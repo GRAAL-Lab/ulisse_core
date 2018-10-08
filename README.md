@@ -1,4 +1,4 @@
-# OM2 Control
+# Ulisse Catamaran Control
 
-Ortomaran 2 (Ulisse) controller revamped with ROS2.
+Ulisse catamaran controller revamped with ROS2.
 
