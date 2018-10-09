@@ -12,13 +12,20 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(builtin_interfaces REQUIRED)
 find_package(std_msgs REQUIRED)
 
-# Add files in directory tree to "Projects" view in QtCreator
-file(GLOB_RECURSE SOURCE_FILES
-    "msg/*.msg"
+rosidl_generate_interfaces(ulisse_msgs
+  "msg/Compass.msg"
+  "msg/MotorReference.msg"
+  DEPENDENCIES builtin_interfaces
 )
-add_custom_target(.Sources. SOURCES ${SOURCE_FILES})
 
+ament_export_include_directories(include)
+
+install(
+  DIRECTORY include/
+  DESTINATION include
+)
 
 ament_package()
