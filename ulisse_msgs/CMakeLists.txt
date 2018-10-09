@@ -15,9 +15,22 @@ find_package(rclcpp REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(std_msgs REQUIRED)
 
+# Add files in directory tree to "Projects" view in QtCreator
+file(GLOB_RECURSE SOURCE_FILES
+    "msg/*.msg"
+    "*.xml"
+    "launch/*.py"
+)
+add_custom_target(.Files. SOURCES ${SOURCE_FILES})
+
 rosidl_generate_interfaces(ulisse_msgs
+  "msg/Accelerometer.msg"
+  "msg/AmbientSensors.msg"
+  "msg/AppliedMotorReference.msg"
   "msg/Compass.msg"
+  "msg/Magnetometer.msg"
   "msg/MotorReference.msg"
+  "msg/TimeInfo.msg"
   DEPENDENCIES builtin_interfaces
 )
 

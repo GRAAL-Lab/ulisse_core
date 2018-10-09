@@ -12,5 +12,5 @@ def generate_launch_description():
         launch_ros.actions.Node(
             package='ulisse_ctrl', node_executable='subscriber', output='screen'),
         launch_ros.actions.Node(
-            package='ulisse_ctrl', node_executable='publisher', output='screen'),
+            package='ulisse_sim', node_executable='simulator', output='screen'),
 ])

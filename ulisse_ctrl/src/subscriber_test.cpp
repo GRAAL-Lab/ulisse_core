@@ -4,6 +4,8 @@
 #include "ulisse_msgs/msg/motor_reference.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 
+#include "rml/RML.h"
+
 #include <chrono>
 
 using namespace std::chrono_literals;
@@ -24,12 +26,15 @@ int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
 
-    g_node = rclcpp::Node::make_shared("om2_publisher");
+    g_node = rclcpp::Node::make_shared("om2_subscriber");
 
     auto subscription = g_node->create_subscription<std_msgs::msg::String>("topic", topic_callback);
     auto compass_sub = g_node->create_subscription<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::compass_sensor, compass_callback);
 
     rclcpp::WallRate loop_rate(500ms);
+
+    Eigen::TransfMatrix wTv;
+    rml::RobotModel myModel(wTv, "myVehicle");
 
     while (rclcpp::ok()) {
 
@@ -38,7 +43,6 @@ int main(int argc, char* argv[])
     }
 
     rclcpp::shutdown();
-
 
     // TODO(clalancette): It would be better to remove both of these nullptr
     // assignments and let the destructors handle it, but we can't because of
