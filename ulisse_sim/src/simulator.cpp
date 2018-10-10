@@ -1,8 +1,11 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
 #include "ulisse_msgs/msg/compass.hpp"
+#include "ulisse_msgs/msg/imu_data.hpp"
 #include "ulisse_msgs/msg/motor_reference.hpp"
+//#include "
 #include "ulisse_msgs/topicnames.hpp"
+#include "ulisse_sim/vehiclesimulator.h"
 
 #include <chrono>
 #include <cmath>
@@ -29,6 +32,8 @@ int main(int argc, char* argv[])
     std::default_random_engine generator;
     std::uniform_real_distribution<double> distribution(0.0, 2.0 * M_PI);
     auto random_compass = std::bind(distribution, generator);
+
+    VehicleSimulator myVehSim;
 
     while (rclcpp::ok()) {
         message->data = "Hello, world! " + std::to_string(publish_count++);

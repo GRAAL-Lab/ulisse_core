@@ -13,9 +13,11 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(surface_vehicle_model REQUIRED)
 find_package(ulisse_msgs REQUIRED)
 
-# Add files in directory tree to "Projects" view in QtCreator
+# Add files in the tree of "Projects" view in QtCreator
 file(GLOB_RECURSE SOURCE_FILES
     "msg/*.msg"
     "*.xml"
@@ -26,10 +28,15 @@ add_custom_target(.Files. SOURCES ${SOURCE_FILES})
 include_directories(
   include
   ${ulisse_msgs_INCLUDE_DIRS}
+  ${surface_vehicle_model_INCLUDE_DIRS}
 )
 
+add_library(VehicleSimulatorClass src/ulisse_sim/vehiclesimulator.cpp)
+target_link_libraries(VehicleSimulatorClass ${surface_vehicle_model_LIBRARIES} Geographic rml)
+
 add_executable(simulator src/simulator.cpp)
-ament_target_dependencies(simulator rclcpp std_msgs ulisse_msgs)
+ament_target_dependencies(simulator rclcpp std_msgs ulisse_msgs surface_vehicle_model)
+target_link_libraries(simulator VehicleSimulatorClass)
 
 install(TARGETS
   simulator

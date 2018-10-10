@@ -7,7 +7,7 @@ Ulisse catamaran controller revamped with ROS2.
 - **rml**: http://bitbucket.org/isme_robotics/rml
 - **fsm**: http://bitbucket.org/isme_robotics/fsm
 - **ctrl_toolbox**: http://bitbucket.org/isme_robotics/ctrl_toolbox
-- **GeographicLib**: ` sudo apt install geographiclib-*`
+- **libgeographic**: ` sudo apt install libgeographic-*`
 
 ### ulisse_msgs
 

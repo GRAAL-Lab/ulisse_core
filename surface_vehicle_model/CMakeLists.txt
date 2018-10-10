@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(ulisse_ctrl)
+project(surface_vehicle_model)
 
 # Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
@@ -12,11 +12,9 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(builtin_interfaces REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(ulisse_msgs REQUIRED)
 find_package(rml REQUIRED)
-find_package(fsm REQUIRED)
-find_package(ctrl_toolbox REQUIRED)
 
 # Add files in the tree of "Projects" view in QtCreator
 file(GLOB_RECURSE SOURCE_FILES
@@ -31,22 +29,24 @@ include_directories(
   ${ulisse_msgs_INCLUDE_DIRS}
 )
 
-add_executable(publisher src/publisher_test.cpp)
-ament_target_dependencies(publisher rclcpp std_msgs ulisse_msgs)
+add_library(surface_vehicle_model_lib src/surfacevehiclemodel.cpp)
+target_link_libraries(surface_vehicle_model_lib rml)
 
-add_executable(subscriber src/subscriber_test.cpp)
-ament_target_dependencies(subscriber rclcpp std_msgs ulisse_msgs rml)
-target_link_libraries(subscriber rml)
+ament_export_include_directories(include)
+ament_export_libraries(surface_vehicle_model_lib)
 
+# install artifacts
+install(
+  DIRECTORY include/
+  DESTINATION include
+)
 
-install(TARGETS
-  publisher
-  subscriber
-  DESTINATION lib/${PROJECT_NAME})
-  
-#install(DIRECTORY
-#  launch
-#  DESTINATION share/${PROJECT_NAME}/
-#)
+install(
+  TARGETS surface_vehicle_model_lib # foo_bin
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
 
 ament_package()
