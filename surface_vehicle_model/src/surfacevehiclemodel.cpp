@@ -4,21 +4,13 @@ SurfaceVehicleModel::SurfaceVehicleModel()
     : tauX_(0.0)
     , tauN_(0.0)
 {
-    vehvel_.setZero();
+    nir_.setZero();
     tauStar_.setZero();
 }
 
 void SurfaceVehicleModel::SetMappingParams(const ThrusterMappingParameters& params)
 {
     params_ = params;
-}
-
-void SurfaceVehicleModel::SetVehicleVelocity(Eigen::Vector6d linAngVel_)
-{
-    vehvel_ = linAngVel_;
-
-    EvaluateTauX();
-    EvaluateTauN();
 }
 
 void SurfaceVehicleModel::EvaluateTauX()
@@ -41,21 +33,27 @@ void SurfaceVehicleModel::EvaluateTauN()
 
 double SurfaceVehicleModel::GetThrusterForce(double n, double linXVel)
 {
-    double force;
     if (n > 0.0) {
-        force = params_.b1 * n * n - params_.b2 * n * linXVel;
+        return params_.b1_pos * n * n - params_.b2_pos * n * linXVel;
     } else {
-        force = - params_.b1 * n * n + params_.b2 * n * linXVel;
+        return -params_.b1_neg * n * n + params_.b2_neg * n * linXVel;
     }
-    return force;
 }
 
-void SurfaceVehicleModel::DirectDynamics()
+double SurfaceVehicleModel::PercentageToRPM(double h)
 {
-    /** INPUTS **/
-    double n_s = 0.0;
-    double n_p = 0.0;
-    /*************/
+    if (h > 0.0) {
+        return h * params_.lambda_pos;
+    } else {
+        return h * params_.lambda_neg;
+    }
+}
+
+void SurfaceVehicleModel::DirectDynamics(double h_s, double h_p, const Eigen::Vector6d linAngVel, Eigen::Vector6d &linAngAcc)
+{
+    vehvel_ = linAngVel;
+    EvaluateTauX();
+    EvaluateTauN();
 
     tauStar_(0) = tauX_;
     tauStar_(1) = 0.0;
@@ -63,6 +61,9 @@ void SurfaceVehicleModel::DirectDynamics()
 
     double motorlinearXVel_s = vehvel_(0) + vehvel_(5) * params_.d;
     double motorlinearXVel_p = vehvel_(0) - vehvel_(5) * params_.d;
+
+    double n_s = PercentageToRPM(h_s);
+    double n_p = PercentageToRPM(h_p);
 
     double thrust_force_s = GetThrusterForce(n_s, motorlinearXVel_s);
     double thrust_force_p = GetThrusterForce(n_p, motorlinearXVel_p);
@@ -72,5 +73,14 @@ void SurfaceVehicleModel::DirectDynamics()
     tauC(1) = 0.0;
     tauC(2) = (thrust_force_p - thrust_force_s) * params_.d;
 
+    rml::RegularizationData regData;
+    nir_ = rml::RegularizedPseudoInverse(params_.Inertia, regData) * (tauC - tauStar_);
+
+    linAngAcc(0) = nir_(0);
+    linAngAcc(1) = nir_(1);
+    linAngAcc(2) = 0.0;
+    linAngAcc(3) = 0.0;
+    linAngAcc(4) = 0.0;
+    linAngAcc(5) = nir_(2);
 
 }

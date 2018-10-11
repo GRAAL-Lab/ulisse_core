@@ -24,8 +24,13 @@ void compass_callback(const ulisse_msgs::msg::Compass::SharedPtr msg)
 
 int main(int argc, char* argv[])
 {
-    rclcpp::init(argc, argv);
+    std::cout << "Argv Test:" << std::endl;
+    for (int i = 1; i < argc; i++) {
+        std::cout << "argv[" << i << "]: " << std::string(argv[i]) << std::endl;
+    }
+    std::cout << std::endl;
 
+    rclcpp::init(argc, argv);
     g_node = rclcpp::Node::make_shared("om2_subscriber");
 
     auto subscription = g_node->create_subscription<std_msgs::msg::String>("topic", topic_callback);
