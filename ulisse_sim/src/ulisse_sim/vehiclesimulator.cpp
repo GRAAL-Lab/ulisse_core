@@ -3,6 +3,18 @@
 VehicleSimulator::VehicleSimulator()
     : geod_(GeographicLib::Constants::WGS84_a(), GeographicLib::Constants::WGS84_f())
 {
+    vehPos_.setZero();
+}
+
+
+Eigen::Vector3d VehicleSimulator::VehPos() const
+{
+    return vehPos_;
+}
+
+void VehicleSimulator::SetVehPos(const Eigen::Vector3d &vehPos)
+{
+    vehPos_ = vehPos;
 }
 
 void VehicleSimulator::SetParameters(double Ts, const ThrusterMappingParameters &thmapparams)

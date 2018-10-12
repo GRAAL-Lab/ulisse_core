@@ -44,6 +44,7 @@ install(TARGETS
 
 install(DIRECTORY
   launch
+  conf
   DESTINATION share/${PROJECT_NAME}/
 )
 

@@ -21,6 +21,8 @@ public:
 
     void SetParameters(double dt, const ThrusterMappingParameters &thmapparams);
     void ExecuteStep(double h_s_, double h_p_);
+    Eigen::Vector3d VehPos() const;
+    void SetVehPos(const Eigen::Vector3d &vehPos);
 };
 
 #endif // VEHICLESIMULATOR_H

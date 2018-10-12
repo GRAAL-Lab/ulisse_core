@@ -15,7 +15,7 @@
 
 using namespace std::chrono_literals;
 
-void ReadMappingParameters(const std::shared_ptr<rclcpp::SyncParametersClient> pc, ThrusterMappingParameters &tmp);
+void ReadMappingParameters(const std::shared_ptr<rclcpp::SyncParametersClient> pc, ThrusterMappingParameters& tmp);
 
 int main(int argc, char* argv[])
 {
@@ -31,7 +31,8 @@ int main(int argc, char* argv[])
     auto compass_pub = node->create_publisher<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::compass_sensor);
     auto compass_msg = std::make_shared<ulisse_msgs::msg::Compass>();
 
-    rclcpp::WallRate loop_rate(500ms);
+    int rate = 4;
+    rclcpp::WallRate loop_rate(rate);
 
     auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(node);
     while (!parameters_client->wait_for_service(1ms)) {
@@ -42,7 +43,7 @@ int main(int argc, char* argv[])
         RCLCPP_INFO(node->get_logger(), "service not available, waiting again...")
     }
 
-    double dt = parameters_client->get_parameter("sim_params.dt", 0.1);
+    double dt = 1.0 / rate; //parameters_client->get_parameter("sim_params.dt", 0.1);
     std::cout << "dt=" << dt << std::endl;
 
     ThrusterMappingParameters myTMP;
@@ -51,15 +52,24 @@ int main(int argc, char* argv[])
     VehicleSimulator myVehSim;
     myVehSim.SetParameters(dt, myTMP);
 
-    auto publish_count = 0;
+    double test_h_s(40.0), test_h_p(20.0);
+
+    //auto publish_count = 0;
     /*std::default_random_engine generator;
             std::uniform_real_distribution<double> distribution(0.0, 2.0 * M_PI);
             auto random_compass = std::bind(distribution, generator);*/
 
+    std::cout.precision(3);
+    std::cout << std::fixed;
+
     while (rclcpp::ok()) {
-        message->data = "Hello, world! " + std::to_string(publish_count++);
-        RCLCPP_INFO(node->get_logger(), "Publishing: '%s'", message->data.c_str())
-        publisher->publish(message);
+        //message->data = "Hello, world! " + std::to_string(publish_count++);
+        //RCLCPP_INFO(node->get_logger(), "Publishing: '%s'", message->data.c_str())
+        //publisher->publish(message);
+
+        myVehSim.ExecuteStep(test_h_s, test_h_p);
+
+        std::cout << "VehPos: " << myVehSim.VehPos().transpose() << std::endl;
 
         /*compass_msg->yaw   = (float)random_compass();
         compass_msg->pitch = (float)random_compass();
@@ -74,22 +84,19 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-
-void ReadMappingParameters(const std::shared_ptr<rclcpp::SyncParametersClient> pc, ThrusterMappingParameters &tmp)
+void ReadMappingParameters(const std::shared_ptr<rclcpp::SyncParametersClient> pc, ThrusterMappingParameters& tmp)
 {
     tmp.lambda_pos = pc->get_parameter("thruster_mapping.lambda_pos", 0.0);
     tmp.lambda_neg = pc->get_parameter("thruster_mapping.lambda_neg", 0.0);
-    tmp.cb         = Eigen::Vector4d((pc->get_parameter("thruster_mapping.cb", std::vector<double>(4, 0.0))).data());
-    tmp.cX         = Eigen::Vector3d((pc->get_parameter("thruster_mapping.cX", std::vector<double>(3, 0.0))).data());
-    tmp.cN         = Eigen::Vector3d((pc->get_parameter("thruster_mapping.cN", std::vector<double>(3, 0.0))).data());
-    tmp.b1_pos     = pc->get_parameter("thruster_mapping.b1_pos", 0.0);
-    tmp.b2_pos     = pc->get_parameter("thruster_mapping.b2_pos", 0.0);
-    tmp.b1_neg     = pc->get_parameter("thruster_mapping.b1_neg", 0.0);
-    tmp.b2_neg     = pc->get_parameter("thruster_mapping.b2_neg", 0.0);
-    tmp.Inertia.diagonal()    = Eigen::Vector3d((pc->get_parameter("thruster_mapping.Inertia", std::vector<double>(3, 0.0))).data());
-
+    tmp.cb = Eigen::Vector4d((pc->get_parameter("thruster_mapping.cb", std::vector<double>(4, 0.0))).data());
+    tmp.cX = Eigen::Vector3d((pc->get_parameter("thruster_mapping.cX", std::vector<double>(3, 0.0))).data());
+    tmp.cN = Eigen::Vector3d((pc->get_parameter("thruster_mapping.cN", std::vector<double>(3, 0.0))).data());
+    tmp.b1_pos = pc->get_parameter("thruster_mapping.b1_pos", 0.0);
+    tmp.b2_pos = pc->get_parameter("thruster_mapping.b2_pos", 0.0);
+    tmp.b1_neg = pc->get_parameter("thruster_mapping.b1_neg", 0.0);
+    tmp.b2_neg = pc->get_parameter("thruster_mapping.b2_neg", 0.0);
+    tmp.Inertia.diagonal() = Eigen::Vector3d((pc->get_parameter("thruster_mapping.Inertia", std::vector<double>(3, 0.0))).data());
 }
-
 
 /*
 // Set several different types of parameters.
