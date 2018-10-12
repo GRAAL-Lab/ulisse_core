@@ -33,20 +33,24 @@ void SurfaceVehicleModel::EvaluateTauN()
 
 double SurfaceVehicleModel::GetThrusterForce(double n, double linXVel)
 {
+    double force;
     if (n > 0.0) {
-        return params_.b1_pos * n * n - params_.b2_pos * n * linXVel;
+        force = params_.b1_pos * n * n - params_.b2_pos * n * linXVel;
     } else {
-        return -params_.b1_neg * n * n + params_.b2_neg * n * linXVel;
+        force = -params_.b1_neg * n * n + params_.b2_neg * n * linXVel;
     }
+    return force;
 }
 
 double SurfaceVehicleModel::PercentageToRPM(double h)
 {
+    double rpm;
     if (h > 0.0) {
-        return h * params_.lambda_pos;
+        rpm = h * params_.lambda_pos;
     } else {
-        return h * params_.lambda_neg;
+        rpm = h * params_.lambda_neg;
     }
+    return rpm;
 }
 
 void SurfaceVehicleModel::DirectDynamics(double h_s, double h_p, const Eigen::Vector6d linAngVel, Eigen::Vector6d &linAngAcc)
@@ -54,6 +58,9 @@ void SurfaceVehicleModel::DirectDynamics(double h_s, double h_p, const Eigen::Ve
     vehvel_ = linAngVel;
     EvaluateTauX();
     EvaluateTauN();
+
+    std::cout << "tauX_: " << tauX_ << std::endl;
+    std::cout << "tauN_: " << tauN_ << std::endl;
 
     tauStar_(0) = tauX_;
     tauStar_(1) = 0.0;
@@ -73,8 +80,12 @@ void SurfaceVehicleModel::DirectDynamics(double h_s, double h_p, const Eigen::Ve
     tauC(1) = 0.0;
     tauC(2) = (thrust_force_p - thrust_force_s) * params_.d;
 
+
     rml::RegularizationData regData;
-    nir_ = rml::RegularizedPseudoInverse(params_.Inertia, regData) * (tauC - tauStar_);
+    regData.params.lambda = 0.001;
+    regData.params.threshold = 0.00001;
+    Eigen::Matrix3d I_pinv = rml::RegularizedPseudoInverse(params_.Inertia, regData);
+    nir_ = I_pinv * (tauC - tauStar_);
 
     linAngAcc(0) = nir_(0);
     linAngAcc(1) = nir_(1);
@@ -82,5 +93,11 @@ void SurfaceVehicleModel::DirectDynamics(double h_s, double h_p, const Eigen::Ve
     linAngAcc(3) = 0.0;
     linAngAcc(4) = 0.0;
     linAngAcc(5) = nir_(2);
+
+    /*std::cout << "tauC: " << tauC.transpose() << std::endl;
+    std::cout << "tauStar: " << tauStar_.transpose() << std::endl;
+    std::cout << "I_pinv:\n" << I_pinv << std::endl;
+    std::cout << "nir: " << nir_.transpose() << std::endl;
+    std::cout << "linAngAcc: " << linAngAcc.transpose() << std::endl;*/
 
 }

@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
     auto compass_pub = node->create_publisher<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::compass_sensor);
     auto compass_msg = std::make_shared<ulisse_msgs::msg::Compass>();
 
-    int rate = 4;
+    int rate = 50;
     rclcpp::WallRate loop_rate(rate);
 
     auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(node);
@@ -67,9 +67,12 @@ int main(int argc, char* argv[])
         //RCLCPP_INFO(node->get_logger(), "Publishing: '%s'", message->data.c_str())
         //publisher->publish(message);
 
-        myVehSim.ExecuteStep(test_h_s, test_h_p);
+        std::cout << "VehPosWorld: " << myVehSim.VehPos().transpose() << std::endl;
+        std::cout << "VehVelWorld: " << myVehSim.VehVel_world().transpose() << std::endl;
 
-        std::cout << "VehPos: " << myVehSim.VehPos().transpose() << std::endl;
+        std::cout << "----------------------------------" << std::endl;
+
+        myVehSim.ExecuteStep(test_h_s, test_h_p);
 
         /*compass_msg->yaw   = (float)random_compass();
         compass_msg->pitch = (float)random_compass();
@@ -86,6 +89,7 @@ int main(int argc, char* argv[])
 
 void ReadMappingParameters(const std::shared_ptr<rclcpp::SyncParametersClient> pc, ThrusterMappingParameters& tmp)
 {
+    tmp.d = pc->get_parameter("thruster_mapping.motors_distance", 0.0);
     tmp.lambda_pos = pc->get_parameter("thruster_mapping.lambda_pos", 0.0);
     tmp.lambda_neg = pc->get_parameter("thruster_mapping.lambda_neg", 0.0);
     tmp.cb = Eigen::Vector4d((pc->get_parameter("thruster_mapping.cb", std::vector<double>(4, 0.0))).data());

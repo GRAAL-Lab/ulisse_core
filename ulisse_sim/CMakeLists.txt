@@ -22,6 +22,7 @@ file(GLOB_RECURSE SOURCE_FILES
     "msg/*.msg"
     "*.xml"
     "launch/*.py"
+    "conf/*"
 )
 add_custom_target(.Files. SOURCES ${SOURCE_FILES})
 

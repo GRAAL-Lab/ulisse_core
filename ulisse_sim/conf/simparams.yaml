@@ -5,12 +5,12 @@ simulator:
         thruster_mapping:
             lambda_pos: 13.0
             lambda_neg: 9.1
-            motors_distance: 1.5
+            motors_distance: 0.6925
             cb: [0.000303, 0.034, 0.00014, 0.055]
             cX: [0.0, 0.0, 45.47]
             cN: [520.0, 0.0, 600.0]
-            b1_pos: 1.0
-            b2_pos: 1.0
-            b1_neg: 0.49
-            b2_neg: 0.49
+            b1_pos: 0.000303
+            b2_pos: 0.034
+            b1_neg: 0.00014
+            b2_neg: 0.055
             Inertia: [400.0, 400.0, 50.0]

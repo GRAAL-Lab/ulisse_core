@@ -6,18 +6,27 @@ VehicleSimulator::VehicleSimulator()
     vehPos_.setZero();
 }
 
-
 Eigen::Vector3d VehicleSimulator::VehPos() const
 {
     return vehPos_;
 }
 
-void VehicleSimulator::SetVehPos(const Eigen::Vector3d &vehPos)
+void VehicleSimulator::SetVehPos(const Eigen::Vector3d& vehPos)
 {
     vehPos_ = vehPos;
 }
 
-void VehicleSimulator::SetParameters(double Ts, const ThrusterMappingParameters &thmapparams)
+Eigen::Vector6d VehicleSimulator::VehVel_world() const
+{
+    return vehVel_world;
+}
+
+void VehicleSimulator::SetVehVel_world(const Eigen::Vector6d& value)
+{
+    vehVel_world = value;
+}
+
+void VehicleSimulator::SetParameters(double Ts, const ThrusterMappingParameters& thmapparams)
 {
     Ts_ = Ts;
     ulisseModel_.SetMappingParams(thmapparams);
@@ -25,15 +34,19 @@ void VehicleSimulator::SetParameters(double Ts, const ThrusterMappingParameters 
 
 void VehicleSimulator::ExecuteStep(double h_s, double h_p)
 {
+
     // Computing vehicle acceleration
     ulisseModel_.DirectDynamics(h_s, h_p, vehRelVel_body_, vehRelAcc_body_);
+
+    std::cout << "vehRelVel_body: " << vehRelVel_body_.transpose() << std::endl;
+    std::cout << "vehRelAcc_body: " << vehRelAcc_body_.transpose() << std::endl;
+
+    // Integrating the acceleration to get the vehicle velocity
+    vehRelVel_body_ = vehRelVel_body_ + vehRelAcc_body_ * Ts_;
 
     // Projecting the acceleration and velocity on the world frame
     vehRelAcc_world_ = vehAtt_.ToRotMatrix().GetCartesianRotationMatrix() * vehRelAcc_body_;
     vehRelVel_world_ = vehAtt_.ToRotMatrix().GetCartesianRotationMatrix() * vehRelVel_body_;
-
-    // Integrating the acceleration to get the vehicle velocity
-    vehRelVel_world_ = vehRelVel_world_ + vehRelAcc_world_ * Ts_;
 
     // Get the vehicle absolute velocity by adding the water current velocity
     vehVel_world = vehRelVel_world_ + waterVel_world_;
