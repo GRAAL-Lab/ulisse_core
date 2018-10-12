@@ -1,5 +1,6 @@
 #include "ulisse_sim/vehiclesimulator.h"
 
+
 VehicleSimulator::VehicleSimulator()
     : geod_(GeographicLib::Constants::WGS84_a(), GeographicLib::Constants::WGS84_f())
 {
@@ -11,19 +12,14 @@ Eigen::Vector3d VehicleSimulator::VehPos() const
     return vehPos_;
 }
 
-void VehicleSimulator::SetVehPos(const Eigen::Vector3d& vehPos)
+rml::EulerRPY VehicleSimulator::VehAtt() const
 {
-    vehPos_ = vehPos;
+    return vehAtt_;
 }
 
 Eigen::Vector6d VehicleSimulator::VehVel_world() const
 {
     return vehVel_world;
-}
-
-void VehicleSimulator::SetVehVel_world(const Eigen::Vector6d& value)
-{
-    vehVel_world = value;
 }
 
 void VehicleSimulator::SetParameters(double Ts, const ThrusterMappingParameters& thmapparams)
@@ -38,8 +34,8 @@ void VehicleSimulator::ExecuteStep(double h_s, double h_p)
     // Computing vehicle acceleration
     ulisseModel_.DirectDynamics(h_s, h_p, vehRelVel_body_, vehRelAcc_body_);
 
-    std::cout << "vehRelVel_body: " << vehRelVel_body_.transpose() << std::endl;
-    std::cout << "vehRelAcc_body: " << vehRelAcc_body_.transpose() << std::endl;
+    /*std::cout << "vehRelVel_body: " << vehRelVel_body_.transpose() << std::endl;
+    std::cout << "vehRelAcc_body: " << vehRelAcc_body_.transpose() << std::endl;*/
 
     // Integrating the acceleration to get the vehicle velocity
     vehRelVel_body_ = vehRelVel_body_ + vehRelAcc_body_ * Ts_;

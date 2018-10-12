@@ -23,9 +23,8 @@ public:
     void ExecuteStep(double h_s_, double h_p_);
 
     Eigen::Vector3d VehPos() const;
-    void SetVehPos(const Eigen::Vector3d &vehPos);
     Eigen::Vector6d VehVel_world() const;
-    void SetVehVel_world(const Eigen::Vector6d &value);
+    rml::EulerRPY VehAtt() const;
 };
 
 #endif // VEHICLESIMULATOR_H

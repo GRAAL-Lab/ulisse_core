@@ -9,9 +9,13 @@
 
 #include <chrono>
 #include <cmath>
+#include <ctime> // localtime
+#include <fstream>
 #include <functional>
+#include <iomanip> // put_time
 #include <iostream>
 #include <random>
+#include <sstream> // stringstream
 
 using namespace std::chrono_literals;
 
@@ -52,7 +56,7 @@ int main(int argc, char* argv[])
     VehicleSimulator myVehSim;
     myVehSim.SetParameters(dt, myTMP);
 
-    double test_h_s(40.0), test_h_p(20.0);
+    double test_h_s(20.0), test_h_p(60.0);
 
     //auto publish_count = 0;
     /*std::default_random_engine generator;
@@ -62,26 +66,37 @@ int main(int argc, char* argv[])
     std::cout.precision(3);
     std::cout << std::fixed;
 
+    std::stringstream strs;
+    std::ofstream logfile;
+
+    auto now = std::chrono::system_clock::now();
+    auto in_time_t = std::chrono::system_clock::to_time_t(now);
+    std::stringstream datess;
+    datess << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d_%X");
+
+    std::string logfilename = "sim_log_" + datess.str() + ".txt";
+    logfile.open(logfilename, std::ios_base::app);
+
     while (rclcpp::ok()) {
-        //message->data = "Hello, world! " + std::to_string(publish_count++);
-        //RCLCPP_INFO(node->get_logger(), "Publishing: '%s'", message->data.c_str())
-        //publisher->publish(message);
 
-        std::cout << "VehPosWorld: " << myVehSim.VehPos().transpose() << std::endl;
-        std::cout << "VehVelWorld: " << myVehSim.VehVel_world().transpose() << std::endl;
+        std::cout << "VehPose (World): " << myVehSim.VehPos().transpose() << " " << myVehSim.VehAtt().ToVect3().transpose() << std::endl;
+        std::cout << "VehVel  (World): " << myVehSim.VehVel_world().transpose() << std::endl;
 
-        std::cout << "----------------------------------" << std::endl;
+        strs.str(std::string());
+        strs << myVehSim.VehPos().transpose() << " " << myVehSim.VehAtt().ToVect3().transpose() << ", ";
+        strs << myVehSim.VehVel_world().transpose() << "\n";
+
+        logfile << strs.str();
 
         myVehSim.ExecuteStep(test_h_s, test_h_p);
 
-        /*compass_msg->yaw   = (float)random_compass();
-        compass_msg->pitch = (float)random_compass();
-        compass_msg->roll  = (float)random_compass();
-        compass_pub->publish(compass_msg);*/
+        std::cout << "----------------------------------" << std::endl;
 
         rclcpp::spin_some(node);
         loop_rate.sleep();
     }
+
+    logfile.close();
 
     rclcpp::shutdown();
     return 0;

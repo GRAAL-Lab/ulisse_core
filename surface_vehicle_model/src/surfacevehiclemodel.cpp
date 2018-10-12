@@ -59,8 +59,8 @@ void SurfaceVehicleModel::DirectDynamics(double h_s, double h_p, const Eigen::Ve
     EvaluateTauX();
     EvaluateTauN();
 
-    std::cout << "tauX_: " << tauX_ << std::endl;
-    std::cout << "tauN_: " << tauN_ << std::endl;
+    //std::cout << "tauX_: " << tauX_ << std::endl;
+    //std::cout << "tauN_: " << tauN_ << std::endl;
 
     tauStar_(0) = tauX_;
     tauStar_(1) = 0.0;
