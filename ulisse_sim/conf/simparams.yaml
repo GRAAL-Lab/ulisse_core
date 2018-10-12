@@ -6,7 +6,6 @@ simulator:
             lambda_pos: 13.0
             lambda_neg: 9.1
             motors_distance: 0.6925
-            cb: [0.000303, 0.034, 0.00014, 0.055]
             cX: [0.0, 0.0, 45.47]
             cN: [520.0, 0.0, 600.0]
             b1_pos: 0.000303

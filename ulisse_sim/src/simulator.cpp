@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
     VehicleSimulator myVehSim;
     myVehSim.SetParameters(dt, myTMP);
 
-    double test_h_s(20.0), test_h_p(60.0);
+    double test_h_s(100.0), test_h_p(100.0);
 
     //auto publish_count = 0;
     /*std::default_random_engine generator;
@@ -66,31 +66,31 @@ int main(int argc, char* argv[])
     std::cout.precision(3);
     std::cout << std::fixed;
 
-    std::stringstream strs;
+    std::stringstream logss;
     std::ofstream logfile;
 
+    std::stringstream datess;
     auto now = std::chrono::system_clock::now();
     auto in_time_t = std::chrono::system_clock::to_time_t(now);
-    std::stringstream datess;
-    datess << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d_%X");
+    datess << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d_%H.%M.%S");
 
     std::string logfilename = "sim_log_" + datess.str() + ".txt";
     logfile.open(logfilename, std::ios_base::app);
 
     while (rclcpp::ok()) {
 
+        std::cout << "----------------------------------" << std::endl;
         std::cout << "VehPose (World): " << myVehSim.VehPos().transpose() << " " << myVehSim.VehAtt().ToVect3().transpose() << std::endl;
         std::cout << "VehVel  (World): " << myVehSim.VehVel_world().transpose() << std::endl;
 
-        strs.str(std::string());
-        strs << myVehSim.VehPos().transpose() << " " << myVehSim.VehAtt().ToVect3().transpose() << ", ";
-        strs << myVehSim.VehVel_world().transpose() << "\n";
-
-        logfile << strs.str();
+        /* LOGGING */
+        logss.str(std::string());
+        logss << myVehSim.VehPos().transpose() << " " << myVehSim.VehAtt().ToVect3().transpose() << ", ";
+        logss << myVehSim.VehVel_world().transpose() << "\n";
+        logfile << logss.str();
+        /***********/
 
         myVehSim.ExecuteStep(test_h_s, test_h_p);
-
-        std::cout << "----------------------------------" << std::endl;
 
         rclcpp::spin_some(node);
         loop_rate.sleep();
@@ -107,7 +107,7 @@ void ReadMappingParameters(const std::shared_ptr<rclcpp::SyncParametersClient> p
     tmp.d = pc->get_parameter("thruster_mapping.motors_distance", 0.0);
     tmp.lambda_pos = pc->get_parameter("thruster_mapping.lambda_pos", 0.0);
     tmp.lambda_neg = pc->get_parameter("thruster_mapping.lambda_neg", 0.0);
-    tmp.cb = Eigen::Vector4d((pc->get_parameter("thruster_mapping.cb", std::vector<double>(4, 0.0))).data());
+    //tmp.cb = Eigen::Vector4d((pc->get_parameter("thruster_mapping.cb", std::vector<double>(4, 0.0))).data());
     tmp.cX = Eigen::Vector3d((pc->get_parameter("thruster_mapping.cX", std::vector<double>(3, 0.0))).data());
     tmp.cN = Eigen::Vector3d((pc->get_parameter("thruster_mapping.cN", std::vector<double>(3, 0.0))).data());
     tmp.b1_pos = pc->get_parameter("thruster_mapping.b1_pos", 0.0);

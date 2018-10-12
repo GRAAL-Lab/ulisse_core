@@ -8,7 +8,6 @@ struct ThrusterMappingParameters {
 
     double lambda_pos, lambda_neg;
     double d;
-    Eigen::Vector4d cb;
     Eigen::Vector3d cX;
     Eigen::Vector3d cN;
     double b1_pos, b2_pos, b1_neg, b2_neg;
@@ -23,7 +22,6 @@ struct ThrusterMappingParameters {
         , b1_neg(0.0)
         , b2_neg(0.0)
     {
-        cb.setZero();
         cX.setZero();
         cN.setZero();
         Inertia.setZero();
