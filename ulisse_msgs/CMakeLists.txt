@@ -30,6 +30,7 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/Magnetometer.msg"
   "msg/MotorReference.msg"
   "msg/TimeInfo.msg"
+  "msg/GPS.msg"
   DEPENDENCIES builtin_interfaces
 )
 

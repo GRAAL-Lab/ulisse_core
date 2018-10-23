@@ -1,8 +1,6 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
-#include "ulisse_msgs/msg/compass.hpp"
-#include "ulisse_msgs/msg/imu_data.hpp"
-#include "ulisse_msgs/msg/motor_reference.hpp"
+
 
 #include "ulisse_msgs/topicnames.hpp"
 #include "ulisse_sim/vehiclesimulator.h"
@@ -79,9 +77,9 @@ int main(int argc, char* argv[])
 
     while (rclcpp::ok()) {
 
-        std::cout << "----------------------------------" << std::endl;
-        std::cout << "VehPose (World): " << myVehSim.VehPos().transpose() << " " << myVehSim.VehAtt().ToVect3().transpose() << std::endl;
-        std::cout << "VehVel  (World): " << myVehSim.VehVel_world().transpose() << std::endl;
+        //std::cout << "----------------------------------" << std::endl;
+        //std::cout << "VehPose (World): " << myVehSim.VehPos().transpose() << " " << myVehSim.VehAtt().ToVect3().transpose() << std::endl;
+        //std::cout << "VehVel  (World): " << myVehSim.VehVel_world().transpose() << std::endl;
 
         /* LOGGING */
         logss.str(std::string());

@@ -31,6 +31,22 @@ include_directories(
   ${ulisse_msgs_INCLUDE_DIRS}
 )
 
+
+## Libraries ##
+set(ulisse_ctrl_lib_sources
+    # States
+    src/ulisse_ctrl/states/genericstate.cpp
+    src/ulisse_ctrl/states/statehalt.cpp
+    src/ulisse_ctrl/states/statemove.cpp
+    # Commands
+    src/ulisse_ctrl/commands/genericcommand.cpp
+    src/ulisse_ctrl/commands/commandhalt.cpp
+)
+add_library(ulisse_ctrl_lib ${ulisse_ctrl_lib_sources})
+target_link_libraries(ulisse_ctrl_lib rml fsm)
+
+
+## Executables ##
 add_executable(publisher src/publisher_test.cpp)
 ament_target_dependencies(publisher rclcpp std_msgs ulisse_msgs)
 
@@ -38,10 +54,15 @@ add_executable(subscriber src/subscriber_test.cpp)
 ament_target_dependencies(subscriber rclcpp std_msgs ulisse_msgs rml)
 target_link_libraries(subscriber rml)
 
+add_executable(controller_node src/controller_node.cpp)
+ament_target_dependencies(controller_node rclcpp std_msgs ulisse_msgs rml)
+target_link_libraries(controller_node rml ulisse_ctrl_lib)
 
+## Install ##
 install(TARGETS
   publisher
   subscriber
+  controller_node
   DESTINATION lib/${PROJECT_NAME})
   
 install(DIRECTORY
