@@ -1,10 +1,10 @@
 float64 time           # Time of update in UNIX time with nanoSec precision (sec.nsec)
 uint8 gpsfixmode
 uint64 flags
-float64 latitude       # Latitude in rad (valid if mode >= 2) */
-float64 longitude      # Longitude in rad (valid if mode >= 2) */
+float64 latitude       # Latitude in deg (valid if mode >= 2) */
+float64 longitude      # Longitude in deg (valid if mode >= 2) */
 float64 altitude       # Altitude in meters (valid if mode == 3) */
-float64 track          # Course made good (relative to true north) */
+float64 track          # Course made good in rad (relative to true north) */
 float64 speed          # Speed over ground, meters/sec */
 float64 climb          # Vertical speed, meters/sec */
 

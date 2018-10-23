@@ -1,3 +1,3 @@
-float32[3] accelerometer #[m/s^2]
-float32[3] gyro          #[rad/s]
-float32[2] gyro4x        #[rad/s]
+float64[3] accelerometer #[m/s^2]
+float64[3] gyro          #[rad/s]
+float64[2] gyro4x        #[rad/s]

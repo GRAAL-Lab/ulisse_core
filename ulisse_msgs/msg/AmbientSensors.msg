@@ -1,2 +1,2 @@
-float32 temperaturectrlbox  #[°C]
-float32 humidityctrlbox     #[%]
+float64 temperaturectrlbox  #[°C]
+float64 humidityctrlbox     #[%]

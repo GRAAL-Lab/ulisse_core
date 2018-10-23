@@ -1,3 +1,3 @@
-float32 yaw     # [rad]
-float32 pitch   # [rad]
-float32 roll    # [rad]
+float64 yaw     # [rad]
+float64 pitch   # [rad]
+float64 roll    # [rad]

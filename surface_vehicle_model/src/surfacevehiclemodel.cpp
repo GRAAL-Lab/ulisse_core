@@ -53,7 +53,7 @@ double SurfaceVehicleModel::PercentageToRPM(double h)
     return rpm;
 }
 
-void SurfaceVehicleModel::DirectDynamics(double h_s, double h_p, const Eigen::Vector6d linAngVel, Eigen::Vector6d &linAngAcc)
+void SurfaceVehicleModel::DirectDynamics(double h_p, double h_s, const Eigen::Vector6d linAngVel, Eigen::Vector6d& linAngAcc)
 {
     vehvel_ = linAngVel;
     EvaluateTauX();
@@ -66,20 +66,19 @@ void SurfaceVehicleModel::DirectDynamics(double h_s, double h_p, const Eigen::Ve
     tauStar_(1) = 0.0;
     tauStar_(2) = tauN_;
 
-    double motorlinearXVel_s = vehvel_(0) + vehvel_(5) * params_.d;
-    double motorlinearXVel_p = vehvel_(0) - vehvel_(5) * params_.d;
+    double motorlinearXVel_p = vehvel_(0) + vehvel_(5) * params_.d;
+    double motorlinearXVel_s = vehvel_(0) - vehvel_(5) * params_.d;
 
-    double n_s = PercentageToRPM(h_s);
     double n_p = PercentageToRPM(h_p);
+    double n_s = PercentageToRPM(h_s);
 
-    double thrust_force_s = GetThrusterForce(n_s, motorlinearXVel_s);
     double thrust_force_p = GetThrusterForce(n_p, motorlinearXVel_p);
+    double thrust_force_s = GetThrusterForce(n_s, motorlinearXVel_s);
 
     Eigen::Vector3d tauC;
     tauC(0) = thrust_force_p + thrust_force_s;
     tauC(1) = 0.0;
     tauC(2) = (thrust_force_p - thrust_force_s) * params_.d;
-
 
     rml::RegularizationData regData;
     regData.params.lambda = 0.001;
@@ -99,5 +98,4 @@ void SurfaceVehicleModel::DirectDynamics(double h_s, double h_p, const Eigen::Ve
     std::cout << "I_pinv:\n" << I_pinv << std::endl;
     std::cout << "nir: " << nir_.transpose() << std::endl;
     std::cout << "linAngAcc: " << linAngAcc.transpose() << std::endl;*/
-
 }

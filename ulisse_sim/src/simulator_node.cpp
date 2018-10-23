@@ -1,7 +1,6 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
 
-
 #include "ulisse_msgs/topicnames.hpp"
 #include "ulisse_sim/vehiclesimulator.h"
 
@@ -52,7 +51,8 @@ int main(int argc, char* argv[])
     ReadMappingParameters(parameters_client, myTMP);
 
     VehicleSimulator myVehSim;
-    myVehSim.SetParameters(dt, myTMP);
+    myVehSim.SetParameters(dt * 5.0, myTMP);
+    myVehSim.SetRealtime(false);
 
     double test_h_s(100.0), test_h_p(100.0);
 
@@ -83,7 +83,7 @@ int main(int argc, char* argv[])
 
         /* LOGGING */
         logss.str(std::string());
-        logss << myVehSim.VehPos().transpose() << " " << myVehSim.VehAtt().ToVect3().transpose() << ", ";
+        logss << myVehSim.VehLatitude() << " " << myVehSim.VehLongitude() << ", ";
         logss << myVehSim.VehVel_world().transpose() << "\n";
         logfile << logss.str();
         /***********/

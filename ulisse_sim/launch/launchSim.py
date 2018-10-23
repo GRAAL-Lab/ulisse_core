@@ -9,7 +9,7 @@ def generate_launch_description():
 
     # Node arguments must be comma separated strings
     sim_node = launch_ros.actions.Node(
-            package='ulisse_sim', node_executable='simulator', output='screen', arguments=[configfile])
+            package='ulisse_sim', node_executable='simulator_node', output='screen', arguments=[configfile])
 
     return LaunchDescription([
         sim_node,

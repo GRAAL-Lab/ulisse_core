@@ -26,9 +26,20 @@ struct ThrusterMappingParameters {
         cN.setZero();
         Inertia.setZero();
     }
-
-
 };
+
+/**
+ * @brief The SurfaceVehicleModel class (N.E.D. coordinates)
+ *
+ *
+ * Vehicle frame:
+ *
+ *         ^ x
+ *         |
+ *         |
+ *  y <----o z
+ *
+*/
 
 class SurfaceVehicleModel {
 
@@ -50,8 +61,8 @@ class SurfaceVehicleModel {
 public:
     SurfaceVehicleModel();
 
-    void SetMappingParams(const ThrusterMappingParameters &params);
-    void DirectDynamics(double h_s, double h_p, const Eigen::Vector6d linAngVel_, Eigen::Vector6d &linAngAcc_);
+    void SetMappingParams(const ThrusterMappingParameters& params);
+    void DirectDynamics(double h_s, double h_p, const Eigen::Vector6d linAngVel_, Eigen::Vector6d& linAngAcc_);
 };
 
 #endif // SURFACEVEHICLEMODEL_H

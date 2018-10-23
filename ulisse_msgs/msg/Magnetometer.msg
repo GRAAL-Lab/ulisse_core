@@ -1,1 +1,1 @@
-float32[3] magnetometer
+float64[3] orthogonalstrength  # [x,y,z in Tesla]

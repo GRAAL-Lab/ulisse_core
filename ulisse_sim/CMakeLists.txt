@@ -35,12 +35,12 @@ include_directories(
 add_library(VehicleSimulatorClass src/ulisse_sim/vehiclesimulator.cpp)
 target_link_libraries(VehicleSimulatorClass ${surface_vehicle_model_LIBRARIES} Geographic rml)
 
-add_executable(simulator src/simulator.cpp)
-ament_target_dependencies(simulator rclcpp std_msgs ulisse_msgs surface_vehicle_model)
-target_link_libraries(simulator VehicleSimulatorClass)
+add_executable(simulator_node src/simulator_node.cpp)
+ament_target_dependencies(simulator_node rclcpp std_msgs ulisse_msgs surface_vehicle_model)
+target_link_libraries(simulator_node VehicleSimulatorClass)
 
 install(TARGETS
-  simulator
+  simulator_node
   DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY
