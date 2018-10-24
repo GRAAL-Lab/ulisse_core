@@ -62,7 +62,7 @@ public:
     SurfaceVehicleModel();
 
     void SetMappingParams(const ThrusterMappingParameters& params);
-    void DirectDynamics(double h_s, double h_p, const Eigen::Vector6d linAngVel_, Eigen::Vector6d& linAngAcc_);
+    void DirectDynamics(double h_p, double h_s, const Eigen::Vector6d linAngVel_, Eigen::Vector6d& linAngAcc_);
 };
 
 #endif // SURFACEVEHICLEMODEL_H

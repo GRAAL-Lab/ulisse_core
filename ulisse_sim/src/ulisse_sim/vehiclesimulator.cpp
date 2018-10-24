@@ -75,7 +75,10 @@ void VehicleSimulator::ExecuteStep(double h_p, double h_s)
         Ts_ = Ts_fixed_;
     }
 
+    //std::cout << "Ts_: " << Ts_ << std::endl;
     //std::cout << "Time since start (sec) = " << (total_elapsed_.count() / 1E9) << std::endl;
+
+    std::cout << "motorref: " << h_p << ", " << h_s << std::endl;
 
     SimulateActuation(h_p, h_s);
     SimulateSensors(h_p, h_s);
@@ -93,6 +96,9 @@ void VehicleSimulator::SimulateActuation(double h_p, double h_s)
 
     // Integrating the acceleration to get the vehicle velocity
     vehRelVel_body_ = vehRelVel_body_ + vehRelAcc_body_ * Ts_;
+
+    std::cout << "vehRelAcc_body_: " << vehRelAcc_body_.transpose() << std::endl;
+    std::cout << "vehRelVel_body_: " << vehRelVel_body_.transpose() << std::endl;
 
     // Projecting the acceleration and velocity on the world frame
     vehRelAcc_world_ = vehAtt_now_.ToRotMatrix().GetCartesianRotationMatrix() * vehRelAcc_body_;
@@ -169,25 +175,19 @@ void VehicleSimulator::SimulateSensors(double h_p, double h_s)
 
     applied_motorref_msg_.left = h_p;
     applied_motorref_msg_.right = h_s;
-
-    /*std::cout << "timestamp:\t\t" << timeinfo_msg_.timestamp << std::endl;
-    std::cout << "stepssincepps:\t" << timeinfo_msg_.stepssincepps << std::endl;
-    std::cout << "total_elapsed_.count() / 1E9 = " << total_elapsed_.count() / 1E9 << std::endl;
-    std::cout << "iter_elapsed_.count() / 1E9 = " << iter_elapsed_.count() / 1E9 << std::endl;
-    std::cout << "Ts = " << Ts_ << std::endl;
-    std::cout << "Ts_ - iter_elapsed = " << (Ts_ - iter_elapsed_.count() / 1E9) << std::endl;*/
 }
 
 void VehicleSimulator::PublishSensors()
 {
-
     timeinfo_pub_->publish(timeinfo_msg_);
 
-    if ((timestamp_count_ % 200) == 0) {
+    if ((int)(timestamp_count_ / 200) == gpspubcounter_) {
+        gpspubcounter_++;
         gpsdata_pub_->publish(gpsdata_msg_);
     }
 
-    if ((timestamp_count_ % 20) == 0) {
+    if ((int)(timestamp_count_ / 20) == sensorpubcounter_) {
+        sensorpubcounter_++;
         compass_pub_->publish(compassdata_msg_);
         imudata_pub_->publish(imudata_msg_);
         ambsens_pub_->publish(ambsens_msg_);

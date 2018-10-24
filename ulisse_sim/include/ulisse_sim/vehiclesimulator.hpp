@@ -54,6 +54,8 @@ class VehicleSimulator {
     rclcpp::Publisher<ulisse_msgs::msg::Magnetometer>::SharedPtr magneto_pub_;
     rclcpp::Publisher<ulisse_msgs::msg::MotorReference>::SharedPtr applied_motorref_pub_;
 
+    int gpspubcounter_, sensorpubcounter_;
+
     rclcpp::TimerBase::SharedPtr timer_;
 
 

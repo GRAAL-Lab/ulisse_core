@@ -1,5 +1,4 @@
 #include "rclcpp/rclcpp.hpp"
-#include "std_msgs/msg/string.hpp"
 
 #include "ulisse_msgs/topicnames.hpp"
 #include "ulisse_sim/vehiclesimulator.hpp"
@@ -16,13 +15,12 @@
 
 using namespace std::chrono_literals;
 
-static double test_h_p(0.0), test_h_s(0.0);
+static double test_h_p(40.0), test_h_s(20.0);
 
 void ReadMappingParameters(const std::shared_ptr<rclcpp::SyncParametersClient> pc, ThrusterMappingParameters& tmp);
 
 void motorref_cb(const ulisse_msgs::msg::MotorReference::SharedPtr msg)
 {
-    std::cout << "motorref: " << msg->left << ", " << msg->right << std::endl;
     test_h_p = msg->left;
     test_h_s = msg->right;
 }
@@ -31,10 +29,6 @@ int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
     auto node = rclcpp::Node::make_shared("simulator_node");
-    auto subscriber = node->create_subscription<ulisse_msgs::msg::MotorReference>(ulisse_msgs::topicnames::motor_ctrl_ref, motorref_cb);
-
-    int rate = 50;
-    rclcpp::WallRate loop_rate(rate);
 
     auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(node);
     while (!parameters_client->wait_for_service(1ms)) {
@@ -44,15 +38,26 @@ int main(int argc, char* argv[])
         }
         RCLCPP_INFO(node->get_logger(), "service not available, waiting again...")
     }
-
-    double dt = 1.0 / rate; //parameters_client->get_parameter("sim_params.dt", 0.1);
-    std::cout << "dt=" << dt << std::endl;
-
     ThrusterMappingParameters myTMP;
     ReadMappingParameters(parameters_client, myTMP);
 
+    auto subscriber = node->create_subscription<ulisse_msgs::msg::MotorReference>(ulisse_msgs::topicnames::motor_ctrl_ref, motorref_cb);
+
+    int rate = 50;
+    rclcpp::WallRate loop_rate(rate);
+    double dt = 1.0 / rate;
+    std::cout << "dt=" << dt << std::endl;
+
     VehicleSimulator myVehSim(node);
     myVehSim.SetParameters(dt * 5.0, myTMP);
+
+    std::stringstream ss;
+    // Get a few of the parameters just set.
+    for (auto& parameter : parameters_client->get_parameters({ "thruster_mapping.motors_distance", "thruster_mapping.lambda_pos", "thruster_mapping.lambda_neg"})) {
+        ss << "\nParameter name: " << parameter.get_name();
+        ss << "\nParameter value (" << parameter.get_type_name() << "): " << parameter.value_to_string();
+    }
+    RCLCPP_INFO(node->get_logger(), ss.str().c_str())
 
     //auto publish_count = 0;
     /*std::default_random_engine generator;
@@ -75,9 +80,10 @@ int main(int argc, char* argv[])
 
     while (rclcpp::ok()) {
 
-        //std::cout << "----------------------------------" << std::endl;
-        //std::cout << "VehPose (World): " << myVehSim.VehPos().transpose() << " " << myVehSim.VehAtt().ToVect3().transpose() << std::endl;
-        //std::cout << "VehVel  (World): " << myVehSim.VehVel_world().transpose() << std::endl;
+        std::cout << "----------------------------------" << std::endl;
+        std::cout << "lat, long: " << std::setprecision(6) << myVehSim.VehLatitude() << ", " << myVehSim.VehLongitude() << std::endl;
+        std::cout << "velocity: " << myVehSim.VehVel_world().transpose() << std::endl;
+
 
         /* LOGGING */
         // logss.str(std::string());
@@ -112,6 +118,9 @@ void ReadMappingParameters(const std::shared_ptr<rclcpp::SyncParametersClient> p
     tmp.b1_neg = pc->get_parameter("thruster_mapping.b1_neg", 0.0);
     tmp.b2_neg = pc->get_parameter("thruster_mapping.b2_neg", 0.0);
     tmp.Inertia.diagonal() = Eigen::Vector3d((pc->get_parameter("thruster_mapping.Inertia", std::vector<double>(3, 0.0))).data());
+
+    //std::cout << "Parameters read!" << std::endl;
+    //std::cout << "tmp.Inertia.diagonal()" << tmp.Inertia.diagonal() << std::endl;
 }
 
 /*

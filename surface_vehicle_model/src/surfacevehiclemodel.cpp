@@ -59,8 +59,8 @@ void SurfaceVehicleModel::DirectDynamics(double h_p, double h_s, const Eigen::Ve
     EvaluateTauX();
     EvaluateTauN();
 
-    //std::cout << "tauX_: " << tauX_ << std::endl;
-    //std::cout << "tauN_: " << tauN_ << std::endl;
+    std::cout << "tauX_: " << tauX_ << std::endl;
+    std::cout << "tauN_: " << tauN_ << std::endl;
 
     tauStar_(0) = tauX_;
     tauStar_(1) = 0.0;
@@ -95,6 +95,7 @@ void SurfaceVehicleModel::DirectDynamics(double h_p, double h_s, const Eigen::Ve
 
     /*std::cout << "tauC: " << tauC.transpose() << std::endl;
     std::cout << "tauStar: " << tauStar_.transpose() << std::endl;
+    std::cout << "I_:\n" << params_.Inertia << std::endl;
     std::cout << "I_pinv:\n" << I_pinv << std::endl;
     std::cout << "nir: " << nir_.transpose() << std::endl;
     std::cout << "linAngAcc: " << linAngAcc.transpose() << std::endl;*/

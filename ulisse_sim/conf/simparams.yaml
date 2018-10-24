@@ -1,4 +1,4 @@
-simulator:
+simulator_node:
     ros__parameters:
         sim_params:
             dt: 0.001
