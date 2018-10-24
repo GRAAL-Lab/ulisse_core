@@ -1,4 +1,4 @@
-#include "surface_vehicle_model/surfacevehiclemodel.h"
+#include "surface_vehicle_model/surfacevehiclemodel.hpp"
 
 SurfaceVehicleModel::SurfaceVehicleModel()
     : tauX_(0.0)

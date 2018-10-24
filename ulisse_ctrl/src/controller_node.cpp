@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
     g_node = rclcpp::Node::make_shared("controller_node");
 
     auto subscription = g_node->create_subscription<std_msgs::msg::String>("topic", topic_callback);
-    auto compass_sub = g_node->create_subscription<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::compass_sensor, compass_callback);
+    auto compass_sub = g_node->create_subscription<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass, compass_callback);
 
     rclcpp::WallRate loop_rate(500ms);
 

@@ -2,7 +2,7 @@
 #include "std_msgs/msg/string.hpp"
 
 #include "ulisse_msgs/topicnames.hpp"
-#include "ulisse_sim/vehiclesimulator.h"
+#include "ulisse_sim/vehiclesimulator.hpp"
 
 #include <chrono>
 #include <cmath>
@@ -16,21 +16,22 @@
 
 using namespace std::chrono_literals;
 
+static double test_h_p(0.0), test_h_s(0.0);
+
 void ReadMappingParameters(const std::shared_ptr<rclcpp::SyncParametersClient> pc, ThrusterMappingParameters& tmp);
+
+void motorref_cb(const ulisse_msgs::msg::MotorReference::SharedPtr msg)
+{
+    std::cout << "motorref: " << msg->left << ", " << msg->right << std::endl;
+    test_h_p = msg->left;
+    test_h_s = msg->right;
+}
 
 int main(int argc, char* argv[])
 {
-    // Force flush of the stdout buffer.
-    //setvbuf(stdout, NULL, _IONBF, BUFSIZ);
-
     rclcpp::init(argc, argv);
-    auto node = rclcpp::Node::make_shared("simulator");
-
-    auto publisher = node->create_publisher<std_msgs::msg::String>("topic");
-    auto message = std::make_shared<std_msgs::msg::String>();
-
-    auto compass_pub = node->create_publisher<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::compass_sensor);
-    auto compass_msg = std::make_shared<ulisse_msgs::msg::Compass>();
+    auto node = rclcpp::Node::make_shared("simulator_node");
+    auto subscriber = node->create_subscription<ulisse_msgs::msg::MotorReference>(ulisse_msgs::topicnames::motor_ctrl_ref, motorref_cb);
 
     int rate = 50;
     rclcpp::WallRate loop_rate(rate);
@@ -50,11 +51,8 @@ int main(int argc, char* argv[])
     ThrusterMappingParameters myTMP;
     ReadMappingParameters(parameters_client, myTMP);
 
-    VehicleSimulator myVehSim;
+    VehicleSimulator myVehSim(node);
     myVehSim.SetParameters(dt * 5.0, myTMP);
-    myVehSim.SetRealtime(false);
-
-    double test_h_s(100.0), test_h_p(100.0);
 
     //auto publish_count = 0;
     /*std::default_random_engine generator;
@@ -82,13 +80,14 @@ int main(int argc, char* argv[])
         //std::cout << "VehVel  (World): " << myVehSim.VehVel_world().transpose() << std::endl;
 
         /* LOGGING */
-        logss.str(std::string());
-        logss << myVehSim.VehLatitude() << " " << myVehSim.VehLongitude() << ", ";
-        logss << myVehSim.VehVel_world().transpose() << "\n";
-        logfile << logss.str();
+        // logss.str(std::string());
+        // logss << myVehSim.VehLatitude() << " " << myVehSim.VehLongitude() << ", ";
+        // logss << myVehSim.VehVel_world().transpose() << "\n";
+        // logfile << logss.str();
         /***********/
 
-        myVehSim.ExecuteStep(test_h_s, test_h_p);
+        myVehSim.ExecuteStep(test_h_p, test_h_s);
+        myVehSim.PublishSensors();
 
         rclcpp::spin_some(node);
         loop_rate.sleep();

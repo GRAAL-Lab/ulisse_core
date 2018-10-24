@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
     auto publisher = node->create_publisher<std_msgs::msg::String>("topic");
     auto message = std::make_shared<std_msgs::msg::String>();
 
-    auto compass_pub = node->create_publisher<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::compass_sensor);
+    auto compass_pub = node->create_publisher<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass);
     auto compass_msg = std::make_shared<ulisse_msgs::msg::Compass>();
 
     auto publish_count = 0;

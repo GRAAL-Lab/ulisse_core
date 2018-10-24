@@ -1,16 +1,14 @@
 #include <cmath>
 #include <iomanip>
 
-#include "ulisse_sim/vehiclesimulator.h"
+#include "ulisse_msgs/topicnames.hpp"
+#include "ulisse_sim/vehiclesimulator.hpp"
 
-VehicleSimulator::VehicleSimulator()
-    : geod_(GeographicLib::Constants::WGS84_a(), GeographicLib::Constants::WGS84_f())
+VehicleSimulator::VehicleSimulator(const rclcpp::Node::SharedPtr& nh)
+    : nh_(nh)
+    , geod_(GeographicLib::Constants::WGS84_a(), GeographicLib::Constants::WGS84_f())
     , realtime_(true)
 {
-    vehAtt_now_.SetRPY(0.0, 0.0, 0.0);
-
-    vehAtt_last_ = vehAtt_now_;
-
     lat_now_ = 44.4056; // Genova lat-long
     long_now_ = 8.9463;
 
@@ -18,6 +16,14 @@ VehicleSimulator::VehicleSimulator()
     long_last_ = long_now_;
 
     t_start_ = t_last_ = t_now_ = std::chrono::system_clock::now();
+
+    timeinfo_pub_ = nh_->create_publisher<ulisse_msgs::msg::TimeInfo>(ulisse_msgs::topicnames::time_info);
+    gpsdata_pub_ = nh_->create_publisher<ulisse_msgs::msg::GPS>(ulisse_msgs::topicnames::sensor_gps);
+    compass_pub_ = nh_->create_publisher<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass);
+    imudata_pub_ = nh_->create_publisher<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu);
+    ambsens_pub_ = nh_->create_publisher<ulisse_msgs::msg::AmbientSensors>(ulisse_msgs::topicnames::sensor_ambient);
+    magneto_pub_ = nh_->create_publisher<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer);
+    applied_motorref_pub_ = nh_->create_publisher<ulisse_msgs::msg::MotorReference>(ulisse_msgs::topicnames::motor_applied_ref);
 }
 
 rml::EulerRPY VehicleSimulator::VehAtt() const
@@ -66,7 +72,6 @@ void VehicleSimulator::ExecuteStep(double h_p, double h_s)
     if (realtime_) {
         Ts_ = iter_elapsed_.count() / 1E9;
     } else {
-
         Ts_ = Ts_fixed_;
     }
 
@@ -119,11 +124,15 @@ void VehicleSimulator::SimulateActuation(double h_p, double h_s)
 void VehicleSimulator::SimulateSensors(double h_p, double h_s)
 {
     long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
-    //std::cout << std::setprecision(9) << "secs = " << now_nanosecs / 1E9 << std::endl;
+    int now_stamp_secs = static_cast<int>(now_nanosecs / (int)1E9);
+    unsigned int now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % (int)1E9);
 
     double elapsed_secs = static_cast<double>(total_elapsed_.count()) / 1E9;
-    timeinfo_msg_.timestamp = static_cast<uint32_t>(elapsed_secs * 200.0);
-    timeinfo_msg_.stepssincepps = static_cast<uint32_t>(elapsed_secs * 200.0) % 200;
+    timestamp_count_ = static_cast<uint32_t>(elapsed_secs * 200.0);
+    stepssincepps_count_ = static_cast<uint32_t>(elapsed_secs * 200.0) % 200;
+
+    timeinfo_msg_.timestamp = timestamp_count_;
+    timeinfo_msg_.stepssincepps = stepssincepps_count_;
 
     gpsdata_msg_.time = static_cast<double>(now_nanosecs / 1E9);
     gpsdata_msg_.track = vehTrack_;
@@ -132,32 +141,58 @@ void VehicleSimulator::SimulateSensors(double h_p, double h_s)
     gpsdata_msg_.longitude = long_now_;
     gpsdata_msg_.gpsfixmode = ulisse_msgs::msg::GPS::MODE_3D;
 
+    compassdata_msg_.stamp.sec = now_stamp_secs;
+    compassdata_msg_.stamp.nanosec = now_stamp_nanosecs;
     compassdata_msg_.roll = 0.0;
     compassdata_msg_.pitch = 0.0;
     compassdata_msg_.yaw = vehAtt_now_.GetYaw(); // * M_PI / 180.0 ;
 
+    imudata_msg_.stamp.sec = now_stamp_secs;
+    imudata_msg_.stamp.nanosec = now_stamp_nanosecs;
     imudata_msg_.accelerometer[0] = vehRelAcc_body_(0);
     imudata_msg_.accelerometer[1] = vehRelAcc_body_(1);
     imudata_msg_.accelerometer[2] = 9.81;
-
     imudata_msg_.gyro[0] = vehRelVel_body_(3);
     imudata_msg_.gyro[1] = vehRelVel_body_(4);
     imudata_msg_.gyro[2] = vehRelVel_body_(5);
 
+    ambsens_msg_.stamp.sec = now_stamp_secs;
+    ambsens_msg_.stamp.nanosec = now_stamp_nanosecs;
     ambsens_msg_.temperaturectrlbox = 23.0 + (rand() / (double)RAND_MAX) * 2;
     ambsens_msg_.humidityctrlbox = 50.0 + (rand() / (double)RAND_MAX) * 2;
 
-    motorref_msg_.left = h_p;
-    motorref_msg_.right = h_s;
+    magneto_msg_.stamp.sec = now_stamp_secs;
+    magneto_msg_.stamp.nanosec = now_stamp_nanosecs;
+    magneto_msg_.orthogonalstrength[0] = 23.464 / 1E-9; // Example of magnetic field at lat long: 44.4056° N, 8.9463° E
+    magneto_msg_.orthogonalstrength[1] = -1.051 / 1E-9;
+    magneto_msg_.orthogonalstrength[2] = 39.746 / 1E-9;
 
-    magn_msg_.orthogonalstrength[0] = 23.464 / 1E-9; // Example of magnetic field at lat long: 44.4056° N, 8.9463° E
-    magn_msg_.orthogonalstrength[1] = -1.051 / 1E-9;
-    magn_msg_.orthogonalstrength[2] = 39.746 / 1E-9;
+    applied_motorref_msg_.left = h_p;
+    applied_motorref_msg_.right = h_s;
 
-    std::cout << "timestamp:\t\t" << timeinfo_msg_.timestamp << std::endl;
+    /*std::cout << "timestamp:\t\t" << timeinfo_msg_.timestamp << std::endl;
     std::cout << "stepssincepps:\t" << timeinfo_msg_.stepssincepps << std::endl;
     std::cout << "total_elapsed_.count() / 1E9 = " << total_elapsed_.count() / 1E9 << std::endl;
     std::cout << "iter_elapsed_.count() / 1E9 = " << iter_elapsed_.count() / 1E9 << std::endl;
     std::cout << "Ts = " << Ts_ << std::endl;
-    std::cout << "Ts_ - iter_elapsed = " << (Ts_ - iter_elapsed_.count() / 1E9) << std::endl;
+    std::cout << "Ts_ - iter_elapsed = " << (Ts_ - iter_elapsed_.count() / 1E9) << std::endl;*/
+}
+
+void VehicleSimulator::PublishSensors()
+{
+
+    timeinfo_pub_->publish(timeinfo_msg_);
+
+    if ((timestamp_count_ % 200) == 0) {
+        gpsdata_pub_->publish(gpsdata_msg_);
+    }
+
+    if ((timestamp_count_ % 20) == 0) {
+        compass_pub_->publish(compassdata_msg_);
+        imudata_pub_->publish(imudata_msg_);
+        ambsens_pub_->publish(ambsens_msg_);
+        magneto_pub_->publish(magneto_msg_);
+    }
+
+    applied_motorref_pub_->publish(applied_motorref_msg_);
 }

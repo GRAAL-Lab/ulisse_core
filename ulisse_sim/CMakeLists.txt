@@ -23,6 +23,7 @@ file(GLOB_RECURSE SOURCE_FILES
     "*.xml"
     "launch/*.py"
     "conf/*"
+#    "include/*.hpp"
 )
 add_custom_target(.Files. SOURCES ${SOURCE_FILES})
 
@@ -33,6 +34,7 @@ include_directories(
 )
 
 add_library(VehicleSimulatorClass src/ulisse_sim/vehiclesimulator.cpp)
+ament_target_dependencies(VehicleSimulatorClass rclcpp ulisse_msgs)
 target_link_libraries(VehicleSimulatorClass ${surface_vehicle_model_LIBRARIES} Geographic rml)
 
 add_executable(simulator_node src/simulator_node.cpp)

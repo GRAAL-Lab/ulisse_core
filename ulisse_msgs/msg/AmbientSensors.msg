@@ -1,2 +1,3 @@
-float64 temperaturectrlbox  #[°C]
-float64 humidityctrlbox     #[%]
+builtin_interfaces/Time stamp # (Two-integer timestamp that is expressed as seconds and nanoseconds)
+float64 temperaturectrlbox  # [°C]
+float64 humidityctrlbox     # [%]
