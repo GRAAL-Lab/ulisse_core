@@ -41,6 +41,7 @@ set(ulisse_ctrl_lib_sources
     # Commands
     src/ulisse_ctrl/commands/genericcommand.cpp
     src/ulisse_ctrl/commands/commandhalt.cpp
+    src/ulisse_ctrl/commands/commandmove.cpp
 )
 add_library(ulisse_ctrl_lib ${ulisse_ctrl_lib_sources})
 target_link_libraries(ulisse_ctrl_lib rml fsm)

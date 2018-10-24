@@ -4,9 +4,19 @@
 #include "ulisse_msgs/topicnames.hpp"
 #include "ulisse_sim/vehiclesimulator.hpp"
 
+/**
+ * Helper clip function
+ */
+double clamp(double n, double lower, double upper)
+{
+    return std::max(lower, std::min(n, upper));
+}
+
 VehicleSimulator::VehicleSimulator(const rclcpp::Node::SharedPtr& nh)
     : nh_(nh)
     , geod_(GeographicLib::Constants::WGS84_a(), GeographicLib::Constants::WGS84_f())
+    , gpspubcounter_(0)
+    , sensorpubcounter_(0)
     , realtime_(true)
 {
     lat_now_ = 44.4056; // Genova lat-long
@@ -59,6 +69,8 @@ void VehicleSimulator::SetRealtime(bool realtime)
 
 void VehicleSimulator::ExecuteStep(double h_p, double h_s)
 {
+    clamp(h_p, -100.0, 100.0);
+    clamp(h_s, -100.0, 100.0);
 
     if (realtime_) {
         t_now_ = std::chrono::system_clock::now();
@@ -176,6 +188,7 @@ void VehicleSimulator::PublishSensors()
 {
     timeinfo_pub_->publish(timeinfo_msg_);
 
+    std::cout << "timestamp_count_ / 200: " << timestamp_count_ / 200 << std::endl;
     if ((int)(timestamp_count_ / 200) == gpspubcounter_) {
         gpspubcounter_++;
         gpsdata_pub_->publish(gpsdata_msg_);

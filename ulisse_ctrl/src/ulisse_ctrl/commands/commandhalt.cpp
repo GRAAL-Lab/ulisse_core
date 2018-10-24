@@ -1,4 +1,4 @@
-#include "ulisse_ctrl/commands/commandhalt.h"
+#include "ulisse_ctrl/commands/commandhalt.hpp"
 
 namespace ulisse {
 

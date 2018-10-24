@@ -72,6 +72,8 @@ int main(int argc, char* argv[])
         u_fsm.ExecuteState();
         u_fsm.ProcessEventQueue();
         u_fsm.SwitchState();
+        
+        
 
         rclcpp::spin_some(g_node);
         loop_rate.sleep();

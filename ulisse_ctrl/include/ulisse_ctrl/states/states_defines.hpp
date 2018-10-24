@@ -7,6 +7,7 @@ namespace commands {
     namespace ID {
 
         const std::string halt = "halt_command";
+        const std::string move = "move_command";
     }
 }
 

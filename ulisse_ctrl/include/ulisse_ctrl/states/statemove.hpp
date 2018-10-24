@@ -1,7 +1,7 @@
 #ifndef ULISSE_CTRL_STATEMOVE_H
 #define ULISSE_CTRL_STATEMOVE_H
 
-#include "ulisse_ctrl/states/genericstate.h"
+#include "ulisse_ctrl/states/genericstate.hpp"
 
 namespace  ulisse {
 

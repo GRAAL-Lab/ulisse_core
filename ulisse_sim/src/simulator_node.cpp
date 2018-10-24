@@ -29,8 +29,9 @@ int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
     auto node = rclcpp::Node::make_shared("simulator_node");
-
+    auto subscriber = node->create_subscription<ulisse_msgs::msg::MotorReference>(ulisse_msgs::topicnames::motor_ctrl_ref, motorref_cb);
     auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(node);
+
     while (!parameters_client->wait_for_service(1ms)) {
         if (!rclcpp::ok()) {
             RCLCPP_ERROR(node->get_logger(), "Interrupted while waiting for the service. Exiting.")
@@ -40,8 +41,6 @@ int main(int argc, char* argv[])
     }
     ThrusterMappingParameters myTMP;
     ReadMappingParameters(parameters_client, myTMP);
-
-    auto subscriber = node->create_subscription<ulisse_msgs::msg::MotorReference>(ulisse_msgs::topicnames::motor_ctrl_ref, motorref_cb);
 
     int rate = 50;
     rclcpp::WallRate loop_rate(rate);
@@ -76,7 +75,7 @@ int main(int argc, char* argv[])
     datess << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d_%H.%M.%S");
 
     std::string logfilename = "sim_log_" + datess.str() + ".txt";
-    logfile.open(logfilename, std::ios_base::app);
+    //logfile.open(logfilename, std::ios_base::app);
 
     while (rclcpp::ok()) {
 
@@ -99,7 +98,7 @@ int main(int argc, char* argv[])
         loop_rate.sleep();
     }
 
-    logfile.close();
+    //logfile.close();
 
     rclcpp::shutdown();
     return 0;

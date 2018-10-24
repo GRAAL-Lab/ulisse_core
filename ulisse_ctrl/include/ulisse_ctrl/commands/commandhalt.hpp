@@ -1,7 +1,7 @@
 #ifndef ULISSE_CTRL_COMMANDHALT_H
 #define ULISSE_CTRL_COMMANDHALT_H
 
-#include "ulisse_ctrl/commands/genericcommand.h"
+#include "ulisse_ctrl/commands/genericcommand.hpp"
 
 namespace ulisse {
 
@@ -15,4 +15,4 @@ namespace commands {
     };
 }
 }
-#endif // COMMANDHALT_H
+#endif // ULISSE_CTRL_COMMANDHALT_H

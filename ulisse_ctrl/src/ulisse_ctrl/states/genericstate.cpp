@@ -1,4 +1,4 @@
-#include "ulisse_ctrl/states/genericstate.h"
+#include "ulisse_ctrl/states/genericstate.hpp"
 
 namespace  ulisse {
 
