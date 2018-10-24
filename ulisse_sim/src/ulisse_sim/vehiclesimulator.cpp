@@ -78,8 +78,6 @@ void VehicleSimulator::ExecuteStep(double h_p, double h_s)
     //std::cout << "Ts_: " << Ts_ << std::endl;
     //std::cout << "Time since start (sec) = " << (total_elapsed_.count() / 1E9) << std::endl;
 
-    std::cout << "motorref: " << h_p << ", " << h_s << std::endl;
-
     SimulateActuation(h_p, h_s);
     SimulateSensors(h_p, h_s);
 
@@ -96,9 +94,6 @@ void VehicleSimulator::SimulateActuation(double h_p, double h_s)
 
     // Integrating the acceleration to get the vehicle velocity
     vehRelVel_body_ = vehRelVel_body_ + vehRelAcc_body_ * Ts_;
-
-    std::cout << "vehRelAcc_body_: " << vehRelAcc_body_.transpose() << std::endl;
-    std::cout << "vehRelVel_body_: " << vehRelVel_body_.transpose() << std::endl;
 
     // Projecting the acceleration and velocity on the world frame
     vehRelAcc_world_ = vehAtt_now_.ToRotMatrix().GetCartesianRotationMatrix() * vehRelAcc_body_;
