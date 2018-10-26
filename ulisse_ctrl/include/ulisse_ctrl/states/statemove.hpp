@@ -1,5 +1,5 @@
-#ifndef ULISSE_CTRL_STATEMOVE_H
-#define ULISSE_CTRL_STATEMOVE_H
+#ifndef ULISSE_CTRL_STATEMOVE_HPP
+#define ULISSE_CTRL_STATEMOVE_HPP
 
 #include "ulisse_ctrl/states/genericstate.hpp"
 
@@ -20,4 +20,4 @@ public:
 
 }
 
-#endif // ULISSE_CTRL_STATEMOVE_H
+#endif // ULISSE_CTRL_STATEMOVE_HPP

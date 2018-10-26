@@ -1,5 +1,5 @@
-#ifndef ULISSE_CTRL_STATEHALT_H
-#define ULISSE_CTRL_STATEHALT_H
+#ifndef ULISSE_CTRL_STATEHALT_HPP
+#define ULISSE_CTRL_STATEHALT_HPP
 
 #include "ulisse_ctrl/states/genericstate.hpp"
 
@@ -16,4 +16,4 @@ namespace states {
 }
 }
 
-#endif // ULISSE_CTRL_STATEHALT_H
+#endif // ULISSE_CTRL_STATEHALT_HPP

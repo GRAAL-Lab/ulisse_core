@@ -1,3 +1,6 @@
+#ifndef ULISSE_CTRL_STATEDEFINES_HPP
+#define ULISSE_CTRL_STATEDEFINES_HPP
+
 #include <string>
 
 namespace ulisse {
@@ -20,3 +23,5 @@ namespace states {
     }
 }
 }
+
+#endif //ULISSE_CTRL_STATEDEFINES_HPP

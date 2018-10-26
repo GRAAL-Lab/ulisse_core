@@ -1,5 +1,5 @@
-#ifndef ULISSE_CTRL_COMMANDHALT_H
-#define ULISSE_CTRL_COMMANDHALT_H
+#ifndef ULISSE_CTRL_COMMANDHALT_HPP
+#define ULISSE_CTRL_COMMANDHALT_HPP
 
 #include "ulisse_ctrl/commands/genericcommand.hpp"
 
@@ -11,8 +11,8 @@ namespace commands {
     public:
         CommandHalt();
         virtual ~CommandHalt();
-        virtual fsm::retval Execute(void);
+        virtual fsm::retval Execute();
     };
 }
 }
-#endif // ULISSE_CTRL_COMMANDHALT_H
+#endif // ULISSE_CTRL_COMMANDHALT_HPP

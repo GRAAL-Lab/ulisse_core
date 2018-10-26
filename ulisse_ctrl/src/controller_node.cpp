@@ -4,10 +4,7 @@
 #include "ulisse_msgs/msg/gps.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 
-#include <ulisse_ctrl/commands/commandhalt.hpp>
-#include <ulisse_ctrl/commands/commandmove.hpp>
-#include <ulisse_ctrl/states/statehalt.hpp>
-#include <ulisse_ctrl/states/statemove.hpp>
+#include <ulisse_ctrl/vehiclecontroller.hpp>
 
 #include "rml/RML.h"
 
@@ -34,44 +31,16 @@ int main(int argc, char* argv[])
 
     auto gps_sub = g_node->create_subscription<ulisse_msgs::msg::GPS>(ulisse_msgs::topicnames::sensor_gps, gps_callback);
 
-    /**
-      Subscribe to commands topics: for now 'halt' and 'move' and  do
-        ret = fsm.ExecuteCommand(om2ctrl::fsm::commands::commandnames::reloadConfig);
-      */
-
     rclcpp::WallRate loop_rate(10ms);
 
     Eigen::TransfMatrix wTv;
     rml::RobotModel myModel(wTv, "myVehicle");
 
-    // FSM
-    fsm::FSM u_fsm;
-
-    ulisse::states::StateHalt state_halt;
-    ulisse::states::StateMove state_move;
-    ulisse::commands::CommandHalt command_halt;
-    ulisse::commands::CommandMove command_move;
-
-    state_halt.SetFSM(&u_fsm);
-
-    command_halt.SetFSM(&u_fsm);
-
-    u_fsm.AddState(ulisse::states::ID::halt, &state_halt);
-    u_fsm.AddState(ulisse::states::ID::move, &state_move);
-
-    u_fsm.AddCommand(ulisse::commands::ID::halt, &command_halt);
-    u_fsm.AddCommand(ulisse::commands::ID::move, &command_move);
-
-    u_fsm.EnableTransition(ulisse::states::ID::halt, ulisse::states::ID::move, true);
-    u_fsm.EnableTransition(ulisse::states::ID::move, ulisse::states::ID::halt, true);
-
-    u_fsm.SetInitState(ulisse::states::ID::halt);
+    ulisse::VehicleController myVC(g_node);
 
     while (rclcpp::ok()) {
 
-        u_fsm.ExecuteState();
-        u_fsm.ProcessEventQueue();
-        u_fsm.SwitchState();
+        myVC.Run();
 
         rclcpp::spin_some(g_node);
         loop_rate.sleep();

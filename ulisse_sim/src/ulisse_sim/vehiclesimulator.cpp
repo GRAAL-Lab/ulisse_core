@@ -4,6 +4,8 @@
 #include "ulisse_msgs/topicnames.hpp"
 #include "ulisse_sim/vehiclesimulator.hpp"
 
+namespace ulisse {
+
 /**
  * Helper clip function
  */
@@ -203,4 +205,6 @@ void VehicleSimulator::PublishSensors()
     }
 
     applied_motorref_pub_->publish(applied_motorref_msg_);
+}
+
 }

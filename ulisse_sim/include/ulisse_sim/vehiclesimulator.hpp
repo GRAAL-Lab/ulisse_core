@@ -17,6 +17,8 @@
 #include "eigen3/Eigen/Dense"
 #include "rml/RML.h"
 
+namespace ulisse {
+
 class VehicleSimulator {
 
     rclcpp::Node::SharedPtr nh_;
@@ -58,8 +60,6 @@ class VehicleSimulator {
 
     rclcpp::TimerBase::SharedPtr timer_;
 
-
-
     bool realtime_;
 
     void SimulateSensors(double h_p, double h_s);
@@ -89,5 +89,7 @@ public:
      */
     void SetRealtime(bool realtime);
 };
+
+}
 
 #endif // VEHICLESIMULATOR_H

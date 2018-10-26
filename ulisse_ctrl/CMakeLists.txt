@@ -17,6 +17,8 @@ find_package(ulisse_msgs REQUIRED)
 find_package(rml REQUIRED)
 find_package(fsm REQUIRED)
 find_package(ctrl_toolbox REQUIRED)
+find_package(surface_vehicle_model REQUIRED)
+
 
 # Add files in the tree of "Projects" view in QtCreator
 file(GLOB_RECURSE SOURCE_FILES
@@ -29,11 +31,14 @@ add_custom_target(.Files. SOURCES ${SOURCE_FILES})
 include_directories(
   include
   ${ulisse_msgs_INCLUDE_DIRS}
+  ${surface_vehicle_model_INCLUDE_DIRS}
 )
 
 
 ## Libraries ##
 set(ulisse_ctrl_lib_sources
+    # Main Class
+    src/ulisse_ctrl/vehiclecontroller.cpp
     # States
     src/ulisse_ctrl/states/genericstate.cpp
     src/ulisse_ctrl/states/statehalt.cpp
@@ -43,11 +48,14 @@ set(ulisse_ctrl_lib_sources
     src/ulisse_ctrl/commands/commandhalt.cpp
     src/ulisse_ctrl/commands/commandmove.cpp
 )
+
+## Libraries
 add_library(ulisse_ctrl_lib ${ulisse_ctrl_lib_sources})
-target_link_libraries(ulisse_ctrl_lib rml fsm)
+ament_target_dependencies(ulisse_ctrl_lib rclcpp std_msgs ulisse_msgs)
+target_link_libraries(ulisse_ctrl_lib ${surface_vehicle_model_LIBRARIES} Geographic rml fsm)
 
 
-## Executables ##
+## Executables
 add_executable(publisher src/publisher_test.cpp)
 ament_target_dependencies(publisher rclcpp std_msgs ulisse_msgs)
 
@@ -59,7 +67,7 @@ add_executable(controller_node src/controller_node.cpp)
 ament_target_dependencies(controller_node rclcpp std_msgs ulisse_msgs rml)
 target_link_libraries(controller_node rml ulisse_ctrl_lib)
 
-## Install ##
+## Install
 install(TARGETS
   publisher
   subscriber

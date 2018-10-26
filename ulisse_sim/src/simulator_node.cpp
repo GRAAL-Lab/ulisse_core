@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
     double dt = 1.0 / rate;
     std::cout << "dt=" << dt << std::endl;
 
-    VehicleSimulator myVehSim(node);
+    ulisse::VehicleSimulator myVehSim(node);
     myVehSim.SetParameters(dt * 5.0, myTMP);
 
     std::stringstream ss;

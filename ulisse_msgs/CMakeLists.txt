@@ -15,6 +15,7 @@ find_package(builtin_interfaces REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(fastrtps)
 
 # Add files in the tree of "Projects" view in QtCreator
 file(GLOB_RECURSE SOURCE_FILES
@@ -25,6 +26,7 @@ file(GLOB_RECURSE SOURCE_FILES
 add_custom_target(.Files. SOURCES ${SOURCE_FILES})
 
 rosidl_generate_interfaces(ulisse_msgs
+  # Sensors
   "msg/IMUData.msg"
   "msg/AmbientSensors.msg"
   "msg/Compass.msg"
@@ -32,6 +34,8 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/MotorReference.msg"
   "msg/TimeInfo.msg"
   "msg/GPS.msg"
+  # Commands
+  "msg/CommandMove.msg"
   DEPENDENCIES builtin_interfaces
 )
 
