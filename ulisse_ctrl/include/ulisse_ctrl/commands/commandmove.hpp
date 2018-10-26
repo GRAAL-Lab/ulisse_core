@@ -2,18 +2,21 @@
 #define ULISSE_CTRL_COMMANDMOVE_HPP
 
 #include "ulisse_ctrl/commands/genericcommand.hpp"
+#include "ulisse_ctrl/fsm_defines.hpp"
+#include <memory>
 
 namespace ulisse {
 
 namespace commands {
 
     class CommandMove : public GenericCommand {
-        double latitude_, longitude_;
+        std::shared_ptr<PositionContext> posCxt_;
     public:
         CommandMove();
         virtual ~CommandMove();
         virtual fsm::retval Execute(void);
         void SetGoal(double latitude_, double longitude_);
+        void SetPosContext(const std::shared_ptr<PositionContext> &posCxt);
     };
 }
 }

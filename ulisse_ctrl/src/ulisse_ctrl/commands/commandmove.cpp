@@ -5,25 +5,30 @@ namespace ulisse {
 
 namespace commands {
 
-    CommandMove::CommandMove()
-        : latitude_(0.0)
-        , longitude_(0.0)
-    {
-    }
 
-    CommandMove::~CommandMove()
-    {
-    }
 
-    fsm::retval CommandMove::Execute()
+CommandMove::CommandMove()
+{
+}
+
+CommandMove::~CommandMove()
+{
+}
+
+void CommandMove::SetPosContext(const std::shared_ptr<PositionContext> &posCxt)
+{
+    posCxt_ = posCxt;
+}
+
+fsm::retval CommandMove::Execute()
     {
         return fsm_->SetNextState(ulisse::states::ID::move);
     }
 
     void CommandMove::SetGoal(double latitude, double longitude)
     {
-        latitude_ = latitude;
-        longitude_ = longitude;
+        posCxt_->next_.latitude = latitude;
+        posCxt_->next_.longitude = longitude;
     }
 }
 }

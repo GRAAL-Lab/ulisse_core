@@ -34,11 +34,13 @@ class VehicleController {
     GeographicLib::Geodesic geod_;
 
     // FSM
-    fsm::FSM u_fsm;
+    fsm::FSM u_fsm_;
     ulisse::states::StateHalt state_halt_;
-    ulisse::states::StateMove state_move;
-    ulisse::commands::CommandHalt command_halt;
-    ulisse::commands::CommandMove command_move;
+    ulisse::states::StateMove state_move_;
+    ulisse::commands::CommandHalt command_halt_;
+    ulisse::commands::CommandMove command_move_;
+
+
 
     void SetUpFSM();
 
@@ -47,7 +49,7 @@ class VehicleController {
 
 public:
     VehicleController(const rclcpp::Node::SharedPtr& nh);
-
+    virtual ~VehicleController();
     void Run();
 };
 }
