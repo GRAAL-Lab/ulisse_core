@@ -14,7 +14,13 @@ namespace commands {
 
     fsm::retval CommandHalt::Execute()
     {
-        return fsm::ok;
+        posCxt_->currentGoal = posCxt_->currentPos;
+        return fsm_->SetNextState(ulisse::states::ID::halt);
+    }
+
+    void CommandHalt::SetPosContext(const std::shared_ptr<PositionContext> &posCxt)
+    {
+        posCxt_ = posCxt;
     }
 }
 }

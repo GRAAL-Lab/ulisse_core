@@ -27,8 +27,8 @@ fsm::retval CommandMove::Execute()
 
     void CommandMove::SetGoal(double latitude, double longitude)
     {
-        posCxt_->next_.latitude = latitude;
-        posCxt_->next_.longitude = longitude;
+        posCxt_->nextGoal.latitude = latitude;
+        posCxt_->nextGoal.longitude = longitude;
     }
 }
 }

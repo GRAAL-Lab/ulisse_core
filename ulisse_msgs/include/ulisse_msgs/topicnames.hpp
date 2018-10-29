@@ -16,7 +16,7 @@ namespace topicnames {
     const std::string motor_applied_ref = "/motor/applied_reference";
 
     const std::string command_halt = "/command/halt";
-
+    const std::string command_move = "/command/move";
 }
 }
 

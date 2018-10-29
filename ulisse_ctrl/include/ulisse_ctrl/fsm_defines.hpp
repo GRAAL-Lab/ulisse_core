@@ -12,11 +12,26 @@ struct LatLong {
     }
 };
 
-class PositionContext {
-public:
-    LatLong current_, next_;
+struct PositionContext {
+    LatLong currentPos, currentGoal, nextGoal;
     PositionContext() {}
-    virtual ~PositionContext() {}
+};
+
+struct MotorReference {
+    double left, right;
+    MotorReference()
+    {
+        SetZero();
+    }
+    void SetZero()
+    {
+        left = 0.0;
+        right = 0.0;
+    }
+};
+
+struct ControlContext {
+    MotorReference motorRef;
 };
 }
 #endif // ULISSE_CTRL_FSM_DEFINES_HPP

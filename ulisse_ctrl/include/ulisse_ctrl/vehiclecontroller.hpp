@@ -29,21 +29,24 @@
 namespace ulisse {
 class VehicleController {
     rclcpp::Node::SharedPtr nh_;
-    SurfaceVehicleModel ulisseModel_;
+    rclcpp::Publisher<ulisse_msgs::msg::MotorReference>::SharedPtr motorref_pub_;
 
+    SurfaceVehicleModel ulisseModel_;
     GeographicLib::Geodesic geod_;
 
     // FSM
     fsm::FSM u_fsm_;
-    ulisse::states::StateHalt state_halt_;
-    ulisse::states::StateMove state_move_;
-    ulisse::commands::CommandHalt command_halt_;
-    ulisse::commands::CommandMove command_move_;
+    states::StateHalt state_halt_;
+    states::StateMove state_move_;
+    commands::CommandHalt command_halt_;
+    commands::CommandMove command_move_;
 
-
+    std::shared_ptr<PositionContext> posCxt_;
+    std::shared_ptr<ControlContext> ctrlCxt_;
 
     void SetUpFSM();
 
+    void GPSSensor_cb(const ulisse_msgs::msg::GPS::SharedPtr msg);
     void CommandHalt_cb(const std_msgs::msg::Empty::SharedPtr msg);
     void CommandMove_cb(const ulisse_msgs::msg::CommandMove::SharedPtr msg);
 
@@ -51,6 +54,8 @@ public:
     VehicleController(const rclcpp::Node::SharedPtr& nh);
     virtual ~VehicleController();
     void Run();
+    void PublishControl();
+    std::shared_ptr<ControlContext> CtrlContext() const;
 };
 }
 #endif // ULISSE_CTRL_VEHICLECONTROLLER_HPP
