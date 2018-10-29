@@ -17,7 +17,6 @@
 #include "ulisse_msgs/msg/time_info.hpp"
 
 
-#include "GeographicLib/Geodesic.hpp"
 #include "eigen3/Eigen/Dense"
 #include "rml/RML.h"
 
@@ -31,8 +30,9 @@ class VehicleController {
     rclcpp::Node::SharedPtr nh_;
     rclcpp::Publisher<ulisse_msgs::msg::MotorReference>::SharedPtr motorref_pub_;
 
+    double sampleTime_;
+
     SurfaceVehicleModel ulisseModel_;
-    GeographicLib::Geodesic geod_;
 
     // FSM
     fsm::FSM u_fsm_;
@@ -45,13 +45,16 @@ class VehicleController {
     std::shared_ptr<ControlContext> ctrlCxt_;
 
     void SetUpFSM();
+    void SetUpControlContext();
 
     void GPSSensor_cb(const ulisse_msgs::msg::GPS::SharedPtr msg);
-    void CommandHalt_cb(const std_msgs::msg::Empty::SharedPtr msg);
+    void CompassSensor_cb(const ulisse_msgs::msg::Compass::SharedPtr msg);
+
+    void CommandHalt_cb(const std_msgs::msg::Empty::SharedPtr);
     void CommandMove_cb(const ulisse_msgs::msg::CommandMove::SharedPtr msg);
 
 public:
-    VehicleController(const rclcpp::Node::SharedPtr& nh);
+    VehicleController(const rclcpp::Node::SharedPtr& nh, double sampleTime);
     virtual ~VehicleController();
     void Run();
     void PublishControl();

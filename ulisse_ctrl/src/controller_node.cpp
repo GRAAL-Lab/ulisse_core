@@ -2,8 +2,8 @@
 
 #include "ulisse_msgs/msg/compass.hpp"
 #include "ulisse_msgs/msg/gps.hpp"
-#include "ulisse_msgs/topicnames.hpp"
 #include "ulisse_msgs/msg/motor_reference.hpp"
+#include "ulisse_msgs/topicnames.hpp"
 
 #include <ulisse_ctrl/vehiclecontroller.hpp>
 
@@ -25,12 +25,14 @@ int main(int argc, char* argv[])
     rclcpp::init(argc, argv);
     g_node = rclcpp::Node::make_shared("controller_node");
 
-    rclcpp::WallRate loop_rate(10ms);
+    int rate = 50;
+    double sampleTime = 1.0 / rate;
+    rclcpp::WallRate loop_rate(50);
 
     Eigen::TransfMatrix wTv;
     auto myModel = std::make_shared<rml::RobotModel>(wTv, "myVehicle");
 
-    ulisse::VehicleController myVC(g_node);
+    ulisse::VehicleController myVC(g_node, sampleTime);
 
     while (rclcpp::ok()) {
 

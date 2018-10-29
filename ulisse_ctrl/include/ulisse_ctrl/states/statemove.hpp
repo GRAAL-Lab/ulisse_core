@@ -20,7 +20,6 @@ namespace states {
         virtual fsm::retval Execute();
         void SetPosContext(const std::shared_ptr<PositionContext>& posCxt);
         void SetCtrlContext(const std::shared_ptr<ControlContext>& ctrlCxt);
-
     };
 }
 }

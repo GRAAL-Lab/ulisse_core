@@ -39,6 +39,8 @@ include_directories(
 set(ulisse_ctrl_lib_sources
     # Main Class
     src/ulisse_ctrl/vehiclecontroller.cpp
+    # Helpers
+    src/ulisse_ctrl/helper_functions.cpp
     # States
     src/ulisse_ctrl/states/genericstate.cpp
     src/ulisse_ctrl/states/statehalt.cpp
@@ -46,13 +48,13 @@ set(ulisse_ctrl_lib_sources
     # Commands
     src/ulisse_ctrl/commands/genericcommand.cpp
     src/ulisse_ctrl/commands/commandhalt.cpp
-    src/ulisse_ctrl/commands/commandmove.cpp
+    src/ulisse_ctrl/commands/commandmove.cpp    
 )
 
 ## Libraries
 add_library(ulisse_ctrl_lib ${ulisse_ctrl_lib_sources})
 ament_target_dependencies(ulisse_ctrl_lib rclcpp std_msgs ulisse_msgs)
-target_link_libraries(ulisse_ctrl_lib ${surface_vehicle_model_LIBRARIES} Geographic rml fsm)
+target_link_libraries(ulisse_ctrl_lib ${surface_vehicle_model_LIBRARIES} Geographic rml fsm ctrl_toolbox)
 
 
 ## Executables

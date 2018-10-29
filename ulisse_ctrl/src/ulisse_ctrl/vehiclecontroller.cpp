@@ -1,19 +1,25 @@
+
 #include "ulisse_ctrl/vehiclecontroller.hpp"
+#include "ctrl_toolbox/HelperFunctions.h"
+#include "ulisse_ctrl/data_structs.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 
 using std::placeholders::_1;
 
 namespace ulisse {
 
-VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh)
+VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double sampleTime)
     : nh_(nh)
-    , geod_(GeographicLib::Constants::WGS84_a(), GeographicLib::Constants::WGS84_f())
+    , sampleTime_(sampleTime)
 {
+    SetUpControlContext();
     SetUpFSM();
 
     // Sensor Subscriptions
     nh_->create_subscription<ulisse_msgs::msg::GPS>(
         ulisse_msgs::topicnames::sensor_gps, std::bind(&VehicleController::GPSSensor_cb, this, _1));
+    nh_->create_subscription<ulisse_msgs::msg::Compass>(
+        ulisse_msgs::topicnames::sensor_compass, std::bind(&VehicleController::CompassSensor_cb, this, _1));
 
     // Commands Subscriptions
     nh_->create_subscription<std_msgs::msg::Empty>(
@@ -37,7 +43,6 @@ std::shared_ptr<ControlContext> VehicleController::CtrlContext() const
 void VehicleController::SetUpFSM()
 {
     posCxt_ = std::make_shared<PositionContext>();
-    ctrlCxt_ = std::make_shared<ControlContext>();
 
     command_halt_.SetFSM(&u_fsm_);
     command_halt_.SetPosContext(posCxt_);
@@ -65,6 +70,21 @@ void VehicleController::SetUpFSM()
     u_fsm_.SetInitState(ulisse::states::ID::halt);
 }
 
+void VehicleController::SetUpControlContext()
+{
+    // TODO LOAD CONFIGURATION PARAMETERS //
+    ConfigurationData conf;
+    // TODO LOAD CONFIGURATION PARAMETERS //
+
+    ctb::DigitalPID pidSpeed(conf.pidgains_speed, sampleTime_, conf.pidsat_speed);
+    ctb::DigitalPID pidPosition(conf.pidgains_position, sampleTime_, conf.pidsat_position);
+    ctb::DigitalPID pidHeading(conf.pidgains_heading, sampleTime_, conf.pidsat_heading);
+
+    pidHeading.SetErrorFunction(ctb::HeadingErrorRadFunctor());
+
+    ctrlCxt_ = std::make_shared<ControlContext>(pidSpeed, pidPosition, pidHeading);
+}
+
 void VehicleController::GPSSensor_cb(const ulisse_msgs::msg::GPS::SharedPtr msg)
 {
     RCLCPP_INFO(nh_->get_logger(), "I heard: 'time:%f, lat:%f, long:%f'", msg->time, msg->latitude, msg->longitude)
@@ -72,7 +92,12 @@ void VehicleController::GPSSensor_cb(const ulisse_msgs::msg::GPS::SharedPtr msg)
     posCxt_->currentPos.longitude = msg->longitude;
 }
 
-void VehicleController::CommandHalt_cb(const std_msgs::msg::Empty::SharedPtr msg)
+void VehicleController::CompassSensor_cb(const ulisse_msgs::msg::Compass::SharedPtr msg)
+{
+    posCxt_->currentHeading = msg->yaw;
+}
+
+void VehicleController::CommandHalt_cb(const std_msgs::msg::Empty::SharedPtr)
 {
     u_fsm_.ExecuteCommand(ulisse::commands::ID::halt);
 }
@@ -93,8 +118,8 @@ void VehicleController::Run()
 void VehicleController::PublishControl()
 {
     ulisse_msgs::msg::MotorReference motorref_msg;
-    motorref_msg.left = ctrlCxt_->motorRef.left;
-    motorref_msg.left = ctrlCxt_->motorRef.right;
+    motorref_msg.left = ctrlCxt_->thrusterData.leftCtrlRef;
+    motorref_msg.left = ctrlCxt_->thrusterData.rightCtrlRef;
     motorref_pub_->publish(motorref_msg);
 }
 }
