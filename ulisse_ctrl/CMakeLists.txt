@@ -25,6 +25,7 @@ file(GLOB_RECURSE SOURCE_FILES
     "msg/*.msg"
     "*.xml"
     "launch/*.py"
+    "conf/*.yaml"
 )
 add_custom_target(.Files. SOURCES ${SOURCE_FILES})
 
@@ -78,6 +79,7 @@ install(TARGETS
   
 install(DIRECTORY
   launch
+  conf
   DESTINATION share/${PROJECT_NAME}/
 )
 

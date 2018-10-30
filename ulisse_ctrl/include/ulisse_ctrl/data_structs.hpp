@@ -6,13 +6,12 @@
 
 namespace ulisse {
 
-enum class ControlMode: int16_t
+enum class ControlMode: int
 {
     ThrusterMapping, DynamicModel
 };
 
 struct ConfigurationData {
-    ThrusterMappingParameters thrusterMapping;
 
     ctb::PIDGains pidgains_speed;
     ctb::PIDGains pidgains_position;
@@ -32,26 +31,10 @@ struct ConfigurationData {
     }
 };
 
-enum class RPMChoiceMethod: int16_t
-{
-    closest, tausign
-};
-
-struct ThrusterRPMSolutions
-{
-    double tau;
-    double n[4]; // all possible solutions
-    double perc[4];
-    bool valid[4]; // if valid
-    double selected;
-    RPMChoiceMethod method;
-};
-
 struct ThrusterControlData
 {
     double desiredSpeed;
     double desiredJog;
-    ThrusterRPMSolutions leftSolutions, rightSolutions;
     double leftCtrlRef, rightCtrlRef;
 };
 }

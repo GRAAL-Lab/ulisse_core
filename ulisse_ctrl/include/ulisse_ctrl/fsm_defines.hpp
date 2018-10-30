@@ -4,6 +4,7 @@
 #include "ctrl_toolbox/DataStructs.h"
 #include "ctrl_toolbox/DigitalPID.h"
 #include "ulisse_ctrl/data_structs.hpp"
+#include "surface_vehicle_model/surfacevehiclemodel.hpp"
 
 namespace ulisse {
 
@@ -15,21 +16,13 @@ struct PositionContext {
 };
 
 struct ControlContext {
+    SurfaceVehicleModel ulisseModel_;
 
     ctb::DigitalPID pidSpeed;
     ctb::DigitalPID pidPosition;
     ctb::DigitalPID pidHeading;
 
-    ConfigurationData conf;
-
     ThrusterControlData thrusterData;
-
-    ControlContext(const ctb::DigitalPID &pid_speed, const ctb::DigitalPID &pid_position, const ctb::DigitalPID &pid_heading)
-        : pidSpeed(pid_speed)
-        , pidPosition(pid_position)
-        , pidHeading(pid_heading)
-    {
-    }
 };
 }
 #endif // ULISSE_CTRL_FSM_DEFINES_HPP

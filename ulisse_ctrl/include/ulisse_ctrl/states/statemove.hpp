@@ -12,6 +12,7 @@ namespace states {
     class StateMove : public GenericState {
         std::shared_ptr<PositionContext> posCxt_;
         std::shared_ptr<ControlContext> ctrlCxt_;
+        std::shared_ptr<ConfigurationData> conf_;
 
     public:
         StateMove();
@@ -20,6 +21,7 @@ namespace states {
         virtual fsm::retval Execute();
         void SetPosContext(const std::shared_ptr<PositionContext>& posCxt);
         void SetCtrlContext(const std::shared_ptr<ControlContext>& ctrlCxt);
+        void SetConf(const std::shared_ptr<ConfigurationData>& conf);
     };
 }
 }

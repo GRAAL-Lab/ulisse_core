@@ -5,8 +5,6 @@ namespace ulisse {
 
 namespace commands {
 
-
-
 CommandMove::CommandMove()
 {
 }

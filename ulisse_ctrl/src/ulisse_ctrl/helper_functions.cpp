@@ -33,22 +33,5 @@ void ThrustersSaturation(double lThruster, double rThruster, double thMin, doubl
     rSatOut = rThruster * factor;
 }
 
-void ThrusterMapping(double desiredSpeed, double desiredJog, const ConfigurationData& conf,
-    ThrusterControlData& thData)
-{
-    thData.desiredSpeed = desiredSpeed;
-    thData.desiredJog = desiredJog;
-    SingleThrusterMapping(desiredSpeed, desiredJog, conf, thData.leftSolutions);
-    SingleThrusterMapping(desiredSpeed, -desiredJog, conf, thData.rightSolutions);
 
-    ThrustersSaturation(thData.leftSolutions.selected, thData.rightSolutions.selected,
-        conf.thrusterLowerSat, conf.thrusterUpperSat,
-        thData.leftCtrlRef, thData.rightCtrlRef);
-}
-
-void SingleThrusterMapping(double desiredSpeed, double desiredJog, const ConfigurationData& conf,
-    ThrusterRPMSolutions& thruster)
-{
-    // IMPLEMENT THRUSTER MAPPING
-}
 }

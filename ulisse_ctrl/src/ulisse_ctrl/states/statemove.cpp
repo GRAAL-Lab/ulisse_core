@@ -35,23 +35,31 @@ namespace states {
     {
         ctb::DistanceAndAzimuthRad(posCxt_->currentPos, posCxt_->currentGoal, posCxt_->goalDistance, posCxt_->goalHeading);
 
-        if (ctrlCxt_->conf.useSlowDownOnTurns) {
+        if (conf_->useSlowDownOnTurns) {
             //distance = SlowDownWhenTurning(ctb::HeadingErrorRad(posCxt_->currentHeading, posCxt_->goalHeading),
             //distance, context_->configuration);
         }
 
         // TODO: check if the desired speed should be multiplied with cos(errorHeading)
-        double uSpeed = ctrlCxt_->pidPosition.Compute(posCxt_->goalDistance, 0.0);
-        double uJog = ctrlCxt_->pidHeading.Compute(posCxt_->goalHeading, posCxt_->currentHeading);
+        ctrlCxt_->thrusterData.desiredSpeed = ctrlCxt_->pidPosition.Compute(posCxt_->goalDistance, 0.0);
+        ctrlCxt_->thrusterData.desiredJog = ctrlCxt_->pidHeading.Compute(posCxt_->goalHeading, posCxt_->currentHeading);
+        Eigen::Vector6d requestedVel;
+        requestedVel(0) = ctrlCxt_->thrusterData.desiredSpeed;
+        requestedVel(5) = ctrlCxt_->thrusterData.desiredJog;
 
-        if (ctrlCxt_->conf.ctrlMode == ControlMode::ThrusterMapping) {
+        if (conf_->ctrlMode == ControlMode::ThrusterMapping) {
 
-            ThrusterMapping(uSpeed, uJog, ctrlCxt_->conf, ctrlCxt_->thrusterData);
+            ctrlCxt_->ulisseModel_.ThrusterMapping(requestedVel, ctrlCxt_->thrusterData.leftCtrlRef, ctrlCxt_->thrusterData.rightCtrlRef);
 
-        } else if (ctrlCxt_->conf.ctrlMode == ControlMode::DynamicModel) {
+        } else if (conf_->ctrlMode == ControlMode::DynamicModel) {
         }
 
         return fsm::ok;
+    }
+
+    void StateMove::SetConf(const std::shared_ptr<ConfigurationData>& conf)
+    {
+        conf_ = conf;
     }
 }
 }

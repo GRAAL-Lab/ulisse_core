@@ -3,8 +3,6 @@
 
 #include "rclcpp/rclcpp.hpp"
 
-#include "surface_vehicle_model/surfacevehiclemodel.hpp"
-
 #include "std_msgs/msg/empty.hpp"
 #include "ulisse_msgs/msg/command_move.hpp"
 
@@ -15,7 +13,6 @@
 #include "ulisse_msgs/msg/magnetometer.hpp"
 #include "ulisse_msgs/msg/motor_reference.hpp"
 #include "ulisse_msgs/msg/time_info.hpp"
-
 
 #include "eigen3/Eigen/Dense"
 #include "rml/RML.h"
@@ -28,11 +25,10 @@
 namespace ulisse {
 class VehicleController {
     rclcpp::Node::SharedPtr nh_;
+    rclcpp::SyncParametersClient::SharedPtr par_client_;
     rclcpp::Publisher<ulisse_msgs::msg::MotorReference>::SharedPtr motorref_pub_;
 
     double sampleTime_;
-
-    SurfaceVehicleModel ulisseModel_;
 
     // FSM
     fsm::FSM u_fsm_;
@@ -41,11 +37,13 @@ class VehicleController {
     commands::CommandHalt command_halt_;
     commands::CommandMove command_move_;
 
+    std::shared_ptr<ConfigurationData> conf_;
+
     std::shared_ptr<PositionContext> posCxt_;
     std::shared_ptr<ControlContext> ctrlCxt_;
 
+    int LoadConfiguration(const std::shared_ptr<ConfigurationData>& configData);
     void SetUpFSM();
-    void SetUpControlContext();
 
     void GPSSensor_cb(const ulisse_msgs::msg::GPS::SharedPtr msg);
     void CompassSensor_cb(const ulisse_msgs::msg::Compass::SharedPtr msg);

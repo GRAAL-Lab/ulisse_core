@@ -1,5 +1,19 @@
 #include "surface_vehicle_model/surfacevehiclemodel.hpp"
 
+bool SolveSecondOrderEquation(double a, double b, double c, std::pair<double, double>& solutions)
+{
+    double delta = b * b - 4.0 * a * c;
+    if (delta < 0.0) {
+        //std::cerr << "Error solving 2nd order eq: delta < 0.0!!! Returning 0.0" << std::endl;
+        solutions = std::make_pair<double, double>(0.0, 0.0);
+        return false;
+    } else {
+        solutions.first = (-b + std::sqrt(delta)) / 2.0 * a;
+        solutions.second = (-b - std::sqrt(delta)) / 2.0 * a;
+        return true;
+    }
+}
+
 SurfaceVehicleModel::SurfaceVehicleModel()
     : tauX_(0.0)
     , tauN_(0.0)
@@ -31,7 +45,7 @@ void SurfaceVehicleModel::EvaluateTauN()
     tauN_ = tempN * params_.cN;
 }
 
-double SurfaceVehicleModel::GetThrusterForce(double n, double linXVel)
+double SurfaceVehicleModel::GetThrusterForceFromRPM(double n, double linXVel)
 {
     double force;
     if (n > 0.0) {
@@ -39,6 +53,13 @@ double SurfaceVehicleModel::GetThrusterForce(double n, double linXVel)
     } else {
         force = -params_.b1_neg * n * n + params_.b2_neg * n * linXVel;
     }
+    return force;
+}
+
+double SurfaceVehicleModel::GetThrusterForceFromMapping()
+{
+    double force;
+    force = 0.5 * (tauX_ + tauN_ / params_.d);
     return force;
 }
 
@@ -53,7 +74,18 @@ double SurfaceVehicleModel::PercentageToRPM(double h)
     return rpm;
 }
 
-void SurfaceVehicleModel::DirectDynamics(double h_p, double h_s, const Eigen::Vector6d linAngVel, Eigen::Vector6d& linAngAcc)
+double SurfaceVehicleModel::RPMToPercentage(double rpm)
+{
+    double h;
+    if (rpm > 0.0) {
+        h = rpm / params_.lambda_pos;
+    } else {
+        h = rpm / params_.lambda_neg;
+    }
+    return h;
+}
+
+void SurfaceVehicleModel::DirectDynamics(double h_p, double h_s, const Eigen::Vector6d& linAngVel, Eigen::Vector6d& linAngAcc)
 {
     vehvel_ = linAngVel;
     EvaluateTauX();
@@ -69,8 +101,8 @@ void SurfaceVehicleModel::DirectDynamics(double h_p, double h_s, const Eigen::Ve
     double n_p = PercentageToRPM(h_p);
     double n_s = PercentageToRPM(h_s);
 
-    double thrust_force_p = GetThrusterForce(n_p, motorlinearXVel_p);
-    double thrust_force_s = GetThrusterForce(n_s, motorlinearXVel_s);
+    double thrust_force_p = GetThrusterForceFromRPM(n_p, motorlinearXVel_p);
+    double thrust_force_s = GetThrusterForceFromRPM(n_s, motorlinearXVel_s);
 
     Eigen::Vector3d tauC;
     tauC(0) = thrust_force_p + thrust_force_s;
@@ -99,4 +131,42 @@ void SurfaceVehicleModel::DirectDynamics(double h_p, double h_s, const Eigen::Ve
     std::cout << "nir: " << nir_.transpose() << std::endl;
     std::cout << "linAngAcc: " << linAngAcc.transpose() << std::endl;
     */
+}
+
+void SurfaceVehicleModel::SingleThrusterMapping(const Eigen::Vector6d& linAngVel, double& thruster_perc)
+{
+    vehvel_ = linAngVel;
+    EvaluateTauX();
+    EvaluateTauN();
+    double motorlinearXVel = vehvel_(0) + vehvel_(5) * params_.d;
+
+    double thrust_force = GetThrusterForceFromMapping();
+    double rpmsolution;
+
+    std::pair<double, double> solutions;
+    if (thrust_force > 0.0) {
+        SolveSecondOrderEquation(params_.b1_pos, -params_.b2_pos * motorlinearXVel, -thrust_force, solutions);
+        if (solutions.first > 0.0) {
+            rpmsolution = solutions.first;
+        } else {
+            rpmsolution = solutions.second;
+        }
+    } else {
+        SolveSecondOrderEquation(-params_.b1_neg, params_.b2_neg * motorlinearXVel, -thrust_force, solutions);
+        if (solutions.first < 0.0) {
+            rpmsolution = solutions.first;
+        } else {
+            rpmsolution = solutions.second;
+        }
+    }
+    thruster_perc = RPMToPercentage(rpmsolution);
+}
+
+void SurfaceVehicleModel::ThrusterMapping(const Eigen::Vector6d& linAngVel, double& n_p, double& n_s)
+{
+    SingleThrusterMapping(linAngVel, n_p);
+
+    Eigen::Vector6d linAngVel_s = linAngVel;
+    linAngVel_s(5) = -linAngVel_s(5);
+    SingleThrusterMapping(linAngVel_s, n_s);
 }

@@ -11,12 +11,14 @@ namespace commands {
 
     class CommandMove : public GenericCommand {
         std::shared_ptr<PositionContext> posCxt_;
+
     public:
         CommandMove();
         virtual ~CommandMove();
         virtual fsm::retval Execute(void);
         void SetGoal(double latitude_, double longitude_);
         void SetPosContext(const std::shared_ptr<PositionContext> &posCxt);
+
     };
 }
 }

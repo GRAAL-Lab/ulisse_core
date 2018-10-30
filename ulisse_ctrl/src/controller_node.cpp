@@ -9,12 +9,6 @@
 
 #include "rml/RML.h"
 
-#include <chrono>
-
-using namespace std::chrono_literals;
-
-static rclcpp::Node::SharedPtr g_node = nullptr;
-
 int main(int argc, char* argv[])
 {
     //    std::cout << "Argv Test:" << std::endl;
@@ -23,7 +17,9 @@ int main(int argc, char* argv[])
     //    }
     //    std::cout << std::endl;
     rclcpp::init(argc, argv);
-    g_node = rclcpp::Node::make_shared("controller_node");
+    auto node = rclcpp::Node::make_shared("controller_node");
+
+
 
     int rate = 50;
     double sampleTime = 1.0 / rate;
@@ -32,24 +28,18 @@ int main(int argc, char* argv[])
     Eigen::TransfMatrix wTv;
     auto myModel = std::make_shared<rml::RobotModel>(wTv, "myVehicle");
 
-    ulisse::VehicleController myVC(g_node, sampleTime);
+    ulisse::VehicleController myVC(node, sampleTime);
 
     while (rclcpp::ok()) {
 
         myVC.Run();
         myVC.PublishControl();
 
-        rclcpp::spin_some(g_node);
+        rclcpp::spin_some(node);
         loop_rate.sleep();
     }
 
     rclcpp::shutdown();
-
-    // TODO(clalancette): It would be better to remove both of these nullptr
-    // assignments and let the destructors handle it, but we can't because of
-    // https://github.com/eProsima/Fast-RTPS/issues/235 .  Once that is fixed
-    // we should probably look at removing these two assignments.
-    g_node = nullptr;
 
     return 0;
 }
