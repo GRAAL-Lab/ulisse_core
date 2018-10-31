@@ -15,7 +15,7 @@
 
 using namespace std::chrono_literals;
 
-static double test_h_p(40.0), test_h_s(20.0);
+static double test_h_p(0.0), test_h_s(0.0);
 
 void ReadMappingParameters(const std::shared_ptr<rclcpp::SyncParametersClient> pc, ThrusterMappingParameters& tmp);
 
@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
     ThrusterMappingParameters myTMP;
     ReadMappingParameters(parameters_client, myTMP);
 
-    int rate = 50;
+    int rate = 10;
     rclcpp::WallRate loop_rate(rate);
     double dt = 1.0 / rate;
     std::cout << "dt=" << dt << std::endl;
@@ -82,7 +82,6 @@ int main(int argc, char* argv[])
         std::cout << "----------------------------------" << std::endl;
         std::cout << "lat, long: " << std::setprecision(6) << myVehSim.VehLatitude() << ", " << myVehSim.VehLongitude() << std::endl;
         std::cout << "velocity: " << myVehSim.VehVel_world().transpose() << std::endl;
-
 
         /* LOGGING */
         // logss.str(std::string());

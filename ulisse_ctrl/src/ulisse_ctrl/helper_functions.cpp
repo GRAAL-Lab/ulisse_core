@@ -2,6 +2,7 @@
 
 namespace ulisse {
 
+
 void ThrustersSaturation(double lThruster, double rThruster, double thMin, double thMax, double& lSatOut, double& rSatOut)
 {
     double factor = 1.0;

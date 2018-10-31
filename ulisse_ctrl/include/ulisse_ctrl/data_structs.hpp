@@ -6,37 +6,89 @@
 
 namespace ulisse {
 
-enum class ControlMode: int
-{
-    ThrusterMapping, DynamicModel
+enum class ControlMode : int {
+    ThrusterMapping,
+    DynamicModel
 };
 
 struct ConfigurationData {
+    ControlMode ctrlMode;
+    bool enableThrusters;
+    bool useSlowDownOnTurns;
 
     ctb::PIDGains pidgains_speed;
     ctb::PIDGains pidgains_position;
     ctb::PIDGains pidgains_heading;
 
-    double pidsat_speed = {0.0};
-    double pidsat_position = {0.0};
-    double pidsat_heading = {0.0};
+    double pidsat_speed;
+    double pidsat_position;
+    double pidsat_heading;
+
+    ThrusterMappingParameters thrusterMap;
 
     double thrusterUpperSat, thrusterLowerSat;
-    ControlMode ctrlMode;
-
-    bool useSlowDownOnTurns = {false};
 
     ConfigurationData()
+        : ctrlMode(ControlMode::ThrusterMapping)
+        , enableThrusters(false)
+        , useSlowDownOnTurns(false)
+        , pidsat_speed(0.0)
+        , pidsat_position(0.0)
+        , pidsat_heading(0.0)
     {
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, ConfigurationData const& a)
+    {
+        return os << "CtrlMode: " << (int)a.ctrlMode << "\n"
+                  << "EnableThrusters: " << a.enableThrusters << "\n"
+                  << "UseSlowDownOnTurns: " << a.useSlowDownOnTurns << "\n";
     }
 };
 
-struct ThrusterControlData
-{
+struct ThrusterControlData {
     double desiredSpeed;
     double desiredJog;
     double leftCtrlRef, rightCtrlRef;
 };
+
+
+struct Spinner {
+    Spinner(int frequency) :
+        freq(frequency), spinIndex(0), spin_chars("/-\\|") {
+        clock_gettime(CLOCK_MONOTONIC, &last);
+        period = 1 / static_cast<double>(freq + 1E-6);
+        //std::cout << "period: " << period << "s" << std::endl;
+    }
+
+    void operator()(void) {
+
+        clock_gettime(CLOCK_MONOTONIC, &now);
+        double timeElapsed = (now.tv_sec - last.tv_sec) + (now.tv_nsec - last.tv_nsec) / 1E9;
+
+        //std::cout << "timeElapsed: " << timeElapsed << std::endl;
+        if (period - timeElapsed < 1E-3) {
+            //std::cout << "fabs(freq - timeElapsed): " << fabs(freq - timeElapsed) << std::endl;
+            //printf("\e[?25l"); /* hide the cursor */
+            putchar(' ');
+            putchar(spin_chars[spinIndex % spin_chars.length()]);
+            putchar(' ');
+            fflush(stdout);
+            putchar('\r');
+            spinIndex++;
+            last = now;
+        }
+
+    }
+
+private:
+    struct timespec last, now;
+    int freq;
+    double period;
+    unsigned long spinIndex;
+    std::string spin_chars;
+};
+
 }
 
 #endif // ULISSE_CTRL_DATA_STRUCTS_HPP

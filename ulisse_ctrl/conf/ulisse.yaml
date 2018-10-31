@@ -1,16 +1,18 @@
 controller_node:
     ros__parameters:
-        ControlMode: 0                  # 0=ThrusterMapping, 1=DynamicModel
         ControlLoopPeriod: 100          # ms
+        ControlMode: 0                  # 0=ThrusterMapping, 1=DynamicModel
+        EnableThrusters: true
+
         MaxPhysicalSpeed: 4.5           # m/s
         SpeedLimiter: 4.5               # m/s
         MaxPhysicalJog: 30.0            # deg/s
         JogLimiter: 30.0                # deg/s
         ThrustersLimit: 70              # percent
-        LeftThrusterBias: 0             # percent
-        RightThrusterBias: 0            # percent
-        ReverseLeftThruster: false
-        ReverseRightThruster: false
+        #LeftThrusterBias: 0             # percent
+        #RightThrusterBias: 0            # percent
+        #ReverseLeftThruster: false
+        #ReverseRightThruster: false
         SpeedLoopGain: 0.25
         JogLoopGain: 0.5
         JogPriority: 0.85               # 1.0 jog only 0.5 speedjog 0.0 speedonly
@@ -19,7 +21,6 @@ controller_node:
         MaximumTargetDistance: 50000.0  # m
         SafetyHeartbeatTimeout: 3000    # ms
         SlowPrintPeriod: 0              # ms
-        EnableThrusters: true
 
         Speed2ThrusterCoefficient: 210.0
         Jog2ThrusterCoefficient: 1050.0
@@ -27,8 +28,8 @@ controller_node:
         ReverseThrusterCoefficient: 0.49 #0.4608
         HoldHysteresisCoefficient: 0.5
 
-        UseCurrentCompensationDuringHold: true
         HoldCurrentCompensation:
+             enable: true
              # above CurrentMax the desired heading will be set equal to the
              # estimated current direction
              # below CurrentMin the desired heading is the actual one

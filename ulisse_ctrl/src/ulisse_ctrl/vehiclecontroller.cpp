@@ -15,9 +15,8 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     , sampleTime_(sampleTime)
 {
     par_client_ = std::make_shared<rclcpp::SyncParametersClient>(nh_);
-
     ctrlCxt_ = std::make_shared<ControlContext>();
-    ctrlCxt_->pidHeading.SetErrorFunction(ctb::HeadingErrorRadFunctor());
+    conf_ = std::make_shared<ConfigurationData>();
 
     while (!par_client_->wait_for_service(1ms)) {
         if (!rclcpp::ok()) {
@@ -27,20 +26,19 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         RCLCPP_INFO(nh_->get_logger(), "service not available, waiting again...")
     }
 
-    conf_ = std::make_shared<ConfigurationData>();
-    LoadConfiguration(conf_);
+    LoadConfiguration();
     SetUpFSM();
 
     // Sensor Subscriptions
-    nh_->create_subscription<ulisse_msgs::msg::GPS>(
+    gps_sub_ = nh_->create_subscription<ulisse_msgs::msg::GPS>(
         ulisse_msgs::topicnames::sensor_gps, std::bind(&VehicleController::GPSSensor_cb, this, _1));
-    nh_->create_subscription<ulisse_msgs::msg::Compass>(
+    compass_sub_ = nh_->create_subscription<ulisse_msgs::msg::Compass>(
         ulisse_msgs::topicnames::sensor_compass, std::bind(&VehicleController::CompassSensor_cb, this, _1));
 
     // Commands Subscriptions
-    nh_->create_subscription<std_msgs::msg::Empty>(
+    cmd_halt_sub_ = nh_->create_subscription<std_msgs::msg::Empty>(
         ulisse_msgs::topicnames::command_halt, std::bind(&VehicleController::CommandHalt_cb, this, _1));
-    nh_->create_subscription<ulisse_msgs::msg::CommandMove>(
+    cmd_move_sub_ = nh_->create_subscription<ulisse_msgs::msg::CommandMove>(
         ulisse_msgs::topicnames::command_move, std::bind(&VehicleController::CommandMove_cb, this, _1));
 
     // Control Publishers
@@ -56,29 +54,59 @@ std::shared_ptr<ControlContext> VehicleController::CtrlContext() const
     return ctrlCxt_;
 }
 
-int VehicleController::LoadConfiguration(const std::shared_ptr<ConfigurationData>& configData)
+int VehicleController::LoadConfiguration()
 {
-
-    configData->ctrlMode = static_cast<ControlMode>(par_client_->get_parameter("ControlMode", 0));
+    // Loading all variables to config file
     // LOAD Config DATA !!!!!!! //
+    conf_->ctrlMode = static_cast<ControlMode>(par_client_->get_parameter("ControlMode", 0));
+    conf_->enableThrusters = par_client_->get_parameter("EnableThrusters", false);
 
-    ThrusterMappingParameters tmp;
-    tmp.d = par_client_->get_parameter("thruster_mapping.motors_distance", 0.0);
-    tmp.lambda_pos = par_client_->get_parameter("thruster_mapping.lambda_pos", 0.0);
-    tmp.lambda_neg = par_client_->get_parameter("thruster_mapping.lambda_neg", 0.0);
-    tmp.cX = Eigen::Vector3d((par_client_->get_parameter("thruster_mapping.cX", std::vector<double>(3, 0.0))).data());
-    tmp.cN = Eigen::Vector3d((par_client_->get_parameter("thruster_mapping.cN", std::vector<double>(3, 0.0))).data());
-    tmp.b1_pos = par_client_->get_parameter("thruster_mapping.b1_pos", 0.0);
-    tmp.b2_pos = par_client_->get_parameter("thruster_mapping.b2_pos", 0.0);
-    tmp.b1_neg = par_client_->get_parameter("thruster_mapping.b1_neg", 0.0);
-    tmp.b2_neg = par_client_->get_parameter("thruster_mapping.b2_neg", 0.0);
-    tmp.Inertia.diagonal() = Eigen::Vector3d((par_client_->get_parameter("thruster_mapping.Inertia", std::vector<double>(3, 0.0))).data());
+    // PID
+    conf_->pidgains_position.Kp = par_client_->get_parameter("PIDPosition.Kp", 0.0);
+    conf_->pidgains_position.Ki = par_client_->get_parameter("PIDPosition.Ki", 0.0);
+    conf_->pidgains_position.Kd = par_client_->get_parameter("PIDPosition.Kd", 0.0);
+    conf_->pidgains_position.Kff = par_client_->get_parameter("PIDPosition.Kff", 0.0);
+    conf_->pidgains_position.N = par_client_->get_parameter("PIDPosition.N", 0.0);
+    conf_->pidgains_position.Tr = par_client_->get_parameter("PIDPosition.Tr", 0.0);
+    conf_->pidsat_position = par_client_->get_parameter("SpeedLimiter", 0.0);
 
-    ctrlCxt_->ulisseModel_.SetMappingParams(tmp);
+    conf_->pidgains_speed.Kp = par_client_->get_parameter("PIDSpeed.Kp", 0.0);
+    conf_->pidgains_speed.Ki = par_client_->get_parameter("PIDSpeed.Ki", 0.0);
+    conf_->pidgains_speed.Kd = par_client_->get_parameter("PIDSpeed.Kd", 0.0);
+    conf_->pidgains_speed.Kff = par_client_->get_parameter("PIDSpeed.Kff", 0.0);
+    conf_->pidgains_speed.N = par_client_->get_parameter("PIDSpeed.N", 0.0);
+    conf_->pidgains_speed.Tr = par_client_->get_parameter("PIDSpeed.Tr", 0.0);
+    conf_->pidsat_speed = par_client_->get_parameter("SpeedLimiter", 0.0);
 
-    ctrlCxt_->pidSpeed.Initialize(conf_->pidgains_speed, sampleTime_, conf_->pidsat_speed);
+    conf_->pidgains_heading.Kp = par_client_->get_parameter("PIDHeading.Kp", 0.0);
+    conf_->pidgains_heading.Ki = par_client_->get_parameter("PIDHeading.Ki", 0.0);
+    conf_->pidgains_heading.Kd = par_client_->get_parameter("PIDHeading.Kd", 0.0);
+    conf_->pidgains_heading.Kff = par_client_->get_parameter("PIDHeading.Kff", 0.0);
+    conf_->pidgains_heading.N = par_client_->get_parameter("PIDHeading.N", 0.0);
+    conf_->pidgains_heading.Tr = par_client_->get_parameter("PIDHeading.Tr", 0.0);
+    conf_->pidsat_heading = par_client_->get_parameter("JogLimiter", 0.0);
+
+    // THRUSTER MAPPING
+    conf_->thrusterMap.d = par_client_->get_parameter("ThrusterMapping.motors_distance", 0.0);
+    conf_->thrusterMap.lambda_pos = par_client_->get_parameter("ThrusterMapping.lambda_pos", 0.0);
+    conf_->thrusterMap.lambda_neg = par_client_->get_parameter("ThrusterMapping.lambda_neg", 0.0);
+    conf_->thrusterMap.cX = Eigen::Vector3d((par_client_->get_parameter("ThrusterMapping.cX", std::vector<double>(3, 0.0))).data());
+    conf_->thrusterMap.cN = Eigen::Vector3d((par_client_->get_parameter("ThrusterMapping.cN", std::vector<double>(3, 0.0))).data());
+    conf_->thrusterMap.b1_pos = par_client_->get_parameter("ThrusterMapping.b1_pos", 0.0);
+    conf_->thrusterMap.b2_pos = par_client_->get_parameter("ThrusterMapping.b2_pos", 0.0);
+    conf_->thrusterMap.b1_neg = par_client_->get_parameter("ThrusterMapping.b1_neg", 0.0);
+    conf_->thrusterMap.b2_neg = par_client_->get_parameter("ThrusterMapping.b2_neg", 0.0);
+    conf_->thrusterMap.Inertia.diagonal() = Eigen::Vector3d((par_client_->get_parameter("ThrusterMapping.Inertia", std::vector<double>(3, 0.0))).data());
+
+    // Routing conf to contexts //
+    ctrlCxt_->ulisseModel_.SetMappingParams(conf_->thrusterMap);
+
     ctrlCxt_->pidPosition.Initialize(conf_->pidgains_position, sampleTime_, conf_->pidsat_position);
+    ctrlCxt_->pidSpeed.Initialize(conf_->pidgains_speed, sampleTime_, conf_->pidsat_speed);
     ctrlCxt_->pidHeading.Initialize(conf_->pidgains_heading, sampleTime_, conf_->pidsat_heading);
+    ctrlCxt_->pidHeading.SetErrorFunction(ctb::HeadingErrorRadFunctor());
+
+    std::cout << *conf_ << std::endl;
 
     return 1;
 }
@@ -108,6 +136,11 @@ void VehicleController::SetUpFSM()
     u_fsm_.AddState(ulisse::states::ID::halt, &state_halt_);
     u_fsm_.AddState(ulisse::states::ID::move, &state_move_);
 
+    u_fsm_.EnableCommandInState(ulisse::commands::ID::move, ulisse::states::ID::halt, true);
+    u_fsm_.EnableCommandInState(ulisse::commands::ID::move, ulisse::states::ID::move, true);
+    u_fsm_.EnableCommandInState(ulisse::commands::ID::halt, ulisse::states::ID::halt, true);
+    u_fsm_.EnableCommandInState(ulisse::commands::ID::halt, ulisse::states::ID::move, true);
+
     u_fsm_.EnableTransition(ulisse::states::ID::halt, ulisse::states::ID::move, true);
     u_fsm_.EnableTransition(ulisse::states::ID::move, ulisse::states::ID::halt, true);
 
@@ -116,7 +149,7 @@ void VehicleController::SetUpFSM()
 
 void VehicleController::GPSSensor_cb(const ulisse_msgs::msg::GPS::SharedPtr msg)
 {
-    RCLCPP_INFO(nh_->get_logger(), "I heard: 'time:%f, lat:%f, long:%f'", msg->time, msg->latitude, msg->longitude)
+    //RCLCPP_INFO(nh_->get_logger(), "I heard: 'time:%f, lat:%f, long:%f'", msg->time, msg->latitude, msg->longitude)
     posCxt_->currentPos.latitude = msg->latitude;
     posCxt_->currentPos.longitude = msg->longitude;
 }
@@ -128,11 +161,13 @@ void VehicleController::CompassSensor_cb(const ulisse_msgs::msg::Compass::Shared
 
 void VehicleController::CommandHalt_cb(const std_msgs::msg::Empty::SharedPtr)
 {
+    std::cout << "Received Command Halt" << std::endl;
     u_fsm_.ExecuteCommand(ulisse::commands::ID::halt);
 }
 
 void VehicleController::CommandMove_cb(const ulisse_msgs::msg::CommandMove::SharedPtr msg)
 {
+    std::cout << "Received Command Move" << std::endl;
     command_move_.SetGoal(msg->latitude, msg->longitude);
     u_fsm_.ExecuteCommand(ulisse::commands::ID::move);
 }
@@ -142,6 +177,11 @@ void VehicleController::Run()
     u_fsm_.ExecuteState();
     u_fsm_.ProcessEventQueue();
     u_fsm_.SwitchState();
+
+    std::cout << "State: " << u_fsm_.GetCurrentStateName() << std::endl;
+
+    /*std::cout << "Current Pos: " << posCxt_->currentPos.latitude << ", " << posCxt_->currentPos.longitude << "\t";
+    std::cout << "Goal Pos: " << posCxt_->currentGoal.latitude << ", " << posCxt_->currentGoal.longitude << std::endl;*/
 }
 
 void VehicleController::PublishControl()

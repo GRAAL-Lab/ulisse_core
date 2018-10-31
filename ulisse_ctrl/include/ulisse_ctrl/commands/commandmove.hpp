@@ -2,7 +2,6 @@
 #define ULISSE_CTRL_COMMANDMOVE_HPP
 
 #include "ulisse_ctrl/commands/genericcommand.hpp"
-#include "ulisse_ctrl/fsm_defines.hpp"
 #include <memory>
 
 namespace ulisse {

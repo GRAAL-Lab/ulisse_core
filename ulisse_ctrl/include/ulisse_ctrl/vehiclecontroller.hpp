@@ -26,6 +26,13 @@ namespace ulisse {
 class VehicleController {
     rclcpp::Node::SharedPtr nh_;
     rclcpp::SyncParametersClient::SharedPtr par_client_;
+
+    rclcpp::Subscription<ulisse_msgs::msg::GPS>::SharedPtr gps_sub_;
+    rclcpp::Subscription<ulisse_msgs::msg::Compass>::SharedPtr compass_sub_;
+
+    rclcpp::Subscription<std_msgs::msg::Empty>::SharedPtr cmd_halt_sub_;
+    rclcpp::Subscription<ulisse_msgs::msg::CommandMove>::SharedPtr cmd_move_sub_;
+
     rclcpp::Publisher<ulisse_msgs::msg::MotorReference>::SharedPtr motorref_pub_;
 
     double sampleTime_;
@@ -42,7 +49,7 @@ class VehicleController {
     std::shared_ptr<PositionContext> posCxt_;
     std::shared_ptr<ControlContext> ctrlCxt_;
 
-    int LoadConfiguration(const std::shared_ptr<ConfigurationData>& configData);
+    int LoadConfiguration();
     void SetUpFSM();
 
     void GPSSensor_cb(const ulisse_msgs::msg::GPS::SharedPtr msg);

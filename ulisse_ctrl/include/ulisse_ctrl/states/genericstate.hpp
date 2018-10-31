@@ -2,7 +2,7 @@
 #define ULISSE_CTRL_GENERICSTATE_HPP
 
 #include <fsm/fsm.h>
-#include "ulisse_ctrl/states/states_defines.hpp"
+#include "ulisse_ctrl/fsm_defines.hpp"
 
 
 namespace  ulisse {

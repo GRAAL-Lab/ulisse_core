@@ -19,9 +19,7 @@ int main(int argc, char* argv[])
     rclcpp::init(argc, argv);
     auto node = rclcpp::Node::make_shared("controller_node");
 
-
-
-    int rate = 50;
+    int rate = 10;
     double sampleTime = 1.0 / rate;
     rclcpp::WallRate loop_rate(50);
 
@@ -30,7 +28,11 @@ int main(int argc, char* argv[])
 
     ulisse::VehicleController myVC(node, sampleTime);
 
+    ulisse::Spinner spinner(7);
+
     while (rclcpp::ok()) {
+
+        spinner();
 
         myVC.Run();
         myVC.PublishControl();
