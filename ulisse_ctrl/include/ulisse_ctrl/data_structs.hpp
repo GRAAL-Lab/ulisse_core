@@ -6,6 +6,16 @@
 
 namespace ulisse {
 
+struct MotorReference {
+    double left;
+    double right;
+    MotorReference()
+        : left(0.0)
+        , right(0.0)
+    {
+    }
+};
+
 enum class ControlMode : int {
     ThrusterMapping,
     DynamicModel
@@ -26,7 +36,8 @@ struct ConfigurationData {
 
     ThrusterMappingParameters thrusterMap;
 
-    double thrusterUpperSat, thrusterLowerSat;
+    //double thrusterUpperSat, thrusterLowerSat;
+    double thrusterPercLimit;
 
     ConfigurationData()
         : ctrlMode(ControlMode::ThrusterMapping)
@@ -49,19 +60,23 @@ struct ConfigurationData {
 struct ThrusterControlData {
     double desiredSpeed;
     double desiredJog;
-    double leftCtrlRef, rightCtrlRef;
+
+    MotorReference mapOut, ctrlRef;
 };
 
-
 struct Spinner {
-    Spinner(int frequency) :
-        freq(frequency), spinIndex(0), spin_chars("/-\\|") {
+    Spinner(int frequency)
+        : freq(frequency)
+        , spinIndex(0)
+        , spin_chars("/-\\|")
+    {
         clock_gettime(CLOCK_MONOTONIC, &last);
         period = 1 / static_cast<double>(freq + 1E-6);
         //std::cout << "period: " << period << "s" << std::endl;
     }
 
-    void operator()(void) {
+    void operator()(void)
+    {
 
         clock_gettime(CLOCK_MONOTONIC, &now);
         double timeElapsed = (now.tv_sec - last.tv_sec) + (now.tv_nsec - last.tv_nsec) / 1E9;
@@ -78,7 +93,6 @@ struct Spinner {
             spinIndex++;
             last = now;
         }
-
     }
 
 private:
@@ -88,7 +102,6 @@ private:
     unsigned long spinIndex;
     std::string spin_chars;
 };
-
 }
 
 #endif // ULISSE_CTRL_DATA_STRUCTS_HPP

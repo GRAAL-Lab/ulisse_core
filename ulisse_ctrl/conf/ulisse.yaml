@@ -8,7 +8,7 @@ controller_node:
         SpeedLimiter: 4.5               # m/s
         MaxPhysicalJog: 30.0            # deg/s
         JogLimiter: 30.0                # deg/s
-        ThrustersLimit: 70              # percent
+        ThrustersPercLimit: 70          # percent
         #LeftThrusterBias: 0             # percent
         #RightThrusterBias: 0            # percent
         #ReverseLeftThruster: false

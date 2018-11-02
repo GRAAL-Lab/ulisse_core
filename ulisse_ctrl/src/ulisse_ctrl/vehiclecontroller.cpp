@@ -60,6 +60,7 @@ int VehicleController::LoadConfiguration()
     // LOAD Config DATA !!!!!!! //
     conf_->ctrlMode = static_cast<ControlMode>(par_client_->get_parameter("ControlMode", 0));
     conf_->enableThrusters = par_client_->get_parameter("EnableThrusters", false);
+    conf_->thrusterPercLimit = par_client_->get_parameter("ThrusterPercLimit", 0.0);
 
     // PID
     conf_->pidgains_position.Kp = par_client_->get_parameter("PIDPosition.Kp", 0.0);
@@ -130,19 +131,19 @@ void VehicleController::SetUpFSM()
     state_move_.SetCtrlContext(ctrlCxt_);
     state_move_.SetConf(conf_);
 
-    u_fsm_.AddCommand(ulisse::commands::ID::halt, &command_halt_);
-    u_fsm_.AddCommand(ulisse::commands::ID::move, &command_move_);
-
     u_fsm_.AddState(ulisse::states::ID::halt, &state_halt_);
     u_fsm_.AddState(ulisse::states::ID::move, &state_move_);
 
-    u_fsm_.EnableCommandInState(ulisse::commands::ID::move, ulisse::states::ID::halt, true);
-    u_fsm_.EnableCommandInState(ulisse::commands::ID::move, ulisse::states::ID::move, true);
-    u_fsm_.EnableCommandInState(ulisse::commands::ID::halt, ulisse::states::ID::halt, true);
-    u_fsm_.EnableCommandInState(ulisse::commands::ID::halt, ulisse::states::ID::move, true);
+    u_fsm_.AddCommand(ulisse::commands::ID::halt, &command_halt_);
+    u_fsm_.AddCommand(ulisse::commands::ID::move, &command_move_);
 
     u_fsm_.EnableTransition(ulisse::states::ID::halt, ulisse::states::ID::move, true);
     u_fsm_.EnableTransition(ulisse::states::ID::move, ulisse::states::ID::halt, true);
+
+    u_fsm_.EnableCommandInState(ulisse::states::ID::halt, ulisse::commands::ID::move, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::move, ulisse::commands::ID::move, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::halt, ulisse::commands::ID::halt, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::move, ulisse::commands::ID::halt, true);
 
     u_fsm_.SetInitState(ulisse::states::ID::halt);
 }
@@ -178,8 +179,7 @@ void VehicleController::Run()
     u_fsm_.ProcessEventQueue();
     u_fsm_.SwitchState();
 
-    std::cout << "State: " << u_fsm_.GetCurrentStateName() << std::endl;
-
+    //std::cout << "State: " << u_fsm_.GetCurrentStateName() << std::endl;
     /*std::cout << "Current Pos: " << posCxt_->currentPos.latitude << ", " << posCxt_->currentPos.longitude << "\t";
     std::cout << "Goal Pos: " << posCxt_->currentGoal.latitude << ", " << posCxt_->currentGoal.longitude << std::endl;*/
 }
@@ -187,8 +187,8 @@ void VehicleController::Run()
 void VehicleController::PublishControl()
 {
     ulisse_msgs::msg::MotorReference motorref_msg;
-    motorref_msg.left = ctrlCxt_->thrusterData.leftCtrlRef;
-    motorref_msg.left = ctrlCxt_->thrusterData.rightCtrlRef;
+    motorref_msg.left = ctrlCxt_->thrusterData.ctrlRef.left;
+    motorref_msg.right = ctrlCxt_->thrusterData.ctrlRef.right;
     motorref_pub_->publish(motorref_msg);
 }
 }

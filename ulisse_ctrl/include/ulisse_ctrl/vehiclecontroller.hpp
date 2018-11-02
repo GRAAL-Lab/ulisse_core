@@ -45,7 +45,6 @@ class VehicleController {
     commands::CommandMove command_move_;
 
     std::shared_ptr<ConfigurationData> conf_;
-
     std::shared_ptr<PositionContext> posCxt_;
     std::shared_ptr<ControlContext> ctrlCxt_;
 
