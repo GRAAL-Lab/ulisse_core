@@ -4,7 +4,7 @@ bool SolveSecondOrderEquation(double a, double b, double c, std::pair<double, do
 {
     double delta = b * b - 4.0 * a * c;
     if (delta < 0.0) {
-        //std::cerr << "Error solving 2nd order eq: delta < 0.0!!! Returning 0.0" << std::endl;
+        std::cerr << "Error solving 2nd order eq: delta < 0.0!!! Returning 0.0" << std::endl;
         solutions = std::make_pair<double, double>(0.0, 0.0);
         return false;
     } else {
@@ -164,6 +164,7 @@ void SurfaceVehicleModel::SingleThrusterMapping(const Eigen::Vector6d& linAngVel
 
 void SurfaceVehicleModel::ThrusterMapping(const Eigen::Vector6d& linAngVel, double& h_p, double& h_s)
 {
+    //Eigen::IOFormat CommaInitFmt(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", ", ", "", "", " << ", ";");
     std::cout << "****************************" << std::endl;
 
     SingleThrusterMapping(linAngVel, h_p);
@@ -173,14 +174,14 @@ void SurfaceVehicleModel::ThrusterMapping(const Eigen::Vector6d& linAngVel, doub
     std::cout << "tauN_: " << tauN_ << std::endl;
     std::cout << "h_p: " << h_p << std::endl;
 
-    std::cout << "-RIGHT MOTOR MAPPING-" << std::endl;
     Eigen::Vector6d linAngVel_s = linAngVel;
     linAngVel_s(5) = -linAngVel_s(5);
     SingleThrusterMapping(linAngVel_s, h_s);
+    std::cout << "-RIGHT MOTOR MAPPING-" << std::endl;
     std::cout << "Req Vel: " << linAngVel_s.transpose() << std::endl;
     std::cout << "tauX_: " << tauX_ << std::endl;
     std::cout << "tauN_: " << tauN_ << std::endl;
-    std::cout << "h_p: " << h_p << std::endl;
+    std::cout << "h_s: " << h_s << std::endl;
 
     std::cout << "****************************" << std::endl;
 }

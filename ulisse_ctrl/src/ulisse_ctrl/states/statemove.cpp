@@ -42,7 +42,6 @@ namespace states {
             ctrlCxt_->pidPosition.SetGains(newPosGains);
         }
 
-        // TODO: check if the desired speed should be multiplied with cos(errorHeading)
         ctrlCxt_->thrusterData.desiredSpeed = ctrlCxt_->pidPosition.Compute(posCxt_->goalDistance, 0.0);
         ctrlCxt_->thrusterData.desiredJog = ctrlCxt_->pidHeading.Compute(posCxt_->goalHeading, posCxt_->currentHeading);
         Eigen::Vector6d requestedVel;

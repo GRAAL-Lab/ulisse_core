@@ -69,9 +69,15 @@ struct ConfigurationData {
 
     friend std::ostream& operator<<(std::ostream& os, ConfigurationData const& a)
     {
-        return os << "CtrlMode: " << (int)a.ctrlMode << "\n"
+        return os << "======= CONFIGURATION =======\n"
+                  << "CtrlMode: " << (int)a.ctrlMode << "\n"
                   << "EnableThrusters: " << a.enableThrusters << "\n"
-                  << "EnableSlowDownOnTurns: " << a.enableSlowDownOnTurns << "\n";
+                  << "EnableSlowDownOnTurns: " << a.enableSlowDownOnTurns << "\n"
+                  << "----------------------\n"
+                  << "Thruster Mapping:\n"
+                  << a.thrusterMap << "\n"
+                  << "----------------------\n"
+                  << "=============================\n";
     }
 };
 

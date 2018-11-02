@@ -26,6 +26,17 @@ struct ThrusterMappingParameters {
         cN.setZero();
         Inertia.setZero();
     }
+
+    friend std::ostream& operator<<(std::ostream& os, ThrusterMappingParameters const& a)
+    {
+        return os << "lambda_pos: " << (int)a.lambda_pos << "\n"
+                  << "lambda_neg: " << a.lambda_neg << "\n"
+                  << "motors distance: " << a.d << "\n"
+                  << "cX: " << a.cX.transpose() << "\n"
+                  << "cN: " << a.cN.transpose() << "\n"
+                  << "cB: " << a.b1_pos << " " << a.b2_pos << " " << a.b1_neg << " " << a.b2_neg << "\n"
+                  << "Inertia:\n" << a.Inertia << "\n";
+    }
 };
 
 /**
@@ -59,7 +70,7 @@ class SurfaceVehicleModel {
     double GetThrusterForceFromMapping();
     double PercentageToRPM(double h);
     double RPMToPercentage(double n);
-    void SingleThrusterMapping(const Eigen::Vector6d &linAngVel, double& perc);
+    void SingleThrusterMapping(const Eigen::Vector6d& linAngVel, double& perc);
 
 public:
     SurfaceVehicleModel();
