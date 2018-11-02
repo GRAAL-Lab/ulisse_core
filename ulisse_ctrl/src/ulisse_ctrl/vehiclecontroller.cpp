@@ -5,6 +5,8 @@
 #include "ulisse_msgs/topicnames.hpp"
 
 #include <chrono>
+#include <iomanip>
+
 using namespace std::chrono_literals;
 using std::placeholders::_1;
 
@@ -56,11 +58,18 @@ std::shared_ptr<ControlContext> VehicleController::CtrlContext() const
 
 int VehicleController::LoadConfiguration()
 {
-    // Loading all variables to config file
-    // LOAD Config DATA !!!!!!! //
+    // Finish to LOAD all Config DATA !!!!!!! //
+
     conf_->ctrlMode = static_cast<ControlMode>(par_client_->get_parameter("ControlMode", 0));
     conf_->enableThrusters = par_client_->get_parameter("EnableThrusters", false);
     conf_->thrusterPercLimit = par_client_->get_parameter("ThrusterPercLimit", 0.0);
+
+    // Slow Down on turns
+    conf_->enableSlowDownOnTurns = par_client_->get_parameter("SlowDownOnTurns.enable", false);
+    conf_->sdtData.headingErrorMin = par_client_->get_parameter("SlowDownOnTurns.HeadingErrorMin", 0.0);
+    conf_->sdtData.headingErrorMax = par_client_->get_parameter("SlowDownOnTurns.HeadingErrorMax", 0.0);
+    conf_->sdtData.alphaMin = par_client_->get_parameter("SlowDownOnTurns.AlphaMin", 0.0);
+    conf_->sdtData.alphaMin = par_client_->get_parameter("SlowDownOnTurns.AlphaMax", 0.0);
 
     // PID
     conf_->pidgains_position.Kp = par_client_->get_parameter("PIDPosition.Kp", 0.0);
@@ -99,7 +108,7 @@ int VehicleController::LoadConfiguration()
     conf_->thrusterMap.b2_neg = par_client_->get_parameter("ThrusterMapping.b2_neg", 0.0);
     conf_->thrusterMap.Inertia.diagonal() = Eigen::Vector3d((par_client_->get_parameter("ThrusterMapping.Inertia", std::vector<double>(3, 0.0))).data());
 
-    // Routing conf to contexts //
+    // /  Routing conf to contexts  / //
     ctrlCxt_->ulisseModel_.SetMappingParams(conf_->thrusterMap);
 
     ctrlCxt_->pidPosition.Initialize(conf_->pidgains_position, sampleTime_, conf_->pidsat_position);
@@ -151,6 +160,7 @@ void VehicleController::SetUpFSM()
 void VehicleController::GPSSensor_cb(const ulisse_msgs::msg::GPS::SharedPtr msg)
 {
     //RCLCPP_INFO(nh_->get_logger(), "I heard: 'time:%f, lat:%f, long:%f'", msg->time, msg->latitude, msg->longitude)
+    timestamp_ = msg->time;
     posCxt_->currentPos.latitude = msg->latitude;
     posCxt_->currentPos.longitude = msg->longitude;
 }
@@ -179,9 +189,18 @@ void VehicleController::Run()
     u_fsm_.ProcessEventQueue();
     u_fsm_.SwitchState();
 
-    //std::cout << "State: " << u_fsm_.GetCurrentStateName() << std::endl;
-    /*std::cout << "Current Pos: " << posCxt_->currentPos.latitude << ", " << posCxt_->currentPos.longitude << "\t";
-    std::cout << "Goal Pos: " << posCxt_->currentGoal.latitude << ", " << posCxt_->currentGoal.longitude << std::endl;*/
+    std::cout << "time: " << std::setprecision(10) << timestamp_ << std::endl;
+    std::cout << "State: " << u_fsm_.GetCurrentStateName() << std::endl;
+
+    //if (u_fsm_.GetCurrentStateName() == states::ID::move) {
+    std::cout << "Current Pos: " << posCxt_->currentPos.latitude << ", " << posCxt_->currentPos.longitude << " -- ";
+    std::cout << "Goal Pos: " << posCxt_->currentGoal.latitude << ", " << posCxt_->currentGoal.longitude << std::endl;
+
+    std::cout << "Desired Speed:\t" << ctrlCxt_->thrusterData.desiredSpeed << std::endl;
+    std::cout << "Desired Jog:\t" << ctrlCxt_->thrusterData.desiredJog << std::endl;
+    std::cout << "Motor Reference: " << ctrlCxt_->thrusterData.ctrlRef.left << ", " << ctrlCxt_->thrusterData.ctrlRef.right << std::endl;
+    //}
+    std::cout << "------------------------------------" << std::endl;
 }
 
 void VehicleController::PublishControl()

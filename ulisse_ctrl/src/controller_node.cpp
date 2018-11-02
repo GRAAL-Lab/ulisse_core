@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
 
     int rate = 10;
     double sampleTime = 1.0 / rate;
-    rclcpp::WallRate loop_rate(50);
+    rclcpp::WallRate loop_rate(rate);
 
     Eigen::TransfMatrix wTv;
     auto myModel = std::make_shared<rml::RobotModel>(wTv, "myVehicle");

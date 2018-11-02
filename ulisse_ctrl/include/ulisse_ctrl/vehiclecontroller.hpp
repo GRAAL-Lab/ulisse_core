@@ -35,6 +35,7 @@ class VehicleController {
 
     rclcpp::Publisher<ulisse_msgs::msg::MotorReference>::SharedPtr motorref_pub_;
 
+    double timestamp_;
     double sampleTime_;
 
     // FSM

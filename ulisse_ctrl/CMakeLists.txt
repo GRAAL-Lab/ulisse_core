@@ -13,11 +13,11 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(surface_vehicle_model REQUIRED)
 find_package(ulisse_msgs REQUIRED)
 find_package(rml REQUIRED)
 find_package(fsm REQUIRED)
 find_package(ctrl_toolbox REQUIRED)
-find_package(surface_vehicle_model REQUIRED)
 
 
 # Add files in the tree of "Projects" view in QtCreator

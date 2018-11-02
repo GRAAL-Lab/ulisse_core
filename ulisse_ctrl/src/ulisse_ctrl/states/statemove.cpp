@@ -35,7 +35,7 @@ namespace states {
     {
         ctb::DistanceAndAzimuthRad(posCxt_->currentPos, posCxt_->currentGoal, posCxt_->goalDistance, posCxt_->goalHeading);
 
-        if (conf_->useSlowDownOnTurns) {
+        if (conf_->enableSlowDownOnTurns) {
             // CORRECTLY IMPLEMENT THIS FUNCTIONS: This is just a dummy
             ctb::PIDGains newPosGains = ctrlCxt_->pidPosition.GetGains();
             newPosGains.Kp = newPosGains.Kp / 10.0;

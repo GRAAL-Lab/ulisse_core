@@ -34,5 +34,27 @@ void ThrustersSaturation(double lThruster, double rThruster, double thMin, doubl
     rSatOut = rThruster * factor;
 }
 
+double SlowDownWhenTurning(double headingError, double desiredSpeed, const ConfigurationData& conf)
+{
+    double herrMin = conf.sdtData.headingErrorMin;
+    double herrMax = conf.sdtData.headingErrorMax;
+    double alphaMin = conf.sdtData.alphaMin;
+    double alphaMax = conf.sdtData.alphaMax;
+    double herrabs = std::abs(headingError);
+    double factor = 1.0;
+    if (herrabs < herrMax && herrabs > herrMin) {
+        factor = (herrabs - herrMin) / (herrMax - herrMin) * (alphaMin - alphaMax)  + alphaMax;
+    } else if (herrabs > herrMax) {
+        factor = alphaMin;
+    } else {
+        factor = alphaMax;
+    }
+
+    double newSpeed = desiredSpeed * factor;
+    /*ortos::DebugConsole::Write(ortos::LogLevel::info, "SlowDownWhenTurning", "Desired value: %lf Factor: %lf Final value: %lf",
+            desiredSpeed, factor, newSpeed);*/
+    return newSpeed;
+}
+
 
 }

@@ -164,9 +164,23 @@ void SurfaceVehicleModel::SingleThrusterMapping(const Eigen::Vector6d& linAngVel
 
 void SurfaceVehicleModel::ThrusterMapping(const Eigen::Vector6d& linAngVel, double& n_p, double& n_s)
 {
-    SingleThrusterMapping(linAngVel, n_p);
+    std::cout << "****************************" << std::endl;
 
+    SingleThrusterMapping(linAngVel, n_p);
+    std::cout << "-LEFT MOTOR MAPPING-" << std::endl;
+    std::cout << "linAngVel: " << linAngVel.transpose() << std::endl;
+    std::cout << "tauX_: " << tauX_ << std::endl;
+    std::cout << "tauN_: " << tauN_ << std::endl;
+    std::cout << "n_p: " << n_p << std::endl;
+
+    std::cout << "-RIGHT MOTOR MAPPING-" << std::endl;
     Eigen::Vector6d linAngVel_s = linAngVel;
     linAngVel_s(5) = -linAngVel_s(5);
     SingleThrusterMapping(linAngVel_s, n_s);
+    std::cout << "linAngVel: " << linAngVel.transpose() << std::endl;
+    std::cout << "tauX_: " << tauX_ << std::endl;
+    std::cout << "tauN_: " << tauN_ << std::endl;
+    std::cout << "n_s: " << n_s << std::endl;
+
+    std::cout << "****************************" << std::endl;
 }

@@ -21,10 +21,30 @@ enum class ControlMode : int {
     DynamicModel
 };
 
+struct SlowDownOnTurnsData {
+    double headingErrorMin; //10.0
+    double headingErrorMax; //25.0
+    double alphaMin; //0.1
+    double alphaMax; // 1.0
+
+    SlowDownOnTurnsData()
+        : headingErrorMin(0.0)
+        , headingErrorMax(0.0)
+        , alphaMin(0.0)
+        , alphaMax(0.0)
+    {
+    }
+};
+
 struct ConfigurationData {
     ControlMode ctrlMode;
+
     bool enableThrusters;
-    bool useSlowDownOnTurns;
+    ThrusterMappingParameters thrusterMap;
+    double thrusterPercLimit;
+
+    bool enableSlowDownOnTurns;
+    SlowDownOnTurnsData sdtData;
 
     ctb::PIDGains pidgains_speed;
     ctb::PIDGains pidgains_position;
@@ -34,15 +54,13 @@ struct ConfigurationData {
     double pidsat_position;
     double pidsat_heading;
 
-    ThrusterMappingParameters thrusterMap;
-
     //double thrusterUpperSat, thrusterLowerSat;
-    double thrusterPercLimit;
 
     ConfigurationData()
         : ctrlMode(ControlMode::ThrusterMapping)
         , enableThrusters(false)
-        , useSlowDownOnTurns(false)
+        , thrusterPercLimit(0.0)
+        , enableSlowDownOnTurns(false)
         , pidsat_speed(0.0)
         , pidsat_position(0.0)
         , pidsat_heading(0.0)
@@ -53,7 +71,7 @@ struct ConfigurationData {
     {
         return os << "CtrlMode: " << (int)a.ctrlMode << "\n"
                   << "EnableThrusters: " << a.enableThrusters << "\n"
-                  << "UseSlowDownOnTurns: " << a.useSlowDownOnTurns << "\n";
+                  << "EnableSlowDownOnTurns: " << a.enableSlowDownOnTurns << "\n";
     }
 };
 
