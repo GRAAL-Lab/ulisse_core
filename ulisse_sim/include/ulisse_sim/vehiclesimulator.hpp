@@ -88,6 +88,7 @@ public:
      * @param[in] realtime
      */
     void SetRealtime(bool realtime);
+    double GetCurrentTimestamp() const;
 };
 
 }

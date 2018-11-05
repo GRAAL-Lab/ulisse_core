@@ -6,6 +6,8 @@
 
 struct ThrusterMappingParameters {
 
+    double surgeMin, surgeMax;
+    double yawRateMin, yawRateMax;
     double lambda_pos, lambda_neg;
     double d;
     Eigen::Vector3d cX;
@@ -14,7 +16,11 @@ struct ThrusterMappingParameters {
     Eigen::Matrix3d Inertia;
 
     ThrusterMappingParameters()
-        : lambda_pos(0.0)
+        : surgeMin(0.0)
+        , surgeMax(0.0)
+        , yawRateMin(0.0)
+        , yawRateMax(0.0)
+        , lambda_pos(0.0)
         , lambda_neg(0.0)
         , d(0.0)
         , b1_pos(0.0)
@@ -29,13 +35,18 @@ struct ThrusterMappingParameters {
 
     friend std::ostream& operator<<(std::ostream& os, ThrusterMappingParameters const& a)
     {
-        return os << "lambda_pos: " << (int)a.lambda_pos << "\n"
+        return os << "surgeMin: " << a.surgeMin << "\n"
+                  << "surgeMax: " << a.surgeMax << "\n"
+                  << "yawRateMin: " << a.yawRateMin << "\n"
+                  << "yawRateMax: " << a.yawRateMax << "\n"
+                  << "lambda_pos: " << (int)a.lambda_pos << "\n"
                   << "lambda_neg: " << a.lambda_neg << "\n"
                   << "motors distance: " << a.d << "\n"
                   << "cX: " << a.cX.transpose() << "\n"
                   << "cN: " << a.cN.transpose() << "\n"
                   << "cB: " << a.b1_pos << " " << a.b2_pos << " " << a.b1_neg << " " << a.b2_neg << "\n"
-                  << "Inertia:\n" << a.Inertia << "\n";
+                  << "Inertia:\n"
+                  << a.Inertia << "\n";
     }
 };
 

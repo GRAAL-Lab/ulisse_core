@@ -30,8 +30,6 @@ void ThrustersSaturation(double lThruster, double rThruster, double thMin, doubl
         }
     }
 
-    std::cout << "Factor=" << factor << std::endl;
-
     lSatOut = lThruster * factor;
     rSatOut = rThruster * factor;
 }

@@ -1,5 +1,13 @@
 #include "surface_vehicle_model/surfacevehiclemodel.hpp"
 
+/**
+ * Helper clip function
+ */
+double clamp(double n, double lower, double upper)
+{
+    return std::max(lower, std::min(n, upper));
+}
+
 bool SolveSecondOrderEquation(double a, double b, double c, std::pair<double, double>& solutions)
 {
     double delta = b * b - 4.0 * a * c;
@@ -164,21 +172,26 @@ void SurfaceVehicleModel::SingleThrusterMapping(const Eigen::Vector6d& linAngVel
 
 void SurfaceVehicleModel::ThrusterMapping(const Eigen::Vector6d& linAngVel, double& h_p, double& h_s)
 {
-    //Eigen::IOFormat CommaInitFmt(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", ", ", "", "", " << ", ";");
+    Eigen::Vector6d inputVel = linAngVel;
+
+    // Saturating input to max acceptable surge and yawrate values
+    inputVel(0) = clamp(inputVel(0), params_.surgeMin, params_.surgeMax);
+    inputVel(5) = clamp(inputVel(5), params_.yawRateMin, params_.yawRateMax);
+
     std::cout << "****************************" << std::endl;
 
-    SingleThrusterMapping(linAngVel, h_p);
+    SingleThrusterMapping(inputVel, h_p);
     std::cout << "-LEFT MOTOR MAPPING-" << std::endl;
-    std::cout << "Req Vel: " << linAngVel.transpose() << std::endl;
+    std::cout << "Req Vel: " << inputVel.transpose() << std::endl;
     std::cout << "tauX_: " << tauX_ << std::endl;
     std::cout << "tauN_: " << tauN_ << std::endl;
     std::cout << "h_p: " << h_p << std::endl;
 
-    Eigen::Vector6d linAngVel_s = linAngVel;
-    linAngVel_s(5) = -linAngVel_s(5);
-    SingleThrusterMapping(linAngVel_s, h_s);
+    Eigen::Vector6d inputVel_s = inputVel;
+    inputVel_s(5) = -inputVel_s(5);
+    SingleThrusterMapping(inputVel_s, h_s);
     std::cout << "-RIGHT MOTOR MAPPING-" << std::endl;
-    std::cout << "Req Vel: " << linAngVel_s.transpose() << std::endl;
+    std::cout << "Req Vel: " << inputVel_s.transpose() << std::endl;
     std::cout << "tauX_: " << tauX_ << std::endl;
     std::cout << "tauN_: " << tauN_ << std::endl;
     std::cout << "h_s: " << h_s << std::endl;

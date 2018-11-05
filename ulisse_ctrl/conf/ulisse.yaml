@@ -4,10 +4,13 @@ controller_node:
         ControlMode: 0                  # 0=ThrusterMapping, 1=DynamicModel
         EnableThrusters: true
 
-        MaxPhysicalSpeed: 4.5           # m/s
+        PosAcceptanceRadius: 5.0
+
+        #MaxPhysicalSpeed: 4.5           # m/s
         SpeedLimiter: 4.5               # m/s
-        MaxPhysicalJog: 30.0            # deg/s
-        JogLimiter: 30.0                # deg/s
+        #MaxPhysicalJog: 0.52            # rad/s
+        JogLimiter: 0.52                # rad/s
+
         ThrusterPercLimit: 70.0         # percent
         #LeftThrusterBias: 0             # percent
         #RightThrusterBias: 0            # percent
@@ -79,9 +82,12 @@ controller_node:
             Tr: 0.5
 
         ThrusterMapping:
-            #RPMToPercentPositive: 69.0
-            #RPMToPercentNegative: 50.5
-            # dati paper
+            # input saturation limits
+            SurgeMin: 0.0
+            SurgeMax: 2.0
+            YawrateMin: -0.3
+            YawRateMax: 0.3
+            # mapping parameters
             lambda_pos: 13.0
             lambda_neg: 9.1
             motors_distance: 0.6925

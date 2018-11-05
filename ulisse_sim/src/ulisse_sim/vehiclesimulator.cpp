@@ -16,7 +16,7 @@ double clamp(double n, double lower, double upper)
 
 VehicleSimulator::VehicleSimulator(const rclcpp::Node::SharedPtr& nh)
     : nh_(nh)
-    , geod_(GeographicLib::Constants::WGS84_a(), GeographicLib::Constants::WGS84_f())
+    , geod_(GeographicLib::Geodesic::WGS84())
     , gpspubcounter_(0)
     , sensorpubcounter_(0)
     , realtime_(true)
@@ -136,6 +136,12 @@ void VehicleSimulator::SimulateActuation(double h_p, double h_s)
     vehAtt_now_.SetYaw(std::remainder(vehAtt_last_.GetYaw() + rpyEulerRates(2) * Ts_, M_PI));
 }
 
+double VehicleSimulator::GetCurrentTimestamp() const
+{
+    long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
+    return static_cast<double>(now_nanosecs / 1E9);;
+}
+
 void VehicleSimulator::SimulateSensors(double h_p, double h_s)
 {
     long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
@@ -173,8 +179,8 @@ void VehicleSimulator::SimulateSensors(double h_p, double h_s)
 
     ambsens_msg_.stamp.sec = now_stamp_secs;
     ambsens_msg_.stamp.nanosec = now_stamp_nanosecs;
-    ambsens_msg_.temperaturectrlbox = 23.0 + (rand() / (double)RAND_MAX) * 2;
-    ambsens_msg_.humidityctrlbox = 50.0 + (rand() / (double)RAND_MAX) * 2;
+    ambsens_msg_.temperaturectrlbox = 23.0 + (rand() / (double)RAND_MAX) * 2.0;
+    ambsens_msg_.humidityctrlbox = 50.0 + (rand() / (double)RAND_MAX) * 2.0;
 
     magneto_msg_.stamp.sec = now_stamp_secs;
     magneto_msg_.stamp.nanosec = now_stamp_nanosecs;
@@ -190,7 +196,7 @@ void VehicleSimulator::PublishSensors()
 {
     timeinfo_pub_->publish(timeinfo_msg_);
 
-    std::cout << "timestamp_count_ / 200: " << timestamp_count_ / 200 << std::endl;
+    //std::cout << "timestamp_count_ / 200: " << timestamp_count_ / 200 << std::endl;
     if ((int)(timestamp_count_ / 200) == gpspubcounter_) {
         gpspubcounter_++;
         gpsdata_pub_->publish(gpsdata_msg_);

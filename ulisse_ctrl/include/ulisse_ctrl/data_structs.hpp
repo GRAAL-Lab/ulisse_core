@@ -43,6 +43,7 @@ struct ConfigurationData {
     ThrusterMappingParameters thrusterMap;
     double thrusterPercLimit;
 
+    double posAcceptanceRadius;
     bool enableSlowDownOnTurns;
     SlowDownOnTurnsData sdtData;
 
@@ -72,6 +73,7 @@ struct ConfigurationData {
         return os << "======= CONFIGURATION =======\n"
                   << "CtrlMode: " << (int)a.ctrlMode << "\n"
                   << "EnableThrusters: " << a.enableThrusters << "\n"
+                  << "PosAcceptanceRadius: " << a.posAcceptanceRadius << "\n"
                   << "EnableSlowDownOnTurns: " << a.enableSlowDownOnTurns << "\n"
                   << "ThrusterPercLimit: " << a.thrusterPercLimit << "\n"
                   << "----------------------\n"

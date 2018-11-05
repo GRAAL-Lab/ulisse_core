@@ -30,7 +30,12 @@ struct PositionContext {
     ctb::LatLong currentPos, currentGoal, nextGoal;
     double currentHeading;
     double goalDistance, goalHeading;
-    PositionContext() {}
+    PositionContext()
+        : currentHeading(0.0)
+        , goalDistance(0.0)
+        , goalHeading(0.0)
+    {
+    }
 };
 
 struct ControlContext {

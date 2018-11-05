@@ -80,7 +80,9 @@ int main(int argc, char* argv[])
     while (rclcpp::ok()) {
 
         std::cout << "----------------------------------" << std::endl;
+        std::cout << "time: " << std::setprecision(1) << myVehSim.GetCurrentTimestamp() << std::endl;
         std::cout << "lat, long: " << std::setprecision(6) << myVehSim.VehLatitude() << ", " << myVehSim.VehLongitude() << std::endl;
+        std::cout << "compass (yaw): " <<  myVehSim.VehAtt().GetYaw() << std::endl;
         std::cout << "velocity: " << myVehSim.VehVel_world().transpose() << std::endl;
 
         /* LOGGING */

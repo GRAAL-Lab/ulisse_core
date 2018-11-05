@@ -63,6 +63,7 @@ int VehicleController::LoadConfiguration()
     conf_->ctrlMode = static_cast<ControlMode>(par_client_->get_parameter("ControlMode", 0));
     conf_->enableThrusters = par_client_->get_parameter("EnableThrusters", false);
     conf_->thrusterPercLimit = par_client_->get_parameter("ThrusterPercLimit", 0.0);
+    conf_->posAcceptanceRadius = par_client_->get_parameter("PosAcceptanceRadius", 0.0);
 
     // Slow Down on turns
     conf_->enableSlowDownOnTurns = par_client_->get_parameter("SlowDownOnTurns.enable", false);
@@ -97,6 +98,10 @@ int VehicleController::LoadConfiguration()
     conf_->pidsat_heading = par_client_->get_parameter("JogLimiter", 0.0);
 
     // THRUSTER MAPPING
+    conf_->thrusterMap.surgeMin = par_client_->get_parameter("ThrusterMapping.SurgeMin", 0.0);
+    conf_->thrusterMap.surgeMax = par_client_->get_parameter("ThrusterMapping.SurgeMax", 0.0);
+    conf_->thrusterMap.yawRateMin = par_client_->get_parameter("ThrusterMapping.YawrateMin", 0.0);
+    conf_->thrusterMap.yawRateMax = par_client_->get_parameter("ThrusterMapping.YawRateMax", 0.0);
     conf_->thrusterMap.d = par_client_->get_parameter("ThrusterMapping.motors_distance", 0.0);
     conf_->thrusterMap.lambda_pos = par_client_->get_parameter("ThrusterMapping.lambda_pos", 0.0);
     conf_->thrusterMap.lambda_neg = par_client_->get_parameter("ThrusterMapping.lambda_neg", 0.0);
@@ -195,6 +200,7 @@ void VehicleController::Run()
     //if (u_fsm_.GetCurrentStateName() == states::ID::move) {
     std::cout << "Current Pos: " << posCxt_->currentPos.latitude << ", " << posCxt_->currentPos.longitude << " -- ";
     std::cout << "Goal Pos: " << posCxt_->currentGoal.latitude << ", " << posCxt_->currentGoal.longitude << std::endl;
+    std::cout << "Current Heading: " << posCxt_->currentHeading << std::endl;
 
     std::cout << "goal_distance: " << std::setprecision(10) << posCxt_->goalDistance << std::endl;
     std::cout << "goal_heading: " << std::setprecision(10) << posCxt_->goalHeading << std::endl;
