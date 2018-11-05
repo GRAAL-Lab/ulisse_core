@@ -14,7 +14,6 @@ namespace commands {
 
     fsm::retval CommandHalt::Execute()
     {
-        posCxt_->currentGoal = posCxt_->currentPos;
         return fsm_->SetNextState(ulisse::states::ID::halt);
     }
 

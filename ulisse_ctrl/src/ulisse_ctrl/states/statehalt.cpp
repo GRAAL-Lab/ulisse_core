@@ -12,11 +12,18 @@ namespace states {
     {
     }
 
-    fsm::retval StateHalt::Execute()
+    fsm::retval StateHalt::OnEntry()
     {
         posCxt_->currentGoal = posCxt_->currentPos;
         ctrlCxt_->thrusterData.ctrlRef.left = 0.0;
         ctrlCxt_->thrusterData.ctrlRef.right = 0.0;
+        return fsm::ok;
+    }
+
+
+    fsm::retval StateHalt::Execute()
+    {
+
         return fsm::ok;
     }
 

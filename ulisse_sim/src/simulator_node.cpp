@@ -86,10 +86,10 @@ int main(int argc, char* argv[])
         std::cout << "velocity: " << myVehSim.VehVel_world().transpose() << std::endl;
 
         /* LOGGING */
-        // logss.str(std::string());
-        // logss << myVehSim.VehLatitude() << " " << myVehSim.VehLongitude() << ", ";
-        // logss << myVehSim.VehVel_world().transpose() << "\n";
-        // logfile << logss.str();
+        logss.str(std::string());
+        logss << myVehSim.VehLatitude() << " " << myVehSim.VehLongitude() << ", ";
+        logss << myVehSim.VehVel_world().transpose() << "\n";
+        logfile << logss.str();
         /***********/
 
         myVehSim.ExecuteStep(test_h_p, test_h_s);

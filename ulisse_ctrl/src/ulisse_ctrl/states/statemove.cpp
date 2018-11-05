@@ -18,6 +18,10 @@ namespace states {
     fsm::retval StateMove::OnEntry()
     {
         posCxt_->currentGoal = posCxt_->nextGoal;
+        ctrlCxt_->pidPosition.Reset();
+        ctrlCxt_->pidHeading.Reset();
+        ctrlCxt_->pidSpeed.Reset();
+
         return fsm::ok;
     }
 
@@ -36,8 +40,8 @@ namespace states {
         ctb::DistanceAndAzimuthRad(posCxt_->currentPos, posCxt_->currentGoal, posCxt_->goalDistance, posCxt_->goalHeading);
 
         if (posCxt_->goalDistance < conf_->posAcceptanceRadius) {
-            std::cout << "GOAL REACHED!" << std::endl;
-            fsm_->SetNextState(ulisse::states::ID::halt);
+            //std::cout << "GOAL REACHED!" << std::endl;
+            fsm_->ExecuteCommand(ulisse::commands::ID::halt);
         }
 
         if (conf_->enableSlowDownOnTurns) {

@@ -164,7 +164,6 @@ void VehicleController::SetUpFSM()
 
 void VehicleController::GPSSensor_cb(const ulisse_msgs::msg::GPS::SharedPtr msg)
 {
-    //RCLCPP_INFO(nh_->get_logger(), "I heard: 'time:%f, lat:%f, long:%f'", msg->time, msg->latitude, msg->longitude)
     timestamp_ = msg->time;
     posCxt_->currentPos.latitude = msg->latitude;
     posCxt_->currentPos.longitude = msg->longitude;
@@ -197,7 +196,6 @@ void VehicleController::Run()
     std::cout << "time: " << std::setprecision(10) << timestamp_ << std::endl;
     std::cout << "State: " << u_fsm_.GetCurrentStateName() << std::endl;
 
-    //if (u_fsm_.GetCurrentStateName() == states::ID::move) {
     std::cout << "Current Pos: " << posCxt_->currentPos.latitude << ", " << posCxt_->currentPos.longitude << " -- ";
     std::cout << "Goal Pos: " << posCxt_->currentGoal.latitude << ", " << posCxt_->currentGoal.longitude << std::endl;
     std::cout << "Current Heading: " << posCxt_->currentHeading << std::endl;
@@ -210,7 +208,7 @@ void VehicleController::Run()
 
     std::cout << "Motor Mapping Output: " << ctrlCxt_->thrusterData.mapOut.left << ", " << ctrlCxt_->thrusterData.mapOut.right << std::endl;
     std::cout << "Motor Ctrl Reference (sat): " << ctrlCxt_->thrusterData.ctrlRef.left << ", " << ctrlCxt_->thrusterData.ctrlRef.right << std::endl;
-    //}
+
     std::cout << "------------------------------------" << std::endl;
 }
 
