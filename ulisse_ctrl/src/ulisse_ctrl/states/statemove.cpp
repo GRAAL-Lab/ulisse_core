@@ -36,7 +36,7 @@ namespace states {
         ctb::DistanceAndAzimuthRad(posCxt_->currentPos, posCxt_->currentGoal, posCxt_->goalDistance, posCxt_->goalHeading);
 
         if (conf_->enableSlowDownOnTurns) {
-            // CORRECTLY IMPLEMENT THIS FUNCTIONS: This is just a dummy
+            // CORRECTLY IMPLEMENT THIS FUNCTIONS: This is just a DUMMY
             ctb::PIDGains newPosGains = ctrlCxt_->pidPosition.GetGains();
             newPosGains.Kp = newPosGains.Kp / 10.0;
             ctrlCxt_->pidPosition.SetGains(newPosGains);
@@ -48,13 +48,14 @@ namespace states {
         requestedVel(0) = ctrlCxt_->thrusterData.desiredSpeed;
         requestedVel(5) = ctrlCxt_->thrusterData.desiredJog;
 
-        bool useSat(false);
+        bool useSat(true);
         if (conf_->ctrlMode == ControlMode::ThrusterMapping) {
 
             ctrlCxt_->ulisseModel_.ThrusterMapping(requestedVel, ctrlCxt_->thrusterData.mapOut.left, ctrlCxt_->thrusterData.mapOut.right);
+
             if (useSat) {
                 ThrustersSaturation(ctrlCxt_->thrusterData.mapOut.left, ctrlCxt_->thrusterData.mapOut.right,
-                    conf_->thrusterPercLimit, conf_->thrusterPercLimit,
+                    -conf_->thrusterPercLimit, conf_->thrusterPercLimit,
                     ctrlCxt_->thrusterData.ctrlRef.left, ctrlCxt_->thrusterData.ctrlRef.right);
             } else {
                 ctrlCxt_->thrusterData.ctrlRef.left = ctrlCxt_->thrusterData.mapOut.left;

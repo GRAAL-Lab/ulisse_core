@@ -108,6 +108,8 @@ int VehicleController::LoadConfiguration()
     conf_->thrusterMap.b2_neg = par_client_->get_parameter("ThrusterMapping.b2_neg", 0.0);
     conf_->thrusterMap.Inertia.diagonal() = Eigen::Vector3d((par_client_->get_parameter("ThrusterMapping.Inertia", std::vector<double>(3, 0.0))).data());
 
+    std::cout << *conf_ << std::endl;
+
     // /  Routing conf to contexts  / //
     ctrlCxt_->ulisseModel_.SetMappingParams(conf_->thrusterMap);
 
@@ -116,9 +118,7 @@ int VehicleController::LoadConfiguration()
     ctrlCxt_->pidHeading.Initialize(conf_->pidgains_heading, sampleTime_, conf_->pidsat_heading);
     ctrlCxt_->pidHeading.SetErrorFunction(ctb::HeadingErrorRadFunctor());
 
-    std::cout << *conf_ << std::endl;
-
-    return 1;
+    return true;
 }
 
 void VehicleController::SetUpFSM()
@@ -196,9 +196,14 @@ void VehicleController::Run()
     std::cout << "Current Pos: " << posCxt_->currentPos.latitude << ", " << posCxt_->currentPos.longitude << " -- ";
     std::cout << "Goal Pos: " << posCxt_->currentGoal.latitude << ", " << posCxt_->currentGoal.longitude << std::endl;
 
+    std::cout << "goal_distance: " << std::setprecision(10) << posCxt_->goalDistance << std::endl;
+    std::cout << "goal_heading: " << std::setprecision(10) << posCxt_->goalHeading << std::endl;
+
     std::cout << "Desired Speed:\t" << ctrlCxt_->thrusterData.desiredSpeed << std::endl;
     std::cout << "Desired Jog:\t" << ctrlCxt_->thrusterData.desiredJog << std::endl;
-    std::cout << "Motor Reference: " << ctrlCxt_->thrusterData.ctrlRef.left << ", " << ctrlCxt_->thrusterData.ctrlRef.right << std::endl;
+
+    std::cout << "Motor Mapping Output: " << ctrlCxt_->thrusterData.mapOut.left << ", " << ctrlCxt_->thrusterData.mapOut.right << std::endl;
+    std::cout << "Motor Ctrl Reference (sat): " << ctrlCxt_->thrusterData.ctrlRef.left << ", " << ctrlCxt_->thrusterData.ctrlRef.right << std::endl;
     //}
     std::cout << "------------------------------------" << std::endl;
 }

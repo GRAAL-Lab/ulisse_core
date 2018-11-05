@@ -8,7 +8,7 @@ bool SolveSecondOrderEquation(double a, double b, double c, std::pair<double, do
         solutions = std::make_pair<double, double>(0.0, 0.0);
         return false;
     } else {
-        solutions.first = (-b + std::sqrt(delta)) / (2.0 * a);
+        solutions.first  = (-b + std::sqrt(delta)) / (2.0 * a);
         solutions.second = (-b - std::sqrt(delta)) / (2.0 * a);
         return true;
     }

@@ -73,6 +73,7 @@ struct ConfigurationData {
                   << "CtrlMode: " << (int)a.ctrlMode << "\n"
                   << "EnableThrusters: " << a.enableThrusters << "\n"
                   << "EnableSlowDownOnTurns: " << a.enableSlowDownOnTurns << "\n"
+                  << "ThrusterPercLimit: " << a.thrusterPercLimit << "\n"
                   << "----------------------\n"
                   << "Thruster Mapping:\n"
                   << a.thrusterMap << "\n"
