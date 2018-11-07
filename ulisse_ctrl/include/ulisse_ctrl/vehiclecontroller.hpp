@@ -4,6 +4,7 @@
 #include "rclcpp/rclcpp.hpp"
 
 #include "std_msgs/msg/empty.hpp"
+#include "std_msgs/msg/string.hpp"
 #include "ulisse_msgs/msg/command_move.hpp"
 
 #include "ulisse_msgs/msg/ambient_sensors.hpp"
@@ -34,6 +35,7 @@ class VehicleController {
     rclcpp::Subscription<ulisse_msgs::msg::CommandMove>::SharedPtr cmd_move_sub_;
 
     rclcpp::Publisher<ulisse_msgs::msg::MotorReference>::SharedPtr motorref_pub_;
+    rclcpp::Publisher<std_msgs::msg::String>::SharedPtr vehiclestate_pub_;
 
     double timestamp_;
     double sampleTime_;

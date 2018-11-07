@@ -27,6 +27,7 @@ add_custom_target(.Files. SOURCES ${SOURCE_FILES})
 
 rosidl_generate_interfaces(ulisse_msgs
   # Sensors
+  "msg/Time.msg"
   "msg/IMUData.msg"
   "msg/AmbientSensors.msg"
   "msg/Compass.msg"
@@ -45,5 +46,9 @@ install(
   DIRECTORY include/
   DESTINATION include
 )
+
+install(
+  FILES mapping_rules.yaml
+  DESTINATION share/${PROJECT_NAME})
 
 ament_package()

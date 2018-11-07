@@ -59,12 +59,9 @@ target_link_libraries(ulisse_ctrl_lib ${surface_vehicle_model_LIBRARIES} Geograp
 
 
 ## Executables
-#add_executable(publisher src/publisher_test.cpp)
-#ament_target_dependencies(publisher rclcpp std_msgs ulisse_msgs)
-
-#add_executable(subscriber src/subscriber_test.cpp)
-#ament_target_dependencies(subscriber rclcpp std_msgs ulisse_msgs rml)
-#target_link_libraries(subscriber rml)
+add_executable(control_test test/control_test.cpp)
+ament_target_dependencies(control_test rclcpp std_msgs ulisse_msgs rml)
+target_link_libraries(control_test rml ulisse_ctrl_lib)
 
 add_executable(controller_node src/controller_node.cpp)
 ament_target_dependencies(controller_node rclcpp std_msgs ulisse_msgs rml)
@@ -75,6 +72,7 @@ install(TARGETS
 #  publisher
 #  subscriber
   controller_node
+  control_test
   DESTINATION lib/${PROJECT_NAME})
   
 install(DIRECTORY

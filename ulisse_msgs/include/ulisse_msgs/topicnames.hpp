@@ -15,6 +15,8 @@ namespace topicnames {
     const std::string motor_ctrl_ref = "/motor/ctrl_reference";
     const std::string motor_applied_ref = "/motor/applied_reference";
 
+    const std::string vehicle_ctrl_state = "/vehicle/ctrl_state";
+
     const std::string command_halt = "/command/halt";
     const std::string command_move = "/command/move";
 }

@@ -18,6 +18,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 {
     par_client_ = std::make_shared<rclcpp::SyncParametersClient>(nh_);
     ctrlCxt_ = std::make_shared<ControlContext>();
+    posCxt_ = std::make_shared<PositionContext>();
     conf_ = std::make_shared<ConfigurationData>();
 
     while (!par_client_->wait_for_service(1ms)) {
@@ -45,6 +46,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 
     // Control Publishers
     motorref_pub_ = nh_->create_publisher<ulisse_msgs::msg::MotorReference>(ulisse_msgs::topicnames::motor_ctrl_ref);
+    vehiclestate_pub_ = nh_->create_publisher<std_msgs::msg::String>(ulisse_msgs::topicnames::vehicle_ctrl_state);
 }
 
 VehicleController::~VehicleController()
@@ -128,7 +130,6 @@ int VehicleController::LoadConfiguration()
 
 void VehicleController::SetUpFSM()
 {
-    posCxt_ = std::make_shared<PositionContext>();
 
     command_halt_.SetFSM(&u_fsm_);
     command_halt_.SetPosContext(posCxt_);
@@ -218,5 +219,9 @@ void VehicleController::PublishControl()
     motorref_msg.left = ctrlCxt_->thrusterData.ctrlRef.left;
     motorref_msg.right = ctrlCxt_->thrusterData.ctrlRef.right;
     motorref_pub_->publish(motorref_msg);
+
+    std_msgs::msg::String state;
+    state.data = u_fsm_.GetCurrentStateName();
+    vehiclestate_pub_->publish(state);
 }
 }

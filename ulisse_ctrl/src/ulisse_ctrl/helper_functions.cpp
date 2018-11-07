@@ -34,7 +34,7 @@ void ThrustersSaturation(double lThruster, double rThruster, double thMin, doubl
     rSatOut = rThruster * factor;
 }
 
-double SlowDownWhenTurning(double headingError, double desiredSpeed, const ConfigurationData& conf)
+double SlowDownWhenTurning(double headingError, const ConfigurationData& conf)
 {
     double herrMin = conf.sdtData.headingErrorMin;
     double herrMax = conf.sdtData.headingErrorMax;
@@ -50,10 +50,10 @@ double SlowDownWhenTurning(double headingError, double desiredSpeed, const Confi
         factor = alphaMax;
     }
 
-    double newSpeed = desiredSpeed * factor;
+    double newKp = conf.pidgains_position.Kp * factor;
     /*ortos::DebugConsole::Write(ortos::LogLevel::info, "SlowDownWhenTurning", "Desired value: %lf Factor: %lf Final value: %lf",
             desiredSpeed, factor, newSpeed);*/
-    return newSpeed;
+    return newKp;
 }
 
 

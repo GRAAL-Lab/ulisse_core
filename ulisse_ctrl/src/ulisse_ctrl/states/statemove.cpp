@@ -47,11 +47,12 @@ namespace states {
         if (conf_->enableSlowDownOnTurns) {
             // CORRECTLY IMPLEMENT THIS FUNCTIONS: This is just a DUMMY
             ctb::PIDGains newPosGains = ctrlCxt_->pidPosition.GetGains();
-            newPosGains.Kp = newPosGains.Kp / 10.0;
+
+            newPosGains.Kp = SlowDownWhenTurning(ctb::HeadingErrorRad(posCxt_->currentHeading,posCxt_->goalHeading),*conf_);
             ctrlCxt_->pidPosition.SetGains(newPosGains);
         }
 
-        ctrlCxt_->thrusterData.desiredSpeed = ctrlCxt_->pidPosition.Compute(posCxt_->goalDistance, 0.0);
+        ctrlCxt_->thrusterData.desiredSpeed = -ctrlCxt_->pidPosition.Compute(0.0, posCxt_->goalDistance);
         ctrlCxt_->thrusterData.desiredJog = ctrlCxt_->pidHeading.Compute(posCxt_->goalHeading, posCxt_->currentHeading);
         Eigen::Vector6d requestedVel;
         requestedVel(0) = ctrlCxt_->thrusterData.desiredSpeed;
