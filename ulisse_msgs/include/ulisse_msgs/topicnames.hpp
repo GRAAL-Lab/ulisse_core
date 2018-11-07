@@ -6,7 +6,7 @@ namespace ulisse_msgs {
 
 namespace topicnames {
 
-    const std::string time_info = "/time/info";
+    const std::string micro_loop_count = "/time/micro_loop_count";
     const std::string sensor_gps = "/sensor/gps";
     const std::string sensor_compass = "/sensor/compass";
     const std::string sensor_imu = "/sensor/imu";

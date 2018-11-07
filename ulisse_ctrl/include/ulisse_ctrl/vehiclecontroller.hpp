@@ -13,7 +13,7 @@
 #include "ulisse_msgs/msg/imu_data.hpp"
 #include "ulisse_msgs/msg/magnetometer.hpp"
 #include "ulisse_msgs/msg/motor_reference.hpp"
-#include "ulisse_msgs/msg/time_info.hpp"
+#include "ulisse_msgs/msg/micro_loop_count.hpp"
 
 #include "eigen3/Eigen/Dense"
 #include "rml/RML.h"

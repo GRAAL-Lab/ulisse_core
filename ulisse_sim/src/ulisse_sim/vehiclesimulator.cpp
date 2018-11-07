@@ -29,7 +29,7 @@ VehicleSimulator::VehicleSimulator(const rclcpp::Node::SharedPtr& nh)
 
     t_start_ = t_last_ = t_now_ = std::chrono::system_clock::now();
 
-    timeinfo_pub_ = nh_->create_publisher<ulisse_msgs::msg::TimeInfo>(ulisse_msgs::topicnames::time_info);
+    micro_loop_count_pub_ = nh_->create_publisher<ulisse_msgs::msg::MicroLoopCount>(ulisse_msgs::topicnames::micro_loop_count);
     gpsdata_pub_ = nh_->create_publisher<ulisse_msgs::msg::GPS>(ulisse_msgs::topicnames::sensor_gps);
     compass_pub_ = nh_->create_publisher<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass);
     imudata_pub_ = nh_->create_publisher<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu);
@@ -152,8 +152,8 @@ void VehicleSimulator::SimulateSensors(double h_p, double h_s)
     timestamp_count_ = static_cast<uint32_t>(elapsed_secs * 200.0);
     stepssincepps_count_ = static_cast<uint32_t>(elapsed_secs * 200.0) % 200;
 
-    timeinfo_msg_.timestamp = timestamp_count_;
-    timeinfo_msg_.stepssincepps = stepssincepps_count_;
+    micro_loop_count_msg_.timestamp = timestamp_count_;
+    micro_loop_count_msg_.stepssincepps = stepssincepps_count_;
 
     gpsdata_msg_.time = static_cast<double>(now_nanosecs / 1E9);
     gpsdata_msg_.track = vehTrack_;
@@ -194,7 +194,7 @@ void VehicleSimulator::SimulateSensors(double h_p, double h_s)
 
 void VehicleSimulator::PublishSensors()
 {
-    timeinfo_pub_->publish(timeinfo_msg_);
+    micro_loop_count_pub_->publish(micro_loop_count_msg_);
 
     //std::cout << "timestamp_count_ / 200: " << timestamp_count_ / 200 << std::endl;
     if ((int)(timestamp_count_ / 200) == gpspubcounter_) {
