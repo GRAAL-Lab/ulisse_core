@@ -1,6 +1,7 @@
 #include "rclcpp/rclcpp.hpp"
 
 #include "ulisse_msgs/topicnames.hpp"
+#include "ulisse_msgs/msg/control_context.hpp"
 #include "ulisse_sim/vehiclesimulator.hpp"
 
 #include <chrono>
@@ -19,17 +20,17 @@ static double test_h_p(0.0), test_h_s(0.0);
 
 void ReadMappingParameters(const std::shared_ptr<rclcpp::SyncParametersClient> pc, ThrusterMappingParameters& tmp);
 
-void motorref_cb(const ulisse_msgs::msg::MotorReference::SharedPtr msg)
+void motorref_cb(const ulisse_msgs::msg::ControlContext::SharedPtr msg)
 {
-    test_h_p = msg->left;
-    test_h_s = msg->right;
+    test_h_p = msg->ctrlref.left;
+    test_h_s = msg->ctrlref.right;
 }
 
 int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
     auto node = rclcpp::Node::make_shared("simulator_node");
-    auto subscriber = node->create_subscription<ulisse_msgs::msg::MotorReference>(ulisse_msgs::topicnames::motor_ctrl_ref, motorref_cb);
+    auto subscriber = node->create_subscription<ulisse_msgs::msg::ControlContext>(ulisse_msgs::topicnames::control_context, motorref_cb);
     auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(node);
 
     while (!parameters_client->wait_for_service(1ms)) {

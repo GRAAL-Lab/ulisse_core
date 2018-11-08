@@ -1,0 +1,5 @@
+LatLong currentpos
+LatLong currentgoal
+float64 currentheading
+float64 goaldistance
+float64 goalheading

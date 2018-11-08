@@ -9,11 +9,12 @@
 
 #include "ulisse_msgs/msg/ambient_sensors.hpp"
 #include "ulisse_msgs/msg/compass.hpp"
+#include "ulisse_msgs/msg/control_context.hpp"
 #include "ulisse_msgs/msg/gps.hpp"
 #include "ulisse_msgs/msg/imu_data.hpp"
 #include "ulisse_msgs/msg/magnetometer.hpp"
-#include "ulisse_msgs/msg/motor_reference.hpp"
 #include "ulisse_msgs/msg/micro_loop_count.hpp"
+#include "ulisse_msgs/msg/position_context.hpp"
 
 #include "eigen3/Eigen/Dense"
 #include "rml/RML.h"
@@ -34,7 +35,8 @@ class VehicleController {
     rclcpp::Subscription<std_msgs::msg::Empty>::SharedPtr cmd_halt_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::CommandMove>::SharedPtr cmd_move_sub_;
 
-    rclcpp::Publisher<ulisse_msgs::msg::MotorReference>::SharedPtr motorref_pub_;
+    rclcpp::Publisher<ulisse_msgs::msg::PositionContext>::SharedPtr poscxt_pub_;
+    rclcpp::Publisher<ulisse_msgs::msg::ControlContext>::SharedPtr ctrlcxt_pub_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr vehiclestate_pub_;
 
     double timestamp_;

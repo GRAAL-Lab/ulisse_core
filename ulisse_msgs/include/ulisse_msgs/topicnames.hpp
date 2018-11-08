@@ -12,10 +12,11 @@ namespace topicnames {
     const std::string sensor_imu = "/sensor/imu";
     const std::string sensor_ambient = "/sensor/ambient";
     const std::string sensor_magnetometer = "/sensor/magnetometer";
-    const std::string motor_ctrl_ref = "/motor/ctrl_reference";
-    const std::string motor_applied_ref = "/motor/applied_reference";
+    const std::string motor_applied_ref = "/vehicle/applied_reference";
 
     const std::string vehicle_ctrl_state = "/vehicle/ctrl_state";
+    const std::string control_context = "/vehicle/ctrl_context";
+    const std::string position_context = "/vehicle/pos_context";
 
     const std::string command_halt = "/command/halt";
     const std::string command_move = "/command/move";

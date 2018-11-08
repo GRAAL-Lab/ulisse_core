@@ -45,7 +45,8 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         ulisse_msgs::topicnames::command_move, std::bind(&VehicleController::CommandMove_cb, this, _1));
 
     // Control Publishers
-    motorref_pub_ = nh_->create_publisher<ulisse_msgs::msg::MotorReference>(ulisse_msgs::topicnames::motor_ctrl_ref);
+    ctrlcxt_pub_ = nh_->create_publisher<ulisse_msgs::msg::ControlContext>(ulisse_msgs::topicnames::control_context);
+    poscxt_pub_ = nh_->create_publisher<ulisse_msgs::msg::PositionContext>(ulisse_msgs::topicnames::position_context);
     vehiclestate_pub_ = nh_->create_publisher<std_msgs::msg::String>(ulisse_msgs::topicnames::vehicle_ctrl_state);
 }
 
@@ -215,10 +216,32 @@ void VehicleController::Run()
 
 void VehicleController::PublishControl()
 {
-    ulisse_msgs::msg::MotorReference motorref_msg;
-    motorref_msg.left = ctrlCxt_->thrusterData.ctrlRef.left;
-    motorref_msg.right = ctrlCxt_->thrusterData.ctrlRef.right;
-    motorref_pub_->publish(motorref_msg);
+    ulisse_msgs::msg::PositionContext poscxt_msg;
+    poscxt_msg.currentpos.latitude = posCxt_->currentPos.latitude;
+    poscxt_msg.currentpos.longitude = posCxt_->currentPos.longitude;
+    poscxt_msg.currentgoal.latitude = posCxt_->currentGoal.latitude;
+    poscxt_msg.currentgoal.longitude = posCxt_->currentGoal.longitude;
+    poscxt_msg.currentheading = posCxt_->currentHeading;
+    poscxt_msg.goalheading = posCxt_->goalHeading;
+
+    ulisse_msgs::msg::ControlContext ctrlcxt_msg;
+    ctrlcxt_msg.pidposition.feedback = ctrlCxt_->pidPosition.GetFbk();
+    ctrlcxt_msg.pidposition.reference = ctrlCxt_->pidPosition.GetRef();
+    ctrlcxt_msg.pidposition.output = ctrlCxt_->pidPosition.GetOutput();
+
+    ctrlcxt_msg.pidheading.feedback = ctrlCxt_->pidHeading.GetFbk();
+    ctrlcxt_msg.pidheading.reference = ctrlCxt_->pidHeading.GetRef();
+    ctrlcxt_msg.pidheading.output = ctrlCxt_->pidHeading.GetOutput();
+
+    ctrlcxt_msg.pidspeed.feedback = ctrlCxt_->pidSpeed.GetFbk();
+    ctrlcxt_msg.pidspeed.reference = ctrlCxt_->pidSpeed.GetRef();
+    ctrlcxt_msg.pidspeed.output = ctrlCxt_->pidSpeed.GetOutput();
+
+    ctrlcxt_msg.mapout.left = ctrlCxt_->thrusterData.mapOut.left;
+    ctrlcxt_msg.mapout.right = ctrlCxt_->thrusterData.mapOut.right;
+    ctrlcxt_msg.ctrlref.left = ctrlCxt_->thrusterData.ctrlRef.left;
+    ctrlcxt_msg.ctrlref.right = ctrlCxt_->thrusterData.ctrlRef.right;
+    ctrlcxt_pub_->publish(ctrlcxt_msg);
 
     std_msgs::msg::String state;
     state.data = u_fsm_.GetCurrentStateName();

@@ -2,9 +2,15 @@
 #define ULISSE_CTRL_DATA_STRUCTS_HPP
 
 #include "ctrl_toolbox/DataStructs.h"
+#include "ctrl_toolbox/DigitalPID.h"
 #include "surface_vehicle_model/surfacevehiclemodel.hpp"
 
 namespace ulisse {
+
+enum class ControlMode : int {
+    ThrusterMapping,
+    DynamicModel
+};
 
 struct MotorReference {
     double left;
@@ -16,9 +22,10 @@ struct MotorReference {
     }
 };
 
-enum class ControlMode : int {
-    ThrusterMapping,
-    DynamicModel
+struct ThrusterControlData {
+    double desiredSpeed;
+    double desiredJog;
+    MotorReference mapOut, ctrlRef;
 };
 
 struct SlowDownOnTurnsData {
@@ -34,6 +41,28 @@ struct SlowDownOnTurnsData {
         , alphaMax(0.0)
     {
     }
+};
+
+struct PositionContext {
+    ctb::LatLong currentPos, currentGoal, nextGoal;
+    double currentHeading;
+    double goalDistance, goalHeading;
+    PositionContext()
+        : currentHeading(0.0)
+        , goalDistance(0.0)
+        , goalHeading(0.0)
+    {
+    }
+};
+
+struct ControlContext {
+    SurfaceVehicleModel ulisseModel_;
+
+    ctb::DigitalPID pidSpeed;
+    ctb::DigitalPID pidPosition;
+    ctb::DigitalPID pidHeading;
+
+    ThrusterControlData thrusterData;
 };
 
 struct ConfigurationData {
@@ -84,12 +113,6 @@ struct ConfigurationData {
     }
 };
 
-struct ThrusterControlData {
-    double desiredSpeed;
-    double desiredJog;
-
-    MotorReference mapOut, ctrlRef;
-};
 
 struct Spinner {
     Spinner(int frequency)
