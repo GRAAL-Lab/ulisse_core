@@ -3,4 +3,6 @@
 
 -
   ros1_package_name: 'ulisse_msgs'
+  ros1_service_name: 'RosbagCmd'
   ros2_package_name: 'ulisse_msgs'
+  ros2_service_name: 'RosbagRecord'

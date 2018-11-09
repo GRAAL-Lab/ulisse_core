@@ -20,6 +20,7 @@ find_package(fastrtps)
 # Add files in the tree of "Projects" view in QtCreator
 file(GLOB_RECURSE SOURCE_FILES
     "msg/*.msg"
+    "srv/*.srv"
     "*.xml"
     "launch/*.py"
 )
@@ -41,6 +42,8 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/GPS.msg"
   # Commands
   "msg/CommandMove.msg"
+  # Services
+  "srv/RosbagRecord.srv"
   DEPENDENCIES builtin_interfaces
 )
 
