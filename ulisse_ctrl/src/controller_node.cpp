@@ -1,10 +1,5 @@
 #include "rclcpp/rclcpp.hpp"
 
-#include "ulisse_msgs/msg/compass.hpp"
-#include "ulisse_msgs/msg/gps.hpp"
-#include "ulisse_msgs/msg/motor_reference.hpp"
-#include "ulisse_msgs/topicnames.hpp"
-
 #include <ulisse_ctrl/vehiclecontroller.hpp>
 
 #include "rml/RML.h"

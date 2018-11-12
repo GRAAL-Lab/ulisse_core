@@ -16,7 +16,6 @@
 #include "ulisse_msgs/msg/micro_loop_count.hpp"
 #include "ulisse_msgs/msg/position_context.hpp"
 
-#include "eigen3/Eigen/Dense"
 #include "rml/RML.h"
 
 #include <ulisse_ctrl/commands/commandhalt.hpp>

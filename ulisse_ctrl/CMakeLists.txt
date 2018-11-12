@@ -67,11 +67,18 @@ add_executable(controller_node src/controller_node.cpp)
 ament_target_dependencies(controller_node rclcpp std_msgs ulisse_msgs rml)
 target_link_libraries(controller_node rml ulisse_ctrl_lib)
 
+add_executable(monitor_node src/monitor_node.cpp)
+ament_target_dependencies(monitor_node rclcpp std_msgs ulisse_msgs rml)
+target_link_libraries(monitor_node rml ulisse_ctrl_lib)
+
+
+
 ## Install
 install(TARGETS
 #  publisher
 #  subscriber
   controller_node
+  monitor_node
   control_test
   DESTINATION lib/${PROJECT_NAME})
   
