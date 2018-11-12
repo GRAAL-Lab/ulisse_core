@@ -43,7 +43,7 @@ rosidl_generate_interfaces(ulisse_msgs
   # Commands
   "msg/CommandMove.msg"
   # Services
-  "srv/RosbagRecord.srv"
+  "srv/RosbagCmd.srv"
   DEPENDENCIES builtin_interfaces
 )
 

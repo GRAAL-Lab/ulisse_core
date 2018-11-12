@@ -54,7 +54,7 @@ set(ulisse_ctrl_lib_sources
 
 ## Libraries
 add_library(ulisse_ctrl_lib ${ulisse_ctrl_lib_sources})
-ament_target_dependencies(ulisse_ctrl_lib rclcpp std_msgs ulisse_msgs)
+ament_target_dependencies(ulisse_ctrl_lib rclcpp std_msgs ulisse_msgs surface_vehicle_model)
 target_link_libraries(ulisse_ctrl_lib ${surface_vehicle_model_LIBRARIES} Geographic rml fsm ctrl_toolbox)
 
 

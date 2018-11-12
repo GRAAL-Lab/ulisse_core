@@ -2,7 +2,5 @@
 # It is used with the ros1_bridge to allow for communcation between ROS 1 and ROS 2.
 
 -
-  ros1_package_name: 'ulisse_msgs'
-  ros1_service_name: 'RosbagCmd'
+  ros1_package_name: 'ulisse_msgs_ros1'
   ros2_package_name: 'ulisse_msgs'
-  ros2_service_name: 'RosbagRecord'
