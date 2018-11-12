@@ -7,5 +7,6 @@
 echo "Starting bridge..."
 source /opt/ros/melodic/setup.bash 
 source /opt/ros/bouncy/setup.bash 
+source ~/ros2_ws/install/local_setup.bash
 echo "- Bridge Running -"
 ros2 run ros1_bridge dynamic_bridge --bridge-all-topics
