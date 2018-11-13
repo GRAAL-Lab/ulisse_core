@@ -145,10 +145,10 @@ double VehicleSimulator::GetCurrentTimestamp() const
 void VehicleSimulator::SimulateSensors(double h_p, double h_s)
 {
     long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
-    int now_stamp_secs = static_cast<int>(now_nanosecs / (int)1E9);
-    unsigned int now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % (int)1E9);
+    auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / (int)1E9);
+    auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % (int)1E9);
 
-    double elapsed_secs = static_cast<double>(total_elapsed_.count()) / 1E9;
+    auto elapsed_secs = static_cast<double>(total_elapsed_.count()) / 1E9;
     timestamp_count_ = static_cast<uint32_t>(elapsed_secs * 200.0);
     stepssincepps_count_ = static_cast<uint32_t>(elapsed_secs * 200.0) % 200;
 

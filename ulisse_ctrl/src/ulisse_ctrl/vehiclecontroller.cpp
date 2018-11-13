@@ -194,6 +194,7 @@ void VehicleController::Run()
     u_fsm_.ExecuteState();
     u_fsm_.ProcessEventQueue();
     u_fsm_.SwitchState();
+
 }
 
 void VehicleController::PublishControl()

@@ -72,7 +72,6 @@ ament_target_dependencies(monitor_node rclcpp std_msgs ulisse_msgs rml)
 target_link_libraries(monitor_node rml ulisse_ctrl_lib)
 
 
-
 ## Install
 install(TARGETS
 #  publisher
