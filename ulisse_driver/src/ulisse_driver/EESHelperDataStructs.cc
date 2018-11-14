@@ -5,12 +5,12 @@
  *      Author: wonder
  */
 
-#include "EESHelperDataStructs.h"
+#include "ulisse_driver/EESHelperDataStructs.h"
 
 namespace ulisse {
 
 namespace ees {
-
+/*
 ReferencesContainer::ReferencesContainer() {
 	timestamp = 0;
 	Describe();
@@ -299,7 +299,7 @@ void Sw485StatusContainer::Describe() {
 	AddElement(ortos::xcom::DataType::ortos_uint64, 1, &d.rightSatellite.received);
 	Finalize();
 }
-
+*/
 std::string CommandTypeToString(uint16_t type) {
 	std:: string name;
 
@@ -368,7 +368,7 @@ std::string CommandAnswerToString(uint16_t answer) {
 
 	return name;
 }
-
+/*
 CommandContainer::CommandContainer() {
 	timestamp = 0;
 	commandType = (uint16_t)CommandType::undefined;
@@ -546,7 +546,7 @@ void CommandAnswerContainer::DescribeAndFinalize() {
 	BaseCommandAnswerContainer::Describe();
 	Finalize();
 }
-
+*/
 } //namespace ees
 
 } //namespace ulisse

@@ -17,7 +17,10 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
-#include "ulisse_driver/EESHelperDataStructs.h"
+
+#include "ulisse_msgs/msg/control_context.hpp"
+
+#include "ulisse_driver/EESHelper.h"
 #include "ulisse_driver/visibility.h"
 
 namespace ulisse {
@@ -26,13 +29,23 @@ namespace ees {
 
     class ThreadSender : public rclcpp::Node {
     public:
-        MINIMAL_COMPOSITION_PUBLIC ThreadSender(const ThreadInitData& thdata);
+        MINIMAL_COMPOSITION_PUBLIC ThreadSender();
 
     private:
         void on_timer();
+        void ControlContext_cb(const ulisse_msgs::msg::ControlContext::SharedPtr msg);
+
         size_t count_;
-        rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
+
+        EESData data_;
+        EESHelper eesHlp_;
+
+        rclcpp::AsyncParametersClient::SharedPtr par_client_;
+        //rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
+        rclcpp::Subscription<ulisse_msgs::msg::ControlContext>::SharedPtr ctrl_cxt_sub_;
         rclcpp::TimerBase::SharedPtr timer_;
+
+        ulisse_msgs::msg::ControlContext ctrl_cxt_msg_;
     };
 }
 }

@@ -9,7 +9,6 @@
 #include <string>
 #include <string.h>
 #include <sys/ioctl.h>
-#include <ortos/ortos.h>
 
 #include "ulisse_driver/CSerialHelper.h"
 
@@ -26,7 +25,7 @@ CSerialHelper::CSerialHelper(const char *serialPort, int baudRate) {
 	this->fd_ = open(serialPort, O_RDWR | O_SYNC);
 
 	if (this->fd_ == -1) {
-		ortos::DebugConsole::Write(ortos::LogLevel::error, "CSerialHelper", "Unable to open %s port!", serialPort);
+        printf("CSerialHelper, Unable to open %s port!\n", serialPort);
 		return;
 	}
 
@@ -62,7 +61,7 @@ CSerialHelper::CSerialHelper(const char *serialPort, int baudRate) {
 		cfsetospeed(&this->newtio_, B230400);
 		break;
 	default:
-		fprintf(stderr, "Unsupported baudrate ( %d ), defaulting to 9600", baudRate);
+        fprintf(stderr, "Unsupported baudrate ( %d ), defaulting to 9600\n", baudRate);
 		cfsetispeed(&this->newtio_, B9600);
 		cfsetospeed(&this->newtio_, B9600);
 		break;
@@ -120,13 +119,13 @@ CSerialHelper *CSerialHelper::getInstance(void) {
 //
 CSerialHelper *CSerialHelper::getInstance(const char *serialPort, int baudRate) {
 	if (instances_.count(serialPort) == 0) {
-		ortos::DebugConsole::Write(ortos::LogLevel::warning, "CSerialHelper::getInstance", "creating new instance %s %d", serialPort, baudRate);
+        printf("CSerialHelper::getInstance, creating new instance %s %d\n", serialPort, baudRate);
 
 		CSerialHelper* tmp = new CSerialHelper(serialPort, baudRate);
 		instances_[serialPort] = tmp;
 
 	} else {
-		ortos::DebugConsole::Write(ortos::LogLevel::warning, "CSerialHelper::getInstance", "instance %s %d found", serialPort, baudRate);
+        printf("CSerialHelper::getInstance, instance %s %d found\n", serialPort, baudRate);
 	}
 
 	return instances_[serialPort];
@@ -149,7 +148,7 @@ void CSerialHelper::ChangeBaudRate(uint32_t baudRate) {
 	pthread_mutex_lock(&critSecSem_);
 
 	if (this->fd_ == -1) {
-		ortos::DebugConsole::Write(ortos::LogLevel::error, "CSerialHelper::ChangeBaudRate", "Port is closed!");
+        printf("CSerialHelper::ChangeBaudRate, Port is closed!\n");
 		return;
 	}
 
@@ -185,7 +184,7 @@ void CSerialHelper::ChangeBaudRate(uint32_t baudRate) {
 		cfsetospeed(&this->newtio_, B230400);
 		break;
 	default:
-		ortos::DebugConsole::Write(ortos::LogLevel::warning, "CSerialHelper::ChangeBaudRate", "Unsupported baudrate ( %d ), defaulting to 9600", baudRate);
+        printf("CSerialHelper::ChangeBaudRate, Unsupported baudrate ( %d ), defaulting to 9600\n", baudRate);
 		cfsetispeed(&this->newtio_, B9600);
 		cfsetospeed(&this->newtio_, B9600);
 		break;
@@ -207,7 +206,7 @@ int CSerialHelper::Write(const char *buffer, int size) {
 			fsync(this->fd_);
 			sent += ret;
 		} else if (ret == -1) {
-			ortos::DebugConsole::Write(ortos::LogLevel::warning, "CSerialHelper::Write", "Error on serial writing");
+            printf("CSerialHelper::Write, Error on serial writing\n");
 
 			return SERIAL_ERROR;
 		}
@@ -239,7 +238,7 @@ int CSerialHelper::ReadBlocking(char *buffer, int size) {
 		if (ret != -1) {
 			readed += ret;
 		} else {
-			ortos::DebugConsole::Write(ortos::LogLevel::warning, "CSerialHelper::ReadBlocking", "Error on serial reading");
+            printf("CSerialHelper::ReadBlocking, Error on serial reading\n");
 			return SERIAL_ERROR;
 		}
 	}
@@ -287,10 +286,10 @@ int CSerialHelper::ReadNonblocking(char *buffer, int size, struct timeval timeou
 
 		/* See if there was an error */
 		if (ret < 0) {
-			ortos::DebugConsole::Write(ortos::LogLevel::warning, "CSerialHelper::ReadNonblocking", "Error on select call");
+            printf("CSerialHelper::ReadNonblocking, Error on select call\n");
 			return SERIAL_ERROR;
 		} else if (ret == 0) {
-			ortos::DebugConsole::Write(ortos::LogLevel::verbose, "CSerialHelper::ReadNonblocking", "Timeout");
+            printf("CSerialHelper::ReadNonblocking, Timeout\n");
 			return SERIAL_TIMEOUT;
 		}
 
@@ -298,7 +297,7 @@ int CSerialHelper::ReadNonblocking(char *buffer, int size, struct timeval timeou
 		if (ret != -1) {
 			readed += ret;
 		} else {
-			ortos::DebugConsole::Write(ortos::LogLevel::warning, "CSerialHelper::ReadNonblocking", "Error on nonblocking read");
+            printf("CSerialHelper::ReadNonblocking, Error on nonblocking read\n");
 			return SERIAL_ERROR;
 		}
 	}
@@ -412,7 +411,7 @@ int CSerialHelper::SetLine(int ctrlSignal, int level) {
 	int status;
 
 	if (ioctl(this->fd_, TIOCMGET, &status) == -1) {
-		ortos::DebugConsole::Write(ortos::LogLevel::error, "CSerialHelper::SetLine", "error on TIOCMGET");
+        printf("CSerialHelper::SetLine, error on TIOCMGET\n");
 		return SERIAL_ERROR;
 	}
 
@@ -421,7 +420,7 @@ int CSerialHelper::SetLine(int ctrlSignal, int level) {
 	else
 		status &= ~ctrlSignal;
 	if (ioctl(this->fd_, TIOCMSET, &status) == -1) {
-		ortos::DebugConsole::Write(ortos::LogLevel::error, "CSerialHelper::SetLine", "error on TIOCMSET");
+        printf("CSerialHelper::SetLine, error on TIOCMSET\n");
 		return SERIAL_ERROR;
 	}
 

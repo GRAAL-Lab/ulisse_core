@@ -10,7 +10,6 @@
 #include "ulisse_msgs/msg/magnetometer.hpp"
 #include "ulisse_msgs/msg/micro_loop_count.hpp"
 #include "ulisse_msgs/msg/motor_reference.hpp"
-#include "ulisse_msgs/topicnames.hpp"
 
 #include "ulisse_driver/EESHelper.h"
 #include "ulisse_driver/visibility.h"
@@ -21,7 +20,7 @@ namespace ees {
 
     class ThreadReceiver : public rclcpp::Node {
     public:
-        MINIMAL_COMPOSITION_PUBLIC ThreadReceiver(const ThreadInitData& thdata);
+        MINIMAL_COMPOSITION_PUBLIC ThreadReceiver();
 
     private:
         void on_timer();
@@ -30,13 +29,13 @@ namespace ees {
         EESData eesData_;
         std::chrono::system_clock::time_point t_now_;
 
-        rclcpp::SyncParametersClient::SharedPtr par_client_;
+        rclcpp::AsyncParametersClient::SharedPtr par_client_;
         rclcpp::TimerBase::SharedPtr timer_;
 
-        ulisse_msgs::msg::MicroLoopCount micro_loop_count_msg_;
-        ulisse_msgs::msg::GPS gpsdata_msg_;
-        ulisse_msgs::msg::Compass compassdata_msg_;
-        ulisse_msgs::msg::IMUData imudata_msg_;
+        ulisse_msgs::msg::MicroLoopCount microloopcount_msg_;
+        ulisse_msgs::msg::GPS gps_msg_;
+        ulisse_msgs::msg::Compass compass_msg_;
+        ulisse_msgs::msg::IMUData imu_msg_;
         ulisse_msgs::msg::AmbientSensors ambsens_msg_;
         ulisse_msgs::msg::Magnetometer magneto_msg_;
         ulisse_msgs::msg::MotorReference applied_motorref_msg_;
@@ -44,7 +43,7 @@ namespace ees {
         rclcpp::Publisher<ulisse_msgs::msg::MicroLoopCount>::SharedPtr micro_loop_count_pub_;
         rclcpp::Publisher<ulisse_msgs::msg::GPS>::SharedPtr gpsdata_pub_;
         rclcpp::Publisher<ulisse_msgs::msg::Compass>::SharedPtr compass_pub_;
-        rclcpp::Publisher<ulisse_msgs::msg::IMUData>::SharedPtr imudata_pub_;
+        rclcpp::Publisher<ulisse_msgs::msg::IMUData>::SharedPtr imu_pub_;
         rclcpp::Publisher<ulisse_msgs::msg::AmbientSensors>::SharedPtr ambsens_pub_;
         rclcpp::Publisher<ulisse_msgs::msg::Magnetometer>::SharedPtr magneto_pub_;
         rclcpp::Publisher<ulisse_msgs::msg::MotorReference>::SharedPtr applied_motorref_pub_;

@@ -37,7 +37,7 @@ set(ulisse_driver_lib_sources
 )
 
 ## Libraries
-add_library(ulisse_driver_lib ${ulisse_driver_lib_sources})
+add_library(ulisse_driver_lib SHARED ${ulisse_driver_lib_sources})
 ament_target_dependencies(ulisse_driver_lib rclcpp std_msgs ulisse_msgs)
 target_link_libraries(ulisse_driver_lib Geographic rml ctrl_toolbox)
 
@@ -47,16 +47,24 @@ add_library(driver_threads SHARED
 target_compile_definitions(driver_threads
   PRIVATE "MINIMAL_COMPOSITION_DLL")
 ament_target_dependencies(driver_threads rclcpp std_msgs class_loader)
+target_link_libraries(driver_threads ulisse_driver_lib)
 
 ## Executables
 add_executable(driver_node src/driver_node.cpp)
 ament_target_dependencies(driver_node rclcpp std_msgs ulisse_msgs rml)
-target_link_libraries(driver_node rml ulisse_driver_lib)
+target_link_libraries(driver_node rml ulisse_driver_lib driver_threads)
 
+install(TARGETS
+  driver_threads
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
 
-#install(TARGETS
-#  publisher
-#  DESTINATION lib/${PROJECT_NAME})
+install(TARGETS
+  driver_node
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 install(DIRECTORY
   launch

@@ -21,9 +21,8 @@
 #define LOG_LEVEL_ERROR 2
 #define LOG_LEVEL LOG_LEVEL_ERROR
 
-static rclcpp::Node::SharedPtr nh = nullptr;
-
 using namespace ulisse::ees;
+using namespace std::chrono_literals;
 
 int32_t ReloadConfigFile(configData& configOut_, std::string configFile);
 void* ThreadSenderFunction(void* dataIn);
@@ -31,48 +30,40 @@ void* ThreadSenderFunction(void* dataIn);
 int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
-    nh = rclcpp::Node::make_shared("driver_node");
+    auto nh = rclcpp::Node::make_shared("driver_node");
 
-    std::string config_file = "conf/ulisse_driver.yaml";
+    //std::string config_file = "conf/ulisse_driver.yaml";
+    std::string serialDevice = "/dev/ttyS0";
+    int baudRate = 115200;
+    bool debugBytes = false;
+    bool debugIncomingValidMessageType = false;
+    bool debugFailedCrc = false;
 
-    ThreadInitData threadData;
-    threadData.serialDevice = "/dev/ttyS0";
-    threadData.baudRate = 115200;
-    threadData.configFile = config_file;
+    auto par_client_ = std::make_shared<rclcpp::SyncParametersClient>(nh);
 
-    for (int i = 1; i < argc; i++) {
-        if ((strcmp(argv[i], "--cfg") == 0) && (i + 1 < argc)) {
-            threadData.configFile.assign(argv[i + 1]);
+    while (!par_client_->wait_for_service(1ms)) {
+        if (!rclcpp::ok()) {
+            RCLCPP_ERROR(nh->get_logger(), "Interrupted while waiting for the service. Exiting.")
+            exit(0);
         }
-
-        if ((strcmp(argv[i], "--serial") == 0) && (i + 1 < argc)) {
-            threadData.serialDevice.assign(argv[i + 1]);
-        }
-
-        if ((strcmp(argv[i], "--baudrate") == 0) && (i + 1 < argc)) {
-            threadData.baudRate = (int)strtol(argv[i + 1], NULL, 10);
-        }
-
-        if ((strcmp(argv[i], "--help") == 0) || (strcmp(argv[i], "-h") == 0)) {
-            RCLCPP_INFO(nh->get_logger(), "Usage: %s [options]", argv[0]);
-            RCLCPP_INFO(nh->get_logger(), "Options");
-            RCLCPP_INFO(nh->get_logger(), "--serial device\t: 'device' is the serial port (default %s)",
-                threadData.serialDevice.c_str());
-            RCLCPP_INFO(nh->get_logger(),
-                "--baudrate baudrate\t: 'baudrate' is the baudrate of serial connection (default %d)",
-                threadData.baudRate);
-            RCLCPP_INFO(nh->get_logger(), "--cfg file\t: 'file' is the config file (default %s)",
-                config_file.c_str());
-            return 0;
-        }
+        RCLCPP_INFO(nh->get_logger(), "service not available, waiting again...")
     }
 
-    ulisse::CSerialHelper::getInstance(threadData.serialDevice.c_str(), threadData.baudRate);
+    serialDevice = par_client_->get_parameter("SerialDevice", std::string(""));
+    baudRate = par_client_->get_parameter("BaudRate", 115200);
 
+    debugBytes = par_client_->get_parameter("EESHelper.DebugBytes", false);
+    debugIncomingValidMessageType = par_client_->get_parameter("EESHelper.DebugIncomingValidMessageType", false);
+    debugFailedCrc = par_client_->get_parameter("EESHelper.DebugFailedCrc", false);
+
+
+    ulisse::CSerialHelper::getInstance(serialDevice.c_str(), baudRate);
+
+    std::cout << "CIAONE MAIN" << std::endl;
     rclcpp::executors::SingleThreadedExecutor exec;
-    auto thread_receiver = std::make_shared<ThreadReceiver>(threadData);
+    auto thread_receiver = std::make_shared<ThreadReceiver>();
     RCLCPP_INFO(nh->get_logger(), "EES receiver thread created");
-    auto thread_sender = std::make_shared<ThreadSender>(threadData);
+    auto thread_sender = std::make_shared<ThreadSender>();
     RCLCPP_INFO(nh->get_logger(), "EES sender thread created");
     exec.add_node(thread_receiver);
     exec.add_node(thread_sender);
@@ -82,64 +73,37 @@ int main(int argc, char* argv[])
     return 0;
 }
 
+/*
 int32_t ReloadConfigFile(configData& configOut_, std::string configFile)
 {
     libconfig::Config confParser;
 
-    try {
-        confParser.readFile(configFile.c_str());
-    } catch (const libconfig::FileIOException& fioex) {
-#if LOG_LEVEL >= LOG_LEVEL_ERROR
-        RCLCPP_ERROR(nh->get_logger(), "I/O error reading file. %s", configFile.c_str());
-#endif
-    } catch (libconfig::ParseException& pex) {
-#if LOG_LEVEL >= LOG_LEVEL_ERROR
-        RCLCPP_ERROR(nh->get_logger(), "Parse exception when reading %s", configFile.c_str());
-        RCLCPP_ERROR(nh->get_logger(), "Line: %d error: %s", pex.getLine(), pex.getError());
-#endif
-    }
-
-    try {
-        configOut_.hbCompass0 = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbCompass0");
-        configOut_.hbCompassMax = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbCompassMax");
-        configOut_.hbMagnetometer0 = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbMagnetometer0");
-        configOut_.hbMagnetometerMax = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbMagnetometerMax");
-        configOut_.hbPacketSensors0 = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbPacketSensors0");
-        configOut_.hbPacketSensorsMax = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbPacketSensorsMax");
-        configOut_.hbPacketStatus0 = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbPacketStatus0");
-        configOut_.hbPacketStatusMax = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbPacketStatusMax");
-        configOut_.hbPacketMotors0 = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbPacketMotors0");
-        configOut_.hbPacketMotorsMax = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbPacketMotorsMax");
-        configOut_.hbPacketBattery0 = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbPacketBattery0");
-        configOut_.hbPacketBatteryMax = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbPacketBatteryMax");
-        configOut_.timeoutAccelerometer = confParser.lookup("EESHelper.LowLevelConfig.TimeoutAccelerometer");
-        configOut_.timeoutCompass = confParser.lookup("EESHelper.LowLevelConfig.TimeoutCompass");
-        configOut_.timeoutMagnetometer = confParser.lookup("EESHelper.LowLevelConfig.TimeoutMagnetometer");
-        configOut_.pwmUpMin = confParser.lookup("EESHelper.LowLevelConfig.PwmUpMin");
-        configOut_.pwmUpMax = confParser.lookup("EESHelper.LowLevelConfig.PwmUpMax");
-        configOut_.pwmPeriodMin = confParser.lookup("EESHelper.LowLevelConfig.PwmPeriodMin");
-        configOut_.pwmPeriodMax = confParser.lookup("EESHelper.LowLevelConfig.PwmPeriodMax");
-        configOut_.pwmTimeThreshold = confParser.lookup("EESHelper.LowLevelConfig.PwmTimeThreshold");
-        configOut_.pwmZeroThreshold = confParser.lookup("EESHelper.LowLevelConfig.PwmZeroThreshold");
-        configOut_.deadzoneTime = confParser.lookup("EESHelper.LowLevelConfig.DeadzoneTime");
-        configOut_.thrusterSaturation = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.ThrusterSaturation");
-    } catch (libconfig::SettingException& sex) {
-#if LOG_LEVEL >= LOG_LEVEL_ERROR
-        RCLCPP_ERROR(nh->get_logger(), "Setting Exception: path = %s, what = %s", sex.getPath(), sex.what());
-#endif
-    } catch (libconfig::FileIOException& fioex) {
-#if LOG_LEVEL >= LOG_LEVEL_ERROR
-        RCLCPP_ERROR(nh->get_logger(), "FileIO Exception");
-#endif
-    } catch (libconfig::ConfigException& cex) {
-#if LOG_LEVEL >= LOG_LEVEL_ERROR
-        RCLCPP_ERROR(nh->get_logger(), "Config Exception: what = %s", cex.what());
-#endif
-    }
+    configOut_.hbCompass0 = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbCompass0");
+    configOut_.hbCompassMax = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbCompassMax");
+    configOut_.hbMagnetometer0 = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbMagnetometer0");
+    configOut_.hbMagnetometerMax = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbMagnetometerMax");
+    configOut_.hbPacketSensors0 = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbPacketSensors0");
+    configOut_.hbPacketSensorsMax = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbPacketSensorsMax");
+    configOut_.hbPacketStatus0 = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbPacketStatus0");
+    configOut_.hbPacketStatusMax = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbPacketStatusMax");
+    configOut_.hbPacketMotors0 = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbPacketMotors0");
+    configOut_.hbPacketMotorsMax = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbPacketMotorsMax");
+    configOut_.hbPacketBattery0 = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbPacketBattery0");
+    configOut_.hbPacketBatteryMax = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbPacketBatteryMax");
+    configOut_.timeoutAccelerometer = confParser.lookup("EESHelper.LowLevelConfig.TimeoutAccelerometer");
+    configOut_.timeoutCompass = confParser.lookup("EESHelper.LowLevelConfig.TimeoutCompass");
+    configOut_.timeoutMagnetometer = confParser.lookup("EESHelper.LowLevelConfig.TimeoutMagnetometer");
+    configOut_.pwmUpMin = confParser.lookup("EESHelper.LowLevelConfig.PwmUpMin");
+    configOut_.pwmUpMax = confParser.lookup("EESHelper.LowLevelConfig.PwmUpMax");
+    configOut_.pwmPeriodMin = confParser.lookup("EESHelper.LowLevelConfig.PwmPeriodMin");
+    configOut_.pwmPeriodMax = confParser.lookup("EESHelper.LowLevelConfig.PwmPeriodMax");
+    configOut_.pwmTimeThreshold = confParser.lookup("EESHelper.LowLevelConfig.PwmTimeThreshold");
+    configOut_.pwmZeroThreshold = confParser.lookup("EESHelper.LowLevelConfig.PwmZeroThreshold");
+    configOut_.deadzoneTime = confParser.lookup("EESHelper.LowLevelConfig.DeadzoneTime");
+    configOut_.thrusterSaturation = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.ThrusterSaturation");
 
     return ORTOS_RV_OK;
 }
-
 
 void* ThreadSenderFunction(void* dataIn)
 {
@@ -150,46 +114,7 @@ void* ThreadSenderFunction(void* dataIn)
     libconfig::Config confParser;
     ThreadInitData* init = (ThreadInitData*)dataIn;
 
-    try {
-        confParser.readFile(init->configFile.c_str());
-    } catch (const libconfig::FileIOException& fioex) {
-#if LOG_LEVEL >= LOG_LEVEL_ERROR
-        RCLCPP_ERROR(nh->get_logger(), "I/O error reading file. %s", init->configFile.c_str());
-#endif
-    } catch (libconfig::ParseException& pex) {
-#if LOG_LEVEL >= LOG_LEVEL_ERROR
-        RCLCPP_ERROR(nh->get_logger(), "Parse exception when reading %s", init->configFile.c_str());
-        RCLCPP_ERROR(nh->get_logger(), "Line: %d error: %s", pex.getLine(), pex.getError());
-#endif
-    }
-
-    try {
-        debugBytes = confParser.lookup("EESHelper.DebugBytes");
-    } catch (libconfig::SettingException& sex) {
-#if LOG_LEVEL >= LOG_LEVEL_ERROR
-        RCLCPP_ERROR(nh->get_logger(), "Setting Exception: path = %s, what = %s", sex.getPath(), sex.what());
-#endif
-    } catch (libconfig::FileIOException& fioex) {
-#if LOG_LEVEL >= LOG_LEVEL_ERROR
-        RCLCPP_ERROR(nh->get_logger(), "FileIO Exception");
-#endif
-    } catch (libconfig::ConfigException& cex) {
-#if LOG_LEVEL >= LOG_LEVEL_ERROR
-        RCLCPP_ERROR(nh->get_logger(), "Config Exception: what = %s", cex.what());
-#endif
-    }
-
-    ortos::Task* task = ortos::Task::GetInstance();
-    task->SetType(ortos::TaskType::user);
-    task->SetSampleTime(ortos::constants::oneMillisecond * 100);
-    ret = task->CreateSync(om2ctrl::tasknames::EESHelperSenderThreadName);
-    ortos::DebugConsole::Write(ortos::LogLevel::info, "thread", "Thread created!");
-    if (ret != ORTOS_RV_OK) {
-        ortos::DebugConsole::Write(ortos::LogLevel::error, "thread", "Error creating the thread!");
-        task->Exit();
-    }
-
-    ortos::xcom::XCOMInterface* xcom = ortos::xcom::XCOMInterface::GetInstance();
+    debugBytes = confParser.lookup("EESHelper.DebugBytes");
 
     EESHelper eesHlp;
 
@@ -330,3 +255,4 @@ void* ThreadSenderFunction(void* dataIn)
     ortos::Thread::Exit();
     return NULL;
 }
+*/

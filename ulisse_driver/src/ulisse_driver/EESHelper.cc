@@ -57,7 +57,7 @@ namespace ees {
                 int ret = serial_->ReadBlocking(&byte, 1);
 
                 if (ret == 1) {
-                    ReturnValue retval = ParseByte(byte);
+                    ReturnValue retval = ParseByte(static_cast<uint8_t>(byte));
 
                     if (retval == ReturnValue::complete) {
                         messageId = GetLastMessage();
@@ -74,14 +74,14 @@ namespace ees {
                             data.messageType = messageId;
                             data.ack = tmp;
                             return ReturnValue::ok;
-                        } break;
+                        } ;
                         case MessageType::status: {
                             statusData tmp;
                             GetStatus(tmp);
                             data.messageType = messageId;
                             data.status = tmp;
                             return ReturnValue::ok;
-                        } break;
+                        } ;
                         case MessageType::sensor: {
                             sensorData tmp;
                             GetSensors(tmp);
@@ -89,42 +89,42 @@ namespace ees {
                             data.messageType = messageId;
                             data.sensors = tmp;
                             return ReturnValue::ok;
-                        } break;
+                        } ;
                         case MessageType::version: {
                             versionData tmp;
                             GetVersion(tmp);
                             data.messageType = messageId;
                             data.version = tmp;
                             return ReturnValue::ok;
-                        } break;
+                        } ;
                         case MessageType::set_config: {
                             configData tmp;
                             GetConfig(tmp);
                             data.messageType = messageId;
                             data.config = tmp;
                             return ReturnValue::ok;
-                        } break;
+                        } ;
                         case MessageType::motors: {
                             motorsData tmp;
                             GetMotors(tmp);
                             data.messageType = messageId;
                             data.motors = tmp;
                             return ReturnValue::ok;
-                        } break;
+                        } ;
                         case MessageType::battery: {
                             batteryData tmp;
                             GetBattery(tmp);
                             data.messageType = messageId;
                             data.battery = tmp;
                             return ReturnValue::ok;
-                        } break;
+                        } ;
                         case MessageType::sw485Status: {
                             sw485StatusData tmp;
                             GetSw485Status(tmp);
                             data.messageType = messageId;
                             data.sw485Status = tmp;
                             return ReturnValue::ok;
-                        } break;
+                        } ;
                         default:
                             //ortos::DebugConsole::Write(ortos::LogLevel::warning, "EESHelper::CollectValidMessage", "unsupported message id %d", messageId);
                             break;
@@ -289,7 +289,7 @@ namespace ees {
                 break;
             }
         } //no break is ok
-        case ParseState::checksum: {
+        [[clang::fallthrough]]; case ParseState::checksum: {
             // parse the two bytes checksum
             if (checksumCount_ == 0) {
                 uint8_t* ptr = (uint8_t*)(&recvChecksum_);
@@ -388,7 +388,6 @@ namespace ees {
         default:
             //ortos::DebugConsole::Write(ortos::LogLevel::info, "EESHelper::CreateEESMessage", "type unknown (%d)", data.messageType);
             return ReturnValue::fail;
-            break;
         }
         return ReturnValue::ok;
     }
