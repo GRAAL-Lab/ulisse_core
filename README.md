@@ -28,7 +28,7 @@ Be sure to start from a clean workspace, with no _log_, _install_ or _build_ fol
  colcon build --symlink-install --packages-skip ros1_bridge
  sourceros1 && sourceros2
  colcon build --symlink-install --packages-select ros1_bridge --cmake-force-configure
- ```
+```
 
 ## Usage
 
