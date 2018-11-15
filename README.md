@@ -35,6 +35,22 @@ colcon build --symlink-install --packages-select ros1_bridge --cmake-force-confi
 
 First of all you need to export the ROS1 master URI for all your bashes, so it can be convenient to add this line to your **~/.bashrc**: `export ROS_MASTER_URI=http://localhost:11311/`.
 
+### Run the architecture
+The following launch files will run all the necessary nodes (all with `sourceros2`):
+```
+#!bash
+# Shell A (driver)
+ros2 launch ulisse_driver launchDriver.py  # real case
+-or-
+ros2 launch ulisse_sim launchSim.py        # simulating
+
+# Shell B (controller)
+ros2 launch ulisse_ctrl launchControl.py
+
+# Shell C (data monitor)
+ros2 run ulisse_ctrl monitor_node
+```
+
 ### Run the Ros1/Ros2 bridge and Rosbag recorder
 Launch the ROS1 rosbag recorder (repository https://bitbucket.org/isme_robotics/ulisse_rosbag_ros1, in which you will also find the BAG to CSV converter):
 
