@@ -13,6 +13,7 @@ Ulisse catamaran controller revamped with ROS2.
 
 ## Subpackages
 
+- **surface_vehicle_model**: Dynamic model of a surface vehicle with two thrusters.
 - **ulisse_msgs**: Interface and services messages package with headers for topic names and common variables.
 - **ulisse_core**: The catamaran controller.
 - **ulisse_driver**: The low level driver that communicate.
@@ -32,7 +33,7 @@ Be sure to start from a clean workspace, with no _log_, _install_ or _build_ fol
 First of all you need to export the ROS1 master URI for all your bashes, so it can be convenient to add this line to your **~/.bashrc**: `export ROS_MASTER_URI=http://localhost:11311/`.
 
 ### Run the Ros1/Ros2 bridge and Rosbag recorder
-Launch the ROS1 rosbag recorder (repository https://bitbucket.org/isme_robotics/ulisse_rosbag_ros1):
+Launch the ROS1 rosbag recorder (repository https://bitbucket.org/isme_robotics/ulisse_rosbag_ros1, in which you will also find the BAG to CSV converter):
 
     # Shell A
     sourceros1
@@ -70,6 +71,6 @@ Run the following commands in separate ROS2 sourced terminals (`sourceros2` comm
     cat ~/graal_ws/serialS0.txt > /dev/pts/6
 
 
-### Misc
+## Misc
 
 For additional info look [info.txt](./info.txt).
