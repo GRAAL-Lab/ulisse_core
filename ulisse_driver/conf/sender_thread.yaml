@@ -1,7 +1,0 @@
-sender_thread:
-    ros__parameters:
-        SerialDevice: "/dev/ttyS0"
-        BaudRate: 115200
-        DebugBytes: false
-        DebugIncomingValidMessageType: false
-        DebugFailedCrc: true

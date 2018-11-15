@@ -54,17 +54,18 @@ namespace ees {
             RCLCPP_ERROR(this->get_logger(), "get_parameters service call failed. Exiting tutorial.")
             exit(EXIT_FAILURE);
         }
-        std::cout << "**Sender Parameters**\n";
+        std::cout << "=====    Sender Parameters    =====\n";
         for (auto& parameter : parameters.get()) {
             std::cout << parameter.get_name() << "(" << parameter.get_type_name() << "): " << parameter.value_to_string() << std::endl;
         }
+
+        std::cout << "====================================" << std::endl;
 
         this->get_parameter_or("SerialDevice", serialDevice, std::string());
         this->get_parameter_or("BaudRate", baudRate, 0);
         this->get_parameter_or("EESHelper.DebugBytes", debugBytes, false);
         this->get_parameter_or("EESHelper.DebugIncomingValidMessageType", debugIncomingValidMessageType, false);
         this->get_parameter_or("EESHelper.DebugFailedCrc", debugFailedCrc, false);
-
 
         /*om2ctrl::utils::CommandHelper commandHelper;
         CommandContainer commandsIn;
@@ -96,8 +97,7 @@ namespace ees {
 
         ctrl_cxt_sub_ = create_subscription<ulisse_msgs::msg::ControlContext>(
             ulisse_msgs::topicnames::control_context, std::bind(&ThreadSender::ControlContext_cb, this, _1));
-        timer_ = create_wall_timer(
-            50ms, std::bind(&ThreadSender::on_timer, this));
+        timer_ = create_wall_timer(50ms, std::bind(&ThreadSender::on_timer, this));
     }
 
     void ThreadSender::on_timer()

@@ -32,12 +32,8 @@ int main(int argc, char* argv[])
     rclcpp::init(argc, argv);
     auto nh = rclcpp::Node::make_shared("driver_node");
 
-    //std::string config_file = "conf/ulisse_driver.yaml";
     std::string serialDevice = "/dev/ttyS0";
     int baudRate = 115200;
-    bool debugBytes = false;
-    bool debugIncomingValidMessageType = false;
-    bool debugFailedCrc = false;
 
     auto par_client_ = std::make_shared<rclcpp::SyncParametersClient>(nh);
 
@@ -52,14 +48,30 @@ int main(int argc, char* argv[])
     serialDevice = par_client_->get_parameter("SerialDevice", std::string(""));
     baudRate = par_client_->get_parameter("BaudRate", 115200);
 
-    debugBytes = par_client_->get_parameter("EESHelper.DebugBytes", false);
-    debugIncomingValidMessageType = par_client_->get_parameter("EESHelper.DebugIncomingValidMessageType", false);
-    debugFailedCrc = par_client_->get_parameter("EESHelper.DebugFailedCrc", false);
-
-
     ulisse::CSerialHelper::getInstance(serialDevice.c_str(), baudRate);
 
-    std::cout << "CIAONE MAIN" << std::endl;
+    /* rclcpp::executors::SingleThreadedExecutor executor2;
+
+      auto callback2 = [&counter2, &counter_goal, &executor2]() {
+          if (counter2 == counter_goal) {
+            executor2.cancel();
+            return;
+          }
+          ++counter2;
+        };
+      auto node2 = rclcpp::Node::make_shared("multiple_executors_2");
+      auto timer2 = node2->create_wall_timer(1ms, callback2);
+      executor2.add_node(node2);
+
+      auto spin_executor2 = [&executor2]() {
+          executor2.spin();
+        };
+
+      // Launch both executors
+    std::thread execution_thread(spin_executor2);*/
+
+
+
     rclcpp::executors::SingleThreadedExecutor exec;
     auto thread_receiver = std::make_shared<ThreadReceiver>();
     RCLCPP_INFO(nh->get_logger(), "EES receiver thread created");

@@ -1,0 +1,82 @@
+--- ntpshmmon
+per verificare che gpsd stia usando il pps
+
+--- ntpq -p
+lista i server ntp e serve per verificare se si stia usando il pps
+
+--- gpsd
+-client testuali: cgps, gpsmon
+-client grafici: xgps
+-gpsmon /dev/ttyUSB0
+anche senza gpsd, analizza i mex NMEA che arrivano su ttyUSB0 e grafica cose
+-gpsd -N -D3 -F /var/run/gpsd.sock /dev/ttyUSB0
+lancia gpsd non demonizzato sul device specificato e si possono vedere info di debug (-D [0-8] (debug and level))
+
+
+http://www.catb.org/gpsd/troubleshooting.html
+https://www.bentasker.co.uk/blog/general/254-ntpd-refusing-to-accept-time-from-gpsd
+
+-oemstar
+COM COM1 115200 N 8 1 N OFF (setta la velocita' a 115200)
+UNLOGALL COM1 TRUE (rasa tutti i log settati)
+LOG COM1 GPRMC ONTIME 0.1
+LOG COM1 GPGSA ONTIME 0.1
+LOG COM1 GPGSV ONTIME 0.1
+
+LOG COM1 SATVISA ONTIME 60
+LOG COM1 SATVIS2A ONCHANGED
+LOG COM1 PSRDOPA ONCHANGED
+
+---ser2net
+attualmente le tty sono mappate su:
+telnet
+ttyS0 115200 : localhost:2000
+ttyS1 115200 : localhost:2001
+ttyS1 9600 : localhost:2002
+
+raw
+ttyS1 115200 : localhost:2003
+ttyS1 9600 : localhost:2004
+
+
+--- backup
+stacca hd, mettilo sul tuo pc, e se e' /dev/sdb dai il seguente comando
+sudo dd if=/dev/sdb | VBoxManage convertfromraw stdin ./moses.vdi 5368709120 --format VDI
+
+
+
+-creo file per immagine
+dd if=/dev/zero of=/mnt/mosesImage-20170228 bs=1M count=5120
+
+-creo file system
+/sbin/mke2fs -F -j /mnt/mosesImage-20170228
+
+-monto l'immagine
+mkdir /mnt/iso
+mount -o loop /mnt/mosesImage-20170228 /mnt/iso
+rsync -aAXv --exclude={"/dev/*","/proc/*","/sys/*","/tmp/*","/run/*","/mnt/*","/media/*","/lost+found"} / /mnt/iso/
+
+--- script di avvio
+screen -S ORTOS -dm bash -c 'ortoscore start; exec sh'
+fa partire detachato uno screen di nome ORTOS in cui lancia lo script ortoscore start
+l'exec sh previene che lo screen si chiuda al termine dello script
+
+screen -r ORTOS
+fa il reattach allo screen con il nome ORTOS
+
+da dentro screen:
+Ctrl+a d
+fa il detach dalla sessione corrente
+
+Ctrl+a [
+manda screen in copy mode (si puo' scrollare indietro)
+
+Ctrl+a \
+Kill screen
+
+
+
+
+
+
+

@@ -238,7 +238,7 @@ int CSerialHelper::ReadBlocking(char *buffer, int size) {
 		if (ret != -1) {
 			readed += ret;
 		} else {
-            printf("CSerialHelper::ReadBlocking, Error on serial reading\n");
+            printf("CSerialHelper::ReadBlocking, Error on serial reading. Error: %s\n", strerror(errno));
 			return SERIAL_ERROR;
 		}
 	}

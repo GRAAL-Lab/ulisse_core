@@ -11,25 +11,14 @@ Ulisse catamaran controller revamped with ROS2.
 - **libgps**: `sudo apt install libgps-dev`
 
 
-### ulisse_msgs
+## Subpackages
 
-Interface messages package.
+- **ulisse_msgs**: Interface and services messages package with headers for topic names and common variables.
+- **ulisse_core**: The catamaran controller.
+- **ulisse_driver**: The low level driver that communicate.
+- **ulisse_sim**: The dynamic simulator, which makes use of `surface_vehicle_model` library.
 
-
-### ulisse_core
-
-The actual controller.
-
-
-### ulisse_driver
-
-The low level driver.
-
-### ulisse_sim
-
-The simulator.
-
-## BUILD
+## Build
 
 Be sure to start from a clean workspace, with no _log_, _install_ or _build_ folders. First install the needed dependencies, then to build the package and the ros_bridge (which has to be downloaded from the ros official repo https://github.com/ros2/ros1_bridge) use the following commands:
 
@@ -38,7 +27,7 @@ Be sure to start from a clean workspace, with no _log_, _install_ or _build_ fol
      sourceros1 && sourceros2
      colcon build --symlink-install --packages-select ros1_bridge --cmake-force-configure
 
-## USAGE
+## Usage
 
 First of all you need to export the ROS1 master URI for all your bashes, so it can be convenient to add this line to your **~/.bashrc**: `export ROS_MASTER_URI=http://localhost:11311/`.
 
@@ -66,3 +55,21 @@ Now using a service call in the `/record_bag` topic you can start and stop the l
     sourceros2
     ros2 service call /record_bag ulisse_msgs/RosbagCmd 'cmd: start'
     ros2 service call /record_bag ulisse_msgs/RosbagCmd 'cmd: stop'
+
+### Testing the serial
+
+Run the following commands in separate ROS2 sourced terminals (`sourceros2` command):
+
+    # Shell A (setup serial)
+    socat -d -d pty,raw,echo=0 pty,raw,echo=0
+
+    # Shell B (launch driver)
+    ros2 launch ulisse_driver launchDriver.py
+
+    # Shell C (echo on any topic of interest)
+    cat ~/graal_ws/serialS0.txt > /dev/pts/6
+
+
+### Misc
+
+For additional info look [info.txt](./info.txt).

@@ -23,7 +23,7 @@ namespace ees {
         MINIMAL_COMPOSITION_PUBLIC ThreadReceiver();
 
     private:
-        void on_timer();
+        void ReadLoop();
 
         EESHelper eesHlp_;
         EESData eesData_;

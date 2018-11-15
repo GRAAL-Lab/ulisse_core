@@ -1,6 +1,6 @@
 driver_node:
     ros__parameters:
-        SerialDevice: "/dev/ttyS0"
+        SerialDevice: "/dev/pts/5"
         BaudRate: 115200
         EESHelper:
             DebugBytes: false
@@ -9,7 +9,7 @@ driver_node:
 
 thread_receiver:
     ros__parameters:
-        SerialDevice: "/dev/ttyS0"
+        SerialDevice: "/dev/pts/5"
         BaudRate: 115200
         EESHelper:
             DebugBytes: false
@@ -18,7 +18,7 @@ thread_receiver:
 
 thread_sender:
     ros__parameters:
-        SerialDevice: "/dev/ttyS0"
+        SerialDevice: "/dev/pts/5"
         BaudRate: 115200
         EESHelper:
             DebugBytes: false
