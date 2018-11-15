@@ -50,6 +50,7 @@ int main(int argc, char* argv[])
 
     ulisse::VehicleSimulator myVehSim(node);
     myVehSim.SetParameters(dt * 5.0, myTMP);
+    //myVehSim.SetRealtime(false);
 
     std::stringstream ss;
     // Get a few of the parameters just set.

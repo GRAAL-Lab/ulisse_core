@@ -1,0 +1,8 @@
+uint16 command_type
+EESBeep beep_data
+EESConfig config_data
+EESEnableRef enable_ref_data
+EESPowerButtons pwr_buttons_data
+EESPumps pumps_data
+---
+int16 res

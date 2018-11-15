@@ -19,6 +19,7 @@
 #include "std_msgs/msg/string.hpp"
 
 #include "ulisse_msgs/msg/control_context.hpp"
+#include "ulisse_msgs/srv/ees_command.hpp"
 
 #include "ulisse_driver/EESHelper.h"
 #include "ulisse_driver/visibility.h"
@@ -32,16 +33,17 @@ namespace ees {
         MINIMAL_COMPOSITION_PUBLIC ThreadSender();
 
     private:
-        void on_timer();
+        void ReloadConfigFile();
         void ControlContext_cb(const ulisse_msgs::msg::ControlContext::SharedPtr msg);
 
         size_t count_;
 
         EESData data_;
         EESHelper eesHlp_;
+        LowLevelConfiguration lowlevelconf_;
 
         rclcpp::AsyncParametersClient::SharedPtr par_client_;
-        //rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
+        rclcpp::Service<ulisse_msgs::srv::EESCommand>::SharedPtr srv_;
         rclcpp::Subscription<ulisse_msgs::msg::ControlContext>::SharedPtr ctrl_cxt_sub_;
         rclcpp::TimerBase::SharedPtr timer_;
 

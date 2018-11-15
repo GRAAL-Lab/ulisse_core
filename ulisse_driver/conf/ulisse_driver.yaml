@@ -1,6 +1,6 @@
 driver_node:
     ros__parameters:
-        SerialDevice: "/dev/pts/5"
+        SerialDevice: "/tmp/serial1"
         BaudRate: 115200
         EESHelper:
             DebugBytes: false
@@ -9,7 +9,7 @@ driver_node:
 
 thread_receiver:
     ros__parameters:
-        SerialDevice: "/dev/pts/5"
+        SerialDevice: "/tmp/serial1"
         BaudRate: 115200
         EESHelper:
             DebugBytes: false
@@ -18,9 +18,33 @@ thread_receiver:
 
 thread_sender:
     ros__parameters:
-        SerialDevice: "/dev/pts/5"
+        SerialDevice: "/tmp/serial1"
         BaudRate: 115200
         EESHelper:
             DebugBytes: false
             DebugIncomingValidMessageType: false
             DebugFailedCrc: true
+            LowLevelConfig:
+                HbCompass0: 0             # count
+                HbCompassMax: 20          # count
+                HbMagnetometer0: 10       # count
+                HbMagnetometerMax: 30     # count
+                HbPacketSensors0: 0       # count
+                HbPacketSensorsMax: 20    # count
+                HbPacketStatus0: 5        # count
+                HbPacketStatusMax: 205    # count
+                HbPacketMotors0: 7        # count
+                HbPacketMotorsMax: 27     # count
+                HbPacketBattery0: 110     # count
+                HbPacketBatteryMax: 310   # count
+                TimeoutAccelerometer: 2.5 # ms
+                TimeoutCompass: 2.5       # ms
+                TimeoutMagnetometer: 2.5  # ms
+                PwmUpMin: 0.7             # ms
+                PwmUpMax: 2.5             # ms
+                PwmPeriodMin: 10.0        # ms
+                PwmPeriodMax: 30.0        # ms
+                PwmTimeThreshold: 1000.0  # ms
+                PwmZeroThreshold: 0.05    # s
+                DeadzoneTime: 0.025       # s
+                ThrusterSaturation: 1000  # %

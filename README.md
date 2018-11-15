@@ -56,7 +56,7 @@ Launch the ROS1 rosbag recorder (repository https://bitbucket.org/isme_robotics/
 
 ```
 #!bash
-# Shell A
+# Shell D
 sourceros1
 roslaunch prog_rosbag record_bag.launch
 ```
@@ -65,7 +65,7 @@ Then, in another terminal execute the bridge using script located in the ulisse_
 
 ```
 #!bash
-# Shell B
+# Shell E
 ./ulisse_ctrl/scripts/run_ros_bridge.sh
 ```
 
@@ -73,12 +73,12 @@ Now using a service call in the `/record_bag` topic you can start and stop the l
 
 ```
 #!bash
-# Shell C: ROS1
+# Shell F: ROS1
 sourceros1
 rosservice call /record_bag "cmd: 'start'"
 rosservice call /record_bag "cmd: 'stop'"
 
-# Shell C: ROS2
+# Shell F: ROS2
 sourceros2
 ros2 service call /record_bag ulisse_msgs/RosbagCmd 'cmd: start'
 ros2 service call /record_bag ulisse_msgs/RosbagCmd 'cmd: stop'
@@ -86,18 +86,18 @@ ros2 service call /record_bag ulisse_msgs/RosbagCmd 'cmd: stop'
 
 ### Testing the serial
 
-Run the following commands in separate ROS2 sourced terminals (`sourceros2` command):
+Be sure that in the driver configuration file *ulisse_driver/conf/ulisse_driver.yaml* the **SerialDevice** paramater is set to `"/tmp/serial1"`. Then, run the following commands in three separate ROS2 sourced terminals (`sourceros2` command):
 
 ```
 #!bash
 # Shell A (setup serial)
-socat -d -d pty,raw,echo=0 pty,raw,echo=0
+socat -d -d pty,raw,echo=0,link=/tmp/serial1 pty,raw,echo=0,link=/tmp/serial2
 
 # Shell B (launch driver)
 ros2 launch ulisse_driver launchDriver.py
 
 # Shell C (echo on any topic of interest)
-cat ~/graal_ws/serialS0.txt > /dev/pts/6
+cat ~/graal_ws/serialS0.txt > /tmp/serial2
 ```
 
 ## Misc

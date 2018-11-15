@@ -12,8 +12,8 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 find_package(builtin_interfaces REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(fastrtps)
 
@@ -42,8 +42,16 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/GPS.msg"
   # Commands
   "msg/CommandMove.msg"
+  # EES
+  "msg/EESBeep.msg"
+  "msg/EESConfig.msg"
+  "msg/EESEnableRef.msg"
+  "msg/EESPowerButtons.msg"
+  "msg/EESPumps.msg"
+
   # Services
   "srv/RosbagCmd.srv"
+  "srv/EESCommand.srv"
   DEPENDENCIES builtin_interfaces
 )
 

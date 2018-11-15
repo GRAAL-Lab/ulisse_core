@@ -24,7 +24,7 @@
 using namespace ulisse::ees;
 using namespace std::chrono_literals;
 
-int32_t ReloadConfigFile(configData& configOut_, std::string configFile);
+int32_t ReloadConfigFile(LowLevelConfiguration& configOut_, std::string configFile);
 void* ThreadSenderFunction(void* dataIn);
 
 int main(int argc, char* argv[])
@@ -67,55 +67,40 @@ int main(int argc, char* argv[])
           executor2.spin();
         };
 
-      // Launch both executors
-    std::thread execution_thread(spin_executor2);*/
+     // Launch both executors
+      std::thread execution_thread(spin_executor2);
 
+      executor1.spin();
+    execution_thread.join();*/
 
-
-    rclcpp::executors::SingleThreadedExecutor exec;
-    auto thread_receiver = std::make_shared<ThreadReceiver>();
+    rclcpp::executors::SingleThreadedExecutor executor1;
+    auto thread_receiver = std::make_shared<ThreadReceiver>(); // Async Node
+    executor1.add_node(thread_receiver);
+    auto spin_executor1 = [&executor1]() {
+        executor1.spin();
+    };
+    std::thread execution1_thread(spin_executor1);
     RCLCPP_INFO(nh->get_logger(), "EES receiver thread created");
-    auto thread_sender = std::make_shared<ThreadSender>();
+
+    rclcpp::executors::SingleThreadedExecutor executor2;
+    auto thread_sender = std::make_shared<ThreadSender>(); // Sync Node
+    executor2.add_node(thread_sender);
+    auto spin_executor2 = [&executor2]() {
+        executor2.spin();
+    };
+    std::thread execution2_thread(spin_executor2);
     RCLCPP_INFO(nh->get_logger(), "EES sender thread created");
-    exec.add_node(thread_receiver);
-    exec.add_node(thread_sender);
-    exec.spin();
+
+    execution1_thread.join();
+    execution2_thread.join();
+
     rclcpp::shutdown();
 
     return 0;
 }
 
 /*
-int32_t ReloadConfigFile(configData& configOut_, std::string configFile)
-{
-    libconfig::Config confParser;
 
-    configOut_.hbCompass0 = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbCompass0");
-    configOut_.hbCompassMax = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbCompassMax");
-    configOut_.hbMagnetometer0 = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbMagnetometer0");
-    configOut_.hbMagnetometerMax = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbMagnetometerMax");
-    configOut_.hbPacketSensors0 = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbPacketSensors0");
-    configOut_.hbPacketSensorsMax = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbPacketSensorsMax");
-    configOut_.hbPacketStatus0 = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbPacketStatus0");
-    configOut_.hbPacketStatusMax = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbPacketStatusMax");
-    configOut_.hbPacketMotors0 = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbPacketMotors0");
-    configOut_.hbPacketMotorsMax = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbPacketMotorsMax");
-    configOut_.hbPacketBattery0 = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbPacketBattery0");
-    configOut_.hbPacketBatteryMax = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.HbPacketBatteryMax");
-    configOut_.timeoutAccelerometer = confParser.lookup("EESHelper.LowLevelConfig.TimeoutAccelerometer");
-    configOut_.timeoutCompass = confParser.lookup("EESHelper.LowLevelConfig.TimeoutCompass");
-    configOut_.timeoutMagnetometer = confParser.lookup("EESHelper.LowLevelConfig.TimeoutMagnetometer");
-    configOut_.pwmUpMin = confParser.lookup("EESHelper.LowLevelConfig.PwmUpMin");
-    configOut_.pwmUpMax = confParser.lookup("EESHelper.LowLevelConfig.PwmUpMax");
-    configOut_.pwmPeriodMin = confParser.lookup("EESHelper.LowLevelConfig.PwmPeriodMin");
-    configOut_.pwmPeriodMax = confParser.lookup("EESHelper.LowLevelConfig.PwmPeriodMax");
-    configOut_.pwmTimeThreshold = confParser.lookup("EESHelper.LowLevelConfig.PwmTimeThreshold");
-    configOut_.pwmZeroThreshold = confParser.lookup("EESHelper.LowLevelConfig.PwmZeroThreshold");
-    configOut_.deadzoneTime = confParser.lookup("EESHelper.LowLevelConfig.DeadzoneTime");
-    configOut_.thrusterSaturation = (unsigned int)confParser.lookup("EESHelper.LowLevelConfig.ThrusterSaturation");
-
-    return ORTOS_RV_OK;
-}
 
 void* ThreadSenderFunction(void* dataIn)
 {

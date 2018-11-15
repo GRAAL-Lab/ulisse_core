@@ -41,7 +41,6 @@ namespace ees {
             RCLCPP_INFO(this->get_logger(), "service not available, waiting again...")
         }
 
-        ReturnValue ret;
         std::string serialDevice = "";
         int baudRate = 0;
         bool debugBytes = false;
@@ -67,13 +66,17 @@ namespace ees {
         this->get_parameter_or("EESHelper.DebugIncomingValidMessageType", debugIncomingValidMessageType, false);
         this->get_parameter_or("EESHelper.DebugFailedCrc", debugFailedCrc, false);
 
+        eesHlp_.DebugBytes(debugBytes);
+
+        ReturnValue ret = eesHlp_.SetSerial(serialDevice, baudRate);
+        if (ret != ReturnValue::ok) {
+            RCLCPP_ERROR(this->get_logger(), "Error opening serial %s %d", serialDevice.c_str(), baudRate);
+            exit(0);
+        }
+
         /*om2ctrl::utils::CommandHelper commandHelper;
         CommandContainer commandsIn;
         CommandAnswerContainer commandAnswerOut;
-
-        xcom->BeginNewGroup("eesout");
-        xcom->AddDataTopic(topicnames::references, references);
-        xcom->EndGroup();
 
         ret = commandHelper.RegisterAsCommandConsumer(topicnames::eescommands, topicnames::eeslogCommandAnswers, commandsIn, commandAnswerOut);
         if (ret != ORTOS_RV_OK) {
@@ -85,114 +88,146 @@ namespace ees {
             ortos::Thread::Exit();
             return NULL;
         }
+        */
 
-        configData lowLevelConfig;
-        ReloadConfigFile(lowLevelConfig, init->configFile);
+        ReloadConfigFile();
 
         data_.messageType = MessageType::set_config;
-        data_.config = lowLevelConfig;
+        data_.config = lowlevelconf_;
         eesHlp_.SendMessage(data_);
         data_.messageType = MessageType::get_config;
-        eesHlp_.SendMessage(data_);*/
+        eesHlp_.SendMessage(data_);
 
         ctrl_cxt_sub_ = create_subscription<ulisse_msgs::msg::ControlContext>(
             ulisse_msgs::topicnames::control_context, std::bind(&ThreadSender::ControlContext_cb, this, _1));
-        timer_ = create_wall_timer(50ms, std::bind(&ThreadSender::on_timer, this));
-    }
 
-    void ThreadSender::on_timer()
-    {
+        // Create a callback function for when service requests are received.
+        auto handle_ees_commands =
+            [this](const std::shared_ptr<rmw_request_id_t> request_header,
+                const std::shared_ptr<ulisse_msgs::srv::EESCommand::Request> request,
+                std::shared_ptr<ulisse_msgs::srv::EESCommand::Response> response) -> void {
+            (void)request_header;
+            RCLCPP_INFO(this->get_logger(), "Incoming request");
 
-        /*ret = xcom->ReadIf(topicnames::references, references);
-        if (ret == ORTOS_RV_OK) {
-            data_.messageType = MessageType::reference;
-            data_.references = references.d;
-            eesHlp.SendMessage(data_);
-        } else if ((ret != ORTOS_RV_ENOBLOCK) && (ret != ORTOS_RV_ENONEWVALUE)) {
-            ortos::DebugConsole::Write(ortos::LogLevel::error, "ThreadSenderFunction", "ret %d", ret);
-        }
-
-        while (commandHelper.CheckCommand(commandsIn) == ORTOS_RV_OK) {
-            ret = ORTOS_RV_OK;
-            switch (commandsIn.commandType) {
+            ReturnValue ret = ReturnValue::ok;
+            switch (request->command_type) {
             case (uint16_t)CommandType::beep:
                 data_.messageType = MessageType::beep;
-                data_.beep = commandsIn.d.beep;
-                eesHlp.SendMessage(data_);
+                data_.beep.delay = request->beep_data.delay;
+                eesHlp_.SendMessage(data_);
                 break;
             case (uint16_t)CommandType::enableref:
                 data_.messageType = MessageType::enable_ref;
-                data_.enableRef = commandsIn.d.enableRef;
-                eesHlp.SendMessage(data_);
+                data_.enableRef.enable = request->enable_ref_data.enable;
+                eesHlp_.SendMessage(data_);
                 break;
             case (uint16_t)CommandType::setconfig:
                 data_.messageType = MessageType::set_config;
-                data_.config = commandsIn.d.setConfig;
-                eesHlp.SendMessage(data_);
+                /// TODO CONVERT CONFIG DATA
+                //data_.config = request->config_data;
+                eesHlp_.SendMessage(data_);
                 data_.messageType = MessageType::get_config;
-                eesHlp.SendMessage(data_);
+                eesHlp_.SendMessage(data_);
                 break;
             case (uint16_t)CommandType::setpumps:
                 data_.messageType = MessageType::pumps;
-                data_.pumps = commandsIn.d.pumps;
-                eesHlp.SendMessage(data_);
+                for (size_t i = 0; i < 3; i++) {
+                    data_.pumps.pumpsFlag[i] = request->pumps_data.pumpsflag[i];
+                }
+                eesHlp_.SendMessage(data_);
                 break;
             case (uint16_t)CommandType::setpowerbuttons:
                 data_.messageType = MessageType::pwrbuttons;
-                data_.pwrButtons = commandsIn.d.powerButtons;
-                eesHlp.SendMessage(data_);
+                data_.pwrButtons.pwrButtonsFlag = request->pwr_buttons_data.pwrbuttonsflag;
+                eesHlp_.SendMessage(data_);
                 break;
             case (uint16_t)CommandType::getconfig:
                 data_.messageType = MessageType::get_config;
-                eesHlp.SendMessage(data_);
+                eesHlp_.SendMessage(data_);
                 break;
             case (uint16_t)CommandType::getversion:
                 data_.messageType = MessageType::get_version;
-                eesHlp.SendMessage(data_);
+                eesHlp_.SendMessage(data_);
                 break;
             case (uint16_t)CommandType::startcompasscal:
                 data_.messageType = MessageType::start_compass_cal;
-                eesHlp.SendMessage(data_);
+                eesHlp_.SendMessage(data_);
                 break;
             case (uint16_t)CommandType::stopcompasscal:
                 data_.messageType = MessageType::stop_compass_cal;
-                eesHlp.SendMessage(data_);
+                eesHlp_.SendMessage(data_);
                 break;
             case (uint16_t)CommandType::reset:
                 data_.messageType = MessageType::reset;
-                eesHlp.SendMessage(data_);
+                eesHlp_.SendMessage(data_);
                 break;
             case (uint16_t)CommandType::reloadconfig:
-                ReloadConfigFile(lowLevelConfig, init->configFile);
+                ReloadConfigFile();
 
                 data_.messageType = MessageType::set_config;
-                data_.config = lowLevelConfig;
-                eesHlp.SendMessage(data_);
+                data_.config = lowlevelconf_;
+                eesHlp_.SendMessage(data_);
                 data_.messageType = MessageType::get_config;
-                eesHlp.SendMessage(data_);
+                eesHlp_.SendMessage(data_);
                 break;
             default:
-                commandsIn.DebugPrint("Unsupported command");
-                ret = ORTOS_RV_FAIL;
+                RCLCPP_INFO(this->get_logger(), "Unsupported command: %s", CommandTypeToString(request->command_type).c_str());
+                ret = ReturnValue::fail;
                 break;
             }
-
-            if (ret != ORTOS_RV_OK)
-                commandAnswerOut.answer = (uint16_t)CommandAnswer::fail;
+            if (ret != ReturnValue::ok)
+                response->res = (int16_t)CommandAnswer::fail;
             else
-                commandAnswerOut.answer = (uint16_t)CommandAnswer::ok;
+                response->res = (int16_t)CommandAnswer::ok;
 
-            ret = commandHelper.SendAnswer(commandsIn, commandAnswerOut);
-            if (ret != ORTOS_RV_OK)
-                ortos::DebugConsole::Write(ortos::LogLevel::error, "ThreadSenderFunction", "SendAnswer returned %d", ret);*/
+            if (ret != ReturnValue::ok)
+                RCLCPP_INFO(this->get_logger(), "SendAnswer returned %d", ret);
+        };
+
+        srv_ = create_service<ulisse_msgs::srv::EESCommand>("ees_commands", handle_ees_commands);
+
+        //timer_ = create_wall_timer(1000ms, std::bind(&ThreadSender::EESCommand_cb, this));
     }
 
-    void ThreadSender::ControlContext_cb(const ulisse_msgs::msg::ControlContext::SharedPtr msg)
+    void
+    ThreadSender::ControlContext_cb(const ulisse_msgs::msg::ControlContext::SharedPtr msg)
     {
+        std::cout << "ControlContext_cb() sending reference!" << std::endl;
         data_.messageType = MessageType::reference;
-        data_.references.leftThruster = static_cast<int16_t>(msg->ctrlref.left * 10);
+        data_.references.leftThruster = static_cast<int16_t>(msg->ctrlref.left * 10); // we multiply be 10 since the micro reads 'Per mille'
         data_.references.rightThruster = static_cast<int16_t>(msg->ctrlref.right * 10);
         eesHlp_.SendMessage(data_);
+    }
+
+    void ThreadSender::ReloadConfigFile()
+    {
+        this->get_parameter_or("EESHelper.LowLevelConfig.HbCompass0", lowlevelconf_.hbCompass0, (uint16_t)0);
+        this->get_parameter_or("EESHelper.LowLevelConfig.HbCompassMax", lowlevelconf_.hbCompassMax, (uint16_t)0);
+        this->get_parameter_or("EESHelper.LowLevelConfig.HbMagnetometer0", lowlevelconf_.hbMagnetometer0, (uint16_t)0);
+        this->get_parameter_or("EESHelper.LowLevelConfig.HbMagnetometerMax", lowlevelconf_.hbMagnetometerMax, (uint16_t)0);
+        this->get_parameter_or("EESHelper.LowLevelConfig.HbPacketSensors0", lowlevelconf_.hbPacketSensors0, (uint16_t)0);
+        this->get_parameter_or("EESHelper.LowLevelConfig.HbPacketSensorsMax", lowlevelconf_.hbPacketSensorsMax, (uint16_t)0);
+        this->get_parameter_or("EESHelper.LowLevelConfig.HbPacketStatus0", lowlevelconf_.hbPacketStatus0, (uint16_t)0);
+        this->get_parameter_or("EESHelper.LowLevelConfig.HbPacketStatusMax", lowlevelconf_.hbPacketStatusMax, (uint16_t)0);
+        this->get_parameter_or("EESHelper.LowLevelConfig.HbPacketMotors0", lowlevelconf_.hbPacketMotors0, (uint16_t)0);
+        this->get_parameter_or("EESHelper.LowLevelConfig.HbPacketMotorsMax", lowlevelconf_.hbPacketMotorsMax, (uint16_t)0);
+        this->get_parameter_or("EESHelper.LowLevelConfig.HbPacketBattery0", lowlevelconf_.hbPacketBattery0, (uint16_t)0);
+        this->get_parameter_or("EESHelper.LowLevelConfig.HbPacketBatteryMax", lowlevelconf_.hbPacketBatteryMax, (uint16_t)0);
+        this->get_parameter_or("EESHelper.LowLevelConfig.TimeoutAccelerometer", lowlevelconf_.timeoutAccelerometer, (float)0.0);
+        this->get_parameter_or("EESHelper.LowLevelConfig.TimeoutCompass", lowlevelconf_.timeoutCompass, (float)0.0);
+        this->get_parameter_or("EESHelper.LowLevelConfig.TimeoutMagnetometer", lowlevelconf_.timeoutMagnetometer, (float)0.0);
+        this->get_parameter_or("EESHelper.LowLevelConfig.PwmUpMin", lowlevelconf_.pwmUpMin, (float)0.0);
+        this->get_parameter_or("EESHelper.LowLevelConfig.PwmUpMax", lowlevelconf_.pwmUpMax, (float)0.0);
+        this->get_parameter_or("EESHelper.LowLevelConfig.PwmPeriodMin", lowlevelconf_.pwmPeriodMin, (float)0.0);
+        this->get_parameter_or("EESHelper.LowLevelConfig.PwmPeriodMax", lowlevelconf_.pwmPeriodMax, (float)0.0);
+        this->get_parameter_or("EESHelper.LowLevelConfig.PwmTimeThreshold", lowlevelconf_.pwmTimeThreshold, (float)0.0);
+        this->get_parameter_or("EESHelper.LowLevelConfig.PwmZeroThreshold", lowlevelconf_.pwmZeroThreshold, (float)0.0);
+        this->get_parameter_or("EESHelper.LowLevelConfig.DeadzoneTime", lowlevelconf_.deadzoneTime, (float)0.0);
+        this->get_parameter_or("EESHelper.LowLevelConfig.ThrusterSaturation", lowlevelconf_.thrusterSaturation, (uint16_t)0.0);
+
+        std::cout << "=====    Reload Sender Config    =====\n";
+        lowlevelconf_.DebugPrint();
+        std::cout << "======================================" << std::endl;
     }
 
 } // namespace ees

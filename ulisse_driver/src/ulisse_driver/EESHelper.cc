@@ -6,6 +6,7 @@
  */
 
 #include "ulisse_driver/EESHelper.h"
+#include <iostream>
 
 namespace ulisse {
 
@@ -74,14 +75,14 @@ namespace ees {
                             data.messageType = messageId;
                             data.ack = tmp;
                             return ReturnValue::ok;
-                        } ;
+                        };
                         case MessageType::status: {
                             statusData tmp;
                             GetStatus(tmp);
                             data.messageType = messageId;
                             data.status = tmp;
                             return ReturnValue::ok;
-                        } ;
+                        };
                         case MessageType::sensor: {
                             sensorData tmp;
                             GetSensors(tmp);
@@ -89,61 +90,63 @@ namespace ees {
                             data.messageType = messageId;
                             data.sensors = tmp;
                             return ReturnValue::ok;
-                        } ;
+                        };
                         case MessageType::version: {
                             versionData tmp;
                             GetVersion(tmp);
                             data.messageType = messageId;
                             data.version = tmp;
                             return ReturnValue::ok;
-                        } ;
+                        };
                         case MessageType::set_config: {
-                            configData tmp;
+                            LowLevelConfiguration tmp;
                             GetConfig(tmp);
                             data.messageType = messageId;
                             data.config = tmp;
                             return ReturnValue::ok;
-                        } ;
+                        };
                         case MessageType::motors: {
                             motorsData tmp;
                             GetMotors(tmp);
                             data.messageType = messageId;
                             data.motors = tmp;
                             return ReturnValue::ok;
-                        } ;
+                        };
                         case MessageType::battery: {
                             batteryData tmp;
                             GetBattery(tmp);
                             data.messageType = messageId;
                             data.battery = tmp;
                             return ReturnValue::ok;
-                        } ;
+                        };
                         case MessageType::sw485Status: {
                             sw485StatusData tmp;
                             GetSw485Status(tmp);
                             data.messageType = messageId;
                             data.sw485Status = tmp;
                             return ReturnValue::ok;
-                        } ;
+                        };
                         default:
-                            //ortos::DebugConsole::Write(ortos::LogLevel::warning, "EESHelper::CollectValidMessage", "unsupported message id %d", messageId);
+                            printf("EESHelper::CollectValidMessage, unsupported message id %hu", (uint16_t)messageId);
                             break;
                         }
                     }
                 } else {
-                    //ortos::DebugConsole::Write(ortos::LogLevel::warning, "EESHelper::CollectValidMessage", "serial->ReadBlocking returned %d", ret);
+                    printf("EESHelper::CollectValidMessage, serial->ReadBlocking returned %d", ret);
                 }
             }
         } else {
-            //ortos::DebugConsole::Write(ortos::LogLevel::warning, "EESHelper::CollectValidMessage", "Invalid or closed channel");
+            printf("EESHelper::CollectValidMessage, Invalid or closed channel");
             return ReturnValue::fail;
         }
     }
 
     ReturnValue EESHelper::SendMessage(EESData& data)
     {
+
         if (serial_->IsOpen()) {
             uint16_t size = 0;
+
             ReturnValue ret = CreateEESMessage(outgoingPacketBuffer_, size, data);
 
             if (ret == ReturnValue::ok) {
@@ -154,13 +157,14 @@ namespace ees {
                         fprintf(stderr, "%02x ", outgoingPacketBuffer_[i]);
                     fprintf(stderr, "\n--------------------\n");
                 }
+
                 serial_->Write((char*)outgoingPacketBuffer_, size);
             } else {
                 return ReturnValue::fail;
             }
 
         } else {
-            //ortos::DebugConsole::Write(ortos::LogLevel::warning, "EESHelper::SendMessage", "Invalid or closed channel");
+            printf("EESHelper::SendMessage, Invalid or closed channel\n");
             return ReturnValue::fail;
         }
         return ReturnValue::ok;
@@ -236,7 +240,7 @@ namespace ees {
                 headerCount_++;
 
                 if (payloadSize_ > maxPayloadSize_) {
-                    //ortos::DebugConsole::Write(ortos::LogLevel::warning, "EESHelper", "Payload size too big (%u > %u)", payloadSize_, maxPayloadSize_);
+                    printf("EESHelper, Payload size too big (%u > %u)", payloadSize_, maxPayloadSize_);
 
                     state_ = ParseState::header;
                     headerCount_ = 0;
@@ -289,7 +293,8 @@ namespace ees {
                 break;
             }
         } //no break is ok
-        [[clang::fallthrough]]; case ParseState::checksum: {
+            [[clang::fallthrough]];
+        case ParseState::checksum: {
             // parse the two bytes checksum
             if (checksumCount_ == 0) {
                 uint8_t* ptr = (uint8_t*)(&recvChecksum_);
@@ -311,8 +316,8 @@ namespace ees {
 
                     return ReturnValue::complete;
                 } else {
-                   // ortos::DebugConsole::Write(ortos::LogLevel::warning, "EESHelper", "ERROR: message %u size %u CHECKSUM FAIL, received %u computed %u sum %u", type_, size_, recvChecksum_,
-                   //     ComputeByteSum(ptr, size_), ComputeByteSum(ptr, size_) + recvChecksum_);
+                    printf("EESHelper, ERROR: message %u size %u CHECKSUM FAIL, received %u computed %u sum %u", type_, size_, recvChecksum_,
+                        ComputeByteSum(ptr, size_), ComputeByteSum(ptr, size_) + recvChecksum_);
 
                     if (debugFailedCrc_) {
                         fprintf(stderr, "\n--rcv-type %d-------\n", type_);
@@ -349,7 +354,7 @@ namespace ees {
         return lastReceived_;
     }
 
-    ReturnValue EESHelper::CreateEESMessage(uint8_t* packetPointer, uint16_t& size, EESData& data)
+    ReturnValue EESHelper::CreateEESMessage(uint8_t*, uint16_t& size, EESData& data)
     {
         switch (data.messageType) {
         case MessageType::reference:
@@ -386,7 +391,7 @@ namespace ees {
             CreatePwrButtons(outgoingPacketBuffer_, size, data.pwrButtons);
             break;
         default:
-            //ortos::DebugConsole::Write(ortos::LogLevel::info, "EESHelper::CreateEESMessage", "type unknown (%d)", data.messageType);
+            printf("EESHelper::CreateEESMessage, type unknown (%hu)", (uint16_t)data.messageType);
             return ReturnValue::fail;
         }
         return ReturnValue::ok;
@@ -408,7 +413,7 @@ namespace ees {
         return FinalizePacket(packetPointer, offset, size);
     }
 
-    void EESHelper::CreateSetConfig(uint8_t* packetPointer, uint16_t& size, configData& config)
+    void EESHelper::CreateSetConfig(uint8_t* packetPointer, uint16_t& size, LowLevelConfiguration& config)
     {
         uint16_t offset = 0;
 
@@ -667,7 +672,7 @@ namespace ees {
         offset = PacketExtract_uint16(packetPointer, offset, &version.rsatVersion);
     }
 
-    void EESHelper::GetConfig(configData& config)
+    void EESHelper::GetConfig(LowLevelConfiguration& config)
     {
         uint8_t* packetPointer = &incomingPacketBuffer_[0];
         uint16_t offset = 4;

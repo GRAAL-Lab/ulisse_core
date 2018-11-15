@@ -83,13 +83,15 @@ namespace ees {
 
     void ThreadReceiver::ReadLoop()
     {
-        std::cout << "ThreadReceiver::on_timer() was called" << std::endl;
+        std::cout << "ThreadReceiver::ReadLoop() was called" << std::endl;
         while (rclcpp::ok()) {
 
             t_now_ = std::chrono::system_clock::now();
             long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
 
+
             eesHlp_.CollectValidMessage(eesData_);
+            std::cout << "ThreadReceiver::ReadLoop(), Collected Valid Message" << std::endl;
             uint8_t sensorStatus = eesData_.sensors.sensorStatus;
 
             ulisse_msgs::msg::Time time_msg;
@@ -147,7 +149,7 @@ namespace ees {
                 }
 
                 if (sensorStatus & EMB_SNSSTSMASK_UPDATEDANALOG) {
-                    imu_msg_.stamp = time_msg;
+                    ambsens_msg_.stamp = time_msg;
                     ambsens_msg_.temperaturectrlbox = eesData_.sensors.temperatureCtrlBox;
                     ambsens_msg_.humidityctrlbox = eesData_.sensors.humidityCtrlBox;
                     ambsens_pub_->publish(ambsens_msg_);
@@ -205,6 +207,7 @@ namespace ees {
                 RCLCPP_WARN(this->get_logger(), "Unhandled message type %d", eesData_.messageType);
                 break;
             }
+            std::this_thread::sleep_for(1ms);
         }
     }
 }

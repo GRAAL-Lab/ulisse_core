@@ -195,7 +195,7 @@ namespace ees {
 
     //PLEASE UPDATE GetSize method AND om2ctrl::ees::CommandContainer AND om2ctrl::enet::ENETContainer on fields change
     //LoggerContainers too
-    struct configData {
+    struct LowLevelConfiguration {
         uint16_t hbCompass0;
         uint16_t hbCompassMax;
         uint16_t hbMagnetometer0;
@@ -220,13 +220,14 @@ namespace ees {
         float32_t deadzoneTime;
         uint16_t thrusterSaturation;
 
-        /*void DebugPrint(const char* string) {
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "configData: Compass %u->%u Magn %u->%u Sensors %u->%u", hbCompass0, hbCompassMax, hbMagnetometer0, hbMagnetometerMax, hbPacketSensors0, hbPacketSensorsMax);
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "configData: Status %u->%u Motors %u->%u Battery %u->%u", hbPacketStatus0, hbPacketStatusMax, hbPacketMotors0, hbPacketMotorsMax, hbPacketBattery0, hbPacketBatteryMax);
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "configData: Timeout Acc %f Timeout Compass %f Timeout Magn %f", timeoutAccelerometer, timeoutCompass, timeoutMagnetometer);
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "configData: PWM Up min %f [ms] PWM Up max %f [ms] PWM Period min %f [ms] PWM Period Max %f [ms]", pwmUpMin, pwmUpMax, pwmPeriodMin, pwmPeriodMax);
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "configData: PWM Time Threshold %f [ms] PWM Zero Threshold %f [ms] deadzone Time %f [s] Thruster Saturation %u/1000", pwmTimeThreshold, pwmZeroThreshold, deadzoneTime, thrusterSaturation);
-    }*/
+        void DebugPrint()
+        {
+            printf("Compass %u->%u Magn %u->%u Sensors %u->%u\n", hbCompass0, hbCompassMax, hbMagnetometer0, hbMagnetometerMax, hbPacketSensors0, hbPacketSensorsMax);
+            printf("Status %u->%u Motors %u->%u Battery %u->%u\n", hbPacketStatus0, hbPacketStatusMax, hbPacketMotors0, hbPacketMotorsMax, hbPacketBattery0, hbPacketBatteryMax);
+            printf("Timeout Acc %f Timeout Compass %f Timeout Magn %f\n", timeoutAccelerometer, timeoutCompass, timeoutMagnetometer);
+            printf("PWM Up min %f [ms] PWM Up max %f [ms]\nPWM Period min %f [ms] PWM Period Max %f [ms]\n", pwmUpMin, pwmUpMax, pwmPeriodMin, pwmPeriodMax);
+            printf("PWM Time Threshold %f [ms] PWM Zero Threshold %f [ms]\ndeadzone Time %f [s] Thruster Saturation %u/1000\n", pwmTimeThreshold, pwmZeroThreshold, deadzoneTime, thrusterSaturation);
+        }
 
         uint16_t GetSize()
         {
@@ -528,7 +529,7 @@ namespace ees {
             enableRefData enableRef;
             sensorData sensors;
             statusData status;
-            configData config;
+            LowLevelConfiguration config;
             ackData ack;
             versionData version;
             motorsData motors;
@@ -672,7 +673,7 @@ namespace ees {
         union {
             beepData beep;
             enableRefData enableRef;
-            configData setConfig;
+            LowLevelConfiguration setConfig;
             pumpsData pumps;
             pwrButtonsData powerButtons;
         };
@@ -686,7 +687,7 @@ namespace ees {
 
     std::string CommandAnswerToString(uint16_t type);
 
-/*
+    /*
     class ReferencesContainer : public ortos::xcom::BaseContainer {
     public:
         ortos::ortostime_t timestamp;

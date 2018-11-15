@@ -34,10 +34,10 @@ namespace ees {
         void Init();
         ReturnValue ParseByte(uint8_t byte);
         MessageType GetLastMessage();
-        ReturnValue CreateEESMessage(uint8_t* packetPointer, uint16_t& size, EESData& data);
+        ReturnValue CreateEESMessage(uint8_t*, uint16_t& size, EESData& data);
 
         void CreateReferences(uint8_t* packetPointer, uint16_t& size, referencesData& references);
-        void CreateSetConfig(uint8_t* packetPointer, uint16_t& size, configData& config);
+        void CreateSetConfig(uint8_t* packetPointer, uint16_t& size, LowLevelConfiguration& config);
         void CreateBeep(uint8_t* packetPointer, uint16_t& size, beepData& beep);
         void CreateGetVersion(uint8_t* packetPointer, uint16_t& size);
         void CreateEnableReferences(uint8_t* packetPointer, uint16_t& size, enableRefData& enable);
@@ -53,7 +53,7 @@ namespace ees {
         void GetSensors(sensorData& sensors);
         void ConvertSensors(sensorData& sensors);
         void GetVersion(versionData& version);
-        void GetConfig(configData& config);
+        void GetConfig(LowLevelConfiguration& config);
         void GetMotors(motorsData& motors);
         void GetBattery(batteryData& battery);
         void GetSw485Status(sw485StatusData& sw485Status);
