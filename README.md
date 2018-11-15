@@ -24,10 +24,11 @@ Ulisse catamaran controller revamped with ROS2.
 Be sure to start from a clean workspace, with no _log_, _install_ or _build_ folders. First install the needed dependencies, then to build the package and the ros_bridge (which has to be downloaded from the ros official repo https://github.com/ros2/ros1_bridge) use the following commands:
 
 ```
- sourceros2
- colcon build --symlink-install --packages-skip ros1_bridge
- sourceros1 && sourceros2
- colcon build --symlink-install --packages-select ros1_bridge --cmake-force-configure
+#!bash
+sourceros2
+colcon build --symlink-install --packages-skip ros1_bridge
+sourceros1 && sourceros2
+colcon build --symlink-install --packages-select ros1_bridge --cmake-force-configure
 ```
 
 ## Usage
@@ -38,6 +39,7 @@ First of all you need to export the ROS1 master URI for all your bashes, so it c
 Launch the ROS1 rosbag recorder (repository https://bitbucket.org/isme_robotics/ulisse_rosbag_ros1, in which you will also find the BAG to CSV converter):
 
 ```
+#!bash
 # Shell A
 sourceros1
 roslaunch prog_rosbag record_bag.launch
@@ -46,6 +48,7 @@ roslaunch prog_rosbag record_bag.launch
 Then, in another terminal execute the bridge using script located in the ulisse_ctrl folder:
 
 ```
+#!bash
 # Shell B
 ./ulisse_ctrl/scripts/run_ros_bridge.sh
 ```
@@ -53,6 +56,7 @@ Then, in another terminal execute the bridge using script located in the ulisse_
 Now using a service call in the `/record_bag` topic you can start and stop the logger, via C++ API or terminal. For example, using the ROS terminal interface:
 
 ```
+#!bash
 # Shell C: ROS1
 sourceros1
 rosservice call /record_bag "cmd: 'start'"
@@ -70,7 +74,6 @@ Run the following commands in separate ROS2 sourced terminals (`sourceros2` comm
 
 ```
 #!bash
-#
 # Shell A (setup serial)
 socat -d -d pty,raw,echo=0 pty,raw,echo=0
 
