@@ -33,10 +33,10 @@ namespace ees {
         MINIMAL_COMPOSITION_PUBLIC ThreadSender();
 
     private:
+        void SetupCommandServer();
         void ReloadConfigFile();
         void ControlContext_cb(const ulisse_msgs::msg::ControlContext::SharedPtr msg);
-
-        size_t count_;
+        void CopyConfigMsg2EESStruct(const std::shared_ptr<ulisse_msgs::srv::EESCommand::Request> request);
 
         EESData data_;
         EESHelper eesHlp_;

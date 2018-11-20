@@ -29,7 +29,6 @@ namespace ees {
 
     ThreadSender::ThreadSender()
         : Node("thread_sender")
-        , count_(0)
     {
         par_client_ = std::make_shared<rclcpp::AsyncParametersClient>(this);
 
@@ -57,7 +56,6 @@ namespace ees {
         for (auto& parameter : parameters.get()) {
             std::cout << parameter.get_name() << "(" << parameter.get_type_name() << "): " << parameter.value_to_string() << std::endl;
         }
-
         std::cout << "====================================" << std::endl;
 
         this->get_parameter_or("SerialDevice", serialDevice, std::string());
@@ -74,22 +72,6 @@ namespace ees {
             exit(0);
         }
 
-        /*om2ctrl::utils::CommandHelper commandHelper;
-        CommandContainer commandsIn;
-        CommandAnswerContainer commandAnswerOut;
-
-        ret = commandHelper.RegisterAsCommandConsumer(topicnames::eescommands, topicnames::eeslogCommandAnswers, commandsIn, commandAnswerOut);
-        if (ret != ORTOS_RV_OK) {
-            ortos::DebugConsole::Write(ortos::LogLevel::error, "ThreadSenderFunction", "RegisterAsCommandConsumer returned %d", ret);
-
-            xcom->Release();
-            xcom->ReleaseInstance();
-
-            ortos::Thread::Exit();
-            return NULL;
-        }
-        */
-
         ReloadConfigFile();
 
         data_.messageType = MessageType::set_config;
@@ -101,15 +83,21 @@ namespace ees {
         ctrl_cxt_sub_ = create_subscription<ulisse_msgs::msg::ControlContext>(
             ulisse_msgs::topicnames::control_context, std::bind(&ThreadSender::ControlContext_cb, this, _1));
 
+        SetupCommandServer();
+    }
+
+    void ThreadSender::SetupCommandServer()
+    {
         // Create a callback function for when service requests are received.
         auto handle_ees_commands =
             [this](const std::shared_ptr<rmw_request_id_t> request_header,
                 const std::shared_ptr<ulisse_msgs::srv::EESCommand::Request> request,
                 std::shared_ptr<ulisse_msgs::srv::EESCommand::Response> response) -> void {
             (void)request_header;
-            RCLCPP_INFO(this->get_logger(), "Incoming request");
+            RCLCPP_INFO(this->get_logger(), "Incoming request: %s", CommandTypeToString((CommandType)(request->command_type)).c_str());
 
             ReturnValue ret = ReturnValue::ok;
+
             switch (request->command_type) {
             case (uint16_t)CommandType::beep:
                 data_.messageType = MessageType::beep;
@@ -123,8 +111,8 @@ namespace ees {
                 break;
             case (uint16_t)CommandType::setconfig:
                 data_.messageType = MessageType::set_config;
-                /// TODO CONVERT CONFIG DATA
-                //data_.config = request->config_data;
+                CopyConfigMsg2EESStruct(request);
+                data_.config = lowlevelconf_;
                 eesHlp_.SendMessage(data_);
                 data_.messageType = MessageType::get_config;
                 eesHlp_.SendMessage(data_);
@@ -163,7 +151,6 @@ namespace ees {
                 break;
             case (uint16_t)CommandType::reloadconfig:
                 ReloadConfigFile();
-
                 data_.messageType = MessageType::set_config;
                 data_.config = lowlevelconf_;
                 eesHlp_.SendMessage(data_);
@@ -171,22 +158,19 @@ namespace ees {
                 eesHlp_.SendMessage(data_);
                 break;
             default:
-                RCLCPP_INFO(this->get_logger(), "Unsupported command: %s", CommandTypeToString(request->command_type).c_str());
+                RCLCPP_INFO(this->get_logger(), "Unsupported command: %s", CommandTypeToString((CommandType)(request->command_type)).c_str());
                 ret = ReturnValue::fail;
                 break;
             }
-            if (ret != ReturnValue::ok)
-                response->res = (int16_t)CommandAnswer::fail;
-            else
-                response->res = (int16_t)CommandAnswer::ok;
-
-            if (ret != ReturnValue::ok)
-                RCLCPP_INFO(this->get_logger(), "SendAnswer returned %d", ret);
+            if (ret != ReturnValue::ok) {
+                response->res = (int16_t)(CommandAnswer::fail);
+                RCLCPP_INFO(this->get_logger(), "SendAnswer returned %s", CommandAnswerToString((CommandAnswer)(response->res)).c_str());
+            } else {
+                response->res = (int16_t)(CommandAnswer::ok);
+            }
         };
 
-        srv_ = create_service<ulisse_msgs::srv::EESCommand>("ees_commands", handle_ees_commands);
-
-        //timer_ = create_wall_timer(1000ms, std::bind(&ThreadSender::EESCommand_cb, this));
+        srv_ = create_service<ulisse_msgs::srv::EESCommand>("/ees_command", handle_ees_commands);
     }
 
     void
@@ -197,6 +181,33 @@ namespace ees {
         data_.references.leftThruster = static_cast<int16_t>(msg->ctrlref.left * 10); // we multiply be 10 since the micro reads 'Per mille'
         data_.references.rightThruster = static_cast<int16_t>(msg->ctrlref.right * 10);
         eesHlp_.SendMessage(data_);
+    }
+
+    void ThreadSender::CopyConfigMsg2EESStruct(const std::shared_ptr<ulisse_msgs::srv::EESCommand::Request> request)
+    {
+        lowlevelconf_.hbCompass0 = request->config_data.hbcompass0;
+        lowlevelconf_.hbCompassMax = request->config_data.hbcompassmax;
+        lowlevelconf_.hbMagnetometer0 = request->config_data.hbmagnetometer0;
+        lowlevelconf_.hbMagnetometerMax = request->config_data.hbmagnetometermax;
+        lowlevelconf_.hbPacketSensors0 = request->config_data.hbpacketsensors0;
+        lowlevelconf_.hbPacketSensorsMax = request->config_data.hbpacketsensorsmax;
+        lowlevelconf_.hbPacketStatus0 = request->config_data.hbpacketstatus0;
+        lowlevelconf_.hbPacketStatusMax = request->config_data.hbpacketstatusmax;
+        lowlevelconf_.hbPacketMotors0 = request->config_data.hbpacketmotors0;
+        lowlevelconf_.hbPacketMotorsMax = request->config_data.hbpacketmotorsmax;
+        lowlevelconf_.hbPacketBattery0 = request->config_data.hbpacketbattery0;
+        lowlevelconf_.hbPacketBatteryMax = request->config_data.hbpacketbatterymax;
+        lowlevelconf_.timeoutAccelerometer = request->config_data.timeoutaccelerometer;
+        lowlevelconf_.timeoutCompass = request->config_data.timeoutcompass;
+        lowlevelconf_.timeoutMagnetometer = request->config_data.timeoutmagnetometer;
+        lowlevelconf_.pwmUpMin = request->config_data.pwmupmin;
+        lowlevelconf_.pwmUpMax = request->config_data.pwmupmax;
+        lowlevelconf_.pwmPeriodMin = request->config_data.pwmperiodmin;
+        lowlevelconf_.pwmPeriodMax = request->config_data.pwmperiodmax;
+        lowlevelconf_.pwmTimeThreshold = request->config_data.pwmtimethreshold;
+        lowlevelconf_.pwmZeroThreshold = request->config_data.pwmzerothreshold;
+        lowlevelconf_.deadzoneTime = request->config_data.deadzonetime;
+        lowlevelconf_.thrusterSaturation = request->config_data.thrustersaturation;
     }
 
     void ThreadSender::ReloadConfigFile()

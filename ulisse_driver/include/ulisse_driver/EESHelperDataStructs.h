@@ -1,8 +1,8 @@
 /*
  * EESHelperDataStructs.h
  *
- *  Created on: Jun 16, 2016
- *      Author: wonder
+ *  Created on: Nov 1, 2018
+ *      Author: francescow
  */
 
 #ifndef SRC_COMM_EESHELPERDATASTRUCTS_H_
@@ -13,8 +13,6 @@
 #include <string>
 
 #include "ulisse_driver/EESHelperDefines.h"
-//#include "Defines.h"
-//#include "CommandHelperDataStructs.h"
 
 namespace ulisse {
 
@@ -667,7 +665,7 @@ namespace ees {
         reloadconfig = 11
     };
 
-    std::string CommandTypeToString(uint16_t type);
+    std::string CommandTypeToString(CommandType type);
 
     struct CommandData {
         union {
@@ -685,7 +683,7 @@ namespace ees {
         ok = 1
     };
 
-    std::string CommandAnswerToString(uint16_t type);
+    std::string CommandAnswerToString(CommandAnswer type);
 
     /*
     class ReferencesContainer : public ortos::xcom::BaseContainer {

@@ -96,7 +96,10 @@ socat -d -d pty,raw,echo=0,link=/tmp/serial1 pty,raw,echo=0,link=/tmp/serial2
 # Shell B (launch driver)
 ros2 launch ulisse_driver launchDriver.py
 
-# Shell C (echo on any topic of interest)
+# Shell C (echo on any topic of interest, e,g. /sensor/ambient)
+ros2 topic echo /sensor/ambient
+
+# Shell D (transmit data on serial)
 cat ~/graal_ws/serialS0.txt > /tmp/serial2
 ```
 

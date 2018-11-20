@@ -69,9 +69,14 @@ namespace ees {
         magneto_pub_ = this->create_publisher<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer);
         applied_motorref_pub_ = this->create_publisher<ulisse_msgs::msg::MotorReference>(ulisse_msgs::topicnames::motor_applied_ref);
 
-        //xcom->AddDataTopic(topicnames::sensors, sensors);  FFATTO
-        // xcom->AddDataTopic(topicnames::status, status);
-        // xcom->AddDataTopic(topicnames::config, config);
+        ees_status_pub_ = this->create_publisher<ulisse_msgs::msg::EESStatus>(ulisse_msgs::topicnames::ees_status);
+        ees_config_pub_ = this->create_publisher<ulisse_msgs::msg::EESConfig>(ulisse_msgs::topicnames::ees_config);
+        ees_motors_pub_ = this->create_publisher<ulisse_msgs::msg::EESMotors>(ulisse_msgs::topicnames::ees_motors);
+
+        // xcom->AddDataTopic(topicnames::sensors, sensors);  FFATTO
+        // xcom->AddDataTopic(topicnames::status, status); FFATTO
+        // xcom->AddDataTopic(topicnames::config, config); FFATTO
+
         // xcom->AddDataTopic(topicnames::motors, motors);
         // xcom->AddDataTopic(topicnames::version, version);
         // xcom->AddDataTopic(topicnames::ack, ack);
@@ -89,7 +94,6 @@ namespace ees {
             t_now_ = std::chrono::system_clock::now();
             long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
 
-
             eesHlp_.CollectValidMessage(eesData_);
             std::cout << "ThreadReceiver::ReadLoop(), Collected Valid Message" << std::endl;
             uint8_t sensorStatus = eesData_.sensors.sensorStatus;
@@ -102,6 +106,7 @@ namespace ees {
             // time which is greater that the current intrasecond time, it means that the measures are
             // referred to the previous second (since measure cannot come from the future)
             if (stepsnanosecs > now_nanosecs) {
+                // Data belonging to previous second
                 time_msg.sec = time_msg.sec - 1;
             }
             time_msg.nanosec = stepsnanosecs;
@@ -158,22 +163,91 @@ namespace ees {
                 applied_motorref_msg_.left = eesData_.sensors.leftReference;
                 applied_motorref_msg_.right = eesData_.sensors.rightReference;
                 applied_motorref_pub_->publish(applied_motorref_msg_);
-
                 break;
             case MessageType::status:
-                /*status.timestamp = ::om2ctrl::utils::GetTime();
-            status.d = eesData_.status;
-            xcom->Write(topicnames::status, status);*/
+                ees_status_msg_.stamp = time_msg;
+                ees_status_msg_.status = eesData_.status.status;
+                ees_status_msg_.commdataerrorcount = eesData_.status.commDataErrorCount;
+                ees_status_msg_.i2cdatastate = eesData_.status.i2cDataState;
+                ees_status_msg_.misseddeadlines = eesData_.status.missedDeadlines;
+                ees_status_msg_.accelerometertimeouts = eesData_.status.accelerometerTimeouts;
+                ees_status_msg_.compasstimeouts = eesData_.status.compassTimeouts;
+                ees_status_msg_.magnetometertimeouts = eesData_.status.magnetometerTimeouts;
+                ees_status_msg_.i2cbusbusy = eesData_.status.i2cbusBusy;
+                ees_status_msg_.messagesent485 = eesData_.status.messageSent485;
+                ees_status_msg_.messagereceived485 = eesData_.status.messageReceived485;
+                ees_status_msg_.errorcount = eesData_.status.errorCount;
+                ees_status_msg_.overflowcount232 = eesData_.status.overflowCount232; // overflow buffer rs232
+                ees_status_msg_.overflowcount485 = eesData_.status.overflowCount485; // overflow buffer rs485
+                ees_status_pub_->publish(ees_status_msg_);
                 break;
             case MessageType::set_config:
-                /*config.timestamp = ::om2ctrl::utils::GetTime();
-            config.d = eesData_.config;
-            xcom->Write(topicnames::config, config);*/
+                ees_config_msg_.stamp = time_msg;
+                ees_config_msg_.hbcompass0 = eesData_.config.hbCompass0;
+                ees_config_msg_.hbcompassmax = eesData_.config.hbCompassMax;
+                ees_config_msg_.hbmagnetometer0 = eesData_.config.hbMagnetometer0;
+                ees_config_msg_.hbmagnetometermax = eesData_.config.hbMagnetometerMax;
+                ees_config_msg_.hbpacketsensors0 = eesData_.config.hbPacketSensors0;
+                ees_config_msg_.hbpacketsensorsmax = eesData_.config.hbPacketSensorsMax;
+                ees_config_msg_.hbpacketstatus0 = eesData_.config.hbPacketStatus0;
+                ees_config_msg_.hbpacketstatusmax = eesData_.config.hbPacketStatusMax;
+                ees_config_msg_.hbpacketmotors0 = eesData_.config.hbPacketMotors0;
+                ees_config_msg_.hbpacketmotorsmax = eesData_.config.hbPacketMotorsMax;
+                ees_config_msg_.hbpacketbattery0 = eesData_.config.hbPacketBattery0;
+                ees_config_msg_.hbpacketbatterymax = eesData_.config.hbPacketBatteryMax;
+                ees_config_msg_.timeoutaccelerometer = eesData_.config.timeoutAccelerometer;
+                ees_config_msg_.timeoutcompass = eesData_.config.timeoutCompass;
+                ees_config_msg_.timeoutmagnetometer = eesData_.config.timeoutMagnetometer;
+                ees_config_msg_.pwmupmin = eesData_.config.pwmUpMin;
+                ees_config_msg_.pwmupmax = eesData_.config.pwmUpMax;
+                ees_config_msg_.pwmperiodmin = eesData_.config.pwmPeriodMin;
+                ees_config_msg_.pwmperiodmax = eesData_.config.pwmPeriodMax;
+                ees_config_msg_.pwmtimethreshold = eesData_.config.pwmTimeThreshold;
+                ees_config_msg_.pwmzerothreshold = eesData_.config.pwmZeroThreshold;
+                ees_config_msg_.deadzonetime = eesData_.config.deadzoneTime;
+                ees_config_msg_.thrustersaturation = eesData_.config.thrusterSaturation;
+                ees_config_pub_->publish(ees_config_msg_);
                 break;
             case MessageType::motors:
-                /*motors.timestamp = ::om2ctrl::utils::GetTime();
-            motors.d = eesData_.motors;
-            xcom->Write(topicnames::motors, motors);*/
+                ees_motors_msg_.stamp = time_msg; // since EES power-on
+                ees_motors_msg_.left.flags0 = eesData_.motors.left.flags0;
+                ees_motors_msg_.left.flags1 = eesData_.motors.left.flags1;
+                ees_motors_msg_.left.master_state = eesData_.motors.left.master_state;
+                ees_motors_msg_.left.master_error_code = eesData_.motors.left.master_error_code;
+                ees_motors_msg_.left.motor_voltage = eesData_.motors.left.motor_voltage; // [1/100 V]
+                ees_motors_msg_.left.motor_current = eesData_.motors.left.motor_current;
+                ees_motors_msg_.left.motor_power = eesData_.motors.left.motor_power;
+                ees_motors_msg_.left.motor_speed = eesData_.motors.left.motor_speed; // [RPM]
+                ees_motors_msg_.left.motor_pcb_temp = eesData_.motors.left.motor_pcb_temp; // [° celsius]
+                ees_motors_msg_.left.motor_stator_temp = eesData_.motors.left.motor_stator_temp; // [° celsius]
+                ees_motors_msg_.left.battery_charge = eesData_.motors.left.battery_charge;
+                ees_motors_msg_.left.battery_voltage = eesData_.motors.left.battery_voltage; // [1/100 V]
+                ees_motors_msg_.left.battery_current = eesData_.motors.left.battery_current; // [1/10 A]
+                ees_motors_msg_.left.gps_speed = eesData_.motors.left.gps_speed;
+                ees_motors_msg_.left.range_miles = eesData_.motors.left.range_miles;
+                ees_motors_msg_.left.range_minutes = eesData_.motors.left.range_minutes;
+                ees_motors_msg_.left.temperature_sw = eesData_.motors.left.temperature_sw; // sembra fissa a 0
+                ees_motors_msg_.left.temperature_rp = eesData_.motors.left.temperature_rp; // [° celsius]*/
+
+                ees_motors_msg_.right.flags0 = eesData_.motors.right.flags0;
+                ees_motors_msg_.right.flags1 = eesData_.motors.right.flags1;
+                ees_motors_msg_.right.master_state = eesData_.motors.right.master_state;
+                ees_motors_msg_.right.master_error_code = eesData_.motors.right.master_error_code;
+                ees_motors_msg_.right.motor_voltage = eesData_.motors.right.motor_voltage; // [1/100 V]
+                ees_motors_msg_.right.motor_current = eesData_.motors.right.motor_current;
+                ees_motors_msg_.right.motor_power = eesData_.motors.right.motor_power;
+                ees_motors_msg_.right.motor_speed = eesData_.motors.right.motor_speed; // [RPM]
+                ees_motors_msg_.right.motor_pcb_temp = eesData_.motors.right.motor_pcb_temp; // [° celsius]
+                ees_motors_msg_.right.motor_stator_temp = eesData_.motors.right.motor_stator_temp; // [° celsius]
+                ees_motors_msg_.right.battery_charge = eesData_.motors.right.battery_charge;
+                ees_motors_msg_.right.battery_voltage = eesData_.motors.right.battery_voltage; // [1/100 V]
+                ees_motors_msg_.right.battery_current = eesData_.motors.right.battery_current; // [1/10 A]
+                ees_motors_msg_.right.gps_speed = eesData_.motors.right.gps_speed;
+                ees_motors_msg_.right.range_miles = eesData_.motors.right.range_miles;
+                ees_motors_msg_.right.range_minutes = eesData_.motors.right.range_minutes;
+                ees_motors_msg_.right.temperature_sw = eesData_.motors.right.temperature_sw; // sembra fissa a 0
+                ees_motors_msg_.right.temperature_rp = eesData_.motors.right.temperature_rp; // [° celsius]*/
+                ees_motors_pub_->publish(ees_motors_msg_);
                 break;
             case MessageType::version:
                 /*version.timestamp = ::om2ctrl::utils::GetTime();
@@ -187,17 +261,16 @@ namespace ees {
                 break;
             case MessageType::battery:
                 /*battery.timestamp = ::om2ctrl::utils::GetTime();
-
-            if (eesData_.battery.id == 0) {
-                battery.d.left = eesData_.battery;
-                xcom->Write(topicnames::battery, battery);
-            } else if (eesData_.battery.id == 1) {
-                battery.d.right = eesData_.battery;
-                xcom->Write(topicnames::battery, battery);
-            } else {
-                ortos::DebugConsole::Write(ortos::LogLevel::warning, "thread", "Unsupported battery id %d", eesData_.battery.id);
-            }
-            break;*/
+                if (eesData_.battery.id == 0) {
+                    battery.d.left = eesData_.battery;
+                    xcom->Write(topicnames::battery, battery);
+                } else if (eesData_.battery.id == 1) {
+                    battery.d.right = eesData_.battery;
+                    xcom->Write(topicnames::battery, battery);
+                } else {
+                    ortos::DebugConsole::Write(ortos::LogLevel::warning, "thread", "Unsupported battery id %d", eesData_.battery.id);
+                }
+                break;*/
             case MessageType::sw485Status:
                 /*sw485Status.timestamp = ::om2ctrl::utils::GetTime();
             sw485Status.d = eesData_.sw485Status;

@@ -15,6 +15,7 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(surface_vehicle_model REQUIRED)
 find_package(ulisse_msgs REQUIRED)
+find_package(ulisse_driver REQUIRED)
 find_package(rml REQUIRED)
 find_package(fsm REQUIRED)
 find_package(ctrl_toolbox REQUIRED)
@@ -31,10 +32,12 @@ add_custom_target(.Files. SOURCES ${SOURCE_FILES})
 
 include_directories(
   include
+  ${ulisse_driver_INCLUDE_DIRS}
   ${ulisse_msgs_INCLUDE_DIRS}
   ${surface_vehicle_model_INCLUDE_DIRS}
 )
 
+#message(STATUS "ulisse_driver_LIBRARIES: ${ulisse_driver_LIBRARIES}")
 
 ## Libraries ##
 set(ulisse_ctrl_lib_sources
@@ -57,11 +60,10 @@ add_library(ulisse_ctrl_lib ${ulisse_ctrl_lib_sources})
 ament_target_dependencies(ulisse_ctrl_lib rclcpp std_msgs ulisse_msgs surface_vehicle_model)
 target_link_libraries(ulisse_ctrl_lib ${surface_vehicle_model_LIBRARIES} Geographic rml fsm ctrl_toolbox)
 
-
 ## Executables
 add_executable(control_test test/control_test.cpp)
 ament_target_dependencies(control_test rclcpp std_msgs ulisse_msgs rml)
-target_link_libraries(control_test rml ulisse_ctrl_lib)
+target_link_libraries(control_test rml ulisse_ctrl_lib ${ulisse_driver_LIBRARIES})
 
 add_executable(controller_node src/controller_node.cpp)
 ament_target_dependencies(controller_node rclcpp std_msgs ulisse_msgs rml)
@@ -71,7 +73,6 @@ add_executable(monitor_node src/monitor_node.cpp)
 ament_target_dependencies(monitor_node rclcpp std_msgs ulisse_msgs rml)
 target_link_libraries(monitor_node rml ulisse_ctrl_lib)
 
-
 ## Install
 install(TARGETS
 #  publisher
@@ -79,12 +80,13 @@ install(TARGETS
   controller_node
   monitor_node
   control_test
-  DESTINATION lib/${PROJECT_NAME})
+  DESTINATION lib/${PROJECT_NAME}
+)
   
 install(DIRECTORY
   launch
   conf
-  DESTINATION share/${PROJECT_NAME}/
+  DESTINATION share/${PROJECT_NAME}
 )
 
 ament_package()

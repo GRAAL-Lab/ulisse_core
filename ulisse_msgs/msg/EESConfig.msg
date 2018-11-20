@@ -1,3 +1,4 @@
+Time stamp
 uint16 hbcompass0
 uint16 hbcompassmax
 uint16 hbmagnetometer0

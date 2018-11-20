@@ -300,10 +300,11 @@ void Sw485StatusContainer::Describe() {
 	Finalize();
 }
 */
-std::string CommandTypeToString(uint16_t type) {
+std::string CommandTypeToString(CommandType type) {
 	std:: string name;
+     uint16_t type_uint = (uint16_t)type;
 
-	switch(type) {
+    switch(type_uint) {
 	case (uint16_t)CommandType::undefined:
 		name = "undefined";
 		break;
@@ -341,28 +342,29 @@ std::string CommandTypeToString(uint16_t type) {
 		name = "reloadconfig";
 		break;
 	default:
-		name = "Unhandled...please update om2ctrl::ees::CommandTypeToString method adding command type " + std::to_string(type);
+        name = "Unhandled...please update om2ctrl::ees::CommandTypeToString method adding command type " + std::to_string(type_uint);
 		break;
 	}
 
 	return name;
 }
 
-std::string CommandAnswerToString(uint16_t answer) {
+std::string CommandAnswerToString(CommandAnswer answer) {
 	std:: string name;
+    int16_t ans_int = (int16_t)answer;
 
-	switch(answer) {
-	case (uint16_t)CommandAnswer::fail:
+    switch(ans_int) {
+    case (int16_t)CommandAnswer::fail:
 		name = "fail";
 		break;
-	case (uint16_t)CommandAnswer::undefined:
+    case (int16_t)CommandAnswer::undefined:
 		name = "undefined";
 		break;
-	case (uint16_t)CommandAnswer::ok:
+    case (int16_t)CommandAnswer::ok:
 		name = "ok";
 		break;
 	default:
-		name = "Unhandled...please update om2ctrl::ees::CommandAnswerToString method adding answer type " + std::to_string(answer);
+        name = "Unhandled...please update om2ctrl::ees::CommandAnswerToString() method adding answer type " + std::to_string(ans_int);
 		break;
 	}
 

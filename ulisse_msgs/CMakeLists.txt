@@ -43,19 +43,22 @@ rosidl_generate_interfaces(ulisse_msgs
   # Commands
   "msg/CommandMove.msg"
   # EES
+  "msg/MotorData.msg"
+  "msg/EESMotors.msg"
+  "msg/EESStatus.msg"
   "msg/EESBeep.msg"
   "msg/EESConfig.msg"
   "msg/EESEnableRef.msg"
   "msg/EESPowerButtons.msg"
   "msg/EESPumps.msg"
-
   # Services
   "srv/RosbagCmd.srv"
   "srv/EESCommand.srv"
-  DEPENDENCIES builtin_interfaces
 )
 
 ament_export_include_directories(include)
+
+ament_export_dependencies(rosidl_default_runtime)
 
 install(
   DIRECTORY include/
@@ -64,6 +67,7 @@ install(
 
 install(
   FILES mapping_rules.yaml
-  DESTINATION share/${PROJECT_NAME})
+  DESTINATION share/${PROJECT_NAME}
+)
 
 ament_package()

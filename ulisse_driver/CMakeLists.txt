@@ -30,11 +30,13 @@ include_directories(
   ${ulisse_msgs_INCLUDE_DIRS}
 )
 
+
 set(ulisse_driver_lib_sources
     src/ulisse_driver/CSerialHelper.cc
     src/ulisse_driver/EESHelper.cc
     src/ulisse_driver/EESHelperDataStructs.cc
 )
+
 
 ## Libraries
 add_library(ulisse_driver_lib SHARED ${ulisse_driver_lib_sources})
@@ -54,22 +56,30 @@ add_executable(driver_node src/driver_node.cpp)
 ament_target_dependencies(driver_node rclcpp std_msgs ulisse_msgs rml)
 target_link_libraries(driver_node rml ulisse_driver_lib driver_threads)
 
-install(TARGETS
-  driver_threads
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-)
+#install(TARGETS
+#  ARCHIVE DESTINATION lib/${PROJECT_NAME}
+#  LIBRARY DESTINATION lib/${PROJECT_NAME}
+#  RUNTIME DESTINATION bin/${PROJECT_NAME}
+#)
+ament_export_include_directories(include)
+ament_export_libraries(ulisse_driver_lib)
 
 install(TARGETS
   driver_node
+  driver_threads
+  ulisse_driver_lib
   DESTINATION lib/${PROJECT_NAME}
 )
 
 install(DIRECTORY
   launch
   conf
-  DESTINATION share/${PROJECT_NAME}/
+  DESTINATION share/${PROJECT_NAME}
+)
+
+install(
+  DIRECTORY include/
+  DESTINATION include
 )
 
 
