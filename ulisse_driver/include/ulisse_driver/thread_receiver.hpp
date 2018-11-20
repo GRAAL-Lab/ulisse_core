@@ -11,9 +11,13 @@
 #include "ulisse_msgs/msg/micro_loop_count.hpp"
 #include "ulisse_msgs/msg/motor_reference.hpp"
 
+#include "ulisse_msgs/msg/ees_ack.hpp"
+#include "ulisse_msgs/msg/ees_battery.hpp"
 #include "ulisse_msgs/msg/ees_config.hpp"
 #include "ulisse_msgs/msg/ees_motors.hpp"
 #include "ulisse_msgs/msg/ees_status.hpp"
+#include "ulisse_msgs/msg/ees_sw485_status.hpp"
+#include "ulisse_msgs/msg/ees_version.hpp"
 
 #include "ulisse_driver/EESHelper.h"
 #include "ulisse_driver/visibility.h"
@@ -29,6 +33,8 @@ namespace ees {
     private:
         void ReadLoop();
 
+        void CopyEESData2RosMsg(ulisse_msgs::msg::EESBattery& batt_msg, const batteryData& ees_batt);
+
         EESHelper eesHlp_;
         EESData eesData_;
         std::chrono::system_clock::time_point t_now_;
@@ -43,9 +49,15 @@ namespace ees {
         ulisse_msgs::msg::AmbientSensors ambsens_msg_;
         ulisse_msgs::msg::Magnetometer magneto_msg_;
         ulisse_msgs::msg::MotorReference applied_motorref_msg_;
+        // EES
         ulisse_msgs::msg::EESStatus ees_status_msg_;
         ulisse_msgs::msg::EESConfig ees_config_msg_;
         ulisse_msgs::msg::EESMotors ees_motors_msg_;
+        ulisse_msgs::msg::EESVersion ees_version_msg_;
+        ulisse_msgs::msg::EESAck ees_ack_msg_;
+        ulisse_msgs::msg::EESBattery ees_battery_left_msg_;
+        ulisse_msgs::msg::EESBattery ees_battery_right_msg_;
+        ulisse_msgs::msg::EESSw485Status ees_sw485_msg_;
 
         rclcpp::Publisher<ulisse_msgs::msg::MicroLoopCount>::SharedPtr micro_loop_count_pub_;
         rclcpp::Publisher<ulisse_msgs::msg::GPS>::SharedPtr gpsdata_pub_;
@@ -54,18 +66,15 @@ namespace ees {
         rclcpp::Publisher<ulisse_msgs::msg::AmbientSensors>::SharedPtr ambsens_pub_;
         rclcpp::Publisher<ulisse_msgs::msg::Magnetometer>::SharedPtr magneto_pub_;
         rclcpp::Publisher<ulisse_msgs::msg::MotorReference>::SharedPtr applied_motorref_pub_;
+        // EES
         rclcpp::Publisher<ulisse_msgs::msg::EESStatus>::SharedPtr ees_status_pub_;
         rclcpp::Publisher<ulisse_msgs::msg::EESConfig>::SharedPtr ees_config_pub_;
         rclcpp::Publisher<ulisse_msgs::msg::EESMotors>::SharedPtr ees_motors_pub_;
-
-        /*SensorsContainer sensors;
-        StatusContainer status;
-        ConfigContainer config;
-        MotorsContainer motors;
-        VersionContainer version;
-        AckContainer ack;
-        BatteryContainer battery;
-        Sw485StatusContainer sw485Status;*/
+        rclcpp::Publisher<ulisse_msgs::msg::EESVersion>::SharedPtr ees_version_pub_;
+        rclcpp::Publisher<ulisse_msgs::msg::EESAck>::SharedPtr ees_ack_pub_;
+        rclcpp::Publisher<ulisse_msgs::msg::EESBattery>::SharedPtr ees_battery_left_pub_;
+        rclcpp::Publisher<ulisse_msgs::msg::EESBattery>::SharedPtr ees_battery_right_pub_;
+        rclcpp::Publisher<ulisse_msgs::msg::EESSw485Status>::SharedPtr ees_sw485_pub_;
     };
 }
 }

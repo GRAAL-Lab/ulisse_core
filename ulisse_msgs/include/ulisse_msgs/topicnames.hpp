@@ -16,6 +16,11 @@ namespace topicnames {
     const std::string ees_status = "/ees/status";
     const std::string ees_config = "/ees/config";
     const std::string ees_motors = "/ees/motors";
+    const std::string ees_version = "/ees/version";
+    const std::string ees_ack = "/ees/ack";
+    const std::string ees_battery_left = "/ees/battery_left";
+    const std::string ees_battery_right = "/ees/battery_right";
+    const std::string ees_sw485status = "/ees/sw485status";
 
     const std::string vehicle_ctrl_state = "/vehicle/ctrl_state";
     const std::string control_context = "/vehicle/ctrl_context";

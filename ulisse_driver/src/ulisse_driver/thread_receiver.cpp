@@ -1,3 +1,5 @@
+
+#include <algorithm>
 #include "rclcpp/rclcpp.hpp"
 
 #include "ulisse_driver/thread_receiver.hpp"
@@ -72,13 +74,18 @@ namespace ees {
         ees_status_pub_ = this->create_publisher<ulisse_msgs::msg::EESStatus>(ulisse_msgs::topicnames::ees_status);
         ees_config_pub_ = this->create_publisher<ulisse_msgs::msg::EESConfig>(ulisse_msgs::topicnames::ees_config);
         ees_motors_pub_ = this->create_publisher<ulisse_msgs::msg::EESMotors>(ulisse_msgs::topicnames::ees_motors);
+        ees_version_pub_ = this->create_publisher<ulisse_msgs::msg::EESVersion>(ulisse_msgs::topicnames::ees_motors);
+        ees_ack_pub_ = this->create_publisher<ulisse_msgs::msg::EESAck>(ulisse_msgs::topicnames::ees_ack);
+        ees_battery_left_pub_ = this->create_publisher<ulisse_msgs::msg::EESBattery>(ulisse_msgs::topicnames::ees_battery_left);
+        ees_battery_right_pub_ = this->create_publisher<ulisse_msgs::msg::EESBattery>(ulisse_msgs::topicnames::ees_battery_right);
+        ees_sw485_pub_ = this->create_publisher<ulisse_msgs::msg::EESSw485Status>(ulisse_msgs::topicnames::ees_sw485status);
 
         // xcom->AddDataTopic(topicnames::sensors, sensors);  FFATTO
         // xcom->AddDataTopic(topicnames::status, status); FFATTO
         // xcom->AddDataTopic(topicnames::config, config); FFATTO
+        // xcom->AddDataTopic(topicnames::motors, motors); FATTO
+        // xcom->AddDataTopic(topicnames::version, version); FFFATTO
 
-        // xcom->AddDataTopic(topicnames::motors, motors);
-        // xcom->AddDataTopic(topicnames::version, version);
         // xcom->AddDataTopic(topicnames::ack, ack);
         // xcom->AddDataTopic(topicnames::battery, battery);
         // xcom->AddDataTopic(topicnames::sw485Status, sw485Status);
@@ -250,31 +257,38 @@ namespace ees {
                 ees_motors_pub_->publish(ees_motors_msg_);
                 break;
             case MessageType::version:
-                /*version.timestamp = ::om2ctrl::utils::GetTime();
-            version.d = eesData_.version;
-            xcom->Write(topicnames::version, version);*/
+                ees_version_msg_.md_version = eesData_.version.mdVersion;
+                ees_version_msg_.sw_version = eesData_.version.swVersion;
+                ees_version_msg_.lsat_version = eesData_.version.lsatVersion;
+                ees_version_msg_.rsat_version = eesData_.version.rsatVersion;
+                ees_version_pub_->publish(ees_version_msg_);
                 break;
             case MessageType::ack:
-                /*ack.timestamp = ::om2ctrl::utils::GetTime();
-            ack.d = eesData_.ack;
-            xcom->Write(topicnames::ack, ack);*/
+                ees_ack_msg_.stamp = time_msg;
+                ees_ack_msg_.messagetype = eesData_.ack.messagetype;
+                ees_ack_msg_.ack = eesData_.ack.ack;
+                ees_ack_pub_->publish(ees_ack_msg_);
                 break;
             case MessageType::battery:
-                /*battery.timestamp = ::om2ctrl::utils::GetTime();
+
                 if (eesData_.battery.id == 0) {
-                    battery.d.left = eesData_.battery;
-                    xcom->Write(topicnames::battery, battery);
+                    ees_battery_left_msg_.stamp = time_msg;
+                    CopyEESData2RosMsg(ees_battery_left_msg_, eesData_.battery);
+                    ees_battery_left_pub_->publish(ees_battery_left_msg_);
                 } else if (eesData_.battery.id == 1) {
-                    battery.d.right = eesData_.battery;
-                    xcom->Write(topicnames::battery, battery);
+                    ees_battery_right_msg_.stamp = time_msg;
+                    CopyEESData2RosMsg(ees_battery_right_msg_, eesData_.battery);
+                    ees_battery_right_pub_->publish(ees_battery_right_msg_);
                 } else {
-                    ortos::DebugConsole::Write(ortos::LogLevel::warning, "thread", "Unsupported battery id %d", eesData_.battery.id);
+                    RCLCPP_INFO(this->get_logger(), "Unsupported battery id %d", eesData_.battery.id);
                 }
-                break;*/
+                break;
             case MessageType::sw485Status:
+                ees_sw485_msg_.stamp = time_msg;
                 /*sw485Status.timestamp = ::om2ctrl::utils::GetTime();
             sw485Status.d = eesData_.sw485Status;
             xcom->Write(topicnames::sw485Status, sw485Status);*/
+                ees_sw485_pub_->publish(ees_sw485_msg_);
                 break;
             default:
                 RCLCPP_WARN(this->get_logger(), "Unhandled message type %d", eesData_.messageType);
@@ -282,6 +296,21 @@ namespace ees {
             }
             std::this_thread::sleep_for(1ms);
         }
+    }
+
+    void ThreadReceiver::CopyEESData2RosMsg(ulisse_msgs::msg::EESBattery& batt_msg, const batteryData& ees_batt)
+    {
+        batt_msg.id = ees_batt.id;
+        batt_msg.timestamp_485 = ees_batt.timestampSW485;
+        batt_msg.timestamp_satellite = ees_batt.timestampSatellite;
+        batt_msg.voltage = ees_batt.voltage;
+        batt_msg.current = ees_batt.current;
+        batt_msg.charge_percent = ees_batt.chargePercent;
+        batt_msg.temperature = ees_batt.temperature;
+        batt_msg.equalisation_cells = ees_batt.equalisationCells;
+        batt_msg.command_state = ees_batt.commandState;
+        batt_msg.alarm_state = ees_batt.alarmState;
+        std::copy(ees_batt.cells, ees_batt.cells + 14, batt_msg.cells.begin());
     }
 }
 }

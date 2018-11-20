@@ -43,6 +43,12 @@ rosidl_generate_interfaces(ulisse_msgs
   # Commands
   "msg/CommandMove.msg"
   # EES
+  "msg/EESAck.msg"
+  #"msg/BatteryData.msg"
+  "msg/EESBattery.msg"
+  "msg/Sw485InOut.msg"
+  "msg/EESSw485Status.msg"
+  "msg/EESVersion.msg"
   "msg/MotorData.msg"
   "msg/EESMotors.msg"
   "msg/EESStatus.msg"
