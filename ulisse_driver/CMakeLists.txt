@@ -57,6 +57,10 @@ add_executable(ees_driver_node src/ees_driver_node.cpp)
 ament_target_dependencies(ees_driver_node rclcpp std_msgs ulisse_msgs rml)
 target_link_libraries(ees_driver_node rml ulisse_driver_lib ees_driver_threads)
 
+add_executable(gps_setup_node src/gps_setup_node.cpp)
+ament_target_dependencies(gps_setup_node rclcpp std_msgs ulisse_msgs rml)
+target_link_libraries(gps_setup_node rml gps)
+
 add_executable(gps_publisher_node src/gps_publisher_node.cpp)
 ament_target_dependencies(gps_publisher_node rclcpp std_msgs ulisse_msgs rml)
 target_link_libraries(gps_publisher_node rml gps)

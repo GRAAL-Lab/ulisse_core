@@ -5,13 +5,13 @@
  *      Author: wonder
  */
 
-#include <ortos/ortos.h>
+#include <rclcpp/rclcpp.hpp>
 
-#include "CSerialHelper.h"
+#include "ulisse_driver/CSerialHelper.h"
 
 int CheckCommandConfirmation(const char* serialDevice, const char* command, const char* expectedAnswer,
 		bool& matchingAnswer) {
-	om2ctrl::CSerialHelper* serial = om2ctrl::CSerialHelper::getInstance(serialDevice, 115200);
+    ulisse::CSerialHelper* serial = ulisse::CSerialHelper::getInstance(serialDevice, 115200);
 
 	char buffer;
 	struct timeval tmp;
@@ -102,7 +102,7 @@ int main(int argc, char *argv[]) {
 	int status = system("service gpsd stop");
 	ortos::DebugConsole::Write(ortos::LogLevel::info, "main", "service gpsd stop returned %d", status);
 
-	om2ctrl::CSerialHelper* serial = om2ctrl::CSerialHelper::getInstance(serialDevice.c_str(), 9600);
+    ulisse::CSerialHelper* serial = ulisse::CSerialHelper::getInstance(serialDevice.c_str(), 9600);
 
 	std::string stringToSend;
 	int ret;
