@@ -56,18 +56,16 @@ add_executable(driver_node src/driver_node.cpp)
 ament_target_dependencies(driver_node rclcpp std_msgs ulisse_msgs rml)
 target_link_libraries(driver_node rml ulisse_driver_lib driver_threads)
 
-#install(TARGETS
-#  ARCHIVE DESTINATION lib/${PROJECT_NAME}
-#  LIBRARY DESTINATION lib/${PROJECT_NAME}
-#  RUNTIME DESTINATION bin/${PROJECT_NAME}
-#)
-ament_export_include_directories(include)
-ament_export_libraries(ulisse_driver_lib)
+install(TARGETS
+  ulisse_driver_lib
+  ARCHIVE DESTINATION lib#/${PROJECT_NAME}
+  LIBRARY DESTINATION lib#/${PROJECT_NAME}
+  RUNTIME DESTINATION bin#/${PROJECT_NAME}
+)
 
 install(TARGETS
   driver_node
   driver_threads
-  ulisse_driver_lib
   DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -82,5 +80,6 @@ install(
   DESTINATION include
 )
 
-
+ament_export_include_directories(include)
+ament_export_libraries(ulisse_driver_lib)
 ament_package()

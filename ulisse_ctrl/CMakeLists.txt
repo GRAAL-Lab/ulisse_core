@@ -37,7 +37,8 @@ include_directories(
   ${surface_vehicle_model_INCLUDE_DIRS}
 )
 
-#message(STATUS "ulisse_driver_LIBRARIES: ${ulisse_driver_LIBRARIES}")
+#message(STATUS "****** ulisse_driver_LIBRARIES ******: ${ulisse_driver_LIBRARIES}")
+
 
 ## Libraries ##
 set(ulisse_ctrl_lib_sources

@@ -39,7 +39,8 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/Magnetometer.msg"
   "msg/MotorReference.msg"
   "msg/MicroLoopCount.msg"
-  "msg/GPS.msg"
+  "msg/GPSData.msg"
+  "msg/GPSStatus.msg"
   # Commands
   "msg/CommandMove.msg"
   # EES

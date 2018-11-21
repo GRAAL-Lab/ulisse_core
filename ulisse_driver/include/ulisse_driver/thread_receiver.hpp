@@ -5,7 +5,7 @@
 
 #include "ulisse_msgs/msg/ambient_sensors.hpp"
 #include "ulisse_msgs/msg/compass.hpp"
-#include "ulisse_msgs/msg/gps.hpp"
+#include "ulisse_msgs/msg/gps_data.hpp"
 #include "ulisse_msgs/msg/imu_data.hpp"
 #include "ulisse_msgs/msg/magnetometer.hpp"
 #include "ulisse_msgs/msg/micro_loop_count.hpp"
@@ -33,7 +33,8 @@ namespace ees {
     private:
         void ReadLoop();
 
-        void CopyEESData2RosMsg(ulisse_msgs::msg::EESBattery& batt_msg, const batteryData& ees_batt);
+        void EESData2RosMsg(const batteryData& ees_batt, ulisse_msgs::msg::EESBattery& batt_msg);
+        void EESData2RosMsg(const motorData& ees_motor, ulisse_msgs::msg::MotorData& motor_msg);
 
         EESHelper eesHlp_;
         EESData eesData_;
@@ -43,7 +44,7 @@ namespace ees {
         rclcpp::TimerBase::SharedPtr timer_;
 
         ulisse_msgs::msg::MicroLoopCount microloopcount_msg_;
-        ulisse_msgs::msg::GPS gps_msg_;
+        ulisse_msgs::msg::GPSData gps_msg_;
         ulisse_msgs::msg::Compass compass_msg_;
         ulisse_msgs::msg::IMUData imu_msg_;
         ulisse_msgs::msg::AmbientSensors ambsens_msg_;
@@ -60,7 +61,7 @@ namespace ees {
         ulisse_msgs::msg::EESSw485Status ees_sw485_msg_;
 
         rclcpp::Publisher<ulisse_msgs::msg::MicroLoopCount>::SharedPtr micro_loop_count_pub_;
-        rclcpp::Publisher<ulisse_msgs::msg::GPS>::SharedPtr gpsdata_pub_;
+        rclcpp::Publisher<ulisse_msgs::msg::GPSData>::SharedPtr gpsdata_pub_;
         rclcpp::Publisher<ulisse_msgs::msg::Compass>::SharedPtr compass_pub_;
         rclcpp::Publisher<ulisse_msgs::msg::IMUData>::SharedPtr imu_pub_;
         rclcpp::Publisher<ulisse_msgs::msg::AmbientSensors>::SharedPtr ambsens_pub_;

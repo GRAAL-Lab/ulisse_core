@@ -4,7 +4,7 @@
 #include "std_msgs/msg/string.hpp"
 
 #include "ulisse_msgs/msg/control_context.hpp"
-#include "ulisse_msgs/msg/gps.hpp"
+#include "ulisse_msgs/msg/gps_data.hpp"
 #include "ulisse_msgs/msg/position_context.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 
@@ -12,12 +12,12 @@
 
 #include "rml/RML.h"
 
-static ulisse_msgs::msg::GPS gps_msg;
+static ulisse_msgs::msg::GPSData gps_msg;
 static ulisse_msgs::msg::PositionContext position_cxt;
 static ulisse_msgs::msg::ControlContext control_cxt;
 static std_msgs::msg::String vehicle_state;
 
-void GPS_cb(const ulisse_msgs::msg::GPS::SharedPtr msg);
+void GPS_cb(const ulisse_msgs::msg::GPSData::SharedPtr msg);
 void PositionContext_cb(const ulisse_msgs::msg::PositionContext::SharedPtr msg);
 void ControlContext_cb(const ulisse_msgs::msg::ControlContext::SharedPtr msg);
 void VehicleState_cb(const std_msgs::msg::String::SharedPtr msg);
@@ -30,12 +30,12 @@ int main(int argc, char* argv[])
     int rate = 10;
     rclcpp::WallRate loop_rate(rate);
 
-    rclcpp::Subscription<ulisse_msgs::msg::GPS>::SharedPtr gps_sub;
+    rclcpp::Subscription<ulisse_msgs::msg::GPSData>::SharedPtr gps_sub;
     rclcpp::Subscription<ulisse_msgs::msg::PositionContext>::SharedPtr poscxt_sub;
     rclcpp::Subscription<ulisse_msgs::msg::ControlContext>::SharedPtr ctrlcxt_sub;
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr vehiclestate_sub;
 
-    gps_sub = nh->create_subscription<ulisse_msgs::msg::GPS>(ulisse_msgs::topicnames::sensor_gps, GPS_cb);
+    gps_sub = nh->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps, GPS_cb);
     poscxt_sub = nh->create_subscription<ulisse_msgs::msg::PositionContext>(
         ulisse_msgs::topicnames::position_context, PositionContext_cb);
     ctrlcxt_sub = nh->create_subscription<ulisse_msgs::msg::ControlContext>(
@@ -74,7 +74,7 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-void GPS_cb(const ulisse_msgs::msg::GPS::SharedPtr msg)
+void GPS_cb(const ulisse_msgs::msg::GPSData::SharedPtr msg)
 {
     gps_msg = *msg;
 }

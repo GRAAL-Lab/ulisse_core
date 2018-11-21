@@ -1,6 +1,6 @@
 
-#include <algorithm>
 #include "rclcpp/rclcpp.hpp"
+#include <algorithm>
 
 #include "ulisse_driver/thread_receiver.hpp"
 
@@ -64,7 +64,7 @@ namespace ees {
         }
 
         micro_loop_count_pub_ = this->create_publisher<ulisse_msgs::msg::MicroLoopCount>(ulisse_msgs::topicnames::micro_loop_count);
-        gpsdata_pub_ = this->create_publisher<ulisse_msgs::msg::GPS>(ulisse_msgs::topicnames::sensor_gps);
+        gpsdata_pub_ = this->create_publisher<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps);
         compass_pub_ = this->create_publisher<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass);
         imu_pub_ = this->create_publisher<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu);
         ambsens_pub_ = this->create_publisher<ulisse_msgs::msg::AmbientSensors>(ulisse_msgs::topicnames::sensor_ambient);
@@ -217,43 +217,8 @@ namespace ees {
                 break;
             case MessageType::motors:
                 ees_motors_msg_.stamp = time_msg; // since EES power-on
-                ees_motors_msg_.left.flags0 = eesData_.motors.left.flags0;
-                ees_motors_msg_.left.flags1 = eesData_.motors.left.flags1;
-                ees_motors_msg_.left.master_state = eesData_.motors.left.master_state;
-                ees_motors_msg_.left.master_error_code = eesData_.motors.left.master_error_code;
-                ees_motors_msg_.left.motor_voltage = eesData_.motors.left.motor_voltage; // [1/100 V]
-                ees_motors_msg_.left.motor_current = eesData_.motors.left.motor_current;
-                ees_motors_msg_.left.motor_power = eesData_.motors.left.motor_power;
-                ees_motors_msg_.left.motor_speed = eesData_.motors.left.motor_speed; // [RPM]
-                ees_motors_msg_.left.motor_pcb_temp = eesData_.motors.left.motor_pcb_temp; // [° celsius]
-                ees_motors_msg_.left.motor_stator_temp = eesData_.motors.left.motor_stator_temp; // [° celsius]
-                ees_motors_msg_.left.battery_charge = eesData_.motors.left.battery_charge;
-                ees_motors_msg_.left.battery_voltage = eesData_.motors.left.battery_voltage; // [1/100 V]
-                ees_motors_msg_.left.battery_current = eesData_.motors.left.battery_current; // [1/10 A]
-                ees_motors_msg_.left.gps_speed = eesData_.motors.left.gps_speed;
-                ees_motors_msg_.left.range_miles = eesData_.motors.left.range_miles;
-                ees_motors_msg_.left.range_minutes = eesData_.motors.left.range_minutes;
-                ees_motors_msg_.left.temperature_sw = eesData_.motors.left.temperature_sw; // sembra fissa a 0
-                ees_motors_msg_.left.temperature_rp = eesData_.motors.left.temperature_rp; // [° celsius]*/
-
-                ees_motors_msg_.right.flags0 = eesData_.motors.right.flags0;
-                ees_motors_msg_.right.flags1 = eesData_.motors.right.flags1;
-                ees_motors_msg_.right.master_state = eesData_.motors.right.master_state;
-                ees_motors_msg_.right.master_error_code = eesData_.motors.right.master_error_code;
-                ees_motors_msg_.right.motor_voltage = eesData_.motors.right.motor_voltage; // [1/100 V]
-                ees_motors_msg_.right.motor_current = eesData_.motors.right.motor_current;
-                ees_motors_msg_.right.motor_power = eesData_.motors.right.motor_power;
-                ees_motors_msg_.right.motor_speed = eesData_.motors.right.motor_speed; // [RPM]
-                ees_motors_msg_.right.motor_pcb_temp = eesData_.motors.right.motor_pcb_temp; // [° celsius]
-                ees_motors_msg_.right.motor_stator_temp = eesData_.motors.right.motor_stator_temp; // [° celsius]
-                ees_motors_msg_.right.battery_charge = eesData_.motors.right.battery_charge;
-                ees_motors_msg_.right.battery_voltage = eesData_.motors.right.battery_voltage; // [1/100 V]
-                ees_motors_msg_.right.battery_current = eesData_.motors.right.battery_current; // [1/10 A]
-                ees_motors_msg_.right.gps_speed = eesData_.motors.right.gps_speed;
-                ees_motors_msg_.right.range_miles = eesData_.motors.right.range_miles;
-                ees_motors_msg_.right.range_minutes = eesData_.motors.right.range_minutes;
-                ees_motors_msg_.right.temperature_sw = eesData_.motors.right.temperature_sw; // sembra fissa a 0
-                ees_motors_msg_.right.temperature_rp = eesData_.motors.right.temperature_rp; // [° celsius]*/
+                EESData2RosMsg(eesData_.motors.left, ees_motors_msg_.left);
+                EESData2RosMsg(eesData_.motors.right, ees_motors_msg_.right);
                 ees_motors_pub_->publish(ees_motors_msg_);
                 break;
             case MessageType::version:
@@ -273,11 +238,11 @@ namespace ees {
 
                 if (eesData_.battery.id == 0) {
                     ees_battery_left_msg_.stamp = time_msg;
-                    CopyEESData2RosMsg(ees_battery_left_msg_, eesData_.battery);
+                    EESData2RosMsg(eesData_.battery, ees_battery_left_msg_);
                     ees_battery_left_pub_->publish(ees_battery_left_msg_);
                 } else if (eesData_.battery.id == 1) {
                     ees_battery_right_msg_.stamp = time_msg;
-                    CopyEESData2RosMsg(ees_battery_right_msg_, eesData_.battery);
+                    EESData2RosMsg(eesData_.battery, ees_battery_right_msg_);
                     ees_battery_right_pub_->publish(ees_battery_right_msg_);
                 } else {
                     RCLCPP_INFO(this->get_logger(), "Unsupported battery id %d", eesData_.battery.id);
@@ -285,9 +250,16 @@ namespace ees {
                 break;
             case MessageType::sw485Status:
                 ees_sw485_msg_.stamp = time_msg;
-                /*sw485Status.timestamp = ::om2ctrl::utils::GetTime();
-            sw485Status.d = eesData_.sw485Status;
-            xcom->Write(topicnames::sw485Status, sw485Status);*/
+                ees_sw485_msg_.timestamp_sw_485 = eesData_.sw485Status.timestampSW485;
+                ees_sw485_msg_.missed_deadlines = eesData_.sw485Status.missedDeadlines;
+                ees_sw485_msg_.left_motor.received = eesData_.sw485Status.leftMotor.received;
+                ees_sw485_msg_.right_motor.received = eesData_.sw485Status.rightMotor.received;
+                ees_sw485_msg_.left_satellite.received = eesData_.sw485Status.leftSatellite.received;
+                ees_sw485_msg_.right_satellite.received = eesData_.sw485Status.rightSatellite.received;
+                ees_sw485_msg_.left_motor.sent = eesData_.sw485Status.leftMotor.sent;
+                ees_sw485_msg_.right_motor.sent = eesData_.sw485Status.rightMotor.sent;
+                ees_sw485_msg_.left_satellite.sent = eesData_.sw485Status.leftSatellite.sent;
+                ees_sw485_msg_.right_satellite.sent = eesData_.sw485Status.rightSatellite.sent;
                 ees_sw485_pub_->publish(ees_sw485_msg_);
                 break;
             default:
@@ -298,7 +270,7 @@ namespace ees {
         }
     }
 
-    void ThreadReceiver::CopyEESData2RosMsg(ulisse_msgs::msg::EESBattery& batt_msg, const batteryData& ees_batt)
+    void ThreadReceiver::EESData2RosMsg(const batteryData& ees_batt, ulisse_msgs::msg::EESBattery& batt_msg)
     {
         batt_msg.id = ees_batt.id;
         batt_msg.timestamp_485 = ees_batt.timestampSW485;
@@ -311,6 +283,28 @@ namespace ees {
         batt_msg.command_state = ees_batt.commandState;
         batt_msg.alarm_state = ees_batt.alarmState;
         std::copy(ees_batt.cells, ees_batt.cells + 14, batt_msg.cells.begin());
+    }
+
+    void ThreadReceiver::EESData2RosMsg(const motorData& ees_motor, ulisse_msgs::msg::MotorData& motor_msg)
+    {
+        motor_msg.flags0 = ees_motor.flags0;
+        motor_msg.flags1 = ees_motor.flags1;
+        motor_msg.master_state = ees_motor.master_state;
+        motor_msg.master_error_code = ees_motor.master_error_code;
+        motor_msg.motor_voltage = ees_motor.motor_voltage; // [1/100 V]
+        motor_msg.motor_current = ees_motor.motor_current;
+        motor_msg.motor_power = ees_motor.motor_power;
+        motor_msg.motor_speed = ees_motor.motor_speed; // [RPM]
+        motor_msg.motor_pcb_temp = ees_motor.motor_pcb_temp; // [° celsius]
+        motor_msg.motor_stator_temp = ees_motor.motor_stator_temp; // [° celsius]
+        motor_msg.battery_charge = ees_motor.battery_charge;
+        motor_msg.battery_voltage = ees_motor.battery_voltage; // [1/100 V]
+        motor_msg.battery_current = ees_motor.battery_current; // [1/10 A]
+        motor_msg.gps_speed = ees_motor.gps_speed;
+        motor_msg.range_miles = ees_motor.range_miles;
+        motor_msg.range_minutes = ees_motor.range_minutes;
+        motor_msg.temperature_sw = ees_motor.temperature_sw; // sembra fissa a 0
+        motor_msg.temperature_rp = ees_motor.temperature_rp; // [° celsius]*/
     }
 }
 }

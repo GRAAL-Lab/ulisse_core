@@ -33,7 +33,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     SetUpFSM();
 
     // Sensor Subscriptions
-    gps_sub_ = nh_->create_subscription<ulisse_msgs::msg::GPS>(
+    gps_sub_ = nh_->create_subscription<ulisse_msgs::msg::GPSData>(
         ulisse_msgs::topicnames::sensor_gps, std::bind(&VehicleController::GPSSensor_cb, this, _1));
     compass_sub_ = nh_->create_subscription<ulisse_msgs::msg::Compass>(
         ulisse_msgs::topicnames::sensor_compass, std::bind(&VehicleController::CompassSensor_cb, this, _1));
@@ -164,7 +164,7 @@ void VehicleController::SetUpFSM()
     u_fsm_.SetInitState(ulisse::states::ID::halt);
 }
 
-void VehicleController::GPSSensor_cb(const ulisse_msgs::msg::GPS::SharedPtr msg)
+void VehicleController::GPSSensor_cb(const ulisse_msgs::msg::GPSData::SharedPtr msg)
 {
     timestamp_ = msg->time;
     posCxt_->currentPos.latitude = msg->latitude;

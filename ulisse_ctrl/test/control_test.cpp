@@ -1,7 +1,7 @@
 #include "rclcpp/rclcpp.hpp"
 
 #include "ulisse_msgs/msg/compass.hpp"
-#include "ulisse_msgs/msg/gps.hpp"
+#include "ulisse_msgs/msg/gps_data.hpp"
 #include "ulisse_msgs/msg/motor_reference.hpp"
 #include "ulisse_msgs/srv/ees_command.hpp"
 #include "ulisse_msgs/srv/rosbag_cmd.hpp"

@@ -10,7 +10,7 @@
 #include "ulisse_msgs/msg/ambient_sensors.hpp"
 #include "ulisse_msgs/msg/compass.hpp"
 #include "ulisse_msgs/msg/control_context.hpp"
-#include "ulisse_msgs/msg/gps.hpp"
+#include "ulisse_msgs/msg/gps_data.hpp"
 #include "ulisse_msgs/msg/imu_data.hpp"
 #include "ulisse_msgs/msg/magnetometer.hpp"
 #include "ulisse_msgs/msg/micro_loop_count.hpp"
@@ -28,7 +28,7 @@ class VehicleController {
     rclcpp::Node::SharedPtr nh_;
     rclcpp::SyncParametersClient::SharedPtr par_client_;
 
-    rclcpp::Subscription<ulisse_msgs::msg::GPS>::SharedPtr gps_sub_;
+    rclcpp::Subscription<ulisse_msgs::msg::GPSData>::SharedPtr gps_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::Compass>::SharedPtr compass_sub_;
 
     rclcpp::Subscription<std_msgs::msg::Empty>::SharedPtr cmd_halt_sub_;
@@ -55,7 +55,7 @@ class VehicleController {
     int LoadConfiguration();
     void SetUpFSM();
 
-    void GPSSensor_cb(const ulisse_msgs::msg::GPS::SharedPtr msg);
+    void GPSSensor_cb(const ulisse_msgs::msg::GPSData::SharedPtr msg);
     void CompassSensor_cb(const ulisse_msgs::msg::Compass::SharedPtr msg);
 
     void CommandHalt_cb(const std_msgs::msg::Empty::SharedPtr);
