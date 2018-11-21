@@ -7,7 +7,7 @@
 #include "surface_vehicle_model/surfacevehiclemodel.hpp"
 #include "ulisse_msgs/msg/ambient_sensors.hpp"
 #include "ulisse_msgs/msg/compass.hpp"
-#include "ulisse_msgs/msg/gps.hpp"
+#include "ulisse_msgs/msg/gps_data.hpp"
 #include "ulisse_msgs/msg/imu_data.hpp"
 #include "ulisse_msgs/msg/magnetometer.hpp"
 #include "ulisse_msgs/msg/motor_reference.hpp"
@@ -41,7 +41,7 @@ class VehicleSimulator {
     uint32_t stepssincepps_count_;
 
     ulisse_msgs::msg::MicroLoopCount micro_loop_count_msg_;
-    ulisse_msgs::msg::GPS gpsdata_msg_;
+    ulisse_msgs::msg::GPSData gpsdata_msg_;
     ulisse_msgs::msg::Compass compassdata_msg_;
     ulisse_msgs::msg::IMUData imudata_msg_;
     ulisse_msgs::msg::AmbientSensors ambsens_msg_;
@@ -49,7 +49,7 @@ class VehicleSimulator {
     ulisse_msgs::msg::MotorReference applied_motorref_msg_;
 
     rclcpp::Publisher<ulisse_msgs::msg::MicroLoopCount>::SharedPtr micro_loop_count_pub_;
-    rclcpp::Publisher<ulisse_msgs::msg::GPS>::SharedPtr gpsdata_pub_;
+    rclcpp::Publisher<ulisse_msgs::msg::GPSData>::SharedPtr gpsdata_pub_;
     rclcpp::Publisher<ulisse_msgs::msg::Compass>::SharedPtr compass_pub_;
     rclcpp::Publisher<ulisse_msgs::msg::IMUData>::SharedPtr imudata_pub_;
     rclcpp::Publisher<ulisse_msgs::msg::AmbientSensors>::SharedPtr ambsens_pub_;
