@@ -35,6 +35,7 @@ set(ulisse_driver_lib_sources
     src/ulisse_driver/CSerialHelper.cc
     src/ulisse_driver/EESHelper.cc
     src/ulisse_driver/EESHelperDataStructs.cc
+    #src/ulisse_driver/GPSDHelperDataStructs.cc
 )
 
 
@@ -43,18 +44,22 @@ add_library(ulisse_driver_lib SHARED ${ulisse_driver_lib_sources})
 ament_target_dependencies(ulisse_driver_lib rclcpp std_msgs ulisse_msgs)
 target_link_libraries(ulisse_driver_lib Geographic rml ctrl_toolbox)
 
-add_library(driver_threads SHARED
+add_library(ees_driver_threads SHARED
             src/ulisse_driver/thread_sender.cpp
             src/ulisse_driver/thread_receiver.cpp)
-target_compile_definitions(driver_threads
+target_compile_definitions(ees_driver_threads
   PRIVATE "MINIMAL_COMPOSITION_DLL")
-ament_target_dependencies(driver_threads rclcpp std_msgs class_loader)
-target_link_libraries(driver_threads ulisse_driver_lib)
+ament_target_dependencies(ees_driver_threads rclcpp std_msgs class_loader)
+target_link_libraries(ees_driver_threads ulisse_driver_lib)
 
 ## Executables
-add_executable(driver_node src/driver_node.cpp)
-ament_target_dependencies(driver_node rclcpp std_msgs ulisse_msgs rml)
-target_link_libraries(driver_node rml ulisse_driver_lib driver_threads)
+add_executable(ees_driver_node src/ees_driver_node.cpp)
+ament_target_dependencies(ees_driver_node rclcpp std_msgs ulisse_msgs rml)
+target_link_libraries(ees_driver_node rml ulisse_driver_lib ees_driver_threads)
+
+add_executable(gps_publisher_node src/gps_publisher_node.cpp)
+ament_target_dependencies(gps_publisher_node rclcpp std_msgs ulisse_msgs rml)
+target_link_libraries(gps_publisher_node rml gps)
 
 install(TARGETS
   ulisse_driver_lib
@@ -64,8 +69,8 @@ install(TARGETS
 )
 
 install(TARGETS
-  driver_node
-  driver_threads
+  ees_driver_node
+  ees_driver_threads
   DESTINATION lib/${PROJECT_NAME}
 )
 

@@ -25,7 +25,7 @@ float64 hdop           # Horizontal dilution of precision */
 float64 vdop           # Vertical dilution of precision */
 float64 tdop           # Temporal dilution of precision */
 
-uint8 MODE_NOT_SEEN=0  # mode update not seen yet */
-uint8 MODE_NO_FIX=1    # none */
-uint8 MODE_2D=2        # good for latitude/longitude */
-uint8 MODE_3D=3        # good for altitude/climb too */
+#uint8 MODE_NOT_SEEN=0  # mode update not seen yet */
+#uint8 MODE_NO_FIX=1    # none */
+#uint8 MODE_2D=2        # good for latitude/longitude */
+#uint8 MODE_3D=3        # good for altitude/climb too */

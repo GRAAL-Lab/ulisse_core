@@ -12,6 +12,7 @@
 #include <math.h>
 #include <string>
 
+#include "ulisse_driver/driver_defines.h"
 #include "ulisse_driver/EESHelperDefines.h"
 
 namespace ulisse {

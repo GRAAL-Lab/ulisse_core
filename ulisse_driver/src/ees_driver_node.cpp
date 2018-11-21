@@ -30,7 +30,7 @@ void* ThreadSenderFunction(void* dataIn);
 int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
-    auto nh = rclcpp::Node::make_shared("driver_node");
+    auto nh = rclcpp::Node::make_shared("ees_driver_node");
 
     std::string serialDevice = "/dev/ttyS0";
     int baudRate = 115200;

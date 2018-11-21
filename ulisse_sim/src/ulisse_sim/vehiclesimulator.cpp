@@ -30,7 +30,7 @@ VehicleSimulator::VehicleSimulator(const rclcpp::Node::SharedPtr& nh)
     t_start_ = t_last_ = t_now_ = std::chrono::system_clock::now();
 
     micro_loop_count_pub_ = nh_->create_publisher<ulisse_msgs::msg::MicroLoopCount>(ulisse_msgs::topicnames::micro_loop_count);
-    gpsdata_pub_ = nh_->create_publisher<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps);
+    gpsdata_pub_ = nh_->create_publisher<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data);
     compass_pub_ = nh_->create_publisher<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass);
     imudata_pub_ = nh_->create_publisher<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu);
     ambsens_pub_ = nh_->create_publisher<ulisse_msgs::msg::AmbientSensors>(ulisse_msgs::topicnames::sensor_ambient);
@@ -160,7 +160,7 @@ void VehicleSimulator::SimulateSensors(double h_p, double h_s)
     gpsdata_msg_.speed = vehSpeed_;
     gpsdata_msg_.latitude = lat_now_;
     gpsdata_msg_.longitude = long_now_;
-    gpsdata_msg_.gpsfixmode = ulisse_msgs::msg::GPSData::MODE_3D;
+    gpsdata_msg_.gpsfixmode = 3u;//ulisse_msgs::msg::GPSData::MODE_3D;
 
     compassdata_msg_.stamp.sec = now_stamp_secs;
     compassdata_msg_.stamp.nanosec = now_stamp_nanosecs;

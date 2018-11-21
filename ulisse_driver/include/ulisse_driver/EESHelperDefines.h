@@ -8,14 +8,12 @@
 #ifndef SRC_COMM_EESHELPERDEFINES_H_
 #define SRC_COMM_EESHELPERDEFINES_H_
 
-typedef float float32_t;
-typedef double float64_t;
 
 namespace ulisse {
 
 namespace ees {
 
-namespace topicnames {
+/*namespace topicnames {
 const char* const sensors = "/ees/out/sensors";
 const char* const status = "/ees/out/status";
 const char* const config = "/ees/out/config";
@@ -28,14 +26,11 @@ const char* const sw485Status = "/ees/out/sw485Status";
 const char* const references = "/ees/in/references";
 const char* const eescommands = "/ees/in/commands";
 const char* const eeslogCommandAnswers = "/ees/out/commandAnswers";
-}
-
-namespace constants {
-}
+}*/
 
 } //namespace ees
 
-} //namespace om2ctrl
+} //namespace ulisse
 
 //TODO esprimere in altri modi piu' moderni?
 

@@ -1,4 +1,4 @@
-uint8 MAXCHANNELS=72
+#uint8 MAXCHANNELS=72
 
 int8 status
 uint16 satellites_used                     # Number of satellites
