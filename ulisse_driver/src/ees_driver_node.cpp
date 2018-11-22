@@ -17,9 +17,6 @@
 #include "ulisse_driver/thread_receiver.hpp"
 #include "ulisse_driver/thread_sender.hpp"
 
-// Temporary
-#define LOG_LEVEL_ERROR 2
-#define LOG_LEVEL LOG_LEVEL_ERROR
 
 using namespace ulisse::ees;
 using namespace std::chrono_literals;
@@ -36,7 +33,6 @@ int main(int argc, char* argv[])
     int baudRate = 115200;
 
     auto par_client_ = std::make_shared<rclcpp::SyncParametersClient>(nh);
-
     while (!par_client_->wait_for_service(1ms)) {
         if (!rclcpp::ok()) {
             RCLCPP_ERROR(nh->get_logger(), "Interrupted while waiting for the service. Exiting.")
@@ -80,6 +76,7 @@ int main(int argc, char* argv[])
     executor.add_node(thread_sender);
     executor.spin();
 
+    //executor.cancel();
     rclcpp::shutdown();
 
     return 0;

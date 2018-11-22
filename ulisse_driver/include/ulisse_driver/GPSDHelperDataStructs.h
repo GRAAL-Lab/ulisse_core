@@ -64,7 +64,7 @@ struct gpsStatus {
 //	GpsSource position_source;    /* Source for position               */
 
 	std::string tmpString;
-	void DebugPrint(const char* string) {
+    void DebugPrint(rclcpp::Logger logger) {
 		switch (status) {
 		case GpsStatus::no_fix:
 			tmpString = "No Fix";
@@ -85,13 +85,13 @@ struct gpsStatus {
 			tmpString = "WAAS Fix";
 			break;
 		}
-        //ortos::DebugConsole::Write(ortos::LogLevel::info, string, "%s - %u sats in view, %u used", tmpString.c_str(), satellites_visible, satellites_used);
+        RCLCPP_INFO(logger, "%s - %u sats in view, %u used", tmpString.c_str(), satellites_visible, satellites_used);
 		for (int i=0 ; i<satellites_visible; ++i ) {
 			if (satellite_visible_used[i])
 				tmpString = "USED";
 			else
 				tmpString = "    ";
-            //ortos::DebugConsole::Write(ortos::LogLevel::info, string, "%s - prn %d snr %d z %d azimuth %d", tmpString.c_str(), satellite_visible_prn[i], satellite_visible_snr[i], satellite_visible_z[i], satellite_visible_azimuth[i]);
+            RCLCPP_INFO(logger, "%s - prn %d snr %d z %d azimuth %d", tmpString.c_str(), satellite_visible_prn[i], satellite_visible_snr[i], satellite_visible_z[i], satellite_visible_azimuth[i]);
 		}
 	}
 };
@@ -128,23 +128,23 @@ struct gpsData {
     	return (flags & bit);
     }
 
-    /*void DebugPrint(const char* string) {
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "-----------------------------------------------------------------------------------------------------------------------");
+    void DebugPrint(rclcpp::Logger logger) {
+        RCLCPP_INFO(logger, "-----------------------------------------------------------------------------------------------------------------------");
 
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "time %lf mode %d lat %lf long %lf altitude %lf", time, mode, latitude, longitude, altitude);
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "track %lf speed %lf climb %lf", track, speed, climb);
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "err %lf err_t %lf err_lat %lf err_lon %lf", err, err_time, err_latitude, err_longitude);
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "err_alt %lf err_tr %lf err_sp %lf err_cl %lf", err_altitude, err_track, err_speed, err_climb);
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "xdop %lf ydop %lf gdop %lf pdop %lf", xdop, ydop, gdop, pdop);
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "hdop %lf vdop %lf tdop %lf", hdop, vdop, tdop);
+        RCLCPP_INFO(logger, "time %lf mode %d lat %lf long %lf altitude %lf", time, mode, latitude, longitude, altitude);
+        RCLCPP_INFO(logger, "track %lf speed %lf climb %lf", track, speed, climb);
+        RCLCPP_INFO(logger, "err %lf err_t %lf err_lat %lf err_lon %lf", err, err_time, err_latitude, err_longitude);
+        RCLCPP_INFO(logger, "err_alt %lf err_tr %lf err_sp %lf err_cl %lf", err_altitude, err_track, err_speed, err_climb);
+        RCLCPP_INFO(logger, "xdop %lf ydop %lf gdop %lf pdop %lf", xdop, ydop, gdop, pdop);
+        RCLCPP_INFO(logger, "hdop %lf vdop %lf tdop %lf", hdop, vdop, tdop);
 
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "set online   %d | time     %d | timerr %d | latlon     %d | altitude %d | speed      %d | track     %d | climb    %d", CheckFlag(ONLINE_SET), CheckFlag(TIME_SET), CheckFlag(TIMERR_SET), CheckFlag(LATLON_SET), CheckFlag(ALTITUDE_SET), CheckFlag(SPEED_SET), CheckFlag(TRACK_SET), CheckFlag(CLIMB_SET));
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "set status   %d | mode     %d | dop    %d | herr       %d | verr     %d | attitude   %d | satellite %d | speederr %d", CheckFlag(STATUS_SET), CheckFlag(MODE_SET), CheckFlag(DOP_SET), CheckFlag(HERR_SET), CheckFlag(VERR_SET), CheckFlag(ATTITUDE_SET), CheckFlag(SATELLITE_SET), CheckFlag(SPEEDERR_SET));
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "set trackerr %d | climberr %d | device %d | devicelist %d | deviceid %d | rtcm2      %d | rtcm3     %d | ais      %d", CheckFlag(TRACKERR_SET), CheckFlag(CLIMBERR_SET), CheckFlag(DEVICE_SET), CheckFlag(DEVICELIST_SET), CheckFlag(DEVICEID_SET), CheckFlag(RTCM2_SET), CheckFlag(RTCM3_SET), CheckFlag(AIS_SET));
-//		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "set packet   %d | subframe %d | gst    %d | version    %d | policy   %d | logmessage %d | error     %d | toff     %d", CheckFlag(PACKET_SET), CheckFlag(SUBFRAME_SET), CheckFlag(GST_SET), CheckFlag(VERSION_SET), CheckFlag(POLICY_SET), CheckFlag(LOGMESSAGE_SET), CheckFlag(ERROR_SET), CheckFlag(TOFF_SET));
-//		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "set pps      %d | navdata  %d | other  %d", CheckFlag(PPS_SET), CheckFlag(NAVDATA_SET), (flags & (~((1llu<<35)-1)))); //(p->set & (~((1llu<<35)-1)))
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "-----------------------------------------------------------------------------------------------------------------------");
-    }*/
+        RCLCPP_INFO(logger, "set online   %d | time     %d | timerr %d | latlon     %d | altitude %d | speed      %d | track     %d | climb    %d", CheckFlag(ONLINE_SET), CheckFlag(TIME_SET), CheckFlag(TIMERR_SET), CheckFlag(LATLON_SET), CheckFlag(ALTITUDE_SET), CheckFlag(SPEED_SET), CheckFlag(TRACK_SET), CheckFlag(CLIMB_SET));
+        RCLCPP_INFO(logger, "set status   %d | mode     %d | dop    %d | herr       %d | verr     %d | attitude   %d | satellite %d | speederr %d", CheckFlag(STATUS_SET), CheckFlag(MODE_SET), CheckFlag(DOP_SET), CheckFlag(HERR_SET), CheckFlag(VERR_SET), CheckFlag(ATTITUDE_SET), CheckFlag(SATELLITE_SET), CheckFlag(SPEEDERR_SET));
+        RCLCPP_INFO(logger, "set trackerr %d | climberr %d | device %d | devicelist %d | deviceid %d | rtcm2      %d | rtcm3     %d | ais      %d", CheckFlag(TRACKERR_SET), CheckFlag(CLIMBERR_SET), CheckFlag(DEVICE_SET), CheckFlag(DEVICELIST_SET), CheckFlag(DEVICEID_SET), CheckFlag(RTCM2_SET), CheckFlag(RTCM3_SET), CheckFlag(AIS_SET));
+//		RCLCPP_INFO(logger, "set packet   %d | subframe %d | gst    %d | version    %d | policy   %d | logmessage %d | error     %d | toff     %d", CheckFlag(PACKET_SET), CheckFlag(SUBFRAME_SET), CheckFlag(GST_SET), CheckFlag(VERSION_SET), CheckFlag(POLICY_SET), CheckFlag(LOGMESSAGE_SET), CheckFlag(ERROR_SET), CheckFlag(TOFF_SET));
+//		RCLCPP_INFO(logger, "set pps      %d | navdata  %d | other  %d", CheckFlag(PPS_SET), CheckFlag(NAVDATA_SET), (flags & (~((1llu<<35)-1)))); //(p->set & (~((1llu<<35)-1)))
+        RCLCPP_INFO(logger, "-----------------------------------------------------------------------------------------------------------------------");
+    }
 };
 
 } //namespace gpsd

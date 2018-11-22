@@ -1,4 +1,4 @@
-driver_node:
+ees_driver_node:
     ros__parameters:
         SerialDevice: "/tmp/serial1"
         BaudRate: 115200
@@ -7,7 +7,7 @@ driver_node:
             DebugIncomingValidMessageType: false
             DebugFailedCrc: true
 
-thread_receiver:
+ees_thread_receiver:
     ros__parameters:
         SerialDevice: "/tmp/serial1"
         BaudRate: 115200
@@ -16,7 +16,7 @@ thread_receiver:
             DebugIncomingValidMessageType: false
             DebugFailedCrc: true
 
-thread_sender:
+ees_thread_sender:
     ros__parameters:
         SerialDevice: "/tmp/serial1"
         BaudRate: 115200
@@ -48,3 +48,8 @@ thread_sender:
                 PwmZeroThreshold: 0.05    # s
                 DeadzoneTime: 0.025       # s
                 ThrusterSaturation: 1000  # %
+                
+gps_setup_node:
+    ros__parameters:
+            SerialDevice: "/tmp/serial1"
+            BaudRate: 115200

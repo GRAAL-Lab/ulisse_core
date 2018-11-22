@@ -76,8 +76,6 @@ target_link_libraries(monitor_node rml ulisse_ctrl_lib)
 
 ## Install
 install(TARGETS
-#  publisher
-#  subscriber
   controller_node
   monitor_node
   control_test

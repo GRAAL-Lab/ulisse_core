@@ -8,12 +8,13 @@
 #ifndef SRC_COMM_EESHELPERDATASTRUCTS_H_
 #define SRC_COMM_EESHELPERDATASTRUCTS_H_
 
+#include <cmath>
 #include <inttypes.h>
-#include <math.h>
+#include <rclcpp/rclcpp.hpp>
 #include <string>
 
-#include "ulisse_driver/driver_defines.h"
 #include "ulisse_driver/EESHelperDefines.h"
+#include "ulisse_driver/driver_defines.h"
 
 namespace ulisse {
 
@@ -62,9 +63,10 @@ namespace ees {
         int16_t speed;
         int16_t jog;
 
-        /*void DebugPrint(const char* string) {
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "referencesData: lth %d rth %d speed %d jog %d", leftThruster, rightThruster, speed, jog);
-    }*/
+        void DebugPrint(rclcpp::Logger logger)
+        {
+            RCLCPP_INFO(logger, "referencesData: lth %d rth %d speed %d jog %d", leftThruster, rightThruster, speed, jog);
+        }
 
         uint16_t GetSize()
         {
@@ -78,9 +80,10 @@ namespace ees {
         uint8_t loop;
         float32_t delay;
 
-        /*void DebugPrint(const char* string) {
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "beepData: num %u loop %d delay %f", numberOfBeeps, loop, delay);
-    }*/
+        void DebugPrint(rclcpp::Logger logger)
+        {
+            RCLCPP_INFO(logger, "beepData: num %u loop %d delay %f", numberOfBeeps, loop, delay);
+        }
 
         uint16_t GetSize()
         {
@@ -92,9 +95,10 @@ namespace ees {
     struct enableRefData {
         uint8_t enable;
 
-        /*void DebugPrint(const char* string) {
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "enableRefData: enable %u", enable);
-    }*/
+        void DebugPrint(rclcpp::Logger logger)
+        {
+            RCLCPP_INFO(logger, "enableRefData: enable %u", enable);
+        }
 
         uint16_t GetSize()
         {
@@ -130,15 +134,16 @@ namespace ees {
         int16_t leftReference; //[‰]
         int16_t rightReference; //[‰]
 
-        /*void DebugPrint(const char* string) {
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "sensorData: ts %u || compass [deg]: heading %lf pitch %lf roll %lf || magn %f %f %f magn heading %lf [deg] || acc [m/s^2] x %f y %f z %f", timestamp,
-				(float64_t)(compassHeading * M_180_OVER_M_PIl), (float64_t)(compassPitch * M_180_OVER_M_PIl), (float64_t)(compassRoll * M_180_OVER_M_PIl), magnetometer[0], magnetometer[1], magnetometer[2], 	(float64_t)(atan2(magnetometer[1], magnetometer[0]) * M_180_OVER_M_PIl), accelerometer[0], accelerometer[1],
-		        accelerometer[2]);
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "sensorData: gyro [deg/s] %lf %lf %lf || gyro4x [deg/s] %lf %lf", (float64_t)(gyro[0] * M_180_OVER_M_PIl), (float64_t)(gyro[1] * M_180_OVER_M_PIl), (float64_t)(gyro[2] * M_180_OVER_M_PIl), (float64_t)(gyro4x[0] * M_180_OVER_M_PIl), (float64_t)(gyro4x[1] * M_180_OVER_M_PIl));
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "sensorData: temp %f [deg C] hum %f [%%]", temperatureCtrlBox, humidityCtrlBox);
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "sensorData: sspps %u leftRef %d/1000 rightRef %d/1000", stepsSincePPS, leftReference, rightReference);
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "sensorData: status:%X || UpdatedAcc %c UpdatedCompass %c UpdatedMagnetometer %c UpdatedAnalog %c", sensorStatus, PRINT_INT(sensorStatus & EMB_SNSSTSMASK_UPDATEDACCELEROMETER), PRINT_INT(sensorStatus & EMB_SNSSTSMASK_UPDATEDCOMPASS), PRINT_INT(sensorStatus & EMB_SNSSTSMASK_UPDATEDMAGNETOMETER), PRINT_INT(sensorStatus & EMB_SNSSTSMASK_UPDATEDANALOG));
-    }*/
+        void DebugPrint(rclcpp::Logger logger)
+        {
+            RCLCPP_INFO(logger, "sensorData: ts %u || compass [deg]: heading %lf pitch %lf roll %lf || magn %f %f %f magn heading %lf [deg] || acc [m/s^2] x %f y %f z %f", timestamp,
+                (float64_t)(compassHeading * M_180_OVER_M_PIl), (float64_t)(compassPitch * M_180_OVER_M_PIl), (float64_t)(compassRoll * M_180_OVER_M_PIl), magnetometer[0], magnetometer[1], magnetometer[2], (float64_t)(atan2(magnetometer[1], magnetometer[0]) * M_180_OVER_M_PIl), accelerometer[0], accelerometer[1],
+                accelerometer[2]);
+            RCLCPP_INFO(logger, "sensorData: gyro [deg/s] %lf %lf %lf || gyro4x [deg/s] %lf %lf", (float64_t)(gyro[0] * M_180_OVER_M_PIl), (float64_t)(gyro[1] * M_180_OVER_M_PIl), (float64_t)(gyro[2] * M_180_OVER_M_PIl), (float64_t)(gyro4x[0] * M_180_OVER_M_PIl), (float64_t)(gyro4x[1] * M_180_OVER_M_PIl));
+            RCLCPP_INFO(logger, "sensorData: temp %f [deg C] hum %f [%%]", temperatureCtrlBox, humidityCtrlBox);
+            RCLCPP_INFO(logger, "sensorData: sspps %u leftRef %d/1000 rightRef %d/1000", stepsSincePPS, leftReference, rightReference);
+            RCLCPP_INFO(logger, "sensorData: status:%X || UpdatedAcc %c UpdatedCompass %c UpdatedMagnetometer %c UpdatedAnalog %c", sensorStatus, PRINT_INT(sensorStatus & EMB_SNSSTSMASK_UPDATEDACCELEROMETER), PRINT_INT(sensorStatus & EMB_SNSSTSMASK_UPDATEDCOMPASS), PRINT_INT(sensorStatus & EMB_SNSSTSMASK_UPDATEDMAGNETOMETER), PRINT_INT(sensorStatus & EMB_SNSSTSMASK_UPDATEDANALOG));
+        }
 
         uint16_t GetSize()
         {
@@ -164,26 +169,26 @@ namespace ees {
         uint16_t overflowCount232; //overflow buffer rs232
         uint16_t overflowCount485; //overflow buffer rs485
 
-        /*void DebugPrint(const char* string) {
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "statusData: ts %u i2c state %d miss deadlines %u", timestamp, i2cDataState,
-		        missedDeadlines);
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "statusData:  acc timeout %u compass timeout %u magn timeout %d i2c busy %u", accelerometerTimeouts, compassTimeouts,
-		        magnetometerTimeouts, i2cbusBusy);
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "statusData: EN ACC %c EN COM %c EN MAG %c EN I2C %c EN ANA %c",
-		        PRINT_INT(status & EMB_STSMASK_ENABLE_ACCELEROMETER), PRINT_INT(status & EMB_STSMASK_ENABLE_COMPASS),
-		        PRINT_INT(status & EMB_STSMASK_ENABLE_MAGNETOMETER), PRINT_INT(status & EMB_STSMASK_ENABLE_I2C), PRINT_INT(status & EMB_STSMASK_ENABLE_ANALOG));
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "statusData: MAG CALIB %c EN REF %c TIMEOUT REF  %c TIMEOUT PUMPS %c",
-		        PRINT_INT(status & EMB_STSMASK_MAGNETOMETERCALIBRATION), PRINT_INT(status & EMB_STSMASK_ENABLE_REFERENCE),
-		        PRINT_INT(status & EMB_STSMASK_TIMEOUT_REFERENCE), PRINT_INT(status & EMB_STSMASK_TIMEOUTPUMPS));
+        void DebugPrint(rclcpp::Logger logger)
+        {
+            RCLCPP_INFO(logger, "statusData: ts %u i2c state %d miss deadlines %u", timestamp, i2cDataState,
+                missedDeadlines);
+            RCLCPP_INFO(logger, "statusData:  acc timeout %u compass timeout %u magn timeout %d i2c busy %u", accelerometerTimeouts, compassTimeouts,
+                magnetometerTimeouts, i2cbusBusy);
+            RCLCPP_INFO(logger, "statusData: EN ACC %c EN COM %c EN MAG %c EN I2C %c EN ANA %c",
+                PRINT_INT(status & EMB_STSMASK_ENABLE_ACCELEROMETER), PRINT_INT(status & EMB_STSMASK_ENABLE_COMPASS),
+                PRINT_INT(status & EMB_STSMASK_ENABLE_MAGNETOMETER), PRINT_INT(status & EMB_STSMASK_ENABLE_I2C), PRINT_INT(status & EMB_STSMASK_ENABLE_ANALOG));
+            RCLCPP_INFO(logger, "statusData: MAG CALIB %c EN REF %c TIMEOUT REF  %c TIMEOUT PUMPS %c",
+                PRINT_INT(status & EMB_STSMASK_MAGNETOMETERCALIBRATION), PRINT_INT(status & EMB_STSMASK_ENABLE_REFERENCE),
+                PRINT_INT(status & EMB_STSMASK_TIMEOUT_REFERENCE), PRINT_INT(status & EMB_STSMASK_TIMEOUTPUMPS));
 
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "statusData: PPM: MAIN VALID %c BACKUP VALID %c EN %c ZEROCHECK %c CHANNEL %c",
-				PRINT_INT(status & EMB_STSMASK_PPMMAIN_VALID), PRINT_INT(status & EMB_STSMASK_PPMBACKUP_VALID),PRINT_INT(status & EMB_STSMASK_PPM_ENABLED),
-				PRINT_INT(status & EMB_STSMASK_PPMNEEDZEROCHECK), ((status & EMB_STSMASK_PPMCHANNEL) != 0) ? 'B' : 'M');
+            RCLCPP_INFO(logger, "statusData: PPM: MAIN VALID %c BACKUP VALID %c EN %c ZEROCHECK %c CHANNEL %c",
+                PRINT_INT(status & EMB_STSMASK_PPMMAIN_VALID), PRINT_INT(status & EMB_STSMASK_PPMBACKUP_VALID), PRINT_INT(status & EMB_STSMASK_PPM_ENABLED),
+                PRINT_INT(status & EMB_STSMASK_PPMNEEDZEROCHECK), ((status & EMB_STSMASK_PPMCHANNEL) != 0) ? 'B' : 'M');
 
-
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "statusData:  485sent %" PRIu64 " 485received %" PRIu64 " diff %" PRIu64 "", messageSent485, messageReceived485, messageSent485 - messageReceived485);
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "statusData:  RS232 error count %u RS485 error count %u Overflow RS232 %u Overflow RS485 %u", commDataErrorCount, errorCount, overflowCount232, overflowCount485);
-    }*/
+            RCLCPP_INFO(logger, "statusData:  485sent %" PRIu64 " 485received %" PRIu64 " diff %" PRIu64 "", messageSent485, messageReceived485, messageSent485 - messageReceived485);
+            RCLCPP_INFO(logger, "statusData:  RS232 error count %u RS485 error count %u Overflow RS232 %u Overflow RS485 %u", commDataErrorCount, errorCount, overflowCount232, overflowCount485);
+        }
 
         uint16_t GetSize()
         {
@@ -218,13 +223,13 @@ namespace ees {
         float32_t deadzoneTime;
         uint16_t thrusterSaturation;
 
-        void DebugPrint()
+        void DebugPrint(rclcpp::Logger logger)
         {
-            printf("Compass %u->%u Magn %u->%u Sensors %u->%u\n", hbCompass0, hbCompassMax, hbMagnetometer0, hbMagnetometerMax, hbPacketSensors0, hbPacketSensorsMax);
-            printf("Status %u->%u Motors %u->%u Battery %u->%u\n", hbPacketStatus0, hbPacketStatusMax, hbPacketMotors0, hbPacketMotorsMax, hbPacketBattery0, hbPacketBatteryMax);
-            printf("Timeout Acc %f Timeout Compass %f Timeout Magn %f\n", timeoutAccelerometer, timeoutCompass, timeoutMagnetometer);
-            printf("PWM Up min %f [ms] PWM Up max %f [ms]\nPWM Period min %f [ms] PWM Period Max %f [ms]\n", pwmUpMin, pwmUpMax, pwmPeriodMin, pwmPeriodMax);
-            printf("PWM Time Threshold %f [ms] PWM Zero Threshold %f [ms]\ndeadzone Time %f [s] Thruster Saturation %u/1000\n", pwmTimeThreshold, pwmZeroThreshold, deadzoneTime, thrusterSaturation);
+            RCLCPP_INFO(logger, "Compass %u->%u Magn %u->%u Sensors %u->%u", hbCompass0, hbCompassMax, hbMagnetometer0, hbMagnetometerMax, hbPacketSensors0, hbPacketSensorsMax);
+            RCLCPP_INFO(logger, "Status %u->%u Motors %u->%u Battery %u->%u", hbPacketStatus0, hbPacketStatusMax, hbPacketMotors0, hbPacketMotorsMax, hbPacketBattery0, hbPacketBatteryMax);
+            RCLCPP_INFO(logger, "Timeout Acc %f Timeout Compass %f Timeout Magn %f", timeoutAccelerometer, timeoutCompass, timeoutMagnetometer);
+            RCLCPP_INFO(logger, "PWM Up min %f [ms] PWM Up max %f [ms]\nPWM Period min %f [ms] PWM Period Max %f [ms]", pwmUpMin, pwmUpMax, pwmPeriodMin, pwmPeriodMax);
+            RCLCPP_INFO(logger, "PWM Time Threshold %f [ms] PWM Zero Threshold %f [ms]\ndeadzone Time %f [s] Thruster Saturation %u/1000", pwmTimeThreshold, pwmZeroThreshold, deadzoneTime, thrusterSaturation);
         }
 
         uint16_t GetSize()
@@ -238,58 +243,59 @@ namespace ees {
         uint16_t messagetype;
         uint8_t ack;
 
-        /*void DebugPrint(const char* string) {
-		std::string messageTypeStr;
-		switch ((MessageType)messagetype) {
-		case MessageType::set_config:
-			messageTypeStr = "Set Config";
-			break;
-		case MessageType::start_compass_cal:
-			messageTypeStr = "Start Compass Calibration";
-			break;
-		case MessageType::stop_compass_cal:
-			messageTypeStr = "Stop Compass Calibration";
-			break;
-		case MessageType::reset:
-			messageTypeStr = "Reset";
-			break;
-		case MessageType::beep:
-			messageTypeStr = "beep";
-			break;
-		case MessageType::enable_ref:
-			messageTypeStr = "Enable Ref";
-			break;
-		case MessageType::pwrbuttons:
-			messageTypeStr = "Power Buttons";
-			break;
-		case MessageType::pumps:
-			messageTypeStr = "Pumps";
-			break;
-		default:
-			messageTypeStr = "Unknown";
-			break;
-		}
+        void DebugPrint(rclcpp::Logger logger)
+        {
+            std::string messageTypeStr;
+            switch ((MessageType)messagetype) {
+            case MessageType::set_config:
+                messageTypeStr = "Set Config";
+                break;
+            case MessageType::start_compass_cal:
+                messageTypeStr = "Start Compass Calibration";
+                break;
+            case MessageType::stop_compass_cal:
+                messageTypeStr = "Stop Compass Calibration";
+                break;
+            case MessageType::reset:
+                messageTypeStr = "Reset";
+                break;
+            case MessageType::beep:
+                messageTypeStr = "beep";
+                break;
+            case MessageType::enable_ref:
+                messageTypeStr = "Enable Ref";
+                break;
+            case MessageType::pwrbuttons:
+                messageTypeStr = "Power Buttons";
+                break;
+            case MessageType::pumps:
+                messageTypeStr = "Pumps";
+                break;
+            default:
+                messageTypeStr = "Unknown";
+                break;
+            }
 
-		std::string ackValue;
-		switch (ack) {
-		case EMB_RV_ACK:
-			ackValue = "ACK";
-			break;
-		case EMB_RV_NACK_ERROR:
-			ackValue = "NACK ERROR";
-			break;
-		case EMB_RV_NACK_UNDEFINED:
-			ackValue = "NACK UNDEFINED";
-			break;
-		case EMB_RV_NACK_INVALID_PAR:
-			ackValue = "NACK INVALID PAR";
-			break;
-		default:
-			ackValue = "UNKNOWN";
-			break;
-		}
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "ackData: message %s (id %u) ack result:%s (embedded code %u)", messageTypeStr.c_str(), messagetype, ackValue.c_str(), ack);
-    }*/
+            std::string ackValue;
+            switch (ack) {
+            case EMB_RV_ACK:
+                ackValue = "ACK";
+                break;
+            case EMB_RV_NACK_ERROR:
+                ackValue = "NACK ERROR";
+                break;
+            case EMB_RV_NACK_UNDEFINED:
+                ackValue = "NACK UNDEFINED";
+                break;
+            case EMB_RV_NACK_INVALID_PAR:
+                ackValue = "NACK INVALID PAR";
+                break;
+            default:
+                ackValue = "UNKNOWN";
+                break;
+            }
+            RCLCPP_INFO(logger, "ackData: message %s (id %u) ack result:%s (embedded code %u)", messageTypeStr.c_str(), messagetype, ackValue.c_str(), ack);
+        }
 
         uint16_t GetSize()
         {
@@ -304,14 +310,15 @@ namespace ees {
         uint16_t lsatVersion;
         uint16_t rsatVersion;
 
-        /*void DebugPrint(const char* string) {
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "-------------------------------------------------");
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "mdVersion: %04x", mdVersion);
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "swVersion: %04x", swVersion);
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "lsatVersion: %04x", lsatVersion);
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "rsatVersion: %04x", rsatVersion);
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "-------------------------------------------------");
-    }*/
+        void DebugPrint(rclcpp::Logger logger)
+        {
+            RCLCPP_INFO(logger, "-------------------------------------------------");
+            RCLCPP_INFO(logger, "mdVersion: %04x", mdVersion);
+            RCLCPP_INFO(logger, "swVersion: %04x", swVersion);
+            RCLCPP_INFO(logger, "lsatVersion: %04x", lsatVersion);
+            RCLCPP_INFO(logger, "rsatVersion: %04x", rsatVersion);
+            RCLCPP_INFO(logger, "-------------------------------------------------");
+        }
 
         uint16_t GetSize()
         {
@@ -342,32 +349,33 @@ namespace ees {
         uint8_t temperature_sw; // sembra fissa a 0
         uint8_t temperature_rp; // [° celsius]
 
-        /*void DebugPrint(const char* string) {
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "motorData: timestamp %u", timestamp);
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "motorData: flag0 Set Throttle Stop %c Setup Allowed %c In Charge %c In Setup %c",
-					        PRINT_INT(flags0 & EMB_MOTORS_FLAG0_SETTHROTTLESTOP),
-					        PRINT_INT(flags0 & EMB_MOTORS_FLAG0_SETUPALLOWED),
-					        PRINT_INT(flags0 & EMB_MOTORS_FLAG0_INCHARGE),
-					        PRINT_INT(flags0 & EMB_MOTORS_FLAG0_INSETUP));
+        void DebugPrint(rclcpp::Logger logger)
+        {
+            RCLCPP_INFO(logger, "motorData: timestamp %u", timestamp);
+            RCLCPP_INFO(logger, "motorData: flag0 Set Throttle Stop %c Setup Allowed %c In Charge %c In Setup %c",
+                PRINT_INT(flags0 & EMB_MOTORS_FLAG0_SETTHROTTLESTOP),
+                PRINT_INT(flags0 & EMB_MOTORS_FLAG0_SETUPALLOWED),
+                PRINT_INT(flags0 & EMB_MOTORS_FLAG0_INCHARGE),
+                PRINT_INT(flags0 & EMB_MOTORS_FLAG0_INSETUP));
 
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "motorData: flag1 Motor Temp Limit %c Batt Charge Valid %c Batt Nearly Empty %c Battery Charging %c",
-					        PRINT_INT(flags1 & EMB_MOTORS_FLAG1_MOTORINTEMPLIMIT),
-					        PRINT_INT(flags1 & EMB_MOTORS_FLAG1_BATTERYCHARGEVALID),
-					        PRINT_INT(flags1 & EMB_MOTORS_FLAG1_BATTERYNEARLYEMPTY),
-					        PRINT_INT(flags1 & EMB_MOTORS_FLAG1_BATTERYCHARGING));
+            RCLCPP_INFO(logger, "motorData: flag1 Motor Temp Limit %c Batt Charge Valid %c Batt Nearly Empty %c Battery Charging %c",
+                PRINT_INT(flags1 & EMB_MOTORS_FLAG1_MOTORINTEMPLIMIT),
+                PRINT_INT(flags1 & EMB_MOTORS_FLAG1_BATTERYCHARGEVALID),
+                PRINT_INT(flags1 & EMB_MOTORS_FLAG1_BATTERYNEARLYEMPTY),
+                PRINT_INT(flags1 & EMB_MOTORS_FLAG1_BATTERYCHARGING));
 
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "motorData: flag1 Gps Searching %c Gps Speed Valid %c Range Miles Valid %c Range Minutes Valid %c",
-					        PRINT_INT(flags1 & EMB_MOTORS_FLAG1_GPSSEARCHING),
-					        PRINT_INT(flags1 & EMB_MOTORS_FLAG1_GPSSPEEDVALID),
-                            PRINT_INT(flags1 & EMB_MOTORS_FLAG1_RANGEMILESVALID),
-                            PRINT_INT(flags1 & EMB_MOTORS_FLAG1_RANGEMINUTESVALID));
+            RCLCPP_INFO(logger, "motorData: flag1 Gps Searching %c Gps Speed Valid %c Range Miles Valid %c Range Minutes Valid %c",
+                PRINT_INT(flags1 & EMB_MOTORS_FLAG1_GPSSEARCHING),
+                PRINT_INT(flags1 & EMB_MOTORS_FLAG1_GPSSPEEDVALID),
+                PRINT_INT(flags1 & EMB_MOTORS_FLAG1_RANGEMILESVALID),
+                PRINT_INT(flags1 & EMB_MOTORS_FLAG1_RANGEMINUTESVALID));
 
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "motorData: Master state %u Master error code %u", master_state, master_error_code);
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "motorData: Vmot %lf [V] Cmot %lf [?] Pmot %u [?] MotSpeed %d [rpm] PcbTemp %u [deg C] StatorTemp %u [deg C]", motor_voltage / 100.0, motor_current / 10.0, motor_power, motor_speed, motor_pcb_temp, motor_stator_temp);
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "motorData: Batt charge %u Batt voltage %lf [V] Batt current %lf [A]", battery_charge, battery_voltage / 100.0, battery_current / 10.0);
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "motorData: Gps Speed %u Range Miles %u Range Minutes %u", gps_speed, range_miles, range_minutes);
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "motorData: Temp sw %u Temp rp %u", temperature_sw, temperature_rp);
-    }*/
+            RCLCPP_INFO(logger, "motorData: Master state %u Master error code %u", master_state, master_error_code);
+            RCLCPP_INFO(logger, "motorData: Vmot %lf [V] Cmot %lf [?] Pmot %u [?] MotSpeed %d [rpm] PcbTemp %u [deg C] StatorTemp %u [deg C]", motor_voltage / 100.0, motor_current / 10.0, motor_power, motor_speed, motor_pcb_temp, motor_stator_temp);
+            RCLCPP_INFO(logger, "motorData: Batt charge %u Batt voltage %lf [V] Batt current %lf [A]", battery_charge, battery_voltage / 100.0, battery_current / 10.0);
+            RCLCPP_INFO(logger, "motorData: Gps Speed %u Range Miles %u Range Minutes %u", gps_speed, range_miles, range_minutes);
+            RCLCPP_INFO(logger, "motorData: Temp sw %u Temp rp %u", temperature_sw, temperature_rp);
+        }
 
         uint16_t GetSize()
         {
@@ -382,13 +390,14 @@ namespace ees {
         motorData left;
         motorData right;
 
-        /*void DebugPrint(const char* string) {
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "timestamp %u", timestamp);
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "Left Motor");
-		left.DebugPrint(string);
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "Right Motor");
-		right.DebugPrint(string);
-    }*/
+        void DebugPrint(rclcpp::Logger logger)
+        {
+            RCLCPP_INFO(logger, "timestamp %u", timestamp);
+            RCLCPP_INFO(logger, "Left Motor");
+            left.DebugPrint(logger);
+            RCLCPP_INFO(logger, "Right Motor");
+            right.DebugPrint(logger);
+        }
 
         uint16_t GetSize()
         {
@@ -400,18 +409,19 @@ namespace ees {
     struct pumpsData {
         uint8_t pumpsFlag[2];
 
-        /*void DebugPrint(const char* string) {
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "pumpsData left: bow load %c bow unload %c stern load %c stern unload %c",
-							        PRINT_INT(pumpsFlag[EMB_PUMPS_LEFT_IDX] & EMB_PUMPS_FLAG_BOWLOADWATER),
-							        PRINT_INT(pumpsFlag[EMB_PUMPS_LEFT_IDX] & EMB_PUMPS_FLAG_BOWUNLOADWATER),
-							        PRINT_INT(pumpsFlag[EMB_PUMPS_LEFT_IDX] & EMB_PUMPS_FLAG_STERNLOADWATER),
-							        PRINT_INT(pumpsFlag[EMB_PUMPS_LEFT_IDX] & EMB_PUMPS_FLAG_STERNUNLOADWATER));
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "pumpsData right: bow load %c bow unload %c stern load %c stern unload %c",
-							        PRINT_INT(pumpsFlag[EMB_PUMPS_RIGHT_IDX] & EMB_PUMPS_FLAG_BOWLOADWATER),
-							        PRINT_INT(pumpsFlag[EMB_PUMPS_RIGHT_IDX] & EMB_PUMPS_FLAG_BOWUNLOADWATER),
-							        PRINT_INT(pumpsFlag[EMB_PUMPS_RIGHT_IDX] & EMB_PUMPS_FLAG_STERNLOADWATER),
-							        PRINT_INT(pumpsFlag[EMB_PUMPS_RIGHT_IDX] & EMB_PUMPS_FLAG_STERNUNLOADWATER));
-    }*/
+        void DebugPrint(rclcpp::Logger logger)
+        {
+            RCLCPP_INFO(logger, "pumpsData left: bow load %c bow unload %c stern load %c stern unload %c",
+                PRINT_INT(pumpsFlag[EMB_PUMPS_LEFT_IDX] & EMB_PUMPS_FLAG_BOWLOADWATER),
+                PRINT_INT(pumpsFlag[EMB_PUMPS_LEFT_IDX] & EMB_PUMPS_FLAG_BOWUNLOADWATER),
+                PRINT_INT(pumpsFlag[EMB_PUMPS_LEFT_IDX] & EMB_PUMPS_FLAG_STERNLOADWATER),
+                PRINT_INT(pumpsFlag[EMB_PUMPS_LEFT_IDX] & EMB_PUMPS_FLAG_STERNUNLOADWATER));
+            RCLCPP_INFO(logger, "pumpsData right: bow load %c bow unload %c stern load %c stern unload %c",
+                PRINT_INT(pumpsFlag[EMB_PUMPS_RIGHT_IDX] & EMB_PUMPS_FLAG_BOWLOADWATER),
+                PRINT_INT(pumpsFlag[EMB_PUMPS_RIGHT_IDX] & EMB_PUMPS_FLAG_BOWUNLOADWATER),
+                PRINT_INT(pumpsFlag[EMB_PUMPS_RIGHT_IDX] & EMB_PUMPS_FLAG_STERNLOADWATER),
+                PRINT_INT(pumpsFlag[EMB_PUMPS_RIGHT_IDX] & EMB_PUMPS_FLAG_STERNUNLOADWATER));
+        }
 
         uint16_t GetSize()
         {
@@ -423,11 +433,12 @@ namespace ees {
     struct pwrButtonsData {
         uint8_t pwrButtonsFlag;
 
-        /*void DebugPrint(const char* string) {
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "pwrButtonsData:left %c right %c",
-							        PRINT_INT(pwrButtonsFlag & EMB_PWRBUTTONS_FLAG_LEFT),
-							        PRINT_INT(pwrButtonsFlag & EMB_PWRBUTTONS_FLAG_RIGHT));
-    }*/
+        void DebugPrint(rclcpp::Logger logger)
+        {
+            RCLCPP_INFO(logger, "pwrButtonsData:left %c right %c",
+                PRINT_INT(pwrButtonsFlag & EMB_PWRBUTTONS_FLAG_LEFT),
+                PRINT_INT(pwrButtonsFlag & EMB_PWRBUTTONS_FLAG_RIGHT));
+        }
 
         uint16_t GetSize()
         {
@@ -451,14 +462,15 @@ namespace ees {
         uint16_t alarmState; // bits: low voltage | high voltage | discharge overcurrent | charge overcurrent | low SOC | low temperature | high temperature
         float32_t cells[14]; // [mV] (cells 0|1|2|3|9|10|11)
 
-        /*void DebugPrint(const char* string) {
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "BatteryData: ts %u id %u tssw485 %" PRIu64 " tssat %" PRIu64 "", timestamp, id, timestampSW485, timestampSatellite);
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "BatteryData: V %f [V] C %f [A] Charge %u%% temp %u [deg C]", voltage/10.0, current/10.0, chargePercent, temperature);
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "BatteryData: eq %u cmd %u alarm %u", equalisationCells, commandState, alarmState);
-		//ortos::DebugConsole::Write(ortos::LogLevel::info, string, "batteryData: %f %f %f %f %f %f %f", cells[0], cells[1], cells[2], cells[3], cells[4], cells[5], cells[6]);
-		//ortos::DebugConsole::Write(ortos::LogLevel::info, string, "batteryData: %f %f %f %f %f %f %f", cells[7], cells[8], cells[9], cells[10], cells[11], cells[12], cells[13]);
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "BatteryData: Cells [V] %lf %lf %lf %lf %lf %lf %lf", cells[0] / 1000.0, cells[1] / 1000.0, cells[2] / 1000.0, cells[3] / 1000.0, cells[9] / 1000.0, cells[10] / 1000.0, cells[11] / 1000.0);
-    }*/
+        void DebugPrint(rclcpp::Logger& logger, std::string batt_id)
+        {
+            RCLCPP_INFO(logger, "%s BatteryData: ts %u id %u tssw485 %" PRIu64 " tssat %" PRIu64 "", batt_id.c_str(), timestamp, id, timestampSW485, timestampSatellite);
+            RCLCPP_INFO(logger, "%s BatteryData: V %f [V] C %f [A] Charge %u%% temp %u [deg C]", batt_id.c_str(), voltage / 10.0, current / 10.0, chargePercent, temperature);
+            RCLCPP_INFO(logger, "%s BatteryData: eq %u cmd %u alarm %u", batt_id.c_str(), equalisationCells, commandState, alarmState);
+            //RCLCPP_INFO(logger, "%s batteryData: %f %f %f %f %f %f %f",batt_id.c_str(), cells[0], cells[1], cells[2], cells[3], cells[4], cells[5], cells[6]);
+            //RCLCPP_INFO(logger, "%s batteryData: %f %f %f %f %f %f %f",batt_id.c_str(), cells[7], cells[8], cells[9], cells[10], cells[11], cells[12], cells[13]);
+            RCLCPP_INFO(logger, "%s BatteryData: Cells [V] %lf %lf %lf %lf %lf %lf %lf", batt_id.c_str(), cells[0] / 1000.0, cells[1] / 1000.0, cells[2] / 1000.0, cells[3] / 1000.0, cells[9] / 1000.0, cells[10] / 1000.0, cells[11] / 1000.0);
+        }
 
         uint16_t GetSize()
         {
@@ -472,10 +484,11 @@ namespace ees {
         batteryData left;
         batteryData right;
 
-        /*void DebugPrint(const char* string) {
-		left.DebugPrint(std::string(std::string(string) + std::string("Left ")).c_str());
-		right.DebugPrint(std::string(std::string(string) + std::string("Right ")).c_str());
-    }*/
+        void DebugPrint(rclcpp::Logger logger)
+        {
+            left.DebugPrint(logger, "Left");
+            right.DebugPrint(logger, "Right");
+        }
 
         uint16_t GetSize()
         {
@@ -500,13 +513,14 @@ namespace ees {
         sw485InOut leftSatellite;
         sw485InOut rightSatellite;
 
-        /*void DebugPrint(const char* string) {
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "sw485StatusData: ts %u tssw485 %" PRIu64 " missed Deadlines %u", timestamp, timestampSW485, missedDeadlines);
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "sw485StatusData: left motor sent %" PRIu64 " received %" PRIu64 "", leftMotor.sent, leftMotor.received);
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "sw485StatusData: right motor sent %" PRIu64 " received %" PRIu64 "", rightMotor.sent, rightMotor.received);
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "sw485StatusData: left satellite sent %" PRIu64 " received %" PRIu64 " diff %" PRIu64 "", leftSatellite.sent, leftSatellite.received, leftSatellite.sent - leftSatellite.received);
-		ortos::DebugConsole::Write(ortos::LogLevel::info, string, "sw485StatusData: right satellite sent %" PRIu64 " received %" PRIu64 " diff %" PRIu64 "", rightSatellite.sent, rightSatellite.received, rightSatellite.sent - rightSatellite.received);
-    }*/
+        void DebugPrint(rclcpp::Logger logger)
+        {
+            RCLCPP_INFO(logger, "sw485StatusData: ts %u tssw485 %" PRIu64 " missed Deadlines %u", timestamp, timestampSW485, missedDeadlines);
+            RCLCPP_INFO(logger, "sw485StatusData: left motor sent %" PRIu64 " received %" PRIu64 "", leftMotor.sent, leftMotor.received);
+            RCLCPP_INFO(logger, "sw485StatusData: right motor sent %" PRIu64 " received %" PRIu64 "", rightMotor.sent, rightMotor.received);
+            RCLCPP_INFO(logger, "sw485StatusData: left satellite sent %" PRIu64 " received %" PRIu64 " diff %" PRIu64 "", leftSatellite.sent, leftSatellite.received, leftSatellite.sent - leftSatellite.received);
+            RCLCPP_INFO(logger, "sw485StatusData: right satellite sent %" PRIu64 " received %" PRIu64 " diff %" PRIu64 "", rightSatellite.sent, rightSatellite.received, rightSatellite.sent - rightSatellite.received);
+        }
 
         uint16_t GetSize()
         {
@@ -537,70 +551,75 @@ namespace ees {
             sw485StatusData sw485Status;
         };
 
-        /*void DebugPrint(const char* string) {
-		switch (messageType) {
-		case MessageType::reference:
-			references.DebugPrint(string);
-			break;
-		case MessageType::beep:
-			beep.DebugPrint(string);
-			break;
-		case MessageType::enable_ref:
-			enableRef.DebugPrint(string);
-			break;
-		case MessageType::sensor:
-			sensors.DebugPrint(string);
-			break;
-		case MessageType::status:
-			status.DebugPrint(string);
-			break;
-		case MessageType::set_config:
-			config.DebugPrint(string);
-			break;
-		case MessageType::ack:
-			ack.DebugPrint(string);
-			break;
-		case MessageType::version:
-			version.DebugPrint(string);
-			break;
-		case MessageType::get_config:
-			ortos::DebugConsole::Write(ortos::LogLevel::info, string, "GetConfig");
-			break;
-		case MessageType::get_version:
-			ortos::DebugConsole::Write(ortos::LogLevel::info, string, "GetVersion");
-			break;
-		case MessageType::start_compass_cal:
-			ortos::DebugConsole::Write(ortos::LogLevel::info, string, "Start Compass Calibration");
-			break;
-		case MessageType::stop_compass_cal:
-			ortos::DebugConsole::Write(ortos::LogLevel::info, string, "Stop Compass Calibration");
-			break;
-		case MessageType::reset:
-			ortos::DebugConsole::Write(ortos::LogLevel::info, string, "Reset");
-			break;
-		case MessageType::motors:
-			motors.DebugPrint(string);
-			break;
-		case MessageType::pumps:
-			pumps.DebugPrint(string);
-			break;
-		case MessageType::pwrbuttons:
-			pwrButtons.DebugPrint(string);
-			break;
-		case MessageType::battery:
-			battery.DebugPrint(string);
-			break;
-		case MessageType::sw485Status:
-			sw485Status.DebugPrint(string);
-			break;
-//		case MessageType::get_config_console:
-//			ortos::DebugConsole::Write(ortos::LogLevel::info, string, "GetConfig by Embedded Console");
-//			break;
-		case MessageType::undefined:
-			ortos::DebugConsole::Write(ortos::LogLevel::warning, string, "eesData::DebugPrint");
-			break;
-		}
-    }*/
+        void DebugPrint(rclcpp::Logger logger)
+        {
+            switch (messageType) {
+            case MessageType::reference:
+                references.DebugPrint(logger);
+                break;
+            case MessageType::beep:
+                beep.DebugPrint(logger);
+                break;
+            case MessageType::enable_ref:
+                enableRef.DebugPrint(logger);
+                break;
+            case MessageType::sensor:
+                sensors.DebugPrint(logger);
+                break;
+            case MessageType::status:
+                status.DebugPrint(logger);
+                break;
+            case MessageType::set_config:
+                config.DebugPrint(logger);
+                break;
+            case MessageType::ack:
+                ack.DebugPrint(logger);
+                break;
+            case MessageType::version:
+                version.DebugPrint(logger);
+                break;
+            case MessageType::get_config:
+                RCLCPP_INFO(logger, "GetConfig");
+                break;
+            case MessageType::get_version:
+                RCLCPP_INFO(logger, "GetVersion");
+                break;
+            case MessageType::start_compass_cal:
+                RCLCPP_INFO(logger, "Start Compass Calibration");
+                break;
+            case MessageType::stop_compass_cal:
+                RCLCPP_INFO(logger, "Stop Compass Calibration");
+                break;
+            case MessageType::reset:
+                RCLCPP_INFO(logger, "Reset");
+                break;
+            case MessageType::motors:
+                motors.DebugPrint(logger);
+                break;
+            case MessageType::pumps:
+                pumps.DebugPrint(logger);
+                break;
+            case MessageType::pwrbuttons:
+                pwrButtons.DebugPrint(logger);
+                break;
+            case MessageType::battery:
+                if (battery.id == 0) {
+                    battery.DebugPrint(logger, "Left");
+                } else if (battery.id == 1) {
+                    battery.DebugPrint(logger, "Right");
+                }
+                break;
+            case MessageType::sw485Status:
+                sw485Status.DebugPrint(logger);
+                break;
+                //		case MessageType::get_config_console:
+                //			RCLCPP_INFO(logger, "GetConfig by Embedded Console");
+                //			break;
+            case MessageType::undefined:
+                RCLCPP_WARN(logger, "eesData::DebugPrint");
+                break;
+            }
+        }
 
         uint16_t GetMaxSize()
         {

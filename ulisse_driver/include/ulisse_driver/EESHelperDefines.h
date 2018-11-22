@@ -9,29 +9,6 @@
 #define SRC_COMM_EESHELPERDEFINES_H_
 
 
-namespace ulisse {
-
-namespace ees {
-
-/*namespace topicnames {
-const char* const sensors = "/ees/out/sensors";
-const char* const status = "/ees/out/status";
-const char* const config = "/ees/out/config";
-const char* const motors = "/ees/out/motors";
-const char* const version = "/ees/out/version";
-const char* const ack = "/ees/out/ack";
-const char* const battery = "/ees/out/battery";
-const char* const sw485Status = "/ees/out/sw485Status";
-
-const char* const references = "/ees/in/references";
-const char* const eescommands = "/ees/in/commands";
-const char* const eeslogCommandAnswers = "/ees/out/commandAnswers";
-}*/
-
-} //namespace ees
-
-} //namespace ulisse
-
 //TODO esprimere in altri modi piu' moderni?
 
 #define PRINT_INT(x) ((x) != 0) ? 'T' : 'F'

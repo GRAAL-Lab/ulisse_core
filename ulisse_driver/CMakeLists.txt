@@ -35,7 +35,6 @@ set(ulisse_driver_lib_sources
     src/ulisse_driver/CSerialHelper.cc
     src/ulisse_driver/EESHelper.cc
     src/ulisse_driver/EESHelperDataStructs.cc
-    #src/ulisse_driver/GPSDHelperDataStructs.cc
 )
 
 
@@ -59,11 +58,11 @@ target_link_libraries(ees_driver_node rml ulisse_driver_lib ees_driver_threads)
 
 add_executable(gps_setup_node src/gps_setup_node.cpp)
 ament_target_dependencies(gps_setup_node rclcpp std_msgs ulisse_msgs rml)
-target_link_libraries(gps_setup_node rml gps)
+target_link_libraries(gps_setup_node ulisse_driver_lib gps)
 
 add_executable(gps_publisher_node src/gps_publisher_node.cpp)
 ament_target_dependencies(gps_publisher_node rclcpp std_msgs ulisse_msgs rml)
-target_link_libraries(gps_publisher_node rml gps)
+target_link_libraries(gps_publisher_node ulisse_driver_lib gps)
 
 install(TARGETS
   ulisse_driver_lib
@@ -75,6 +74,8 @@ install(TARGETS
 install(TARGETS
   ees_driver_node
   ees_driver_threads
+  gps_setup_node
+  gps_publisher_node
   DESTINATION lib/${PROJECT_NAME}
 )
 

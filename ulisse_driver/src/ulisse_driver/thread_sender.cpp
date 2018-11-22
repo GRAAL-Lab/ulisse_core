@@ -28,7 +28,7 @@ namespace ulisse {
 namespace ees {
 
     ThreadSender::ThreadSender()
-        : Node("thread_sender")
+        : Node("ees_thread_sender")
     {
         par_client_ = std::make_shared<rclcpp::AsyncParametersClient>(this);
 
@@ -212,32 +212,32 @@ namespace ees {
 
     void ThreadSender::ReloadConfigFile()
     {
-        this->get_parameter_or("EESHelper.LowLevelConfig.HbCompass0", lowlevelconf_.hbCompass0, (uint16_t)0);
-        this->get_parameter_or("EESHelper.LowLevelConfig.HbCompassMax", lowlevelconf_.hbCompassMax, (uint16_t)0);
-        this->get_parameter_or("EESHelper.LowLevelConfig.HbMagnetometer0", lowlevelconf_.hbMagnetometer0, (uint16_t)0);
-        this->get_parameter_or("EESHelper.LowLevelConfig.HbMagnetometerMax", lowlevelconf_.hbMagnetometerMax, (uint16_t)0);
-        this->get_parameter_or("EESHelper.LowLevelConfig.HbPacketSensors0", lowlevelconf_.hbPacketSensors0, (uint16_t)0);
-        this->get_parameter_or("EESHelper.LowLevelConfig.HbPacketSensorsMax", lowlevelconf_.hbPacketSensorsMax, (uint16_t)0);
-        this->get_parameter_or("EESHelper.LowLevelConfig.HbPacketStatus0", lowlevelconf_.hbPacketStatus0, (uint16_t)0);
-        this->get_parameter_or("EESHelper.LowLevelConfig.HbPacketStatusMax", lowlevelconf_.hbPacketStatusMax, (uint16_t)0);
-        this->get_parameter_or("EESHelper.LowLevelConfig.HbPacketMotors0", lowlevelconf_.hbPacketMotors0, (uint16_t)0);
-        this->get_parameter_or("EESHelper.LowLevelConfig.HbPacketMotorsMax", lowlevelconf_.hbPacketMotorsMax, (uint16_t)0);
-        this->get_parameter_or("EESHelper.LowLevelConfig.HbPacketBattery0", lowlevelconf_.hbPacketBattery0, (uint16_t)0);
-        this->get_parameter_or("EESHelper.LowLevelConfig.HbPacketBatteryMax", lowlevelconf_.hbPacketBatteryMax, (uint16_t)0);
-        this->get_parameter_or("EESHelper.LowLevelConfig.TimeoutAccelerometer", lowlevelconf_.timeoutAccelerometer, (float)0.0);
-        this->get_parameter_or("EESHelper.LowLevelConfig.TimeoutCompass", lowlevelconf_.timeoutCompass, (float)0.0);
-        this->get_parameter_or("EESHelper.LowLevelConfig.TimeoutMagnetometer", lowlevelconf_.timeoutMagnetometer, (float)0.0);
-        this->get_parameter_or("EESHelper.LowLevelConfig.PwmUpMin", lowlevelconf_.pwmUpMin, (float)0.0);
-        this->get_parameter_or("EESHelper.LowLevelConfig.PwmUpMax", lowlevelconf_.pwmUpMax, (float)0.0);
-        this->get_parameter_or("EESHelper.LowLevelConfig.PwmPeriodMin", lowlevelconf_.pwmPeriodMin, (float)0.0);
-        this->get_parameter_or("EESHelper.LowLevelConfig.PwmPeriodMax", lowlevelconf_.pwmPeriodMax, (float)0.0);
-        this->get_parameter_or("EESHelper.LowLevelConfig.PwmTimeThreshold", lowlevelconf_.pwmTimeThreshold, (float)0.0);
-        this->get_parameter_or("EESHelper.LowLevelConfig.PwmZeroThreshold", lowlevelconf_.pwmZeroThreshold, (float)0.0);
-        this->get_parameter_or("EESHelper.LowLevelConfig.DeadzoneTime", lowlevelconf_.deadzoneTime, (float)0.0);
-        this->get_parameter_or("EESHelper.LowLevelConfig.ThrusterSaturation", lowlevelconf_.thrusterSaturation, (uint16_t)0.0);
+        get_parameter_or("EESHelper.LowLevelConfig.HbCompass0", lowlevelconf_.hbCompass0, (uint16_t)0);
+        get_parameter_or("EESHelper.LowLevelConfig.HbCompassMax", lowlevelconf_.hbCompassMax, (uint16_t)0);
+        get_parameter_or("EESHelper.LowLevelConfig.HbMagnetometer0", lowlevelconf_.hbMagnetometer0, (uint16_t)0);
+        get_parameter_or("EESHelper.LowLevelConfig.HbMagnetometerMax", lowlevelconf_.hbMagnetometerMax, (uint16_t)0);
+        get_parameter_or("EESHelper.LowLevelConfig.HbPacketSensors0", lowlevelconf_.hbPacketSensors0, (uint16_t)0);
+        get_parameter_or("EESHelper.LowLevelConfig.HbPacketSensorsMax", lowlevelconf_.hbPacketSensorsMax, (uint16_t)0);
+        get_parameter_or("EESHelper.LowLevelConfig.HbPacketStatus0", lowlevelconf_.hbPacketStatus0, (uint16_t)0);
+        get_parameter_or("EESHelper.LowLevelConfig.HbPacketStatusMax", lowlevelconf_.hbPacketStatusMax, (uint16_t)0);
+        get_parameter_or("EESHelper.LowLevelConfig.HbPacketMotors0", lowlevelconf_.hbPacketMotors0, (uint16_t)0);
+        get_parameter_or("EESHelper.LowLevelConfig.HbPacketMotorsMax", lowlevelconf_.hbPacketMotorsMax, (uint16_t)0);
+        get_parameter_or("EESHelper.LowLevelConfig.HbPacketBattery0", lowlevelconf_.hbPacketBattery0, (uint16_t)0);
+        get_parameter_or("EESHelper.LowLevelConfig.HbPacketBatteryMax", lowlevelconf_.hbPacketBatteryMax, (uint16_t)0);
+        get_parameter_or("EESHelper.LowLevelConfig.TimeoutAccelerometer", lowlevelconf_.timeoutAccelerometer, (float)0.0);
+        get_parameter_or("EESHelper.LowLevelConfig.TimeoutCompass", lowlevelconf_.timeoutCompass, (float)0.0);
+        get_parameter_or("EESHelper.LowLevelConfig.TimeoutMagnetometer", lowlevelconf_.timeoutMagnetometer, (float)0.0);
+        get_parameter_or("EESHelper.LowLevelConfig.PwmUpMin", lowlevelconf_.pwmUpMin, (float)0.0);
+        get_parameter_or("EESHelper.LowLevelConfig.PwmUpMax", lowlevelconf_.pwmUpMax, (float)0.0);
+        get_parameter_or("EESHelper.LowLevelConfig.PwmPeriodMin", lowlevelconf_.pwmPeriodMin, (float)0.0);
+        get_parameter_or("EESHelper.LowLevelConfig.PwmPeriodMax", lowlevelconf_.pwmPeriodMax, (float)0.0);
+        get_parameter_or("EESHelper.LowLevelConfig.PwmTimeThreshold", lowlevelconf_.pwmTimeThreshold, (float)0.0);
+        get_parameter_or("EESHelper.LowLevelConfig.PwmZeroThreshold", lowlevelconf_.pwmZeroThreshold, (float)0.0);
+        get_parameter_or("EESHelper.LowLevelConfig.DeadzoneTime", lowlevelconf_.deadzoneTime, (float)0.0);
+        get_parameter_or("EESHelper.LowLevelConfig.ThrusterSaturation", lowlevelconf_.thrusterSaturation, (uint16_t)0.0);
 
         std::cout << "=====    Reload Sender Config    =====\n";
-        lowlevelconf_.DebugPrint();
+        lowlevelconf_.DebugPrint(this->get_logger());
         std::cout << "======================================" << std::endl;
     }
 

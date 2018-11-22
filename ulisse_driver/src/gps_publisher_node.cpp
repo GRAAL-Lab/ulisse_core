@@ -25,14 +25,14 @@ using namespace std::chrono_literals;
 
 void process_data(gpsData& my_gps_data, struct gps_data_t* p);
 void process_status(gpsStatus& my_gps_status, struct gps_data_t* p);
-void step(gpsData& my_gps_data, gpsStatus& my_gps_status, gpsmm* gps);
+bool step(gpsData& my_gps_data, gpsStatus& my_gps_status, gpsmm* gps);
 void GPSData2ROSMsg(const gpsData& my_gps_data, ulisse_msgs::msg::GPSData& gps_data_msg);
 void GPSData2ROSMsg(const gpsStatus& my_gps_data, ulisse_msgs::msg::GPSStatus& gps_data_msg);
 
 int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
-    auto nh = rclcpp::Node::make_shared("gps_setup_node");
+    auto nh = rclcpp::Node::make_shared("gps_publisher_node");
 
     gpsmm* gps;
     gps_data_t* resp = NULL;
@@ -57,8 +57,10 @@ int main(int argc, char* argv[])
 #endif
 
     if (resp == NULL) {
-        fprintf(stderr, "Failed to open GPSd");
+        RCLCPP_ERROR(nh->get_logger(), "Failed to open GPSd");
         return -1;
+    } else {
+        RCLCPP_INFO(nh->get_logger(), "Successfully opened GPSd");
     }
 
     gpsData gpsdData;
@@ -79,16 +81,14 @@ int main(int argc, char* argv[])
 
     while (rclcpp::ok()) {
 
-        step(gpsdData, gpsdStatus, gps);
+        if (step(gpsdData, gpsdStatus, gps)) {
 
-        GPSData2ROSMsg(gpsdData, gps_data_msg);
-        GPSData2ROSMsg(gpsdStatus, gps_status_msg);
+            GPSData2ROSMsg(gpsdData, gps_data_msg);
+            GPSData2ROSMsg(gpsdStatus, gps_status_msg);
 
-        //data.d = gpsdData;
-        //status.d = gpsdStatus;
-
-        gps_data_pub->publish(gps_data_msg);
-        gps_status_pub->publish(gps_status_msg);
+            gps_data_pub->publish(gps_data_msg);
+            gps_status_pub->publish(gps_status_msg);
+        }
 
         rclcpp::spin_some(nh);
     }
@@ -100,11 +100,13 @@ int main(int argc, char* argv[])
 
 void process_data(gpsData& my_gps_data, struct gps_data_t* p)
 {
-    if (p == NULL)
+    if (p == NULL) {
         return;
+    }
 
-    if (!p->online)
+    if (!p->online) {
         return;
+    }
 
     my_gps_data.time = p->fix.time;
     my_gps_data.mode = (GpsFixMode)p->fix.mode;
@@ -115,17 +117,21 @@ void process_data(gpsData& my_gps_data, struct gps_data_t* p)
         my_gps_data.longitude = p->fix.longitude;
     }
 
-    if (my_gps_data.CheckFlag(ALTITUDE_SET))
+    if (my_gps_data.CheckFlag(ALTITUDE_SET)) {
         my_gps_data.altitude = p->fix.altitude;
+    }
 
-    if (my_gps_data.CheckFlag(TRACK_SET))
+    if (my_gps_data.CheckFlag(TRACK_SET)) {
         my_gps_data.track = p->fix.track;
+    }
 
-    if (my_gps_data.CheckFlag(SPEED_SET))
+    if (my_gps_data.CheckFlag(SPEED_SET)) {
         my_gps_data.speed = p->fix.speed;
+    }
 
-    if (my_gps_data.CheckFlag(CLIMB_SET))
+    if (my_gps_data.CheckFlag(CLIMB_SET)) {
         my_gps_data.climb = p->fix.climb;
+    }
 
     my_gps_data.err = p->epe;
     my_gps_data.err_time = p->fix.ept;
@@ -147,11 +153,13 @@ void process_data(gpsData& my_gps_data, struct gps_data_t* p)
 
 void process_status(gpsStatus& my_gps_status, struct gps_data_t* p)
 {
-    if (p == NULL)
+    if (p == NULL) {
         return;
+    }
 
-    if (!p->online)
+    if (!p->online) {
         return;
+    }
 
     my_gps_status.status = (GpsStatus)p->status;
 
@@ -186,23 +194,29 @@ void process_status(gpsStatus& my_gps_status, struct gps_data_t* p)
     }
 }
 
-void step(gpsData& my_gps_data, gpsStatus& my_gps_status, gpsmm* gps)
+bool step(gpsData& my_gps_data, gpsStatus& my_gps_status, gpsmm* gps)
 {
 #if GPSD_API_MAJOR_VERSION >= 5
-    if (!gps->waiting(1e6))
-        return;
+    if (!gps->waiting(1e6)) {
+        return false;
+    }
     gps_data_t* p = gps->read();
+    if (p == NULL) {
+        return false;
+    }
 #else
     gps_data_t* p = gps->poll();
 #endif
+
     process_data(my_gps_data, p);
     process_status(my_gps_status, p);
+    return true;
 }
 
 void GPSData2ROSMsg(const gpsData& gps_data, ulisse_msgs::msg::GPSData& gps_data_msg)
 {
     gps_data_msg.time = gps_data.time;
-    gps_data_msg.gpsfixmode = static_cast<int8_t>(gps_data.mode);
+    gps_data_msg.gpsfixmode = static_cast<uint8_t>(gps_data.mode);
     gps_data_msg.flags = gps_data.flags;
     gps_data_msg.latitude = gps_data.latitude;
     gps_data_msg.longitude = gps_data.longitude;
@@ -236,15 +250,15 @@ void GPSData2ROSMsg(const gpsStatus& g_d, ulisse_msgs::msg::GPSStatus& g_m)
     g_m.satellites_visible = g_d.satellites_visible;
 
     std::copy(g_d.satellite_used_prn, g_d.satellite_used_prn + constants::maxChannels,
-        g_m.satellite_used_prn.begin());                                                // PRN identifiers
+        g_m.satellite_used_prn.begin()); // PRN identifiers
     std::copy(g_d.satellite_visible_prn, g_d.satellite_visible_prn + constants::maxChannels,
-        g_m.satellite_visible_prn.begin());                                             // PRN identifiers
+        g_m.satellite_visible_prn.begin()); // PRN identifiers
     std::copy(g_d.satellite_visible_z, g_d.satellite_visible_z + constants::maxChannels,
-        g_m.satellite_visible_z.begin());                                               // Elevation of satellites
+        g_m.satellite_visible_z.begin()); // Elevation of satellites
     std::copy(g_d.satellite_visible_azimuth, g_d.satellite_visible_azimuth + constants::maxChannels,
-        g_m.satellite_visible_azimuth.begin());                                         // Azimuth of satellites
+        g_m.satellite_visible_azimuth.begin()); // Azimuth of satellites
     std::copy(g_d.satellite_visible_snr, g_d.satellite_visible_snr + constants::maxChannels,
-        g_m.satellite_visible_snr.begin());                                             // Signal-to-noise ratios (dB)
+        g_m.satellite_visible_snr.begin()); // Signal-to-noise ratios (dB)
     std::copy(g_d.satellite_visible_used, g_d.satellite_visible_used + constants::maxChannels,
         g_m.satellite_visible_used.begin());
 }

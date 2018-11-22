@@ -57,7 +57,7 @@ public:
 
 	void ChangeBaudRate(uint32_t baudRate);
 
-	int Write(const char *buffer, int size);
+    ssize_t Write(const char *buffer, size_t size);
 	int SetRTS(int level);
 	int SetDTR(int level);
 	int SetCD(int level);

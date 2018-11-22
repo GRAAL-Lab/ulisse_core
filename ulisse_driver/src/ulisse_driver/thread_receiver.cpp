@@ -14,7 +14,7 @@ namespace ulisse {
 namespace ees {
 
     ThreadReceiver::ThreadReceiver()
-        : Node("thread_receiver")
+        : Node("ees_thread_receiver")
     {
         par_client_ = std::make_shared<rclcpp::AsyncParametersClient>(this);
 
@@ -99,20 +99,21 @@ namespace ees {
         while (rclcpp::ok()) {
 
             t_now_ = std::chrono::system_clock::now();
-            long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
+            long epoch_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
+            auto fraction_nanosecs = static_cast<unsigned int>(epoch_nanosecs % (int)1E9);
 
             eesHlp_.CollectValidMessage(eesData_);
             std::cout << "ThreadReceiver::ReadLoop(), Collected Valid Message" << std::endl;
             uint8_t sensorStatus = eesData_.sensors.sensorStatus;
 
             ulisse_msgs::msg::Time time_msg;
-            time_msg.sec = static_cast<unsigned int>(now_nanosecs / (int)1E9);
+            time_msg.sec = static_cast<unsigned int>(epoch_nanosecs / (int)1E9);
             unsigned int stepsnanosecs = static_cast<unsigned int>(eesData_.sensors.stepsSincePPS * 1E9 / 200.0);
             // Assuming that the time of the control PC is synchronized with the GPS time,
             // if the stepsSincePPS (time since last gps 'seconds' pulse) gives an elapsed intrasecond
             // time which is greater that the current intrasecond time, it means that the measures are
             // referred to the previous second (since measure cannot come from the future)
-            if (stepsnanosecs > now_nanosecs) {
+            if (stepsnanosecs > fraction_nanosecs) {
                 // Data belonging to previous second
                 time_msg.sec = time_msg.sec - 1;
             }
