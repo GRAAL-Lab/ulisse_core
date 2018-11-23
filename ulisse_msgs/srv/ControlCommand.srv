@@ -1,0 +1,4 @@
+string command_type
+CommandMove move
+---
+string res

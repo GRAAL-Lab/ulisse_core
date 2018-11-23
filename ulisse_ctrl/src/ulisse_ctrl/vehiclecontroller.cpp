@@ -10,6 +10,16 @@
 using namespace std::chrono_literals;
 using std::placeholders::_1;
 
+/*size_t hash(const std::string& str)
+{
+    return std::hash<std::string>{}(str);
+}*/
+
+/*constexpr unsigned int hash(const char* str, int h = 0)
+{
+    return !str[h] ? 5381 : (hash(str, h + 1) * 33) ^ str[h];
+}*/
+
 namespace ulisse {
 
 VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double sampleTime)
@@ -39,15 +49,17 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         ulisse_msgs::topicnames::sensor_compass, std::bind(&VehicleController::CompassSensor_cb, this, _1));
 
     // Commands Subscriptions
-    cmd_halt_sub_ = nh_->create_subscription<std_msgs::msg::Empty>(
-        ulisse_msgs::topicnames::command_halt, std::bind(&VehicleController::CommandHalt_cb, this, _1));
-    cmd_move_sub_ = nh_->create_subscription<ulisse_msgs::msg::CommandMove>(
-        ulisse_msgs::topicnames::command_move, std::bind(&VehicleController::CommandMove_cb, this, _1));
+    //cmd_halt_sub_ = nh_->create_subscription<std_msgs::msg::Empty>(
+    //    ulisse_msgs::topicnames::command_halt, std::bind(&VehicleController::CommandHalt_cb, this, _1));
+    //cmd_move_sub_ = nh_->create_subscription<ulisse_msgs::msg::CommandMove>(
+    //    ulisse_msgs::topicnames::command_move, std::bind(&VehicleController::CommandMove_cb, this, _1));
 
     // Control Publishers
     ctrlcxt_pub_ = nh_->create_publisher<ulisse_msgs::msg::ControlContext>(ulisse_msgs::topicnames::control_context);
     poscxt_pub_ = nh_->create_publisher<ulisse_msgs::msg::PositionContext>(ulisse_msgs::topicnames::position_context);
     vehiclestate_pub_ = nh_->create_publisher<std_msgs::msg::String>(ulisse_msgs::topicnames::vehicle_ctrl_state);
+
+    SetupCommandServer();
 }
 
 VehicleController::~VehicleController()
@@ -164,6 +176,41 @@ void VehicleController::SetUpFSM()
     u_fsm_.SetInitState(ulisse::states::ID::halt);
 }
 
+void VehicleController::SetupCommandServer()
+{
+    // Create a callback function for when service requests are received.
+    auto handle_control_commands =
+        [this](const std::shared_ptr<rmw_request_id_t> request_header,
+            const std::shared_ptr<ulisse_msgs::srv::ControlCommand::Request> request,
+            std::shared_ptr<ulisse_msgs::srv::ControlCommand::Response> response) -> void {
+        (void)request_header;
+        RCLCPP_INFO(nh_->get_logger(), "Incoming request: %s", request->command_type.c_str());
+
+        fsm::retval ret = fsm::ok;
+
+        if (request->command_type == ulisse::commands::ID::halt) {
+            std::cout << "Received Command Halt" << std::endl;
+            u_fsm_.ExecuteCommand(ulisse::commands::ID::halt);
+        } else if (request->command_type == ulisse::commands::ID::move) {
+            std::cout << "Received Command Move" << std::endl;
+            command_move_.SetGoal(request->move.latitude, request->move.longitude, request->move.acceptance_radius);
+            u_fsm_.ExecuteCommand(ulisse::commands::ID::move);
+        } else {
+            RCLCPP_INFO(nh_->get_logger(), "Unsupported command: %s", request->command_type.c_str());
+            ret = fsm::retval::fail;
+        }
+
+        if (ret != fsm::retval::ok) {
+            response->res = "CommandAnswer::fail";
+            RCLCPP_INFO(nh_->get_logger(), "SendAnswer returned %s", response->res.c_str());
+        } else {
+            response->res = "CommandAnswer::ok";
+        }
+    };
+
+    srv_ = nh_->create_service<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service, handle_control_commands);
+}
+
 void VehicleController::GPSSensor_cb(const ulisse_msgs::msg::GPSData::SharedPtr msg)
 {
     timestamp_ = msg->time;
@@ -176,7 +223,7 @@ void VehicleController::CompassSensor_cb(const ulisse_msgs::msg::Compass::Shared
     posCxt_->currentHeading = msg->yaw;
 }
 
-void VehicleController::CommandHalt_cb(const std_msgs::msg::Empty::SharedPtr)
+/*void VehicleController::CommandHalt_cb(const std_msgs::msg::Empty::SharedPtr)
 {
     std::cout << "Received Command Halt" << std::endl;
     u_fsm_.ExecuteCommand(ulisse::commands::ID::halt);
@@ -185,16 +232,15 @@ void VehicleController::CommandHalt_cb(const std_msgs::msg::Empty::SharedPtr)
 void VehicleController::CommandMove_cb(const ulisse_msgs::msg::CommandMove::SharedPtr msg)
 {
     std::cout << "Received Command Move" << std::endl;
-    command_move_.SetGoal(msg->latitude, msg->longitude);
+    command_move_.SetGoal(msg->latitude, msg->longitude, msg->acceptance_radius);
     u_fsm_.ExecuteCommand(ulisse::commands::ID::move);
-}
+}*/
 
 void VehicleController::Run()
 {
     u_fsm_.ExecuteState();
     u_fsm_.ProcessEventQueue();
     u_fsm_.SwitchState();
-
 }
 
 void VehicleController::PublishControl()
@@ -202,8 +248,8 @@ void VehicleController::PublishControl()
     ulisse_msgs::msg::PositionContext poscxt_msg;
     poscxt_msg.currentpos.latitude = posCxt_->currentPos.latitude;
     poscxt_msg.currentpos.longitude = posCxt_->currentPos.longitude;
-    poscxt_msg.currentgoal.latitude = posCxt_->currentGoal.latitude;
-    poscxt_msg.currentgoal.longitude = posCxt_->currentGoal.longitude;
+    poscxt_msg.currentgoal.latitude = posCxt_->currentGoal.pos.latitude;
+    poscxt_msg.currentgoal.longitude = posCxt_->currentGoal.pos.longitude;
     poscxt_msg.currentheading = posCxt_->currentHeading;
     poscxt_msg.goalheading = posCxt_->goalHeading;
     poscxt_pub_->publish(poscxt_msg);

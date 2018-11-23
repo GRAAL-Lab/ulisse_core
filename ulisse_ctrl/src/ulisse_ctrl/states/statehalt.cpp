@@ -14,7 +14,7 @@ namespace states {
 
     fsm::retval StateHalt::OnEntry()
     {
-        posCxt_->currentGoal = posCxt_->currentPos;
+        posCxt_->currentGoal.pos = posCxt_->currentPos;
         ctrlCxt_->thrusterData.ctrlRef.left = 0.0;
         ctrlCxt_->thrusterData.ctrlRef.right = 0.0;
         return fsm::ok;

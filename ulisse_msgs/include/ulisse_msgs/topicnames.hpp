@@ -32,6 +32,7 @@ namespace topicnames {
 
     const std::string rosbag_service = "/record/record_bag";
     const std::string ees_cmd_service = "/ees_command";
+    const std::string control_cmd_service = "/control_command";
 }
 }
 

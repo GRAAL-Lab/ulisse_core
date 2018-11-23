@@ -170,11 +170,10 @@ namespace ees {
             }
         };
 
-        srv_ = create_service<ulisse_msgs::srv::EESCommand>("/ees_command", handle_ees_commands);
+        srv_ = create_service<ulisse_msgs::srv::EESCommand>(ulisse_msgs::topicnames::ees_cmd_service, handle_ees_commands);
     }
 
-    void
-    ThreadSender::ControlContext_cb(const ulisse_msgs::msg::ControlContext::SharedPtr msg)
+    void ThreadSender::ControlContext_cb(const ulisse_msgs::msg::ControlContext::SharedPtr msg)
     {
         std::cout << "ControlContext_cb() sending reference!" << std::endl;
         data_.messageType = MessageType::reference;

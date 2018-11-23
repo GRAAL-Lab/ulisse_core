@@ -5,8 +5,7 @@
 #include "ctrl_toolbox/DigitalPID.h"
 #include "surface_vehicle_model/surfacevehiclemodel.hpp"
 
-namespace tc
-{
+namespace tc {
 const char* const none = "\033[0m";
 const char* const black = "\033[0;30m";
 const char* const grayD = "\033[1;30m";
@@ -64,10 +63,21 @@ struct SlowDownOnTurnsData {
     }
 };
 
+struct Waypoint {
+    ctb::LatLong pos;
+    double acceptRadius;
+    Waypoint()
+        : acceptRadius(1.0)
+    {
+    }
+};
+
 struct PositionContext {
-    ctb::LatLong currentPos, currentGoal, nextGoal;
+    Waypoint currentGoal, nextGoal;
+    ctb::LatLong currentPos;
     double currentHeading;
     double goalDistance, goalHeading;
+
     PositionContext()
         : currentHeading(0.0)
         , goalDistance(0.0)
@@ -78,11 +88,9 @@ struct PositionContext {
 
 struct ControlContext {
     SurfaceVehicleModel ulisseModel_;
-
     ctb::DigitalPID pidSpeed;
     ctb::DigitalPID pidPosition;
     ctb::DigitalPID pidHeading;
-
     ThrusterControlData thrusterData;
 };
 
@@ -133,7 +141,6 @@ struct ConfigurationData {
                   << "=============================\n";
     }
 };
-
 
 struct Spinner {
     Spinner(int frequency)

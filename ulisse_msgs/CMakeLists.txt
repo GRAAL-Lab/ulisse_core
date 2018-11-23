@@ -59,8 +59,10 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/EESPowerButtons.msg"
   "msg/EESPumps.msg"
   # Services
-  "srv/RosbagCmd.srv"
+  "srv/ControlCommand.srv"
   "srv/EESCommand.srv"
+  "srv/RosbagCmd.srv"
+
 )
 
 ament_export_include_directories(include)

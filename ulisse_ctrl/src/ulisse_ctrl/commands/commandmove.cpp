@@ -22,10 +22,11 @@ namespace commands {
         return fsm_->SetNextState(ulisse::states::ID::move);
     }
 
-    void CommandMove::SetGoal(double latitude, double longitude)
+    void CommandMove::SetGoal(double latitude, double longitude, double acceptanceRadius)
     {
-        posCxt_->nextGoal.latitude = latitude;
-        posCxt_->nextGoal.longitude = longitude;
+        posCxt_->nextGoal.pos.latitude = latitude;
+        posCxt_->nextGoal.pos.longitude = longitude;
+        posCxt_->nextGoal.acceptRadius = acceptanceRadius;
     }
 }
 }

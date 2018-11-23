@@ -35,7 +35,8 @@ int main(int argc, char* argv[])
     rclcpp::Subscription<ulisse_msgs::msg::ControlContext>::SharedPtr ctrlcxt_sub;
     rclcpp::Subscription<std_msgs::msg::String>::SharedPtr vehiclestate_sub;
 
-    gps_sub = nh->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data, GPS_cb);
+    gps_sub = nh->create_subscription<ulisse_msgs::msg::GPSData>(
+        ulisse_msgs::topicnames::sensor_gps_data, GPS_cb);
     poscxt_sub = nh->create_subscription<ulisse_msgs::msg::PositionContext>(
         ulisse_msgs::topicnames::position_context, PositionContext_cb);
     ctrlcxt_sub = nh->create_subscription<ulisse_msgs::msg::ControlContext>(

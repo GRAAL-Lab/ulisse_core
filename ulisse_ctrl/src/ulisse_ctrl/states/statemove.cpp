@@ -37,10 +37,10 @@ namespace states {
 
     fsm::retval StateMove::Execute()
     {
-        ctb::DistanceAndAzimuthRad(posCxt_->currentPos, posCxt_->currentGoal, posCxt_->goalDistance, posCxt_->goalHeading);
+        ctb::DistanceAndAzimuthRad(posCxt_->currentPos, posCxt_->currentGoal.pos, posCxt_->goalDistance, posCxt_->goalHeading);
 
-        if (posCxt_->goalDistance < conf_->posAcceptanceRadius) {
-            //std::cout << "GOAL REACHED!" << std::endl;
+        if (posCxt_->goalDistance < posCxt_->currentGoal.acceptRadius) {
+            std::cout << "GOAL REACHED!" << std::endl;
             fsm_->ExecuteCommand(ulisse::commands::ID::halt);
         }
 
