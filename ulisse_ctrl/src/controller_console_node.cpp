@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
     bool send;
 
     auto serviceClient = node->create_client<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service);
-    while (!serviceClient->wait_for_service(1s)) {
+    while (!serviceClient->wait_for_service(2s)) {
         if (!rclcpp::ok()) {
             RCLCPP_ERROR(node->get_logger(), "client interrupted while waiting for service to appear.");
             return 1;
@@ -36,12 +36,12 @@ int main(int argc, char* argv[])
         RCLCPP_INFO(node->get_logger(), "waiting for Controller service to appear...");
     }
 
-    auto serviceRequest = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
+    auto serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
 
     while (rclcpp::ok()) {
         //std::cout << "0 speed jog" << std::endl;
-        std::cout << "1 move to" << std::endl;
-        std::cout << "2 halt" << std::endl;
+        std::cout << "1)  Move to LatLong" << std::endl;
+        std::cout << "2)  Halt" << std::endl;
         //std::cout << "3 hold" << std::endl;
         //std::cout << "4 arm" << std::endl;
         //std::cout << "5 disarm" << std::endl;
@@ -49,8 +49,7 @@ int main(int argc, char* argv[])
         //std::cout << "7 set current waypoint" << std::endl;
         //std::cout << "8 follow waypoints" << std::endl;
         //std::cout << "9 reload config" << std::endl;
-        //std::cout << "10 speed heading command" << std::endl;
-        //std::cout << "11 speed heading ref" << std::endl;
+        std::cout << "10) speed heading command" << std::endl;
         std::cin >> choice;
 
         if (std::cin.fail()) {
@@ -78,16 +77,16 @@ int main(int argc, char* argv[])
 		}
             break;*/
         case 1: {
-            serviceRequest->command_type = ulisse::commands::ID::move;
+            serviceReq->command_type = ulisse::commands::ID::latlong;
             std::cout << "latitude ";
-            std::cin >> serviceRequest->move.latitude;
+            std::cin >> serviceReq->latlong_cmd.latitude;
             std::cout << "longitude ";
-            std::cin >> serviceRequest->move.longitude;
+            std::cin >> serviceReq->latlong_cmd.longitude;
             std::cout << "acceptanceRadius ";
-            std::cin >> serviceRequest->move.acceptance_radius;
+            std::cin >> serviceReq->latlong_cmd.acceptance_radius;
         } break;
         case 2: {
-            serviceRequest->command_type = ulisse::commands::ID::halt;
+            serviceReq->command_type = ulisse::commands::ID::halt;
         } break;
             /*case 3: {
 			std::cout << "acceptanceRadius ";
@@ -199,32 +198,23 @@ int main(int argc, char* argv[])
 		case 9: {
 			command.commandType = (uint16_t) CommandType::reloadConfig;
 		}
-			break;
-		case 10: {
-			command.commandType = (uint16_t) CommandType::speedHeading;
-		}
-			break;
-		case 11: {
-			SpeedHeadingReferenceContainer shref;
+            break;*/
+        case 10: {
+            serviceReq->command_type = ulisse::commands::ID::speedheading;
 
 			std::cout << "speed ";
-			std::cin >> shref.d.desiredSpeed;
+            std::cin >> serviceReq->sh_cmd.speed;
 
 			std::cout << "heading ";
-			std::cin >> shref.d.desiredHeading;
+            std::cin >> serviceReq->sh_cmd.heading;
 
 			std::cout << "timeout [s] ";
-			std::cin >> shref.d.desiredTimeout;
-			shref.d.desiredTimeout *= ortos::constants::oneSecond;
+            std::cin >> serviceReq->sh_cmd.timeout.sec;
+            serviceReq->sh_cmd.timeout.nanosec = 0;
 
-			shref.d.type = om2ctrl::SpeedHeadingType::absolute;
-
-			shref.timestamp = ::om2ctrl::utils::GetTime();
-			ortos::xcom::XCOMInterface::GetInstance()->WriteIf(om2ctrl::topicnames::speedHeadingRef, shref);
-
-			send = false;
+            //shref.d.type = om2ctrl::SpeedHeadingType::absolute;
         }
-            break;*/
+            break;
         default:
             std::cout << "Unsupported choice! " << choice << std::endl;
             send = false;
@@ -233,7 +223,7 @@ int main(int argc, char* argv[])
         }
 
         if (send) {
-            auto result_future = serviceClient->async_send_request(serviceRequest);
+            auto result_future = serviceClient->async_send_request(serviceReq);
             std::cout << "Sent Request to controller" << std::endl;
             if (rclcpp::spin_until_future_complete(node, result_future) != rclcpp::executor::FutureReturnCode::SUCCESS) {
                 RCLCPP_ERROR(node->get_logger(), "service call failed :(");

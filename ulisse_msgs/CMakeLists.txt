@@ -15,7 +15,7 @@ find_package(builtin_interfaces REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(fastrtps)
+#find_package(fastrtps)
 
 # Add files in the tree of "Projects" view in QtCreator
 file(GLOB_RECURSE SOURCE_FILES
@@ -42,7 +42,8 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/GPSData.msg"
   "msg/GPSStatus.msg"
   # Commands
-  "msg/CommandMove.msg"
+  "msg/CommandLatLong.msg"
+  "msg/CommandSpeedHeading.msg"
   # EES
   "msg/EESAck.msg"
   #"msg/BatteryData.msg"

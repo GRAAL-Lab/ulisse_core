@@ -9,13 +9,11 @@ namespace ulisse {
 namespace commands {
 
     class CommandHalt : public GenericCommand {
-        std::shared_ptr<PositionContext> posCxt_;
 
     public:
         CommandHalt();
         virtual ~CommandHalt();
         virtual fsm::retval Execute();
-        void SetPosContext(const std::shared_ptr<PositionContext>& posCxt);
     };
 }
 }

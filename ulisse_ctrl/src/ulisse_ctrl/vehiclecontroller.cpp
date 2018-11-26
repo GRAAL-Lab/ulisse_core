@@ -150,6 +150,9 @@ void VehicleController::SetUpFSM()
     command_move_.SetFSM(&u_fsm_);
     command_move_.SetPosContext(posCxt_);
 
+    command_speedheading_.SetFSM(&u_fsm_);
+    command_speedheading_.SetPosContext(posCxt_);
+
     state_halt_.SetFSM(&u_fsm_);
     state_halt_.SetPosContext(posCxt_);
     state_halt_.SetCtrlContext(ctrlCxt_);
@@ -159,19 +162,46 @@ void VehicleController::SetUpFSM()
     state_move_.SetCtrlContext(ctrlCxt_);
     state_move_.SetConf(conf_);
 
+    state_speedheading_.SetFSM(&u_fsm_);
+    state_speedheading_.SetPosContext(posCxt_);
+    state_speedheading_.SetCtrlContext(ctrlCxt_);
+    state_speedheading_.SetConf(conf_);
+
+    //ADD STATES
     u_fsm_.AddState(ulisse::states::ID::halt, &state_halt_);
-    u_fsm_.AddState(ulisse::states::ID::move, &state_move_);
+    u_fsm_.AddState(ulisse::states::ID::latlong, &state_move_);
+    u_fsm_.AddState(ulisse::states::ID::speedheading, &state_speedheading_);
 
+    //ADD COMMANDS
     u_fsm_.AddCommand(ulisse::commands::ID::halt, &command_halt_);
-    u_fsm_.AddCommand(ulisse::commands::ID::move, &command_move_);
+    u_fsm_.AddCommand(ulisse::commands::ID::latlong, &command_move_);
+    u_fsm_.AddCommand(ulisse::commands::ID::speedheading, &command_speedheading_);
 
-    u_fsm_.EnableTransition(ulisse::states::ID::halt, ulisse::states::ID::move, true);
-    u_fsm_.EnableTransition(ulisse::states::ID::move, ulisse::states::ID::halt, true);
+    //ADD EVENTS
+    u_fsm_.AddEvent(ulisse::events::names::rcenabled, &event_rc_enabled_);
 
-    u_fsm_.EnableCommandInState(ulisse::states::ID::halt, ulisse::commands::ID::move, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::move, ulisse::commands::ID::move, true);
+    //ENABLE TRANSITIONS
+    u_fsm_.EnableTransition(ulisse::states::ID::halt, ulisse::states::ID::latlong, true);
+    u_fsm_.EnableTransition(ulisse::states::ID::halt, ulisse::states::ID::speedheading, true);
+
+    u_fsm_.EnableTransition(ulisse::states::ID::latlong, ulisse::states::ID::halt, true);
+    u_fsm_.EnableTransition(ulisse::states::ID::latlong, ulisse::states::ID::speedheading, true);
+
+    u_fsm_.EnableTransition(ulisse::states::ID::speedheading, ulisse::states::ID::halt, true);
+    u_fsm_.EnableTransition(ulisse::states::ID::speedheading, ulisse::states::ID::latlong, true);
+
+    //ENABLE COMMANDS
+    u_fsm_.EnableCommandInState(ulisse::states::ID::halt, ulisse::commands::ID::latlong, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::latlong, ulisse::commands::ID::latlong, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::speedheading, ulisse::commands::ID::latlong, true);
+
     u_fsm_.EnableCommandInState(ulisse::states::ID::halt, ulisse::commands::ID::halt, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::move, ulisse::commands::ID::halt, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::latlong, ulisse::commands::ID::halt, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::speedheading, ulisse::commands::ID::halt, true);
+
+    u_fsm_.EnableCommandInState(ulisse::states::ID::halt, ulisse::commands::ID::speedheading, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::latlong, ulisse::commands::ID::speedheading, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::speedheading, ulisse::commands::ID::speedheading, true);
 
     u_fsm_.SetInitState(ulisse::states::ID::halt);
 }
@@ -191,10 +221,15 @@ void VehicleController::SetupCommandServer()
         if (request->command_type == ulisse::commands::ID::halt) {
             std::cout << "Received Command Halt" << std::endl;
             u_fsm_.ExecuteCommand(ulisse::commands::ID::halt);
-        } else if (request->command_type == ulisse::commands::ID::move) {
-            std::cout << "Received Command Move" << std::endl;
-            command_move_.SetGoal(request->move.latitude, request->move.longitude, request->move.acceptance_radius);
-            u_fsm_.ExecuteCommand(ulisse::commands::ID::move);
+        } else if (request->command_type == ulisse::commands::ID::latlong) {
+            std::cout << "Received Command LatLong" << std::endl;
+            command_move_.SetGoal(request->latlong_cmd.latitude, request->latlong_cmd.longitude, request->latlong_cmd.acceptance_radius);
+            u_fsm_.ExecuteCommand(ulisse::commands::ID::latlong);
+        } else if (request->command_type == ulisse::commands::ID::speedheading) {
+            std::cout << "Received Command SpeedHeading" << std::endl;
+            command_speedheading_.SetGoal(request->sh_cmd.speed, request->sh_cmd.heading, request->sh_cmd.timeout.sec);
+
+            u_fsm_.ExecuteCommand(ulisse::commands::ID::speedheading);
         } else {
             RCLCPP_INFO(nh_->get_logger(), "Unsupported command: %s", request->command_type.c_str());
             ret = fsm::retval::fail;
@@ -223,24 +258,16 @@ void VehicleController::CompassSensor_cb(const ulisse_msgs::msg::Compass::Shared
     posCxt_->currentHeading = msg->yaw;
 }
 
-/*void VehicleController::CommandHalt_cb(const std_msgs::msg::Empty::SharedPtr)
+void VehicleController::EESStatus_cb(const ulisse_msgs::msg::EESStatus::SharedPtr msg)
 {
-    std::cout << "Received Command Halt" << std::endl;
-    u_fsm_.ExecuteCommand(ulisse::commands::ID::halt);
+    ctrlCxt_->eesStatus = msg->status;
 }
-
-void VehicleController::CommandMove_cb(const ulisse_msgs::msg::CommandMove::SharedPtr msg)
-{
-    std::cout << "Received Command Move" << std::endl;
-    command_move_.SetGoal(msg->latitude, msg->longitude, msg->acceptance_radius);
-    u_fsm_.ExecuteCommand(ulisse::commands::ID::move);
-}*/
 
 void VehicleController::Run()
 {
-    u_fsm_.ExecuteState();
-    u_fsm_.ProcessEventQueue();
     u_fsm_.SwitchState();
+    u_fsm_.ProcessEventQueue();
+    u_fsm_.ExecuteState();
 }
 
 void VehicleController::PublishControl()
@@ -254,24 +281,26 @@ void VehicleController::PublishControl()
     poscxt_msg.goalheading = posCxt_->goalHeading;
     poscxt_pub_->publish(poscxt_msg);
 
-    ulisse_msgs::msg::ControlContext ctrlcxt_msg;
-    ctrlcxt_msg.pidposition.feedback = ctrlCxt_->pidPosition.GetFbk();
-    ctrlcxt_msg.pidposition.reference = ctrlCxt_->pidPosition.GetRef();
-    ctrlcxt_msg.pidposition.output = ctrlCxt_->pidPosition.GetOutput();
+    if (u_fsm_.GetCurrentStateName() != ulisse::states::ID::halt) {
+        ulisse_msgs::msg::ControlContext ctrlcxt_msg;
+        ctrlcxt_msg.pidposition.feedback = ctrlCxt_->pidPosition.GetFbk();
+        ctrlcxt_msg.pidposition.reference = ctrlCxt_->pidPosition.GetRef();
+        ctrlcxt_msg.pidposition.output = ctrlCxt_->pidPosition.GetOutput();
 
-    ctrlcxt_msg.pidheading.feedback = ctrlCxt_->pidHeading.GetFbk();
-    ctrlcxt_msg.pidheading.reference = ctrlCxt_->pidHeading.GetRef();
-    ctrlcxt_msg.pidheading.output = ctrlCxt_->pidHeading.GetOutput();
+        ctrlcxt_msg.pidheading.feedback = ctrlCxt_->pidHeading.GetFbk();
+        ctrlcxt_msg.pidheading.reference = ctrlCxt_->pidHeading.GetRef();
+        ctrlcxt_msg.pidheading.output = ctrlCxt_->pidHeading.GetOutput();
 
-    ctrlcxt_msg.pidspeed.feedback = ctrlCxt_->pidSpeed.GetFbk();
-    ctrlcxt_msg.pidspeed.reference = ctrlCxt_->pidSpeed.GetRef();
-    ctrlcxt_msg.pidspeed.output = ctrlCxt_->pidSpeed.GetOutput();
+        ctrlcxt_msg.pidspeed.feedback = ctrlCxt_->pidSpeed.GetFbk();
+        ctrlcxt_msg.pidspeed.reference = ctrlCxt_->pidSpeed.GetRef();
+        ctrlcxt_msg.pidspeed.output = ctrlCxt_->pidSpeed.GetOutput();
 
-    ctrlcxt_msg.mapout.left = ctrlCxt_->thrusterData.mapOut.left;
-    ctrlcxt_msg.mapout.right = ctrlCxt_->thrusterData.mapOut.right;
-    ctrlcxt_msg.ctrlref.left = ctrlCxt_->thrusterData.ctrlRef.left;
-    ctrlcxt_msg.ctrlref.right = ctrlCxt_->thrusterData.ctrlRef.right;
-    ctrlcxt_pub_->publish(ctrlcxt_msg);
+        ctrlcxt_msg.mapout.left = ctrlCxt_->thrusterData.mapOut.left;
+        ctrlcxt_msg.mapout.right = ctrlCxt_->thrusterData.mapOut.right;
+        ctrlcxt_msg.ctrlref.left = ctrlCxt_->thrusterData.ctrlRef.left;
+        ctrlcxt_msg.ctrlref.right = ctrlCxt_->thrusterData.ctrlRef.right;
+        ctrlcxt_pub_->publish(ctrlcxt_msg);
+    }
 
     std_msgs::msg::String state;
     state.data = u_fsm_.GetCurrentStateName();

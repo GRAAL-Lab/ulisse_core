@@ -36,7 +36,7 @@ namespace ees {
         auto parameters = par_client_->get_parameters({ "SerialDevice", "BaudRate", "EESHelper.DebugBytes",
             "EESHelper.DebugIncomingValidMessageType", "EESHelper.DebugFailedCrc" });
         if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), parameters) != rclcpp::executor::FutureReturnCode::SUCCESS) {
-            RCLCPP_ERROR(this->get_logger(), "get_parameters service call failed. Exiting tutorial.")
+            RCLCPP_ERROR(this->get_logger(), "get_parameters service call failed. Exiting.")
             exit(EXIT_FAILURE);
         }
         std::cout << "=====    Receiver Parameters    =====\n";
@@ -50,7 +50,7 @@ namespace ees {
         this->get_parameter_or("EESHelper.DebugIncomingValidMessageType", debugIncomingValidMessageType, false);
         this->get_parameter_or("EESHelper.DebugFailedCrc", debugFailedCrc, false);
 
-        std::cout << "serial: " << serialDevice << ", rate: " << baudRate << std::endl;
+        RCLCPP_INFO(this->get_logger(), "Trying to open: serialDevice %s, baudRate %d ", serialDevice.c_str(), baudRate);
         std::cout << "===================================" << std::endl;
 
         eesHlp_.DebugBytes(debugBytes);
@@ -79,16 +79,6 @@ namespace ees {
         ees_battery_left_pub_ = this->create_publisher<ulisse_msgs::msg::EESBattery>(ulisse_msgs::topicnames::ees_battery_left);
         ees_battery_right_pub_ = this->create_publisher<ulisse_msgs::msg::EESBattery>(ulisse_msgs::topicnames::ees_battery_right);
         ees_sw485_pub_ = this->create_publisher<ulisse_msgs::msg::EESSw485Status>(ulisse_msgs::topicnames::ees_sw485status);
-
-        // xcom->AddDataTopic(topicnames::sensors, sensors);  FFATTO
-        // xcom->AddDataTopic(topicnames::status, status); FFATTO
-        // xcom->AddDataTopic(topicnames::config, config); FFATTO
-        // xcom->AddDataTopic(topicnames::motors, motors); FATTO
-        // xcom->AddDataTopic(topicnames::version, version); FFFATTO
-
-        // xcom->AddDataTopic(topicnames::ack, ack);
-        // xcom->AddDataTopic(topicnames::battery, battery);
-        // xcom->AddDataTopic(topicnames::sw485Status, sw485Status);
 
         timer_ = create_wall_timer(50ms, std::bind(&ThreadReceiver::ReadLoop, this));
     }

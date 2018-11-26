@@ -64,6 +64,10 @@ add_executable(gps_publisher_node src/gps_publisher_node.cpp)
 ament_target_dependencies(gps_publisher_node rclcpp std_msgs ulisse_msgs rml)
 target_link_libraries(gps_publisher_node ulisse_driver_lib gps)
 
+add_executable(driver_console_node src/driver_console_node.cpp)
+ament_target_dependencies(driver_console_node rclcpp std_msgs ulisse_msgs rml)
+target_link_libraries(driver_console_node rml ulisse_driver_lib ees_driver_threads)
+
 install(TARGETS
   ulisse_driver_lib
   ARCHIVE DESTINATION lib#/${PROJECT_NAME}
@@ -76,6 +80,7 @@ install(TARGETS
   ees_driver_threads
   gps_setup_node
   gps_publisher_node
+  driver_console_node
   DESTINATION lib/${PROJECT_NAME}
 )
 

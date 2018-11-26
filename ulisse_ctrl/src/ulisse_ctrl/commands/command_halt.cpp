@@ -1,4 +1,4 @@
-#include "ulisse_ctrl/commands/commandhalt.hpp"
+#include "ulisse_ctrl/commands/command_halt.hpp"
 
 namespace ulisse {
 
@@ -17,9 +17,6 @@ namespace commands {
         return fsm_->SetNextState(ulisse::states::ID::halt);
     }
 
-    void CommandHalt::SetPosContext(const std::shared_ptr<PositionContext> &posCxt)
-    {
-        posCxt_ = posCxt;
-    }
+
 }
 }

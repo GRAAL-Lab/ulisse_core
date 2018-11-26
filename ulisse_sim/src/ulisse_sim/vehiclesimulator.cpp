@@ -89,9 +89,6 @@ void VehicleSimulator::ExecuteStep(double h_p, double h_s)
         Ts_ = Ts_fixed_;
     }
 
-    //std::cout << "Ts_: " << Ts_ << std::endl;
-    //std::cout << "Time since start (sec) = " << (total_elapsed_.count() / 1E9) << std::endl;
-
     SimulateActuation(h_p, h_s);
     SimulateSensors(h_p, h_s);
 

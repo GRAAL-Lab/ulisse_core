@@ -1,4 +1,4 @@
-#include "ulisse_ctrl/states/statehalt.hpp"
+#include "ulisse_ctrl/states/state_halt.hpp"
 
 namespace ulisse {
 
@@ -27,7 +27,7 @@ namespace states {
         return fsm::ok;
     }
 
-    void StateHalt::SetPosContext(const std::shared_ptr<PositionContext>& posCxt)
+    /*void StateHalt::SetPosContext(const std::shared_ptr<PositionContext>& posCxt)
     {
         posCxt_ = posCxt;
     }
@@ -35,6 +35,6 @@ namespace states {
     void StateHalt::SetCtrlContext(const std::shared_ptr<ControlContext> &ctrlCxt)
     {
         ctrlCxt_ = ctrlCxt;
-    }
+    }*/
 }
 }

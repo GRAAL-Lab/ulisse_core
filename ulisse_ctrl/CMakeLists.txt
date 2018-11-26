@@ -48,12 +48,17 @@ set(ulisse_ctrl_lib_sources
     src/ulisse_ctrl/helper_functions.cpp
     # States
     src/ulisse_ctrl/states/genericstate.cpp
-    src/ulisse_ctrl/states/statehalt.cpp
-    src/ulisse_ctrl/states/statemove.cpp
+    src/ulisse_ctrl/states/state_halt.cpp
+    src/ulisse_ctrl/states/state_latlong.cpp
+    src/ulisse_ctrl/states/state_speedheading.cpp
     # Commands
     src/ulisse_ctrl/commands/genericcommand.cpp
-    src/ulisse_ctrl/commands/commandhalt.cpp
-    src/ulisse_ctrl/commands/commandmove.cpp    
+    src/ulisse_ctrl/commands/command_halt.cpp
+    src/ulisse_ctrl/commands/command_latlong.cpp
+    src/ulisse_ctrl/commands/command_speedheading.cpp
+    # Events
+    src/ulisse_ctrl/events/generic_event.cpp
+    src/ulisse_ctrl/events/event_rc_enabled.cpp
 )
 
 ## Libraries

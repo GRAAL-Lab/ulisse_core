@@ -1,4 +1,4 @@
-#include "ulisse_ctrl/states/statemove.hpp"
+#include "ulisse_ctrl/states/state_latlong.hpp"
 #include "ctrl_toolbox/HelperFunctions.h"
 #include "ulisse_ctrl/data_structs.hpp"
 #include "ulisse_ctrl/helper_functions.hpp"
@@ -7,15 +7,15 @@ namespace ulisse {
 
 namespace states {
 
-    StateMove::StateMove()
+    StateLatLong::StateLatLong()
     {
     }
 
-    StateMove::~StateMove()
+    StateLatLong::~StateLatLong()
     {
     }
 
-    fsm::retval StateMove::OnEntry()
+    fsm::retval StateLatLong::OnEntry()
     {
         posCxt_->currentGoal = posCxt_->nextGoal;
         ctrlCxt_->pidPosition.Reset();
@@ -25,18 +25,10 @@ namespace states {
         return fsm::ok;
     }
 
-    void StateMove::SetPosContext(const std::shared_ptr<PositionContext>& posCxt)
+    fsm::retval StateLatLong::Execute()
     {
-        posCxt_ = posCxt;
-    }
+        CheckRadioController();
 
-    void StateMove::SetCtrlContext(const std::shared_ptr<ControlContext>& ctrlCxt)
-    {
-        ctrlCxt_ = ctrlCxt;
-    }
-
-    fsm::retval StateMove::Execute()
-    {
         ctb::DistanceAndAzimuthRad(posCxt_->currentPos, posCxt_->currentGoal.pos, posCxt_->goalDistance, posCxt_->goalHeading);
 
         if (posCxt_->goalDistance < posCxt_->currentGoal.acceptRadius) {
@@ -72,9 +64,6 @@ namespace states {
         return fsm::ok;
     }
 
-    void StateMove::SetConf(const std::shared_ptr<ConfigurationData>& conf)
-    {
-        conf_ = conf;
-    }
+
 }
 }

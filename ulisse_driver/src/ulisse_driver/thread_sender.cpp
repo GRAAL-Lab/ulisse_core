@@ -23,6 +23,11 @@
 using std::placeholders::_1;
 using namespace std::chrono_literals;
 
+double clamp(double n, double lower, double upper)
+{
+    return std::max(lower, std::min(n, upper));
+}
+
 namespace ulisse {
 
 namespace ees {
@@ -49,7 +54,7 @@ namespace ees {
         auto parameters = par_client_->get_parameters({ "SerialDevice", "BaudRate", "EESHelper.DebugBytes",
             "EESHelper.DebugIncomingValidMessageType", "EESHelper.DebugFailedCrc" });
         if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), parameters) != rclcpp::executor::FutureReturnCode::SUCCESS) {
-            RCLCPP_ERROR(this->get_logger(), "get_parameters service call failed. Exiting tutorial.")
+            RCLCPP_ERROR(this->get_logger(), "get_parameters service call failed. Exiting.")
             exit(EXIT_FAILURE);
         }
         std::cout << "=====    Sender Parameters    =====\n";
@@ -64,6 +69,7 @@ namespace ees {
         this->get_parameter_or("EESHelper.DebugIncomingValidMessageType", debugIncomingValidMessageType, false);
         this->get_parameter_or("EESHelper.DebugFailedCrc", debugFailedCrc, false);
 
+        RCLCPP_INFO(this->get_logger(), "Trying to open serialDevice: %s, baudRate: %d ", serialDevice.c_str(), baudRate);
         eesHlp_.DebugBytes(debugBytes);
 
         ReturnValue ret = eesHlp_.SetSerial(serialDevice, baudRate);
@@ -102,6 +108,8 @@ namespace ees {
             case (uint16_t)CommandType::beep:
                 data_.messageType = MessageType::beep;
                 data_.beep.delay = request->beep_data.delay;
+                data_.beep.loop = request->beep_data.loop;
+                data_.beep.numberOfBeeps = request->beep_data.numberofbeeps;
                 eesHlp_.SendMessage(data_);
                 break;
             case (uint16_t)CommandType::enableref:
@@ -119,9 +127,8 @@ namespace ees {
                 break;
             case (uint16_t)CommandType::setpumps:
                 data_.messageType = MessageType::pumps;
-                for (size_t i = 0; i < 3; i++) {
-                    data_.pumps.pumpsFlag[i] = request->pumps_data.pumpsflag[i];
-                }
+                data_.pumps.pumpsFlag[EMB_PUMPS_LEFT_IDX] = request->pumps_data.pumpsflag[EMB_PUMPS_LEFT_IDX];
+                data_.pumps.pumpsFlag[EMB_PUMPS_RIGHT_IDX] = request->pumps_data.pumpsflag[EMB_PUMPS_RIGHT_IDX];
                 eesHlp_.SendMessage(data_);
                 break;
             case (uint16_t)CommandType::setpowerbuttons:
@@ -158,13 +165,12 @@ namespace ees {
                 eesHlp_.SendMessage(data_);
                 break;
             default:
-                RCLCPP_INFO(this->get_logger(), "Unsupported command: %s", CommandTypeToString((CommandType)(request->command_type)).c_str());
+                RCLCPP_INFO(this->get_logger(), "Unsupported command! [%s]", CommandTypeToString((CommandType)(request->command_type)).c_str());
                 ret = ReturnValue::fail;
                 break;
             }
             if (ret != ReturnValue::ok) {
                 response->res = (int16_t)(CommandAnswer::fail);
-                RCLCPP_INFO(this->get_logger(), "SendAnswer returned %s", CommandAnswerToString((CommandAnswer)(response->res)).c_str());
             } else {
                 response->res = (int16_t)(CommandAnswer::ok);
             }
@@ -175,11 +181,13 @@ namespace ees {
 
     void ThreadSender::ControlContext_cb(const ulisse_msgs::msg::ControlContext::SharedPtr msg)
     {
-        std::cout << "ControlContext_cb() sending reference!" << std::endl;
         data_.messageType = MessageType::reference;
         data_.references.leftThruster = static_cast<int16_t>(msg->ctrlref.left * 10); // we multiply be 10 since the micro reads 'Per mille'
         data_.references.rightThruster = static_cast<int16_t>(msg->ctrlref.right * 10);
+        clamp(data_.references.leftThruster, -1000, 1000);
+        clamp(data_.references.rightThruster, -1000, 1000);
         eesHlp_.SendMessage(data_);
+        RCLCPP_INFO(this->get_logger(), "ControlContext_cb() sending reference! (L:%d, R:%d)", data_.references.leftThruster, data_.references.rightThruster);
     }
 
     void ThreadSender::CopyConfigMsg2EESStruct(const std::shared_ptr<ulisse_msgs::srv::EESCommand::Request> request)

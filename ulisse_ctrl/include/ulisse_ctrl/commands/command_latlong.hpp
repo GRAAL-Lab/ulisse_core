@@ -8,16 +8,13 @@ namespace ulisse {
 
 namespace commands {
 
-    class CommandMove : public GenericCommand {
-        std::shared_ptr<PositionContext> posCxt_;
+    class CommandLatLong : public GenericCommand {
 
     public:
-        CommandMove();
-        virtual ~CommandMove();
+        CommandLatLong();
+        virtual ~CommandLatLong();
         virtual fsm::retval Execute(void);
         void SetGoal(double latitude_, double longitude_, double acceptanceRadius);
-        void SetPosContext(const std::shared_ptr<PositionContext> &posCxt);
-
     };
 }
 }

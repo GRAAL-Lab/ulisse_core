@@ -228,7 +228,8 @@ namespace ees {
             RCLCPP_INFO(logger, "Compass %u->%u Magn %u->%u Sensors %u->%u", hbCompass0, hbCompassMax, hbMagnetometer0, hbMagnetometerMax, hbPacketSensors0, hbPacketSensorsMax);
             RCLCPP_INFO(logger, "Status %u->%u Motors %u->%u Battery %u->%u", hbPacketStatus0, hbPacketStatusMax, hbPacketMotors0, hbPacketMotorsMax, hbPacketBattery0, hbPacketBatteryMax);
             RCLCPP_INFO(logger, "Timeout Acc %f Timeout Compass %f Timeout Magn %f", timeoutAccelerometer, timeoutCompass, timeoutMagnetometer);
-            RCLCPP_INFO(logger, "PWM Up min %f [ms] PWM Up max %f [ms]\nPWM Period min %f [ms] PWM Period Max %f [ms]", pwmUpMin, pwmUpMax, pwmPeriodMin, pwmPeriodMax);
+            RCLCPP_INFO(logger, "PWM Up min %f [ms] PWM Up max %f [ms]", pwmUpMin, pwmUpMax);
+            RCLCPP_INFO(logger, "PWM Period min %f [ms] PWM Period Max %f [ms]", pwmPeriodMin, pwmPeriodMax);
             RCLCPP_INFO(logger, "PWM Time Threshold %f [ms] PWM Zero Threshold %f [ms]\ndeadzone Time %f [s] Thruster Saturation %u/1000", pwmTimeThreshold, pwmZeroThreshold, deadzoneTime, thrusterSaturation);
         }
 

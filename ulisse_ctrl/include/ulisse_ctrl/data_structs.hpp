@@ -76,7 +76,8 @@ struct PositionContext {
     Waypoint currentGoal, nextGoal;
     ctb::LatLong currentPos;
     double currentHeading;
-    double goalDistance, goalHeading;
+    double goalDistance, goalHeading, goalSpeed;
+    uint cmdTimeout;
 
     PositionContext()
         : currentHeading(0.0)
@@ -92,6 +93,7 @@ struct ControlContext {
     ctb::DigitalPID pidPosition;
     ctb::DigitalPID pidHeading;
     ThrusterControlData thrusterData;
+    uint16_t eesStatus;
 };
 
 struct ConfigurationData {
