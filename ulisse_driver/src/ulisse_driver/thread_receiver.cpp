@@ -26,7 +26,7 @@ namespace ees {
             RCLCPP_INFO(this->get_logger(), "service not available, waiting again...")
         }
 
-        ReturnValue ret;
+        RetVal ret;
         std::string serialDevice = "";
         int baudRate = 0;
         bool debugBytes = false;
@@ -58,7 +58,7 @@ namespace ees {
         eesHlp_.DebugFailedCrc(debugFailedCrc);
 
         ret = eesHlp_.SetSerial(serialDevice, baudRate);
-        if (ret != ReturnValue::ok) {
+        if (ret != RetVal::ok) {
             RCLCPP_ERROR(this->get_logger(), "Error opening serial %s %d", serialDevice.c_str(), baudRate);
             exit(0);
         }

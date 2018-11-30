@@ -1,6 +1,5 @@
 #include "ulisse_ctrl/states/state_latlong.hpp"
 #include "ctrl_toolbox/HelperFunctions.h"
-#include "ulisse_ctrl/data_structs.hpp"
 #include "ulisse_ctrl/helper_functions.hpp"
 
 namespace ulisse {
@@ -29,22 +28,22 @@ namespace states {
     {
         CheckRadioController();
 
-        ctb::DistanceAndAzimuthRad(posCxt_->currentPos, posCxt_->currentGoal.pos, posCxt_->goalDistance, posCxt_->goalHeading);
+        ctb::DistanceAndAzimuthRad(posCxt_->gpsPos, posCxt_->currentGoal.pos, posCxt_->goalDistance, posCxt_->goalHeading);
 
         if (posCxt_->goalDistance < posCxt_->currentGoal.acceptRadius) {
             std::cout << "GOAL REACHED!" << std::endl;
             fsm_->ExecuteCommand(ulisse::commands::ID::halt);
         }
 
+        double goalDistance = posCxt_->goalDistance;
         if (conf_->enableSlowDownOnTurns) {
-            // CORRECTLY IMPLEMENT THIS FUNCTIONS: This is just a DUMMY
-            ctb::PIDGains newPosGains = ctrlCxt_->pidPosition.GetGains();
-
-            newPosGains.Kp = SlowDownWhenTurning(ctb::HeadingErrorRad(posCxt_->currentHeading,posCxt_->goalHeading),*conf_);
-            ctrlCxt_->pidPosition.SetGains(newPosGains);
+            //ctb::PIDGains newPosGains = ctrlCxt_->pidPosition.GetGains();
+            double headingError = ctb::HeadingErrorRad(posCxt_->currentHeading, posCxt_->goalHeading);
+            goalDistance = SlowDownWhenTurning(headingError, goalDistance, *conf_);
+            //ctrlCxt_->pidPosition.SetGains(newPosGains);
         }
 
-        ctrlCxt_->thrusterData.desiredSpeed = -ctrlCxt_->pidPosition.Compute(0.0, posCxt_->goalDistance);
+        ctrlCxt_->thrusterData.desiredSpeed = -ctrlCxt_->pidPosition.Compute(0.0, goalDistance);
         ctrlCxt_->thrusterData.desiredJog = ctrlCxt_->pidHeading.Compute(posCxt_->goalHeading, posCxt_->currentHeading);
         Eigen::Vector6d requestedVel;
         requestedVel(0) = ctrlCxt_->thrusterData.desiredSpeed;
@@ -63,7 +62,5 @@ namespace states {
 
         return fsm::ok;
     }
-
-
 }
 }

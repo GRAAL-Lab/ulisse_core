@@ -20,7 +20,7 @@ namespace ulisse {
 
 namespace ees {
 
-    enum class ReturnValue {
+    enum class RetVal {
         ok,
         fail,
         complete,

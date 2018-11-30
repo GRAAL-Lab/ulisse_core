@@ -2,7 +2,6 @@
 
 namespace ulisse {
 
-
 void ThrustersSaturation(double lThruster, double rThruster, double thMin, double thMax, double& lSatOut, double& rSatOut)
 {
     double factor = 1.0;
@@ -34,27 +33,48 @@ void ThrustersSaturation(double lThruster, double rThruster, double thMin, doubl
     rSatOut = rThruster * factor;
 }
 
-double SlowDownWhenTurning(double headingError, const ConfigurationData& conf)
+double SlowDownWhenTurning(double headingError, double desiredSpeed, const ConfigurationData& conf)
 {
-    double herrMin = conf.sdtData.headingErrorMin;
-    double herrMax = conf.sdtData.headingErrorMax;
-    double alphaMin = conf.sdtData.alphaMin;
-    double alphaMax = conf.sdtData.alphaMax;
+    double herrMin = conf.slowOnTurns.headingErrorMin;
+    double herrMax = conf.slowOnTurns.headingErrorMax;
+    double alphaMin = conf.slowOnTurns.alphaMin;
+    double alphaMax = conf.slowOnTurns.alphaMax;
     double herrabs = std::abs(headingError);
     double factor = 1.0;
     if (herrabs < herrMax && herrabs > herrMin) {
-        factor = (herrabs - herrMin) / (herrMax - herrMin) * (alphaMin - alphaMax)  + alphaMax;
+        factor = (herrabs - herrMin) / (herrMax - herrMin) * (alphaMin - alphaMax) + alphaMax;
     } else if (herrabs > herrMax) {
         factor = alphaMin;
     } else {
         factor = alphaMax;
     }
 
-    double newKp = conf.pidgains_position.Kp * factor;
+    double newSpeed = desiredSpeed * factor;
+    //double newKp = conf.pidgains_position.Kp * factor;
     /*ortos::DebugConsole::Write(ortos::LogLevel::info, "SlowDownWhenTurning", "Desired value: %lf Factor: %lf Final value: %lf",
             desiredSpeed, factor, newSpeed);*/
-    return newKp;
+    return newSpeed;
 }
 
+double AvoidRotationCloseToTarget(double desiredHeading, double heading, double desiredSpeed, const ConfigurationData& conf)
+{
+    double sMin = conf.avoidRot.speedMin;
+    double sMax = conf.avoidRot.speedMax;
+    double betaMin = conf.avoidRot.betaMin;
+    double betaMax = conf.avoidRot.betaMax;
 
+    double beta;
+    if (desiredSpeed < sMax && desiredSpeed > sMin) {
+        beta = (desiredSpeed - sMin) / (sMax - sMin) * (betaMax - betaMin) + betaMin;
+    } else if (desiredSpeed > sMax) {
+        beta = 1;
+    } else {
+        beta = betaMin;
+    }
+
+    double newHeading = (1 - beta) * heading + beta * desiredHeading;
+    /*ortos::DebugConsole::Write(ortos::LogLevel::info, "AvoidRotationWhenCloseToTarget", "Desired heading: %lf Factor: %lf Final heading: %lf",
+            desiredHeading, beta, newHeading);*/
+    return newHeading;
+}
 }

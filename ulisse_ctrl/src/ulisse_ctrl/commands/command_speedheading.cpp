@@ -21,7 +21,7 @@ namespace commands {
     {
         posCxt_->goalSpeed = speed;
         posCxt_->goalHeading = heading;
-        posCxt_->cmdTimeout = timeout_sec;
+        ctrlCxt_->cmdTimeout = timeout_sec;
     }
 }
 }

@@ -46,7 +46,6 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/CommandSpeedHeading.msg"
   # EES
   "msg/EESAck.msg"
-  #"msg/BatteryData.msg"
   "msg/EESBattery.msg"
   "msg/Sw485InOut.msg"
   "msg/EESSw485Status.msg"
@@ -59,10 +58,14 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/EESEnableRef.msg"
   "msg/EESPowerButtons.msg"
   "msg/EESPumps.msg"
-  # Services
+  # Other
+  "msg/NavFilterData.msg"
+  ## Services ##
   "srv/ControlCommand.srv"
   "srv/EESCommand.srv"
   "srv/RosbagCmd.srv"
+  "srv/NavFilterCommand.srv" 
+
 
 )
 

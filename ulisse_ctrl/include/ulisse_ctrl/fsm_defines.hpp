@@ -2,7 +2,7 @@
 #define ULISSE_CTRL_FSM_DEFINES_HPP
 
 #include "ctrl_toolbox/DataStructs.h"
-#include "ulisse_ctrl/data_structs.hpp"
+#include "ulisse_ctrl/ctrl_data_structs.hpp"
 
 namespace ulisse {
 

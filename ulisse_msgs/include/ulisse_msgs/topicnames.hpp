@@ -23,6 +23,8 @@ namespace topicnames {
     const std::string ees_battery_right = "/ees/battery_right";
     const std::string ees_sw485status = "/ees/sw485status";
 
+        const std::string nav_filter_data = "/nav_filter_data";
+
     const std::string vehicle_ctrl_state = "/vehicle/ctrl_state";
     const std::string control_context = "/vehicle/ctrl_context";
     const std::string position_context = "/vehicle/pos_context";
@@ -31,8 +33,9 @@ namespace topicnames {
     const std::string command_move = "/command/move";
 
     const std::string rosbag_service = "/record/record_bag";
-    const std::string ees_cmd_service = "/ees_command";
-    const std::string control_cmd_service = "/control_command";
+    const std::string ees_cmd_service = "/ees_cmd_service";
+    const std::string control_cmd_service = "/control_cmd_service";
+    const std::string navfilter_cmd_service = "/navfilter_cmd_service";
 }
 }
 

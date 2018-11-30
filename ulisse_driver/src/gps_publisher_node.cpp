@@ -23,11 +23,11 @@
 using namespace ulisse::gpsd;
 using namespace std::chrono_literals;
 
-void process_data(gpsData& my_gps_data, struct gps_data_t* p);
-void process_status(gpsStatus& my_gps_status, struct gps_data_t* p);
-bool step(gpsData& my_gps_data, gpsStatus& my_gps_status, gpsmm* gps);
-void GPSData2ROSMsg(const gpsData& my_gps_data, ulisse_msgs::msg::GPSData& gps_data_msg);
-void GPSData2ROSMsg(const gpsStatus& my_gps_data, ulisse_msgs::msg::GPSStatus& gps_data_msg);
+void process_data(GpsData& my_gps_data, struct gps_data_t* p);
+void process_status(GpsStatusData& my_gps_status, struct gps_data_t* p);
+bool step(GpsData& my_gps_data, GpsStatusData& my_gps_status, gpsmm* gps);
+void GPSData2ROSMsg(const GpsData& my_gps_data, ulisse_msgs::msg::GPSData& gps_data_msg);
+void GPSData2ROSMsg(const GpsStatusData& my_gps_data, ulisse_msgs::msg::GPSStatus& gps_data_msg);
 
 int main(int argc, char* argv[])
 {
@@ -63,8 +63,8 @@ int main(int argc, char* argv[])
         RCLCPP_INFO(nh->get_logger(), "Successfully opened GPSd");
     }
 
-    gpsData gpsdData;
-    gpsStatus gpsdStatus;
+    GpsData gpsdData;
+    GpsStatusData gpsdStatus;
 
     ulisse_msgs::msg::GPSData gps_data_msg;
     ulisse_msgs::msg::GPSStatus gps_status_msg;
@@ -98,7 +98,7 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-void process_data(gpsData& my_gps_data, struct gps_data_t* p)
+void process_data(GpsData& my_gps_data, struct gps_data_t* p)
 {
     if (p == NULL) {
         return;
@@ -151,7 +151,7 @@ void process_data(gpsData& my_gps_data, struct gps_data_t* p)
     my_gps_data.tdop = p->dop.tdop;
 }
 
-void process_status(gpsStatus& my_gps_status, struct gps_data_t* p)
+void process_status(GpsStatusData& my_gps_status, struct gps_data_t* p)
 {
     if (p == NULL) {
         return;
@@ -194,7 +194,7 @@ void process_status(gpsStatus& my_gps_status, struct gps_data_t* p)
     }
 }
 
-bool step(gpsData& my_gps_data, gpsStatus& my_gps_status, gpsmm* gps)
+bool step(GpsData& my_gps_data, GpsStatusData& my_gps_status, gpsmm* gps)
 {
 #if GPSD_API_MAJOR_VERSION >= 5
     if (!gps->waiting(1e6)) {
@@ -213,7 +213,7 @@ bool step(gpsData& my_gps_data, gpsStatus& my_gps_status, gpsmm* gps)
     return true;
 }
 
-void GPSData2ROSMsg(const gpsData& gps_data, ulisse_msgs::msg::GPSData& gps_data_msg)
+void GPSData2ROSMsg(const GpsData& gps_data, ulisse_msgs::msg::GPSData& gps_data_msg)
 {
     gps_data_msg.time = gps_data.time;
     gps_data_msg.gpsfixmode = static_cast<uint8_t>(gps_data.mode);
@@ -243,7 +243,7 @@ void GPSData2ROSMsg(const gpsData& gps_data, ulisse_msgs::msg::GPSData& gps_data
     gps_data_msg.tdop = gps_data.tdop;
 }
 
-void GPSData2ROSMsg(const gpsStatus& g_d, ulisse_msgs::msg::GPSStatus& g_m)
+void GPSData2ROSMsg(const GpsStatusData& g_d, ulisse_msgs::msg::GPSStatus& g_m)
 {
     g_m.status = static_cast<int8_t>(g_d.status);
     g_m.satellites_used = g_d.satellites_used; // Number of satellites

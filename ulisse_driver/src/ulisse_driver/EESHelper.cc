@@ -36,19 +36,19 @@ namespace ees {
         delete[] incomingPacketBuffer_;
     }
 
-    ReturnValue EESHelper::SetSerial(std::string serialDevice, int baudRate)
+    RetVal EESHelper::SetSerial(std::string serialDevice, int baudRate)
     {
         serial_ = CSerialHelper::getInstance(serialDevice.c_str(), baudRate);
 
         if (serial_->IsOpen()) {
             Init();
-            return ReturnValue::ok;
+            return RetVal::ok;
         } else {
-            return ReturnValue::fail;
+            return RetVal::fail;
         }
     }
 
-    ReturnValue EESHelper::CollectValidMessage(EESData& data)
+    RetVal EESHelper::CollectValidMessage(EESData& data)
     {
         //TODO portare fuori i vari GetAck e soci per evitare il passaggio inutile dalla union
         if (serial_->IsOpen()) {
@@ -58,9 +58,9 @@ namespace ees {
                 int ret = serial_->ReadBlocking(&byte, 1);
 
                 if (ret == 1) {
-                    ReturnValue retval = ParseByte(static_cast<uint8_t>(byte));
+                    RetVal retval = ParseByte(static_cast<uint8_t>(byte));
 
-                    if (retval == ReturnValue::complete) {
+                    if (retval == RetVal::complete) {
                         messageId = GetLastMessage();
 
                         if (debugIncomingValidMessageType_) {
@@ -74,14 +74,14 @@ namespace ees {
                             GetAck(tmp);
                             data.messageType = messageId;
                             data.ack = tmp;
-                            return ReturnValue::ok;
+                            return RetVal::ok;
                         };
                         case MessageType::status: {
                             statusData tmp;
                             GetStatus(tmp);
                             data.messageType = messageId;
                             data.status = tmp;
-                            return ReturnValue::ok;
+                            return RetVal::ok;
                         };
                         case MessageType::sensor: {
                             sensorData tmp;
@@ -89,42 +89,42 @@ namespace ees {
                             ConvertSensors(tmp);
                             data.messageType = messageId;
                             data.sensors = tmp;
-                            return ReturnValue::ok;
+                            return RetVal::ok;
                         };
                         case MessageType::version: {
                             versionData tmp;
                             GetVersion(tmp);
                             data.messageType = messageId;
                             data.version = tmp;
-                            return ReturnValue::ok;
+                            return RetVal::ok;
                         };
                         case MessageType::set_config: {
                             LowLevelConfiguration tmp;
                             GetConfig(tmp);
                             data.messageType = messageId;
                             data.config = tmp;
-                            return ReturnValue::ok;
+                            return RetVal::ok;
                         };
                         case MessageType::motors: {
                             motorsData tmp;
                             GetMotors(tmp);
                             data.messageType = messageId;
                             data.motors = tmp;
-                            return ReturnValue::ok;
+                            return RetVal::ok;
                         };
                         case MessageType::battery: {
                             batteryData tmp;
                             GetBattery(tmp);
                             data.messageType = messageId;
                             data.battery = tmp;
-                            return ReturnValue::ok;
+                            return RetVal::ok;
                         };
                         case MessageType::sw485Status: {
                             sw485StatusData tmp;
                             GetSw485Status(tmp);
                             data.messageType = messageId;
                             data.sw485Status = tmp;
-                            return ReturnValue::ok;
+                            return RetVal::ok;
                         };
                         default:
                             printf("EESHelper::CollectValidMessage, unsupported message id %hu", (uint16_t)messageId);
@@ -137,19 +137,19 @@ namespace ees {
             }
         } else {
             printf("EESHelper::CollectValidMessage, Invalid or closed channel");
-            return ReturnValue::fail;
+            return RetVal::fail;
         }
     }
 
-    ReturnValue EESHelper::SendMessage(EESData& data)
+    RetVal EESHelper::SendMessage(EESData& data)
     {
 
         if (serial_->IsOpen()) {
             uint16_t size = 0;
 
-            ReturnValue ret = CreateEESMessage(outgoingPacketBuffer_, size, data);
+            RetVal ret = CreateEESMessage(outgoingPacketBuffer_, size, data);
 
-            if (ret == ReturnValue::ok) {
+            if (ret == RetVal::ok) {
 
                 if (debugBytes_) {
                     fprintf(stderr, "\n------type %d-------\n", (int)data.messageType);
@@ -160,14 +160,14 @@ namespace ees {
 
                 serial_->Write((char*)outgoingPacketBuffer_, size);
             } else {
-                return ReturnValue::fail;
+                return RetVal::fail;
             }
 
         } else {
             printf("EESHelper::SendMessage, Invalid or closed channel\n");
-            return ReturnValue::fail;
+            return RetVal::fail;
         }
-        return ReturnValue::ok;
+        return RetVal::ok;
     }
 
     void EESHelper::DebugBytes(bool enable)
@@ -203,7 +203,7 @@ namespace ees {
         errorCount_ = 0;
     }
 
-    ReturnValue EESHelper::ParseByte(uint8_t byte)
+    RetVal EESHelper::ParseByte(uint8_t byte)
     {
         uint8_t* payload_ptr;
 
@@ -245,7 +245,7 @@ namespace ees {
                     state_ = ParseState::header;
                     headerCount_ = 0;
                     errorCount_++;
-                    return ReturnValue::fail;
+                    return RetVal::fail;
                 } else {
                     payload_ptr = (uint8_t*)incomingPacketBuffer_;
                     *(payload_ptr + dataCount_) = byte;
@@ -314,7 +314,7 @@ namespace ees {
                         fprintf(stderr, "\n CRC ok \n");
                     }
 
-                    return ReturnValue::complete;
+                    return RetVal::complete;
                 } else {
                     printf("EESHelper, ERROR: message %u size %u CHECKSUM FAIL, received %u computed %u sum %u", type_, size_, recvChecksum_,
                         ComputeByteSum(ptr, size_), ComputeByteSum(ptr, size_) + recvChecksum_);
@@ -333,7 +333,7 @@ namespace ees {
                     state_ = ParseState::header;
                     headerCount_ = 0;
                     errorCount_++;
-                    return ReturnValue::fail;
+                    return RetVal::fail;
                 }
             }
 
@@ -346,7 +346,7 @@ namespace ees {
         }
         }
 
-        return ReturnValue::nodata;
+        return RetVal::nodata;
     }
 
     MessageType EESHelper::GetLastMessage()
@@ -354,7 +354,7 @@ namespace ees {
         return lastReceived_;
     }
 
-    ReturnValue EESHelper::CreateEESMessage(uint8_t*, uint16_t& size, EESData& data)
+    RetVal EESHelper::CreateEESMessage(uint8_t*, uint16_t& size, EESData& data)
     {
         switch (data.messageType) {
         case MessageType::reference:
@@ -392,9 +392,9 @@ namespace ees {
             break;
         default:
             printf("EESHelper::CreateEESMessage, type unknown (%hu)", (uint16_t)data.messageType);
-            return ReturnValue::fail;
+            return RetVal::fail;
         }
-        return ReturnValue::ok;
+        return RetVal::ok;
     }
 
     void EESHelper::CreateReferences(uint8_t* packetPointer, uint16_t& size, referencesData& references)

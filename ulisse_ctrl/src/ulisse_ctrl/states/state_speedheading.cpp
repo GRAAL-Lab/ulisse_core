@@ -1,6 +1,5 @@
 #include "ulisse_ctrl/states/state_speedheading.hpp"
 #include "ctrl_toolbox/HelperFunctions.h"
-#include "ulisse_ctrl/data_structs.hpp"
 #include "ulisse_ctrl/helper_functions.hpp"
 
 namespace ulisse {
@@ -17,7 +16,6 @@ namespace states {
 
     fsm::retval StateSpeedHeading::OnEntry()
     {
-        //posCxt_->currentGoal = posCxt_->nextGoal;
         ctrlCxt_->pidPosition.Reset();
         ctrlCxt_->pidHeading.Reset();
         ctrlCxt_->pidSpeed.Reset();
@@ -30,18 +28,43 @@ namespace states {
 
     fsm::retval StateSpeedHeading::Execute()
     {
-
         CheckRadioController();
 
+        t_now_ = std::chrono::system_clock::now();
+        total_elapsed_ = std::chrono::duration_cast<std::chrono::seconds>(t_now_ - t_start_);
 
-        if (total_elapsed_.count() > posCxt_->cmdTimeout) {
-            std::cout << "Timeout reached!" << std::endl;
+        if (total_elapsed_.count() > ctrlCxt_->cmdTimeout) {
+            std::cout << "Speed Heading Timeout reached!" << std::endl;
+
+            ctrlCxt_->thrusterData.ctrlRef.left = 0;
+            ctrlCxt_->thrusterData.ctrlRef.right = 0;
+            ctrlCxt_->pidSpeed.Reset();
+            ctrlCxt_->pidHeading.Reset();
             fsm_->ExecuteCommand(ulisse::commands::ID::halt);
         }
 
+        double speedRef, headingRef;
+        double surgeFbk;
+        //double swayFbk;
 
+        double headingTrackDiff = ctb::HeadingErrorRad(posCxt_->gpsTrack, posCxt_->currentHeading);
+        surgeFbk = posCxt_->gpsSpeed * cos(headingTrackDiff);
+        //swayFbk = posCxt_->gpsSpeed * sin(headingTrackDiff);
+        // TODO: check if the desired speed should be multiplied with cos(errorHeading)
+        speedRef = posCxt_->goalSpeed;
+        headingRef = posCxt_->goalHeading;
 
-        ctrlCxt_->thrusterData.desiredSpeed = posCxt_->goalSpeed;
+        if (conf_->enableSlowDownOnTurns) {
+            double headingError = ctb::HeadingErrorRad(posCxt_->currentHeading, headingRef);
+            speedRef = SlowDownWhenTurning(headingError, speedRef, *conf_);
+        }
+
+        /*if (context_->speedHeadingRefIn.d.type == SpeedHeadingType::to_target) {
+            headingRef = AvoidRotationCloseToTarget(headingRef, context_->state.heading, context_->speedHeadingRefIn.d.desiredSpeed,
+                context_->configuration);
+        }*/
+
+        ctrlCxt_->thrusterData.desiredSpeed = ctrlCxt_->pidSpeed.Compute(posCxt_->goalSpeed, surgeFbk);
         ctrlCxt_->thrusterData.desiredJog = ctrlCxt_->pidHeading.Compute(posCxt_->goalHeading, posCxt_->currentHeading);
         Eigen::Vector6d requestedVel;
 

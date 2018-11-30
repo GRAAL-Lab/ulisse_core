@@ -7,7 +7,7 @@
 #include "ulisse_msgs/srv/rosbag_cmd.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 
-#include "ulisse_ctrl/data_structs.hpp"
+#include "ulisse_ctrl/ctrl_data_structs.hpp"
 #include "ulisse_driver/EESHelperDataStructs.h"
 
 #include "rml/RML.h"

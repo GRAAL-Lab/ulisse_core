@@ -16,5 +16,11 @@ namespace commands {
     {
         posCxt_ = posCxt;
     }
+
+    void GenericCommand::SetCtrlContext(const std::shared_ptr<ControlContext>& ctrlCxt)
+    {
+        ctrlCxt_ = ctrlCxt;
+    }
+
 }
 }

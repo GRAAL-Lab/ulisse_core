@@ -22,8 +22,8 @@ void ReadMappingParameters(const std::shared_ptr<rclcpp::SyncParametersClient> p
 
 void motorref_cb(const ulisse_msgs::msg::ControlContext::SharedPtr msg)
 {
-    test_h_p = msg->ctrlref.left;
-    test_h_s = msg->ctrlref.right;
+    test_h_p = msg->motor_ctrlref.left;
+    test_h_s = msg->motor_ctrlref.right;
 }
 
 int main(int argc, char* argv[])

@@ -1,6 +1,9 @@
 PIDData pidposition
 PIDData pidheading
 PIDData pidspeed
-MotorReference mapout
-MotorReference ctrlref
+float64 desired_speed
+float64 desired_jog
+MotorReference motor_mapout
+MotorReference motor_ctrlref
+
 

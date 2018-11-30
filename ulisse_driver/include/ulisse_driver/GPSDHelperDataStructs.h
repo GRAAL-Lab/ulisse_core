@@ -17,7 +17,7 @@ namespace ulisse {
 
 namespace gpsd {
 
-enum class GpsStatus:int8_t {
+enum class GpsStatus : int8_t {
 	no_fix = -1,   /* Unable to fix position                            */
 	fix = 0,       /* Normal fix                                        */
 	sbas_fix = 1,  /* Fixed using a satellite-based augmentation system */
@@ -37,14 +37,14 @@ enum class GpsStatus:int8_t {
 //	accel = 64     /* Using accelerometers                                         */
 //};
 
-enum class GpsFixMode:uint8_t {
+enum class GpsFixMode : uint8_t {
 	mode_not_seen = 0, /* mode update not seen yet    */
 	mode_no_fix = 1,   /* none                        */
 	mode_2d = 2,       /* good for latitude/longitude */
 	mode_3d = 3        /* good for altitude/climb too */
 };
 
-struct gpsStatus {
+struct GpsStatusData {
 	//# Satellites used in solution
 	uint16_t satellites_used;                                // Number of satellites
 	int32_t satellite_used_prn[constants::maxChannels];      // PRN identifiers
@@ -96,7 +96,7 @@ struct gpsStatus {
 	}
 };
 
-struct gpsData {
+struct GpsData {
 	float64_t time;       /* Time of update */
 	GpsFixMode mode;
 	uint64_t flags;

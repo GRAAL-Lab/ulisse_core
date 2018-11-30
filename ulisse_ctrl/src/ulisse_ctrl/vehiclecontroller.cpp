@@ -1,7 +1,7 @@
 
 #include "ulisse_ctrl/vehiclecontroller.hpp"
 #include "ctrl_toolbox/HelperFunctions.h"
-#include "ulisse_ctrl/data_structs.hpp"
+#include "ulisse_ctrl/ctrl_data_structs.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 
 #include <chrono>
@@ -9,16 +9,6 @@
 
 using namespace std::chrono_literals;
 using std::placeholders::_1;
-
-/*size_t hash(const std::string& str)
-{
-    return std::hash<std::string>{}(str);
-}*/
-
-/*constexpr unsigned int hash(const char* str, int h = 0)
-{
-    return !str[h] ? 5381 : (hash(str, h + 1) * 33) ^ str[h];
-}*/
 
 namespace ulisse {
 
@@ -82,10 +72,12 @@ int VehicleController::LoadConfiguration()
 
     // Slow Down on turns
     conf_->enableSlowDownOnTurns = par_client_->get_parameter("SlowDownOnTurns.enable", false);
-    conf_->sdtData.headingErrorMin = par_client_->get_parameter("SlowDownOnTurns.HeadingErrorMin", 0.0);
-    conf_->sdtData.headingErrorMax = par_client_->get_parameter("SlowDownOnTurns.HeadingErrorMax", 0.0);
-    conf_->sdtData.alphaMin = par_client_->get_parameter("SlowDownOnTurns.AlphaMin", 0.0);
-    conf_->sdtData.alphaMin = par_client_->get_parameter("SlowDownOnTurns.AlphaMax", 0.0);
+    conf_->slowOnTurns.headingErrorMin = par_client_->get_parameter("SlowDownOnTurns.HeadingErrorMin", 0.0);
+    conf_->slowOnTurns.headingErrorMax = par_client_->get_parameter("SlowDownOnTurns.HeadingErrorMax", 0.0);
+    conf_->slowOnTurns.alphaMin = par_client_->get_parameter("SlowDownOnTurns.AlphaMin", 0.0);
+    conf_->slowOnTurns.alphaMin = par_client_->get_parameter("SlowDownOnTurns.AlphaMax", 0.0);
+
+    // Avoid Rotations
 
     // PID
     conf_->pidgains_position.Kp = par_client_->get_parameter("PIDPosition.Kp", 0.0);
@@ -152,6 +144,7 @@ void VehicleController::SetUpFSM()
 
     command_speedheading_.SetFSM(&u_fsm_);
     command_speedheading_.SetPosContext(posCxt_);
+    command_speedheading_.SetCtrlContext(ctrlCxt_);
 
     state_halt_.SetFSM(&u_fsm_);
     state_halt_.SetPosContext(posCxt_);
@@ -220,16 +213,12 @@ void VehicleController::SetupCommandServer()
 
         if (request->command_type == ulisse::commands::ID::halt) {
             std::cout << "Received Command Halt" << std::endl;
-            u_fsm_.ExecuteCommand(ulisse::commands::ID::halt);
         } else if (request->command_type == ulisse::commands::ID::latlong) {
             std::cout << "Received Command LatLong" << std::endl;
             command_move_.SetGoal(request->latlong_cmd.latitude, request->latlong_cmd.longitude, request->latlong_cmd.acceptance_radius);
-            u_fsm_.ExecuteCommand(ulisse::commands::ID::latlong);
         } else if (request->command_type == ulisse::commands::ID::speedheading) {
             std::cout << "Received Command SpeedHeading" << std::endl;
             command_speedheading_.SetGoal(request->sh_cmd.speed, request->sh_cmd.heading, request->sh_cmd.timeout.sec);
-
-            u_fsm_.ExecuteCommand(ulisse::commands::ID::speedheading);
         } else {
             RCLCPP_INFO(nh_->get_logger(), "Unsupported command: %s", request->command_type.c_str());
             ret = fsm::retval::fail;
@@ -239,6 +228,7 @@ void VehicleController::SetupCommandServer()
             response->res = "CommandAnswer::fail";
             RCLCPP_INFO(nh_->get_logger(), "SendAnswer returned %s", response->res.c_str());
         } else {
+            u_fsm_.ExecuteCommand(request->command_type);
             response->res = "CommandAnswer::ok";
         }
     };
@@ -249,8 +239,10 @@ void VehicleController::SetupCommandServer()
 void VehicleController::GPSSensor_cb(const ulisse_msgs::msg::GPSData::SharedPtr msg)
 {
     timestamp_ = msg->time;
-    posCxt_->currentPos.latitude = msg->latitude;
-    posCxt_->currentPos.longitude = msg->longitude;
+    posCxt_->gpsPos.latitude = msg->latitude;
+    posCxt_->gpsPos.longitude = msg->longitude;
+    posCxt_->gpsSpeed = msg->speed;
+    posCxt_->gpsTrack = msg->track;
 }
 
 void VehicleController::CompassSensor_cb(const ulisse_msgs::msg::Compass::SharedPtr msg)
@@ -273,12 +265,14 @@ void VehicleController::Run()
 void VehicleController::PublishControl()
 {
     ulisse_msgs::msg::PositionContext poscxt_msg;
-    poscxt_msg.currentpos.latitude = posCxt_->currentPos.latitude;
-    poscxt_msg.currentpos.longitude = posCxt_->currentPos.longitude;
-    poscxt_msg.currentgoal.latitude = posCxt_->currentGoal.pos.latitude;
-    poscxt_msg.currentgoal.longitude = posCxt_->currentGoal.pos.longitude;
-    poscxt_msg.currentheading = posCxt_->currentHeading;
-    poscxt_msg.goalheading = posCxt_->goalHeading;
+    poscxt_msg.gps_pos.latitude = posCxt_->gpsPos.latitude;
+    poscxt_msg.gps_pos.longitude = posCxt_->gpsPos.longitude;
+    poscxt_msg.current_heading = posCxt_->currentHeading;
+    poscxt_msg.current_goal.latitude = posCxt_->currentGoal.pos.latitude;
+    poscxt_msg.current_goal.longitude = posCxt_->currentGoal.pos.longitude;
+    poscxt_msg.goal_distance = posCxt_->goalDistance;
+    poscxt_msg.goal_heading = posCxt_->goalHeading;
+    poscxt_msg.goal_speed = posCxt_->goalSpeed;
     poscxt_pub_->publish(poscxt_msg);
 
     if (u_fsm_.GetCurrentStateName() != ulisse::states::ID::halt) {
@@ -295,10 +289,13 @@ void VehicleController::PublishControl()
         ctrlcxt_msg.pidspeed.reference = ctrlCxt_->pidSpeed.GetRef();
         ctrlcxt_msg.pidspeed.output = ctrlCxt_->pidSpeed.GetOutput();
 
-        ctrlcxt_msg.mapout.left = ctrlCxt_->thrusterData.mapOut.left;
-        ctrlcxt_msg.mapout.right = ctrlCxt_->thrusterData.mapOut.right;
-        ctrlcxt_msg.ctrlref.left = ctrlCxt_->thrusterData.ctrlRef.left;
-        ctrlcxt_msg.ctrlref.right = ctrlCxt_->thrusterData.ctrlRef.right;
+        ctrlcxt_msg.desired_speed = ctrlCxt_->thrusterData.desiredSpeed;
+        ctrlcxt_msg.desired_jog = ctrlCxt_->thrusterData.desiredJog;
+
+        ctrlcxt_msg.motor_mapout.left = ctrlCxt_->thrusterData.mapOut.left;
+        ctrlcxt_msg.motor_mapout.right = ctrlCxt_->thrusterData.mapOut.right;
+        ctrlcxt_msg.motor_ctrlref.left = ctrlCxt_->thrusterData.ctrlRef.left;
+        ctrlcxt_msg.motor_ctrlref.right = ctrlCxt_->thrusterData.ctrlRef.right;
         ctrlcxt_pub_->publish(ctrlcxt_msg);
     }
 

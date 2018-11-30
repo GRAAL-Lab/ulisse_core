@@ -4,26 +4,7 @@
 #include "ctrl_toolbox/DataStructs.h"
 #include "ctrl_toolbox/DigitalPID.h"
 #include "surface_vehicle_model/surfacevehiclemodel.hpp"
-
-namespace tc {
-const char* const none = "\033[0m";
-const char* const black = "\033[0;30m";
-const char* const grayD = "\033[1;30m";
-const char* const red = "\033[0;31m";
-const char* const redL = "\033[1;31m";
-const char* const green = "\033[0;32m";
-const char* const greenL = "\033[1;32m";
-const char* const brown = "\033[0;33m";
-const char* const yellow = "\033[1;33m";
-const char* const blu = "\033[0;34m";
-const char* const bluL = "\033[1;34m";
-const char* const mag = "\033[0;35m";
-const char* const magL = "\033[1;35m";
-const char* const cyan = "\033[0;36m";
-const char* const cyanL = "\033[1;36m";
-const char* const grayL = "\033[0;37m";
-const char* const white = "\033[1;37m";
-}
+#include "ulisse_ctrl/terminal_utils.hpp"
 
 namespace ulisse {
 
@@ -63,6 +44,34 @@ struct SlowDownOnTurnsData {
     }
 };
 
+struct AvoidRotationData {
+    double speedMin;
+    double speedMax;
+    double betaMin;
+    double betaMax;
+};
+
+struct HoldCurrentData {
+    double currentMin;
+    double currentMax;
+};
+
+struct NavFilterData {
+    double latitude;
+    double longitude;
+    double speed[2];
+    double current[2];
+};
+
+struct NavFilterConfigData {
+    //bool debugMessages;
+    double k[4];
+    /*void DebugPrint(const char* string) {
+        ortos::DebugConsole::Write(ortos::LogLevel::info, string, "AHRSconfigData: debugMessages %c", debugMessages ? 'T' : 'F');
+        ortos::DebugConsole::Write(ortos::LogLevel::info, string, "AHRSconfigData: k: [%lf %lf %lf %lf]", k[0], k[1], k[2], k[3]);
+    }*/
+};
+
 struct Waypoint {
     ctb::LatLong pos;
     double acceptRadius;
@@ -73,11 +82,11 @@ struct Waypoint {
 };
 
 struct PositionContext {
-    Waypoint currentGoal, nextGoal;
-    ctb::LatLong currentPos;
+    ctb::LatLong gpsPos;
+    double gpsTrack, gpsSpeed;
     double currentHeading;
+    Waypoint currentGoal, nextGoal;
     double goalDistance, goalHeading, goalSpeed;
-    uint cmdTimeout;
 
     PositionContext()
         : currentHeading(0.0)
@@ -94,6 +103,7 @@ struct ControlContext {
     ctb::DigitalPID pidHeading;
     ThrusterControlData thrusterData;
     uint16_t eesStatus;
+    uint cmdTimeout;
 };
 
 struct ConfigurationData {
@@ -105,7 +115,8 @@ struct ConfigurationData {
 
     double posAcceptanceRadius;
     bool enableSlowDownOnTurns;
-    SlowDownOnTurnsData sdtData;
+    SlowDownOnTurnsData slowOnTurns;
+    AvoidRotationData avoidRot;
 
     ctb::PIDGains pidgains_speed;
     ctb::PIDGains pidgains_position;
@@ -114,6 +125,8 @@ struct ConfigurationData {
     double pidsat_speed;
     double pidsat_position;
     double pidsat_heading;
+
+    NavFilterConfigData navFilter;
 
     //double thrusterUpperSat, thrusterLowerSat;
 
@@ -143,45 +156,6 @@ struct ConfigurationData {
                   << "=============================\n";
     }
 };
-
-struct Spinner {
-    Spinner(int frequency)
-        : freq(frequency)
-        , spinIndex(0)
-        , spin_chars("/-\\|")
-    {
-        clock_gettime(CLOCK_MONOTONIC, &last);
-        period = 1 / static_cast<double>(freq + 1E-6);
-        //std::cout << "period: " << period << "s" << std::endl;
-    }
-
-    void operator()(void)
-    {
-
-        clock_gettime(CLOCK_MONOTONIC, &now);
-        double timeElapsed = (now.tv_sec - last.tv_sec) + (now.tv_nsec - last.tv_nsec) / 1E9;
-
-        //std::cout << "timeElapsed: " << timeElapsed << std::endl;
-        if (period - timeElapsed < 1E-3) {
-            //std::cout << "fabs(freq - timeElapsed): " << fabs(freq - timeElapsed) << std::endl;
-            //printf("\e[?25l"); /* hide the cursor */
-            putchar(' ');
-            putchar(spin_chars[spinIndex % spin_chars.length()]);
-            putchar(' ');
-            fflush(stdout);
-            putchar('\r');
-            spinIndex++;
-            last = now;
-        }
-    }
-
-private:
-    struct timespec last, now;
-    int freq;
-    double period;
-    unsigned long spinIndex;
-    std::string spin_chars;
-};
 }
 
-#endif // ULISSE_CTRL_DATA_STRUCTS_HPP
+#endif //  ULISSE_CTRL_DATA_STRUCTS_HPP

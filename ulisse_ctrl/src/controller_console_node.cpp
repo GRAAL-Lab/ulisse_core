@@ -9,7 +9,6 @@
 #include <iostream>
 #include <rclcpp/rclcpp.hpp>
 
-#include "ulisse_ctrl/data_structs.hpp"
 #include "ulisse_ctrl/fsm_defines.hpp"
 
 #include "ulisse_msgs/srv/control_command.hpp"

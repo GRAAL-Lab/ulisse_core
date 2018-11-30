@@ -22,9 +22,9 @@ namespace ees {
     public:
         EESHelper();
         ~EESHelper();
-        ReturnValue SetSerial(std::string serialDevice, int baudRate);
-        ReturnValue CollectValidMessage(EESData& data);
-        ReturnValue SendMessage(EESData& data);
+        RetVal SetSerial(std::string serialDevice, int baudRate);
+        RetVal CollectValidMessage(EESData& data);
+        RetVal SendMessage(EESData& data);
 
         void DebugBytes(bool enable);
         void DebugIncomingValidMessageType(bool enable);
@@ -32,9 +32,9 @@ namespace ees {
 
     private:
         void Init();
-        ReturnValue ParseByte(uint8_t byte);
+        RetVal ParseByte(uint8_t byte);
         MessageType GetLastMessage();
-        ReturnValue CreateEESMessage(uint8_t*, uint16_t& size, EESData& data);
+        RetVal CreateEESMessage(uint8_t*, uint16_t& size, EESData& data);
 
         void CreateReferences(uint8_t* packetPointer, uint16_t& size, referencesData& references);
         void CreateSetConfig(uint8_t* packetPointer, uint16_t& size, LowLevelConfiguration& config);

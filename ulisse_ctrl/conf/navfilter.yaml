@@ -1,0 +1,6 @@
+navigation_filter_node:
+    ros__parameters:
+        Rate: 100               
+        UseThrusterMapping: true
+        Gains: [0.0, 0.0, 0.0, 0.0]
+

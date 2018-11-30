@@ -42,8 +42,9 @@ include_directories(
 
 ## Libraries ##
 set(ulisse_ctrl_lib_sources
-    # Main Class
+    # Main Classes
     src/ulisse_ctrl/vehiclecontroller.cpp
+    src/ulisse_ctrl/pos_vel_observer.cpp
     # Helpers
     src/ulisse_ctrl/helper_functions.cpp
     # States
@@ -75,10 +76,13 @@ add_executable(controller_node src/controller_node.cpp)
 ament_target_dependencies(controller_node rclcpp std_msgs ulisse_msgs rml)
 target_link_libraries(controller_node rml ulisse_ctrl_lib)
 
+add_executable(navigation_filter_node src/navigation_filter_node.cpp)
+ament_target_dependencies(navigation_filter_node rclcpp std_msgs ulisse_msgs rml)
+target_link_libraries(navigation_filter_node rml ulisse_ctrl_lib)
+
 add_executable(controller_console_node src/controller_console_node.cpp)
 ament_target_dependencies(controller_console_node rclcpp std_msgs ulisse_msgs rml)
 target_link_libraries(controller_console_node rml ulisse_ctrl_lib)
-
 
 add_executable(monitor_node src/monitor_node.cpp)
 ament_target_dependencies(monitor_node rclcpp std_msgs ulisse_msgs rml)
@@ -87,6 +91,7 @@ target_link_libraries(monitor_node rml ulisse_ctrl_lib)
 ## Install
 install(TARGETS
   controller_node
+  navigation_filter_node
   controller_console_node
   monitor_node
   control_test

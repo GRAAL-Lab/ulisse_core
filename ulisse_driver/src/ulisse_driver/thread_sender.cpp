@@ -72,8 +72,8 @@ namespace ees {
         RCLCPP_INFO(this->get_logger(), "Trying to open serialDevice: %s, baudRate: %d ", serialDevice.c_str(), baudRate);
         eesHlp_.DebugBytes(debugBytes);
 
-        ReturnValue ret = eesHlp_.SetSerial(serialDevice, baudRate);
-        if (ret != ReturnValue::ok) {
+        RetVal ret = eesHlp_.SetSerial(serialDevice, baudRate);
+        if (ret != RetVal::ok) {
             RCLCPP_ERROR(this->get_logger(), "Error opening serial %s %d", serialDevice.c_str(), baudRate);
             exit(0);
         }
@@ -102,7 +102,7 @@ namespace ees {
             (void)request_header;
             RCLCPP_INFO(this->get_logger(), "Incoming request: %s", CommandTypeToString((CommandType)(request->command_type)).c_str());
 
-            ReturnValue ret = ReturnValue::ok;
+            RetVal ret = RetVal::ok;
 
             switch (request->command_type) {
             case (uint16_t)CommandType::beep:
@@ -166,13 +166,13 @@ namespace ees {
                 break;
             default:
                 RCLCPP_INFO(this->get_logger(), "Unsupported command! [%s]", CommandTypeToString((CommandType)(request->command_type)).c_str());
-                ret = ReturnValue::fail;
+                ret = RetVal::fail;
                 break;
             }
-            if (ret != ReturnValue::ok) {
-                response->res = (int16_t)(CommandAnswer::fail);
+            if (ret != RetVal::ok) {
+                response->res = (int16_t)(RetVal::fail);
             } else {
-                response->res = (int16_t)(CommandAnswer::ok);
+                response->res = (int16_t)(RetVal::ok);
             }
         };
 
