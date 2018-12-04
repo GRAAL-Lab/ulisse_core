@@ -215,7 +215,7 @@ void VehicleController::SetupCommandServer()
             std::cout << "Received Command Halt" << std::endl;
         } else if (request->command_type == ulisse::commands::ID::latlong) {
             std::cout << "Received Command LatLong" << std::endl;
-            command_move_.SetGoal(request->latlong_cmd.latitude, request->latlong_cmd.longitude, request->latlong_cmd.acceptance_radius);
+            command_move_.SetGoal(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude, request->latlong_cmd.acceptance_radius);
         } else if (request->command_type == ulisse::commands::ID::speedheading) {
             std::cout << "Received Command SpeedHeading" << std::endl;
             command_speedheading_.SetGoal(request->sh_cmd.speed, request->sh_cmd.heading, request->sh_cmd.timeout.sec);

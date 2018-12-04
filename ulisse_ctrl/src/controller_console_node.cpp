@@ -78,9 +78,9 @@ int main(int argc, char* argv[])
         case 1: {
             serviceReq->command_type = ulisse::commands::ID::latlong;
             std::cout << "latitude ";
-            std::cin >> serviceReq->latlong_cmd.latitude;
+            std::cin >> serviceReq->latlong_cmd.goal.latitude;
             std::cout << "longitude ";
-            std::cin >> serviceReq->latlong_cmd.longitude;
+            std::cin >> serviceReq->latlong_cmd.goal.longitude;
             std::cout << "acceptanceRadius ";
             std::cin >> serviceReq->latlong_cmd.acceptance_radius;
         } break;

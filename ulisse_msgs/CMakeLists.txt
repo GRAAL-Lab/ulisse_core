@@ -65,8 +65,6 @@ rosidl_generate_interfaces(ulisse_msgs
   "srv/EESCommand.srv"
   "srv/RosbagCmd.srv"
   "srv/NavFilterCommand.srv" 
-
-
 )
 
 ament_export_include_directories(include)

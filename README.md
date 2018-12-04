@@ -21,15 +21,25 @@ Ulisse catamaran controller revamped with ROS2.
 
 ## Build
 
-Be sure to start from a clean workspace, with no _log_, _install_ or _build_ folders. First install the needed dependencies, then to build the package and the ros_bridge (which has to be downloaded from the ros official repo https://github.com/ros2/ros1_bridge) use the following commands:
+Be sure to start from a clean workspace, with no _log_, _install_ or _build_ folders. First install the needed dependencies, and download the ros_bridge (from the ros official repo https://github.com/ros2/ros1_bridge). Navigate to your ROS1 workspace and build the `ulisse_rosbag_ros1` package (https://bitbucket.org/isme_robotics/ulisse_rosbag_ros1/):
+
+```
+#!bash
+sourceros1
+catkin_make
+```
+
+Then, navigate to your ROS2 workspace and execute the following commands to build this package:
 
 ```
 #!bash
 sourceros2
 colcon build --symlink-install --packages-skip ros1_bridge
-sourceros1 && sourceros2
+sourceros1 ; sourceros2
 colcon build --symlink-install --packages-select ros1_bridge --cmake-force-configure
 ```
+
+*Note*: If you are building on a memory constrained system you might want to limit the number of parallel jobs by setting e.g. the environment variable `MAKEFLAGS=-j2` (more info on https://github.com/ros2/ros1_bridge/).
 
 ## Usage
 
@@ -61,7 +71,7 @@ sourceros1
 roslaunch prog_rosbag record_bag.launch
 ```
 
-Then, in another terminal execute the bridge using script located in the ulisse_ctrl folder:
+Then, in another terminal navigate to the repository root and execute the bridge using script located in the ulisse_ctrl folder:
 
 ```
 #!bash

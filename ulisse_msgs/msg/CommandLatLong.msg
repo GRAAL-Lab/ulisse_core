@@ -1,3 +1,2 @@
-float64 latitude
-float64 longitude
+LatLong goal
 float64 acceptance_radius
