@@ -54,18 +54,18 @@ int main(int argc, char* argv[])
         std::cout << tc::white << "GPS time:\t" << tc::none << std::setprecision(10) << gps_msg.time << std::endl;
         std::cout << tc::white << "Vehicle State:\t" << tc::none << vehicle_state.data << std::endl;
 
-        std::cout << tc::green << "Current Pos:\t" << tc::none << position_cxt.currentpos.latitude << ", " << position_cxt.currentpos.longitude << std::endl;
-        std::cout << tc::green << "Goal Pos:\t" << tc::none << position_cxt.currentgoal.latitude << ", " << position_cxt.currentgoal.longitude << std::endl;
-        std::cout << tc::green << "Current Heading:" << tc::none << position_cxt.currentheading << std::endl;
+        std::cout << tc::green << "Current Pos:\t" << tc::none << position_cxt.gps_pos.latitude << ", " << position_cxt.gps_pos.longitude << std::endl;
+        std::cout << tc::green << "Goal Pos:\t" << tc::none << position_cxt.current_goal.latitude << ", " << position_cxt.current_goal.longitude << std::endl;
+        std::cout << tc::green << "Current Heading:" << tc::none << position_cxt.current_heading << std::endl;
 
-        std::cout << tc::green << "goal_distance:\t" << tc::none << std::setprecision(10) << position_cxt.goaldistance << std::endl;
-        std::cout << tc::green << "goal_heading:\t" << tc::none << std::setprecision(10) << position_cxt.goalheading << std::endl;
+        std::cout << tc::green << "goal_distance:\t" << tc::none << std::setprecision(10) << position_cxt.goal_distance << std::endl;
+        std::cout << tc::green << "goal_heading:\t" << tc::none << std::setprecision(10) << position_cxt.goal_heading << std::endl;
 
         std::cout << tc::blu << "Desired Speed:\t" << tc::none << control_cxt.pidspeed.reference << std::endl;
         std::cout << tc::blu << "Desired Jog:\t" << tc::none << control_cxt.pidheading.reference << std::endl;
 
-        std::cout << tc::blu << "Motor Map Out:\t" << tc::none << control_cxt.mapout.left << ", " << control_cxt.mapout.right << std::endl;
-        std::cout << tc::blu << "Motor Ctrl Ref:\t" << tc::none << control_cxt.ctrlref.left << ", " << control_cxt.ctrlref.right << std::endl;
+        std::cout << tc::blu << "Motor Map Out:\t" << tc::none << control_cxt.motor_mapout.left << ", " << control_cxt.motor_mapout.right << std::endl;
+        std::cout << tc::blu << "Motor Ctrl Ref:\t" << tc::none << control_cxt.motor_ctrlref.left << ", " << control_cxt.motor_ctrlref.right << std::endl;
 
         std::cout << "------------------------------------" << std::endl;
 

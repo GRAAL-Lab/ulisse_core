@@ -32,7 +32,7 @@ static ulisse_msgs::msg::Compass compass;
 static ulisse_msgs::msg::GPSData gpsData;
 //static ulisse_msgs::msg::PositionContext positionData;
 static ulisse_msgs::msg::ControlContext controlData;
-//static ulisse_msgs::msg::EESMotors motorData;
+
 
 void ReloadConfig();
 void handle_navfilter_commands(const std::shared_ptr<rmw_request_id_t> request_header,
@@ -41,7 +41,6 @@ void handle_navfilter_commands(const std::shared_ptr<rmw_request_id_t> request_h
 void controlcontext_cb(const ulisse_msgs::msg::ControlContext::SharedPtr msg);
 //void positioncontext_cb(const ulisse_msgs::msg::PositionContext::SharedPtr msg);
 void compass_cb(const ulisse_msgs::msg::Compass::SharedPtr msg);
-//void eesmotors_cb(const ulisse_msgs::msg::EESMotors::SharedPtr msg);
 void gpsdata_cb(const ulisse_msgs::msg::GPSData::SharedPtr msg);
 
 int main(int argc, char* argv[])
@@ -73,7 +72,6 @@ int main(int argc, char* argv[])
     //auto poscxt_sub = node->create_subscription<ulisse_msgs::msg::PositionContext>(ulisse_msgs::topicnames::position_context, positioncontext_cb);
     auto compass_sub = node->create_subscription<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass, compass_cb);
     auto gpsdata_sub = node->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data, gpsdata_cb);
-    //auto motors_sub = node->create_subscription<ulisse_msgs::msg::EESMotors>(ulisse_msgs::topicnames::sensor_compass, eesmotors_cb);
 
     double lastValidGPSTime = 0;
     ulisse_msgs::msg::NavFilterData filterData;
@@ -102,7 +100,6 @@ int main(int argc, char* argv[])
                     GeographicLib::UTMUPS::Reverse(zone, northp, x, y, filterData.latitude,
                         filterData.longitude);
 
-                    //uliss
                     navfilter_pub->publish(filterData);
 
                 } catch (const GeographicLib::GeographicErr& e) {
@@ -183,8 +180,3 @@ void gpsdata_cb(const ulisse_msgs::msg::GPSData::SharedPtr msg)
 {
     gpsData = *msg;
 }
-
-/*void eesmotors_cb(const ulisse_msgs::msg::EESMotors::SharedPtr msg)
-{
-    motorData = *msg;
-}*/

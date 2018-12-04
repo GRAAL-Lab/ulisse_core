@@ -182,8 +182,8 @@ namespace ees {
     void ThreadSender::ControlContext_cb(const ulisse_msgs::msg::ControlContext::SharedPtr msg)
     {
         data_.messageType = MessageType::reference;
-        data_.references.leftThruster = static_cast<int16_t>(msg->ctrlref.left * 10); // we multiply be 10 since the micro reads 'Per mille'
-        data_.references.rightThruster = static_cast<int16_t>(msg->ctrlref.right * 10);
+        data_.references.leftThruster = static_cast<int16_t>(msg->motor_ctrlref.left * 10); // we multiply be 10 since the micro reads 'Per mille'
+        data_.references.rightThruster = static_cast<int16_t>(msg->motor_ctrlref.right * 10);
         clamp(data_.references.leftThruster, -1000, 1000);
         clamp(data_.references.rightThruster, -1000, 1000);
         eesHlp_.SendMessage(data_);

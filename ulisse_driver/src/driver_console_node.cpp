@@ -68,9 +68,9 @@ int main(int argc, char* argv[])
             send = false;
             ulisse_msgs::msg::ControlContext ctrlcxt_msg;
             std::cout << "left thruster (%): ";
-            std::cin >> ctrlcxt_msg.ctrlref.left;
+            std::cin >> ctrlcxt_msg.motor_ctrlref.left;
             std::cout << "right thruster (%): ";
-            std::cin >> ctrlcxt_msg.ctrlref.right;
+            std::cin >> ctrlcxt_msg.motor_ctrlref.right;
 
             std::cout << "repeat? (1 yes, 0 no): ";
             std::cin >> repeat;
