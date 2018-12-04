@@ -35,7 +35,9 @@ Then, navigate to your ROS2 workspace and execute the following commands to buil
 #!bash
 sourceros2
 colcon build --symlink-install --packages-skip ros1_bridge
-sourceros1 ; sourceros2
+source /opt/ros/melodic/setup.bash
+source ~/ros_ws/devel/setup.bash
+source ~/ros2_ws/install/setup.bash 
 colcon build --symlink-install --packages-select ros1_bridge --cmake-force-configure
 ```
 
