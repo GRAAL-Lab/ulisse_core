@@ -43,9 +43,9 @@ int main(int argc, char* argv[])
     poscxt_sub = nh->create_subscription<ulisse_msgs::msg::PositionContext>(
         ulisse_msgs::topicnames::position_context, PositionContext_cb);
     ctrlcxt_sub = nh->create_subscription<ulisse_msgs::msg::ControlContext>(
-        ulisse_msgs::topicnames::position_context, ControlContext_cb);
+        ulisse_msgs::topicnames::control_context, ControlContext_cb);
     vehiclestate_sub = nh->create_subscription<std_msgs::msg::String>(
-        ulisse_msgs::topicnames::position_context, VehicleState_cb);
+        ulisse_msgs::topicnames::vehicle_ctrl_state, VehicleState_cb);
 
     vehicle_state.data = "undefined";
 
