@@ -10,6 +10,10 @@ Ulisse catamaran controller revamped with ROS2.
 - **libgeographic**: ` sudo apt install libgeographic-*`
 - **libgps**: `sudo apt install libgps-dev`
 
+### Additional packages not coming with ros2
+
+- **colcon**: Follow the guide at https://colcon.readthedocs.io/en/master/user/installation.html
+- **rosbag2**: `sudo apt-get install ros2bag rosbag2*`.
 
 ## Subpackages
 

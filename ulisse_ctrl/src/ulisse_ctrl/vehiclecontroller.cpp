@@ -39,9 +39,9 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         ulisse_msgs::topicnames::sensor_compass, std::bind(&VehicleController::CompassSensor_cb, this, _1));
 
     // Commands Subscriptions
-    //cmd_halt_sub_ = nh_->create_subscription<std_msgs::msg::Empty>(
+    // cmd_halt_sub_ = nh_->create_subscription<std_msgs::msg::Empty>(
     //    ulisse_msgs::topicnames::command_halt, std::bind(&VehicleController::CommandHalt_cb, this, _1));
-    //cmd_move_sub_ = nh_->create_subscription<ulisse_msgs::msg::CommandMove>(
+    // cmd_move_sub_ = nh_->create_subscription<ulisse_msgs::msg::CommandMove>(
     //    ulisse_msgs::topicnames::command_move, std::bind(&VehicleController::CommandMove_cb, this, _1));
 
     // Control Publishers
@@ -52,14 +52,9 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     SetupCommandServer();
 }
 
-VehicleController::~VehicleController()
-{
-}
+VehicleController::~VehicleController() {}
 
-std::shared_ptr<ControlContext> VehicleController::CtrlContext() const
-{
-    return ctrlCxt_;
-}
+std::shared_ptr<ControlContext> VehicleController::CtrlContext() const { return ctrlCxt_; }
 
 int VehicleController::LoadConfiguration()
 {
@@ -112,13 +107,16 @@ int VehicleController::LoadConfiguration()
     conf_->thrusterMap.d = par_client_->get_parameter("ThrusterMapping.motors_distance", 0.0);
     conf_->thrusterMap.lambda_pos = par_client_->get_parameter("ThrusterMapping.lambda_pos", 0.0);
     conf_->thrusterMap.lambda_neg = par_client_->get_parameter("ThrusterMapping.lambda_neg", 0.0);
-    conf_->thrusterMap.cX = Eigen::Vector3d((par_client_->get_parameter("ThrusterMapping.cX", std::vector<double>(3, 0.0))).data());
-    conf_->thrusterMap.cN = Eigen::Vector3d((par_client_->get_parameter("ThrusterMapping.cN", std::vector<double>(3, 0.0))).data());
+    conf_->thrusterMap.cX
+        = Eigen::Vector3d((par_client_->get_parameter("ThrusterMapping.cX", std::vector<double>(3, 0.0))).data());
+    conf_->thrusterMap.cN
+        = Eigen::Vector3d((par_client_->get_parameter("ThrusterMapping.cN", std::vector<double>(3, 0.0))).data());
     conf_->thrusterMap.b1_pos = par_client_->get_parameter("ThrusterMapping.b1_pos", 0.0);
     conf_->thrusterMap.b2_pos = par_client_->get_parameter("ThrusterMapping.b2_pos", 0.0);
     conf_->thrusterMap.b1_neg = par_client_->get_parameter("ThrusterMapping.b1_neg", 0.0);
     conf_->thrusterMap.b2_neg = par_client_->get_parameter("ThrusterMapping.b2_neg", 0.0);
-    conf_->thrusterMap.Inertia.diagonal() = Eigen::Vector3d((par_client_->get_parameter("ThrusterMapping.Inertia", std::vector<double>(3, 0.0))).data());
+    conf_->thrusterMap.Inertia.diagonal()
+        = Eigen::Vector3d((par_client_->get_parameter("ThrusterMapping.Inertia", std::vector<double>(3, 0.0))).data());
 
     std::cout << *conf_ << std::endl;
 
@@ -160,20 +158,20 @@ void VehicleController::SetUpFSM()
     state_speedheading_.SetCtrlContext(ctrlCxt_);
     state_speedheading_.SetConf(conf_);
 
-    //ADD STATES
+    // ADD STATES
     u_fsm_.AddState(ulisse::states::ID::halt, &state_halt_);
     u_fsm_.AddState(ulisse::states::ID::latlong, &state_move_);
     u_fsm_.AddState(ulisse::states::ID::speedheading, &state_speedheading_);
 
-    //ADD COMMANDS
+    // ADD COMMANDS
     u_fsm_.AddCommand(ulisse::commands::ID::halt, &command_halt_);
     u_fsm_.AddCommand(ulisse::commands::ID::latlong, &command_move_);
     u_fsm_.AddCommand(ulisse::commands::ID::speedheading, &command_speedheading_);
 
-    //ADD EVENTS
+    // ADD EVENTS
     u_fsm_.AddEvent(ulisse::events::names::rcenabled, &event_rc_enabled_);
 
-    //ENABLE TRANSITIONS
+    // ENABLE TRANSITIONS
     u_fsm_.EnableTransition(ulisse::states::ID::halt, ulisse::states::ID::latlong, true);
     u_fsm_.EnableTransition(ulisse::states::ID::halt, ulisse::states::ID::speedheading, true);
 
@@ -183,7 +181,7 @@ void VehicleController::SetUpFSM()
     u_fsm_.EnableTransition(ulisse::states::ID::speedheading, ulisse::states::ID::halt, true);
     u_fsm_.EnableTransition(ulisse::states::ID::speedheading, ulisse::states::ID::latlong, true);
 
-    //ENABLE COMMANDS
+    // ENABLE COMMANDS
     u_fsm_.EnableCommandInState(ulisse::states::ID::halt, ulisse::commands::ID::latlong, true);
     u_fsm_.EnableCommandInState(ulisse::states::ID::latlong, ulisse::commands::ID::latlong, true);
     u_fsm_.EnableCommandInState(ulisse::states::ID::speedheading, ulisse::commands::ID::latlong, true);
@@ -202,10 +200,9 @@ void VehicleController::SetUpFSM()
 void VehicleController::SetupCommandServer()
 {
     // Create a callback function for when service requests are received.
-    auto handle_control_commands =
-        [this](const std::shared_ptr<rmw_request_id_t> request_header,
-            const std::shared_ptr<ulisse_msgs::srv::ControlCommand::Request> request,
-            std::shared_ptr<ulisse_msgs::srv::ControlCommand::Response> response) -> void {
+    auto handle_control_commands = [this](const std::shared_ptr<rmw_request_id_t> request_header,
+                                       const std::shared_ptr<ulisse_msgs::srv::ControlCommand::Request> request,
+                                       std::shared_ptr<ulisse_msgs::srv::ControlCommand::Response> response) -> void {
         (void)request_header;
         RCLCPP_INFO(nh_->get_logger(), "Incoming request: %s", request->command_type.c_str());
 
@@ -215,7 +212,8 @@ void VehicleController::SetupCommandServer()
             std::cout << "Received Command Halt" << std::endl;
         } else if (request->command_type == ulisse::commands::ID::latlong) {
             std::cout << "Received Command LatLong" << std::endl;
-            command_move_.SetGoal(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude, request->latlong_cmd.acceptance_radius);
+            command_move_.SetGoal(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude,
+                request->latlong_cmd.acceptance_radius);
         } else if (request->command_type == ulisse::commands::ID::speedheading) {
             std::cout << "Received Command SpeedHeading" << std::endl;
             command_speedheading_.SetGoal(request->sh_cmd.speed, request->sh_cmd.heading, request->sh_cmd.timeout.sec);
@@ -233,7 +231,8 @@ void VehicleController::SetupCommandServer()
         }
     };
 
-    srv_ = nh_->create_service<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service, handle_control_commands);
+    srv_ = nh_->create_service<ulisse_msgs::srv::ControlCommand>(
+        ulisse_msgs::topicnames::control_cmd_service, handle_control_commands);
 }
 
 void VehicleController::GPSSensor_cb(const ulisse_msgs::msg::GPSData::SharedPtr msg)
