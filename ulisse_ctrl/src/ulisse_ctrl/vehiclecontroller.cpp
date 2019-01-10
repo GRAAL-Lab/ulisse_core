@@ -23,10 +23,10 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 
     while (!par_client_->wait_for_service(1ms)) {
         if (!rclcpp::ok()) {
-            RCLCPP_ERROR(nh_->get_logger(), "Interrupted while waiting for the service. Exiting.")
+            RCLCPP_ERROR(nh_->get_logger(), "Interrupted while waiting for the service. Exiting.");
             exit(0);
         }
-        RCLCPP_INFO(nh_->get_logger(), "service not available, waiting again...")
+        RCLCPP_INFO(nh_->get_logger(), "service not available, waiting again...");
     }
 
     LoadConfiguration();

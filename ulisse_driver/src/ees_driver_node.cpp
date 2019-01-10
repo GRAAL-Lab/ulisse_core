@@ -35,10 +35,10 @@ int main(int argc, char* argv[])
     auto par_client_ = std::make_shared<rclcpp::SyncParametersClient>(nh);
     while (!par_client_->wait_for_service(1ms)) {
         if (!rclcpp::ok()) {
-            RCLCPP_ERROR(nh->get_logger(), "Interrupted while waiting for the service. Exiting.")
+            RCLCPP_ERROR(nh->get_logger(), "Interrupted while waiting for the service. Exiting.");
             exit(0);
         }
-        RCLCPP_INFO(nh->get_logger(), "service not available, waiting again...")
+        RCLCPP_INFO(nh->get_logger(), "service not available, waiting again...");
     }
 
     serialDevice = par_client_->get_parameter("SerialDevice", std::string(""));

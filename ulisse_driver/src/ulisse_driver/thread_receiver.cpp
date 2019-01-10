@@ -20,10 +20,10 @@ namespace ees {
 
         while (!par_client_->wait_for_service(1ms)) {
             if (!rclcpp::ok()) {
-                RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service. Exiting.")
+                RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service. Exiting.");
                 exit(0);
             }
-            RCLCPP_INFO(this->get_logger(), "service not available, waiting again...")
+            RCLCPP_INFO(this->get_logger(), "service not available, waiting again...");
         }
 
         RetVal ret;
@@ -36,7 +36,7 @@ namespace ees {
         auto parameters = par_client_->get_parameters({ "SerialDevice", "BaudRate", "EESHelper.DebugBytes",
             "EESHelper.DebugIncomingValidMessageType", "EESHelper.DebugFailedCrc" });
         if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), parameters) != rclcpp::executor::FutureReturnCode::SUCCESS) {
-            RCLCPP_ERROR(this->get_logger(), "get_parameters service call failed. Exiting.")
+            RCLCPP_ERROR(this->get_logger(), "get_parameters service call failed. Exiting.");
             exit(EXIT_FAILURE);
         }
         std::cout << "=====    Receiver Parameters    =====\n";
