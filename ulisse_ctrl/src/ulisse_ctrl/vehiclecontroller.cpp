@@ -240,6 +240,9 @@ void VehicleController::GPSSensor_cb(const ulisse_msgs::msg::GPSData::SharedPtr 
     timestamp_ = msg->time;
     posCxt_->gpsPos.latitude = msg->latitude;
     posCxt_->gpsPos.longitude = msg->longitude;
+    //std::cout << "Current lat: " << posCxt_->gpsPos.latitude << std::endl;
+    //std::cout << "Current long: " << posCxt_->gpsPos.longitude << std::endl;
+
     posCxt_->gpsSpeed = msg->speed;
     posCxt_->gpsTrack = msg->track;
 }
@@ -247,6 +250,7 @@ void VehicleController::GPSSensor_cb(const ulisse_msgs::msg::GPSData::SharedPtr 
 void VehicleController::CompassSensor_cb(const ulisse_msgs::msg::Compass::SharedPtr msg)
 {
     posCxt_->currentHeading = msg->yaw;
+    //std::cout << "Current yaw: " << posCxt_->currentHeading << std::endl;
 }
 
 void VehicleController::EESStatus_cb(const ulisse_msgs::msg::EESStatus::SharedPtr msg)

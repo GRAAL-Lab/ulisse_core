@@ -193,14 +193,18 @@ void VehicleSimulator::PublishSensors()
 {
     micro_loop_count_pub_->publish(micro_loop_count_msg_);
 
-    //std::cout << "timestamp_count_ / 200: " << timestamp_count_ / 200 << std::endl;
-    if ((int)(timestamp_count_ / 200) == gpspubcounter_) {
-        gpspubcounter_++;
+    //std::cout << "timestamp_count_ % 200: " << timestamp_count_ % 200 << std::endl;
+    if ((int)(timestamp_count_ / 200) > gpspubcounter_) {
+        gpspubcounter_ = (int)(timestamp_count_ / 200);
         gpsdata_pub_->publish(gpsdata_msg_);
     }
 
-    if ((int)(timestamp_count_ / 20) == sensorpubcounter_) {
-        sensorpubcounter_++;
+    //std::cout << "(int)(timestamp_count_ % 20):" << (int)(timestamp_count_ % 20) << std::endl;
+    //std::cout << "sensorpubcounter: " << sensorpubcounter_ << std::endl;
+    if ((int)(timestamp_count_ / 20) > sensorpubcounter_) {
+
+        sensorpubcounter_ = (int)(timestamp_count_ / 20);
+        //std::cout << "Ma ci passiamo di qua?" << std::endl;
         compass_pub_->publish(compassdata_msg_);
         imudata_pub_->publish(imudata_msg_);
         ambsens_pub_->publish(ambsens_msg_);
