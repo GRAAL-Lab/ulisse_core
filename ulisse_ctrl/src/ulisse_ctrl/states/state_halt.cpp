@@ -17,6 +17,7 @@ namespace states {
         posCxt_->currentGoal.pos = posCxt_->gpsPos;
         ctrlCxt_->thrusterData.ctrlRef.left = 0.0;
         ctrlCxt_->thrusterData.ctrlRef.right = 0.0;
+
         return fsm::ok;
     }
 

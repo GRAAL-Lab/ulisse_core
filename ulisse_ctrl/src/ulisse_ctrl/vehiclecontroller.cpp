@@ -240,8 +240,8 @@ void VehicleController::GPSSensor_cb(const ulisse_msgs::msg::GPSData::SharedPtr 
     timestamp_ = msg->time;
     posCxt_->gpsPos.latitude = msg->latitude;
     posCxt_->gpsPos.longitude = msg->longitude;
-    //std::cout << "Current lat: " << posCxt_->gpsPos.latitude << std::endl;
-    //std::cout << "Current long: " << posCxt_->gpsPos.longitude << std::endl;
+    // std::cout << "Current lat: " << posCxt_->gpsPos.latitude << std::endl;
+    // std::cout << "Current long: " << posCxt_->gpsPos.longitude << std::endl;
 
     posCxt_->gpsSpeed = msg->speed;
     posCxt_->gpsTrack = msg->track;
@@ -250,7 +250,7 @@ void VehicleController::GPSSensor_cb(const ulisse_msgs::msg::GPSData::SharedPtr 
 void VehicleController::CompassSensor_cb(const ulisse_msgs::msg::Compass::SharedPtr msg)
 {
     posCxt_->currentHeading = msg->yaw;
-    //std::cout << "Current yaw: " << posCxt_->currentHeading << std::endl;
+    // std::cout << "Current yaw: " << posCxt_->currentHeading << std::endl;
 }
 
 void VehicleController::EESStatus_cb(const ulisse_msgs::msg::EESStatus::SharedPtr msg)
@@ -278,29 +278,29 @@ void VehicleController::PublishControl()
     poscxt_msg.goal_speed = posCxt_->goalSpeed;
     poscxt_pub_->publish(poscxt_msg);
 
-    if (u_fsm_.GetCurrentStateName() != ulisse::states::ID::halt) {
-        ulisse_msgs::msg::ControlContext ctrlcxt_msg;
-        ctrlcxt_msg.pidposition.feedback = ctrlCxt_->pidPosition.GetFbk();
-        ctrlcxt_msg.pidposition.reference = ctrlCxt_->pidPosition.GetRef();
-        ctrlcxt_msg.pidposition.output = ctrlCxt_->pidPosition.GetOutput();
+    // if (u_fsm_.GetCurrentStateName() != ulisse::states::ID::halt) {
+    ulisse_msgs::msg::ControlContext ctrlcxt_msg;
+    ctrlcxt_msg.pidposition.feedback = ctrlCxt_->pidPosition.GetFbk();
+    ctrlcxt_msg.pidposition.reference = ctrlCxt_->pidPosition.GetRef();
+    ctrlcxt_msg.pidposition.output = ctrlCxt_->pidPosition.GetOutput();
 
-        ctrlcxt_msg.pidheading.feedback = ctrlCxt_->pidHeading.GetFbk();
-        ctrlcxt_msg.pidheading.reference = ctrlCxt_->pidHeading.GetRef();
-        ctrlcxt_msg.pidheading.output = ctrlCxt_->pidHeading.GetOutput();
+    ctrlcxt_msg.pidheading.feedback = ctrlCxt_->pidHeading.GetFbk();
+    ctrlcxt_msg.pidheading.reference = ctrlCxt_->pidHeading.GetRef();
+    ctrlcxt_msg.pidheading.output = ctrlCxt_->pidHeading.GetOutput();
 
-        ctrlcxt_msg.pidspeed.feedback = ctrlCxt_->pidSpeed.GetFbk();
-        ctrlcxt_msg.pidspeed.reference = ctrlCxt_->pidSpeed.GetRef();
-        ctrlcxt_msg.pidspeed.output = ctrlCxt_->pidSpeed.GetOutput();
+    ctrlcxt_msg.pidspeed.feedback = ctrlCxt_->pidSpeed.GetFbk();
+    ctrlcxt_msg.pidspeed.reference = ctrlCxt_->pidSpeed.GetRef();
+    ctrlcxt_msg.pidspeed.output = ctrlCxt_->pidSpeed.GetOutput();
 
-        ctrlcxt_msg.desired_speed = ctrlCxt_->thrusterData.desiredSpeed;
-        ctrlcxt_msg.desired_jog = ctrlCxt_->thrusterData.desiredJog;
+    ctrlcxt_msg.desired_speed = ctrlCxt_->thrusterData.desiredSpeed;
+    ctrlcxt_msg.desired_jog = ctrlCxt_->thrusterData.desiredJog;
 
-        ctrlcxt_msg.motor_mapout.left = ctrlCxt_->thrusterData.mapOut.left;
-        ctrlcxt_msg.motor_mapout.right = ctrlCxt_->thrusterData.mapOut.right;
-        ctrlcxt_msg.motor_ctrlref.left = ctrlCxt_->thrusterData.ctrlRef.left;
-        ctrlcxt_msg.motor_ctrlref.right = ctrlCxt_->thrusterData.ctrlRef.right;
-        ctrlcxt_pub_->publish(ctrlcxt_msg);
-    }
+    ctrlcxt_msg.motor_mapout.left = ctrlCxt_->thrusterData.mapOut.left;
+    ctrlcxt_msg.motor_mapout.right = ctrlCxt_->thrusterData.mapOut.right;
+    ctrlcxt_msg.motor_ctrlref.left = ctrlCxt_->thrusterData.ctrlRef.left;
+    ctrlcxt_msg.motor_ctrlref.right = ctrlCxt_->thrusterData.ctrlRef.right;
+    ctrlcxt_pub_->publish(ctrlcxt_msg);
+    //}
 
     std_msgs::msg::String state;
     state.data = u_fsm_.GetCurrentStateName();

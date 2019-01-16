@@ -38,7 +38,7 @@ namespace states {
         double goalDistance = posCxt_->goalDistance;
         if (conf_->enableSlowDownOnTurns) {
             //ctb::PIDGains newPosGains = ctrlCxt_->pidPosition.GetGains();
-            double headingError = ctb::HeadingErrorRad(posCxt_->currentHeading, posCxt_->goalHeading);
+            double headingError = ctb::HeadingErrorRad(posCxt_->goalHeading, posCxt_->currentHeading);
             goalDistance = SlowDownWhenTurning(headingError, goalDistance, *conf_);
             //ctrlCxt_->pidPosition.SetGains(newPosGains);
         }
@@ -48,6 +48,9 @@ namespace states {
         Eigen::Vector6d requestedVel;
         requestedVel(0) = ctrlCxt_->thrusterData.desiredSpeed;
         requestedVel(5) = ctrlCxt_->thrusterData.desiredJog;
+
+        std::cout << "Current Heading: " << posCxt_->currentHeading << std::endl;
+        std::cout << "Goal Heading: " << posCxt_->goalHeading << std::endl;
 
         if (conf_->ctrlMode == ControlMode::ThrusterMapping) {
 

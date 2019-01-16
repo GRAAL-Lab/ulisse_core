@@ -23,8 +23,9 @@ namespace topicnames {
     const std::string ees_battery_right = "/ees/battery_right";
     const std::string ees_sw485status = "/ees/sw485status";
 
-        const std::string nav_filter_data = "/nav_filter_data";
+    const std::string nav_filter_data = "/nav_filter_data";
 
+    const std::string motorref = "motor/ctrlref";
     const std::string vehicle_ctrl_state = "/vehicle/ctrl_state";
     const std::string control_context = "/vehicle/ctrl_context";
     const std::string position_context = "/vehicle/pos_context";

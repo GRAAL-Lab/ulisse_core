@@ -20,10 +20,16 @@ static double test_h_p(0.0), test_h_s(0.0);
 
 void ReadMappingParameters(const std::shared_ptr<rclcpp::SyncParametersClient> pc, ThrusterMappingParameters& tmp);
 
-void motorref_cb(const ulisse_msgs::msg::ControlContext::SharedPtr msg)
+void ctrlCtx_cb(const ulisse_msgs::msg::ControlContext::SharedPtr msg)
 {
     test_h_p = msg->motor_ctrlref.left;
     test_h_s = msg->motor_ctrlref.right;
+}
+
+void motorref_cb(const ulisse_msgs::msg::MotorReference::SharedPtr msg)
+{
+    test_h_p = msg->left;
+    test_h_s = msg->right;
 }
 
 int main(int argc, char* argv[])
@@ -31,7 +37,9 @@ int main(int argc, char* argv[])
     rclcpp::init(argc, argv);
     auto node = rclcpp::Node::make_shared("simulator_node");
     auto subscriber = node->create_subscription<ulisse_msgs::msg::ControlContext>(
-        ulisse_msgs::topicnames::control_context, motorref_cb);
+        ulisse_msgs::topicnames::control_context, ctrlCtx_cb);
+    auto motorref_sub = node->create_subscription<ulisse_msgs::msg::MotorReference>(
+        ulisse_msgs::topicnames::motorref, motorref_cb);
     auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(node);
 
     while (!parameters_client->wait_for_service(1ms)) {
@@ -44,7 +52,7 @@ int main(int argc, char* argv[])
     ThrusterMappingParameters myTMP;
     ReadMappingParameters(parameters_client, myTMP);
 
-    int rate = 10;
+    int rate = 100;
     rclcpp::WallRate loop_rate(rate);
     double dt = 1.0 / rate;
     std::cout << "dt=" << dt << std::endl;
@@ -78,14 +86,20 @@ int main(int argc, char* argv[])
     auto in_time_t = std::chrono::system_clock::to_time_t(now);
     datess << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d_%H.%M.%S");
 
-    std::string logfilename = "sim_log_" + datess.str() + ".txt";
-    // logfile.open(logfilename, std::ios_base::app);
+    std::string logfilename = "/home/graal/logs/sim/sim_log_" + datess.str() + ".txt";
+    std::cout << "* Saving log to: \"" << logfilename << "\" *" << std::endl;
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    logfile.open(logfilename, std::ios_base::app);
+    logss << "Lat Long, Yaw, Velocity (world)" << std::endl;
+    logfile << logss.str();
+
+    Eigen::IOFormat CommaInitFmt(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", ", ", "", "", "", "");
 
     while (rclcpp::ok()) {
 
         std::cout << "----------------------------------" << std::endl;
         std::cout << "time: " << std::setprecision(1) << myVehSim.GetCurrentTimestamp() << std::endl;
-        std::cout << "lat, long: " << std::setprecision(6) << myVehSim.VehLatitude() << ", " << myVehSim.VehLongitude()
+        std::cout << "lat, long: " << std::setprecision(8) << myVehSim.VehLatitude() << ", " << myVehSim.VehLongitude()
                   << std::endl;
         std::cout << "compass (yaw): " << myVehSim.VehAtt().GetYaw() << std::endl;
         std::cout << "velocity: " << myVehSim.VehVel_world().transpose() << std::endl;
@@ -93,8 +107,9 @@ int main(int argc, char* argv[])
 
         /* LOGGING */
         logss.str(std::string());
-        logss << myVehSim.VehLatitude() << " " << myVehSim.VehLongitude() << ", ";
-        logss << myVehSim.VehVel_world().transpose() << "\n";
+        logss << std::setprecision(8) << myVehSim.VehLatitude() << " " << myVehSim.VehLongitude() << ", ";
+        logss << myVehSim.VehAtt().GetYaw() << ", ";
+        logss << myVehSim.VehVel_world().transpose().format(CommaInitFmt) << "\n";
         logfile << logss.str();
         /***********/
 
@@ -105,7 +120,7 @@ int main(int argc, char* argv[])
         loop_rate.sleep();
     }
 
-    // logfile.close();
+    logfile.close();
 
     rclcpp::shutdown();
     return 0;
