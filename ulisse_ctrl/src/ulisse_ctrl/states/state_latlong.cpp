@@ -31,7 +31,7 @@ namespace states {
         ctb::DistanceAndAzimuthRad(posCxt_->gpsPos, posCxt_->currentGoal.pos, posCxt_->goalDistance, posCxt_->goalHeading);
 
         if (posCxt_->goalDistance < posCxt_->currentGoal.acceptRadius) {
-            std::cout << "GOAL REACHED!" << std::endl;
+            std::cout << "*** GOAL REACHED! ***" << std::endl;
             fsm_->ExecuteCommand(ulisse::commands::ID::halt);
         }
 
@@ -51,6 +51,10 @@ namespace states {
 
         std::cout << "Current Heading: " << posCxt_->currentHeading << std::endl;
         std::cout << "Goal Heading: " << posCxt_->goalHeading << std::endl;
+        std::cout << "Requested vel: " << requestedVel.transpose() << std::endl;
+        std::cout << "Goal Distance: " << posCxt_->goalDistance << std::endl;
+        std::cout << "Acceptance radius:" << posCxt_->currentGoal.acceptRadius << std::endl;
+        std::cout << "----------------------------------" << std::endl;
 
         if (conf_->ctrlMode == ControlMode::ThrusterMapping) {
 

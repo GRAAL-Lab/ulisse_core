@@ -128,16 +128,16 @@ void VehicleSimulator::SimulateActuation(double h_p, double h_s)
 
     // Integrating the linear velocity to get the new position
     vehTrack_ = std::atan2(vehVel_world_(1), vehVel_world_(0));
-    std::cout << "Track (not wrapped): " << vehTrack_ << std::endl;
+    //std::cout << "Track (not wrapped): " << vehTrack_ << std::endl;
     // Wrapping track around 2*PI
     vehTrack_ = std::fmod(vehTrack_ + 2 * M_PI, 2 * M_PI);
 
     vehSpeed_ = std::sqrt(vehVel_world_(0) * vehVel_world_(0) + vehVel_world_(1) * vehVel_world_(1));
     double distance_ = vehSpeed_ * Ts_;
 
-    std::cout << "Track (deg): " << vehTrack_ * 180.0 / M_PI << std::endl;
-    std::cout << "Yaw (deg): " << vehAtt_last_.GetYaw() * 180.0 / M_PI << std::endl;
-    std::cout << "Distance: " << distance_ << std::endl;
+    //std::cout << "Track (deg): " << vehTrack_ * 180.0 / M_PI << std::endl;
+    //std::cout << "Yaw (deg): " << vehAtt_last_.GetYaw() * 180.0 / M_PI << std::endl;
+    //std::cout << "Distance: " << distance_ << std::endl;
 
     geod_.Direct(lat_last_, long_last_, vehTrack_ * 180.0 / M_PI, distance_, lat_now_, long_now_);
 

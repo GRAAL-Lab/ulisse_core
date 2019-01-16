@@ -38,12 +38,6 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     compass_sub_ = nh_->create_subscription<ulisse_msgs::msg::Compass>(
         ulisse_msgs::topicnames::sensor_compass, std::bind(&VehicleController::CompassSensor_cb, this, _1));
 
-    // Commands Subscriptions
-    // cmd_halt_sub_ = nh_->create_subscription<std_msgs::msg::Empty>(
-    //    ulisse_msgs::topicnames::command_halt, std::bind(&VehicleController::CommandHalt_cb, this, _1));
-    // cmd_move_sub_ = nh_->create_subscription<ulisse_msgs::msg::CommandMove>(
-    //    ulisse_msgs::topicnames::command_move, std::bind(&VehicleController::CommandMove_cb, this, _1));
-
     // Control Publishers
     ctrlcxt_pub_ = nh_->create_publisher<ulisse_msgs::msg::ControlContext>(ulisse_msgs::topicnames::control_context);
     poscxt_pub_ = nh_->create_publisher<ulisse_msgs::msg::PositionContext>(ulisse_msgs::topicnames::position_context);

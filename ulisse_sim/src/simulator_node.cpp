@@ -61,14 +61,14 @@ int main(int argc, char* argv[])
     myVehSim.SetParameters(dt * 5.0, myTMP);
     //myVehSim.SetRealtime(false);
 
-    std::stringstream ss;
+    /*std::stringstream ss;
     // Get a few of the parameters just set.
     for (auto& parameter : parameters_client->get_parameters(
              { "thruster_mapping.motors_distance", "thruster_mapping.lambda_pos", "thruster_mapping.lambda_neg" })) {
         ss << "\nParameter name: " << parameter.get_name();
         ss << "\nParameter value (" << parameter.get_type_name() << "): " << parameter.value_to_string();
     }
-    RCLCPP_INFO(node->get_logger(), ss.str().c_str());
+    RCLCPP_INFO(node->get_logger(), ss.str().c_str());*/
 
     // auto publish_count = 0;
     /*std::default_random_engine generator;
@@ -101,7 +101,7 @@ int main(int argc, char* argv[])
         std::cout << "time: " << std::setprecision(1) << myVehSim.GetCurrentTimestamp() << std::endl;
         std::cout << "lat, long: " << std::setprecision(8) << myVehSim.VehLatitude() << ", " << myVehSim.VehLongitude()
                   << std::endl;
-        std::cout << "compass (yaw): " << myVehSim.VehAtt().GetYaw() << std::endl;
+        std::cout << "compass (deg): " << myVehSim.VehAtt().GetYaw() * 180.0 / M_PI << std::endl;
         std::cout << "velocity: " << myVehSim.VehVel_world().transpose() << std::endl;
         std::cout << "motorref: " << test_h_p << ", " << test_h_s << std::endl;
 
