@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
     //    }
 
     RCLCPP_INFO(node->get_logger(), "Stopping gpsd server");
-    int status = system("service gpsd stop");
+    int status = system("sudo service gpsd stop");
     RCLCPP_INFO(node->get_logger(), "service gpsd stop returned %d", status);
 
     ulisse::CSerialHelper* serial = ulisse::CSerialHelper::getInstance(serialDevice.c_str(), 9600);
@@ -206,8 +206,8 @@ int main(int argc, char* argv[])
     }
 
     RCLCPP_INFO(node->get_logger(), "Starting gpsd server");
-    status = system("service gpsd start");
-    RCLCPP_INFO(node->get_logger(), "service gpsd start returned %d", status);
+    status = system("sudo service gpsd start");
+    RCLCPP_INFO(node->get_logger(), "sudo service gpsd start returned %d", status);
 
     rclcpp::shutdown();
 }
