@@ -47,7 +47,7 @@ namespace states {
         double surgeFbk;
         //double swayFbk;
 
-        double headingTrackDiff = ctb::HeadingErrorRad(posCxt_->gpsTrack, posCxt_->currentHeading);
+        double headingTrackDiff = ctb::HeadingErrorRad(posCxt_->currentHeading, posCxt_->gpsTrack);
         surgeFbk = posCxt_->gpsSpeed * cos(headingTrackDiff);
         //swayFbk = posCxt_->gpsSpeed * sin(headingTrackDiff);
         // TODO: check if the desired speed should be multiplied with cos(errorHeading)
@@ -55,7 +55,7 @@ namespace states {
         headingRef = posCxt_->goalHeading;
 
         if (conf_->enableSlowDownOnTurns) {
-            double headingError = ctb::HeadingErrorRad(posCxt_->currentHeading, headingRef);
+            double headingError = ctb::HeadingErrorRad(headingRef, posCxt_->currentHeading);
             speedRef = SlowDownWhenTurning(headingError, speedRef, *conf_);
         }
 

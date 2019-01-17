@@ -178,23 +178,23 @@ void SurfaceVehicleModel::ThrusterMapping(const Eigen::Vector6d& linAngVel, doub
     inputVel(0) = clamp(inputVel(0), params_.surgeMin, params_.surgeMax);
     inputVel(5) = clamp(inputVel(5), params_.yawRateMin, params_.yawRateMax);
 
-    std::cout << "****************************" << std::endl;
+    //std::cout << "****************************" << std::endl;
 
     SingleThrusterMapping(inputVel, h_p);
-    std::cout << "-LEFT MOTOR MAPPING-" << std::endl;
+    /*std::cout << "-LEFT MOTOR MAPPING-" << std::endl;
     std::cout << "Req Vel: " << inputVel.transpose() << std::endl;
     std::cout << "tauX_: " << tauX_ << std::endl;
     std::cout << "tauN_: " << tauN_ << std::endl;
-    std::cout << "h_p: " << h_p << std::endl;
+    std::cout << "h_p: " << h_p << std::endl;*/
 
     Eigen::Vector6d inputVel_s = inputVel;
     inputVel_s(5) = -inputVel_s(5);
     SingleThrusterMapping(inputVel_s, h_s);
-    std::cout << "-RIGHT MOTOR MAPPING-" << std::endl;
+    /*std::cout << "-RIGHT MOTOR MAPPING-" << std::endl;
     std::cout << "Req Vel: " << inputVel_s.transpose() << std::endl;
     std::cout << "tauX_: " << tauX_ << std::endl;
     std::cout << "tauN_: " << tauN_ << std::endl;
     std::cout << "h_s: " << h_s << std::endl;
 
-    std::cout << "****************************" << std::endl;
+    std::cout << "****************************" << std::endl;*/
 }

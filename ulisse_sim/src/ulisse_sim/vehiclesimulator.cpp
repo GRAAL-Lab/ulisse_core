@@ -1,6 +1,7 @@
 #include <cmath>
 #include <iomanip>
 
+#include "GeographicLib/UTMUPS.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 #include "ulisse_sim/vehiclesimulator.hpp"
 
@@ -62,6 +63,10 @@ void VehicleSimulator::SetParameters(double Ts, const ThrusterMappingParameters&
 {
     Ts_fixed_ = Ts;
     ulisseModel_.SetMappingParams(thmapparams);
+
+    std::cout << "=====  THRUSTER MAPPING   =====" << std::endl;
+    std::cout << thmapparams << std::endl;
+    std::cout << "===============================" << std::endl;
 }
 
 void VehicleSimulator::SetRealtime(bool realtime)
@@ -123,20 +128,36 @@ void VehicleSimulator::SimulateActuation(double h_p, double h_s)
 
     // Integrating the linear velocity to get the new position
     vehTrack_ = std::atan2(vehVel_world_(1), vehVel_world_(0));
+    //std::cout << "Track (not wrapped): " << vehTrack_ << std::endl;
+    // Wrapping track around 2*PI
+    vehTrack_ = std::fmod(vehTrack_ + 2 * M_PI, 2 * M_PI);
+
     vehSpeed_ = std::sqrt(vehVel_world_(0) * vehVel_world_(0) + vehVel_world_(1) * vehVel_world_(1));
     double distance_ = vehSpeed_ * Ts_;
-    geod_.Direct(lat_last_, long_last_, vehTrack_, distance_, lat_now_, long_now_);
+
+    //std::cout << "Track (deg): " << vehTrack_ * 180.0 / M_PI << std::endl;
+    //std::cout << "Yaw (deg): " << vehAtt_last_.GetYaw() * 180.0 / M_PI << std::endl;
+    //std::cout << "Distance: " << distance_ << std::endl;
+
+    geod_.Direct(lat_last_, long_last_, vehTrack_ * 180.0 / M_PI, distance_, lat_now_, long_now_);
 
     // Integrating the Euler rates to get the new Euler angles and wrapping around PI
-    vehAtt_now_.SetRoll(std::remainder(vehAtt_last_.GetRoll() + rpyEulerRates(0) * Ts_, M_PI));
-    vehAtt_now_.SetPitch(std::remainder(vehAtt_last_.GetPitch() + rpyEulerRates(1) * Ts_, M_PI));
-    vehAtt_now_.SetYaw(std::remainder(vehAtt_last_.GetYaw() + rpyEulerRates(2) * Ts_, M_PI));
+    vehAtt_now_.SetRoll(std::fmod((vehAtt_last_.GetRoll() + rpyEulerRates(0) * Ts_) + 2 * M_PI, 2 * M_PI));
+    vehAtt_now_.SetPitch(std::fmod((vehAtt_last_.GetPitch() + rpyEulerRates(1) * Ts_) + 2 * M_PI, 2 * M_PI));
+    vehAtt_now_.SetYaw(std::fmod((vehAtt_last_.GetYaw() + rpyEulerRates(2) * Ts_) + 2 * M_PI, 2 * M_PI));
+
+    //int zone;
+    //bool northp;
+    //double x, y;
+    //GeographicLib::UTMUPS::Forward(lat_now_, long_now_, zone, northp, x, y);
+    //std::cout << "UTM Coords: " << x << ", " << y << std::endl;
 }
 
 double VehicleSimulator::GetCurrentTimestamp() const
 {
     long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
-    return static_cast<double>(now_nanosecs / 1E9);;
+    return static_cast<double>(now_nanosecs / 1E9);
+    ;
 }
 
 void VehicleSimulator::SimulateSensors(double h_p, double h_s)
@@ -157,7 +178,7 @@ void VehicleSimulator::SimulateSensors(double h_p, double h_s)
     gpsdata_msg_.speed = vehSpeed_;
     gpsdata_msg_.latitude = lat_now_;
     gpsdata_msg_.longitude = long_now_;
-    gpsdata_msg_.gpsfixmode = 3u;//ulisse_msgs::msg::GPSData::MODE_3D;
+    gpsdata_msg_.gpsfixmode = 3u; //ulisse_msgs::msg::GPSData::MODE_3D;
 
     compassdata_msg_.stamp.sec = now_stamp_secs;
     compassdata_msg_.stamp.nanosec = now_stamp_nanosecs;
@@ -193,14 +214,18 @@ void VehicleSimulator::PublishSensors()
 {
     micro_loop_count_pub_->publish(micro_loop_count_msg_);
 
-    //std::cout << "timestamp_count_ / 200: " << timestamp_count_ / 200 << std::endl;
-    if ((int)(timestamp_count_ / 200) == gpspubcounter_) {
-        gpspubcounter_++;
+    //std::cout << "timestamp_count_ % 200: " << timestamp_count_ % 200 << std::endl;
+    if ((int)(timestamp_count_ / 200) > gpspubcounter_) {
+        gpspubcounter_ = (int)(timestamp_count_ / 200);
         gpsdata_pub_->publish(gpsdata_msg_);
     }
 
-    if ((int)(timestamp_count_ / 20) == sensorpubcounter_) {
-        sensorpubcounter_++;
+    //std::cout << "(int)(timestamp_count_ % 20):" << (int)(timestamp_count_ % 20) << std::endl;
+    //std::cout << "sensorpubcounter: " << sensorpubcounter_ << std::endl;
+    if ((int)(timestamp_count_ / 20) > sensorpubcounter_) {
+
+        sensorpubcounter_ = (int)(timestamp_count_ / 20);
+        //std::cout << "Ma ci passiamo di qua?" << std::endl;
         compass_pub_->publish(compassdata_msg_);
         imudata_pub_->publish(imudata_msg_);
         ambsens_pub_->publish(ambsens_msg_);
@@ -209,5 +234,4 @@ void VehicleSimulator::PublishSensors()
 
     applied_motorref_pub_->publish(applied_motorref_msg_);
 }
-
 }

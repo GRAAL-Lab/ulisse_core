@@ -26,10 +26,10 @@ int main(int argc, char* argv[])
 
     while (!par_client_->wait_for_service(1ms)) {
         if (!rclcpp::ok()) {
-            RCLCPP_ERROR(node->get_logger(), "Interrupted while waiting for the service. Exiting.")
+            RCLCPP_ERROR(node->get_logger(), "Interrupted while waiting for the service. Exiting.");
             exit(0);
         }
-        RCLCPP_INFO(node->get_logger(), "service not available, waiting again...")
+        RCLCPP_INFO(node->get_logger(), "service not available, waiting again...");
     }
 
     std::string serialDevice = "";
