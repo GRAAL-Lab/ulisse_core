@@ -1,4 +1,4 @@
-LatLong gps_pos
+LatLong filtered_pos
 float64 current_heading
 LatLong current_goal
 float64 goal_distance

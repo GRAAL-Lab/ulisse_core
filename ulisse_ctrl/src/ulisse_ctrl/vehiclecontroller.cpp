@@ -37,6 +37,8 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         ulisse_msgs::topicnames::sensor_gps_data, std::bind(&VehicleController::GPSSensor_cb, this, _1));
     compass_sub_ = nh_->create_subscription<ulisse_msgs::msg::Compass>(
         ulisse_msgs::topicnames::sensor_compass, std::bind(&VehicleController::CompassSensor_cb, this, _1));
+    nav_filter_sub_ = nh_->create_subscription<ulisse_msgs::msg::NavFilterData>(
+        ulisse_msgs::topicnames::nav_filter_data, std::bind(&VehicleController::NavFilter_cb, this, _1));
 
     // Control Publishers
     ctrlcxt_pub_ = nh_->create_publisher<ulisse_msgs::msg::ControlContext>(ulisse_msgs::topicnames::control_context);
@@ -232,13 +234,16 @@ void VehicleController::SetupCommandServer()
 void VehicleController::GPSSensor_cb(const ulisse_msgs::msg::GPSData::SharedPtr msg)
 {
     timestamp_ = msg->time;
-    posCxt_->gpsPos.latitude = msg->latitude;
-    posCxt_->gpsPos.longitude = msg->longitude;
-    // std::cout << "Current lat: " << posCxt_->gpsPos.latitude << std::endl;
-    // std::cout << "Current long: " << posCxt_->gpsPos.longitude << std::endl;
+    //std::cout << "GPS (lat, long): " << msg->latitude << ", " << msg->longitude << std::endl;
 
     posCxt_->gpsSpeed = msg->speed;
     posCxt_->gpsTrack = msg->track;
+}
+
+void VehicleController::NavFilter_cb(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)
+{
+    posCxt_->filteredPos.latitude = msg->latitude;
+    posCxt_->filteredPos.longitude = msg->longitude;
 }
 
 void VehicleController::CompassSensor_cb(const ulisse_msgs::msg::Compass::SharedPtr msg)
@@ -262,8 +267,8 @@ void VehicleController::Run()
 void VehicleController::PublishControl()
 {
     ulisse_msgs::msg::PositionContext poscxt_msg;
-    poscxt_msg.gps_pos.latitude = posCxt_->gpsPos.latitude;
-    poscxt_msg.gps_pos.longitude = posCxt_->gpsPos.longitude;
+    poscxt_msg.filtered_pos.latitude = posCxt_->filteredPos.latitude;
+    poscxt_msg.filtered_pos.longitude = posCxt_->filteredPos.longitude;
     poscxt_msg.current_heading = posCxt_->currentHeading;
     poscxt_msg.current_goal.latitude = posCxt_->currentGoal.pos.latitude;
     poscxt_msg.current_goal.longitude = posCxt_->currentGoal.pos.longitude;

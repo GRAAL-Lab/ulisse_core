@@ -15,6 +15,7 @@
 #include "ulisse_msgs/msg/magnetometer.hpp"
 #include "ulisse_msgs/msg/micro_loop_count.hpp"
 #include "ulisse_msgs/msg/position_context.hpp"
+#include "ulisse_msgs/msg/nav_filter_data.hpp"
 
 #include "rml/RML.h"
 
@@ -37,6 +38,7 @@ class VehicleController {
     rclcpp::Subscription<ulisse_msgs::msg::GPSData>::SharedPtr gps_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::Compass>::SharedPtr compass_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::EESStatus>::SharedPtr ees_status_sub_;
+    rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr nav_filter_sub_;
 
     //rclcpp::Subscription<std_msgs::msg::Empty>::SharedPtr cmd_halt_sub_;
     //rclcpp::Subscription<ulisse_msgs::msg::CommandMove>::SharedPtr cmd_move_sub_;
@@ -70,6 +72,7 @@ class VehicleController {
 
     void GPSSensor_cb(const ulisse_msgs::msg::GPSData::SharedPtr msg);
     void CompassSensor_cb(const ulisse_msgs::msg::Compass::SharedPtr msg);
+    void NavFilter_cb(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
     void EESStatus_cb(const ulisse_msgs::msg::EESStatus::SharedPtr msg);
 
 public:

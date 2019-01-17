@@ -28,7 +28,7 @@ namespace states {
     {
         CheckRadioController();
 
-        ctb::DistanceAndAzimuthRad(posCxt_->gpsPos, posCxt_->currentGoal.pos, posCxt_->goalDistance, posCxt_->goalHeading);
+        ctb::DistanceAndAzimuthRad(posCxt_->filteredPos, posCxt_->currentGoal.pos, posCxt_->goalDistance, posCxt_->goalHeading);
 
         if (posCxt_->goalDistance < posCxt_->currentGoal.acceptRadius) {
             std::cout << "*** GOAL REACHED! ***" << std::endl;

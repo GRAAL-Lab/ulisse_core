@@ -32,10 +32,6 @@ void PosVelObserver::Update(double v, double theta, double x, double y) {
 
 	prevTime_ = now;
 
-	/*ortos::DebugConsole::Write(ortos::LogLevel::info, "PosVelObserver", "xhat = %lf yhat = %lf xhatdot = %lf yhatdot = %lf",
-			xhat_, yhat_, xhatdot_, yhatdot_);
-	ortos::DebugConsole::Write(ortos::LogLevel::info, "PosVelObserver", "Cxhat = %lf Cyhat = %lf Cxhatdot = %lf Cyhatdot = %lf",
-				Cxhat_, Cyhat_, Cxhatdot_, Cyhatdot_);*/
 }
 
 }

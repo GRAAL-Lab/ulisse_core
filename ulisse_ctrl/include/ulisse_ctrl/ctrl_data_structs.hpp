@@ -82,7 +82,7 @@ struct Waypoint {
 };
 
 struct PositionContext {
-    ctb::LatLong gpsPos;
+    ctb::LatLong filteredPos;
     double gpsTrack, gpsSpeed;
     double currentHeading;
     Waypoint currentGoal, nextGoal;
