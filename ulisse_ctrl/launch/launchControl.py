@@ -10,8 +10,11 @@ def generate_launch_description():
     # Node arguments must be comma separated strings
     ctrl_node = launch_ros.actions.Node(
             package='ulisse_ctrl', node_executable='controller_node', output='screen', arguments=[configfile])
+    nav_filter_node = launch_ros.actions.Node(
+            package='ulisse_ctrl', node_executable='navigation_filter_node', output='screen', arguments=[configfile])
 
     return LaunchDescription([
         ctrl_node,
+        nav_filter_node
         # more nodes can be added here
     ])

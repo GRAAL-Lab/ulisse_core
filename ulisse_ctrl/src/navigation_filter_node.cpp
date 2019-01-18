@@ -34,7 +34,6 @@ static ulisse_msgs::msg::GPSData gpsData;
 //static ulisse_msgs::msg::PositionContext positionData;
 static ulisse_msgs::msg::ControlContext controlData;
 
-
 void ReloadConfig();
 void handle_navfilter_commands(const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<ulisse_msgs::srv::NavFilterCommand::Request> request,
@@ -77,6 +76,8 @@ int main(int argc, char* argv[])
     double lastValidGPSTime = 0;
     ulisse_msgs::msg::NavFilterData filterData;
 
+    bool filterEnable(false);
+
     while (rclcpp::ok()) {
 
         if (gpsData.time > lastValidGPSTime) {
@@ -93,14 +94,18 @@ int main(int argc, char* argv[])
                 try {
                     GeographicLib::UTMUPS::Forward(gpsData.latitude, gpsData.longitude, zone, northp, x, y);
 
-                    obs.Update(speedRef, compass.yaw * M_PI / 180.0, y, x);
-                    obs.GetCurrent(filterData.current[0], filterData.current[1]);
-                    obs.GetSpeed(filterData.speed[0], filterData.speed[1]);
-                    obs.GetPosition(y, x);
+                    if (filterEnable) {
+                        obs.Update(speedRef, compass.yaw * M_PI / 180.0, y, x);
+                        obs.GetCurrent(filterData.current[0], filterData.current[1]);
+                        obs.GetSpeed(filterData.speed[0], filterData.speed[1]);
+                        obs.GetPosition(y, x);
 
-                    GeographicLib::UTMUPS::Reverse(zone, northp, x, y, filterData.latitude,
-                        filterData.longitude);
-
+                        GeographicLib::UTMUPS::Reverse(zone, northp, x, y, filterData.latitude,
+                            filterData.longitude);
+                    } else {
+                        filterData.latitude = gpsData.latitude;
+                        filterData.longitude = gpsData.longitude;
+                    }
                     navfilter_pub->publish(filterData);
 
                 } catch (const GeographicLib::GeographicErr& e) {
