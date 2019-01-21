@@ -56,10 +56,10 @@ struct ThrusterMappingParameters {
  *
  * Vehicle frame:
  *
- *         ^ x
- *         |
- *         |
- *  y <----o z
+ *   x ^
+ *     |
+ *     |
+ *   z X----> y
  *
 */
 

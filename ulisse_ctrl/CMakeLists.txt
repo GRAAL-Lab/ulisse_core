@@ -51,11 +51,13 @@ set(ulisse_ctrl_lib_sources
     src/ulisse_ctrl/states/genericstate.cpp
     src/ulisse_ctrl/states/state_halt.cpp
     src/ulisse_ctrl/states/state_latlong.cpp
+    src/ulisse_ctrl/states/state_hold.cpp
     src/ulisse_ctrl/states/state_speedheading.cpp
     # Commands
     src/ulisse_ctrl/commands/genericcommand.cpp
     src/ulisse_ctrl/commands/command_halt.cpp
     src/ulisse_ctrl/commands/command_latlong.cpp
+    src/ulisse_ctrl/commands/command_hold.cpp
     src/ulisse_ctrl/commands/command_speedheading.cpp
     # Events
     src/ulisse_ctrl/events/generic_event.cpp

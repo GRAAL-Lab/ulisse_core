@@ -49,13 +49,6 @@ namespace states {
         requestedVel(0) = ctrlCxt_->thrusterData.desiredSpeed;
         requestedVel(5) = ctrlCxt_->thrusterData.desiredJog;
 
-        std::cout << "Current Heading: " << posCxt_->currentHeading << std::endl;
-        std::cout << "Goal Heading: " << posCxt_->goalHeading << std::endl;
-        std::cout << "Requested vel: " << requestedVel.transpose() << std::endl;
-        std::cout << "Goal Distance: " << posCxt_->goalDistance << std::endl;
-        std::cout << "Acceptance radius:" << posCxt_->currentGoal.acceptRadius << std::endl;
-        std::cout << "----------------------------------" << std::endl;
-
         if (conf_->ctrlMode == ControlMode::ThrusterMapping) {
 
             ctrlCxt_->ulisseModel_.ThrusterMapping(requestedVel, ctrlCxt_->thrusterData.mapOut.left, ctrlCxt_->thrusterData.mapOut.right);
@@ -66,6 +59,13 @@ namespace states {
 
         } else if (conf_->ctrlMode == ControlMode::DynamicModel) {
         }
+
+        std::cout << "Current Heading: " << posCxt_->currentHeading << std::endl;
+        std::cout << "Goal Heading: " << posCxt_->goalHeading << std::endl;
+        std::cout << "Requested vel: " << requestedVel.transpose() << std::endl;
+        std::cout << "Goal Distance: " << posCxt_->goalDistance << std::endl;
+        std::cout << "Acceptance radius:" << posCxt_->currentGoal.acceptRadius << std::endl;
+        std::cout << "----------------------------------" << std::endl;
 
         return fsm::ok;
     }

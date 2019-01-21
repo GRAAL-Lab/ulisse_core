@@ -76,7 +76,7 @@ int main(int argc, char* argv[])
     double lastValidGPSTime = 0;
     ulisse_msgs::msg::NavFilterData filterData;
 
-    bool filterEnable(false);
+    bool filterEnable(true);
 
     while (rclcpp::ok()) {
 
@@ -95,10 +95,12 @@ int main(int argc, char* argv[])
                     GeographicLib::UTMUPS::Forward(gpsData.latitude, gpsData.longitude, zone, northp, x, y);
 
                     if (filterEnable) {
-                        obs.Update(speedRef, compass.yaw * M_PI / 180.0, y, x);
+                        // The geographic lib conversion outputs UTM coordinates but
+                        //
+                        obs.Update(speedRef, compass.yaw, y, x); //y, x);
                         obs.GetCurrent(filterData.current[0], filterData.current[1]);
                         obs.GetSpeed(filterData.speed[0], filterData.speed[1]);
-                        obs.GetPosition(y, x);
+                        obs.GetPosition(y, x); //(y, x);
 
                         GeographicLib::UTMUPS::Reverse(zone, northp, x, y, filterData.latitude,
                             filterData.longitude);

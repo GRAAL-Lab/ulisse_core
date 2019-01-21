@@ -12,6 +12,7 @@ namespace commands {
 
         const std::string halt = "halt_command";
         const std::string latlong = "latlong_command";
+        const std::string hold = "hold_command";
         const std::string speedheading = "speedheading_command";
     }
 }
@@ -22,6 +23,7 @@ namespace states {
 
         const std::string halt = "halt_state";
         const std::string latlong = "latlong_state";
+        const std::string hold = "hold_state";
         const std::string speedheading = "speedheading_state";
     }
 }

@@ -42,6 +42,7 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/GPSData.msg"
   "msg/GPSStatus.msg"
   # Commands
+  "msg/CommandHold.msg"
   "msg/CommandLatLong.msg"
   "msg/CommandSpeedHeading.msg"
   # EES

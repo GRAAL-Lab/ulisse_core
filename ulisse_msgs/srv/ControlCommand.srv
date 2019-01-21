@@ -1,4 +1,5 @@
 string command_type
+CommandHold hold_cmd
 CommandLatLong latlong_cmd
 CommandSpeedHeading sh_cmd
 ---
