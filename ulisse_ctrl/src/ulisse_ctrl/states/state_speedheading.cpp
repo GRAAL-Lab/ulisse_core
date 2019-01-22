@@ -35,11 +35,6 @@ namespace states {
 
         if (total_elapsed_.count() > ctrlCxt_->cmdTimeout) {
             std::cout << "Speed Heading Timeout reached!" << std::endl;
-
-            ctrlCxt_->thrusterData.ctrlRef.left = 0;
-            ctrlCxt_->thrusterData.ctrlRef.right = 0;
-            ctrlCxt_->pidSpeed.Reset();
-            ctrlCxt_->pidHeading.Reset();
             fsm_->ExecuteCommand(ulisse::commands::ID::halt);
         }
 
@@ -55,7 +50,7 @@ namespace states {
         headingRef = posCxt_->goalHeading;
 
         if (conf_->enableSlowDownOnTurns) {
-            double headingError = ctb::HeadingErrorRad(headingRef, posCxt_->currentHeading);
+            double headingError = ctb::HeadingErrorRad(posCxt_->currentHeading, headingRef);
             speedRef = SlowDownWhenTurning(headingError, speedRef, *conf_);
         }
 

@@ -6,19 +6,9 @@ controller_node:
 
         PosAcceptanceRadius: 5.0
 
-        #MaxPhysicalSpeed: 4.5           # m/s
-        SpeedLimiter: 4.5               # m/s
-        #MaxPhysicalJog: 0.52            # rad/s
-        JogLimiter: 0.52                # rad/s
-
+        SpeedLimiter: 2.5               # m/s [Be careful to make the mapping saturation bigger than this values] (to avoid double saturation)
+        JogLimiter: 0.3                 # rad/s
         ThrusterPercLimit: 70.0         # percent
-        #LeftThrusterBias: 0             # percent
-        #RightThrusterBias: 0            # percent
-        #ReverseLeftThruster: false
-        #ReverseRightThruster: false
-        SpeedLoopGain: 0.25
-        JogLoopGain: 0.5
-        JogPriority: 0.85               # 1.0 jog only 0.5 speedjog 0.0 speedonly
 
         DistanceThreshold: 5.0          # m
         MaximumTargetDistance: 50000.0  # m
@@ -83,10 +73,10 @@ controller_node:
 
         ThrusterMapping:
             # input saturation limits
-            SurgeMin: 0.0
-            SurgeMax: 2.0
-            YawrateMin: -0.3
-            YawRateMax: 0.3
+            SurgeMin: 0.0  
+            SurgeMax: 5.0    # Be careful to make the PID saturation smaller than this values
+            YawrateMin: -0.5
+            YawRateMax: 0.5  # Be careful to make the PID saturation smaller than this values
             # mapping parameters
             lambda_pos: 13.0
             lambda_neg: 9.1

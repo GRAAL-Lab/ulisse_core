@@ -21,6 +21,10 @@ namespace states {
         ctrlCxt_->thrusterData.desiredSpeed = 0.0;
         ctrlCxt_->thrusterData.desiredJog = 0.0;
 
+        ctrlCxt_->pidPosition.Reset();
+        ctrlCxt_->pidSpeed.Reset();
+        ctrlCxt_->pidHeading.Reset();
+
         return fsm::ok;
     }
 

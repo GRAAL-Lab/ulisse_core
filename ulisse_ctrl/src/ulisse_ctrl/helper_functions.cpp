@@ -4,6 +4,7 @@ namespace ulisse {
 
 void ThrustersSaturation(double lThruster, double rThruster, double thMin, double thMax, double& lSatOut, double& rSatOut)
 {
+    //std::cout << "min-max: " << thMin << ", " << thMax << std::endl;
     double factor = 1.0;
     if (lThruster > thMax) {
         double newFactor = thMax / lThruster;

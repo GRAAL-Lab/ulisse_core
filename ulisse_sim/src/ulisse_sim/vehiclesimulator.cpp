@@ -215,8 +215,8 @@ void VehicleSimulator::PublishSensors()
     micro_loop_count_pub_->publish(micro_loop_count_msg_);
 
     //std::cout << "timestamp_count_ % 200: " << timestamp_count_ % 200 << std::endl;
-    if ((int)(timestamp_count_ / 200) > gpspubcounter_) {
-        gpspubcounter_ = (int)(timestamp_count_ / 200);
+    if ((int)(timestamp_count_ / 20) > gpspubcounter_) {
+        gpspubcounter_ = (int)(timestamp_count_ / 20);
         gpsdata_pub_->publish(gpsdata_msg_);
     }
 

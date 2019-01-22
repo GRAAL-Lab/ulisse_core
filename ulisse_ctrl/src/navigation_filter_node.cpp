@@ -33,6 +33,7 @@ static ulisse_msgs::msg::Compass compass;
 static ulisse_msgs::msg::GPSData gpsData;
 //static ulisse_msgs::msg::PositionContext positionData;
 static ulisse_msgs::msg::ControlContext controlData;
+static int rate = 10;
 
 void ReloadConfig();
 void handle_navfilter_commands(const std::shared_ptr<rmw_request_id_t> request_header,
@@ -49,7 +50,6 @@ int main(int argc, char* argv[])
     rclcpp::init(argc, argv);
     auto node = rclcpp::Node::make_shared("navigation_filter_node");
 
-    int rate = 10;
     rclcpp::WallRate loop_rate(rate);
 
     auto srv_ = node->create_service<ulisse_msgs::srv::NavFilterCommand>(
@@ -89,20 +89,26 @@ int main(int argc, char* argv[])
 
                 int zone;
                 bool northp;
-                double x, y;
+                double x_utm, y_utm;
 
                 try {
-                    GeographicLib::UTMUPS::Forward(gpsData.latitude, gpsData.longitude, zone, northp, x, y);
+                    GeographicLib::UTMUPS::Forward(gpsData.latitude, gpsData.longitude, zone, northp, x_utm, y_utm);
+
+                    double x_ned = y_utm;
+                    double y_ned = x_utm;
 
                     if (filterEnable) {
                         // The geographic lib conversion outputs UTM coordinates but
                         //
-                        obs.Update(speedRef, compass.yaw, y, x); //y, x);
+                        obs.Update(speedRef, compass.yaw, x_ned, y_ned);
                         obs.GetCurrent(filterData.current[0], filterData.current[1]);
                         obs.GetSpeed(filterData.speed[0], filterData.speed[1]);
-                        obs.GetPosition(y, x); //(y, x);
+                        obs.GetPosition(x_ned, y_ned);
 
-                        GeographicLib::UTMUPS::Reverse(zone, northp, x, y, filterData.latitude,
+                        x_utm = y_ned;
+                        y_utm = x_ned;
+
+                        GeographicLib::UTMUPS::Reverse(zone, northp, x_utm, y_utm, filterData.latitude,
                             filterData.longitude);
                     } else {
                         filterData.latitude = gpsData.latitude;
@@ -131,10 +137,12 @@ void ReloadConfig()
     static NavFilterConfigData navFilterConfig;
     //useThrusterMap = par_client->get_parameter("UseThrusterMapping", false);
     std::vector<double> gains = par_client->get_parameter("Gains", std::vector<double>(4, 0.0));
+    rate = par_client->get_parameter("Rate", 10);
 
     for (size_t i = 0; i < 4; ++i) {
         navFilterConfig.k[i] = gains.at(i);
     }
+
     obs.SetConfig(navFilterConfig);
 }
 
