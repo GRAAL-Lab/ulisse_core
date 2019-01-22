@@ -16,7 +16,7 @@ namespace states {
 
     fsm::retval StateLatLong::OnEntry()
     {
-        posCxt_->currentGoal = posCxt_->nextGoal;
+        statusCxt_->currentGoal = statusCxt_->nextGoal;
         ctrlCxt_->pidPosition.Reset();
         ctrlCxt_->pidHeading.Reset();
         ctrlCxt_->pidSpeed.Reset();
@@ -28,23 +28,23 @@ namespace states {
     {
         CheckRadioController();
 
-        ctb::DistanceAndAzimuthRad(posCxt_->filteredPos, posCxt_->currentGoal.pos, posCxt_->goalDistance, posCxt_->goalHeading);
+        ctb::DistanceAndAzimuthRad(statusCxt_->filterData.pos, statusCxt_->currentGoal.pos, statusCxt_->goalDistance, statusCxt_->goalHeading);
 
-        if (posCxt_->goalDistance < posCxt_->currentGoal.acceptRadius) {
+        if (statusCxt_->goalDistance < goalCxt_->holdData.acceptRadius) {
             std::cout << "*** GOAL REACHED! ***" << std::endl;
             fsm_->ExecuteCommand(ulisse::commands::ID::halt);
         }
 
-        double goalDistance = posCxt_->goalDistance;
+        double goalDistance = statusCxt_->goalDistance;
         if (conf_->enableSlowDownOnTurns) {
             //ctb::PIDGains newPosGains = ctrlCxt_->pidPosition.GetGains();
-            double headingError = ctb::HeadingErrorRad(posCxt_->goalHeading, posCxt_->currentHeading);
+            double headingError = ctb::HeadingErrorRad(statusCxt_->goalHeading, statusCxt_->currentHeading);
             goalDistance = SlowDownWhenTurning(headingError, goalDistance, *conf_);
             //ctrlCxt_->pidPosition.SetGains(newPosGains);
         }
 
         ctrlCxt_->thrusterData.desiredSpeed = -ctrlCxt_->pidPosition.Compute(0.0, goalDistance);
-        ctrlCxt_->thrusterData.desiredJog = ctrlCxt_->pidHeading.Compute(posCxt_->goalHeading, posCxt_->currentHeading);
+        ctrlCxt_->thrusterData.desiredJog = ctrlCxt_->pidHeading.Compute(statusCxt_->goalHeading, statusCxt_->currentHeading);
         Eigen::Vector6d requestedVel;
         requestedVel(0) = ctrlCxt_->thrusterData.desiredSpeed;
         requestedVel(5) = ctrlCxt_->thrusterData.desiredJog;
@@ -60,11 +60,11 @@ namespace states {
         } else if (conf_->ctrlMode == ControlMode::DynamicModel) {
         }
 
-        std::cout << "Current Heading: " << posCxt_->currentHeading << std::endl;
-        std::cout << "Goal Heading: " << posCxt_->goalHeading << std::endl;
+        std::cout << "Current Heading: " << statusCxt_->currentHeading << std::endl;
+        std::cout << "Goal Heading: " << statusCxt_->goalHeading << std::endl;
         std::cout << "Requested vel: " << requestedVel.transpose() << std::endl;
-        std::cout << "Goal Distance: " << posCxt_->goalDistance << std::endl;
-        std::cout << "Acceptance radius:" << posCxt_->currentGoal.acceptRadius << std::endl;
+        std::cout << "Goal Distance: " << statusCxt_->goalDistance << std::endl;
+        std::cout << "Acceptance radius:" << statusCxt_->currentGoal.acceptRadius << std::endl;
         std::cout << "----------------------------------" << std::endl;
 
         return fsm::ok;

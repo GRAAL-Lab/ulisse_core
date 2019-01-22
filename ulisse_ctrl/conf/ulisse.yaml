@@ -12,22 +12,18 @@ controller_node:
 
         DistanceThreshold: 5.0          # m
         MaximumTargetDistance: 50000.0  # m
-        SafetyHeartbeatTimeout: 3000    # ms
-        SlowPrintPeriod: 0              # ms
 
         Speed2ThrusterCoefficient: 210.0
         Jog2ThrusterCoefficient: 1050.0
 
-        ReverseThrusterCoefficient: 0.49 #0.4608
-        HoldHysteresisCoefficient: 0.5
-
-        HoldCurrentCompensation:
-             enable: true
-             # above CurrentMax the desired heading will be set equal to the
-             # estimated current direction
-             # below CurrentMin the desired heading is the actual one
-             CurrentMin: 0.0
-             CurrentMax: 0.1
+        Hold:
+            HysteresisCoefficient: 0.5
+            enableCurrentCompensation: true
+            # above CurrentMax the desired heading will be set equal to the
+            # estimated current direction
+            # below CurrentMin the desired heading is the actual one
+            CurrentMin: 0.0
+            CurrentMax: 0.1
 
         GotoHoldAfterMove: true
 

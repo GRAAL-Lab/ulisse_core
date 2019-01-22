@@ -52,13 +52,12 @@ struct AvoidRotationData {
 };
 
 struct HoldCurrentData {
-    double currentMin;
-    double currentMax;
+    double hysteresis;
+    double currentMin, currentMax;
 };
 
 struct NavFilterData {
-    double latitude;
-    double longitude;
+    ctb::LatLong pos;
     double speed[2];
     double current[2];
 };
@@ -81,17 +80,15 @@ struct Waypoint {
     }
 };
 
-struct PositionContext {
-    ctb::LatLong filteredPos;
+struct StatusContext {
+    NavFilterData filterData;
     double gpsTrack, gpsSpeed;
     double currentHeading;
-    Waypoint currentGoal, nextGoal;
-    double goalDistance, goalHeading, goalSpeed;
+    uint16_t eesStatus;
+    double goalDistance;
 
-    PositionContext()
+    StatusContext()
         : currentHeading(0.0)
-        , goalDistance(0.0)
-        , goalHeading(0.0)
     {
     }
 };
@@ -102,8 +99,17 @@ struct ControlContext {
     ctb::DigitalPID pidPosition;
     ctb::DigitalPID pidHeading;
     ThrusterControlData thrusterData;
-    uint16_t eesStatus;
+};
+
+struct GoalContext {
+    Waypoint currentGoal, nextGoal;
+    double goalDistance, goalHeading, goalSpeed;
     uint cmdTimeout;
+    GoalContext()
+        : goalDistance(0.0)
+        , goalHeading(0.0)
+    {
+    }
 };
 
 struct ConfigurationData {
@@ -127,8 +133,7 @@ struct ConfigurationData {
     double pidsat_heading;
 
     NavFilterConfigData navFilter;
-
-    //double thrusterUpperSat, thrusterLowerSat;
+    HoldCurrentData holdData;
 
     ConfigurationData()
         : ctrlMode(ControlMode::ThrusterMapping)

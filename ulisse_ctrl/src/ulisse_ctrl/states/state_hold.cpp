@@ -18,8 +18,8 @@ namespace states {
     fsm::retval StateHold::OnEntry()
     {
         goalReached = 1;
-        posCxt_->currentGoal.pos.latitude = posCxt_->filteredPos.latitude;
-        posCxt_->currentGoal.pos.longitude = posCxt_->filteredPos.longitude;
+        statusCxt_->currentGoal.pos.latitude = statusCxt_->filteredPos.latitude;
+        statusCxt_->currentGoal.pos.longitude = statusCxt_->filteredPos.longitude;
         ctrlCxt_->pidPosition.Reset();
         ctrlCxt_->pidHeading.Reset();
         ctrlCxt_->pidSpeed.Reset();
@@ -31,37 +31,38 @@ namespace states {
     {
         CheckRadioController();
 
-        ctb::DistanceAndAzimuthRad(posCxt_->filteredPos, posCxt_->currentGoal.pos, posCxt_->goalDistance, posCxt_->goalHeading);
+        ctb::DistanceAndAzimuthRad(statusCxt_->filterData.pos, goalCxt_->currentGoal.pos, goalCxt_->goalDistance, goalCxt_->goalHeading);
 
-        double surgeFbk, speedFbk;
-        double speedRef, headingRef;
+        // if on distance + hysteresis
 
-        /*
-        ======================== CODE TO BE UPDATED ===========================================
+        if (goalCxt_->goalDistance < ) {
+            // Align to current and hold
+            double surgeFbk;
+            double surgeRef, headingRef;
 
-        double currentDirection = NormalizeHeading(
-            atan2(context_->navFilterDataIn.d.current[1], context_->navFilterDataIn.d.current[0]) * 180 / PI);
-        double desiredHeading = NormalizeHeading(currentDirection + 180.0);
-        double currentNorm = sqrt(
-            pow(context_->navFilterDataIn.d.current[0], 2) + pow(context_->navFilterDataIn.d.current[1], 2));
+            double currentDirection = NormalizeHeadingOn2PI(
+                atan2(statusCxt_->filterData.current[1], statusCxt_->filterData.current[0]));
+            double desiredHeading = NormalizeHeadingOn2PI(currentDirection + M_PI);
+            double currentNorm = sqrt(
+                pow(statusCxt_->filterData.current[0], 2) + pow(statusCxt_->filterData.current[1], 2));
 
-        speedRef = 0;
+            surgeRef = 0;
 
-        // smooth coefficient that depends on the current norm
-        // if the norm is lower than currentMin, the desired heading is equal to the current one
-        // if above the currentMax it is equal to the current direction, else it is a value inbetween
-        double hrefA = rml::DecreasingBellShapedFunction(context_->configuration.holdCurrentParams.currentMin,
-            context_->configuration.holdCurrentParams.currentMax, 0, 1, currentNorm);
-        headingRef = NormalizeHeading((1 - hrefA) * (desiredHeading) + hrefA * context_->state.heading);
+            // smooth coefficient that depends on the current norm
+            // if the norm is lower than currentMin, the desired heading is equal to the current one
+            // if above the currentMax it is equal to the current direction, else it is a value inbetween
+            double hrefA = rml::DecreasingBellShapedFunction(conf_->holdData.currentMin, conf_->holdData.currentMax, 0, 1, currentNorm);
+            goalCxt_->goalHeading = NormalizeHeadingOn2PI((1 - hrefA) * (desiredHeading) + hrefA * statusCxt_->currentHeading);
 
-        double headingTrackDiff = ctb::HeadingErrorRad(posCxt_->gpsTrack, posCxt_->currentHeading);
-        speedFbk = surgeFbk = context_->state.speed * cos(headingTrackDiff);
+            double headingTrackDiff = ctb::HeadingErrorRad(statusCxt_->gpsTrack, statusCxt_->currentHeading);
+            surgeFbk = statusCxt_->gpsSpeed * cos(headingTrackDiff);
 
-        =======================================================================================
-
-        double headingError = ctb::HeadingErrorRad(posCxt_->currentHeading, headingRef);
-        ctrlCxt_->thrusterData.desiredSpeed = -ctrlCxt_->pidSpeed.Compute(speedRef, surgeFbk);
-        ctrlCxt_->thrusterData.desiredJog = ctrlCxt_->pidHeading.Compute(posCxt_->goalHeading, posCxt_->currentHeading);
+            double headingError = ctb::HeadingErrorRad(statusCxt_->currentHeading, headingRef);
+            ctrlCxt_->thrusterData.desiredSpeed = -ctrlCxt_->pidSpeed.Compute(surgeRef, surgeFbk);
+            ctrlCxt_->thrusterData.desiredJog = ctrlCxt_->pidHeading.Compute(goalCxt_->goalHeading, statusCxt_->currentHeading);
+        } else {
+            // Lat Long state
+        }
 
         Eigen::Vector6d requestedVel;
         requestedVel(0) = ctrlCxt_->thrusterData.desiredSpeed;
@@ -77,8 +78,6 @@ namespace states {
 
         } else if (conf_->ctrlMode == ControlMode::DynamicModel) {
         }
-        */
-
 
         /*ortos::DebugConsole::Write(ortos::LogLevel::info, "StateHold", "Current compensation: enabled");
         ortos::DebugConsole::Write(ortos::LogLevel::info, "StateHold",

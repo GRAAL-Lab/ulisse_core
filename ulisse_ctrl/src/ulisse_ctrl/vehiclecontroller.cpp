@@ -18,7 +18,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 {
     par_client_ = std::make_shared<rclcpp::SyncParametersClient>(nh_);
     ctrlCxt_ = std::make_shared<ControlContext>();
-    posCxt_ = std::make_shared<PositionContext>();
+    posCxt_ = std::make_shared<StatusContext>();
     conf_ = std::make_shared<ConfigurationData>();
 
     while (!par_client_->wait_for_service(1ms)) {

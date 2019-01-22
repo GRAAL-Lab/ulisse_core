@@ -14,7 +14,7 @@ namespace commands {
         CommandLatLong();
         virtual ~CommandLatLong();
         virtual fsm::retval Execute(void);
-        void SetGoal(double latitude_, double longitude_, double acceptanceRadius);
+        void SetGoal(double latitude, double longitude, double acceptanceRadius);
     };
 }
 }

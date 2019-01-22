@@ -22,9 +22,9 @@ void GenericState::CheckRadioController() {
     }
 }
 
-void GenericState::SetPosContext(const std::shared_ptr<PositionContext>& posCxt)
+void GenericState::SetPosContext(const std::shared_ptr<StatusContext>& posCxt)
 {
-    posCxt_ = posCxt;
+    statusCxt_ = posCxt;
 }
 
 void GenericState::SetCtrlContext(const std::shared_ptr<ControlContext>& ctrlCxt)

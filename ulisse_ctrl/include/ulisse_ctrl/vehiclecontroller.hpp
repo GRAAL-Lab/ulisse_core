@@ -63,7 +63,7 @@ class VehicleController {
     events::EventRCEnabled event_rc_enabled_;
 
     std::shared_ptr<ConfigurationData> conf_;
-    std::shared_ptr<PositionContext> posCxt_;
+    std::shared_ptr<StatusContext> posCxt_;
     std::shared_ptr<ControlContext> ctrlCxt_;
 
     int LoadConfiguration();

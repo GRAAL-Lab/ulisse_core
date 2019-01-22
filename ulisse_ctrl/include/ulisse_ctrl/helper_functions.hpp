@@ -5,6 +5,8 @@
 
 namespace ulisse {
 
+double NormalizeHeadingOn2PI(double angle);
+
 void ThrustersSaturation(double lThruster, double rThruster, double thMin, double thMax, double &lSatOut, double &rSatOut);
 
 double SlowDownWhenTurning(double headingError, double desiredSpeed, const ConfigurationData& conf);

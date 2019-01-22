@@ -12,14 +12,14 @@ namespace commands {
     {
     }
 
-    void GenericCommand::SetPosContext(const std::shared_ptr<PositionContext>& posCxt)
+    void GenericCommand::SetPosContext(const std::shared_ptr<StatusContext>& posCxt)
     {
         posCxt_ = posCxt;
     }
 
-    void GenericCommand::SetCtrlContext(const std::shared_ptr<ControlContext>& ctrlCxt)
+    void GenericCommand::SetGoalContext(const std::shared_ptr<GoalContext>& ctrlCxt)
     {
-        ctrlCxt_ = ctrlCxt;
+        goalCxt_ = ctrlCxt;
     }
 
 }

@@ -2,6 +2,11 @@
 
 namespace ulisse {
 
+double NormalizeHeadingOn2PI(double angle)
+{
+    return std::fmod(angle + 2 * M_PI, 2 * M_PI);
+}
+
 void ThrustersSaturation(double lThruster, double rThruster, double thMin, double thMax, double& lSatOut, double& rSatOut)
 {
     //std::cout << "min-max: " << thMin << ", " << thMax << std::endl;

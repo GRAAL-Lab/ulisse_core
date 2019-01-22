@@ -42,15 +42,15 @@ namespace states {
         double surgeFbk;
         //double swayFbk;
 
-        double headingTrackDiff = ctb::HeadingErrorRad(posCxt_->currentHeading, posCxt_->gpsTrack);
-        surgeFbk = posCxt_->gpsSpeed * cos(headingTrackDiff);
+        double headingTrackDiff = ctb::HeadingErrorRad(statusCxt_->currentHeading, statusCxt_->gpsTrack);
+        surgeFbk = statusCxt_->gpsSpeed * cos(headingTrackDiff);
         //swayFbk = posCxt_->gpsSpeed * sin(headingTrackDiff);
         // TODO: check if the desired speed should be multiplied with cos(errorHeading)
-        speedRef = posCxt_->goalSpeed;
-        headingRef = posCxt_->goalHeading;
+        speedRef = statusCxt_->goalSpeed;
+        headingRef = statusCxt_->goalHeading;
 
         if (conf_->enableSlowDownOnTurns) {
-            double headingError = ctb::HeadingErrorRad(posCxt_->currentHeading, headingRef);
+            double headingError = ctb::HeadingErrorRad(statusCxt_->currentHeading, headingRef);
             speedRef = SlowDownWhenTurning(headingError, speedRef, *conf_);
         }
 
@@ -59,8 +59,8 @@ namespace states {
                 context_->configuration);
         }*/
 
-        ctrlCxt_->thrusterData.desiredSpeed = ctrlCxt_->pidSpeed.Compute(posCxt_->goalSpeed, surgeFbk);
-        ctrlCxt_->thrusterData.desiredJog = ctrlCxt_->pidHeading.Compute(posCxt_->goalHeading, posCxt_->currentHeading);
+        ctrlCxt_->thrusterData.desiredSpeed = ctrlCxt_->pidSpeed.Compute(statusCxt_->goalSpeed, surgeFbk);
+        ctrlCxt_->thrusterData.desiredJog = ctrlCxt_->pidHeading.Compute(statusCxt_->goalHeading, statusCxt_->currentHeading);
         Eigen::Vector6d requestedVel;
 
         requestedVel(0) = ctrlCxt_->thrusterData.desiredSpeed;

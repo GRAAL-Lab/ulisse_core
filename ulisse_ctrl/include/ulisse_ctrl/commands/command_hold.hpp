@@ -14,6 +14,7 @@ namespace commands {
         CommandHold();
         virtual ~CommandHold();
         virtual fsm::retval Execute(void);
+        void SetGoal(double latitude, double longitude, double acceptanceRadius);
     };
 }
 }
