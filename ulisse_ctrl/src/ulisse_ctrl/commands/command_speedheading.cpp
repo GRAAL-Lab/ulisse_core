@@ -19,9 +19,9 @@ namespace commands {
 
     void CommandSpeedHeading::SetGoal(double speed, double heading, uint timeout_sec)
     {
-        posCxt_->goalSpeed = speed;
-        posCxt_->goalHeading = heading;
-        ctrlCxt_->cmdTimeout = timeout_sec;
+        goalCxt_->goalSpeed = speed;
+        goalCxt_->goalHeading = heading;
+        goalCxt_->cmdTimeout = timeout_sec;
     }
 }
 }

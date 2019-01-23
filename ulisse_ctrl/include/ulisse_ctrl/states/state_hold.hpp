@@ -11,7 +11,6 @@ namespace states {
 
     class StateHold : public GenericState {
 
-        double hysteresis;
         bool goalReached;
 
     public:

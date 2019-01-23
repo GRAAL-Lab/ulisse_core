@@ -19,9 +19,9 @@ namespace commands {
 
     void CommandLatLong::SetGoal(double latitude, double longitude, double acceptanceRadius)
     {
-        posCxt_->nextGoal.pos.latitude = latitude;
-        posCxt_->nextGoal.pos.longitude = longitude;
-        posCxt_->nextGoal.acceptRadius = acceptanceRadius;
+        goalCxt_->nextGoal.pos.latitude = latitude;
+        goalCxt_->nextGoal.pos.longitude = longitude;
+        goalCxt_->nextGoal.acceptRadius = acceptanceRadius;
     }
 }
 }

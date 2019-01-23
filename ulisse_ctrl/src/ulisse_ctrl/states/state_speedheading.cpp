@@ -33,7 +33,7 @@ namespace states {
         t_now_ = std::chrono::system_clock::now();
         total_elapsed_ = std::chrono::duration_cast<std::chrono::seconds>(t_now_ - t_start_);
 
-        if (total_elapsed_.count() > ctrlCxt_->cmdTimeout) {
+        if (total_elapsed_.count() > goalCxt_->cmdTimeout) {
             std::cout << "Speed Heading Timeout reached!" << std::endl;
             fsm_->ExecuteCommand(ulisse::commands::ID::halt);
         }
@@ -46,8 +46,8 @@ namespace states {
         surgeFbk = statusCxt_->gpsSpeed * cos(headingTrackDiff);
         //swayFbk = posCxt_->gpsSpeed * sin(headingTrackDiff);
         // TODO: check if the desired speed should be multiplied with cos(errorHeading)
-        speedRef = statusCxt_->goalSpeed;
-        headingRef = statusCxt_->goalHeading;
+        speedRef = goalCxt_->goalSpeed;
+        headingRef = goalCxt_->goalHeading;
 
         if (conf_->enableSlowDownOnTurns) {
             double headingError = ctb::HeadingErrorRad(statusCxt_->currentHeading, headingRef);
@@ -59,8 +59,8 @@ namespace states {
                 context_->configuration);
         }*/
 
-        ctrlCxt_->thrusterData.desiredSpeed = ctrlCxt_->pidSpeed.Compute(statusCxt_->goalSpeed, surgeFbk);
-        ctrlCxt_->thrusterData.desiredJog = ctrlCxt_->pidHeading.Compute(statusCxt_->goalHeading, statusCxt_->currentHeading);
+        ctrlCxt_->thrusterData.desiredSpeed = ctrlCxt_->pidSpeed.Compute(goalCxt_->goalSpeed, surgeFbk);
+        ctrlCxt_->thrusterData.desiredJog = ctrlCxt_->pidHeading.Compute(goalCxt_->goalHeading, statusCxt_->currentHeading);
         Eigen::Vector6d requestedVel;
 
         requestedVel(0) = ctrlCxt_->thrusterData.desiredSpeed;

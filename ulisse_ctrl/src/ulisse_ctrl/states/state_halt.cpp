@@ -15,7 +15,7 @@ namespace states {
     fsm::retval StateHalt::OnEntry()
     {
         std::cout << "- Switched to state HALT -" << std::endl;
-        statusCxt_->currentGoal.pos = statusCxt_->filteredPos;
+        goalCxt_->currentGoal.pos = statusCxt_->filterData.pos;
         ctrlCxt_->thrusterData.ctrlRef.left = 0.0;
         ctrlCxt_->thrusterData.ctrlRef.right = 0.0;
         ctrlCxt_->thrusterData.desiredSpeed = 0.0;
@@ -31,7 +31,6 @@ namespace states {
 
     fsm::retval StateHalt::Execute()
     {
-
         return fsm::ok;
     }
 }

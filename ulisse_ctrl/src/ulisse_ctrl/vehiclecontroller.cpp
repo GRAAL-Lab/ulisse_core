@@ -18,7 +18,8 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 {
     par_client_ = std::make_shared<rclcpp::SyncParametersClient>(nh_);
     ctrlCxt_ = std::make_shared<ControlContext>();
-    posCxt_ = std::make_shared<StatusContext>();
+    goalCxt_ = std::make_shared<GoalContext>();
+    statusCxt_ = std::make_shared<StatusContext>();
     conf_ = std::make_shared<ConfigurationData>();
 
     while (!par_client_->wait_for_service(1ms)) {
@@ -55,7 +56,6 @@ std::shared_ptr<ControlContext> VehicleController::CtrlContext() const { return 
 int VehicleController::LoadConfiguration()
 {
     // Finish to LOAD all Config DATA !!!!!!! //
-
     conf_->ctrlMode = static_cast<ControlMode>(par_client_->get_parameter("ControlMode", 0));
     conf_->enableThrusters = par_client_->get_parameter("EnableThrusters", false);
     conf_->thrusterPercLimit = par_client_->get_parameter("ThrusterPercLimit", 0.0);
@@ -124,6 +124,10 @@ int VehicleController::LoadConfiguration()
     ctrlCxt_->pidHeading.Initialize(conf_->pidgains_heading, sampleTime_, conf_->pidsat_heading);
     ctrlCxt_->pidHeading.SetErrorFunction(ctb::HeadingErrorRadFunctor());
 
+    conf_->holdData.hysteresis = par_client_->get_parameter("Hold.Hysteresis", 1.0);
+    conf_->holdData.currentMin = par_client_->get_parameter("Hold.CurrentMin", 1.0);
+    conf_->holdData.currentMax = par_client_->get_parameter("Hold.CurrentMax", 1.0);
+
     return true;
 }
 
@@ -131,62 +135,88 @@ void VehicleController::SetUpFSM()
 {
 
     command_halt_.SetFSM(&u_fsm_);
-    command_halt_.SetPosContext(posCxt_);
 
-    command_move_.SetFSM(&u_fsm_);
-    command_move_.SetPosContext(posCxt_);
+    command_hold_.SetFSM(&u_fsm_);
+    command_hold_.SetGoalContext(goalCxt_);
+
+    command_latlong_.SetFSM(&u_fsm_);
+    command_latlong_.SetGoalContext(goalCxt_);
 
     command_speedheading_.SetFSM(&u_fsm_);
-    command_speedheading_.SetPosContext(posCxt_);
-    command_speedheading_.SetCtrlContext(ctrlCxt_);
+    command_speedheading_.SetGoalContext(goalCxt_);
 
     state_halt_.SetFSM(&u_fsm_);
-    state_halt_.SetPosContext(posCxt_);
+    state_halt_.SetStatusContext(statusCxt_);
+    state_halt_.SetGoalContext(goalCxt_);
     state_halt_.SetCtrlContext(ctrlCxt_);
 
+    state_hold_.SetFSM(&u_fsm_);
+    state_hold_.SetStatusContext(statusCxt_);
+    state_hold_.SetGoalContext(goalCxt_);
+    state_hold_.SetCtrlContext(ctrlCxt_);
+
     state_move_.SetFSM(&u_fsm_);
-    state_move_.SetPosContext(posCxt_);
+    state_move_.SetStatusContext(statusCxt_);
+    state_move_.SetGoalContext(goalCxt_);
     state_move_.SetCtrlContext(ctrlCxt_);
     state_move_.SetConf(conf_);
 
     state_speedheading_.SetFSM(&u_fsm_);
-    state_speedheading_.SetPosContext(posCxt_);
+    state_speedheading_.SetStatusContext(statusCxt_);
+    state_speedheading_.SetGoalContext(goalCxt_);
     state_speedheading_.SetCtrlContext(ctrlCxt_);
     state_speedheading_.SetConf(conf_);
 
-    // ADD STATES
-    u_fsm_.AddState(ulisse::states::ID::halt, &state_halt_);
-    u_fsm_.AddState(ulisse::states::ID::latlong, &state_move_);
-    u_fsm_.AddState(ulisse::states::ID::speedheading, &state_speedheading_);
-
     // ADD COMMANDS
     u_fsm_.AddCommand(ulisse::commands::ID::halt, &command_halt_);
-    u_fsm_.AddCommand(ulisse::commands::ID::latlong, &command_move_);
+    u_fsm_.AddCommand(ulisse::commands::ID::hold, &command_hold_);
+    u_fsm_.AddCommand(ulisse::commands::ID::latlong, &command_latlong_);
     u_fsm_.AddCommand(ulisse::commands::ID::speedheading, &command_speedheading_);
+
+    // ADD STATES
+    u_fsm_.AddState(ulisse::states::ID::halt, &state_halt_);
+    u_fsm_.AddState(ulisse::states::ID::hold, &state_hold_);
+    u_fsm_.AddState(ulisse::states::ID::latlong, &state_move_);
+    u_fsm_.AddState(ulisse::states::ID::speedheading, &state_speedheading_);
 
     // ADD EVENTS
     u_fsm_.AddEvent(ulisse::events::names::rcenabled, &event_rc_enabled_);
 
     // ENABLE TRANSITIONS
+    u_fsm_.EnableTransition(ulisse::states::ID::halt, ulisse::states::ID::hold, true);
     u_fsm_.EnableTransition(ulisse::states::ID::halt, ulisse::states::ID::latlong, true);
     u_fsm_.EnableTransition(ulisse::states::ID::halt, ulisse::states::ID::speedheading, true);
 
+    u_fsm_.EnableTransition(ulisse::states::ID::hold, ulisse::states::ID::halt, true);
+    u_fsm_.EnableTransition(ulisse::states::ID::hold, ulisse::states::ID::latlong, true);
+    u_fsm_.EnableTransition(ulisse::states::ID::hold, ulisse::states::ID::speedheading, true);
+
+    u_fsm_.EnableTransition(ulisse::states::ID::latlong, ulisse::states::ID::hold, true);
     u_fsm_.EnableTransition(ulisse::states::ID::latlong, ulisse::states::ID::halt, true);
     u_fsm_.EnableTransition(ulisse::states::ID::latlong, ulisse::states::ID::speedheading, true);
 
+    u_fsm_.EnableTransition(ulisse::states::ID::speedheading, ulisse::states::ID::hold, true);
     u_fsm_.EnableTransition(ulisse::states::ID::speedheading, ulisse::states::ID::halt, true);
     u_fsm_.EnableTransition(ulisse::states::ID::speedheading, ulisse::states::ID::latlong, true);
 
     // ENABLE COMMANDS
-    u_fsm_.EnableCommandInState(ulisse::states::ID::halt, ulisse::commands::ID::latlong, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::latlong, ulisse::commands::ID::latlong, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::speedheading, ulisse::commands::ID::latlong, true);
-
     u_fsm_.EnableCommandInState(ulisse::states::ID::halt, ulisse::commands::ID::halt, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::hold, ulisse::commands::ID::halt, true);
     u_fsm_.EnableCommandInState(ulisse::states::ID::latlong, ulisse::commands::ID::halt, true);
     u_fsm_.EnableCommandInState(ulisse::states::ID::speedheading, ulisse::commands::ID::halt, true);
 
+    u_fsm_.EnableCommandInState(ulisse::states::ID::halt, ulisse::commands::ID::hold, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::hold, ulisse::commands::ID::hold, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::latlong, ulisse::commands::ID::hold, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::speedheading, ulisse::commands::ID::hold, true);
+
+    u_fsm_.EnableCommandInState(ulisse::states::ID::halt, ulisse::commands::ID::latlong, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::hold, ulisse::commands::ID::latlong, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::latlong, ulisse::commands::ID::latlong, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::speedheading, ulisse::commands::ID::latlong, true);
+
     u_fsm_.EnableCommandInState(ulisse::states::ID::halt, ulisse::commands::ID::speedheading, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::hold, ulisse::commands::ID::speedheading, true);
     u_fsm_.EnableCommandInState(ulisse::states::ID::latlong, ulisse::commands::ID::speedheading, true);
     u_fsm_.EnableCommandInState(ulisse::states::ID::speedheading, ulisse::commands::ID::speedheading, true);
 
@@ -206,9 +236,12 @@ void VehicleController::SetupCommandServer()
 
         if (request->command_type == ulisse::commands::ID::halt) {
             std::cout << "Received Command Halt" << std::endl;
+        } else if (request->command_type == ulisse::commands::ID::hold) {
+            std::cout << "Received Command Hold" << std::endl;
+            command_hold_.SetAcceptanceRadius(request->latlong_cmd.acceptance_radius);
         } else if (request->command_type == ulisse::commands::ID::latlong) {
             std::cout << "Received Command LatLong" << std::endl;
-            command_move_.SetGoal(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude,
+            command_latlong_.SetGoal(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude,
                 request->latlong_cmd.acceptance_radius);
         } else if (request->command_type == ulisse::commands::ID::speedheading) {
             std::cout << "Received Command SpeedHeading" << std::endl;
@@ -236,25 +269,25 @@ void VehicleController::GPSSensor_cb(const ulisse_msgs::msg::GPSData::SharedPtr 
     timestamp_ = msg->time;
     //std::cout << "GPS (lat, long): " << msg->latitude << ", " << msg->longitude << std::endl;
 
-    posCxt_->gpsSpeed = msg->speed;
-    posCxt_->gpsTrack = msg->track;
+    statusCxt_->gpsSpeed = msg->speed;
+    statusCxt_->gpsTrack = msg->track;
 }
 
 void VehicleController::NavFilter_cb(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)
 {
-    posCxt_->filteredPos.latitude = msg->latitude;
-    posCxt_->filteredPos.longitude = msg->longitude;
+    statusCxt_->filterData.pos.latitude = msg->latitude;
+    statusCxt_->filterData.pos.longitude = msg->longitude;
 }
 
 void VehicleController::CompassSensor_cb(const ulisse_msgs::msg::Compass::SharedPtr msg)
 {
-    posCxt_->currentHeading = msg->yaw;
+    statusCxt_->currentHeading = msg->yaw;
     // std::cout << "Current yaw: " << posCxt_->currentHeading << std::endl;
 }
 
 void VehicleController::EESStatus_cb(const ulisse_msgs::msg::EESStatus::SharedPtr msg)
 {
-    ctrlCxt_->eesStatus = msg->status;
+    statusCxt_->eesStatus = msg->status;
 }
 
 void VehicleController::Run()
@@ -267,14 +300,14 @@ void VehicleController::Run()
 void VehicleController::PublishControl()
 {
     ulisse_msgs::msg::PositionContext poscxt_msg;
-    poscxt_msg.filtered_pos.latitude = posCxt_->filteredPos.latitude;
-    poscxt_msg.filtered_pos.longitude = posCxt_->filteredPos.longitude;
-    poscxt_msg.current_heading = posCxt_->currentHeading;
-    poscxt_msg.current_goal.latitude = posCxt_->currentGoal.pos.latitude;
-    poscxt_msg.current_goal.longitude = posCxt_->currentGoal.pos.longitude;
-    poscxt_msg.goal_distance = posCxt_->goalDistance;
-    poscxt_msg.goal_heading = posCxt_->goalHeading;
-    poscxt_msg.goal_speed = posCxt_->goalSpeed;
+    poscxt_msg.filtered_pos.latitude = statusCxt_->filterData.pos.latitude;
+    poscxt_msg.filtered_pos.longitude = statusCxt_->filterData.pos.longitude;
+    poscxt_msg.current_heading = statusCxt_->currentHeading;
+    poscxt_msg.current_goal.latitude = goalCxt_->currentGoal.pos.latitude;
+    poscxt_msg.current_goal.longitude = goalCxt_->currentGoal.pos.longitude;
+    poscxt_msg.goal_distance = goalCxt_->goalDistance;
+    poscxt_msg.goal_heading = goalCxt_->goalHeading;
+    poscxt_msg.goal_speed = goalCxt_->goalSpeed;
     poscxt_pub_->publish(poscxt_msg);
 
     // if (u_fsm_.GetCurrentStateName() != ulisse::states::ID::halt) {

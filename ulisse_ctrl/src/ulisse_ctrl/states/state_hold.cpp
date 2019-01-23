@@ -7,7 +7,6 @@ namespace ulisse {
 namespace states {
 
     StateHold::StateHold()
-        : hysteresis(2.0)
     {
     }
 
@@ -17,9 +16,11 @@ namespace states {
 
     fsm::retval StateHold::OnEntry()
     {
-        goalReached = 1;
-        statusCxt_->currentGoal.pos.latitude = statusCxt_->filteredPos.latitude;
-        statusCxt_->currentGoal.pos.longitude = statusCxt_->filteredPos.longitude;
+        goalReached = true;
+        goalCxt_->currentGoal.pos.latitude = statusCxt_->filterData.pos.latitude;
+        goalCxt_->currentGoal.pos.longitude = statusCxt_->filterData.pos.longitude;
+        goalCxt_->currentGoal.acceptRadius = goalCxt_->nextGoal.acceptRadius;
+
         ctrlCxt_->pidPosition.Reset();
         ctrlCxt_->pidHeading.Reset();
         ctrlCxt_->pidSpeed.Reset();
@@ -33,12 +34,12 @@ namespace states {
 
         ctb::DistanceAndAzimuthRad(statusCxt_->filterData.pos, goalCxt_->currentGoal.pos, goalCxt_->goalDistance, goalCxt_->goalHeading);
 
-        // if on distance + hysteresis
-
-        if (goalCxt_->goalDistance < ) {
-            // Align to current and hold
-            double surgeFbk;
-            double surgeRef, headingRef;
+        if (goalReached) {
+            if (goalCxt_->goalDistance < (goalCxt_->currentGoal.acceptRadius + conf_->holdData.hysteresis)) {
+                goalReached = false;
+            }
+            // ALIGN TO CURRENT AND HOLD STATE
+            double surgeFbk(0.0), surgeRef(0.0);
 
             double currentDirection = NormalizeHeadingOn2PI(
                 atan2(statusCxt_->filterData.current[1], statusCxt_->filterData.current[0]));
@@ -46,22 +47,35 @@ namespace states {
             double currentNorm = sqrt(
                 pow(statusCxt_->filterData.current[0], 2) + pow(statusCxt_->filterData.current[1], 2));
 
-            surgeRef = 0;
-
-            // smooth coefficient that depends on the current norm
-            // if the norm is lower than currentMin, the desired heading is equal to the current one
-            // if above the currentMax it is equal to the current direction, else it is a value inbetween
+            /*
+             * Smooth coefficient that depends on the current norm.
+             * If the norm is lower than currentMin, the desired heading is equal to the current one
+             * If above the currentMax it is equal to the current direction, else it is a value inbetween
+             */
             double hrefA = rml::DecreasingBellShapedFunction(conf_->holdData.currentMin, conf_->holdData.currentMax, 0, 1, currentNorm);
             goalCxt_->goalHeading = NormalizeHeadingOn2PI((1 - hrefA) * (desiredHeading) + hrefA * statusCxt_->currentHeading);
 
             double headingTrackDiff = ctb::HeadingErrorRad(statusCxt_->gpsTrack, statusCxt_->currentHeading);
             surgeFbk = statusCxt_->gpsSpeed * cos(headingTrackDiff);
 
-            double headingError = ctb::HeadingErrorRad(statusCxt_->currentHeading, headingRef);
+            //double headingError = ctb::HeadingErrorRad(statusCxt_->currentHeading, headingRef);
             ctrlCxt_->thrusterData.desiredSpeed = -ctrlCxt_->pidSpeed.Compute(surgeRef, surgeFbk);
             ctrlCxt_->thrusterData.desiredJog = ctrlCxt_->pidHeading.Compute(goalCxt_->goalHeading, statusCxt_->currentHeading);
         } else {
-            // Lat Long state
+            // LAT-LONG STATE
+            if (statusCxt_->goalDistance < goalCxt_->currentGoal.acceptRadius) {
+                goalReached = true;
+            }
+
+            double goalDistance = statusCxt_->goalDistance;
+            if (conf_->enableSlowDownOnTurns) {
+                //ctb::PIDGains newPosGains = ctrlCxt_->pidPosition.GetGains();
+                double headingError = ctb::HeadingErrorRad(goalCxt_->goalHeading, statusCxt_->currentHeading);
+                goalDistance = SlowDownWhenTurning(headingError, goalDistance, *conf_);
+            }
+
+            ctrlCxt_->thrusterData.desiredSpeed = -ctrlCxt_->pidPosition.Compute(0.0, goalDistance);
+            ctrlCxt_->thrusterData.desiredJog = ctrlCxt_->pidHeading.Compute(goalCxt_->goalHeading, statusCxt_->currentHeading);
         }
 
         Eigen::Vector6d requestedVel;

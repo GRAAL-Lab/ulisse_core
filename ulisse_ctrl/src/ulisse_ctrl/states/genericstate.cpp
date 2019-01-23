@@ -17,14 +17,18 @@ GenericState::~GenericState()
 
 void GenericState::CheckRadioController() {
 
-    if ((ctrlCxt_->eesStatus & EMB_STSMASK_PPM_ENABLED) != 0) {
+    if ((statusCxt_->eesStatus & EMB_STSMASK_PPM_ENABLED) != 0) {
         fsm_->EmitEvent(ulisse::events::names::rcenabled, ulisse::events::priority::high);
     }
 }
 
-void GenericState::SetPosContext(const std::shared_ptr<StatusContext>& posCxt)
+void GenericState::SetStatusContext(const std::shared_ptr<StatusContext>& posCxt)
 {
     statusCxt_ = posCxt;
+}
+
+void GenericState::SetGoalContext(const std::shared_ptr<GoalContext>& goalCxt){
+    goalCxt_ = goalCxt;
 }
 
 void GenericState::SetCtrlContext(const std::shared_ptr<ControlContext>& ctrlCxt)

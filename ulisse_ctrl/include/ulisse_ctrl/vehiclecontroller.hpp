@@ -20,10 +20,12 @@
 #include "rml/RML.h"
 
 #include <ulisse_ctrl/commands/command_halt.hpp>
+#include <ulisse_ctrl/commands/command_hold.hpp>
 #include <ulisse_ctrl/commands/command_latlong.hpp>
 #include <ulisse_ctrl/commands/command_speedheading.hpp>
 
 #include <ulisse_ctrl/states/state_halt.hpp>
+#include <ulisse_ctrl/states/state_hold.hpp>
 #include <ulisse_ctrl/states/state_latlong.hpp>
 #include <ulisse_ctrl/states/state_speedheading.hpp>
 
@@ -40,9 +42,6 @@ class VehicleController {
     rclcpp::Subscription<ulisse_msgs::msg::EESStatus>::SharedPtr ees_status_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr nav_filter_sub_;
 
-    //rclcpp::Subscription<std_msgs::msg::Empty>::SharedPtr cmd_halt_sub_;
-    //rclcpp::Subscription<ulisse_msgs::msg::CommandMove>::SharedPtr cmd_move_sub_;
-
     rclcpp::Publisher<ulisse_msgs::msg::PositionContext>::SharedPtr poscxt_pub_;
     rclcpp::Publisher<ulisse_msgs::msg::ControlContext>::SharedPtr ctrlcxt_pub_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr vehiclestate_pub_;
@@ -52,18 +51,22 @@ class VehicleController {
 
     // FSM
     fsm::FSM u_fsm_;
+
     states::StateHalt state_halt_;
+    states::StateHold state_hold_;
     states::StateLatLong state_move_;
     states::StateSpeedHeading state_speedheading_;
 
     commands::CommandHalt command_halt_;
-    commands::CommandLatLong command_move_;
+    commands::CommandHold command_hold_;
+    commands::CommandLatLong command_latlong_;
     commands::CommandSpeedHeading command_speedheading_;
 
     events::EventRCEnabled event_rc_enabled_;
 
     std::shared_ptr<ConfigurationData> conf_;
-    std::shared_ptr<StatusContext> posCxt_;
+    std::shared_ptr<StatusContext> statusCxt_;
+    std::shared_ptr<GoalContext> goalCxt_;
     std::shared_ptr<ControlContext> ctrlCxt_;
 
     int LoadConfiguration();
