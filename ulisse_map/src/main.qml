@@ -95,7 +95,6 @@ Window {
 
                         Label {
                             id: textUlissePos
-                            color: 'lightgray'
                             text: "%1, %2".arg(fbkUpdater.ulisse_pos.latitude).arg(fbkUpdater.ulisse_pos.longitude)
                         }
                     }
@@ -139,14 +138,29 @@ Window {
                 MapQuickItem {
                     id:markerIcon
                     sourceItem: Image{
-                        id: image
+                        id: markerImage
                         width: 32; height: 32
                         source: 'images/map-marker-64.png'
 
                     }
                     coordinate: map.center
-                    anchorPoint.x: image.width / 2
-                    anchorPoint.y: image.height / 2
+                    anchorPoint.x: markerImage.width / 2
+                    anchorPoint.y: markerImage.height / 2
+                    opacity: 0.0
+                }
+
+                MapQuickItem {
+                    id:ulisseIcon
+                    sourceItem: Image{
+                        id: ulisseImage
+                        width: 32; height: 32
+                        source: 'images/catamaran_icon_32.png'
+                        //transform: Rotation { origin.x: 16; origin.y: 16; angle: 0}
+
+                    }
+                    coordinate: QtPositioning.coordinate(fbkUpdater.ulisse_pos.latitude, fbkUpdater.ulisse_pos.longitude) // Genoa
+                    anchorPoint.x: ulisseImage.width / 2
+                    anchorPoint.y: ulisseImage.height / 2
                     opacity: 0.0
                 }
 

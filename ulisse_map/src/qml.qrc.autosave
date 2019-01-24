@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>qtquickcontrols2.conf</file>
+        <file>images/map-marker-64.png</file>
+        <file>images/ulisse_icon-512.png</file>
+        <file>images/ulisse_icon-48.png</file>
+    </qresource>
+</RCC>
