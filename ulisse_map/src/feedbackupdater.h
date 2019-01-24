@@ -17,7 +17,9 @@ class FeedbackUpdater : public QObject
     QQmlApplicationEngine *appEngine_;
     QTimer *myTimer_;
     Q_PROPERTY(QGeoCoordinate ulisse_pos READ get_ulisse_pos NOTIFY callbacks_processed)
+    Q_PROPERTY(double ulisse_yaw_deg READ get_ulisse_yaw NOTIFY callbacks_processed)
     QGeoCoordinate q_ulisse_pos;
+    double q_ulisse_yaw_deg;
     int feedbackUpdateInterval;
 
     rclcpp::Node::SharedPtr np_;
@@ -37,9 +39,7 @@ public:
     Q_INVOKABLE void copyToClipboard(QString value);
 
     QGeoCoordinate get_ulisse_pos();
-    /*QString get_r_wTt();
-    QString get_l_Q();
-    QString get_r_Q();*/
+    double get_ulisse_yaw();
 
     //Q_INVOKABLE void someFunction(int i);
 
@@ -47,9 +47,7 @@ public:
 
 signals:
     void callbacks_processed();
-    /*void r_wTt_FeedbackUpdate();
-    void l_Q_FeedbackUpdate();
-    void r_Q_FeedbackUpdate();*/
+
 
 public slots:
     void process_callbacks_Slot();

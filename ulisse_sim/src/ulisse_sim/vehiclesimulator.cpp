@@ -22,8 +22,8 @@ VehicleSimulator::VehicleSimulator(const rclcpp::Node::SharedPtr& nh)
     , sensorpubcounter_(0)
     , realtime_(true)
 {
-    lat_now_ = 44.4056; // Genova lat-long
-    long_now_ = 8.9463;
+    lat_now_ = 44.393; // Genova Harbour lat-long
+    long_now_ =  8.945;
 
     lat_last_ = lat_now_;
     long_last_ = long_now_;

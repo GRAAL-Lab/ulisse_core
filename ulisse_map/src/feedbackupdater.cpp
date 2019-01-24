@@ -46,6 +46,7 @@ void FeedbackUpdater::PositionContext_cb(const ulisse_msgs::msg::PositionContext
     position_cxt_ = *msg;
     q_ulisse_pos.setLatitude(position_cxt_.filtered_pos.latitude);
     q_ulisse_pos.setLongitude(position_cxt_.filtered_pos.longitude);
+    q_ulisse_yaw_deg = position_cxt_.current_heading * 180 / M_PI;
 }
 
 
@@ -60,12 +61,17 @@ QGeoCoordinate FeedbackUpdater::get_ulisse_pos()
     return q_ulisse_pos;
 }
 
+double FeedbackUpdater::get_ulisse_yaw()
+{
+    return q_ulisse_yaw_deg;
+}
 
 void FeedbackUpdater::process_callbacks_Slot()
 {
     rclcpp::spin_some(np_);
 
-    qDebug() << q_ulisse_pos;
+    qDebug() << "Pos: " << q_ulisse_pos;
+    qDebug() << "Compass: " << q_ulisse_yaw_deg;
     /*std::cout << tc::grnL << "l_wTt: " << tc::none;
     FUTILS::PrintArray(v6Container_.d.data, 6, ' ');
     std::cout << std::endl;*/

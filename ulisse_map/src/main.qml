@@ -52,22 +52,27 @@ Window {
                     border.width: 2
                     border.color: 'lightgray'
 
-                    Column {
+                    ColumnLayout {
                         id: markerColumn
-                        height: textTitleMarker.contentHeight + textMarker.contentHeight
+                        height: textTitleMarker.contentHeight + textMarker.contentHeight + 5
                         width: parent.width
                         spacing: 2
 
                         Label {
                             id: textTitleMarker
-                            color: 'lightgray'
+                            Layout.alignment: Qt.AlignCenter
+                            Layout.fillWidth: true
+                            color: 'gray'
                             font.pointSize: 9
                             text: "Marker Coordinates"
                         }
 
                         Label {
                             id: textMarker
+                            Layout.alignment: Qt.AlignCenter
+                            Layout.fillWidth: true
                             color: 'lightgray'
+                            font.pointSize: 11
                             text: "Right click on map"
                         }
                     }
@@ -81,20 +86,25 @@ Window {
                     border.width: 2
                     border.color: 'lightgray'
 
-                    Column {
+                    ColumnLayout {
                         id: ulisseTextColumn
-                        height: textTitleUlissePos.contentHeight + textUlissePos.contentHeight
+                        height: textTitleUlissePos.contentHeight + textUlissePos.contentHeight + 5
                         width: parent.width
 
                         Label {
                             id: textTitleUlissePos
-                            color: 'lightgray'
+                            Layout.alignment: Qt.AlignCenter
+                            Layout.fillWidth: true
+                            color: 'gray'
                             font.pointSize: 9
                             text: "Ulisse Coordinates"
                         }
 
                         Label {
                             id: textUlissePos
+                            Layout.alignment: Qt.AlignCenter
+                            Layout.fillWidth: true
+                            font.pointSize: 11
                             text: "%1, %2".arg(fbkUpdater.ulisse_pos.latitude).arg(fbkUpdater.ulisse_pos.longitude)
                         }
                     }
@@ -132,7 +142,7 @@ Window {
                 id: map
                 anchors.fill: parent
                 plugin: mapPlugin
-                center: QtPositioning.coordinate(44.4, 8.94) // Genoa
+                center: QtPositioning.coordinate(44.393, 8.945) // Genoa
                 zoomLevel: 14
 
                 MapQuickItem {
@@ -150,18 +160,16 @@ Window {
                 }
 
                 MapQuickItem {
-                    id:ulisseIcon
+                    id: ulisseIcon
                     sourceItem: Image{
                         id: ulisseImage
                         width: 32; height: 32
                         source: 'images/catamaran_icon_32.png'
-                        //transform: Rotation { origin.x: 16; origin.y: 16; angle: 0}
-
+                        transform: Rotation { origin.x: 16; origin.y: 16; angle: fbkUpdater.ulisse_yaw_deg}
                     }
                     coordinate: QtPositioning.coordinate(fbkUpdater.ulisse_pos.latitude, fbkUpdater.ulisse_pos.longitude) // Genoa
                     anchorPoint.x: ulisseImage.width / 2
                     anchorPoint.y: ulisseImage.height / 2
-                    opacity: 0.0
                 }
 
                 MouseArea {
@@ -174,9 +182,8 @@ Window {
                              markerIcon.opacity = 1.0
                              markerIcon.coordinate = map.toCoordinate(Qt.point(mouse.x,mouse.y-16))
 
-                             textMarker.text = "LatLong: %1, %2".arg(marker_coords.latitude).arg(marker_coords.longitude)
+                             textMarker.text = "%1, %2".arg(marker_coords.latitude).arg(marker_coords.longitude)
                              textMarker.color = 'black'
-
                          }
                     }
                 }
