@@ -5,24 +5,25 @@
 #include <QQmlApplicationEngine>
 #include <QObject>
 #include <QVector>
-//#include <control_baxter/roc.h>
+#include <QtPositioning/QtPositioning>
+
+#include "rclcpp/rclcpp.hpp"
+#include "ulisse_msgs/msg/position_context.hpp"
+
 
 class FeedbackUpdater : public QObject
 {
     Q_OBJECT
     QQmlApplicationEngine *appEngine_;
     QTimer *myTimer_;
-    Q_PROPERTY( QString l_wTt READ get_l_wTt NOTIFY l_wTt_FeedbackUpdate )
-    Q_PROPERTY( QString r_wTt READ get_r_wTt NOTIFY r_wTt_FeedbackUpdate )
-    Q_PROPERTY( QString l_Q READ get_l_Q NOTIFY l_Q_FeedbackUpdate )
-    Q_PROPERTY( QString r_Q READ get_r_Q NOTIFY r_Q_FeedbackUpdate )
-    QString l_wTt_qs, r_wTt_qs, l_Q_qs, r_Q_qs;
+    Q_PROPERTY(QGeoCoordinate ulisse_pos READ get_ulisse_pos NOTIFY callbacks_processed)
+    QGeoCoordinate q_ulisse_pos;
     int feedbackUpdateInterval;
 
-    //ortos::xcom::XCOMInterface* xcom_;
-    //ortosdata::DataHelper odh_;
-    //ortosdata::Vector6Container v6Container_;
-    //ortosdata::ArmFeedbackContainer armFbkContainer_;
+    rclcpp::Node::SharedPtr np_;
+    rclcpp::Subscription<ulisse_msgs::msg::PositionContext>::SharedPtr poscxt_sub_;
+
+    ulisse_msgs::msg::PositionContext position_cxt_;
 
     QVector<double> generateRandFloatVector(int size);
 
@@ -31,29 +32,28 @@ public:
     explicit FeedbackUpdater(QQmlApplicationEngine *engine, QObject *parent = 0);
     virtual ~FeedbackUpdater();
     void Init(QQmlApplicationEngine *engine);
-    void ReadwTt(QString &wTtString, const std::string topicGroup);
-    void ReadArmQ(QString &armString, const std::string topicGroup);
+    void PositionContext_cb(const ulisse_msgs::msg::PositionContext::SharedPtr msg);
 
     Q_INVOKABLE void copyToClipboard(QString value);
 
-    QString get_l_wTt();
-    QString get_r_wTt();
+    QGeoCoordinate get_ulisse_pos();
+    /*QString get_r_wTt();
     QString get_l_Q();
-    QString get_r_Q();
+    QString get_r_Q();*/
 
     //Q_INVOKABLE void someFunction(int i);
 
+    void SetNodeHandle(const rclcpp::Node::SharedPtr &np);
+
 signals:
-    void l_wTt_FeedbackUpdate();
-    void r_wTt_FeedbackUpdate();
+    void callbacks_processed();
+    /*void r_wTt_FeedbackUpdate();
     void l_Q_FeedbackUpdate();
-    void r_Q_FeedbackUpdate();
+    void r_Q_FeedbackUpdate();*/
 
 public slots:
-    void l_wTt_Slot();
-    void r_wTt_Slot();
-    void l_Q_Slot();
-    void r_Q_Slot();
+    void process_callbacks_Slot();
+
 };
 
 #endif // FEEDBACKUPDATER_H

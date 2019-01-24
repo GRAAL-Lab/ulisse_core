@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
     QGuiApplication::setOrganizationName("GRAAL Lab");
 
     QGuiApplication app(argc, argv);
-    QIcon icon(":/images/ulisse_icon.png");
+    QIcon icon(":/images/ulisse_icon-48.png");
     app.setWindowIcon(icon);
 
     /**
@@ -54,10 +54,10 @@ int main(int argc, char* argv[])
      * Making the QML aware of my functions
      * (using the ScopedPointer we are sure they get destroyed when they go out of scope)
      */
-
     QScopedPointer<FeedbackUpdater> fbkUpdater(new FeedbackUpdater);
-    appEngine.rootContext()->setContextProperty("fbkUpdater", fbkUpdater.data());
+    fbkUpdater->SetNodeHandle(node);
 
+    appEngine.rootContext()->setContextProperty("fbkUpdater", fbkUpdater.data());
     appEngine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 
     /**
@@ -69,5 +69,9 @@ int main(int argc, char* argv[])
 
     if (appEngine.rootObjects().isEmpty())
         return -1;
-    return app.exec();
+    app.exec();
+
+    rclcpp::shutdown();
+
+    return 0;
 }

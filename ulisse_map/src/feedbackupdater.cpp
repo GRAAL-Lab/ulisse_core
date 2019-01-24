@@ -1,5 +1,8 @@
 #include <iostream>
 #include "feedbackupdater.h"
+#include "ulisse_msgs/topicnames.hpp"
+
+using std::placeholders::_1;
 
 double fRand(double fMin, double fMax)
 {
@@ -21,46 +24,30 @@ FeedbackUpdater::FeedbackUpdater(QQmlApplicationEngine *engine, QObject *parent)
 }
 
 FeedbackUpdater::~FeedbackUpdater(){
-    //xcom_->Release();
+
     delete myTimer_;
 }
 
 void FeedbackUpdater::Init(QQmlApplicationEngine *engine){
 
     appEngine_ = engine;
-    //xcom_ = ortos::xcom::XCOMInterface::GetInstance();
 
     myTimer_ = new QTimer(this);
     myTimer_->start(feedbackUpdateInterval);
-    QObject::connect(myTimer_, SIGNAL (timeout()), this, SLOT (l_wTt_Slot()));
-    QObject::connect(myTimer_, SIGNAL (timeout()), this, SLOT (r_wTt_Slot()));
-    QObject::connect(myTimer_, SIGNAL (timeout()), this, SLOT (l_Q_Slot()));
-    QObject::connect(myTimer_, SIGNAL (timeout()), this, SLOT (r_Q_Slot()));
+    QObject::connect(myTimer_, SIGNAL (timeout()), this, SLOT (process_callbacks_Slot()));
+
+    poscxt_sub_ = np_->create_subscription<ulisse_msgs::msg::PositionContext>(
+           ulisse_msgs::topicnames::position_context, std::bind(&FeedbackUpdater::PositionContext_cb, this, _1));
+
 }
 
-void FeedbackUpdater::ReadwTt(QString &wTtString, const std::string topicGroup)
+void FeedbackUpdater::PositionContext_cb(const ulisse_msgs::msg::PositionContext::SharedPtr msg)
 {
-    /*xcom_->Synchronize();
-
-    int ret = odh_.ReadArm_wTt(v6Container_, topicGroup);
-    if(ret == ORTOS_RV_OK){
-        wTtString = QString::fromStdString(FUTILS::ArrayToString(v6Container_.d.data,6,' '));
-    }else{
-        wTtString = "*No incoming data*";
-    }*/
+    position_cxt_ = *msg;
+    q_ulisse_pos.setLatitude(position_cxt_.filtered_pos.latitude);
+    q_ulisse_pos.setLongitude(position_cxt_.filtered_pos.longitude);
 }
 
-void FeedbackUpdater::ReadArmQ(QString &armQ, const std::string topicGroup)
-{
-    /*xcom_->Synchronize();
-
-    int ret = odh_.ReadArmFeedback(armFbkContainer_, topicGroup);
-    if(ret == ORTOS_RV_OK){
-        armQ = QString::fromStdString(FUTILS::ArrayToString(armFbkContainer_.d.q,ortosdata::numJoints,' '));
-    }else{
-        armQ = "*No incoming data*";
-    }*/
-}
 
 void FeedbackUpdater::copyToClipboard(QString newText)
 {
@@ -68,54 +55,27 @@ void FeedbackUpdater::copyToClipboard(QString newText)
     clipboard->setText(newText);
 }
 
-QString FeedbackUpdater::get_l_wTt()
+QGeoCoordinate FeedbackUpdater::get_ulisse_pos()
 {
-    return l_wTt_qs;
-}
-
-QString FeedbackUpdater::get_r_wTt()
-{
-    return r_wTt_qs;
-}
-
-QString FeedbackUpdater::get_l_Q()
-{
-    return l_Q_qs;
-}
-
-QString FeedbackUpdater::get_r_Q()
-{
-    return r_Q_qs;
+    return q_ulisse_pos;
 }
 
 
-void FeedbackUpdater::l_wTt_Slot()
+void FeedbackUpdater::process_callbacks_Slot()
 {
-    //ReadwTt(l_wTt_qs, ortosdata::topicnames::left);
+    rclcpp::spin_some(np_);
 
-    //qDebug() << l_wTt_qs;
+    qDebug() << q_ulisse_pos;
     /*std::cout << tc::grnL << "l_wTt: " << tc::none;
     FUTILS::PrintArray(v6Container_.d.data, 6, ' ');
     std::cout << std::endl;*/
-    emit l_wTt_FeedbackUpdate();
+    emit callbacks_processed();
 }
 
-void FeedbackUpdater::r_wTt_Slot()
-{
-    //ReadwTt(r_wTt_qs, ortosdata::topicnames::right);
-    emit r_wTt_FeedbackUpdate();
-}
 
-void FeedbackUpdater::l_Q_Slot()
+void FeedbackUpdater::SetNodeHandle(const rclcpp::Node::SharedPtr &np)
 {
-    //ReadArmQ(l_Q_qs, ortosdata::topicnames::left);
-    emit l_Q_FeedbackUpdate();
-}
-
-void FeedbackUpdater::r_Q_Slot()
-{
-    //ReadArmQ(r_Q_qs, ortosdata::topicnames::right);
-    emit r_Q_FeedbackUpdate();
+    np_ = np;
 }
 
 QVector<double> FeedbackUpdater::generateRandFloatVector(int size)

@@ -1,6 +1,7 @@
-import QtQuick 2.0
+import QtQuick 2.1
 import QtQuick.Window 2.0
 import QtQuick.Layouts 1.3
+import QtQuick.Controls 1.2
 import QtLocation 5.6
 import QtPositioning 5.6
 
@@ -12,14 +13,16 @@ Window {
     minimumHeight: 200
     minimumWidth: 300
 
+    property var marker_coords: QtPositioning.coordinate(44.4, 8.94)
+
     Plugin {
         id: mapPlugin
         name: "osm" // "mapboxgl", "esri", ...
         // specify plugin parameters if necessary
-        // PluginParameter {
-        //     name:
-        //     value:
-        // }
+         PluginParameter {
+             name: "osm.mapping.offline.directory"
+             value: "/home/graal/.cache/QtLocation/5.8/tiles/osm/"
+         }
     }
 
     RowLayout {
@@ -40,20 +43,61 @@ Window {
             ColumnLayout{
                 anchors.fill: parent
                 spacing: 2
-                Rectangle {
 
+                Rectangle {
+                    Layout.alignment: Qt.AlignCenter
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: markerColumn.height
+                    color: 'white'
+                    border.width: 2
+                    border.color: 'lightgray'
+
+                    Column {
+                        id: markerColumn
+                        height: textTitleMarker.contentHeight + textMarker.contentHeight
+                        width: parent.width
+                        spacing: 2
+
+                        Label {
+                            id: textTitleMarker
+                            color: 'lightgray'
+                            font.pointSize: 9
+                            text: "Marker Coordinates"
+                        }
+
+                        Label {
+                            id: textMarker
+                            color: 'lightgray'
+                            text: "Right click on map"
+                        }
+                    }
+                }
+
+                Rectangle {
                     Layout.alignment: Qt.AlignCenter
                     Layout.fillWidth: true
                     Layout.preferredHeight: 40
                     color: 'white'
-                    border.width: 4
+                    border.width: 2
                     border.color: 'lightgray'
 
-                    Text {
-                        id: textlatlong
-                        opacity: 0.0
-                        anchors.centerIn: parent
-                        text: "LatLong: %1, %2".arg(marker.coordinate.latitude).arg(marker.coordinate.longitude)
+                    Column {
+                        id: ulisseTextColumn
+                        height: textTitleUlissePos.contentHeight + textUlissePos.contentHeight
+                        width: parent.width
+
+                        Label {
+                            id: textTitleUlissePos
+                            color: 'lightgray'
+                            font.pointSize: 9
+                            text: "Ulisse Coordinates"
+                        }
+
+                        Label {
+                            id: textUlissePos
+                            color: 'lightgray'
+                            text: "%1, %2".arg(fbkUpdater.ulisse_pos.latitude).arg(fbkUpdater.ulisse_pos.longitude)
+                        }
                     }
                 }
 
@@ -70,7 +114,6 @@ Window {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 40
                     color: 'transparent'
-                    //Layout.preferredWidth: 70
                     Text {
                         anchors.centerIn: parent
                         text: "(Right click to set marker)"
@@ -94,7 +137,7 @@ Window {
                 zoomLevel: 14
 
                 MapQuickItem {
-                    id:marker
+                    id:markerIcon
                     sourceItem: Image{
                         id: image
                         width: 32; height: 32
@@ -112,9 +155,14 @@ Window {
                     acceptedButtons: Qt.LeftButton | Qt.RightButton
                     onClicked: {
                          if(mouse.button & Qt.RightButton) {
-                             marker.opacity = 1.0
-                             textlatlong.opacity = 1.0
-                             marker.coordinate = map.toCoordinate(Qt.point(mouse.x,mouse.y))
+                             marker_coords = map.toCoordinate(Qt.point(mouse.x,mouse.y))
+
+                             markerIcon.opacity = 1.0
+                             markerIcon.coordinate = map.toCoordinate(Qt.point(mouse.x,mouse.y-16))
+
+                             textMarker.text = "LatLong: %1, %2".arg(marker_coords.latitude).arg(marker_coords.longitude)
+                             textMarker.color = 'black'
+
                          }
                     }
                 }
