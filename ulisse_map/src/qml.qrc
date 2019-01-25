@@ -5,6 +5,7 @@
         <file>images/map-marker-64.png</file>
         <file>images/ulisse_icon-512.png</file>
         <file>images/ulisse_icon-48.png</file>
-        <file>images/catamaran_icon_32.png</file>
+        <file>images/catamaran_icon_64.png</file>
+        <file>qml/LabelledText.qml</file>
     </qresource>
 </RCC>

@@ -4,7 +4,7 @@
 #include "ctrl_toolbox/DataStructs.h"
 #include "ctrl_toolbox/DigitalPID.h"
 #include "surface_vehicle_model/surfacevehiclemodel.hpp"
-#include "ulisse_ctrl/terminal_utils.hpp"
+#include "ulisse_msgs/terminal_utils.hpp"
 
 namespace ulisse {
 

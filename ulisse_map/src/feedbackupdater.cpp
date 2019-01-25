@@ -36,6 +36,13 @@ void FeedbackUpdater::Init(QQmlApplicationEngine *engine){
     myTimer_->start(feedbackUpdateInterval);
     QObject::connect(myTimer_, SIGNAL (timeout()), this, SLOT (process_callbacks_Slot()));
 
+    q_ulisse_pos.setLatitude(44.392);
+    q_ulisse_pos.setLongitude(8.945);
+    q_ulisse_yaw_deg = 0.0;
+
+    qDebug() << "INITIAL POS: LatLong = " << q_ulisse_pos << "- Compass = " << q_ulisse_yaw_deg;
+
+
     poscxt_sub_ = np_->create_subscription<ulisse_msgs::msg::PositionContext>(
            ulisse_msgs::topicnames::position_context, std::bind(&FeedbackUpdater::PositionContext_cb, this, _1));
 
@@ -70,11 +77,8 @@ void FeedbackUpdater::process_callbacks_Slot()
 {
     rclcpp::spin_some(np_);
 
-    qDebug() << "Pos: " << q_ulisse_pos;
-    qDebug() << "Compass: " << q_ulisse_yaw_deg;
-    /*std::cout << tc::grnL << "l_wTt: " << tc::none;
-    FUTILS::PrintArray(v6Container_.d.data, 6, ' ');
-    std::cout << std::endl;*/
+    //qDebug() << "Ulisse Pos: " << q_ulisse_pos << " - Compass: " << q_ulisse_yaw_deg;
+
     emit callbacks_processed();
 }
 

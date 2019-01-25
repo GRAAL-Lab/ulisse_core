@@ -12,10 +12,11 @@
 #include "ulisse_msgs/msg/control_context.hpp"
 #include "ulisse_msgs/srv/ees_command.hpp"
 #include "ulisse_msgs/topicnames.hpp"
+#include "ulisse_msgs/terminal_utils.hpp"
 
 #include "ulisse_driver/EESHelperDataStructs.h"
 
-using namespace ulisse::ees;
+using namespace ulisse;
 using namespace std::chrono_literals;
 
 int main(int argc, char* argv[])
@@ -42,17 +43,17 @@ int main(int argc, char* argv[])
 
         auto eesRequest = std::make_shared<ulisse_msgs::srv::EESCommand::Request>();
 
-        std::cout << "1)  Ref send" << std::endl;
-        std::cout << "2)  Beep" << std::endl;
-        std::cout << "3)  Enable ref" << std::endl;
-        std::cout << "4)  Reload config" << std::endl;
-        std::cout << "5)  Get version" << std::endl;
-        std::cout << "6)  Start compass calibration" << std::endl;
-        std::cout << "7)  Stop compass calibration" << std::endl;
-        std::cout << "8)  Reset" << std::endl;
-        std::cout << "9)  Get config" << std::endl;
-        std::cout << "10) Set pumps" << std::endl;
-        std::cout << "11) Set pwr buttons" << std::endl;
+        std::cout << tc::bluL << "1)  " << tc::none << "Ref send" << std::endl;
+        std::cout << tc::bluL << "2)  " << tc::none << "Beep" << std::endl;
+        std::cout << tc::bluL << "3)  " << tc::none << "Enable ref" << std::endl;
+        std::cout << tc::bluL << "4)  " << tc::none << "Reload config" << std::endl;
+        std::cout << tc::bluL << "5)  " << tc::none << "Get version" << std::endl;
+        std::cout << tc::bluL << "6)  " << tc::none << "Start compass calibration" << std::endl;
+        std::cout << tc::bluL << "7)  " << tc::none << "Stop compass calibration" << std::endl;
+        std::cout << tc::bluL << "8)  " << tc::none << "Reset" << std::endl;
+        std::cout << tc::bluL << "9)  " << tc::none << "Get config" << std::endl;
+        std::cout << tc::bluL << "10) " << tc::none << "Set pumps" << std::endl;
+        std::cout << tc::bluL << "11) " << tc::none << "Set pwr buttons" << std::endl;
 
         std::cin >> choice;
 
@@ -90,7 +91,7 @@ int main(int argc, char* argv[])
             } while (repeat);
         } break;
         case 2: {
-            eesRequest->command_type = static_cast<uint16_t>(CommandType::beep);
+            eesRequest->command_type = static_cast<uint16_t>(ees::CommandType::beep);
             //uint8_t numberOfBeeps;
             //uint8_t loop;
             std::cout << "number of beeps: ";
@@ -101,30 +102,30 @@ int main(int argc, char* argv[])
             std::cin >> eesRequest->beep_data.delay;
         } break;
         case 3: {
-            eesRequest->command_type = static_cast<uint16_t>(CommandType::enableref);
+            eesRequest->command_type = static_cast<uint16_t>(ees::CommandType::enableref);
             std::cout << "enable: ";
             std::cin >> eesRequest->enable_ref_data.enable;
         } break;
         case 4: {
-            eesRequest->command_type = static_cast<uint16_t>(CommandType::reloadconfig);
+            eesRequest->command_type = static_cast<uint16_t>(ees::CommandType::reloadconfig);
         } break;
         case 5: {
-            eesRequest->command_type = static_cast<uint16_t>(CommandType::getversion);
+            eesRequest->command_type = static_cast<uint16_t>(ees::CommandType::getversion);
         } break;
         case 6: {
-            eesRequest->command_type = static_cast<uint16_t>(CommandType::startcompasscal);
+            eesRequest->command_type = static_cast<uint16_t>(ees::CommandType::startcompasscal);
         } break;
         case 7: {
-            eesRequest->command_type = static_cast<uint16_t>(CommandType::stopcompasscal);
+            eesRequest->command_type = static_cast<uint16_t>(ees::CommandType::stopcompasscal);
         } break;
         case 8: {
-            eesRequest->command_type = static_cast<uint16_t>(CommandType::reset);
+            eesRequest->command_type = static_cast<uint16_t>(ees::CommandType::reset);
         } break;
         case 9: {
-            eesRequest->command_type = static_cast<uint16_t>(CommandType::getconfig);
+            eesRequest->command_type = static_cast<uint16_t>(ees::CommandType::getconfig);
         } break;
         case 10: {
-            eesRequest->command_type = static_cast<uint16_t>(CommandType::setpumps);
+            eesRequest->command_type = static_cast<uint16_t>(ees::CommandType::setpumps);
             std::cout << "0: stop all\n1: left\n2: right\n3: left+right\n";
             uint8_t flagaction;
             int posizione, azione;
@@ -193,7 +194,7 @@ int main(int argc, char* argv[])
 
         } break;
         case 11: {
-            eesRequest->command_type = static_cast<uint16_t>(CommandType::setpowerbuttons);
+            eesRequest->command_type = static_cast<uint16_t>(ees::CommandType::setpowerbuttons);
             std::cout << "1: left\n2: right\n3: left+right\n";
             int scelta;
             std::cin >> scelta;
@@ -228,7 +229,7 @@ int main(int argc, char* argv[])
                 return 1;
             }
             auto result_ees = result_future_ees.get();
-            RCLCPP_INFO(node->get_logger(), "SendAnswer returned %s", CommandAnswerToString((CommandAnswer)(result_ees->res)).c_str());
+            RCLCPP_INFO(node->get_logger(), "SendAnswer returned %s", CommandAnswerToString((ees::CommandAnswer)(result_ees->res)).c_str());
         }
     }
 

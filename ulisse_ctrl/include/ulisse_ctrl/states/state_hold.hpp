@@ -11,7 +11,7 @@ namespace states {
 
     class StateHold : public GenericState {
 
-        bool goalReached;
+        bool goalReached_;
 
     public:
         StateHold();

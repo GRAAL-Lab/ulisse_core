@@ -13,6 +13,7 @@
 
 #include "ulisse_msgs/srv/control_command.hpp"
 #include "ulisse_msgs/topicnames.hpp"
+#include "ulisse_msgs/terminal_utils.hpp"
 
 using namespace ulisse;
 using namespace std::chrono_literals;

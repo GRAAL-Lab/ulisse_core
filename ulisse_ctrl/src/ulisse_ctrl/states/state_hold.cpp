@@ -16,7 +16,7 @@ namespace states {
 
     fsm::retval StateHold::OnEntry()
     {
-        goalReached = true;
+        goalReached_ = true;
         goalCxt_->currentGoal.pos.latitude = statusCxt_->filterData.pos.latitude;
         goalCxt_->currentGoal.pos.longitude = statusCxt_->filterData.pos.longitude;
         goalCxt_->currentGoal.acceptRadius = goalCxt_->nextGoal.acceptRadius;
@@ -34,10 +34,11 @@ namespace states {
 
         ctb::DistanceAndAzimuthRad(statusCxt_->filterData.pos, goalCxt_->currentGoal.pos, goalCxt_->goalDistance, goalCxt_->goalHeading);
 
-        if (goalReached) {
+        if (goalReached_) {
             if (goalCxt_->goalDistance < (goalCxt_->currentGoal.acceptRadius + conf_->holdData.hysteresis)) {
-                goalReached = false;
+                goalReached_ = false;
             }
+
             // ALIGN TO CURRENT AND HOLD STATE
             double surgeFbk(0.0), surgeRef(0.0);
 
@@ -61,10 +62,11 @@ namespace states {
             //double headingError = ctb::HeadingErrorRad(statusCxt_->currentHeading, headingRef);
             ctrlCxt_->thrusterData.desiredSpeed = -ctrlCxt_->pidSpeed.Compute(surgeRef, surgeFbk);
             ctrlCxt_->thrusterData.desiredJog = ctrlCxt_->pidHeading.Compute(goalCxt_->goalHeading, statusCxt_->currentHeading);
+
         } else {
             // LAT-LONG STATE
             if (statusCxt_->goalDistance < goalCxt_->currentGoal.acceptRadius) {
-                goalReached = true;
+                goalReached_ = true;
             }
 
             double goalDistance = statusCxt_->goalDistance;
@@ -92,19 +94,6 @@ namespace states {
 
         } else if (conf_->ctrlMode == ControlMode::DynamicModel) {
         }
-
-        /*ortos::DebugConsole::Write(ortos::LogLevel::info, "StateHold", "Current compensation: enabled");
-        ortos::DebugConsole::Write(ortos::LogLevel::info, "StateHold",
-                "Feedback: AHRS Heading = %lf, COG = %lf, Compass = %f CurrentDirecton = %lf",
-                context_->state.heading, NormalizeHeading(context_->gpsdataIn.d.track),
-                context_->sensorsIn.d.compassHeading * 180 / PI, currentDirection);
-        ortos::DebugConsole::Write(ortos::LogLevel::info, "StateHold",
-                "Feedback: Abs Speed = %+lf, SurgeFbk = %+lf Current = %+lf", context_->state.speed, speedFbk,
-                currentNorm);
-        ortos::DebugConsole::Write(ortos::LogLevel::info, "StateHold", "Refs    : Speed = %+lf    Heading = %+lf",
-                uSpeed, headingRef);
-        ortos::DebugConsole::Write(ortos::LogLevel::info, "StateHold", "Errors  : Speed = %+lf    Heading = %+lf",
-                speedRef - surgeFbk, headingError);*/
 
         return fsm::ok;
     }

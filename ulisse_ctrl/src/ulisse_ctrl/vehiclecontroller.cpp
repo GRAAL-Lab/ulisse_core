@@ -125,6 +125,8 @@ int VehicleController::LoadConfiguration()
     ctrlCxt_->pidHeading.SetErrorFunction(ctb::HeadingErrorRadFunctor());
 
     conf_->holdData.hysteresis = par_client_->get_parameter("Hold.Hysteresis", 1.0);
+
+
     conf_->holdData.currentMin = par_client_->get_parameter("Hold.CurrentMin", 1.0);
     conf_->holdData.currentMax = par_client_->get_parameter("Hold.CurrentMax", 1.0);
 
@@ -149,11 +151,13 @@ void VehicleController::SetUpFSM()
     state_halt_.SetStatusContext(statusCxt_);
     state_halt_.SetGoalContext(goalCxt_);
     state_halt_.SetCtrlContext(ctrlCxt_);
+    state_halt_.SetConf(conf_);
 
     state_hold_.SetFSM(&u_fsm_);
     state_hold_.SetStatusContext(statusCxt_);
     state_hold_.SetGoalContext(goalCxt_);
     state_hold_.SetCtrlContext(ctrlCxt_);
+    state_hold_.SetConf(conf_);
 
     state_move_.SetFSM(&u_fsm_);
     state_move_.SetStatusContext(statusCxt_);
@@ -238,7 +242,7 @@ void VehicleController::SetupCommandServer()
             std::cout << "Received Command Halt" << std::endl;
         } else if (request->command_type == ulisse::commands::ID::hold) {
             std::cout << "Received Command Hold" << std::endl;
-            command_hold_.SetAcceptanceRadius(request->latlong_cmd.acceptance_radius);
+            command_hold_.SetAcceptanceRadius(request->hold_cmd.acceptance_radius);
         } else if (request->command_type == ulisse::commands::ID::latlong) {
             std::cout << "Received Command LatLong" << std::endl;
             command_latlong_.SetGoal(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude,
