@@ -7,5 +7,8 @@
         <file>images/ulisse_icon-48.png</file>
         <file>images/catamaran_icon_64.png</file>
         <file>qml/LabelledText.qml</file>
+        <file>images/flag_transp.png</file>
+        <file>images/flag_green.png</file>
+        <file>images/flag_checker.png</file>
     </qresource>
 </RCC>

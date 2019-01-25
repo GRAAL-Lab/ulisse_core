@@ -16,7 +16,7 @@ ColumnLayout {
     Label {
         id: title
         width: parent.width
-        color: 'gray'
+        color: 'cadetblue'
         leftPadding: 5.0
         bottomPadding: -5
         font.pointSize: 9

@@ -16,9 +16,11 @@ class FeedbackUpdater : public QObject
     Q_OBJECT
     QQmlApplicationEngine *appEngine_;
     QTimer *myTimer_;
+    QObject* goalFlagObj_;
     Q_PROPERTY(QGeoCoordinate ulisse_pos READ get_ulisse_pos NOTIFY callbacks_processed)
     Q_PROPERTY(double ulisse_yaw_deg READ get_ulisse_yaw NOTIFY callbacks_processed)
-    QGeoCoordinate q_ulisse_pos;
+    Q_PROPERTY(QGeoCoordinate goal_pos READ get_goal_pos NOTIFY callbacks_processed)
+    QGeoCoordinate q_ulisse_pos, q_goal_pos;
     double q_ulisse_yaw_deg;
     int feedbackUpdateInterval;
 
@@ -39,6 +41,7 @@ public:
     Q_INVOKABLE void copyToClipboard(QString value);
 
     QGeoCoordinate get_ulisse_pos();
+        QGeoCoordinate get_goal_pos();
     double get_ulisse_yaw();
 
     //Q_INVOKABLE void someFunction(int i);

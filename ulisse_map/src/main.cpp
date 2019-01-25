@@ -36,17 +36,6 @@ int main(int argc, char* argv[])
     QIcon icon(":/images/ulisse_icon-48.png");
     app.setWindowIcon(icon);
 
-    /**
-     * Theme styling
-     */
-    //QSettings settings;
-    //QString style = QQuickStyle::name();
-    //if (!style.isEmpty()) {
-    //    style = "Material";
-    //    QQuickStyle::setStyle(style);
-    //    settings.setValue("style", style);
-    //} else
-    //    QQuickStyle::setStyle(settings.value("style").toString());
 
     QQmlApplicationEngine appEngine;
 
@@ -56,8 +45,9 @@ int main(int argc, char* argv[])
      */
     QScopedPointer<FeedbackUpdater> fbkUpdater(new FeedbackUpdater);
     fbkUpdater->SetNodeHandle(node);
-
     appEngine.rootContext()->setContextProperty("fbkUpdater", fbkUpdater.data());
+
+
     appEngine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 
     /**
