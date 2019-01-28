@@ -12,12 +12,18 @@
 #include "ulisse_msgs/msg/control_context.hpp"
 #include "ulisse_msgs/msg/goal_context.hpp"
 #include "ulisse_msgs/msg/status_context.hpp"
+#include "ulisse_msgs/srv/control_command.hpp"
+
+#include "ulisse_msgs/topicnames.hpp"
+
 
 class CommandWrapper : public QObject {
     Q_OBJECT
     QQmlApplicationEngine* appEngine_;
+    QObject* toastMgrObj_;
+
     rclcpp::Node::SharedPtr np_;
-    QObject *toastMgrObj_;
+    rclcpp::Client<ulisse_msgs::srv::ControlCommand>::SharedPtr command_srv_;
 
     void ShowToast(const QVariant message, const QVariant duration);
 

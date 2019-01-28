@@ -101,7 +101,7 @@ RowLayout {
                     Button {
                         text: "Halt"
                         Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                        //onClicked: model.submit()
+                        onClicked: cmdWrapper.sendHaltCommand()
                     }
                     Button {
                         text: "Hold Position"

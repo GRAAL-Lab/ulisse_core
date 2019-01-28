@@ -20,6 +20,7 @@ find_package(Qt5Quick REQUIRED)
 find_package(Qt5Location REQUIRED)
 find_package(Qt5Positioning REQUIRED)
 find_package(ulisse_msgs REQUIRED)
+find_package(ulisse_ctrl REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -33,6 +34,7 @@ include_directories(
 	${Qt5Core_INCLUDE_DIRS}
 	${Qt5Quick_INCLUDE_DIRS}
     ${ulisse_msgs_INCLUDE_DIRS}
+    ${ulisse_ctrl_INCLUDE_DIRS}
 	)
 
 file(GLOB SOURCE_FILES
