@@ -1,60 +1,63 @@
 #ifndef FEEDBACKUPDATER_H
 #define FEEDBACKUPDATER_H
 
-#include <QtGui>
-#include <QQmlApplicationEngine>
 #include <QObject>
+#include <QQmlApplicationEngine>
 #include <QVector>
+#include <QtGui>
 #include <QtPositioning/QtPositioning>
 
 #include "rclcpp/rclcpp.hpp"
-#include "ulisse_msgs/msg/position_context.hpp"
 
+#include "ulisse_msgs/msg/control_context.hpp"
+#include "ulisse_msgs/msg/goal_context.hpp"
+#include "ulisse_msgs/msg/status_context.hpp"
 
-class FeedbackUpdater : public QObject
-{
+class FeedbackUpdater : public QObject {
     Q_OBJECT
-    QQmlApplicationEngine *appEngine_;
-    QTimer *myTimer_;
-    QObject* goalFlagObj_;
+    QQmlApplicationEngine* appEngine_;
+    QTimer* myTimer_;
+    QObject *goalFlagObj_;
     Q_PROPERTY(QGeoCoordinate ulisse_pos READ get_ulisse_pos NOTIFY callbacks_processed)
     Q_PROPERTY(double ulisse_yaw_deg READ get_ulisse_yaw NOTIFY callbacks_processed)
     Q_PROPERTY(QGeoCoordinate goal_pos READ get_goal_pos NOTIFY callbacks_processed)
-    QGeoCoordinate q_ulisse_pos, q_goal_pos;
-    double q_ulisse_yaw_deg;
-    int feedbackUpdateInterval;
+
+    QGeoCoordinate q_ulisse_pos_, q_goal_pos_;
+    double q_ulisse_yaw_deg_;
+    int feedbackUpdateInterval_;
 
     rclcpp::Node::SharedPtr np_;
-    rclcpp::Subscription<ulisse_msgs::msg::PositionContext>::SharedPtr poscxt_sub_;
+    rclcpp::Subscription<ulisse_msgs::msg::StatusContext>::SharedPtr status_cxt_sub_;
+    rclcpp::Subscription<ulisse_msgs::msg::GoalContext>::SharedPtr goal_cxt_sub_;
+    rclcpp::Subscription<ulisse_msgs::msg::ControlContext>::SharedPtr control_cxt_sub_;
 
-    ulisse_msgs::msg::PositionContext position_cxt_;
+    ulisse_msgs::msg::StatusContext status_cxt_msg_;
+    ulisse_msgs::msg::GoalContext goal_cxt_msg_;
+    ulisse_msgs::msg::ControlContext control_cxt_msg_;
 
     QVector<double> generateRandFloatVector(int size);
 
 public:
-    explicit FeedbackUpdater(QObject *parent = 0);
-    explicit FeedbackUpdater(QQmlApplicationEngine *engine, QObject *parent = 0);
+    explicit FeedbackUpdater(QObject* parent = 0);
+    explicit FeedbackUpdater(QQmlApplicationEngine* engine, QObject* parent = 0);
     virtual ~FeedbackUpdater();
-    void Init(QQmlApplicationEngine *engine);
-    void PositionContext_cb(const ulisse_msgs::msg::PositionContext::SharedPtr msg);
+    void Init(QQmlApplicationEngine* engine);
+    void SetNodeHandle(const rclcpp::Node::SharedPtr& np);
+    void GoalContextCB(const ulisse_msgs::msg::GoalContext::SharedPtr msg);
+    void ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg);
+    void StatusContextCB(const ulisse_msgs::msg::StatusContext::SharedPtr msg);
 
     Q_INVOKABLE void copyToClipboard(QString value);
 
     QGeoCoordinate get_ulisse_pos();
-        QGeoCoordinate get_goal_pos();
+    QGeoCoordinate get_goal_pos();
     double get_ulisse_yaw();
-
-    //Q_INVOKABLE void someFunction(int i);
-
-    void SetNodeHandle(const rclcpp::Node::SharedPtr &np);
 
 signals:
     void callbacks_processed();
 
-
 public slots:
     void process_callbacks_Slot();
-
 };
 
 #endif // FEEDBACKUPDATER_H

@@ -85,7 +85,7 @@ struct StatusContext {
     double gpsTrack, gpsSpeed;
     double currentHeading;
     uint16_t eesStatus;
-    double goalDistance;
+    std::string vehicleState;
 
     StatusContext()
         : currentHeading(0.0)

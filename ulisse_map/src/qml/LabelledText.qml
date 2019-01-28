@@ -1,6 +1,6 @@
 import QtQuick 2.1
 import QtQuick.Layouts 1.3
-import QtQuick.Controls 1.2
+import QtQuick.Controls 2.1
 
 ColumnLayout {
     property alias label: title.text
@@ -30,6 +30,13 @@ ColumnLayout {
         color: 'lightgray'
         leftPadding: 5.0
         font.pointSize: 11
-        //text: "Right click on map"
+
+        MouseArea{
+            anchors.fill: parent
+            onClicked: {
+                fbkUpdater.copyToClipboard(text)
+                toast.show("Copied to clipboard")
+            }
+        }
     }
 }

@@ -65,11 +65,11 @@ namespace states {
 
         } else {
             // LAT-LONG STATE
-            if (statusCxt_->goalDistance < goalCxt_->currentGoal.acceptRadius) {
+            if (goalCxt_->goalDistance < goalCxt_->currentGoal.acceptRadius) {
                 goalReached_ = true;
             }
 
-            double goalDistance = statusCxt_->goalDistance;
+            double goalDistance = goalCxt_->goalDistance;
             if (conf_->enableSlowDownOnTurns) {
                 //ctb::PIDGains newPosGains = ctrlCxt_->pidPosition.GetGains();
                 double headingError = ctb::HeadingErrorRad(goalCxt_->goalHeading, statusCxt_->currentHeading);

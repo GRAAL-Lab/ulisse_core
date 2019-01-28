@@ -43,8 +43,8 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 
     // Control Publishers
     ctrlcxt_pub_ = nh_->create_publisher<ulisse_msgs::msg::ControlContext>(ulisse_msgs::topicnames::control_context);
-    poscxt_pub_ = nh_->create_publisher<ulisse_msgs::msg::PositionContext>(ulisse_msgs::topicnames::position_context);
-    vehiclestate_pub_ = nh_->create_publisher<std_msgs::msg::String>(ulisse_msgs::topicnames::vehicle_ctrl_state);
+    goalcxt_pub_ = nh_->create_publisher<ulisse_msgs::msg::GoalContext>(ulisse_msgs::topicnames::goal_context);
+    statuscxt_pub_ = nh_->create_publisher<ulisse_msgs::msg::StatusContext>(ulisse_msgs::topicnames::status_context);
 
     SetupCommandServer();
 }
@@ -125,7 +125,6 @@ int VehicleController::LoadConfiguration()
     ctrlCxt_->pidHeading.SetErrorFunction(ctb::HeadingErrorRadFunctor());
 
     conf_->holdData.hysteresis = par_client_->get_parameter("Hold.Hysteresis", 1.0);
-
 
     conf_->holdData.currentMin = par_client_->get_parameter("Hold.CurrentMin", 1.0);
     conf_->holdData.currentMax = par_client_->get_parameter("Hold.CurrentMax", 1.0);
@@ -272,7 +271,6 @@ void VehicleController::GPSSensor_cb(const ulisse_msgs::msg::GPSData::SharedPtr 
 {
     timestamp_ = msg->time;
     //std::cout << "GPS (lat, long): " << msg->latitude << ", " << msg->longitude << std::endl;
-
     statusCxt_->gpsSpeed = msg->speed;
     statusCxt_->gpsTrack = msg->track;
 }
@@ -303,18 +301,23 @@ void VehicleController::Run()
 
 void VehicleController::PublishControl()
 {
-    ulisse_msgs::msg::PositionContext poscxt_msg;
-    poscxt_msg.filtered_pos.latitude = statusCxt_->filterData.pos.latitude;
-    poscxt_msg.filtered_pos.longitude = statusCxt_->filterData.pos.longitude;
-    poscxt_msg.current_heading = statusCxt_->currentHeading;
-    poscxt_msg.current_goal.latitude = goalCxt_->currentGoal.pos.latitude;
-    poscxt_msg.current_goal.longitude = goalCxt_->currentGoal.pos.longitude;
-    poscxt_msg.goal_distance = goalCxt_->goalDistance;
-    poscxt_msg.goal_heading = goalCxt_->goalHeading;
-    poscxt_msg.goal_speed = goalCxt_->goalSpeed;
-    poscxt_pub_->publish(poscxt_msg);
+    ulisse_msgs::msg::StatusContext statuscxt_msg;
+    statuscxt_msg.vehicle_pos.latitude = statusCxt_->filterData.pos.latitude;
+    statuscxt_msg.vehicle_pos.longitude = statusCxt_->filterData.pos.longitude;
+    statuscxt_msg.vehicle_heading = statusCxt_->currentHeading;
+    statuscxt_msg.vehicle_speed = statusCxt_->gpsSpeed;
+    statuscxt_msg.vehicle_track = statusCxt_->gpsTrack;
+    statuscxt_msg.vehicle_state = u_fsm_.GetCurrentStateName();
+    statuscxt_pub_->publish(statuscxt_msg);
 
-    // if (u_fsm_.GetCurrentStateName() != ulisse::states::ID::halt) {
+    ulisse_msgs::msg::GoalContext goalcxt_msg;
+    goalcxt_msg.current_goal.latitude = goalCxt_->currentGoal.pos.latitude;
+    goalcxt_msg.current_goal.longitude = goalCxt_->currentGoal.pos.longitude;
+    goalcxt_msg.goal_distance = goalCxt_->goalDistance;
+    goalcxt_msg.goal_heading = goalCxt_->goalHeading;
+    goalcxt_msg.goal_speed = goalCxt_->goalSpeed;
+    goalcxt_pub_->publish(goalcxt_msg);
+
     ulisse_msgs::msg::ControlContext ctrlcxt_msg;
     ctrlcxt_msg.pidposition.feedback = ctrlCxt_->pidPosition.GetFbk();
     ctrlcxt_msg.pidposition.reference = ctrlCxt_->pidPosition.GetRef();
@@ -336,10 +339,5 @@ void VehicleController::PublishControl()
     ctrlcxt_msg.motor_ctrlref.left = ctrlCxt_->thrusterData.ctrlRef.left;
     ctrlcxt_msg.motor_ctrlref.right = ctrlCxt_->thrusterData.ctrlRef.right;
     ctrlcxt_pub_->publish(ctrlcxt_msg);
-    //}
-
-    std_msgs::msg::String state;
-    state.data = u_fsm_.GetCurrentStateName();
-    vehiclestate_pub_->publish(state);
 }
 }

@@ -13,7 +13,7 @@ double fRand(double fMin, double fMax)
 
 FeedbackUpdater::FeedbackUpdater(QObject* parent)
     : QObject(parent)
-    , feedbackUpdateInterval(200)
+    , feedbackUpdateInterval_(200)
 {
     //std::cerr << tc::brwn << Q_FUNC_INFO << ": If you use this constructor remember to call Init(*engine) after"
     //          << tc::none << "\n";
@@ -21,7 +21,7 @@ FeedbackUpdater::FeedbackUpdater(QObject* parent)
 
 FeedbackUpdater::FeedbackUpdater(QQmlApplicationEngine* engine, QObject* parent)
     : QObject(parent)
-    , feedbackUpdateInterval(200)
+    , feedbackUpdateInterval_(200)
 {
     Init(engine);
 }
@@ -38,34 +38,54 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
     appEngine_ = engine;
 
     myTimer_ = new QTimer(this);
-    myTimer_->start(feedbackUpdateInterval);
+    myTimer_->start(feedbackUpdateInterval_);
     QObject::connect(myTimer_, SIGNAL(timeout()), this, SLOT(process_callbacks_Slot()));
 
-    q_ulisse_pos.setLatitude(44.392);
-    q_ulisse_pos.setLongitude(8.945);
-    q_ulisse_yaw_deg = 0.0;
+    q_ulisse_pos_.setLatitude(44.392);
+    q_ulisse_pos_.setLongitude(8.945);
+    q_ulisse_yaw_deg_ = 0.0;
 
-    q_goal_pos = q_ulisse_pos;
+    q_goal_pos_ = q_ulisse_pos_;
 
     goalFlagObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("goalFlag");
     if (!goalFlagObj_) {
         qDebug() << "goalFlagObj_ Object NOT found!";
     }
-    qDebug() << "INITIAL POS: LatLong = " << q_ulisse_pos << "- Compass = " << q_ulisse_yaw_deg;
+    qDebug() << "INITIAL POS: LatLong = " << q_ulisse_pos_ << "- Compass = " << q_ulisse_yaw_deg_;
 
-    poscxt_sub_ = np_->create_subscription<ulisse_msgs::msg::PositionContext>(
-        ulisse_msgs::topicnames::position_context, std::bind(&FeedbackUpdater::PositionContext_cb, this, _1));
+    status_cxt_sub_ = np_->create_subscription<ulisse_msgs::msg::StatusContext>(
+        ulisse_msgs::topicnames::status_context, std::bind(&FeedbackUpdater::StatusContextCB, this, _1));
+    goal_cxt_sub_ = np_->create_subscription<ulisse_msgs::msg::GoalContext>(
+        ulisse_msgs::topicnames::goal_context, std::bind(&FeedbackUpdater::GoalContextCB, this, _1));
+    control_cxt_sub_ = np_->create_subscription<ulisse_msgs::msg::ControlContext>(
+        ulisse_msgs::topicnames::control_context, std::bind(&FeedbackUpdater::ControlContextCB, this, _1));
 }
 
-void FeedbackUpdater::PositionContext_cb(const ulisse_msgs::msg::PositionContext::SharedPtr msg)
+void FeedbackUpdater::SetNodeHandle(const rclcpp::Node::SharedPtr& np)
 {
-    position_cxt_ = *msg;
-    q_ulisse_pos.setLatitude(position_cxt_.filtered_pos.latitude);
-    q_ulisse_pos.setLongitude(position_cxt_.filtered_pos.longitude);
-    q_ulisse_yaw_deg = position_cxt_.current_heading * 180 / M_PI;
+    np_ = np;
+}
 
-    q_goal_pos.setLatitude(position_cxt_.current_goal.latitude);
-    q_goal_pos.setLongitude(position_cxt_.current_goal.longitude);
+void FeedbackUpdater::GoalContextCB(const ulisse_msgs::msg::GoalContext::SharedPtr msg)
+{
+    goal_cxt_msg_ = *msg;
+
+    q_goal_pos_.setLatitude(goal_cxt_msg_.current_goal.latitude);
+    q_goal_pos_.setLongitude(goal_cxt_msg_.current_goal.longitude);
+}
+
+void FeedbackUpdater::ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg)
+{
+    control_cxt_msg_ = *msg;
+}
+
+void FeedbackUpdater::StatusContextCB(const ulisse_msgs::msg::StatusContext::SharedPtr msg)
+{
+    status_cxt_msg_ = *msg;
+
+    q_ulisse_pos_.setLatitude(status_cxt_msg_.vehicle_pos.latitude);
+    q_ulisse_pos_.setLongitude(status_cxt_msg_.vehicle_pos.longitude);
+    q_ulisse_yaw_deg_ = status_cxt_msg_.vehicle_heading * 180 / M_PI;
 
     goalFlagObj_->setProperty("opacity", 1.0);
 }
@@ -78,17 +98,17 @@ void FeedbackUpdater::copyToClipboard(QString newText)
 
 QGeoCoordinate FeedbackUpdater::get_ulisse_pos()
 {
-    return q_ulisse_pos;
+    return q_ulisse_pos_;
 }
 
 QGeoCoordinate FeedbackUpdater::get_goal_pos()
 {
-    return q_goal_pos;
+    return q_goal_pos_;
 }
 
 double FeedbackUpdater::get_ulisse_yaw()
 {
-    return q_ulisse_yaw_deg;
+    return q_ulisse_yaw_deg_;
 }
 
 void FeedbackUpdater::process_callbacks_Slot()
@@ -98,11 +118,6 @@ void FeedbackUpdater::process_callbacks_Slot()
     //qDebug() << "Ulisse Pos: " << q_ulisse_pos << " - Compass: " << q_ulisse_yaw_deg;
 
     emit callbacks_processed();
-}
-
-void FeedbackUpdater::SetNodeHandle(const rclcpp::Node::SharedPtr& np)
-{
-    np_ = np;
 }
 
 QVector<double> FeedbackUpdater::generateRandFloatVector(int size)

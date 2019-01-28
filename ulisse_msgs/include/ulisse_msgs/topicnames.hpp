@@ -26,9 +26,10 @@ namespace topicnames {
     const std::string nav_filter_data = "/nav_filter_data";
 
     const std::string motorref = "motor/ctrlref";
-    const std::string vehicle_ctrl_state = "/vehicle/ctrl_state";
+    //const std::string vehicle_ctrl_state = "/vehicle/ctrl_state";
     const std::string control_context = "/vehicle/ctrl_context";
-    const std::string position_context = "/vehicle/pos_context";
+    const std::string status_context = "/vehicle/status_context";
+    const std::string goal_context = "/vehicle/pos_context";
 
     const std::string command_halt = "/command/halt";
     const std::string command_move = "/command/move";

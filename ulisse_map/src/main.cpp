@@ -9,19 +9,13 @@
 #include <QQmlProperty>
 #include <QSettings>
 
+#include "commandwrapper.h"
 #include "feedbackupdater.h"
 #include "rclcpp/rclcpp.hpp"
 
 int main(int argc, char* argv[])
 {
     char name[] = { "Ulisse Control GUI" };
-    //    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    //    QGuiApplication app(argc, argv);
-    //    QQmlApplicationEngine engine;
-    //    engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
-    //    if (engine.rootObjects().isEmpty())
-    //        return -1;
-    //    return app.exec();
 
     rclcpp::init(argc, argv);
     auto node = rclcpp::Node::make_shared("ulisse_map_node");
@@ -36,7 +30,6 @@ int main(int argc, char* argv[])
     QIcon icon(":/images/ulisse_icon-48.png");
     app.setWindowIcon(icon);
 
-
     QQmlApplicationEngine appEngine;
 
     /**
@@ -44,9 +37,11 @@ int main(int argc, char* argv[])
      * (using the ScopedPointer we are sure they get destroyed when they go out of scope)
      */
     QScopedPointer<FeedbackUpdater> fbkUpdater(new FeedbackUpdater);
+    QScopedPointer<CommandWrapper> cmdWrapper(new CommandWrapper);
     fbkUpdater->SetNodeHandle(node);
+    cmdWrapper->SetNodeHandle(node);
     appEngine.rootContext()->setContextProperty("fbkUpdater", fbkUpdater.data());
-
+    appEngine.rootContext()->setContextProperty("cmdWrapper", cmdWrapper.data());
 
     appEngine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 
@@ -56,6 +51,7 @@ int main(int argc, char* argv[])
       * called inside C++ such as ->findChild() will not find anything.
       */
     fbkUpdater.data()->Init(&appEngine);
+    cmdWrapper.data()->Init(&appEngine);
 
     if (appEngine.rootObjects().isEmpty())
         return -1;

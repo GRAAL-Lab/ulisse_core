@@ -10,5 +10,8 @@
         <file>images/flag_transp.png</file>
         <file>images/flag_green.png</file>
         <file>images/flag_checker.png</file>
+        <file>qml/Toast.qml</file>
+        <file>qml/ToastManager.qml</file>
+        <file>qml/MapView.qml</file>
     </qresource>
 </RCC>

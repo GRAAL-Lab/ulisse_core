@@ -10,12 +10,13 @@
 #include "ulisse_msgs/msg/compass.hpp"
 #include "ulisse_msgs/msg/control_context.hpp"
 #include "ulisse_msgs/msg/ees_status.hpp"
+#include "ulisse_msgs/msg/goal_context.hpp"
 #include "ulisse_msgs/msg/gps_data.hpp"
 #include "ulisse_msgs/msg/imu_data.hpp"
 #include "ulisse_msgs/msg/magnetometer.hpp"
 #include "ulisse_msgs/msg/micro_loop_count.hpp"
-#include "ulisse_msgs/msg/position_context.hpp"
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
+#include "ulisse_msgs/msg/status_context.hpp"
 
 #include "rml/RML.h"
 
@@ -42,7 +43,8 @@ class VehicleController {
     rclcpp::Subscription<ulisse_msgs::msg::EESStatus>::SharedPtr ees_status_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr nav_filter_sub_;
 
-    rclcpp::Publisher<ulisse_msgs::msg::PositionContext>::SharedPtr poscxt_pub_;
+    rclcpp::Publisher<ulisse_msgs::msg::StatusContext>::SharedPtr statuscxt_pub_;
+    rclcpp::Publisher<ulisse_msgs::msg::GoalContext>::SharedPtr goalcxt_pub_;
     rclcpp::Publisher<ulisse_msgs::msg::ControlContext>::SharedPtr ctrlcxt_pub_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr vehiclestate_pub_;
 

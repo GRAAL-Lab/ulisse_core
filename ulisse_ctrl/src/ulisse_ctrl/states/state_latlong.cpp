@@ -28,14 +28,14 @@ namespace states {
     {
         CheckRadioController();
 
-        ctb::DistanceAndAzimuthRad(statusCxt_->filterData.pos, goalCxt_->currentGoal.pos, statusCxt_->goalDistance, goalCxt_->goalHeading);
+        ctb::DistanceAndAzimuthRad(statusCxt_->filterData.pos, goalCxt_->currentGoal.pos, goalCxt_->goalDistance, goalCxt_->goalHeading);
 
-        if (statusCxt_->goalDistance < goalCxt_->currentGoal.acceptRadius) {
+        if (goalCxt_->goalDistance < goalCxt_->currentGoal.acceptRadius) {
             std::cout << "*** GOAL REACHED! ***" << std::endl;
             fsm_->ExecuteCommand(ulisse::commands::ID::halt);
         }
 
-        double goalDistance = statusCxt_->goalDistance;
+        double goalDistance = goalCxt_->goalDistance;
         if (conf_->enableSlowDownOnTurns) {
             //ctb::PIDGains newPosGains = ctrlCxt_->pidPosition.GetGains();
             double headingError = ctb::HeadingErrorRad(goalCxt_->goalHeading, statusCxt_->currentHeading);
@@ -63,7 +63,7 @@ namespace states {
         std::cout << "Current Heading: " << statusCxt_->currentHeading << std::endl;
         std::cout << "Goal Heading: " << goalCxt_->goalHeading << std::endl;
         std::cout << "Requested vel: " << requestedVel.transpose() << std::endl;
-        std::cout << "Goal Distance: " << statusCxt_->goalDistance << std::endl;
+        std::cout << "Goal Distance: " << goalCxt_->goalDistance << std::endl;
         std::cout << "Acceptance radius:" << goalCxt_->currentGoal.acceptRadius << std::endl;
         std::cout << "----------------------------------" << std::endl;
 

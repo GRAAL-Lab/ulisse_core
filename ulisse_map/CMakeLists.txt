@@ -41,6 +41,7 @@ file(GLOB SOURCE_FILES
 	
 add_library(ulissemap_lib
     src/feedbackupdater.cpp
+    src/commandwrapper.cpp
 )
 
 add_executable(${PROJECT_NAME}_node ${SOURCE_FILES} "src/qml.qrc")

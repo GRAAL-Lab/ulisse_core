@@ -30,7 +30,7 @@ controller_node:
         UsePosVelObserver: false
 
         SlowDownOnTurns:
-            enable: false
+            enable: true
             HeadingErrorMin: 10.0
             HeadingErrorMax: 25.0
             AlphaMin: 0.1
