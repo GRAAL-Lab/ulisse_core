@@ -90,6 +90,8 @@ add_executable(monitor_node src/monitor_node.cpp)
 ament_target_dependencies(monitor_node rclcpp std_msgs ulisse_msgs rml)
 target_link_libraries(monitor_node rml ulisse_ctrl_lib)
 
+ament_export_include_directories(include)
+
 ## Install
 install(TARGETS
   controller_node
@@ -104,6 +106,11 @@ install(DIRECTORY
   launch
   conf
   DESTINATION share/${PROJECT_NAME}
+)
+
+install(
+  DIRECTORY include/
+  DESTINATION include
 )
 
 ament_package()

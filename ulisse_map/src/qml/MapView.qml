@@ -12,6 +12,7 @@ import "."
 RowLayout {
 
     property var marker_coords: QtPositioning.coordinate(44.4, 8.94)
+    property bool ulisse_state_changed: false
 
     Plugin {
         id: mapPlugin
@@ -22,35 +23,91 @@ RowLayout {
          }
     }
 
-    spacing: 4
+    spacing: 0
 
     Rectangle {
         id: leftbarrect
         Layout.fillWidth: true
         Layout.fillHeight: true
-        Layout.minimumWidth: 200
+        Layout.minimumWidth: 150
         Layout.minimumHeight: 150
         Layout.preferredWidth: 100
-        Layout.maximumWidth: 250
+        Layout.maximumWidth: 210
         //Material.elevation: 6
+        color: 'lightgray'
 
         ColumnLayout {
             id: leftbarlayout
             anchors.fill: parent
-            spacing: 0
+            spacing: 4
+
+            Rectangle {
+                id: statusdatarect
+                Layout.alignment: Qt.AlignCenter
+                Layout.fillWidth: true
+
+                Layout.preferredHeight: statusdatalayout.height
+
+                ColumnLayout {
+                    id: statusdatalayout
+                    width: parent.width
+                    Layout.preferredHeight: ulisseStateLabel.height + ulissePosLabel.height
+
+                    Label {
+                        Layout.alignment: Qt.AlignVCenter
+                        padding: 5
+                        font.pointSize: 12
+                        font.weight: Font.DemiBold
+                        color: 'dimgray'
+                        text: "Status"
+                    }
+
+                    LabelledText {
+                        id: ulisseStateLabel
+                        Layout.bottomMargin: 5
+                        labelColor: '#4a93b6'
+                        label: "Ulisse State"
+                        textColor: 'lightgray'
+                        text: "%1".arg(fbkUpdater.vehicle_state)
+                        onTextChanged: {
+                            if(ulisse_state_changed){
+                                ulisseStateLabel.textColor = 'darkslategray';
+                            }
+                            ulisse_state_changed = true;
+                        }
+                    }
+
+                    LabelledText {
+                        id: ulissePosLabel
+                        Layout.bottomMargin: 5
+                        labelColor: '#4a93b6'
+                        label: "Ulisse Coordinates"
+                        textColor: 'darkslategray'
+                        text: "%1, %2".arg(fbkUpdater.ulisse_pos.latitude).arg(fbkUpdater.ulisse_pos.longitude)
+                    }
+
+                }
+            }
 
             Rectangle {
                 id: infodatarect
                 Layout.alignment: Qt.AlignCenter
                 Layout.fillWidth: true
-                //color: 'white'
                 Layout.preferredHeight: infodatalayout.height
 
                 ColumnLayout {
                     id: infodatalayout
                     width: parent.width
-                    Layout.preferredHeight: markerTextLabel.height + ulisseTextLabel.height + 20
-                    spacing: 10
+                    Layout.preferredHeight: markerTextLabel.height + goalTextLabel.height
+
+                    Label {
+                        Layout.alignment: Qt.AlignVCenter
+                        padding: 5
+                        font.pointSize: 12
+                        font.weight: Font.DemiBold
+                        color: 'dimgray'
+                        text: "Goal"
+                    }
 
                     LabelledText {
                         id: markerTextLabel
@@ -58,14 +115,6 @@ RowLayout {
                         label: "Marker Coordinates"
                         textColor: 'lightgray'
                         text: "Right click on map"
-                    }
-
-                    LabelledText {
-                        id: ulisseTextLabel
-                        labelColor: '#4a93b6'
-                        label: "Ulisse Coordinates"
-                        textColor: 'darkslategray'
-                        text: "%1, %2".arg(fbkUpdater.ulisse_pos.latitude).arg(fbkUpdater.ulisse_pos.longitude)
                     }
 
                     LabelledText {
@@ -83,7 +132,7 @@ RowLayout {
                 Layout.alignment: Qt.AlignCenter
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                color: 'lightgray'
+                color: 'transparent'
 
                 ColumnLayout {
                     id: buttonsColumn
@@ -106,17 +155,17 @@ RowLayout {
                     Button {
                         text: "Hold Position"
                         Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                        //onClicked: model.revert()
+                        onClicked: cmdWrapper.sendHoldCommand()
                     }
                     Button {
                         text: "Move To Marker"
                         Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                        //onClicked: model.submit()
+                        onClicked: cmdWrapper.sendLatLongCommand(marker_coords)
                     }
                     Button {
                         text: "Speed-Heading"
                         Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                        //onClicked: model.revert()
+                        onClicked: toast.show("Not yet implemented", 1000)
                     }
                 }
 
@@ -126,7 +175,7 @@ RowLayout {
                 Layout.alignment: Qt.AlignBottom
                 Layout.fillWidth: true
                 Layout.preferredHeight: 40
-                color: 'lightgray'
+                color: 'transparent'
                 Text {
                     anchors.centerIn: parent
                     color: 'darkslategray'

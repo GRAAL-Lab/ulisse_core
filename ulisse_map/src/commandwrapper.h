@@ -16,16 +16,18 @@
 
 #include "ulisse_msgs/topicnames.hpp"
 
-
 class CommandWrapper : public QObject {
     Q_OBJECT
     QQmlApplicationEngine* appEngine_;
+    QTimer* myTimer_;
     QObject* toastMgrObj_;
 
     rclcpp::Node::SharedPtr np_;
     rclcpp::Client<ulisse_msgs::srv::ControlCommand>::SharedPtr command_srv_;
 
     void ShowToast(const QVariant message, const QVariant duration);
+    void SendCommandRequest(ulisse_msgs::srv::ControlCommand::Request::SharedPtr req);
+    //void SetupCommandClient();
 
 public:
     explicit CommandWrapper(QObject* parent = 0);
@@ -38,6 +40,9 @@ public:
     Q_INVOKABLE bool sendHoldCommand();
     Q_INVOKABLE bool sendLatLongCommand(const QGeoCoordinate& goal);
     Q_INVOKABLE bool sendSpeedHeadingCommand(double speed, double heading);
+
+public slots:
+    //void setup_command_client_slot();
 };
 
 #endif // COMMANDWRAPPER_H

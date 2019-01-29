@@ -17,12 +17,14 @@ class FeedbackUpdater : public QObject {
     Q_OBJECT
     QQmlApplicationEngine* appEngine_;
     QTimer* myTimer_;
-    QObject *goalFlagObj_;
+    QObject* goalFlagObj_;
     Q_PROPERTY(QGeoCoordinate ulisse_pos READ get_ulisse_pos NOTIFY callbacks_processed)
     Q_PROPERTY(double ulisse_yaw_deg READ get_ulisse_yaw NOTIFY callbacks_processed)
+    Q_PROPERTY(QString vehicle_state READ get_vehicle_state NOTIFY callbacks_processed)
     Q_PROPERTY(QGeoCoordinate goal_pos READ get_goal_pos NOTIFY callbacks_processed)
 
     QGeoCoordinate q_ulisse_pos_, q_goal_pos_;
+    QString q_vehicle_state_;
     double q_ulisse_yaw_deg_;
     int feedbackUpdateInterval_;
 
@@ -35,7 +37,7 @@ class FeedbackUpdater : public QObject {
     ulisse_msgs::msg::GoalContext goal_cxt_msg_;
     ulisse_msgs::msg::ControlContext control_cxt_msg_;
 
-    QVector<double> generateRandFloatVector(int size);
+    QVector<double> GenerateRandFloatVector(int size);
 
 public:
     explicit FeedbackUpdater(QObject* parent = 0);
@@ -52,12 +54,13 @@ public:
     QGeoCoordinate get_ulisse_pos();
     QGeoCoordinate get_goal_pos();
     double get_ulisse_yaw();
+    QString get_vehicle_state();
 
 signals:
     void callbacks_processed();
 
 public slots:
-    void process_callbacks_Slot();
+    void process_callbacks_slot();
 };
 
 #endif // FEEDBACKUPDATER_H

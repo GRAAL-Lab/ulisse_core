@@ -1,7 +1,9 @@
-#include "feedbackupdater.h"
-#include "ulisse_msgs/topicnames.hpp"
 #include <QQmlContext>
 #include <iostream>
+
+#include "feedbackupdater.h"
+#include "ulisse_ctrl/fsm_defines.hpp"
+#include "ulisse_msgs/topicnames.hpp"
 
 using std::placeholders::_1;
 
@@ -39,11 +41,12 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
 
     myTimer_ = new QTimer(this);
     myTimer_->start(feedbackUpdateInterval_);
-    QObject::connect(myTimer_, SIGNAL(timeout()), this, SLOT(process_callbacks_Slot()));
+    QObject::connect(myTimer_, SIGNAL(timeout()), this, SLOT(process_callbacks_slot()));
 
     q_ulisse_pos_.setLatitude(44.392);
     q_ulisse_pos_.setLongitude(8.945);
     q_ulisse_yaw_deg_ = 0.0;
+    q_vehicle_state_ = "undefined";
 
     q_goal_pos_ = q_ulisse_pos_;
 
@@ -86,8 +89,16 @@ void FeedbackUpdater::StatusContextCB(const ulisse_msgs::msg::StatusContext::Sha
     q_ulisse_pos_.setLatitude(status_cxt_msg_.vehicle_pos.latitude);
     q_ulisse_pos_.setLongitude(status_cxt_msg_.vehicle_pos.longitude);
     q_ulisse_yaw_deg_ = status_cxt_msg_.vehicle_heading * 180 / M_PI;
+    q_vehicle_state_ = status_cxt_msg_.vehicle_state.c_str();
 
-    goalFlagObj_->setProperty("opacity", 1.0);
+    //qDebug() << "State: " << q_vehicle_state_ << ", " << status_cxt_msg_.vehicle_state.c_str();
+
+    if (q_vehicle_state_.toStdString() == ulisse::states::ID::latlong
+        || q_vehicle_state_.toStdString() == ulisse::states::ID::hold) {
+        goalFlagObj_->setProperty("opacity", 1.0);
+    } else {
+        goalFlagObj_->setProperty("opacity", 0.0);
+    }
 }
 
 void FeedbackUpdater::copyToClipboard(QString newText)
@@ -111,16 +122,19 @@ double FeedbackUpdater::get_ulisse_yaw()
     return q_ulisse_yaw_deg_;
 }
 
-void FeedbackUpdater::process_callbacks_Slot()
+QString FeedbackUpdater::get_vehicle_state()
+{
+    return q_vehicle_state_;
+}
+
+void FeedbackUpdater::process_callbacks_slot()
 {
     rclcpp::spin_some(np_);
-
-    //qDebug() << "Ulisse Pos: " << q_ulisse_pos << " - Compass: " << q_ulisse_yaw_deg;
 
     emit callbacks_processed();
 }
 
-QVector<double> FeedbackUpdater::generateRandFloatVector(int size)
+QVector<double> FeedbackUpdater::GenerateRandFloatVector(int size)
 {
     QVector<double> randVect(size);
 

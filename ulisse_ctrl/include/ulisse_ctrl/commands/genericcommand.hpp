@@ -4,6 +4,7 @@
 #include <rclcpp/logger.hpp>
 #include <fsm/fsm.h>
 #include "ulisse_ctrl/fsm_defines.hpp"
+#include "ulisse_ctrl/ctrl_data_structs.hpp"
 
 
 namespace ulisse {
