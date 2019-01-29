@@ -11,20 +11,21 @@ import QtQuick.Controls.Styles 1.4
 import "./qml"
 
 ApplicationWindow {
+    id: window
     width: 800
-    height: 600
+    height: 640
     visible: true
 
     minimumHeight: 200
     minimumWidth: 300
 
     Material.theme: Material.Light
-    Material.accent: Material.Orange
+    Material.accent: Material.Cyan
 
     /* Halting catamaran when space is pressed */
     Shortcut {
         sequence: " "
-        //onActivated: /** Insert function **/
+        onActivated: cmdWrapper.sendHaltCommand()
     }
 
     Settings {
@@ -32,11 +33,48 @@ ApplicationWindow {
         property string style: "Material"
     }
 
+    header: CustomHeader {
+        id: headerBar
+    }
 
-
-    MapView {
-        id: mapview
+    Item{
+        // This Item is needed to add margins to the StackLayout and make it correctly resize
+        id: stackViewContainer
+        //anchors.margins: 10
         anchors.fill: parent
+        anchors.horizontalCenter: parent.horizontalCenter;
+        height: window.height - headerBar.height// - customFoot.height
+        width: window.width
+
+        StackLayout {
+            id: mainStackView
+            height: parent.height
+            anchors.fill: parent
+            currentIndex: headerBar.tabBarIndex
+            Layout.alignment: Qt.AlignHCenter
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+
+            MapView {
+                id: mapview
+                anchors.fill: parent
+            }
+
+            Rectangle {
+                anchors.fill: parent
+
+
+                LabelledText {
+                    id: dataTextLabel
+                    labelColor: 'tomato'
+                    label: "All the interesting data"
+                    textColor: 'gray'
+                    text: "Coming Soon"
+                    anchors.centerIn: parent
+                    width: parent.width
+                }
+            }
+        }
     }
 
     ToastManager {

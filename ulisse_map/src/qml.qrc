@@ -13,5 +13,7 @@
         <file>qml/Toast.qml</file>
         <file>qml/ToastManager.qml</file>
         <file>qml/MapView.qml</file>
+        <file>qml/CustomHeader.qml</file>
+        <file>images/menu.png</file>
     </qresource>
 </RCC>
