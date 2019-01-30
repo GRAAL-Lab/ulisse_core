@@ -15,7 +15,7 @@ ToolBar {
 
     Material.foreground: Material.color(Material.Grey,Material.Shade300)//"white"
     Material.accent: "white"//Material.color(Material.BlueGrey,Material.Shade900)
-    Material.background: Material.color(Material.Teal,Material.Shade600)
+    Material.background: Material.color(Material.Red,Material.Shade400)
 
     Layout.alignment: Qt.AlignLeft
 
@@ -41,7 +41,7 @@ ToolBar {
 
     TabBar {
         id: headerBar
-        anchors.left: robotLogo.right
+        anchors.left: parent.left//robotLogo.right
         width: parent.width - toolButton.width
         TabButton {
             text: qsTr("Map")

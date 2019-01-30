@@ -10,7 +10,7 @@ ColumnLayout {
 
     //id: markerTextColumn
     width: parent.width
-    Layout.preferredHeight: title.contentHeight + data.contentHeight + 10
+    Layout.preferredHeight: title.contentHeight + data.contentHeight + 5
     spacing: 0
 
     Label {

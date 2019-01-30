@@ -37,10 +37,8 @@ namespace states {
 
         double goalDistance = goalCxt_->goalDistance;
         if (conf_->enableSlowDownOnTurns) {
-            //ctb::PIDGains newPosGains = ctrlCxt_->pidPosition.GetGains();
             double headingError = ctb::HeadingErrorRad(goalCxt_->goalHeading, statusCxt_->currentHeading);
             goalDistance = SlowDownWhenTurning(headingError, goalDistance, *conf_);
-            //ctrlCxt_->pidPosition.SetGains(newPosGains);
         }
 
         ctrlCxt_->thrusterData.desiredSpeed = -ctrlCxt_->pidPosition.Compute(0.0, goalDistance);

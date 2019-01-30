@@ -56,7 +56,7 @@ class VehicleController {
 
     states::StateHalt state_halt_;
     states::StateHold state_hold_;
-    states::StateLatLong state_move_;
+    states::StateLatLong state_latlong_;
     states::StateSpeedHeading state_speedheading_;
 
     commands::CommandHalt command_halt_;

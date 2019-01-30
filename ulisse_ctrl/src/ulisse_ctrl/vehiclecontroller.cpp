@@ -66,7 +66,7 @@ int VehicleController::LoadConfiguration()
     conf_->slowOnTurns.headingErrorMin = par_client_->get_parameter("SlowDownOnTurns.HeadingErrorMin", 0.0);
     conf_->slowOnTurns.headingErrorMax = par_client_->get_parameter("SlowDownOnTurns.HeadingErrorMax", 0.0);
     conf_->slowOnTurns.alphaMin = par_client_->get_parameter("SlowDownOnTurns.AlphaMin", 0.0);
-    conf_->slowOnTurns.alphaMin = par_client_->get_parameter("SlowDownOnTurns.AlphaMax", 0.0);
+    conf_->slowOnTurns.alphaMax = par_client_->get_parameter("SlowDownOnTurns.AlphaMax", 0.0);
 
     // Avoid Rotations
 
@@ -158,11 +158,11 @@ void VehicleController::SetUpFSM()
     state_hold_.SetCtrlContext(ctrlCxt_);
     state_hold_.SetConf(conf_);
 
-    state_move_.SetFSM(&u_fsm_);
-    state_move_.SetStatusContext(statusCxt_);
-    state_move_.SetGoalContext(goalCxt_);
-    state_move_.SetCtrlContext(ctrlCxt_);
-    state_move_.SetConf(conf_);
+    state_latlong_.SetFSM(&u_fsm_);
+    state_latlong_.SetStatusContext(statusCxt_);
+    state_latlong_.SetGoalContext(goalCxt_);
+    state_latlong_.SetCtrlContext(ctrlCxt_);
+    state_latlong_.SetConf(conf_);
 
     state_speedheading_.SetFSM(&u_fsm_);
     state_speedheading_.SetStatusContext(statusCxt_);
@@ -179,7 +179,7 @@ void VehicleController::SetUpFSM()
     // ADD STATES
     u_fsm_.AddState(ulisse::states::ID::halt, &state_halt_);
     u_fsm_.AddState(ulisse::states::ID::hold, &state_hold_);
-    u_fsm_.AddState(ulisse::states::ID::latlong, &state_move_);
+    u_fsm_.AddState(ulisse::states::ID::latlong, &state_latlong_);
     u_fsm_.AddState(ulisse::states::ID::speedheading, &state_speedheading_);
 
     // ADD EVENTS
@@ -294,8 +294,11 @@ void VehicleController::EESStatus_cb(const ulisse_msgs::msg::EESStatus::SharedPt
 
 void VehicleController::Run()
 {
+    std::cout << "SwitchState" << std::endl;
     u_fsm_.SwitchState();
+    std::cout << "ProcessEventQueue" << std::endl;
     u_fsm_.ProcessEventQueue();
+    std::cout << "ExecuteState" << std::endl;
     u_fsm_.ExecuteState();
 }
 

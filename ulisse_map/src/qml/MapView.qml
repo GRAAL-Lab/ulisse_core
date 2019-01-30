@@ -13,7 +13,7 @@ RowLayout {
 
     property var marker_coords: QtPositioning.coordinate(44.4, 8.94)
     property bool ulisse_state_changed: false
-    property real elevation: 6
+    property real myElevation: 6
     property real panesMargin: 14
 
     Plugin {
@@ -33,8 +33,8 @@ RowLayout {
         Layout.fillHeight: true
         Layout.minimumWidth: 180
         Layout.minimumHeight: 150
-        Layout.preferredWidth: 100
-        Layout.maximumWidth: 210
+        Layout.preferredWidth: 230
+        Layout.maximumWidth: 230
         Layout.topMargin: 5
         color: 'white'
 
@@ -48,7 +48,7 @@ RowLayout {
                 id: statusdatarect
                 Layout.alignment: Qt.AlignCenter
                 Layout.preferredWidth: parent.width - panesMargin
-                Material.elevation: elevation
+                Material.elevation: myElevation
 
                 ColumnLayout {
                     id: statusdatalayout
@@ -66,7 +66,6 @@ RowLayout {
 
                     LabelledText {
                         id: ulisseStateLabel
-                        //Layout.bottomMargin: 5
                         labelColor: '#4a93b6'
                         label: "Ulisse State"
                         textColor: 'lightgray'
@@ -95,8 +94,7 @@ RowLayout {
                 id: goaldatarect
                 Layout.alignment: Qt.AlignCenter
                 Layout.preferredWidth: parent.width - panesMargin
-                //Layout.preferredHeight: goaldatalayout.height
-                Material.elevation: elevation
+                Material.elevation: myElevation
 
                 ColumnLayout {
                     id: goaldatalayout
@@ -127,7 +125,7 @@ RowLayout {
                 Layout.alignment: Qt.AlignCenter
                 Layout.preferredWidth: parent.width - panesMargin
                 //Layout.preferredHeight: infodatalayout.height
-                Material.elevation: elevation
+                Material.elevation: myElevation
 
                 ColumnLayout {
                     id: infodatalayout
@@ -144,17 +142,34 @@ RowLayout {
                 }
             }
 
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.minimumHeight: 14
+                color: 'transparent'
+                Text {
+                    //anchors.centerIn: parent
+                    width: parent.width
+                    font.pointSize: 8
+                    color: 'darkslategray'
+                    text: "(Right click to set marker)"
+                    horizontalAlignment: Text.AlignHCenter
+                }
+            }
+
             Pane {
                 id: commandRect
                 Layout.alignment: Qt.AlignCenter
                 Layout.preferredWidth: parent.width - panesMargin
-                //Layout.preferredHeight: statusdatalayout.height
-                Material.elevation: elevation
+                //Layout.preferredHeight: buttonsColumn.height
+                Layout.bottomMargin: 10
+                Material.elevation: myElevation
 
                 ColumnLayout {
                     id: buttonsColumn
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.horizontalCenter: parent.horizontalCenter
+                    width: parent.width
                     spacing: 0
 
                     Label {
@@ -166,48 +181,54 @@ RowLayout {
                         text: "Commands"
                     }
 
+
                     Button {
                         text: "Halt"
-                        Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                        //Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                         onClicked: cmdWrapper.sendHaltCommand()
                     }
-                    Button {
-                        text: "Hold Position"
-                        Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                        onClicked: cmdWrapper.sendHoldCommand()
+                    Row {
+                        Button {
+                            id: holdButton
+                            text: "Hold Position"
+                            //Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                            onClicked: cmdWrapper.sendHoldCommand()
+                        }
+
+                        Rectangle {
+                           width: buttonsColumn.width - holdButton.width - holdRadiusText.width
+                           height: parent.height
+                           color: red
+                        }
+
+                        TextArea {
+                            id: holdRadiusText
+                            font.pointSize: 10
+                            width: 40
+                            placeholderText: "Radius"
+                        }
+
                     }
+
                     Button {
                         text: "Move To Marker"
-                        Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                        //Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                         onClicked: cmdWrapper.sendLatLongCommand(marker_coords)
                     }
                     Button {
                         text: "Speed-Heading"
-                        Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                        //Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                         onClicked: toast.show("Not yet implemented", 1000)
                     }
                 }
 
             }
 
-            Rectangle {
-                Layout.alignment: Qt.AlignBottom
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                color: 'transparent'
-                Text {
-                    //anchors.centerIn: parent
-                    width: parent.width
-                    font.pointSize: 8
-                    color: 'darkslategray'
-                    text: "(Right click to set marker)"
-                    horizontalAlignment: Text.AlignHCenter
-                }
-            }
+
         }
     }
 
-    Rectangle {
+    Column {
         Layout.fillWidth: true
         Layout.fillHeight: true
         Layout.minimumWidth: 300
@@ -216,7 +237,8 @@ RowLayout {
 
         Map {
             id: map
-            anchors.fill: parent
+            width: parent.width
+            height: parent.height - bottomToolbar.height
             plugin: mapPlugin
             center: QtPositioning.coordinate(44.393, 8.945) // Genoa
             zoomLevel: 14
@@ -240,8 +262,8 @@ RowLayout {
                 sourceItem: Image{
                     id: ulisseImage
                     width: 38; height: 38
-                    source: 'qrc:/images/catamaran_icon_64.png'
-                    transform: Rotation { origin.x: 16; origin.y: 16; angle: fbkUpdater.ulisse_yaw_deg }
+                    source: 'qrc:/images/catamaran_icon_64_sat.png'
+                    transform: Rotation { origin.x: ulisseImage.width / 2 ; origin.y: ulisseImage.height / 2; angle: fbkUpdater.ulisse_yaw_deg }
                 }
                 coordinate: QtPositioning.coordinate(fbkUpdater.ulisse_pos.latitude, fbkUpdater.ulisse_pos.longitude)
                 anchorPoint.x: ulisseImage.width / 2
@@ -253,13 +275,42 @@ RowLayout {
                 objectName: "goalFlag"
                 sourceItem: Image{
                     id: flagCheckerImage
-                    width: 38; height: 38
+                    width: 72; height: 72
                     source: 'qrc:/images/flag_checker.png'
                 }
                 coordinate: QtPositioning.coordinate(fbkUpdater.goal_pos.latitude, fbkUpdater.goal_pos.longitude)
-                anchorPoint.x: flagCheckerImage.width / 4 - 2
-                anchorPoint.y: flagCheckerImage.height - 5
+                anchorPoint.x: flagCheckerImage.width / 2
+                anchorPoint.y: flagCheckerImage.height / 2
                 opacity: 0.0
+            }
+
+
+            MapPolyline {
+                id: ulissePath
+                line.width: 2
+                line.color: 'forestgreen'
+                property bool firstRun: true
+
+                Timer {
+                    interval: 500; running: true; repeat: true
+
+                    onTriggered: {
+                        if (ulissePath.firstRun) {
+                            ulissePath.addCoordinate(fbkUpdater.ulisse_pos)
+                            ulissePath.firstRun = false;
+                        }
+
+                        var lastCoord = ulissePath.coordinateAt(ulissePath.pathLength() - 1);
+                        var distToNext = lastCoord.distanceTo(fbkUpdater.ulisse_pos);
+                        //toast.show("Distance %1".arg(distToNext));
+                        if (distToNext > 0.5){
+                            ulissePath.addCoordinate(fbkUpdater.ulisse_pos)
+                            if(ulissePath.pathLength() > 500) {
+                                ulissePath.removeCoordinate(0);
+                            }
+                        }
+                    }
+                }
             }
 
             MouseArea {
@@ -275,6 +326,29 @@ RowLayout {
                          markerTextLabel.text = "%1, %2".arg(marker_coords.latitude).arg(marker_coords.longitude)
                          markerTextLabel.textColor = 'darkslategray'
                      }
+                }
+            }
+        }
+
+        Rectangle {
+
+            id: bottomToolbar
+            width: parent.width
+            height: clearPathButton.height;
+            color: 'gainsboro'
+
+            Button {
+                id:clearPathButton
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+                anchors.rightMargin: 5
+                text: "Clear path"
+                highlighted: true
+                Material.accent: Material.Cyan
+
+                onClicked: {
+                    ulissePath.path = [];
+                    ulissePath.firstRun = true;
                 }
             }
         }

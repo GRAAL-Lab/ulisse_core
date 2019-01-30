@@ -40,7 +40,6 @@ ApplicationWindow {
     Item{
         // This Item is needed to add margins to the StackLayout and make it correctly resize
         id: stackViewContainer
-        //anchors.margins: 10
         anchors.fill: parent
         anchors.horizontalCenter: parent.horizontalCenter;
         height: window.height - headerBar.height// - customFoot.height
@@ -61,17 +60,22 @@ ApplicationWindow {
             }
 
             Rectangle {
-                anchors.fill: parent
+                //color: "#cfcccc"
+                Layout.alignment: Qt.AlignCenter
 
+                Item {
+                    //anchors.centerIn: parent
+                    //width: parent.width
+                    Layout.alignment: Qt.AlignCenter
 
-                LabelledText {
-                    id: dataTextLabel
-                    labelColor: 'tomato'
-                    label: "All the interesting data"
-                    textColor: 'gray'
-                    text: "Coming Soon"
-                    anchors.centerIn: parent
-                    width: parent.width
+                    LabelledText {
+                        id: dataTextLabel
+                        labelColor: 'tomato'
+                        label: "All the interesting data"
+                        textColor: 'gray'
+                        text: "Coming Soon"
+
+                    }
                 }
             }
         }
