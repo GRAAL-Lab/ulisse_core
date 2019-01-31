@@ -7,6 +7,7 @@ ColumnLayout {
     property alias labelColor: title.color
     property alias text: data.text
     property alias textColor: data.color
+    property alias textBoldness: data.font.weight
 
     //id: markerTextColumn
     width: parent.width
@@ -18,7 +19,7 @@ ColumnLayout {
         width: parent.width
         color: 'cadetblue'
         leftPadding: 5.0
-        bottomPadding: -5
+        bottomPadding: -4
         font.pointSize: 9
         font.weight: Font.DemiBold
         //text: "Coordinates"
@@ -29,7 +30,7 @@ ColumnLayout {
         width: parent.width
         color: 'lightgray'
         leftPadding: 5.0
-        font.pointSize: 11
+        font.pointSize: 10.5
 
         MouseArea{
             anchors.fill: parent

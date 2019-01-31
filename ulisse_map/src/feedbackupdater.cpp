@@ -47,6 +47,7 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
     q_ulisse_pos_.setLongitude(8.945);
     q_ulisse_yaw_deg_ = 0.0;
     q_vehicle_state_ = "undefined";
+    q_goal_distance_ = 0.0;
 
     q_goal_pos_ = q_ulisse_pos_;
 
@@ -75,6 +76,7 @@ void FeedbackUpdater::GoalContextCB(const ulisse_msgs::msg::GoalContext::SharedP
 
     q_goal_pos_.setLatitude(goal_cxt_msg_.current_goal.latitude);
     q_goal_pos_.setLongitude(goal_cxt_msg_.current_goal.longitude);
+    q_goal_distance_ = goal_cxt_msg_.goal_distance;
 }
 
 void FeedbackUpdater::ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg)
@@ -97,7 +99,8 @@ void FeedbackUpdater::StatusContextCB(const ulisse_msgs::msg::StatusContext::Sha
         || q_vehicle_state_.toStdString() == ulisse::states::ID::hold) {
         goalFlagObj_->setProperty("opacity", 1.0);
     } else {
-        goalFlagObj_->setProperty("opacity", 0.0);
+        goalFlagObj_->setProperty("opacity", 0.3);
+
     }
 }
 
@@ -125,6 +128,11 @@ double FeedbackUpdater::get_ulisse_yaw()
 QString FeedbackUpdater::get_vehicle_state()
 {
     return q_vehicle_state_;
+}
+
+double FeedbackUpdater::get_goal_distance()
+{
+    return q_goal_distance_;
 }
 
 void FeedbackUpdater::process_callbacks_slot()

@@ -119,7 +119,7 @@ bool CommandWrapper::sendSpeedHeadingCommand(double speed, double heading)
     auto serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
     serviceReq->command_type = ulisse::commands::ID::speedheading;
     serviceReq->sh_cmd.speed = speed;
-    serviceReq->sh_cmd.heading = heading;
+    serviceReq->sh_cmd.heading = heading * M_PI / 180.0;  // Converting to radians
     SendCommandRequest(serviceReq);
     return true;
 }

@@ -16,13 +16,15 @@ RowLayout {
     property real myElevation: 6
     property real panesMargin: 14
 
+    Material.background: 'white'
+
     Plugin {
         id: mapPlugin
         name: "osm"
-         PluginParameter {
-             name: "osm.mapping.offline.directory"
-             value: "/home/graal/.cache/QtLocation/5.8/tiles/osm/"
-         }
+        PluginParameter {
+            name: "osm.mapping.offline.directory"
+            value: "/home/graal/.cache/QtLocation/5.8/tiles/osm/"
+        }
     }
 
     ModalPopup {
@@ -33,18 +35,17 @@ RowLayout {
 
     ModalPopup {
         id: speedHeadingDialog
-        dialogTitle: "Insert both speed (mt) and heading (deg)"
+        dialogTitle: "Insert both speed (m/s) and heading (deg)"
     }
 
 
     Rectangle {
         id: leftbarrect
-        Layout.fillWidth: true
+        //Layout.fillWidth: true
         Layout.fillHeight: true
-        Layout.minimumWidth: 180
         Layout.minimumHeight: 150
-        Layout.preferredWidth: 230
-        Layout.maximumWidth: 230
+        Layout.preferredWidth: 236
+        Layout.maximumWidth: 235
         Layout.topMargin: 5
         color: 'white'
 
@@ -58,7 +59,7 @@ RowLayout {
                 id: statusdatarect
                 Layout.alignment: Qt.AlignCenter
                 Layout.preferredWidth: parent.width - panesMargin
-                Material.elevation: myElevation
+                Material.elevation: myElevation  * 0
 
                 ColumnLayout {
                     id: statusdatalayout
@@ -76,10 +77,11 @@ RowLayout {
 
                     LabelledText {
                         id: ulisseStateLabel
-                        labelColor: '#4a93b6'
+                        labelColor: Material.color(mainColor, Material.Shade700)
                         label: "Ulisse State"
                         textColor: 'lightgray'
                         text: "%1".arg(fbkUpdater.vehicle_state)
+                        textBoldness: Font.DemiBold
                         onTextChanged: {
                             if(ulisse_state_changed){
                                 ulisseStateLabel.textColor = 'darkslategray';
@@ -90,8 +92,7 @@ RowLayout {
 
                     LabelledText {
                         id: ulissePosLabel
-                        //Layout.bottomMargin: 5
-                        labelColor: '#4a93b6'
+                        labelColor: Material.color(mainColor, Material.Shade700)
                         label: "Ulisse Coordinates"
                         textColor: 'darkslategray'
                         text: "%1, %2".arg(fbkUpdater.ulisse_pos.latitude).arg(fbkUpdater.ulisse_pos.longitude)
@@ -104,7 +105,7 @@ RowLayout {
                 id: goaldatarect
                 Layout.alignment: Qt.AlignCenter
                 Layout.preferredWidth: parent.width - panesMargin
-                Material.elevation: myElevation
+                Material.elevation: myElevation  * 0
 
                 ColumnLayout {
                     id: goaldatalayout
@@ -122,10 +123,19 @@ RowLayout {
 
                     LabelledText {
                         id: goalTextLabel
-                        labelColor: '#222222'
+                        labelColor: Material.color(mainColor, Material.Shade700)
                         label: "Goal Coordinates"
                         textColor: 'darkslategray'
                         text: "%1, %2".arg(fbkUpdater.goal_pos.latitude).arg(fbkUpdater.goal_pos.longitude)
+                    }
+
+                    LabelledText {
+                        id: goalDistLabel
+                        labelColor: Material.color(mainColor, Material.Shade700)
+                        label: "Distance to Target"
+                        textColor: 'darkslategray'
+                        text: "%1 (m)".arg(fbkUpdater.goal_distance)
+
                     }
                 }
             }
@@ -135,7 +145,7 @@ RowLayout {
                 Layout.alignment: Qt.AlignCenter
                 Layout.preferredWidth: parent.width - panesMargin
                 //Layout.preferredHeight: infodatalayout.height
-                Material.elevation: myElevation
+                Material.elevation: myElevation * 0
 
                 ColumnLayout {
                     id: infodatalayout
@@ -144,7 +154,7 @@ RowLayout {
 
                     LabelledText {
                         id: markerTextLabel
-                        labelColor: 'tomato'
+                        labelColor: Material.color(Material.Red, Material.Shade800)
                         label: "Marker Coordinates"
                         textColor: 'lightgray'
                         text: "Right click on map"
@@ -169,8 +179,12 @@ RowLayout {
 
 
             CommandPane {
-
-
+                id: commandRect
+                Layout.alignment: Qt.AlignCenter
+                Layout.preferredWidth: parent.width - panesMargin
+                Layout.bottomMargin: 10
+                Material.elevation: myElevation
+                //Material.background: Material.color(Material.BlueGrey, Material.Shade50)
             }
 
 
@@ -185,12 +199,40 @@ RowLayout {
         Layout.preferredHeight: 500
 
         Map {
+
+
             id: map
             width: parent.width
             height: parent.height - bottomToolbar.height
             plugin: mapPlugin
             center: QtPositioning.coordinate(44.393, 8.945) // Genoa
-            zoomLevel: 14
+
+            zoomLevel: 14//(maximumZoomLevel - minimumZoomLevel)/2
+
+
+            Ruler{
+                id: ruler
+                anchors.fill: parent
+            }
+
+            onCenterChanged:{
+                ruler.rulerTimer.restart()
+                /*if (map.followme)
+                    if (map.center !== positionSource.position.coordinate) map.followme = false*/
+            }
+
+            onZoomLevelChanged:{
+                ruler.rulerTimer.restart()
+                //if (map.followme) map.center = positionSource.position.coordinate
+            }
+
+            onWidthChanged:{
+                ruler.rulerTimer.restart()
+            }
+
+            onHeightChanged:{
+                ruler.rulerTimer.restart()
+            }
 
             MapQuickItem {
                 id:markerIcon
@@ -236,8 +278,8 @@ RowLayout {
 
             MapPolyline {
                 id: ulissePath
-                line.width: 2
-                line.color: 'forestgreen'
+                line.width: 1
+                line.color: Material.color(Material.Amber, Material.Shade300)
                 property bool firstRun: true
 
                 Timer {
@@ -266,15 +308,15 @@ RowLayout {
                 anchors.fill: parent
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
                 onClicked: {
-                     if(mouse.button & Qt.RightButton) {
-                         marker_coords = map.toCoordinate(Qt.point(mouse.x,mouse.y))
+                    if(mouse.button & Qt.RightButton) {
+                        marker_coords = map.toCoordinate(Qt.point(mouse.x,mouse.y))
 
-                         markerIcon.opacity = 1.0
-                         markerIcon.coordinate = map.toCoordinate(Qt.point(mouse.x,mouse.y))
+                        markerIcon.opacity = 1.0
+                        markerIcon.coordinate = map.toCoordinate(Qt.point(mouse.x,mouse.y))
 
-                         markerTextLabel.text = "%1, %2".arg(marker_coords.latitude).arg(marker_coords.longitude)
-                         markerTextLabel.textColor = 'darkslategray'
-                     }
+                        markerTextLabel.text = "%1, %2".arg(marker_coords.latitude).arg(marker_coords.longitude)
+                        markerTextLabel.textColor = 'darkslategray'
+                    }
                 }
             }
         }

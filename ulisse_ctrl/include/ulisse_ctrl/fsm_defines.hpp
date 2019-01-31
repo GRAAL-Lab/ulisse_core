@@ -22,10 +22,10 @@ namespace states {
 
     namespace ID {
 
-        const std::string halt = "halt_state";
-        const std::string latlong = "latlong_state";
-        const std::string hold = "hold_state";
-        const std::string speedheading = "speedheading_state";
+        const std::string halt = "Halted";
+        const std::string latlong = "LatLong Move";
+        const std::string hold = "Hold Position";
+        const std::string speedheading = "Speed Heading";
     }
 }
 

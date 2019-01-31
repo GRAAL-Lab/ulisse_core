@@ -16,6 +16,7 @@ namespace states {
     {
         std::cout << "- Switched to state HALT -" << std::endl;
         goalCxt_->currentGoal.pos = statusCxt_->filterData.pos;
+        goalCxt_->goalDistance = 0.0;
         ctrlCxt_->thrusterData.ctrlRef.left = 0.0;
         ctrlCxt_->thrusterData.ctrlRef.right = 0.0;
         ctrlCxt_->thrusterData.desiredSpeed = 0.0;

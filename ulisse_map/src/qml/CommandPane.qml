@@ -5,17 +5,8 @@ import QtLocation 5.6
 import QtPositioning 5.6
 import QtQuick.Controls.Material 2.1
 import QtQuick.Controls.Styles 1.4
-//import QtQuick.Dialogs 2.0
-
 
 Pane {
-    id: commandRect
-    Layout.alignment: Qt.AlignCenter
-    Layout.preferredWidth: parent.width - panesMargin
-    //Layout.preferredHeight: buttonsColumn.height
-    Layout.bottomMargin: 10
-    Material.elevation: myElevation
-
     ColumnLayout {
         id: buttonsColumn
         anchors.verticalCenter: parent.verticalCenter
@@ -52,7 +43,6 @@ Pane {
                         acceptRadDialog.open();
                     }
                 }
-
             }
 
             Rectangle {
@@ -60,17 +50,20 @@ Pane {
                 width: buttonsColumn.width - holdButton.width - holdRadiusText.width
                 height: parent.height
                 anchors.left: holdButton.right
+                color: 'transparent'
             }
 
 
             TextField {
                 id: holdRadiusText
-                Layout.maximumWidth: 40
-                Layout.fillWidth: true
-                anchors.left: holdSpacer.right
+                Layout.preferredWidth: 45
+                Layout.minimumWidth: 45
+                Layout.maximumWidth: 45
                 font.pointSize: 10
                 placeholderText: "Radius"
                 selectByMouse: true
+
+                anchors.left: holdSpacer.right
 
                 validator: DoubleValidator {
                     bottom: 0.0;
@@ -103,19 +96,20 @@ Pane {
                 width: buttonsColumn.width - moveToMarkButton.width - moveToMarkText.width
                 height: parent.height
                 anchors.left: moveToMarkButton.right
+                color: 'transparent'
             }
 
 
             TextField {
                 id: moveToMarkText
-                Layout.maximumWidth: 40
-                Layout.fillWidth: true
-                anchors.left: moveToMarkSpacer.right
+                Layout.preferredWidth: 45
+                Layout.minimumWidth: 45
+                Layout.maximumWidth: 45
                 font.pointSize: 10
                 placeholderText: "Radius"
                 selectByMouse: true
 
-                //validator: RegExpValidator { regExp: /[0-9]{5}/ }
+                anchors.left: moveToMarkSpacer.right
                 validator: DoubleValidator {
                     bottom: 0.0;
                     top: 50.0;
@@ -134,7 +128,7 @@ Pane {
 
                 onClicked: {
                     if(speedText.text !== '' && headingText.text !== ''){
-                        cmdWrapper.sendLatLongCommand(marker_coords)
+                        cmdWrapper.sendSpeedHeadingCommand(speedText.text, headingText.text)
                     } else {
                         speedHeadingDialog.open();
                     }
@@ -147,6 +141,7 @@ Pane {
                 width: buttonsColumn.width - speedHeadButton.width - speedText.width - headingText.width
                 height: parent.height
                 anchors.left: speedHeadButton.right
+                color: 'transparent'
             }
 
 
@@ -184,5 +179,4 @@ Pane {
             }
         }
     }
-
 }

@@ -19,6 +19,7 @@ namespace states {
         ctrlCxt_->pidPosition.Reset();
         ctrlCxt_->pidHeading.Reset();
         ctrlCxt_->pidSpeed.Reset();
+        goalCxt_->goalDistance = 0.0;
 
         t_now_ = t_start_ = std::chrono::system_clock::now();
         total_elapsed_ = std::chrono::duration_cast<std::chrono::seconds>(t_now_ - t_start_);

@@ -15,7 +15,7 @@ ToolBar {
 
     Material.foreground: Material.color(Material.Grey,Material.Shade300)//"white"
     Material.accent: "white"//Material.color(Material.BlueGrey,Material.Shade900)
-    Material.background: Material.color(Material.Cyan,Material.Shade400)
+    Material.background: Material.color(mainColor,Material.Shade400)
 
     Layout.alignment: Qt.AlignLeft
 

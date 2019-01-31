@@ -19,8 +19,10 @@ ApplicationWindow {
     minimumHeight: 200
     minimumWidth: 300
 
+    property var mainColor: Material.Cyan
+
     Material.theme: Material.Light
-    Material.accent: Material.Cyan
+    Material.accent: mainColor
 
     /* Halting catamaran when space is pressed */
     Shortcut {
@@ -64,9 +66,9 @@ ApplicationWindow {
                 Layout.alignment: Qt.AlignCenter
 
                 Item {
-                    //anchors.centerIn: parent
+                    anchors.centerIn: parent
                     //width: parent.width
-                    Layout.alignment: Qt.AlignCenter
+                    Layout.alignment: Qt.AlignHCenter
 
                     LabelledText {
                         id: dataTextLabel
