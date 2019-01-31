@@ -10,7 +10,7 @@ import QtQuick.Controls.Styles 1.4
 import "."
 
 RowLayout {
-
+    spacing: 0
     property var marker_coords: QtPositioning.coordinate(44.4, 8.94)
     property bool ulisse_state_changed: false
     property real myElevation: 6
@@ -25,7 +25,17 @@ RowLayout {
          }
     }
 
-    spacing: 0
+    ModalPopup {
+        id: acceptRadDialog
+        dialogTitle: "Insert an acceptance radius"
+
+    }
+
+    ModalPopup {
+        id: speedHeadingDialog
+        dialogTitle: "Insert both speed (mt) and heading (deg)"
+    }
+
 
     Rectangle {
         id: leftbarrect
@@ -157,70 +167,9 @@ RowLayout {
                 }
             }
 
-            Pane {
-                id: commandRect
-                Layout.alignment: Qt.AlignCenter
-                Layout.preferredWidth: parent.width - panesMargin
-                //Layout.preferredHeight: buttonsColumn.height
-                Layout.bottomMargin: 10
-                Material.elevation: myElevation
 
-                ColumnLayout {
-                    id: buttonsColumn
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    width: parent.width
-                    spacing: 0
+            CommandPane {
 
-                    Label {
-                        Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                        font.pointSize: 12
-                        font.weight: Font.DemiBold
-                        bottomPadding: 10
-                        color: 'seagreen'
-                        text: "Commands"
-                    }
-
-
-                    Button {
-                        text: "Halt"
-                        //Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                        onClicked: cmdWrapper.sendHaltCommand()
-                    }
-                    Row {
-                        Button {
-                            id: holdButton
-                            text: "Hold Position"
-                            //Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                            onClicked: cmdWrapper.sendHoldCommand()
-                        }
-
-                        Rectangle {
-                           width: buttonsColumn.width - holdButton.width - holdRadiusText.width
-                           height: parent.height
-                           color: red
-                        }
-
-                        TextArea {
-                            id: holdRadiusText
-                            font.pointSize: 10
-                            width: 40
-                            placeholderText: "Radius"
-                        }
-
-                    }
-
-                    Button {
-                        text: "Move To Marker"
-                        //Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                        onClicked: cmdWrapper.sendLatLongCommand(marker_coords)
-                    }
-                    Button {
-                        text: "Speed-Heading"
-                        //Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                        onClicked: toast.show("Not yet implemented", 1000)
-                    }
-                }
 
             }
 

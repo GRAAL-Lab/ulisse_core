@@ -16,5 +16,7 @@
         <file>qml/CustomHeader.qml</file>
         <file>images/menu.png</file>
         <file>images/catamaran_icon_64_sat.png</file>
+        <file>qml/CommandPane.qml</file>
+        <file>qml/ModalPopup.qml</file>
     </qresource>
 </RCC>

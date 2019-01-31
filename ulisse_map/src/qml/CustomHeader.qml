@@ -15,29 +15,9 @@ ToolBar {
 
     Material.foreground: Material.color(Material.Grey,Material.Shade300)//"white"
     Material.accent: "white"//Material.color(Material.BlueGrey,Material.Shade900)
-    Material.background: Material.color(Material.Red,Material.Shade400)
+    Material.background: Material.color(Material.Cyan,Material.Shade400)
 
     Layout.alignment: Qt.AlignLeft
-
-    /*Item{
-        id: robotLogo
-        height: parent.height
-        width: logoImage.width+20
-        Image {
-            id: logoImage
-            anchors.centerIn: parent
-            height: parent.height*0.7
-            fillMode: Image.PreserveAspectFit
-            source: 'qrc:/images/ulisse_icon-48.png'
-            mipmap: true
-            ColorOverlay {
-                anchors.fill: logoImage
-                source: logoImage
-                color: (settings.style == "Material") ? "white" : "transparent"
-            }
-        }
-    }*/
-
 
     TabBar {
         id: headerBar
