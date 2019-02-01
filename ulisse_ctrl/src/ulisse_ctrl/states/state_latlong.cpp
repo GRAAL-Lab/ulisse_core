@@ -16,7 +16,7 @@ namespace states {
 
     fsm::retval StateLatLong::OnEntry()
     {
-        goalCxt_->currentGoal = goalCxt_->nextGoal;
+
         ctrlCxt_->pidPosition.Reset();
         ctrlCxt_->pidHeading.Reset();
         ctrlCxt_->pidSpeed.Reset();

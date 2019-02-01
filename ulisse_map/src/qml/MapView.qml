@@ -278,7 +278,20 @@ RowLayout {
                 coordinate: QtPositioning.coordinate(fbkUpdater.goal_pos.latitude, fbkUpdater.goal_pos.longitude)
                 anchorPoint.x: flagCheckerImage.width / 2
                 anchorPoint.y: flagCheckerImage.height / 2
+                z: goalAcceptRadius.z + 1
                 opacity: 0.0
+
+
+            }
+
+            MapCircle {
+                id: goalAcceptRadius
+                center: goalFlag.coordinate
+                radius: fbkUpdater.accept_radius
+                color: 'transparent'
+                border.width: 1
+                border.color: 'lightgray'
+                opacity: goalFlag.opacity == 1.0 ? goalFlag.opacity : 0.0
             }
 
 

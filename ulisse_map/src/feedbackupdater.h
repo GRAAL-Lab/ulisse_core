@@ -23,12 +23,14 @@ class FeedbackUpdater : public QObject {
     Q_PROPERTY(QString vehicle_state READ get_vehicle_state NOTIFY callbacks_processed)
     Q_PROPERTY(QGeoCoordinate goal_pos READ get_goal_pos NOTIFY callbacks_processed)
     Q_PROPERTY(double goal_distance READ get_goal_distance NOTIFY callbacks_processed)
+    Q_PROPERTY(double accept_radius READ get_accept_radius NOTIFY callbacks_processed)
 
     QGeoCoordinate q_ulisse_pos_, q_goal_pos_;
     double q_goal_distance_;
     QString q_vehicle_state_;
     double q_ulisse_yaw_deg_;
     int feedbackUpdateInterval_;
+    double q_accept_radius_;
 
     rclcpp::Node::SharedPtr np_;
     rclcpp::Subscription<ulisse_msgs::msg::StatusContext>::SharedPtr status_cxt_sub_;
@@ -58,6 +60,7 @@ public:
     double get_ulisse_yaw();
     QString get_vehicle_state();
     double get_goal_distance();
+    double get_accept_radius();
 
 signals:
     void callbacks_processed();

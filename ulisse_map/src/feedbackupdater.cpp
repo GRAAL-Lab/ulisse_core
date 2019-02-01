@@ -77,6 +77,7 @@ void FeedbackUpdater::GoalContextCB(const ulisse_msgs::msg::GoalContext::SharedP
     q_goal_pos_.setLatitude(goal_cxt_msg_.current_goal.latitude);
     q_goal_pos_.setLongitude(goal_cxt_msg_.current_goal.longitude);
     q_goal_distance_ = goal_cxt_msg_.goal_distance;
+    q_accept_radius_ = goal_cxt_msg_.accept_radius;
 }
 
 void FeedbackUpdater::ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg)
@@ -133,6 +134,11 @@ QString FeedbackUpdater::get_vehicle_state()
 double FeedbackUpdater::get_goal_distance()
 {
     return q_goal_distance_;
+}
+
+double FeedbackUpdater::get_accept_radius()
+{
+    return q_accept_radius_;
 }
 
 void FeedbackUpdater::process_callbacks_slot()

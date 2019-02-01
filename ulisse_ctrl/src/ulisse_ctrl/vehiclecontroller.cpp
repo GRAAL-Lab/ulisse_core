@@ -319,9 +319,11 @@ void VehicleController::PublishControl()
     ulisse_msgs::msg::GoalContext goalcxt_msg;
     goalcxt_msg.current_goal.latitude = goalCxt_->currentGoal.pos.latitude;
     goalcxt_msg.current_goal.longitude = goalCxt_->currentGoal.pos.longitude;
+    goalcxt_msg.accept_radius = goalCxt_->currentGoal.acceptRadius;
     goalcxt_msg.goal_distance = goalCxt_->goalDistance;
     goalcxt_msg.goal_heading = goalCxt_->goalHeading;
     goalcxt_msg.goal_speed = goalCxt_->goalSpeed;
+
     goalcxt_pub_->publish(goalcxt_msg);
 
     ulisse_msgs::msg::ControlContext ctrlcxt_msg;
