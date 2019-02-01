@@ -260,7 +260,7 @@ RowLayout {
                     id: ulisseImage
                     width: 38; height: 38
                     source: 'qrc:/images/catamaran_icon_64_sat.png'
-                    transform: Rotation { origin.x: ulisseImage.width / 2 ; origin.y: ulisseImage.height / 2; angle: fbkUpdater.ulisse_yaw_deg }
+                    transform: Rotation { origin.x: ulisseImage.width / 2 ; origin.y: ulisseImage.height / 2; angle: fbkUpdater.ulisse_yaw_deg - map.bearing }
                 }
                 coordinate: QtPositioning.coordinate(fbkUpdater.ulisse_pos.latitude, fbkUpdater.ulisse_pos.longitude)
                 anchorPoint.x: ulisseImage.width / 2
