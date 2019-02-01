@@ -13,14 +13,16 @@ namespace commands {
 
     class GenericCommand : public fsm::BaseCommand {
     protected:
-        //std::shared_ptr<StatusContext> posCxt_;
+        std::shared_ptr<StatusContext> statusCxt_;
         std::shared_ptr<GoalContext> goalCxt_;
+        std::shared_ptr<ControlContext> ctrlCxt_;
 
     public:
         GenericCommand();
         virtual ~GenericCommand();
-        //void SetPosContext(const std::shared_ptr<StatusContext>& posCxt);
+        void SetStatusContext(const std::shared_ptr<StatusContext>& statusCxt);
         void SetGoalContext(const std::shared_ptr<GoalContext>& goalCxt);
+        void SetControlContext(const std::shared_ptr<ControlContext>& ctrlCxt);
     };
 }
 }

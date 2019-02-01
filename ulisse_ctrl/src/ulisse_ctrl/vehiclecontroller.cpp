@@ -139,6 +139,8 @@ void VehicleController::SetUpFSM()
 
     command_hold_.SetFSM(&u_fsm_);
     command_hold_.SetGoalContext(goalCxt_);
+    command_hold_.SetControlContext(ctrlCxt_);
+    command_hold_.SetStatusContext(statusCxt_);
 
     command_latlong_.SetFSM(&u_fsm_);
     command_latlong_.SetGoalContext(goalCxt_);
