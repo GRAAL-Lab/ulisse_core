@@ -27,14 +27,19 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
 {
     appEngine_ = engine;
 
-    /*myTimer_ = new QTimer(this);
-    myTimer_->setSingleShot(true);
-    myTimer_->start(2000);
-    QObject::connect(myTimer_, SIGNAL(timeout()), this, SLOT(setup_command_client_slot()));*/
-
     toastMgrObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("toastManager");
     if (!toastMgrObj_) {
         qDebug("No 'toastManager' found!");
+    }
+
+    holdRadiusObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("holdRadiusText");
+    if (!holdRadiusObj_) {
+        qDebug("No 'holdRadiusText' found!");
+    }
+
+    moveToRadiusObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("moveToRadiusText");
+    if (!moveToRadiusObj_) {
+        qDebug("No 'moveToRadiusText' found!");
     }
 
     command_srv_ = np_->create_client<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service);
@@ -98,7 +103,7 @@ bool CommandWrapper::sendHoldCommand()
 {
     auto serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
     serviceReq->command_type = ulisse::commands::ID::hold;
-    serviceReq->hold_cmd.acceptance_radius = 3.0;
+    serviceReq->hold_cmd.acceptance_radius = (holdRadiusObj_->property("text")).toDouble();
     SendCommandRequest(serviceReq);
     return true;
 }
@@ -109,7 +114,7 @@ bool CommandWrapper::sendLatLongCommand(const QGeoCoordinate& goal)
     serviceReq->command_type = ulisse::commands::ID::latlong;
     serviceReq->latlong_cmd.goal.latitude = goal.latitude();
     serviceReq->latlong_cmd.goal.longitude = goal.longitude();
-    serviceReq->latlong_cmd.acceptance_radius = 3.0;
+    serviceReq->latlong_cmd.acceptance_radius = (moveToRadiusObj_->property("text")).toDouble();
     SendCommandRequest(serviceReq);
     return true;
 }
@@ -119,7 +124,7 @@ bool CommandWrapper::sendSpeedHeadingCommand(double speed, double heading)
     auto serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
     serviceReq->command_type = ulisse::commands::ID::speedheading;
     serviceReq->sh_cmd.speed = speed;
-    serviceReq->sh_cmd.heading = heading * M_PI / 180.0;  // Converting to radians
+    serviceReq->sh_cmd.heading = heading * M_PI / 180.0; // Converting to radians
     SendCommandRequest(serviceReq);
     return true;
 }

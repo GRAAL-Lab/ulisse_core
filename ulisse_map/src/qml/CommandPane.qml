@@ -19,7 +19,7 @@ Pane {
             font.pointSize: 12
             font.weight: Font.DemiBold
             bottomPadding: 10
-            color: 'seagreen'
+            color: Material.color(Material.Green, Material.Shade700)
             text: "Commands"
         }
 
@@ -56,6 +56,7 @@ Pane {
 
             TextField {
                 id: holdRadiusText
+                objectName: "holdRadiusText"
                 Layout.preferredWidth: 45
                 Layout.minimumWidth: 45
                 Layout.maximumWidth: 45
@@ -78,12 +79,13 @@ Pane {
             Layout.fillWidth: true
 
             Button {
-                id: moveToMarkButton
+                id: moveToButton
                 text: "Move To Marker"
 
                 onClicked: {
-                    if(moveToMarkText.text !== ''){
+                    if(moveToRadiusText.text !== ''){
                         cmdWrapper.sendLatLongCommand(marker_coords)
+                        markerIcon.opacity = 0.0
                     } else {
                         acceptRadDialog.open();
                     }
@@ -92,16 +94,17 @@ Pane {
             }
 
             Rectangle {
-                id: moveToMarkSpacer
-                width: buttonsColumn.width - moveToMarkButton.width - moveToMarkText.width
+                id: moveToSpacer
+                width: buttonsColumn.width - moveToButton.width - moveToRadiusText.width
                 height: parent.height
-                anchors.left: moveToMarkButton.right
+                anchors.left: moveToButton.right
                 color: 'transparent'
             }
 
 
             TextField {
-                id: moveToMarkText
+                id: moveToRadiusText
+                objectName: "moveToRadiusText"
                 Layout.preferredWidth: 45
                 Layout.minimumWidth: 45
                 Layout.maximumWidth: 45
@@ -109,7 +112,7 @@ Pane {
                 placeholderText: "Radius"
                 selectByMouse: true
 
-                anchors.left: moveToMarkSpacer.right
+                anchors.left: moveToSpacer.right
                 validator: DoubleValidator {
                     bottom: 0.0;
                     top: 50.0;

@@ -88,7 +88,8 @@ struct StatusContext {
     std::string vehicleState;
 
     StatusContext()
-        : currentHeading(0.0)
+        : currentHeading(0.0),
+          eesStatus(0)
     {
     }
 };

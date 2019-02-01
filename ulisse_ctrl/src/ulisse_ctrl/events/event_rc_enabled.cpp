@@ -7,7 +7,8 @@ namespace events
 {
 
 fsm::retval EventRCEnabled::Execute() {
-    //ortos::DebugConsole::Write(ortos::LogLevel::info, "EventRCEnabled::Execute", "RC was enabled, switching to halt");
+
+    std::cout << "RC Controller Detected: Halting!" << std::endl;
 
     fsm_->SetNextState(ulisse::states::ID::halt);
 

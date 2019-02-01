@@ -209,10 +209,16 @@ RowLayout {
 
             zoomLevel: 14//(maximumZoomLevel - minimumZoomLevel)/2
 
-
-            Ruler{
+            MapRuler {
                 id: ruler
                 anchors.fill: parent
+            }
+
+            MapSliders {
+                id: sliders
+                z: map.z + 3
+                mapSource: map
+                edge: Qt.RightEdge
             }
 
             onCenterChanged:{

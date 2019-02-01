@@ -21,6 +21,7 @@
         <file>images/scale_end.png</file>
         <file>images/scale.png</file>
         <file>scripts/helper.js</file>
-        <file>qml/Ruler.qml</file>
+        <file>qml/MapRuler.qml</file>
+        <file>qml/MapSliders.qml</file>
     </qresource>
 </RCC>

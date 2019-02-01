@@ -20,7 +20,7 @@ class CommandWrapper : public QObject {
     Q_OBJECT
     QQmlApplicationEngine* appEngine_;
     QTimer* myTimer_;
-    QObject* toastMgrObj_;
+    QObject *toastMgrObj_, *holdRadiusObj_, *moveToRadiusObj_;
 
     rclcpp::Node::SharedPtr np_;
     rclcpp::Client<ulisse_msgs::srv::ControlCommand>::SharedPtr command_srv_;

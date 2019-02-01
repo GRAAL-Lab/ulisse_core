@@ -170,6 +170,9 @@ void VehicleController::SetUpFSM()
     state_speedheading_.SetCtrlContext(ctrlCxt_);
     state_speedheading_.SetConf(conf_);
 
+    event_rc_enabled_.SetFSM(&u_fsm_);
+    event_rc_enabled_.SetCtrlContext(ctrlCxt_);
+
     // ADD COMMANDS
     u_fsm_.AddCommand(ulisse::commands::ID::halt, &command_halt_);
     u_fsm_.AddCommand(ulisse::commands::ID::hold, &command_hold_);
@@ -294,11 +297,11 @@ void VehicleController::EESStatus_cb(const ulisse_msgs::msg::EESStatus::SharedPt
 
 void VehicleController::Run()
 {
-    std::cout << "SwitchState" << std::endl;
+    //std::cout << "SwitchState" << std::endl;
     u_fsm_.SwitchState();
-    std::cout << "ProcessEventQueue" << std::endl;
+    //std::cout << "ProcessEventQueue" << std::endl;
     u_fsm_.ProcessEventQueue();
-    std::cout << "ExecuteState" << std::endl;
+    //std::cout << "ExecuteState" << std::endl;
     u_fsm_.ExecuteState();
 }
 
