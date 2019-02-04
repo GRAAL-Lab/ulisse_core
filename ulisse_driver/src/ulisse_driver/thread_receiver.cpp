@@ -85,7 +85,7 @@ namespace ees {
 
     void ThreadReceiver::ReadLoop()
     {
-        std::cout << "ThreadReceiver::ReadLoop() was called" << std::endl;
+        //std::cout << "ThreadReceiver::ReadLoop() was called" << std::endl;
         while (rclcpp::ok()) {
 
             t_now_ = std::chrono::system_clock::now();
@@ -93,7 +93,7 @@ namespace ees {
             auto fraction_nanosecs = static_cast<unsigned int>(epoch_nanosecs % (int)1E9);
 
             eesHlp_.CollectValidMessage(eesData_);
-            std::cout << "ThreadReceiver::ReadLoop(), Collected Valid Message" << std::endl;
+            //std::cout << "ThreadReceiver::ReadLoop(), Collected Valid Message" << std::endl;
             uint8_t sensorStatus = eesData_.sensors.sensorStatus;
 
             ulisse_msgs::msg::Time time_msg;
