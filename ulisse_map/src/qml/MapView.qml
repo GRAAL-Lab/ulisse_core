@@ -39,8 +39,8 @@ RowLayout {
     }
 
 
-    Rectangle {
-        id: leftbarrect
+    MapSidebar {
+        id: mapsidebar
         //Layout.fillWidth: true
         Layout.fillHeight: true
         Layout.minimumHeight: 150
@@ -49,146 +49,6 @@ RowLayout {
         Layout.topMargin: 5
         color: 'white'
 
-        ColumnLayout {
-            id: leftbarlayout
-            anchors.fill: parent
-            spacing: 6
-            Layout.leftMargin: 15
-
-            Pane {
-                id: statusdatarect
-                Layout.alignment: Qt.AlignCenter
-                Layout.preferredWidth: parent.width - panesMargin
-                Material.elevation: myElevation  * 0
-
-                ColumnLayout {
-                    id: statusdatalayout
-                    width: parent.width
-                    Layout.preferredHeight: ulisseStateLabel.height + ulissePosLabel.height
-                    spacing: 0
-
-                    Label {
-                        Layout.alignment: Qt.AlignHCenter
-                        font.pointSize: 11
-                        font.weight: Font.DemiBold
-                        color: 'gray'
-                        text: "Status"
-                    }
-
-                    LabelledText {
-                        id: ulisseStateLabel
-                        labelColor: Material.color(mainColor, Material.Shade700)
-                        label: "Ulisse State"
-                        textColor: 'lightgray'
-                        text: "%1".arg(fbkUpdater.vehicle_state)
-                        textBoldness: Font.DemiBold
-                        onTextChanged: {
-                            if(ulisse_state_changed){
-                                ulisseStateLabel.textColor = 'darkslategray';
-                            }
-                            ulisse_state_changed = true;
-                        }
-                    }
-
-                    LabelledText {
-                        id: ulissePosLabel
-                        labelColor: Material.color(mainColor, Material.Shade700)
-                        label: "Ulisse Coordinates"
-                        textColor: 'darkslategray'
-                        text: "%1, %2".arg(fbkUpdater.ulisse_pos.latitude).arg(fbkUpdater.ulisse_pos.longitude)
-                    }
-
-                }
-            }
-
-            Pane {
-                id: goaldatarect
-                Layout.alignment: Qt.AlignCenter
-                Layout.preferredWidth: parent.width - panesMargin
-                Material.elevation: myElevation  * 0
-
-                ColumnLayout {
-                    id: goaldatalayout
-                    width: parent.width
-                    Layout.preferredHeight: goalTextLabel.height
-                    spacing: 0
-
-                    Label {
-                        Layout.alignment: Qt.AlignHCenter
-                        font.pointSize: 11
-                        font.weight: Font.DemiBold
-                        color: 'gray'
-                        text: "Goal"
-                    }
-
-                    LabelledText {
-                        id: goalTextLabel
-                        labelColor: Material.color(mainColor, Material.Shade700)
-                        label: "Goal Coordinates"
-                        textColor: 'darkslategray'
-                        text: "%1, %2".arg(fbkUpdater.goal_pos.latitude).arg(fbkUpdater.goal_pos.longitude)
-                    }
-
-                    LabelledText {
-                        id: goalDistLabel
-                        labelColor: Material.color(mainColor, Material.Shade700)
-                        label: "Distance to Target"
-                        textColor: 'darkslategray'
-                        text: "%1 (m)".arg(fbkUpdater.goal_distance)
-
-                    }
-                }
-            }
-
-            Pane {
-                id: infodatarect
-                Layout.alignment: Qt.AlignCenter
-                Layout.preferredWidth: parent.width - panesMargin
-                //Layout.preferredHeight: infodatalayout.height
-                Material.elevation: myElevation * 0
-
-                ColumnLayout {
-                    id: infodatalayout
-                    width: parent.width
-                    Layout.preferredHeight: markerTextLabel.height + goalTextLabel.height
-
-                    LabelledText {
-                        id: markerTextLabel
-                        labelColor: Material.color(Material.Red, Material.Shade800)
-                        label: "Marker Coordinates"
-                        textColor: 'lightgray'
-                        text: "Right click on map"
-                    }
-                }
-            }
-
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                Layout.minimumHeight: 14
-                color: 'transparent'
-                Text {
-                    //anchors.centerIn: parent
-                    width: parent.width
-                    font.pointSize: 8
-                    color: 'darkslategray'
-                    text: "(Right click to set marker)"
-                    horizontalAlignment: Text.AlignHCenter
-                }
-            }
-
-
-            CommandPane {
-                id: commandRect
-                Layout.alignment: Qt.AlignCenter
-                Layout.preferredWidth: parent.width - panesMargin
-                Layout.bottomMargin: 10
-                Material.elevation: myElevation
-                //Material.background: Material.color(Material.BlueGrey, Material.Shade50)
-            }
-
-
-        }
     }
 
     Column {
@@ -333,8 +193,8 @@ RowLayout {
                         markerIcon.opacity = 1.0
                         markerIcon.coordinate = map.toCoordinate(Qt.point(mouse.x,mouse.y))
 
-                        markerTextLabel.text = "%1, %2".arg(marker_coords.latitude).arg(marker_coords.longitude)
-                        markerTextLabel.textColor = 'darkslategray'
+                        mapsidebar.markerText = "%1, %2".arg(marker_coords.latitude).arg(marker_coords.longitude)
+                        mapsidebar.markerTextColor = 'darkslategray'
                     }
                 }
             }
@@ -347,18 +207,65 @@ RowLayout {
             height: clearPathButton.height;
             color: 'gainsboro'
 
-            Button {
-                id:clearPathButton
-                anchors.right: parent.right
-                anchors.bottom: parent.bottom
-                anchors.rightMargin: 5
-                text: "Clear path"
-                highlighted: true
-                Material.accent: Material.Cyan
+            RowLayout {
 
-                onClicked: {
-                    ulissePath.path = [];
-                    ulissePath.firstRun = true;
+                width: parent.width
+
+                Button {
+                    id:recenterButton
+                    //anchors.right: parent.right
+                    //anchors.bottom: parent.bottom
+                    //anchors.rightMargin: 5
+                    text: "Recenter"
+                    highlighted: true
+                    Material.accent: Material.Green
+
+                    onClicked: {
+                        map.center = ulisseIcon.coordinate;
+                    }
+                }
+
+                CheckBox {
+                    id: followMeCheckbox
+                    text: "Follow vehicle"
+                    anchors.left: recenterButton.right
+                    Material.accent: Material.Green
+                    checked: false
+
+                    Timer {
+                        id: followMeTimer
+                        interval: 250; running: false; repeat: true
+
+                        onTriggered: {
+                            map.center = ulisseIcon.coordinate;
+                            //console.log("Triggered %1".arg(followMeCheckbox.checked))
+                        }
+                    }
+
+                    onCheckStateChanged: {
+                        if (checked === true){
+                            followMeTimer.start()
+                        } else {
+                            followMeTimer.stop()
+                        }
+                    }
+
+                }
+
+                Button {
+                    id:clearPathButton
+                    //anchors.right: parent.right
+                    //anchors.bottom: parent.bottom
+                    Layout.rightMargin: 5
+                    text: "Clear path"
+                    highlighted: true
+                    Material.accent: Material.Cyan
+                    Layout.alignment: Qt.AlignRight
+
+                    onClicked: {
+                        ulissePath.path = [];
+                        ulissePath.firstRun = true;
+                    }
                 }
             }
         }

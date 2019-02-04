@@ -23,5 +23,6 @@
         <file>scripts/helper.js</file>
         <file>qml/MapRuler.qml</file>
         <file>qml/MapSliders.qml</file>
+        <file>qml/MapSidebar.qml</file>
     </qresource>
 </RCC>
