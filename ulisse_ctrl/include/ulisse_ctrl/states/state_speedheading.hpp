@@ -19,6 +19,7 @@ namespace states {
         virtual ~StateSpeedHeading();
         virtual fsm::retval OnEntry();
         virtual fsm::retval Execute();
+        void ResetTimer();
     };
 }
 }

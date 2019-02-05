@@ -7,6 +7,7 @@
 #include <QQmlContext>
 #include <QQmlEngine>
 #include <QQmlProperty>
+#include <QQuickStyle>
 #include <QSettings>
 
 #include "commandwrapper.h"
@@ -30,6 +31,19 @@ int main(int argc, char* argv[])
     QIcon icon(":/images/ulisse_icon-48.png");
     app.setWindowIcon(icon);
 
+    /**
+     * Theme styling
+     */
+    /*QSettings settings;
+    QString theme;
+    settings.value("theme", theme);
+    if (!theme.isEmpty()) {
+        theme = "Light";
+        //QQuickStyle::setStyle(theme);
+        settings.setValue("Light", theme);
+    } else
+        QQuickStyle::setStyle(settings.value("Theme").toString());
+*/
     QQmlApplicationEngine appEngine;
 
     /**

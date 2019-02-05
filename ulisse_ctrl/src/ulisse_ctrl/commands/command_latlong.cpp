@@ -24,6 +24,10 @@ namespace commands {
         goalCxt_->nextGoal.acceptRadius = acceptanceRadius;
 
         goalCxt_->currentGoal = goalCxt_->nextGoal;
+
+        ctrlCxt_->pidPosition.Reset();
+        ctrlCxt_->pidHeading.Reset();
+        ctrlCxt_->pidSpeed.Reset();
     }
 }
 }

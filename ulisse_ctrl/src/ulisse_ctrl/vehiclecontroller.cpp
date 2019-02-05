@@ -144,9 +144,11 @@ void VehicleController::SetUpFSM()
 
     command_latlong_.SetFSM(&u_fsm_);
     command_latlong_.SetGoalContext(goalCxt_);
+    command_latlong_.SetControlContext(ctrlCxt_);
 
     command_speedheading_.SetFSM(&u_fsm_);
     command_speedheading_.SetGoalContext(goalCxt_);
+    command_speedheading_.SetControlContext(ctrlCxt_);
 
     state_halt_.SetFSM(&u_fsm_);
     state_halt_.SetStatusContext(statusCxt_);
@@ -254,6 +256,7 @@ void VehicleController::SetupCommandServer()
         } else if (request->command_type == ulisse::commands::ID::speedheading) {
             std::cout << "Received Command SpeedHeading" << std::endl;
             command_speedheading_.SetGoal(request->sh_cmd.speed, request->sh_cmd.heading, request->sh_cmd.timeout.sec);
+            state_speedheading_.ResetTimer();
         } else {
             RCLCPP_INFO(nh_->get_logger(), "Unsupported command: %s", request->command_type.c_str());
             ret = fsm::retval::fail;

@@ -17,6 +17,7 @@ find_package(rmw_implementation REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Quick REQUIRED)
+find_package(Qt5QuickControls2 REQUIRED)
 find_package(Qt5Location REQUIRED)
 find_package(Qt5Positioning REQUIRED)
 find_package(ulisse_msgs REQUIRED)
@@ -59,6 +60,7 @@ target_link_libraries(${PROJECT_NAME}_node
 	Qt5::Quick
     Qt5::Location
     Qt5::Positioning
+    Qt5::QuickControls2
 	ulissemap_lib
 	)
 

@@ -6,23 +6,24 @@ namespace ulisse {
 
 namespace states {
 
-    StateSpeedHeading::StateSpeedHeading()
-    {
-    }
+void StateSpeedHeading::ResetTimer()
+{
+    t_start_ = std::chrono::system_clock::now();
+}
 
-    StateSpeedHeading::~StateSpeedHeading()
-    {
-    }
+StateSpeedHeading::StateSpeedHeading()
+{
+}
 
-    fsm::retval StateSpeedHeading::OnEntry()
-    {
-        ctrlCxt_->pidPosition.Reset();
-        ctrlCxt_->pidHeading.Reset();
-        ctrlCxt_->pidSpeed.Reset();
-        goalCxt_->goalDistance = 0.0;
+StateSpeedHeading::~StateSpeedHeading()
+{
+}
 
-        t_now_ = t_start_ = std::chrono::system_clock::now();
-        total_elapsed_ = std::chrono::duration_cast<std::chrono::seconds>(t_now_ - t_start_);
+fsm::retval StateSpeedHeading::OnEntry()
+    {
+
+        //t_now_ = t_start_ = std::chrono::system_clock::now();
+        //total_elapsed_ = std::chrono::duration_cast<std::chrono::seconds>(t_now_ - t_start_);
 
         return fsm::ok;
     }
@@ -33,6 +34,8 @@ namespace states {
 
         t_now_ = std::chrono::system_clock::now();
         total_elapsed_ = std::chrono::duration_cast<std::chrono::seconds>(t_now_ - t_start_);
+
+        //std::cout << "total_elapsed_.count(): " << total_elapsed_.count() << std::endl;
 
         if (total_elapsed_.count() > goalCxt_->cmdTimeout) {
             std::cout << "Speed Heading Timeout reached!" << std::endl;

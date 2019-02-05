@@ -7,6 +7,7 @@ import Qt.labs.settings 1.0
 import QtQuick.Controls.Material 2.1
 import QtQuick.Controls.Universal 2.1
 import QtQuick.Controls.Styles 1.4
+import QtGraphicalEffects 1.0
 import "."
 
 RowLayout {
@@ -16,7 +17,7 @@ RowLayout {
     property real myElevation: 6
     property real panesMargin: 14
 
-    Material.background: 'white'
+    //Material.background: 'white'
 
     Plugin {
         id: mapPlugin
@@ -47,27 +48,36 @@ RowLayout {
         Layout.preferredWidth: 236
         Layout.maximumWidth: 235
         Layout.topMargin: 5
-        color: 'white'
+        //color: 'white'
 
     }
 
-    Column {
+    property real altezzaScrittaDemmerda: 17
+
+    Rectangle {
+        id: mapContainer
         Layout.fillWidth: true
         Layout.fillHeight: true
         Layout.minimumWidth: 300
         Layout.preferredWidth: 500
         Layout.preferredHeight: 500
 
+
         Map {
-
-
             id: map
             width: parent.width
-            height: parent.height - bottomToolbar.height
+            height: parent.height - bottomToolbar.height + altezzaScrittaDemmerda
             plugin: mapPlugin
             center: QtPositioning.coordinate(44.393, 8.945) // Genoa
 
             zoomLevel: 14//(maximumZoomLevel - minimumZoomLevel)/2
+
+
+            ColorOverlay {
+                anchors.fill: map
+                source: map
+                color: (settings.theme === "Light") ? "transparent" : Qt.rgba(1.0, 0.2, 0, 0.1)
+            }
 
             MapRuler {
                 id: ruler
@@ -195,7 +205,6 @@ RowLayout {
 
                         var lastCoord = ulissePath.coordinateAt(ulissePath.pathLength() - 1);
                         var distToNext = lastCoord.distanceTo(fbkUpdater.ulisse_pos);
-                        //toast.show("Distance %1".arg(distToNext));
                         if (distToNext > 0.5){
                             ulissePath.addCoordinate(fbkUpdater.ulisse_pos)
                             if(ulissePath.pathLength() > 500) {
@@ -217,7 +226,7 @@ RowLayout {
                         markerIcon.coordinate = map.toCoordinate(Qt.point(mouse.x,mouse.y))
 
                         mapsidebar.markerText = "%1, %2".arg(marker_coords.latitude).arg(marker_coords.longitude)
-                        mapsidebar.markerTextColor = 'darkslategray'
+                        mapsidebar.markerTextColor = Material.foreground
                     }
                 }
             }
@@ -228,18 +237,18 @@ RowLayout {
             id: bottomToolbar
             width: parent.width
             height: clearPathButton.height
-            color: 'transparent'
+            color: Material.background
+            anchors.bottom: parent.bottom
 
             RowLayout {
-
                 width: parent.width
 
                 Button {
                     id:recenterButton
                     text: "Recenter"
                     highlighted: true
-                    Material.accent: Material.Green
-
+                    Material.accent: secondaryAccentColor
+                    Layout.leftMargin: 5
                     onClicked: {
                         map.center = ulisseIcon.coordinate;
                     }
@@ -249,7 +258,7 @@ RowLayout {
                     id: followMeCheckbox
                     text: "Follow vehicle"
                     anchors.left: recenterButton.right
-                    Material.accent: Material.Green
+                    Material.accent: secondaryAccentColor
                     checked: false
 
                     Timer {
@@ -276,7 +285,7 @@ RowLayout {
                     id: overlayStatusCbox
                     text: "Show Overlay"
                     anchors.left: followMeCheckbox.right
-                    Material.accent: Material.Green
+                    Material.accent: secondaryAccentColor
                     checked: false
 
                     onCheckStateChanged: {
@@ -291,12 +300,10 @@ RowLayout {
 
                 Button {
                     id:clearPathButton
-                    //anchors.right: parent.right
-                    //anchors.bottom: parent.bottom
                     Layout.rightMargin: 5
                     text: "Clear path"
                     highlighted: true
-                    Material.accent: Material.Cyan
+                    Material.accent: mainAccentColor
                     Layout.alignment: Qt.AlignRight
 
                     onClicked: {

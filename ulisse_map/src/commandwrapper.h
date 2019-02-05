@@ -20,13 +20,13 @@ class CommandWrapper : public QObject {
     Q_OBJECT
     QQmlApplicationEngine* appEngine_;
     QTimer* myTimer_;
-    QObject *toastMgrObj_, *holdRadiusObj_, *moveToRadiusObj_;
+    QObject *toastMgrObj_, *holdRadiusObj_, *moveToRadiusObj_, *speedHeadTimoutObj_;
 
     rclcpp::Node::SharedPtr np_;
     rclcpp::Client<ulisse_msgs::srv::ControlCommand>::SharedPtr command_srv_;
 
     void ShowToast(const QVariant message, const QVariant duration);
-    void SendCommandRequest(ulisse_msgs::srv::ControlCommand::Request::SharedPtr req);
+    bool SendCommandRequest(ulisse_msgs::srv::ControlCommand::Request::SharedPtr req);
     //void SetupCommandClient();
 
 public:

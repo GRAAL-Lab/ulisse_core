@@ -62,7 +62,7 @@ Row {
     property color labelBackground : "transparent"
     property int edge: Qt.RightEdge
     property alias expanded: sliderToggler.checked
-    property var togglerColor: Material.color(Material.Amber, Material.Shade500)
+    property var togglerColor: mainAccentColor
 
     function rightEdge() {
         return (containerRow.edge === Qt.RightEdge);
@@ -140,9 +140,9 @@ Row {
         height: parent.height
         width: sliderRow.width + 10
         visible: sliderToggler.checked
-        color: Qt.rgba( 0, 191 / 255.0, 255 / 255.0, 0.1)
+        color: Qt.rgba(0, 0, 0, 0.05)//Qt.rgba( 0, 191 / 255.0, 255 / 255.0, 0.1)
 
-        Material.accent: Material.Amber
+        Material.accent: mainAccentColor
         Material.foreground: Material.color(Material.BlueGrey, Material.Shade600)
 
         property var labelBorderColor: "transparent"

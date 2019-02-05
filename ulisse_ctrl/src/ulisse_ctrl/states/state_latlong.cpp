@@ -17,9 +17,6 @@ namespace states {
     fsm::retval StateLatLong::OnEntry()
     {
 
-        ctrlCxt_->pidPosition.Reset();
-        ctrlCxt_->pidHeading.Reset();
-        ctrlCxt_->pidSpeed.Reset();
 
         return fsm::ok;
     }

@@ -28,7 +28,7 @@ ColumnLayout {
     Label {
         id: data
         width: parent.width
-        color: 'lightgray'
+        //color: 'lightgray'
         leftPadding: 5.0
         font.pointSize: 10.5
 

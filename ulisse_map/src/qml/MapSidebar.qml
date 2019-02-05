@@ -8,6 +8,7 @@ Rectangle {
 
     property alias markerText: markerTextLabel.text
     property alias markerTextColor: markerTextLabel.textColor
+    color: Material.background
 
     ColumnLayout {
         id: leftbarlayout
@@ -44,7 +45,7 @@ Rectangle {
                     textBoldness: Font.DemiBold
                     onTextChanged: {
                         if(ulisse_state_changed){
-                            ulisseStateLabel.textColor = 'darkslategray';
+                            ulisseStateLabel.textColor = Material.foreground;
                         }
                         ulisse_state_changed = true;
                     }
@@ -54,7 +55,7 @@ Rectangle {
                     id: ulissePosLabel
                     labelColor: Material.color(mainColor, Material.Shade700)
                     label: "Ulisse Coordinates"
-                    textColor: 'darkslategray'
+                    //textColor: 'darkslategray'
                     text: "%1, %2".arg(fbkUpdater.ulisse_pos.latitude).arg(fbkUpdater.ulisse_pos.longitude)
                 }
 
@@ -85,7 +86,7 @@ Rectangle {
                     id: goalTextLabel
                     labelColor: Material.color(mainColor, Material.Shade700)
                     label: "Goal Coordinates"
-                    textColor: 'darkslategray'
+                    //textColor: 'darkslategray'
                     text: "%1, %2".arg(fbkUpdater.goal_pos.latitude).arg(fbkUpdater.goal_pos.longitude)
                 }
 
@@ -93,7 +94,7 @@ Rectangle {
                     id: goalDistLabel
                     labelColor: Material.color(mainColor, Material.Shade700)
                     label: "Distance to Target"
-                    textColor: 'darkslategray'
+                    //textColor: 'darkslategray'
                     text: "%1 (m)".arg(fbkUpdater.goal_distance)
 
                 }
@@ -131,7 +132,7 @@ Rectangle {
                 //anchors.centerIn: parent
                 width: parent.width
                 font.pointSize: 8
-                color: 'darkslategray'
+                color: 'gray'
                 text: "(Right click to set marker)"
                 horizontalAlignment: Text.AlignHCenter
             }

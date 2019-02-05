@@ -16,23 +16,30 @@ ApplicationWindow {
     height: 640
     visible: true
 
-    minimumHeight: 200
-    minimumWidth: 300
+    minimumHeight: 500
+    minimumWidth: 705
 
     property var mainColor: Material.Cyan
+    property var mainAccentColor: Material.color(Material.Amber, Material.Shade700)
+    property var secondaryAccentColor: Material.color(Material.Green, Material.Shade600)
 
-    Material.theme: Material.Light
+    Material.theme: settings.theme
     Material.accent: mainColor
 
     /* Halting catamaran when space is pressed */
     Shortcut {
         sequence: " "
-        onActivated: cmdWrapper.sendHaltCommand()
+        onActivated: {
+            toast.show("Sent Halt Command")
+            cmdWrapper.sendHaltCommand()
+
+        }
     }
 
     Settings {
         id: settings
-        property string style: "Material"
+        property string theme: "Light"
+
     }
 
     header: CustomHeader {
@@ -73,4 +80,33 @@ ApplicationWindow {
         id: toast
         objectName: "toastManager"
     }
+
+    SettingsDialog {
+        id: settingsDialog
+        x: Math.round((window.width - width) / 2)
+        y: Math.round(window.height / 6)
+        width: Math.round(Math.min(window.width, window.height) / 3 * 2)
+
+        onActiveFocusChanged: stackViewContainer.forceActiveFocus()
+    }
+
+    HelpDialog {
+        id: helpDialog
+        x: Math.round((window.width - width) / 2)
+        y: Math.round((window.height - height) / 2) - headerBar.height
+        width: Math.round(window.width * 0.8)
+        height: Math.round(window.height * 0.7)
+
+        onActiveFocusChanged: stackViewContainer.forceActiveFocus()
+    }
+
+    /*Text {
+        color: "#2b2b2b"
+        z: 10
+        anchors.centerIn: parent
+        //anchors.fill: parent
+        text: "%1 x %2".arg(window.width).arg(window.height)
+        font.family: "Ubuntu Mono"
+    }*/
+
 }

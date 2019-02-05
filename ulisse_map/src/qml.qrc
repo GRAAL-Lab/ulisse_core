@@ -25,5 +25,8 @@
         <file>qml/MapSliders.qml</file>
         <file>qml/MapSidebar.qml</file>
         <file>qml/DataView.qml</file>
+        <file>qml/SettingsDialog.qml</file>
+        <file>qml/HelpDialog.qml</file>
+        <file>images/graal_logo.png</file>
     </qresource>
 </RCC>

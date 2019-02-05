@@ -11,17 +11,17 @@ import QtGraphicalEffects 1.0
 ToolBar {
     property alias tabBarIndex: headerBar.currentIndex
     width: parent.width
-    Material.elevation: 2
+    Material.elevation: 4
 
-    Material.foreground: Material.color(Material.Grey,Material.Shade300)//"white"
-    Material.accent: "white"//Material.color(Material.BlueGrey,Material.Shade900)
-    Material.background: Material.color(mainColor,Material.Shade400)
+    Material.foreground: Material.color(Material.Grey, Material.Shade300)
+    Material.background: Material.color(Material.Cyan, Material.Shade500)
+    Material.accent: "white"
 
     Layout.alignment: Qt.AlignLeft
 
     TabBar {
         id: headerBar
-        anchors.left: parent.left//robotLogo.right
+        anchors.left: parent.left
         width: parent.width - toolButton.width
         TabButton {
             text: qsTr("Map")
@@ -29,38 +29,38 @@ ToolBar {
         TabButton {
             text: qsTr("Data")
         }
-        /*TabButton {
-            text: qsTr("Graphs")
-        }*/
     }
 
     ToolButton {
         id: toolButton
         anchors.right: parent.right
-        contentItem: Image {
-            id: menuIcon
-            fillMode: Image.Pad
-            horizontalAlignment: Image.AlignHCenter
-            verticalAlignment: Image.AlignVCenter
-            source: 'qrc:/images/menu.png'
+        text: qsTr("⋮")
+        font.pointSize: 16
+        font.weight: Font.Bold
+        Material.background: Material.color(Material.Cyan, Material.Shade500)
 
-            ColorOverlay {
-                anchors.fill: menuIcon
-                source: menuIcon
-                color: (settings.style == "Material") ? "white" : "transparent"
-            }
-        }
         onClicked: optionsMenu.open()
 
         Menu {
             id: optionsMenu
             x: parent.width - width
+            y: parent.height
             transformOrigin: Menu.TopRight
 
-            /*MenuItem {
+            MenuItem {
+                text: "Help"
+                onTriggered: helpDialog.open()
+            }
+
+            MenuItem {
                 text: "Settings"
-                onTriggered: settingsDialog.open()
-            }*/
+                onTriggered: {
+                    settingsDialog.open();
+                }
+            }
+
+            MenuSeparator{}
+
             MenuItem {
                 text: "Quit"
                 onTriggered: Qt.quit()

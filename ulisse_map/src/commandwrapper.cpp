@@ -42,6 +42,11 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
         qDebug("No 'moveToRadiusText' found!");
     }
 
+    speedHeadTimoutObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("speedHeadingTimeout");
+    if (!speedHeadTimoutObj_) {
+        qDebug("No 'speedHeadingTimeout' found!");
+    }
+
     command_srv_ = np_->create_client<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service);
 }
 
@@ -71,9 +76,10 @@ void CommandWrapper::ShowToast(const QVariant message, const QVariant duration)
         Q_ARG(QVariant, message), Q_ARG(QVariant, duration));
 }
 
-void CommandWrapper::SendCommandRequest(ulisse_msgs::srv::ControlCommand::Request::SharedPtr req)
+bool CommandWrapper::SendCommandRequest(ulisse_msgs::srv::ControlCommand::Request::SharedPtr req)
 {
     std::string result_msg;
+    bool serviceAvailable;
     if (command_srv_->service_is_ready()) {
         auto result_future = command_srv_->async_send_request(req);
         std::cout << "Sent Request to controller" << std::endl;
@@ -85,18 +91,20 @@ void CommandWrapper::SendCommandRequest(ulisse_msgs::srv::ControlCommand::Reques
             result_msg = "Service returned: " + result->res;
             RCLCPP_INFO(np_->get_logger(), result_msg.c_str());
         }
+        serviceAvailable = true;
     } else {
         result_msg = "No Command Server Available";
+        serviceAvailable = false;
     }
     ShowToast(result_msg.c_str(), 2000);
+    return serviceAvailable;
 }
 
 bool CommandWrapper::sendHaltCommand()
 {
     auto serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
     serviceReq->command_type = ulisse::commands::ID::halt;
-    SendCommandRequest(serviceReq);
-    return true;
+    return SendCommandRequest(serviceReq);
 }
 
 bool CommandWrapper::sendHoldCommand()
@@ -104,8 +112,7 @@ bool CommandWrapper::sendHoldCommand()
     auto serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
     serviceReq->command_type = ulisse::commands::ID::hold;
     serviceReq->hold_cmd.acceptance_radius = (holdRadiusObj_->property("text")).toDouble();
-    SendCommandRequest(serviceReq);
-    return true;
+    return SendCommandRequest(serviceReq);
 }
 
 bool CommandWrapper::sendLatLongCommand(const QGeoCoordinate& goal)
@@ -115,8 +122,7 @@ bool CommandWrapper::sendLatLongCommand(const QGeoCoordinate& goal)
     serviceReq->latlong_cmd.goal.latitude = goal.latitude();
     serviceReq->latlong_cmd.goal.longitude = goal.longitude();
     serviceReq->latlong_cmd.acceptance_radius = (moveToRadiusObj_->property("text")).toDouble();
-    SendCommandRequest(serviceReq);
-    return true;
+    return SendCommandRequest(serviceReq);
 }
 
 bool CommandWrapper::sendSpeedHeadingCommand(double speed, double heading)
@@ -125,6 +131,7 @@ bool CommandWrapper::sendSpeedHeadingCommand(double speed, double heading)
     serviceReq->command_type = ulisse::commands::ID::speedheading;
     serviceReq->sh_cmd.speed = speed;
     serviceReq->sh_cmd.heading = heading * M_PI / 180.0; // Converting to radians
-    SendCommandRequest(serviceReq);
-    return true;
+    serviceReq->sh_cmd.timeout.sec = (speedHeadTimoutObj_->property("text")).toUInt();
+    serviceReq->sh_cmd.timeout.nanosec = 0;
+    return SendCommandRequest(serviceReq);
 }

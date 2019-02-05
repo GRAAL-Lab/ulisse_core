@@ -84,8 +84,9 @@ Pane {
 
                 onClicked: {
                     if(moveToRadiusText.text !== ''){
-                        cmdWrapper.sendLatLongCommand(marker_coords)
-                        markerIcon.opacity = 0.0
+                        if(cmdWrapper.sendLatLongCommand(marker_coords)){
+                            markerIcon.opacity = 0.0
+                        }
                     } else {
                         acceptRadDialog.open();
                     }
