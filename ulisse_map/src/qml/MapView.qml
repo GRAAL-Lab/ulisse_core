@@ -83,13 +83,10 @@ RowLayout {
 
             onCenterChanged:{
                 ruler.rulerTimer.restart()
-                /*if (map.followme)
-                    if (map.center !== positionSource.position.coordinate) map.followme = false*/
             }
 
             onZoomLevelChanged:{
                 ruler.rulerTimer.restart()
-                //if (map.followme) map.center = positionSource.position.coordinate
             }
 
             onWidthChanged:{
@@ -109,6 +106,7 @@ RowLayout {
 
                 }
                 coordinate: map.center
+                z: ulisseIcon.z + 1
                 anchorPoint.x: markerImage.width / 2
                 anchorPoint.y: markerImage.height
                 opacity: 0.0
@@ -120,7 +118,21 @@ RowLayout {
                     id: ulisseImage
                     width: 38; height: 38
                     source: 'qrc:/images/catamaran_icon_64_sat.png'
-                    transform: Rotation { origin.x: ulisseImage.width / 2 ; origin.y: ulisseImage.height / 2; angle: fbkUpdater.ulisse_yaw_deg - map.bearing }
+                    transform: [
+                        Rotation {
+                            origin.x: ulisseImage.width / 2 ;
+                            origin.y: ulisseImage.height / 2;
+                            angle: fbkUpdater.ulisse_yaw_deg - map.bearing
+                        },
+                        Rotation {
+                            origin.x: ulisseImage.width / 2 ;
+                            origin.y: ulisseImage.height / 2;
+                            angle: map.tilt
+                            axis.x: 1
+                            axis.y: 0
+                            axis.z: 0
+                        }
+                    ]
                 }
                 coordinate: QtPositioning.coordinate(fbkUpdater.ulisse_pos.latitude, fbkUpdater.ulisse_pos.longitude)
                 anchorPoint.x: ulisseImage.width / 2
@@ -141,7 +153,18 @@ RowLayout {
                 z: goalAcceptRadius.z + 1
                 opacity: 0.0
 
+            }
 
+            MapQuickItem {
+                id: overlayText
+                sourceItem: Text {
+                    color: 'darkslategray'
+                    text: "Speed: %1 m/s\nHeading: %2°".arg(fbkUpdater.ulisse_speed).arg(fbkUpdater.ulisse_yaw_deg)
+                }
+                coordinate: QtPositioning.coordinate(fbkUpdater.ulisse_pos.latitude, fbkUpdater.ulisse_pos.longitude)
+                anchorPoint.x: - ulisseImage.width / 2
+                anchorPoint.y: - ulisseImage.height / 2
+                opacity: 0.0
             }
 
             MapCircle {
@@ -204,8 +227,8 @@ RowLayout {
 
             id: bottomToolbar
             width: parent.width
-            height: clearPathButton.height;
-            color: 'gainsboro'
+            height: clearPathButton.height
+            color: 'transparent'
 
             RowLayout {
 
@@ -213,9 +236,6 @@ RowLayout {
 
                 Button {
                     id:recenterButton
-                    //anchors.right: parent.right
-                    //anchors.bottom: parent.bottom
-                    //anchors.rightMargin: 5
                     text: "Recenter"
                     highlighted: true
                     Material.accent: Material.Green
@@ -247,6 +267,23 @@ RowLayout {
                             followMeTimer.start()
                         } else {
                             followMeTimer.stop()
+                        }
+                    }
+
+                }
+
+                CheckBox {
+                    id: overlayStatusCbox
+                    text: "Show Overlay"
+                    anchors.left: followMeCheckbox.right
+                    Material.accent: Material.Green
+                    checked: false
+
+                    onCheckStateChanged: {
+                        if (checked === true){
+                            overlayText.opacity = 1.0;
+                        } else {
+                            overlayText.opacity = 0.0;
                         }
                     }
 

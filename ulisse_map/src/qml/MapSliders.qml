@@ -83,15 +83,15 @@ Row {
         anchors.verticalCenter: parent.verticalCenter
 
         transform:  Scale {
-                        origin.x: rightEdge() ? 0 : sliderToggler.width / 2
-                        xScale: rightEdge() ? 1 : -1
-                    }
+            origin.x: rightEdge() ? 0 : sliderToggler.width / 2
+            xScale: rightEdge() ? 1 : -1
+        }
 
         style:  ButtonStyle {
-                    background: Rectangle {
-                        color: "transparent"
-                    }
-                }
+            background: Rectangle {
+                color: "transparent"
+            }
+        }
 
         property real shear: 0.333
         property real buttonOpacity: 0.66
@@ -105,6 +105,7 @@ Row {
             opacity: sliderToggler.buttonOpacity
             anchors.top: parent.top
             anchors.left: sliderToggler.checked ?  parent.left : parent.horizontalCenter
+            anchors.leftMargin: -5
 
             transform: Matrix4x4 {
                 property real d : sliderToggler.checked ? 1.0 : -1.0
@@ -123,6 +124,7 @@ Row {
             opacity: sliderToggler.buttonOpacity
             anchors.top: parent.verticalCenter
             anchors.right: sliderToggler.checked ?  parent.right : parent.horizontalCenter
+            anchors.rightMargin: 5
             transform: Matrix4x4 {
                 property real d : sliderToggler.checked ? -1.0 : 1.0
                 matrix:    Qt.matrix4x4(1.0,  d * sliderToggler.shear,    0.0,    0.0,
@@ -234,7 +236,7 @@ Row {
                     to : containerRow.mapSource.maximumZoomLevel
                     value : containerRow.mapSource.zoomLevel
                     onValueChanged: {
-                            containerRow.mapSource.zoomLevel = value
+                        containerRow.mapSource.zoomLevel = value
                     }
 
 

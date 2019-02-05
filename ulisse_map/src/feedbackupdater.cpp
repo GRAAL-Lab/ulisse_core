@@ -48,6 +48,9 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
     q_ulisse_yaw_deg_ = 0.0;
     q_vehicle_state_ = "undefined";
     q_goal_distance_ = 0.0;
+    q_ulisse_speed_ = 0.0;
+    q_battery_perc_L_ = 99.9;
+    q_battery_perc_R_ = 99.9;
 
     q_goal_pos_ = q_ulisse_pos_;
 
@@ -93,6 +96,7 @@ void FeedbackUpdater::StatusContextCB(const ulisse_msgs::msg::StatusContext::Sha
     q_ulisse_pos_.setLongitude(status_cxt_msg_.vehicle_pos.longitude);
     q_ulisse_yaw_deg_ = status_cxt_msg_.vehicle_heading * 180 / M_PI;
     q_vehicle_state_ = status_cxt_msg_.vehicle_state.c_str();
+    q_ulisse_speed_ = status_cxt_msg_.vehicle_speed;
 
     //qDebug() << "State: " << q_vehicle_state_ << ", " << status_cxt_msg_.vehicle_state.c_str();
 
@@ -114,6 +118,11 @@ void FeedbackUpdater::copyToClipboard(QString newText)
 QGeoCoordinate FeedbackUpdater::get_ulisse_pos()
 {
     return q_ulisse_pos_;
+}
+
+double FeedbackUpdater::get_ulisse_speed()
+{
+    return q_ulisse_speed_;
 }
 
 QGeoCoordinate FeedbackUpdater::get_goal_pos()
@@ -139,6 +148,16 @@ double FeedbackUpdater::get_goal_distance()
 double FeedbackUpdater::get_accept_radius()
 {
     return q_accept_radius_;
+}
+
+double FeedbackUpdater::get_battery_perc_L()
+{
+    return q_battery_perc_L_;
+}
+
+double FeedbackUpdater::get_battery_perc_R()
+{
+    return q_battery_perc_R_;
 }
 
 void FeedbackUpdater::process_callbacks_slot()

@@ -61,24 +61,10 @@ ApplicationWindow {
                 anchors.fill: parent
             }
 
-            Rectangle {
-                //color: "#cfcccc"
-                Layout.alignment: Qt.AlignCenter
-
-                Item {
-                    anchors.centerIn: parent
-                    //width: parent.width
-                    Layout.alignment: Qt.AlignHCenter
-
-                    LabelledText {
-                        id: dataTextLabel
-                        labelColor: 'tomato'
-                        label: "All the interesting data"
-                        textColor: 'gray'
-                        text: "Coming Soon"
-
-                    }
-                }
+            DataView {
+                id: dataView
+                anchors.fill: parent
+                anchors.margins: 10
             }
         }
     }

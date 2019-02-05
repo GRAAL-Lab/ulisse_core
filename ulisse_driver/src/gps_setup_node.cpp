@@ -210,6 +210,8 @@ int main(int argc, char* argv[])
     RCLCPP_INFO(node->get_logger(), "sudo service gpsd start returned %d", status);
 
     rclcpp::shutdown();
+
+    return 0;
 }
 
 bool CheckCommandConfirmation(const char* serialDevice, const char* command, const char* expectedAnswer,
