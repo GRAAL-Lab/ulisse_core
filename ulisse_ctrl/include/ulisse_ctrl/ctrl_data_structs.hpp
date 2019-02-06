@@ -88,18 +88,20 @@ struct StatusContext {
     std::string vehicleState;
 
     StatusContext()
-        : currentHeading(0.0),
-          eesStatus(0)
+        : currentHeading(0.0)
+        , eesStatus(0)
     {
     }
 };
 
 struct ControlContext {
-    SurfaceVehicleModel ulisseModel_;
+    //SurfaceVehicleModel ulisseModel_;
     ctb::DigitalPID pidSpeed;
     ctb::DigitalPID pidPosition;
     ctb::DigitalPID pidHeading;
-    ThrusterControlData thrusterData;
+    double desiredSpeed;
+    double desiredJog;
+    //ThrusterControlData thrusterData;
 };
 
 struct GoalContext {

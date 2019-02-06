@@ -86,8 +86,8 @@ namespace ees {
         data_.messageType = MessageType::get_config;
         eesHlp_.SendMessage(data_);
 
-        ctrl_cxt_sub_ = create_subscription<ulisse_msgs::msg::ControlContext>(
-            ulisse_msgs::topicnames::control_context, std::bind(&ThreadSender::ControlContext_cb, this, _1));
+        thruster_data_sub_ = create_subscription<ulisse_msgs::msg::ThrustersData>(
+            ulisse_msgs::topicnames::thrusters_data, std::bind(&ThreadSender::ThrustersDataCB, this, _1));
 
         SetupCommandServer();
     }
@@ -179,7 +179,7 @@ namespace ees {
         srv_ = create_service<ulisse_msgs::srv::EESCommand>(ulisse_msgs::topicnames::ees_cmd_service, handle_ees_commands);
     }
 
-    void ThreadSender::ControlContext_cb(const ulisse_msgs::msg::ControlContext::SharedPtr msg)
+    void ThreadSender::ThrustersDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg)
     {
         data_.messageType = MessageType::reference;
         data_.references.leftThruster = static_cast<int16_t>(msg->motor_ctrlref.left * 10); // we multiply be 10 since the micro reads 'Per mille'

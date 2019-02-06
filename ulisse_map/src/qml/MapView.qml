@@ -72,7 +72,6 @@ RowLayout {
 
             zoomLevel: 14//(maximumZoomLevel - minimumZoomLevel)/2
 
-
             ColorOverlay {
                 anchors.fill: map
                 source: map
@@ -107,6 +106,35 @@ RowLayout {
                 ruler.rulerTimer.restart()
             }
 
+            Image {
+                id: compass
+                source: 'qrc:/images/compass_icon.svg'
+                width: 42
+                height: 42
+                mipmap: true
+                z: map.z + 2
+
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.rightMargin: 15
+                anchors.topMargin: 20
+
+                transform: [ Rotation {
+                        origin.x: compass.width / 2 ;
+                        origin.y: compass.height / 2;
+                        angle: 180.0 - map.bearing
+                    },
+                    Rotation {
+                        origin.x: ulisseImage.width / 2 ;
+                        origin.y: ulisseImage.height / 2;
+                        angle: map.tilt
+                        axis.x: 1
+                        axis.y: 0
+                        axis.z: 0
+                    } ]
+
+            }
+
             MapQuickItem {
                 id:markerIcon
                 sourceItem: Image{
@@ -128,6 +156,7 @@ RowLayout {
                     id: ulisseImage
                     width: 38; height: 38
                     source: 'qrc:/images/catamaran_icon_64_sat.png'
+                    //mipmap: true
                     transform: [
                         Rotation {
                             origin.x: ulisseImage.width / 2 ;

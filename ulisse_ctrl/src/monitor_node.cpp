@@ -7,6 +7,7 @@
 #include "ulisse_msgs/msg/status_context.hpp"
 #include "ulisse_msgs/msg/ees_battery.hpp"
 #include "ulisse_msgs/msg/gps_data.hpp"
+#include "ulisse_msgs/msg/thrusters_data.hpp"
 
 #include "ulisse_msgs/terminal_utils.hpp"
 #include "ulisse_msgs/topicnames.hpp"
@@ -21,6 +22,7 @@ static ulisse_msgs::msg::GPSData gps_data;
 static ulisse_msgs::msg::GoalContext goal_cxt;
 static ulisse_msgs::msg::ControlContext control_cxt;
 static ulisse_msgs::msg::StatusContext status_cxt;
+static ulisse_msgs::msg::ThrustersData thrusters_data;
 static ulisse_msgs::msg::EESBattery battery_left;
 static ulisse_msgs::msg::EESBattery battery_right;
 
@@ -28,6 +30,7 @@ void GpsCB(const ulisse_msgs::msg::GPSData::SharedPtr msg);
 void GoalContextCB(const ulisse_msgs::msg::GoalContext::SharedPtr msg);
 void ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg);
 void StatusContextCB(const ulisse_msgs::msg::StatusContext::SharedPtr msg);
+void ThrustersDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg);
 
 void BatteryLeftCB(const ulisse_msgs::msg::EESBattery::SharedPtr msg);
 void BatteryRightCB(const ulisse_msgs::msg::EESBattery::SharedPtr msg);
@@ -48,6 +51,9 @@ int main(int argc, char* argv[])
         ulisse_msgs::topicnames::control_context, ControlContextCB);
     auto statuscxt_sub = nh->create_subscription<ulisse_msgs::msg::StatusContext>(
         ulisse_msgs::topicnames::status_context, StatusContextCB);
+
+    auto thrusterdata_sub = nh->create_subscription<ulisse_msgs::msg::ThrustersData>(
+        ulisse_msgs::topicnames::thrusters_data, ThrustersDataCB);
 
     auto batteryleft_sub = nh->create_subscription<ulisse_msgs::msg::EESBattery>(
         ulisse_msgs::topicnames::ees_battery_left, BatteryLeftCB);
@@ -71,8 +77,8 @@ int main(int argc, char* argv[])
         std::cout << tc::blu << "Desired Speed:\t" << tc::none << control_cxt.desired_speed << std::endl;
         std::cout << tc::blu << "Desired Jog:\t" << tc::none << control_cxt.desired_jog << std::endl;
 
-        std::cout << tc::blu << "Motor Map Out:\t" << tc::none << control_cxt.motor_mapout.left << ", " << control_cxt.motor_mapout.right << std::endl;
-        std::cout << tc::blu << "Motor Ctrl Ref:\t" << tc::none << control_cxt.motor_ctrlref.left << ", " << control_cxt.motor_ctrlref.right << std::endl;
+        std::cout << tc::blu << "Motor Map Out:\t" << tc::none << thrusters_data.motor_mapout.left << ", " << thrusters_data.motor_mapout.right << std::endl;
+        std::cout << tc::blu << "Motor Ctrl Ref:\t" << tc::none << thrusters_data.motor_ctrlref.left << ", " << thrusters_data.motor_ctrlref.right << std::endl;
 
         std::cout << tc::mag << "Battery Level (L,R): " << tc::none << battery_left.charge_percent << "%, " << battery_right.charge_percent << "%" << std::endl;
 
@@ -105,6 +111,11 @@ void ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg)
 void StatusContextCB(const ulisse_msgs::msg::StatusContext::SharedPtr msg)
 {
     status_cxt = *msg;
+}
+
+void ThrustersDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg)
+{
+    thrusters_data = *msg;
 }
 
 void BatteryLeftCB(const ulisse_msgs::msg::EESBattery::SharedPtr msg)

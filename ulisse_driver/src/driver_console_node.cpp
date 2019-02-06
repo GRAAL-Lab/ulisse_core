@@ -9,7 +9,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <stdio.h>
 
-#include "ulisse_msgs/msg/control_context.hpp"
+#include "ulisse_msgs/msg/thrusters_data.hpp"
 #include "ulisse_msgs/srv/ees_command.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 #include "ulisse_msgs/terminal_utils.hpp"
@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
         }
         RCLCPP_INFO(node->get_logger(), "waiting for EES Driver service to appear...");
     }
-    auto ctrlcxt_pub_ = node->create_publisher<ulisse_msgs::msg::ControlContext>(ulisse_msgs::topicnames::control_context);
+    auto thruster_data_pub_ = node->create_publisher<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data);
 
     while (rclcpp::ok()) {
         int choice;
@@ -67,11 +67,11 @@ int main(int argc, char* argv[])
         switch (choice) {
         case 1: {
             send = false;
-            ulisse_msgs::msg::ControlContext ctrlcxt_msg;
+            ulisse_msgs::msg::ThrustersData thruster_data_msg;
             std::cout << "left thruster (%): ";
-            std::cin >> ctrlcxt_msg.motor_ctrlref.left;
+            std::cin >> thruster_data_msg.motor_ctrlref.left;
             std::cout << "right thruster (%): ";
-            std::cin >> ctrlcxt_msg.motor_ctrlref.right;
+            std::cin >> thruster_data_msg.motor_ctrlref.right;
 
             std::cout << "repeat? (1 yes, 0 no): ";
             std::cin >> repeat;
@@ -82,7 +82,7 @@ int main(int argc, char* argv[])
                 std::cin >> delayMs;
             }
             do {
-                ctrlcxt_pub_->publish(ctrlcxt_msg);
+                thruster_data_pub_->publish(thruster_data_msg);
                 if (--repetitions > 0) {
                     std::this_thread::sleep_for(std::chrono::milliseconds(delayMs));
                 } else

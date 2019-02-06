@@ -18,7 +18,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
 
-#include "ulisse_msgs/msg/control_context.hpp"
+#include "ulisse_msgs/msg/thrusters_data.hpp"
 #include "ulisse_msgs/srv/ees_command.hpp"
 
 #include "ulisse_driver/EESHelper.h"
@@ -35,7 +35,7 @@ namespace ees {
     private:
         void SetupCommandServer();
         void ReloadConfigFile();
-        void ControlContext_cb(const ulisse_msgs::msg::ControlContext::SharedPtr msg);
+        void ThrustersDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg);
         void CopyConfigMsg2EESStruct(const std::shared_ptr<ulisse_msgs::srv::EESCommand::Request> request);
 
         EESData data_;
@@ -44,10 +44,10 @@ namespace ees {
 
         rclcpp::AsyncParametersClient::SharedPtr par_client_;
         rclcpp::Service<ulisse_msgs::srv::EESCommand>::SharedPtr srv_;
-        rclcpp::Subscription<ulisse_msgs::msg::ControlContext>::SharedPtr ctrl_cxt_sub_;
+        rclcpp::Subscription<ulisse_msgs::msg::ThrustersData>::SharedPtr thruster_data_sub_;
         rclcpp::TimerBase::SharedPtr timer_;
 
-        ulisse_msgs::msg::ControlContext ctrl_cxt_msg_;
+        //ulisse_msgs::msg::ThrustersData ctrl_cxt_msg_;
     };
 }
 }

@@ -76,6 +76,9 @@ int main(int argc, char* argv[])
     double lastValidGPSTime = 0;
     ulisse_msgs::msg::NavFilterData filterData;
 
+    gpsData.latitude = 44.4;
+    gpsData.longitude = 8.94;
+
     bool filterEnable(true);
 
     while (rclcpp::ok()) {

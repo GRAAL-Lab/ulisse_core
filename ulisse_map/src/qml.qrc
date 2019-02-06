@@ -28,5 +28,6 @@
         <file>qml/SettingsDialog.qml</file>
         <file>qml/HelpDialog.qml</file>
         <file>images/graal_logo.png</file>
+        <file>images/compass_icon.svg</file>
     </qresource>
 </RCC>

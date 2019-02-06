@@ -78,6 +78,10 @@ add_executable(controller_node src/controller_node.cpp)
 ament_target_dependencies(controller_node rclcpp std_msgs ulisse_msgs rml)
 target_link_libraries(controller_node rml ulisse_ctrl_lib)
 
+add_executable(low_level_control_node src/low_level_control_node.cpp)
+ament_target_dependencies(low_level_control_node rclcpp std_msgs ulisse_msgs rml)
+target_link_libraries(low_level_control_node rml ulisse_ctrl_lib)
+
 add_executable(navigation_filter_node src/navigation_filter_node.cpp)
 ament_target_dependencies(navigation_filter_node rclcpp std_msgs ulisse_msgs rml)
 target_link_libraries(navigation_filter_node rml ulisse_ctrl_lib)
@@ -95,6 +99,7 @@ ament_export_include_directories(include)
 ## Install
 install(TARGETS
   controller_node
+  low_level_control_node
   navigation_filter_node
   controller_console_node
   monitor_node

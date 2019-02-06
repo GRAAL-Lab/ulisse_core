@@ -14,7 +14,7 @@ ToolBar {
     Material.elevation: 4
 
     Material.foreground: Material.color(Material.Grey, Material.Shade300)
-    Material.background: Material.color(Material.Cyan, Material.Shade500)
+    Material.background: (settings.theme == "Light" ? Material.Cyan : Material.color(Material.Red, Material.Shade600))
     Material.accent: "white"
 
     Layout.alignment: Qt.AlignLeft

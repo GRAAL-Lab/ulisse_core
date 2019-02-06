@@ -1,0 +1,2 @@
+MotorReference motor_mapout
+MotorReference motor_ctrlref

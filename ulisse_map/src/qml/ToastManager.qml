@@ -29,7 +29,9 @@ Column{
 
     z: Infinity
     spacing: 5
-    anchors.centerIn: parent
+    anchors.horizontalCenter: parent.horizontalCenter
+    anchors.bottom: parent.bottom
+    anchors.bottomMargin: 100
 
     property var toastComponent
 

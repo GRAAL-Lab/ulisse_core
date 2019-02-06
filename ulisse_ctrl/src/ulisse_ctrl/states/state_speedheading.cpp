@@ -35,8 +35,6 @@ fsm::retval StateSpeedHeading::OnEntry()
         t_now_ = std::chrono::system_clock::now();
         total_elapsed_ = std::chrono::duration_cast<std::chrono::seconds>(t_now_ - t_start_);
 
-        //std::cout << "total_elapsed_.count(): " << total_elapsed_.count() << std::endl;
-
         if (total_elapsed_.count() > goalCxt_->cmdTimeout) {
             std::cout << "Speed Heading Timeout reached!" << std::endl;
             fsm_->ExecuteCommand(ulisse::commands::ID::halt);
@@ -58,28 +56,23 @@ fsm::retval StateSpeedHeading::OnEntry()
             speedRef = SlowDownWhenTurning(headingError, speedRef, *conf_);
         }
 
-        /*if (context_->speedHeadingRefIn.d.type == SpeedHeadingType::to_target) {
-            headingRef = AvoidRotationCloseToTarget(headingRef, context_->state.heading, context_->speedHeadingRefIn.d.desiredSpeed,
-                context_->configuration);
-        }*/
+        ctrlCxt_->desiredSpeed = ctrlCxt_->pidSpeed.Compute(goalCxt_->goalSpeed, surgeFbk);
+        ctrlCxt_->desiredJog = ctrlCxt_->pidHeading.Compute(goalCxt_->goalHeading, statusCxt_->currentHeading);
+//        Eigen::Vector6d requestedVel;
 
-        ctrlCxt_->thrusterData.desiredSpeed = ctrlCxt_->pidSpeed.Compute(goalCxt_->goalSpeed, surgeFbk);
-        ctrlCxt_->thrusterData.desiredJog = ctrlCxt_->pidHeading.Compute(goalCxt_->goalHeading, statusCxt_->currentHeading);
-        Eigen::Vector6d requestedVel;
+//        requestedVel(0) = ctrlCxt_->thrusterData.desiredSpeed;
+//        requestedVel(5) = ctrlCxt_->thrusterData.desiredJog;
 
-        requestedVel(0) = ctrlCxt_->thrusterData.desiredSpeed;
-        requestedVel(5) = ctrlCxt_->thrusterData.desiredJog;
+//        if (conf_->ctrlMode == ControlMode::ThrusterMapping) {
 
-        if (conf_->ctrlMode == ControlMode::ThrusterMapping) {
+//            ctrlCxt_->ulisseModel_.ThrusterMapping(requestedVel, ctrlCxt_->thrusterData.mapOut.left, ctrlCxt_->thrusterData.mapOut.right);
 
-            ctrlCxt_->ulisseModel_.ThrusterMapping(requestedVel, ctrlCxt_->thrusterData.mapOut.left, ctrlCxt_->thrusterData.mapOut.right);
+//            ThrustersSaturation(ctrlCxt_->thrusterData.mapOut.left, ctrlCxt_->thrusterData.mapOut.right,
+//                -conf_->thrusterPercLimit, conf_->thrusterPercLimit,
+//                ctrlCxt_->thrusterData.ctrlRef.left, ctrlCxt_->thrusterData.ctrlRef.right);
 
-            ThrustersSaturation(ctrlCxt_->thrusterData.mapOut.left, ctrlCxt_->thrusterData.mapOut.right,
-                -conf_->thrusterPercLimit, conf_->thrusterPercLimit,
-                ctrlCxt_->thrusterData.ctrlRef.left, ctrlCxt_->thrusterData.ctrlRef.right);
-
-        } else if (conf_->ctrlMode == ControlMode::DynamicModel) {
-        }
+//        } else if (conf_->ctrlMode == ControlMode::DynamicModel) {
+//        }
 
         return fsm::ok;
     }

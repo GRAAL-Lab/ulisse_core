@@ -1,7 +1,6 @@
-
 #include "ulisse_ctrl/vehiclecontroller.hpp"
 #include "ctrl_toolbox/HelperFunctions.h"
-#include "ulisse_ctrl/ctrl_data_structs.hpp"
+#include "ulisse_ctrl/helper_functions.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 
 #include <chrono>
@@ -56,68 +55,12 @@ std::shared_ptr<ControlContext> VehicleController::CtrlContext() const { return 
 int VehicleController::LoadConfiguration()
 {
     // Finish to LOAD all Config DATA !!!!!!! //
-    conf_->ctrlMode = static_cast<ControlMode>(par_client_->get_parameter("ControlMode", 0));
-    conf_->enableThrusters = par_client_->get_parameter("EnableThrusters", false);
-    conf_->thrusterPercLimit = par_client_->get_parameter("ThrusterPercLimit", 0.0);
-    conf_->posAcceptanceRadius = par_client_->get_parameter("PosAcceptanceRadius", 0.0);
-
-    // Slow Down on turns
-    conf_->enableSlowDownOnTurns = par_client_->get_parameter("SlowDownOnTurns.enable", false);
-    conf_->slowOnTurns.headingErrorMin = par_client_->get_parameter("SlowDownOnTurns.HeadingErrorMin", 0.0);
-    conf_->slowOnTurns.headingErrorMax = par_client_->get_parameter("SlowDownOnTurns.HeadingErrorMax", 0.0);
-    conf_->slowOnTurns.alphaMin = par_client_->get_parameter("SlowDownOnTurns.AlphaMin", 0.0);
-    conf_->slowOnTurns.alphaMax = par_client_->get_parameter("SlowDownOnTurns.AlphaMax", 0.0);
-
-    // Avoid Rotations
-
-    // PID
-    conf_->pidgains_position.Kp = par_client_->get_parameter("PIDPosition.Kp", 0.0);
-    conf_->pidgains_position.Ki = par_client_->get_parameter("PIDPosition.Ki", 0.0);
-    conf_->pidgains_position.Kd = par_client_->get_parameter("PIDPosition.Kd", 0.0);
-    conf_->pidgains_position.Kff = par_client_->get_parameter("PIDPosition.Kff", 0.0);
-    conf_->pidgains_position.N = par_client_->get_parameter("PIDPosition.N", 0.0);
-    conf_->pidgains_position.Tr = par_client_->get_parameter("PIDPosition.Tr", 0.0);
-    conf_->pidsat_position = par_client_->get_parameter("SpeedLimiter", 0.0);
-
-    conf_->pidgains_speed.Kp = par_client_->get_parameter("PIDSpeed.Kp", 0.0);
-    conf_->pidgains_speed.Ki = par_client_->get_parameter("PIDSpeed.Ki", 0.0);
-    conf_->pidgains_speed.Kd = par_client_->get_parameter("PIDSpeed.Kd", 0.0);
-    conf_->pidgains_speed.Kff = par_client_->get_parameter("PIDSpeed.Kff", 0.0);
-    conf_->pidgains_speed.N = par_client_->get_parameter("PIDSpeed.N", 0.0);
-    conf_->pidgains_speed.Tr = par_client_->get_parameter("PIDSpeed.Tr", 0.0);
-    conf_->pidsat_speed = par_client_->get_parameter("SpeedLimiter", 0.0);
-
-    conf_->pidgains_heading.Kp = par_client_->get_parameter("PIDHeading.Kp", 0.0);
-    conf_->pidgains_heading.Ki = par_client_->get_parameter("PIDHeading.Ki", 0.0);
-    conf_->pidgains_heading.Kd = par_client_->get_parameter("PIDHeading.Kd", 0.0);
-    conf_->pidgains_heading.Kff = par_client_->get_parameter("PIDHeading.Kff", 0.0);
-    conf_->pidgains_heading.N = par_client_->get_parameter("PIDHeading.N", 0.0);
-    conf_->pidgains_heading.Tr = par_client_->get_parameter("PIDHeading.Tr", 0.0);
-    conf_->pidsat_heading = par_client_->get_parameter("JogLimiter", 0.0);
-
-    // THRUSTER MAPPING
-    conf_->thrusterMap.surgeMin = par_client_->get_parameter("ThrusterMapping.SurgeMin", 0.0);
-    conf_->thrusterMap.surgeMax = par_client_->get_parameter("ThrusterMapping.SurgeMax", 0.0);
-    conf_->thrusterMap.yawRateMin = par_client_->get_parameter("ThrusterMapping.YawrateMin", 0.0);
-    conf_->thrusterMap.yawRateMax = par_client_->get_parameter("ThrusterMapping.YawRateMax", 0.0);
-    conf_->thrusterMap.d = par_client_->get_parameter("ThrusterMapping.motors_distance", 0.0);
-    conf_->thrusterMap.lambda_pos = par_client_->get_parameter("ThrusterMapping.lambda_pos", 0.0);
-    conf_->thrusterMap.lambda_neg = par_client_->get_parameter("ThrusterMapping.lambda_neg", 0.0);
-    conf_->thrusterMap.cX
-        = Eigen::Vector3d((par_client_->get_parameter("ThrusterMapping.cX", std::vector<double>(3, 0.0))).data());
-    conf_->thrusterMap.cN
-        = Eigen::Vector3d((par_client_->get_parameter("ThrusterMapping.cN", std::vector<double>(3, 0.0))).data());
-    conf_->thrusterMap.b1_pos = par_client_->get_parameter("ThrusterMapping.b1_pos", 0.0);
-    conf_->thrusterMap.b2_pos = par_client_->get_parameter("ThrusterMapping.b2_pos", 0.0);
-    conf_->thrusterMap.b1_neg = par_client_->get_parameter("ThrusterMapping.b1_neg", 0.0);
-    conf_->thrusterMap.b2_neg = par_client_->get_parameter("ThrusterMapping.b2_neg", 0.0);
-    conf_->thrusterMap.Inertia.diagonal()
-        = Eigen::Vector3d((par_client_->get_parameter("ThrusterMapping.Inertia", std::vector<double>(3, 0.0))).data());
+    LoadConfFromParameterClient(conf_, par_client_);
 
     std::cout << *conf_ << std::endl;
 
     // /  Routing conf to contexts  / //
-    ctrlCxt_->ulisseModel_.SetMappingParams(conf_->thrusterMap);
+    //ctrlCxt_->ulisseModel_.SetMappingParams(conf_->thrusterMap);
 
     ctrlCxt_->pidPosition.Initialize(conf_->pidgains_position, sampleTime_, conf_->pidsat_position);
     ctrlCxt_->pidSpeed.Initialize(conf_->pidgains_speed, sampleTime_, conf_->pidsat_speed);
@@ -344,13 +287,13 @@ void VehicleController::PublishControl()
     ctrlcxt_msg.pidspeed.reference = ctrlCxt_->pidSpeed.GetRef();
     ctrlcxt_msg.pidspeed.output = ctrlCxt_->pidSpeed.GetOutput();
 
-    ctrlcxt_msg.desired_speed = ctrlCxt_->thrusterData.desiredSpeed;
-    ctrlcxt_msg.desired_jog = ctrlCxt_->thrusterData.desiredJog;
+    ctrlcxt_msg.desired_speed = ctrlCxt_->desiredSpeed;
+    ctrlcxt_msg.desired_jog = ctrlCxt_->desiredJog;
 
-    ctrlcxt_msg.motor_mapout.left = ctrlCxt_->thrusterData.mapOut.left;
-    ctrlcxt_msg.motor_mapout.right = ctrlCxt_->thrusterData.mapOut.right;
-    ctrlcxt_msg.motor_ctrlref.left = ctrlCxt_->thrusterData.ctrlRef.left;
-    ctrlcxt_msg.motor_ctrlref.right = ctrlCxt_->thrusterData.ctrlRef.right;
+    //ctrlcxt_msg.motor_mapout.left = ctrlCxt_->thrusterData.mapOut.left;
+    //ctrlcxt_msg.motor_mapout.right = ctrlCxt_->thrusterData.mapOut.right;
+    //ctrlcxt_msg.motor_ctrlref.left = ctrlCxt_->thrusterData.ctrlRef.left;
+    //ctrlcxt_msg.motor_ctrlref.right = ctrlCxt_->thrusterData.ctrlRef.right;
     ctrlcxt_pub_->publish(ctrlcxt_msg);
 }
 }

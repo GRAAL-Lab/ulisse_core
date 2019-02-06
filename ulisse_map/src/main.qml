@@ -19,7 +19,7 @@ ApplicationWindow {
     minimumHeight: 500
     minimumWidth: 705
 
-    property var mainColor: Material.Cyan
+    property var mainColor: (settings.theme == "Light" ? Material.Cyan : Material.Red)
     property var mainAccentColor: Material.color(Material.Amber, Material.Shade700)
     property var secondaryAccentColor: Material.color(Material.Green, Material.Shade600)
 
@@ -32,7 +32,6 @@ ApplicationWindow {
         onActivated: {
             toast.show("Sent Halt Command")
             cmdWrapper.sendHaltCommand()
-
         }
     }
 
@@ -51,7 +50,7 @@ ApplicationWindow {
         id: stackViewContainer
         anchors.fill: parent
         anchors.horizontalCenter: parent.horizontalCenter;
-        height: window.height - headerBar.height// - customFoot.height
+        height: window.height - headerBar.height
         width: window.width
 
         StackLayout {

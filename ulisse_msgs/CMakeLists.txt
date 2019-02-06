@@ -39,6 +39,7 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/Compass.msg"
   "msg/Magnetometer.msg"
   "msg/MotorReference.msg"
+  "msg/ThrustersData.msg"
   "msg/MicroLoopCount.msg"
   "msg/GPSData.msg"
   "msg/GPSStatus.msg"

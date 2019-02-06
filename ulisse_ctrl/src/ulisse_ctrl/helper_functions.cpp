@@ -83,4 +83,64 @@ double AvoidRotationCloseToTarget(double desiredHeading, double heading, double 
             desiredHeading, beta, newHeading);*/
     return newHeading;
 }
+
+void LoadConfFromParameterClient(std::shared_ptr<ConfigurationData> conf, rclcpp::SyncParametersClient::SharedPtr par_client){
+    conf->ctrlMode = static_cast<ControlMode>(par_client->get_parameter("ControlMode", 0));
+    conf->enableThrusters = par_client->get_parameter("EnableThrusters", false);
+    conf->thrusterPercLimit = par_client->get_parameter("ThrusterPercLimit", 0.0);
+    conf->posAcceptanceRadius = par_client->get_parameter("PosAcceptanceRadius", 0.0);
+
+    // Slow Down on turns
+    conf->enableSlowDownOnTurns = par_client->get_parameter("SlowDownOnTurns.enable", false);
+    conf->slowOnTurns.headingErrorMin = par_client->get_parameter("SlowDownOnTurns.HeadingErrorMin", 0.0);
+    conf->slowOnTurns.headingErrorMax = par_client->get_parameter("SlowDownOnTurns.HeadingErrorMax", 0.0);
+    conf->slowOnTurns.alphaMin = par_client->get_parameter("SlowDownOnTurns.AlphaMin", 0.0);
+    conf->slowOnTurns.alphaMax = par_client->get_parameter("SlowDownOnTurns.AlphaMax", 0.0);
+
+    // Avoid Rotations
+
+    // PID
+    conf->pidgains_position.Kp = par_client->get_parameter("PIDPosition.Kp", 0.0);
+    conf->pidgains_position.Ki = par_client->get_parameter("PIDPosition.Ki", 0.0);
+    conf->pidgains_position.Kd = par_client->get_parameter("PIDPosition.Kd", 0.0);
+    conf->pidgains_position.Kff = par_client->get_parameter("PIDPosition.Kff", 0.0);
+    conf->pidgains_position.N = par_client->get_parameter("PIDPosition.N", 0.0);
+    conf->pidgains_position.Tr = par_client->get_parameter("PIDPosition.Tr", 0.0);
+    conf->pidsat_position = par_client->get_parameter("SpeedLimiter", 0.0);
+
+    conf->pidgains_speed.Kp = par_client->get_parameter("PIDSpeed.Kp", 0.0);
+    conf->pidgains_speed.Ki = par_client->get_parameter("PIDSpeed.Ki", 0.0);
+    conf->pidgains_speed.Kd = par_client->get_parameter("PIDSpeed.Kd", 0.0);
+    conf->pidgains_speed.Kff = par_client->get_parameter("PIDSpeed.Kff", 0.0);
+    conf->pidgains_speed.N = par_client->get_parameter("PIDSpeed.N", 0.0);
+    conf->pidgains_speed.Tr = par_client->get_parameter("PIDSpeed.Tr", 0.0);
+    conf->pidsat_speed = par_client->get_parameter("SpeedLimiter", 0.0);
+
+    conf->pidgains_heading.Kp = par_client->get_parameter("PIDHeading.Kp", 0.0);
+    conf->pidgains_heading.Ki = par_client->get_parameter("PIDHeading.Ki", 0.0);
+    conf->pidgains_heading.Kd = par_client->get_parameter("PIDHeading.Kd", 0.0);
+    conf->pidgains_heading.Kff = par_client->get_parameter("PIDHeading.Kff", 0.0);
+    conf->pidgains_heading.N = par_client->get_parameter("PIDHeading.N", 0.0);
+    conf->pidgains_heading.Tr = par_client->get_parameter("PIDHeading.Tr", 0.0);
+    conf->pidsat_heading = par_client->get_parameter("JogLimiter", 0.0);
+
+    // THRUSTER MAPPING
+    conf->thrusterMap.surgeMin = par_client->get_parameter("ThrusterMapping.SurgeMin", 0.0);
+    conf->thrusterMap.surgeMax = par_client->get_parameter("ThrusterMapping.SurgeMax", 0.0);
+    conf->thrusterMap.yawRateMin = par_client->get_parameter("ThrusterMapping.YawrateMin", 0.0);
+    conf->thrusterMap.yawRateMax = par_client->get_parameter("ThrusterMapping.YawRateMax", 0.0);
+    conf->thrusterMap.d = par_client->get_parameter("ThrusterMapping.motors_distance", 0.0);
+    conf->thrusterMap.lambda_pos = par_client->get_parameter("ThrusterMapping.lambda_pos", 0.0);
+    conf->thrusterMap.lambda_neg = par_client->get_parameter("ThrusterMapping.lambda_neg", 0.0);
+    conf->thrusterMap.cX
+        = Eigen::Vector3d((par_client->get_parameter("ThrusterMapping.cX", std::vector<double>(3, 0.0))).data());
+    conf->thrusterMap.cN
+        = Eigen::Vector3d((par_client->get_parameter("ThrusterMapping.cN", std::vector<double>(3, 0.0))).data());
+    conf->thrusterMap.b1_pos = par_client->get_parameter("ThrusterMapping.b1_pos", 0.0);
+    conf->thrusterMap.b2_pos = par_client->get_parameter("ThrusterMapping.b2_pos", 0.0);
+    conf->thrusterMap.b1_neg = par_client->get_parameter("ThrusterMapping.b1_neg", 0.0);
+    conf->thrusterMap.b2_neg = par_client->get_parameter("ThrusterMapping.b2_neg", 0.0);
+    conf->thrusterMap.Inertia.diagonal()
+        = Eigen::Vector3d((par_client->get_parameter("ThrusterMapping.Inertia", std::vector<double>(3, 0.0))).data());
+}
 }

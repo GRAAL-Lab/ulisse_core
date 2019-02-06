@@ -1,6 +1,6 @@
 #include "rclcpp/rclcpp.hpp"
 
-#include "ulisse_msgs/msg/control_context.hpp"
+#include "ulisse_msgs/msg/thrusters_data.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 #include "ulisse_sim/vehiclesimulator.hpp"
 
@@ -20,26 +20,19 @@ static double test_h_p(0.0), test_h_s(0.0);
 
 void ReadMappingParameters(const std::shared_ptr<rclcpp::SyncParametersClient> pc, ThrusterMappingParameters& tmp);
 
-void ctrlCtx_cb(const ulisse_msgs::msg::ControlContext::SharedPtr msg)
+void ThrusterDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg)
 {
     test_h_p = msg->motor_ctrlref.left;
     test_h_s = msg->motor_ctrlref.right;
-}
-
-void motorref_cb(const ulisse_msgs::msg::MotorReference::SharedPtr msg)
-{
-    test_h_p = msg->left;
-    test_h_s = msg->right;
 }
 
 int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
     auto node = rclcpp::Node::make_shared("simulator_node");
-    auto subscriber = node->create_subscription<ulisse_msgs::msg::ControlContext>(
-        ulisse_msgs::topicnames::control_context, ctrlCtx_cb);
-    auto motorref_sub = node->create_subscription<ulisse_msgs::msg::MotorReference>(
-        ulisse_msgs::topicnames::motorref, motorref_cb);
+    auto thrusters_sub = node->create_subscription<ulisse_msgs::msg::ThrustersData>(
+        ulisse_msgs::topicnames::thrusters_data, ThrusterDataCB);
+
     auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(node);
 
     while (!parameters_client->wait_for_service(1ms)) {
