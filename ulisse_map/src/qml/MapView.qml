@@ -22,10 +22,10 @@ RowLayout {
     Plugin {
         id: mapPlugin
         name: "osm"
-        PluginParameter {
+        /*PluginParameter {
             name: "osm.mapping.offline.directory"
             value: "/home/graal/.cache/QtLocation/5.8/tiles/osm/"
-        }
+        }*/
     }
 
     ModalPopup {
@@ -203,6 +203,7 @@ RowLayout {
                 coordinate: QtPositioning.coordinate(fbkUpdater.ulisse_pos.latitude, fbkUpdater.ulisse_pos.longitude)
                 anchorPoint.x: - ulisseImage.width / 2
                 anchorPoint.y: - ulisseImage.height / 2
+                z: map.z + 3
                 opacity: 0.0
             }
 

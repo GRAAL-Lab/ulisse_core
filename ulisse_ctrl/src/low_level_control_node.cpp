@@ -82,6 +82,7 @@ int main(int argc, char* argv[])
                     thrusterData.ctrlRef.left, thrusterData.ctrlRef.right);
 
             } else if (conf->ctrlMode == ControlMode::DynamicModel) {
+                // Dyamic Code Here
             }
         } else {
             thrusterData.mapOut.left = 0.0;

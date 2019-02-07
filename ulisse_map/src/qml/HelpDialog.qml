@@ -2,6 +2,7 @@ import QtQuick 2.5
 import QtQuick.Layouts 1.3
 import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
+import QtGraphicalEffects 1.0
 
 Dialog {
     id: dialog
@@ -88,10 +89,30 @@ Dialog {
             height: 20
             fillMode: Image.PreserveAspectFit
             source: 'qrc:/images/graal_logo.png'
-            //horizontalAlignment: Label.AlignHCenter
-            //verticalAlignment: Label.AlignVCenter
             Layout.fillWidth: true
-            //Layout.alignment: Qt.AlignBottom
+            MouseArea {
+                anchors.fill: parent
+
+                onClicked:  {
+                    eastereggDialog.open();
+                }
+            }
+        }
+
+        ModalPopup {
+            id: eastereggDialog
+            title: "Interfaccia bella assai"
+            contentItem: Text {
+                id: theText
+                width: parent.width
+                color: "#ff7644"
+                text: "by <b>wanderfra</b>"
+                font.bold: true
+                verticalAlignment: Text.AlignVCenter
+                horizontalAlignment: Text.AlignHCenter
+                styleColor: "#ffead1"
+                style: Text.Outline
+            }
         }
     }
 }

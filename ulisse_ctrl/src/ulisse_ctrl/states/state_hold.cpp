@@ -28,7 +28,7 @@ namespace states {
         ctb::DistanceAndAzimuthRad(statusCxt_->filterData.pos, goalCxt_->currentGoal.pos, goalCxt_->goalDistance, goalCxt_->goalHeading);
 
         if (goalReached_) {
-            if (goalCxt_->goalDistance < (goalCxt_->currentGoal.acceptRadius + conf_->holdData.hysteresis)) {
+            if (goalCxt_->goalDistance > (goalCxt_->currentGoal.acceptRadius + conf_->holdData.hysteresis)) {
                 goalReached_ = false;
             }
 
@@ -74,10 +74,11 @@ namespace states {
         std::cout << " ****\n";
         std::cout << "Current Heading: " << statusCxt_->currentHeading << std::endl;
         std::cout << "Goal Heading: " << goalCxt_->goalHeading << std::endl;
-        std::cout << "Desired speed: " << ctrlCxt_->desiredSpeed << std::endl;
-        std::cout << "Desired jog: " << ctrlCxt_->desiredJog << std::endl;
-        std::cout << "Goal Distance: " << goalCxt_->goalDistance << std::endl;
-        std::cout << "Acceptance radius:" << goalCxt_->currentGoal.acceptRadius << std::endl;
+        std::cout << "Desired Speed: " << ctrlCxt_->desiredSpeed << std::endl;
+        std::cout << "Desired Jog: " << ctrlCxt_->desiredJog << std::endl;
+        if(!goalReached_) std::cout << "Goal Distance: " << goalCxt_->goalDistance << std::endl;
+        std::cout << "Acceptance radius: " << goalCxt_->currentGoal.acceptRadius << std::endl;
+        std::cout << "Hysteresis: " << conf_->holdData.hysteresis << std::endl;
         std::cout << "----------------------------------" << std::endl;
 
         return fsm::ok;

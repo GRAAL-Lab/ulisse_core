@@ -17,7 +17,7 @@ controller_node:
         Jog2ThrusterCoefficient: 1050.0
 
         Hold:
-            Hysteresis: 1.0
+            Hysteresis: 2.0
             enableCurrentCompensation: true
             # above CurrentMax the desired heading will be set equal to the
             # estimated current direction

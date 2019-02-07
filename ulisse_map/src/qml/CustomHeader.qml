@@ -48,15 +48,15 @@ ToolBar {
             transformOrigin: Menu.TopRight
 
             MenuItem {
-                text: "Help"
-                onTriggered: helpDialog.open()
-            }
-
-            MenuItem {
                 text: "Settings"
                 onTriggered: {
                     settingsDialog.open();
                 }
+            }
+
+            MenuItem {
+                text: "Help"
+                onTriggered: helpDialog.open()
             }
 
             MenuSeparator{}
