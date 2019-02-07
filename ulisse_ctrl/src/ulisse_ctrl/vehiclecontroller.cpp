@@ -63,7 +63,7 @@ int VehicleController::LoadConfiguration()
     //ctrlCxt_->ulisseModel_.SetMappingParams(conf_->thrusterMap);
 
     ctrlCxt_->pidPosition.Initialize(conf_->pidgains_position, sampleTime_, conf_->pidsat_position);
-    ctrlCxt_->pidSpeed.Initialize(conf_->pidgains_speed, sampleTime_, conf_->pidsat_speed);
+    ctrlCxt_->pidSurge.Initialize(conf_->pidgains_surge, sampleTime_, conf_->pidsat_surge);
     ctrlCxt_->pidHeading.Initialize(conf_->pidgains_heading, sampleTime_, conf_->pidsat_heading);
     ctrlCxt_->pidHeading.SetErrorFunction(ctb::HeadingErrorRadFunctor());
 
@@ -270,7 +270,7 @@ void VehicleController::PublishControl()
     goalcxt_msg.accept_radius = goalCxt_->currentGoal.acceptRadius;
     goalcxt_msg.goal_distance = goalCxt_->goalDistance;
     goalcxt_msg.goal_heading = goalCxt_->goalHeading;
-    goalcxt_msg.goal_speed = goalCxt_->goalSpeed;
+    goalcxt_msg.goal_speed = goalCxt_->goalSurge;
 
     goalcxt_pub_->publish(goalcxt_msg);
 
@@ -283,11 +283,11 @@ void VehicleController::PublishControl()
     ctrlcxt_msg.pidheading.reference = ctrlCxt_->pidHeading.GetRef();
     ctrlcxt_msg.pidheading.output = ctrlCxt_->pidHeading.GetOutput();
 
-    ctrlcxt_msg.pidspeed.feedback = ctrlCxt_->pidSpeed.GetFbk();
-    ctrlcxt_msg.pidspeed.reference = ctrlCxt_->pidSpeed.GetRef();
-    ctrlcxt_msg.pidspeed.output = ctrlCxt_->pidSpeed.GetOutput();
+    /*ctrlcxt_msg.pidspeed.feedback = ctrlCxt_->pidSurge.GetFbk();
+    ctrlcxt_msg.pidspeed.reference = ctrlCxt_->pidSurge.GetRef();
+    ctrlcxt_msg.pidspeed.output = ctrlCxt_->pidSurge.GetOutput();*/
 
-    ctrlcxt_msg.desired_speed = ctrlCxt_->desiredSpeed;
+    ctrlcxt_msg.desired_speed = ctrlCxt_->desiredSurge;
     ctrlcxt_msg.desired_jog = ctrlCxt_->desiredJog;
 
     //ctrlcxt_msg.motor_mapout.left = ctrlCxt_->thrusterData.mapOut.left;

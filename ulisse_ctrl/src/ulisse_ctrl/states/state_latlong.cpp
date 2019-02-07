@@ -38,26 +38,12 @@ namespace states {
             goalDistance = SlowDownWhenTurning(headingError, goalDistance, *conf_);
         }
 
-        ctrlCxt_->desiredSpeed = -ctrlCxt_->pidPosition.Compute(0.0, goalDistance);
+        ctrlCxt_->desiredSurge = ctrlCxt_->pidPosition.Compute(goalDistance, 0.0);
         ctrlCxt_->desiredJog = ctrlCxt_->pidHeading.Compute(goalCxt_->goalHeading, statusCxt_->currentHeading);
-//        Eigen::Vector6d requestedVel;
-//        requestedVel(0) = ctrlCxt_->thrusterData.desiredSpeed;
-//        requestedVel(5) = ctrlCxt_->thrusterData.desiredJog;
-
-//        if (conf_->ctrlMode == ControlMode::ThrusterMapping) {
-
-//            ctrlCxt_->ulisseModel_.ThrusterMapping(requestedVel, ctrlCxt_->thrusterData.mapOut.left, ctrlCxt_->thrusterData.mapOut.right);
-
-//            ThrustersSaturation(ctrlCxt_->thrusterData.mapOut.left, ctrlCxt_->thrusterData.mapOut.right,
-//                -conf_->thrusterPercLimit, conf_->thrusterPercLimit,
-//                ctrlCxt_->thrusterData.ctrlRef.left, ctrlCxt_->thrusterData.ctrlRef.right);
-
-//        } else if (conf_->ctrlMode == ControlMode::DynamicModel) {
-//        }
 
         std::cout << "Current Heading: " << statusCxt_->currentHeading << std::endl;
         std::cout << "Goal Heading: " << goalCxt_->goalHeading << std::endl;
-        std::cout << "Desired speed: " << ctrlCxt_->desiredSpeed << std::endl;
+        std::cout << "Desired speed: " << ctrlCxt_->desiredSurge << std::endl;
         std::cout << "Desired jog: " << ctrlCxt_->desiredJog << std::endl;
         std::cout << "Goal Distance: " << goalCxt_->goalDistance << std::endl;
         std::cout << "Acceptance radius:" << goalCxt_->currentGoal.acceptRadius << std::endl;

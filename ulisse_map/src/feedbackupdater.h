@@ -20,7 +20,7 @@ class FeedbackUpdater : public QObject {
     QObject* goalFlagObj_;
     Q_PROPERTY(QGeoCoordinate ulisse_pos READ get_ulisse_pos NOTIFY callbacks_processed)
     Q_PROPERTY(double ulisse_yaw_deg READ get_ulisse_yaw NOTIFY callbacks_processed)
-    Q_PROPERTY(double ulisse_speed READ get_ulisse_speed NOTIFY callbacks_processed)
+    Q_PROPERTY(double ulisse_surge READ get_ulisse_surge NOTIFY callbacks_processed)
     Q_PROPERTY(QString vehicle_state READ get_vehicle_state NOTIFY callbacks_processed)
     Q_PROPERTY(QGeoCoordinate goal_pos READ get_goal_pos NOTIFY callbacks_processed)
     Q_PROPERTY(double goal_distance READ get_goal_distance NOTIFY callbacks_processed)
@@ -30,7 +30,7 @@ class FeedbackUpdater : public QObject {
 
     QGeoCoordinate q_ulisse_pos_, q_goal_pos_;
     double q_goal_distance_;
-    double q_ulisse_speed_;
+    double q_ulisse_surge_;
     double q_battery_perc_L_, q_battery_perc_R_;
     QString q_vehicle_state_;
     double q_ulisse_yaw_deg_;
@@ -61,7 +61,7 @@ public:
     Q_INVOKABLE void copyToClipboard(QString value);
 
     QGeoCoordinate get_ulisse_pos();
-    double get_ulisse_speed();
+    double get_ulisse_surge();
     QGeoCoordinate get_goal_pos();
     double get_ulisse_yaw();
     QString get_vehicle_state();

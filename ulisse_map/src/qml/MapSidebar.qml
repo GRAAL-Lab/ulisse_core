@@ -46,22 +46,14 @@ Rectangle {
                         id: ulisseStateLabel
                         labelColor: Material.color(mainColor, Material.Shade700)
                         label: "Ulisse State"
-                        textColor: 'lightgray'
                         text: "%1".arg(fbkUpdater.vehicle_state)
                         textBoldness: Font.DemiBold
-                        onTextChanged: {
-                            if(ulisse_state_changed){
-                                ulisseStateLabel.textColor = Material.foreground;
-                            }
-                            ulisse_state_changed = true;
-                        }
                     }
 
                     LabelledText {
                         id: ulissePosLabel
                         labelColor: Material.color(mainColor, Material.Shade700)
                         label: "Ulisse Coordinates"
-                        //textColor: 'darkslategray'
                         text: "%1, %2".arg(fbkUpdater.ulisse_pos.latitude).arg(fbkUpdater.ulisse_pos.longitude)
                     }
                 }
@@ -84,7 +76,6 @@ Rectangle {
                         id: goalTextLabel
                         labelColor: Material.color(mainColor, Material.Shade700)
                         label: "Goal Coordinates"
-                        //textColor: 'darkslategray'
                         text: "%1, %2".arg(fbkUpdater.goal_pos.latitude).arg(fbkUpdater.goal_pos.longitude)
                     }
 
@@ -92,7 +83,6 @@ Rectangle {
                         id: goalDistLabel
                         labelColor: Material.color(mainColor, Material.Shade700)
                         label: "Distance to Target"
-                        //textColor: 'darkslategray'
                         text: "%1 (m)".arg(fbkUpdater.goal_distance)
 
                     }
@@ -107,7 +97,6 @@ Rectangle {
                         id: markerTextLabel
                         labelColor: Material.color(Material.Red, Material.Shade800)
                         label: "Marker Coordinates"
-                        textColor: 'lightgray'
                         text: "Right click on map"
                     }
                 }
@@ -120,7 +109,6 @@ Rectangle {
             Layout.minimumHeight: 14
             color: 'transparent'
             Text {
-                //anchors.centerIn: parent
                 width: parent.width
                 font.pointSize: 8
                 color: 'gray'

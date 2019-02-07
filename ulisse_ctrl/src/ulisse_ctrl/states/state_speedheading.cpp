@@ -21,10 +21,6 @@ StateSpeedHeading::~StateSpeedHeading()
 
 fsm::retval StateSpeedHeading::OnEntry()
     {
-
-        //t_now_ = t_start_ = std::chrono::system_clock::now();
-        //total_elapsed_ = std::chrono::duration_cast<std::chrono::seconds>(t_now_ - t_start_);
-
         return fsm::ok;
     }
 
@@ -40,39 +36,29 @@ fsm::retval StateSpeedHeading::OnEntry()
             fsm_->ExecuteCommand(ulisse::commands::ID::halt);
         }
 
-        double speedRef, headingRef;
+        double surgeRef, headingRef;
         double surgeFbk;
-        //double swayFbk;
 
-        double headingTrackDiff = ctb::HeadingErrorRad(statusCxt_->currentHeading, statusCxt_->gpsTrack);
-        surgeFbk = statusCxt_->gpsSpeed * cos(headingTrackDiff);
-        //swayFbk = posCxt_->gpsSpeed * sin(headingTrackDiff);
-        // TODO: check if the desired speed should be multiplied with cos(errorHeading)
-        speedRef = goalCxt_->goalSpeed;
+//        double headingTrackDiff = ctb::HeadingErrorRad(statusCxt_->currentHeading, statusCxt_->gpsTrack);
+//        surgeFbk = statusCxt_->gpsSpeed * cos(headingTrackDiff);
+
+        surgeRef = goalCxt_->goalSurge;
         headingRef = goalCxt_->goalHeading;
 
         if (conf_->enableSlowDownOnTurns) {
             double headingError = ctb::HeadingErrorRad(statusCxt_->currentHeading, headingRef);
-            speedRef = SlowDownWhenTurning(headingError, speedRef, *conf_);
+            goalCxt_->goalSurge = SlowDownWhenTurning(headingError, surgeRef, *conf_);
         }
 
-        ctrlCxt_->desiredSpeed = ctrlCxt_->pidSpeed.Compute(goalCxt_->goalSpeed, surgeFbk);
+        ctrlCxt_->desiredSurge = goalCxt_->goalSurge;//ctrlCxt_->pidSurge.Compute(, surgeFbk);
         ctrlCxt_->desiredJog = ctrlCxt_->pidHeading.Compute(goalCxt_->goalHeading, statusCxt_->currentHeading);
-//        Eigen::Vector6d requestedVel;
 
-//        requestedVel(0) = ctrlCxt_->thrusterData.desiredSpeed;
-//        requestedVel(5) = ctrlCxt_->thrusterData.desiredJog;
-
-//        if (conf_->ctrlMode == ControlMode::ThrusterMapping) {
-
-//            ctrlCxt_->ulisseModel_.ThrusterMapping(requestedVel, ctrlCxt_->thrusterData.mapOut.left, ctrlCxt_->thrusterData.mapOut.right);
-
-//            ThrustersSaturation(ctrlCxt_->thrusterData.mapOut.left, ctrlCxt_->thrusterData.mapOut.right,
-//                -conf_->thrusterPercLimit, conf_->thrusterPercLimit,
-//                ctrlCxt_->thrusterData.ctrlRef.left, ctrlCxt_->thrusterData.ctrlRef.right);
-
-//        } else if (conf_->ctrlMode == ControlMode::DynamicModel) {
-//        }
+        std::cout << "Current Heading: " << statusCxt_->currentHeading << std::endl;
+        std::cout << "Current Surge: " << statusCxt_->gpsSpeed << std::endl;
+        std::cout << "Goal Heading: " << goalCxt_->goalHeading << std::endl;
+        std::cout << "Desired Surge: " << ctrlCxt_->desiredSurge << std::endl;
+        std::cout << "Desired Jog: " << ctrlCxt_->desiredJog << std::endl;
+        std::cout << "----------------------------------" << std::endl;
 
         return fsm::ok;
     }

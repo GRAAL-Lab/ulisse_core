@@ -108,13 +108,13 @@ void LoadConfFromParameterClient(std::shared_ptr<ConfigurationData> conf, rclcpp
     conf->pidgains_position.Tr = par_client->get_parameter("PIDPosition.Tr", 0.0);
     conf->pidsat_position = par_client->get_parameter("SpeedLimiter", 0.0);
 
-    conf->pidgains_speed.Kp = par_client->get_parameter("PIDSpeed.Kp", 0.0);
-    conf->pidgains_speed.Ki = par_client->get_parameter("PIDSpeed.Ki", 0.0);
-    conf->pidgains_speed.Kd = par_client->get_parameter("PIDSpeed.Kd", 0.0);
-    conf->pidgains_speed.Kff = par_client->get_parameter("PIDSpeed.Kff", 0.0);
-    conf->pidgains_speed.N = par_client->get_parameter("PIDSpeed.N", 0.0);
-    conf->pidgains_speed.Tr = par_client->get_parameter("PIDSpeed.Tr", 0.0);
-    conf->pidsat_speed = par_client->get_parameter("SpeedLimiter", 0.0);
+    conf->pidgains_surge.Kp = par_client->get_parameter("PIDSpeed.Kp", 0.0);
+    conf->pidgains_surge.Ki = par_client->get_parameter("PIDSpeed.Ki", 0.0);
+    conf->pidgains_surge.Kd = par_client->get_parameter("PIDSpeed.Kd", 0.0);
+    conf->pidgains_surge.Kff = par_client->get_parameter("PIDSpeed.Kff", 0.0);
+    conf->pidgains_surge.N = par_client->get_parameter("PIDSpeed.N", 0.0);
+    conf->pidgains_surge.Tr = par_client->get_parameter("PIDSpeed.Tr", 0.0);
+    conf->pidsat_surge = par_client->get_parameter("SpeedLimiter", 0.0);
 
     conf->pidgains_heading.Kp = par_client->get_parameter("PIDHeading.Kp", 0.0);
     conf->pidgains_heading.Ki = par_client->get_parameter("PIDHeading.Ki", 0.0);

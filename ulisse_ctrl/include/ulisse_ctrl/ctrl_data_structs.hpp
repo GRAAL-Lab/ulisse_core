@@ -24,7 +24,7 @@ struct MotorReference {
 };
 
 struct ThrusterControlData {
-    double desiredSpeed;
+    double desiredSurge;
     double desiredJog;
     MotorReference mapOut, ctrlRef;
 };
@@ -96,17 +96,17 @@ struct StatusContext {
 
 struct ControlContext {
     //SurfaceVehicleModel ulisseModel_;
-    ctb::DigitalPID pidSpeed;
+    ctb::DigitalPID pidSurge;
     ctb::DigitalPID pidPosition;
     ctb::DigitalPID pidHeading;
-    double desiredSpeed;
+    double desiredSurge;
     double desiredJog;
     //ThrusterControlData thrusterData;
 };
 
 struct GoalContext {
     Waypoint currentGoal, nextGoal;
-    double goalDistance, goalHeading, goalSpeed;
+    double goalDistance, goalHeading, goalSurge;
     uint cmdTimeout;
     GoalContext()
         : goalDistance(0.0)
@@ -127,11 +127,11 @@ struct ConfigurationData {
     SlowDownOnTurnsData slowOnTurns;
     AvoidRotationData avoidRot;
 
-    ctb::PIDGains pidgains_speed;
+    ctb::PIDGains pidgains_surge;
     ctb::PIDGains pidgains_position;
     ctb::PIDGains pidgains_heading;
 
-    double pidsat_speed;
+    double pidsat_surge;
     double pidsat_position;
     double pidsat_heading;
 
@@ -143,7 +143,7 @@ struct ConfigurationData {
         , enableThrusters(false)
         , thrusterPercLimit(0.0)
         , enableSlowDownOnTurns(false)
-        , pidsat_speed(0.0)
+        , pidsat_surge(0.0)
         , pidsat_position(0.0)
         , pidsat_heading(0.0)
     {

@@ -19,7 +19,7 @@ namespace states {
         goalCxt_->goalDistance = 0.0;
 
         ctrlCxt_->pidPosition.Reset();
-        ctrlCxt_->pidSpeed.Reset();
+        ctrlCxt_->pidSurge.Reset();
         ctrlCxt_->pidHeading.Reset();
 
         return fsm::ok;

@@ -84,9 +84,7 @@ ApplicationWindow {
         id: settingsDialog
         x: Math.round((window.width - width) / 2)
         y: Math.round(window.height / 6)
-        width: Math.round(Math.min(window.width, window.height) / 3 * 2)
-
-        onActiveFocusChanged: stackViewContainer.forceActiveFocus()
+        width: Math.round(Math.min(window.width, window.height) / 3 * 2)    
     }
 
     HelpDialog {
@@ -96,7 +94,6 @@ ApplicationWindow {
         width: Math.round(window.width * 0.8)
         height: Math.round(window.height * 0.7)
 
-        onActiveFocusChanged: stackViewContainer.forceActiveFocus()
     }
 
     /*Text {

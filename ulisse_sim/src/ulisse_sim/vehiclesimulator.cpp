@@ -146,11 +146,6 @@ void VehicleSimulator::SimulateActuation(double h_p, double h_s)
     vehAtt_now_.SetPitch(std::fmod((vehAtt_last_.GetPitch() + rpyEulerRates(1) * Ts_) + 2 * M_PI, 2 * M_PI));
     vehAtt_now_.SetYaw(std::fmod((vehAtt_last_.GetYaw() + rpyEulerRates(2) * Ts_) + 2 * M_PI, 2 * M_PI));
 
-    //int zone;
-    //bool northp;
-    //double x, y;
-    //GeographicLib::UTMUPS::Forward(lat_now_, long_now_, zone, northp, x, y);
-    //std::cout << "UTM Coords: " << x << ", " << y << std::endl;
 }
 
 double VehicleSimulator::GetCurrentTimestamp() const

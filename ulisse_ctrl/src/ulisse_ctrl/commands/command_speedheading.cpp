@@ -19,13 +19,13 @@ namespace commands {
 
     void CommandSpeedHeading::SetGoal(double speed, double heading, uint timeout_sec)
     {
-        goalCxt_->goalSpeed = speed;
+        goalCxt_->goalSurge = speed;
         goalCxt_->goalHeading = heading;
         goalCxt_->cmdTimeout = timeout_sec;
 
         ctrlCxt_->pidPosition.Reset();
         ctrlCxt_->pidHeading.Reset();
-        ctrlCxt_->pidSpeed.Reset();
+        ctrlCxt_->pidSurge.Reset();
         goalCxt_->goalDistance = 0.0;
     }
 }

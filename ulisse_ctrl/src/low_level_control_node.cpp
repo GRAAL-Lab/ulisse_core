@@ -22,7 +22,7 @@
 using namespace std::chrono_literals;
 using namespace ulisse;
 
-static ulisse_msgs::msg::ControlContext control_cxt;
+static ulisse_msgs::msg::ControlContext ctrl_cxt_msg;
 static ulisse_msgs::msg::StatusContext status_cxt;
 
 void ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg);
@@ -34,6 +34,7 @@ int main(int argc, char* argv[])
     auto nh = rclcpp::Node::make_shared("low_level_control_node");
 
     int rate = 10;
+    double sampleTime = 1.0 / rate;
     rclcpp::WallRate loop_rate(rate);
 
     auto ctrlcxt_sub = nh->create_subscription<ulisse_msgs::msg::ControlContext>(
@@ -57,20 +58,28 @@ int main(int argc, char* argv[])
     auto conf = std::make_shared<ConfigurationData>();
     LoadConfFromParameterClient(conf, par_client);
 
+    ControlContext ctrlCxt;
+    ctrlCxt.pidSurge.Initialize(conf->pidgains_surge, sampleTime, conf->pidsat_surge);
+
     SurfaceVehicleModel ulisseModel;
     ulisseModel.SetMappingParams(conf->thrusterMap);
+
     ThrusterControlData thrusterData;
     ulisse_msgs::msg::ThrustersData thrust_msg;
 
     while (rclcpp::ok()) {
 
-        thrusterData.desiredSpeed = control_cxt.desired_speed;
-        thrusterData.desiredJog = control_cxt.desired_jog;
+        double headingTrackDiff = ctb::HeadingErrorRad(status_cxt.vehicle_heading, status_cxt.vehicle_track);
+        double surgeFbk = status_cxt.vehicle_speed * cos(headingTrackDiff);
+
+        thrusterData.desiredSurge = ctrlCxt.pidSurge.Compute(ctrl_cxt_msg.desired_speed, surgeFbk);
+        thrusterData.desiredJog = ctrl_cxt_msg.desired_jog;
 
         if (status_cxt.vehicle_state != ulisse::states::ID::halt) {
 
             Eigen::Vector6d requestedVel;
-            requestedVel(0) = thrusterData.desiredSpeed;
+            requestedVel.setZero();
+            requestedVel(0) = thrusterData.desiredSurge;
             requestedVel(5) = thrusterData.desiredJog;
 
             if (conf->ctrlMode == ControlMode::ThrusterMapping) {
@@ -81,24 +90,20 @@ int main(int argc, char* argv[])
                     -conf->thrusterPercLimit, conf->thrusterPercLimit,
                     thrusterData.ctrlRef.left, thrusterData.ctrlRef.right);
 
+                thrust_msg.motor_mapout.left = thrusterData.mapOut.left;
+                thrust_msg.motor_mapout.right = thrusterData.mapOut.right;
+
             } else if (conf->ctrlMode == ControlMode::DynamicModel) {
                 // Dyamic Code Here
             }
+
+            thrust_msg.motor_ctrlref.left = thrusterData.ctrlRef.left;
+            thrust_msg.motor_ctrlref.right = thrusterData.ctrlRef.right;
+
         } else {
-            thrusterData.mapOut.left = 0.0;
-            thrusterData.mapOut.right = 0.0;
-            thrusterData.ctrlRef.left = 0.0;
-            thrusterData.ctrlRef.right = 0.0;
+            thrust_msg.motor_ctrlref.left = 0.0;
+            thrust_msg.motor_ctrlref.right = 0.0;
         }
-
-        //std::cout << "mapOut.left: " << thrusterData.mapOut.left << std::endl;
-        //std::cout << "mapOut.right: " << thrusterData.mapOut.right << std::endl;
-
-        thrust_msg.motor_mapout.left = thrusterData.mapOut.left;
-        thrust_msg.motor_mapout.right = thrusterData.mapOut.right;
-        thrust_msg.motor_ctrlref.left = thrusterData.ctrlRef.left;
-        thrust_msg.motor_ctrlref.right = thrusterData.ctrlRef.right;
-
         thrusterdata_pub->publish(thrust_msg);
 
         rclcpp::spin_some(nh);
@@ -112,7 +117,7 @@ int main(int argc, char* argv[])
 
 void ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg)
 {
-    control_cxt = *msg;
+    ctrl_cxt_msg = *msg;
 }
 
 void StatusContextCB(const ulisse_msgs::msg::StatusContext::SharedPtr msg)

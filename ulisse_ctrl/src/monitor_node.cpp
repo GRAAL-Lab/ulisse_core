@@ -68,7 +68,8 @@ int main(int argc, char* argv[])
 
         std::cout << tc::green << "GPS Pos:\t" << tc::none << gps_data.latitude << ", " << gps_data.longitude << std::endl;
         std::cout << tc::green << "Filtered Pos:\t" << tc::none << status_cxt.vehicle_pos.latitude << ", " << status_cxt.vehicle_pos.longitude << std::endl;
-        std::cout << tc::green << "Heading:\t" << tc::none << status_cxt.vehicle_heading << std::endl;
+        std::cout << tc::green << "Heading:\t" << tc::none << status_cxt.vehicle_heading * 180 / M_PI << std::endl;
+        std::cout << tc::green << "Surge:\t\t" << tc::none << status_cxt.vehicle_speed << std::endl;
 
         std::cout << tc::green << "Goal Pos:\t" << tc::none << goal_cxt.current_goal.latitude << ", " << goal_cxt.current_goal.longitude << std::endl;
         std::cout << tc::green << "Goal Distance:\t" << tc::none << std::setprecision(10) << goal_cxt.goal_distance << std::endl;

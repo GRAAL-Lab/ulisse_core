@@ -198,7 +198,7 @@ RowLayout {
                 id: overlayText
                 sourceItem: Text {
                     color: 'darkslategray'
-                    text: "Speed: %1 m/s\nHeading: %2°".arg(fbkUpdater.ulisse_speed).arg(fbkUpdater.ulisse_yaw_deg)
+                    text: "Surge: %1 m/s\nHeading: %2°".arg(fbkUpdater.ulisse_surge).arg(fbkUpdater.ulisse_yaw_deg)
                 }
                 coordinate: QtPositioning.coordinate(fbkUpdater.ulisse_pos.latitude, fbkUpdater.ulisse_pos.longitude)
                 anchorPoint.x: - ulisseImage.width / 2
@@ -256,7 +256,7 @@ RowLayout {
                         markerIcon.coordinate = map.toCoordinate(Qt.point(mouse.x,mouse.y))
 
                         mapsidebar.markerText = "%1, %2".arg(marker_coords.latitude).arg(marker_coords.longitude)
-                        mapsidebar.markerTextColor = Material.foreground
+                        //mapsidebar.markerTextColor = Material.foreground
                     }
                 }
             }

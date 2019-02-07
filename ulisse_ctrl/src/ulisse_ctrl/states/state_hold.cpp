@@ -30,6 +30,7 @@ namespace states {
         if (goalReached_) {
             if (goalCxt_->goalDistance > (goalCxt_->currentGoal.acceptRadius + conf_->holdData.hysteresis)) {
                 goalReached_ = false;
+                ctrlCxt_->pidHeading.Reset();
             }
 
             // ALIGN TO CURRENT AND HOLD STATE
@@ -48,16 +49,22 @@ namespace states {
             goalCxt_->goalHeading = NormalizeHeadingOn2PI((1 - hrefA) * (desiredHeading) + hrefA * statusCxt_->currentHeading);
 
             double headingTrackDiff = ctb::HeadingErrorRad(statusCxt_->gpsTrack, statusCxt_->currentHeading);
+
             surgeFbk = statusCxt_->gpsSpeed * cos(headingTrackDiff);
 
-
-            ctrlCxt_->desiredSpeed = -ctrlCxt_->pidSpeed.Compute(surgeRef, surgeFbk);
+            ctrlCxt_->desiredSurge = surgeRef;//ctrlCxt_->pidSurge.Compute(surgeRef, surgeFbk);
             ctrlCxt_->desiredJog = ctrlCxt_->pidHeading.Compute(goalCxt_->goalHeading, statusCxt_->currentHeading);
+
+            /*std::cout << "---- Heading Track Difference: " << headingTrackDiff << " ----" << std::endl;
+            std::cout << "---- SurgeFbk: " << surgeFbk << " ----" << std::endl;
+            std::cout << "---- SurgeRef: " << surgeRef << " ----" << std::endl;*/
 
         } else {
             // LAT-LONG STATE
             if (goalCxt_->goalDistance < goalCxt_->currentGoal.acceptRadius) {
                 goalReached_ = true;
+                ctrlCxt_->pidHeading.Reset();
+                ctrlCxt_->pidPosition.Reset();
             }
 
             double goalDistance = goalCxt_->goalDistance;
@@ -65,7 +72,7 @@ namespace states {
                 double headingError = ctb::HeadingErrorRad(goalCxt_->goalHeading, statusCxt_->currentHeading);
                 goalDistance = SlowDownWhenTurning(headingError, goalDistance, *conf_);
             }
-            ctrlCxt_->desiredSpeed = -ctrlCxt_->pidPosition.Compute(0.0, goalDistance);
+            ctrlCxt_->desiredSurge = ctrlCxt_->pidPosition.Compute(goalDistance, 0.0);
             ctrlCxt_->desiredJog = ctrlCxt_->pidHeading.Compute(goalCxt_->goalHeading, statusCxt_->currentHeading);
         }
 
@@ -74,9 +81,10 @@ namespace states {
         std::cout << " ****\n";
         std::cout << "Current Heading: " << statusCxt_->currentHeading << std::endl;
         std::cout << "Goal Heading: " << goalCxt_->goalHeading << std::endl;
-        std::cout << "Desired Speed: " << ctrlCxt_->desiredSpeed << std::endl;
+        if (!goalReached_)
+            std::cout << "Goal Distance: " << goalCxt_->goalDistance << std::endl;
+        std::cout << "Desired Speed: " << ctrlCxt_->desiredSurge << std::endl;
         std::cout << "Desired Jog: " << ctrlCxt_->desiredJog << std::endl;
-        if(!goalReached_) std::cout << "Goal Distance: " << goalCxt_->goalDistance << std::endl;
         std::cout << "Acceptance radius: " << goalCxt_->currentGoal.acceptRadius << std::endl;
         std::cout << "Hysteresis: " << conf_->holdData.hysteresis << std::endl;
         std::cout << "----------------------------------" << std::endl;

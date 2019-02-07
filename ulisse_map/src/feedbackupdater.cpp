@@ -48,7 +48,7 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
     q_ulisse_yaw_deg_ = 0.0;
     q_vehicle_state_ = "undefined";
     q_goal_distance_ = 0.0;
-    q_ulisse_speed_ = 0.0;
+    q_ulisse_surge_ = 0.0;
     q_battery_perc_L_ = 99.9;
     q_battery_perc_R_ = 99.9;
 
@@ -92,11 +92,11 @@ void FeedbackUpdater::StatusContextCB(const ulisse_msgs::msg::StatusContext::Sha
 {
     status_cxt_msg_ = *msg;
 
+    q_vehicle_state_ = status_cxt_msg_.vehicle_state.c_str();
     q_ulisse_pos_.setLatitude(status_cxt_msg_.vehicle_pos.latitude);
     q_ulisse_pos_.setLongitude(status_cxt_msg_.vehicle_pos.longitude);
     q_ulisse_yaw_deg_ = status_cxt_msg_.vehicle_heading * 180 / M_PI;
-    q_vehicle_state_ = status_cxt_msg_.vehicle_state.c_str();
-    q_ulisse_speed_ = status_cxt_msg_.vehicle_speed;
+    q_ulisse_surge_ = status_cxt_msg_.vehicle_speed;
 
     //qDebug() << "State: " << q_vehicle_state_ << ", " << status_cxt_msg_.vehicle_state.c_str();
 
@@ -105,8 +105,11 @@ void FeedbackUpdater::StatusContextCB(const ulisse_msgs::msg::StatusContext::Sha
         goalFlagObj_->setProperty("opacity", 1.0);
     } else {
         goalFlagObj_->setProperty("opacity", 0.3);
-
     }
+
+    // Rounding surge and heading to 2 decimal places
+    q_ulisse_yaw_deg_ = (int)(q_ulisse_yaw_deg_ * 1E2) / 1E2;
+    q_ulisse_surge_ = (int)(q_ulisse_surge_ * 1E2) / 1E2;
 }
 
 void FeedbackUpdater::copyToClipboard(QString newText)
@@ -120,9 +123,9 @@ QGeoCoordinate FeedbackUpdater::get_ulisse_pos()
     return q_ulisse_pos_;
 }
 
-double FeedbackUpdater::get_ulisse_speed()
+double FeedbackUpdater::get_ulisse_surge()
 {
-    return q_ulisse_speed_;
+    return q_ulisse_surge_;
 }
 
 QGeoCoordinate FeedbackUpdater::get_goal_pos()

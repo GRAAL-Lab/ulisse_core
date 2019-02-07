@@ -15,6 +15,7 @@ Dialog {
     standardButtons: Dialog.Ok
     onAccepted: {
         close()
+        stackViewContainer.forceActiveFocus()
     }
 
     contentItem: ColumnLayout {

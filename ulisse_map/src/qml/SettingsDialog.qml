@@ -12,10 +12,12 @@ Dialog {
     onAccepted: {
         settings.theme = styleBox.displayText
         close()
+        stackViewContainer.forceActiveFocus()
     }
     onRejected: {
         styleBox.currentIndex = styleBox.styleIndex
         close()
+        stackViewContainer.forceActiveFocus()
     }
 
     contentItem: ColumnLayout {
@@ -25,7 +27,6 @@ Dialog {
         RowLayout {
             spacing: 10
             width: parent.width
-            //horizontalAlignment: Label.AlignHCenter
 
             Label {
                 text: "Speed/Heading Timeout (s):"
@@ -36,7 +37,7 @@ Dialog {
                 objectName: "speedHeadingTimeout"
                 Layout.preferredWidth: 45
                 Layout.fillWidth: true
-                font.pointSize: 10
+                font.pointSize: 11
                 text: "120"
                 placeholderText: "Timeout"
                 selectByMouse: true
@@ -67,16 +68,6 @@ Dialog {
                 Layout.fillWidth: true
             }
         }
-
-        /*Label {
-            text: "Restart required"
-            color: "#e41e25"
-            opacity: styleBox.currentIndex !== styleBox.styleIndex ? 1.0 : 0.0
-            horizontalAlignment: Label.AlignHCenter
-            verticalAlignment: Label.AlignVCenter
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-        }*/
     }
 }
 

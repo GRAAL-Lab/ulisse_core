@@ -21,7 +21,7 @@ namespace commands {
 
         ctrlCxt_->pidPosition.Reset();
         ctrlCxt_->pidHeading.Reset();
-        ctrlCxt_->pidSpeed.Reset();
+        ctrlCxt_->pidSurge.Reset();
 
         return fsm_->SetNextState(ulisse::states::ID::hold);
     }
