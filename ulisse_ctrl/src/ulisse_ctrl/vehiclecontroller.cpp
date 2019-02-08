@@ -34,11 +34,11 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 
     // Sensor Subscriptions
     gps_sub_ = nh_->create_subscription<ulisse_msgs::msg::GPSData>(
-        ulisse_msgs::topicnames::sensor_gps_data, std::bind(&VehicleController::GPSSensor_cb, this, _1));
+        ulisse_msgs::topicnames::sensor_gps_data, std::bind(&VehicleController::GPSSensorCB, this, _1));
     compass_sub_ = nh_->create_subscription<ulisse_msgs::msg::Compass>(
-        ulisse_msgs::topicnames::sensor_compass, std::bind(&VehicleController::CompassSensor_cb, this, _1));
+        ulisse_msgs::topicnames::sensor_compass, std::bind(&VehicleController::CompassSensorCB, this, _1));
     nav_filter_sub_ = nh_->create_subscription<ulisse_msgs::msg::NavFilterData>(
-        ulisse_msgs::topicnames::nav_filter_data, std::bind(&VehicleController::NavFilter_cb, this, _1));
+        ulisse_msgs::topicnames::nav_filter_data, std::bind(&VehicleController::NavFilterCB, this, _1));
 
     // Control Publishers
     ctrlcxt_pub_ = nh_->create_publisher<ulisse_msgs::msg::ControlContext>(ulisse_msgs::topicnames::control_context);
@@ -54,7 +54,6 @@ std::shared_ptr<ControlContext> VehicleController::CtrlContext() const { return 
 
 int VehicleController::LoadConfiguration()
 {
-
     LoadControllerConfiguration(conf_, par_client_);
 
     std::cout << tc::grayD << *conf_ << tc::none << std::endl;
@@ -68,13 +67,13 @@ int VehicleController::LoadConfiguration()
 
 void VehicleController::SetUpFSM()
 {
-
     command_halt_.SetFSM(&u_fsm_);
 
     command_hold_.SetFSM(&u_fsm_);
     command_hold_.SetGoalContext(goalCxt_);
     command_hold_.SetControlContext(ctrlCxt_);
     command_hold_.SetStatusContext(statusCxt_);
+    command_hold_.SetAcceptanceRadius(conf_->holdData.defaultRadius);
 
     command_latlong_.SetFSM(&u_fsm_);
     command_latlong_.SetGoalContext(goalCxt_);
@@ -209,7 +208,7 @@ void VehicleController::SetupCommandServer()
         ulisse_msgs::topicnames::control_cmd_service, handle_control_commands);
 }
 
-void VehicleController::GPSSensor_cb(const ulisse_msgs::msg::GPSData::SharedPtr msg)
+void VehicleController::GPSSensorCB(const ulisse_msgs::msg::GPSData::SharedPtr msg)
 {
     timestamp_ = msg->time;
     statusCxt_->gpsSpeed = msg->speed;
@@ -220,19 +219,19 @@ void VehicleController::GPSSensor_cb(const ulisse_msgs::msg::GPSData::SharedPtr 
     //std::cout << "GPS track: " << msg->track << std::endl;
 }
 
-void VehicleController::NavFilter_cb(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)
+void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)
 {
     statusCxt_->filterData.pos.latitude = msg->latitude;
     statusCxt_->filterData.pos.longitude = msg->longitude;
 }
 
-void VehicleController::CompassSensor_cb(const ulisse_msgs::msg::Compass::SharedPtr msg)
+void VehicleController::CompassSensorCB(const ulisse_msgs::msg::Compass::SharedPtr msg)
 {
     statusCxt_->currentHeading = msg->yaw;
     // std::cout << "Current yaw: " << posCxt_->currentHeading << std::endl;
 }
 
-void VehicleController::EESStatus_cb(const ulisse_msgs::msg::EESStatus::SharedPtr msg)
+void VehicleController::EESStatusCB(const ulisse_msgs::msg::EESStatus::SharedPtr msg)
 {
     statusCxt_->eesStatus = msg->status;
 }
@@ -265,7 +264,6 @@ void VehicleController::PublishControl()
     goalcxt_msg.goal_distance = goalCxt_->goalDistance;
     goalcxt_msg.goal_heading = goalCxt_->goalHeading;
     goalcxt_msg.goal_speed = goalCxt_->goalSurge;
-
     goalcxt_pub_->publish(goalcxt_msg);
 
     ulisse_msgs::msg::ControlContext ctrlcxt_msg;
@@ -284,10 +282,6 @@ void VehicleController::PublishControl()
     ctrlcxt_msg.desired_speed = ctrlCxt_->desiredSurge;
     ctrlcxt_msg.desired_jog = ctrlCxt_->desiredJog;
 
-    //ctrlcxt_msg.motor_mapout.left = ctrlCxt_->thrusterData.mapOut.left;
-    //ctrlcxt_msg.motor_mapout.right = ctrlCxt_->thrusterData.mapOut.right;
-    //ctrlcxt_msg.motor_ctrlref.left = ctrlCxt_->thrusterData.ctrlRef.left;
-    //ctrlcxt_msg.motor_ctrlref.right = ctrlCxt_->thrusterData.ctrlRef.right;
     ctrlcxt_pub_->publish(ctrlcxt_msg);
 }
 }

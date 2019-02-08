@@ -16,8 +16,6 @@ namespace states {
 
     fsm::retval StateLatLong::OnEntry()
     {
-
-
         return fsm::ok;
     }
 
@@ -29,7 +27,11 @@ namespace states {
 
         if (goalCxt_->goalDistance < goalCxt_->currentGoal.acceptRadius) {
             std::cout << "*** GOAL REACHED! ***" << std::endl;
-            fsm_->ExecuteCommand(ulisse::commands::ID::halt);
+            if (conf_->goToHoldAfterMove) {
+                fsm_->ExecuteCommand(ulisse::commands::ID::hold);
+            } else {
+                fsm_->ExecuteCommand(ulisse::commands::ID::halt);
+            }
         }
 
         double goalDistance = goalCxt_->goalDistance;

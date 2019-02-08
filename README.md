@@ -22,6 +22,7 @@ Ulisse catamaran controller revamped with ROS2.
 - **ulisse_core**: The catamaran controller.
 - **ulisse_driver**: The low level driver that communicate.
 - **ulisse_sim**: The dynamic simulator, which makes use of `surface_vehicle_model` library.
+- **ulisse_map**: Graphical interface (Qt based) for controlling the catamaran.
 
 ## Build
 

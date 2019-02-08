@@ -75,10 +75,10 @@ class VehicleController {
     void SetUpFSM();
     void SetupCommandServer();
 
-    void GPSSensor_cb(const ulisse_msgs::msg::GPSData::SharedPtr msg);
-    void CompassSensor_cb(const ulisse_msgs::msg::Compass::SharedPtr msg);
-    void NavFilter_cb(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
-    void EESStatus_cb(const ulisse_msgs::msg::EESStatus::SharedPtr msg);
+    void GPSSensorCB(const ulisse_msgs::msg::GPSData::SharedPtr msg);
+    void CompassSensorCB(const ulisse_msgs::msg::Compass::SharedPtr msg);
+    void NavFilterCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
+    void EESStatusCB(const ulisse_msgs::msg::EESStatus::SharedPtr msg);
 
 public:
     VehicleController(const rclcpp::Node::SharedPtr& nh, double sampleTime);

@@ -15,9 +15,8 @@ namespace commands {
     fsm::retval CommandHold::Execute()
     {
 
-        //goalCxt_->currentGoal.pos.latitude = statusCxt_->filterData.pos.latitude;
-        //goalCxt_->currentGoal.pos.longitude = statusCxt_->filterData.pos.longitude;
-        //goalCxt_->currentGoal.acceptRadius = goalCxt_->nextGoal.acceptRadius;
+        goalCxt_->currentGoal.pos.latitude = statusCxt_->filterData.pos.latitude;
+        goalCxt_->currentGoal.pos.longitude = statusCxt_->filterData.pos.longitude;
 
         ctrlCxt_->pidPosition.Reset();
         ctrlCxt_->pidHeading.Reset();
@@ -28,8 +27,7 @@ namespace commands {
 
     void CommandHold::SetAcceptanceRadius(double acceptanceRadius)
     {
-        goalCxt_->currentGoal.pos.latitude = statusCxt_->filterData.pos.latitude;
-        goalCxt_->currentGoal.pos.longitude = statusCxt_->filterData.pos.longitude;
+
         goalCxt_->currentGoal.acceptRadius = acceptanceRadius;
 
     }

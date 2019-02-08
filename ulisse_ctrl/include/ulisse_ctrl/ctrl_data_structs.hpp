@@ -53,6 +53,7 @@ struct AvoidRotationData {
 
 struct HoldCurrentData {
     double hysteresis;
+    double defaultRadius;
     bool enableCurrentCompensation;
     double currentMin;
     double currentMax;

@@ -277,7 +277,7 @@ RowLayout {
                     id:recenterButton
                     text: "Recenter"
                     highlighted: true
-                    Material.accent: secondaryAccentColor
+                    Material.accent: mainColor
                     Layout.leftMargin: 5
                     onClicked: {
                         map.center = ulisseIcon.coordinate;
@@ -288,7 +288,7 @@ RowLayout {
                     id: followMeCheckbox
                     text: "Follow vehicle"
                     anchors.left: recenterButton.right
-                    Material.accent: secondaryAccentColor
+                    Material.accent: mainColor
                     checked: false
 
                     Timer {
@@ -315,7 +315,7 @@ RowLayout {
                     id: overlayStatusCbox
                     text: "Show Overlay"
                     anchors.left: followMeCheckbox.right
-                    Material.accent: secondaryAccentColor
+                    Material.accent: mainColor
                     checked: false
 
                     onCheckStateChanged: {

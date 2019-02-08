@@ -13,6 +13,7 @@ controller_node:
         Hold:
             enableCurrentCompensation: true
             Hysteresis: 2.0
+            DefaultRadius: 3.0
             # above CurrentMax the desired heading will be set equal to the
             # estimated current direction
             # below CurrentMin the desired heading is the actual one
@@ -21,7 +22,7 @@ controller_node:
 
         GotoHoldAfterMove: true
 
-        UsePosVelObserver: false
+        #UsePosVelObserver: false
 
         SlowDownOnTurns:
             enable: true

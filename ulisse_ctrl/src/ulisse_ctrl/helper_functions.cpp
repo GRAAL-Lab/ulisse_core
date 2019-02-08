@@ -91,6 +91,7 @@ void LoadControllerConfiguration(std::shared_ptr<ControllerConfiguration> conf, 
 
     // Hold
     conf->holdData.hysteresis = par_client->get_parameter("Hold.Hysteresis", 1.0);
+    conf->holdData.defaultRadius = par_client->get_parameter("Hold.DefaultRadius", 1.0);
     conf->holdData.enableCurrentCompensation = par_client->get_parameter("Hold.enableCurrentCompensation", false);
     conf->holdData.currentMin = par_client->get_parameter("Hold.CurrentMin", 0.0);
     conf->holdData.currentMax = par_client->get_parameter("Hold.CurrentMax", 0.0);
