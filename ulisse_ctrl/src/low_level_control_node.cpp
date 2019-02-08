@@ -100,11 +100,12 @@ int main(int argc, char* argv[])
             thrust_msg.motor_ctrlref.left = thrusterData.ctrlRef.left;
             thrust_msg.motor_ctrlref.right = thrusterData.ctrlRef.right;
 
+            thrusterdata_pub->publish(thrust_msg);
+
         } else {
             thrust_msg.motor_ctrlref.left = 0.0;
             thrust_msg.motor_ctrlref.right = 0.0;
         }
-        thrusterdata_pub->publish(thrust_msg);
 
         rclcpp::spin_some(nh);
         loop_rate.sleep();

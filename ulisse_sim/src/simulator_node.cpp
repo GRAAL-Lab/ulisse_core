@@ -3,6 +3,7 @@
 #include "ulisse_msgs/msg/thrusters_data.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 #include "ulisse_sim/vehiclesimulator.hpp"
+#include "ulisse_sim/futils.h"
 
 #include <chrono>
 #include <cmath>
@@ -17,6 +18,8 @@
 using namespace std::chrono_literals;
 
 static double test_h_p(0.0), test_h_s(0.0);
+static futils::Timer motor_timeout;
+
 
 void ReadMappingParameters(const std::shared_ptr<rclcpp::SyncParametersClient> pc, ThrusterMappingParameters& tmp);
 
@@ -24,6 +27,7 @@ void ThrusterDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg)
 {
     test_h_p = msg->motor_ctrlref.left;
     test_h_s = msg->motor_ctrlref.right;
+    motor_timeout.Start();
 }
 
 int main(int argc, char* argv[])
@@ -54,20 +58,6 @@ int main(int argc, char* argv[])
     myVehSim.SetParameters(dt * 5.0, myTMP);
     //myVehSim.SetRealtime(false);
 
-    /*std::stringstream ss;
-    // Get a few of the parameters just set.
-    for (auto& parameter : parameters_client->get_parameters(
-             { "thruster_mapping.motors_distance", "thruster_mapping.lambda_pos", "thruster_mapping.lambda_neg" })) {
-        ss << "\nParameter name: " << parameter.get_name();
-        ss << "\nParameter value (" << parameter.get_type_name() << "): " << parameter.value_to_string();
-    }
-    RCLCPP_INFO(node->get_logger(), ss.str().c_str());*/
-
-    // auto publish_count = 0;
-    /*std::default_random_engine generator;
-            std::uniform_real_distribution<double> distribution(0.0, 2.0 * M_PI);
-            auto random_compass = std::bind(distribution, generator);*/
-
     std::cout.precision(3);
     std::cout << std::fixed;
 
@@ -89,6 +79,11 @@ int main(int argc, char* argv[])
     Eigen::IOFormat CommaInitFmt(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", ", ", "", "", "", "");
 
     while (rclcpp::ok()) {
+
+        // We reset the motor reference in case we don't receive any message for more than one second
+        if(motor_timeout.Elapsed() > 1.0){
+            test_h_p = test_h_s = 0.0;
+        }
 
         std::cout << "----------------------------------" << std::endl;
         std::cout << "time: " << std::setprecision(1) << myVehSim.GetCurrentTimestamp() << std::endl;
