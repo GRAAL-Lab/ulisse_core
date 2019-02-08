@@ -36,7 +36,7 @@ void GenericState::SetCtrlContext(const std::shared_ptr<ControlContext>& ctrlCxt
     ctrlCxt_ = ctrlCxt;
 }
 
-void GenericState::SetConf(const std::shared_ptr<ConfigurationData>& conf)
+void GenericState::SetConf(const std::shared_ptr<ControllerConfiguration>& conf)
 {
     conf_ = conf;
 }

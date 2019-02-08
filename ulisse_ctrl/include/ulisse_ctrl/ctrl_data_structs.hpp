@@ -53,7 +53,9 @@ struct AvoidRotationData {
 
 struct HoldCurrentData {
     double hysteresis;
-    double currentMin, currentMax;
+    bool enableCurrentCompensation;
+    double currentMin;
+    double currentMax;
 };
 
 struct NavFilterData {
@@ -115,57 +117,68 @@ struct GoalContext {
     }
 };
 
-struct ConfigurationData {
-    ControlMode ctrlMode;
+struct ControllerConfiguration {
 
-    bool enableThrusters;
-    ThrusterMappingParameters thrusterMap;
-    double thrusterPercLimit;
-
+    bool goToHoldAfterMove;
     double posAcceptanceRadius;
     bool enableSlowDownOnTurns;
     SlowDownOnTurnsData slowOnTurns;
     AvoidRotationData avoidRot;
 
-    ctb::PIDGains pidgains_surge;
     ctb::PIDGains pidgains_position;
     ctb::PIDGains pidgains_heading;
 
-    double pidsat_surge;
     double pidsat_position;
     double pidsat_heading;
 
     NavFilterConfigData navFilter;
     HoldCurrentData holdData;
 
-    ConfigurationData()
-        : ctrlMode(ControlMode::ThrusterMapping)
-        , enableThrusters(false)
-        , thrusterPercLimit(0.0)
+    ControllerConfiguration()
+        : goToHoldAfterMove(false)
         , enableSlowDownOnTurns(false)
-        , pidsat_surge(0.0)
         , pidsat_position(0.0)
         , pidsat_heading(0.0)
     {
     }
 
-    friend std::ostream& operator<<(std::ostream& os, ConfigurationData const& a)
+    friend std::ostream& operator<<(std::ostream& os, ControllerConfiguration const& a)
     {
-        return os << "======= CONFIGURATION =======\n"
-                  << "CtrlMode: " << (int)a.ctrlMode << "\n"
-                  << "EnableThrusters: " << a.enableThrusters << "\n"
+        return os << "======= CONTROLLER CONF =======\n"
                   << "PosAcceptanceRadius: " << a.posAcceptanceRadius << "\n"
+                  << "GoToHoldAfterMove: " << a.goToHoldAfterMove << "\n"
                   << "EnableSlowDownOnTurns: " << a.enableSlowDownOnTurns << "\n"
                   << "\tHeadingErrorMin:" << a.slowOnTurns.headingErrorMin << "\n"
                   << "\tHeadingErrorMax:" << a.slowOnTurns.headingErrorMax << "\n"
                   << "\tAlphaMin:" << a.slowOnTurns.alphaMin << "\n"
                   << "\tAlphaMax:" << a.slowOnTurns.alphaMax << "\n"
+                  << "===============================\n";
+    }
+};
+
+struct LowLevelConfiguration {
+
+    bool enableThrusters;
+    ThrusterMappingParameters thrusterMap;
+    double thrusterPercLimit;
+
+    ControlMode ctrlMode;
+    ctb::PIDGains pidgains_surge;
+    ctb::PIDGains pidgains_yawrate;
+
+    double pidsat_surge;
+    double pidsat_yawrate;
+
+    friend std::ostream& operator<<(std::ostream& os, LowLevelConfiguration const& a)
+    {
+        return os << "======= LOW LEVEL CONF =======\n"
+                  << "CtrlMode: " << (int)a.ctrlMode << "\n"
+                  << "EnableThrusters: " << a.enableThrusters << "\n"
                   << "ThrusterPercLimit: " << a.thrusterPercLimit << "\n"
                   << "----------------------\n"
-                  << "Thruster Mapping:\n"
-                  << a.thrusterMap << "\n"
+                  << a.thrusterMap
                   << "----------------------\n"
-                  << "=============================\n";
+                  << "==============================\n";
     }
 };
 }

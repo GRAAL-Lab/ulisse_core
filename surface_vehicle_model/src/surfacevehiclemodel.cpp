@@ -1,7 +1,7 @@
 #include "surface_vehicle_model/surfacevehiclemodel.hpp"
 
 /**
- * Helper clip function
+ * Helper clipping function
  */
 double clamp(double n, double lower, double upper)
 {

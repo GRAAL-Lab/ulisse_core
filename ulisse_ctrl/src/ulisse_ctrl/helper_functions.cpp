@@ -39,7 +39,7 @@ void ThrustersSaturation(double lThruster, double rThruster, double thMin, doubl
     rSatOut = rThruster * factor;
 }
 
-double SlowDownWhenTurning(double headingError, double desiredSpeed, const ConfigurationData& conf)
+double SlowDownWhenTurning(double headingError, double desiredSpeed, const ControllerConfiguration& conf)
 {
     double herrMin = conf.slowOnTurns.headingErrorMin;
     double herrMax = conf.slowOnTurns.headingErrorMax;
@@ -62,7 +62,7 @@ double SlowDownWhenTurning(double headingError, double desiredSpeed, const Confi
     return newSpeed;
 }
 
-double AvoidRotationCloseToTarget(double desiredHeading, double heading, double desiredSpeed, const ConfigurationData& conf)
+double AvoidRotationCloseToTarget(double desiredHeading, double heading, double desiredSpeed, const ControllerConfiguration& conf)
 {
     double sMin = conf.avoidRot.speedMin;
     double sMax = conf.avoidRot.speedMax;
@@ -84,11 +84,16 @@ double AvoidRotationCloseToTarget(double desiredHeading, double heading, double 
     return newHeading;
 }
 
-void LoadConfFromParameterClient(std::shared_ptr<ConfigurationData> conf, rclcpp::SyncParametersClient::SharedPtr par_client){
-    conf->ctrlMode = static_cast<ControlMode>(par_client->get_parameter("ControlMode", 0));
-    conf->enableThrusters = par_client->get_parameter("EnableThrusters", false);
-    conf->thrusterPercLimit = par_client->get_parameter("ThrusterPercLimit", 0.0);
+void LoadControllerConfiguration(std::shared_ptr<ControllerConfiguration> conf, rclcpp::SyncParametersClient::SharedPtr par_client)
+{
     conf->posAcceptanceRadius = par_client->get_parameter("PosAcceptanceRadius", 0.0);
+    conf->goToHoldAfterMove = par_client->get_parameter("GotoHoldAfterMove", false);
+
+    // Hold
+    conf->holdData.hysteresis = par_client->get_parameter("Hold.Hysteresis", 1.0);
+    conf->holdData.enableCurrentCompensation = par_client->get_parameter("Hold.enableCurrentCompensation", false);
+    conf->holdData.currentMin = par_client->get_parameter("Hold.CurrentMin", 0.0);
+    conf->holdData.currentMax = par_client->get_parameter("Hold.CurrentMax", 0.0);
 
     // Slow Down on turns
     conf->enableSlowDownOnTurns = par_client->get_parameter("SlowDownOnTurns.enable", false);
@@ -96,8 +101,6 @@ void LoadConfFromParameterClient(std::shared_ptr<ConfigurationData> conf, rclcpp
     conf->slowOnTurns.headingErrorMax = par_client->get_parameter("SlowDownOnTurns.HeadingErrorMax", 0.0);
     conf->slowOnTurns.alphaMin = par_client->get_parameter("SlowDownOnTurns.AlphaMin", 0.0);
     conf->slowOnTurns.alphaMax = par_client->get_parameter("SlowDownOnTurns.AlphaMax", 0.0);
-
-    // Avoid Rotations
 
     // PID
     conf->pidgains_position.Kp = par_client->get_parameter("PIDPosition.Kp", 0.0);
@@ -108,14 +111,6 @@ void LoadConfFromParameterClient(std::shared_ptr<ConfigurationData> conf, rclcpp
     conf->pidgains_position.Tr = par_client->get_parameter("PIDPosition.Tr", 0.0);
     conf->pidsat_position = par_client->get_parameter("SpeedLimiter", 0.0);
 
-    conf->pidgains_surge.Kp = par_client->get_parameter("PIDSpeed.Kp", 0.0);
-    conf->pidgains_surge.Ki = par_client->get_parameter("PIDSpeed.Ki", 0.0);
-    conf->pidgains_surge.Kd = par_client->get_parameter("PIDSpeed.Kd", 0.0);
-    conf->pidgains_surge.Kff = par_client->get_parameter("PIDSpeed.Kff", 0.0);
-    conf->pidgains_surge.N = par_client->get_parameter("PIDSpeed.N", 0.0);
-    conf->pidgains_surge.Tr = par_client->get_parameter("PIDSpeed.Tr", 0.0);
-    conf->pidsat_surge = par_client->get_parameter("SpeedLimiter", 0.0);
-
     conf->pidgains_heading.Kp = par_client->get_parameter("PIDHeading.Kp", 0.0);
     conf->pidgains_heading.Ki = par_client->get_parameter("PIDHeading.Ki", 0.0);
     conf->pidgains_heading.Kd = par_client->get_parameter("PIDHeading.Kd", 0.0);
@@ -123,6 +118,29 @@ void LoadConfFromParameterClient(std::shared_ptr<ConfigurationData> conf, rclcpp
     conf->pidgains_heading.N = par_client->get_parameter("PIDHeading.N", 0.0);
     conf->pidgains_heading.Tr = par_client->get_parameter("PIDHeading.Tr", 0.0);
     conf->pidsat_heading = par_client->get_parameter("JogLimiter", 0.0);
+}
+
+void LoadLowLevelConfiguration(std::shared_ptr<LowLevelConfiguration> conf, rclcpp::SyncParametersClient::SharedPtr par_client)
+{
+    conf->ctrlMode = static_cast<ControlMode>(par_client->get_parameter("ControlMode", 0));
+    conf->enableThrusters = par_client->get_parameter("EnableThrusters", false);
+    conf->thrusterPercLimit = par_client->get_parameter("ThrusterPercLimit", 0.0);
+
+    conf->pidgains_surge.Kp = par_client->get_parameter("PIDSurge.Kp", 0.0);
+    conf->pidgains_surge.Ki = par_client->get_parameter("PIDSurge.Ki", 0.0);
+    conf->pidgains_surge.Kd = par_client->get_parameter("PIDSurge.Kd", 0.0);
+    conf->pidgains_surge.Kff = par_client->get_parameter("PIDSurge.Kff", 0.0);
+    conf->pidgains_surge.N = par_client->get_parameter("PIDSurge.N", 0.0);
+    conf->pidgains_surge.Tr = par_client->get_parameter("PIDSurge.Tr", 0.0);
+    conf->pidsat_surge = par_client->get_parameter("SpeedLimiter", 0.0);
+
+    conf->pidgains_yawrate.Kp = par_client->get_parameter("PIDYawRate.Kp", 0.0);
+    conf->pidgains_yawrate.Ki = par_client->get_parameter("PIDYawRate.Ki", 0.0);
+    conf->pidgains_yawrate.Kd = par_client->get_parameter("PIDYawRate.Kd", 0.0);
+    conf->pidgains_yawrate.Kff = par_client->get_parameter("PIDYawRate.Kff", 0.0);
+    conf->pidgains_yawrate.N = par_client->get_parameter("PIDYawRate.N", 0.0);
+    conf->pidgains_yawrate.Tr = par_client->get_parameter("PIDYawRate.Tr", 0.0);
+    conf->pidsat_yawrate = par_client->get_parameter("JogLimiter", 0.0);
 
     // THRUSTER MAPPING
     conf->thrusterMap.surgeMin = par_client->get_parameter("ThrusterMapping.SurgeMin", 0.0);

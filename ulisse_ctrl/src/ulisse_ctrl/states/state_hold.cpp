@@ -34,7 +34,7 @@ namespace states {
             }
 
             // ALIGN TO CURRENT AND HOLD STATE
-            double surgeFbk(0.0), surgeRef(0.0);
+            double surgeRef(0.0);
 
             double currentDirection = NormalizeHeadingOn2PI(
                 atan2(statusCxt_->filterData.current[1], statusCxt_->filterData.current[0]));
@@ -48,16 +48,12 @@ namespace states {
             double hrefA = rml::DecreasingBellShapedFunction(conf_->holdData.currentMin, conf_->holdData.currentMax, 0, 1, currentNorm);
             goalCxt_->goalHeading = NormalizeHeadingOn2PI((1 - hrefA) * (desiredHeading) + hrefA * statusCxt_->currentHeading);
 
-            double headingTrackDiff = ctb::HeadingErrorRad(statusCxt_->gpsTrack, statusCxt_->currentHeading);
-
-            surgeFbk = statusCxt_->gpsSpeed * cos(headingTrackDiff);
+            /*double headingTrackDiff = ctb::HeadingErrorRad(statusCxt_->gpsTrack, statusCxt_->currentHeading);
+            surgeFbk = statusCxt_->gpsSpeed * cos(headingTrackDiff);*/
 
             ctrlCxt_->desiredSurge = surgeRef;//ctrlCxt_->pidSurge.Compute(surgeRef, surgeFbk);
             ctrlCxt_->desiredJog = ctrlCxt_->pidHeading.Compute(goalCxt_->goalHeading, statusCxt_->currentHeading);
 
-            /*std::cout << "---- Heading Track Difference: " << headingTrackDiff << " ----" << std::endl;
-            std::cout << "---- SurgeFbk: " << surgeFbk << " ----" << std::endl;
-            std::cout << "---- SurgeRef: " << surgeRef << " ----" << std::endl;*/
 
         } else {
             // LAT-LONG STATE

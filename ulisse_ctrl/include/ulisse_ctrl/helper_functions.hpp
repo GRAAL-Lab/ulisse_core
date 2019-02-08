@@ -11,9 +11,11 @@ double NormalizeHeadingOn2PI(double angle);
 
 void ThrustersSaturation(double lThruster, double rThruster, double thMin, double thMax, double &lSatOut, double &rSatOut);
 
-double SlowDownWhenTurning(double headingError, double desiredSpeed, const ConfigurationData& conf);
+double SlowDownWhenTurning(double headingError, double desiredSpeed, const ControllerConfiguration& conf);
 
-void LoadConfFromParameterClient(std::shared_ptr<ConfigurationData> conf, rclcpp::SyncParametersClient::SharedPtr par_client);
+void LoadControllerConfiguration(std::shared_ptr<ControllerConfiguration> conf, rclcpp::SyncParametersClient::SharedPtr par_client);
+
+void LoadLowLevelConfiguration(std::shared_ptr<LowLevelConfiguration> conf, rclcpp::SyncParametersClient::SharedPtr par_client);
 }
 
 #endif // HELPERFUNCTIONS_HPP

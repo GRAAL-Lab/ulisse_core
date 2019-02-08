@@ -28,6 +28,11 @@ static ulisse_msgs::msg::StatusContext status_cxt;
 void ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg);
 void StatusContextCB(const ulisse_msgs::msg::StatusContext::SharedPtr msg);
 
+struct DynamicControlData{
+    ctb::DigitalPID pidSurge;
+    ctb::DigitalPID pidYawRate;
+};
+
 int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
@@ -55,11 +60,15 @@ int main(int argc, char* argv[])
         RCLCPP_INFO(nh->get_logger(), "service not available, waiting again...");
     }
 
-    auto conf = std::make_shared<ConfigurationData>();
-    LoadConfFromParameterClient(conf, par_client);
+    ctb::DigitalPID pidSurge;
 
-    ControlContext ctrlCxt;
-    ctrlCxt.pidSurge.Initialize(conf->pidgains_surge, sampleTime, conf->pidsat_surge);
+    auto conf = std::make_shared<LowLevelConfiguration>();
+    LoadLowLevelConfiguration(conf, par_client);
+
+    std::cout << tc::grayD << *conf << tc::none << std::endl;
+
+    pidSurge.Initialize(conf->pidgains_surge, sampleTime, conf->pidsat_surge);
+    pidSurge.SetSaturation(conf->pidsat_surge);
 
     SurfaceVehicleModel ulisseModel;
     ulisseModel.SetMappingParams(conf->thrusterMap);
@@ -72,7 +81,7 @@ int main(int argc, char* argv[])
         double headingTrackDiff = ctb::HeadingErrorRad(status_cxt.vehicle_heading, status_cxt.vehicle_track);
         double surgeFbk = status_cxt.vehicle_speed * cos(headingTrackDiff);
 
-        thrusterData.desiredSurge = ctrlCxt.pidSurge.Compute(ctrl_cxt_msg.desired_speed, surgeFbk);
+        thrusterData.desiredSurge = pidSurge.Compute(ctrl_cxt_msg.desired_speed, surgeFbk);
         thrusterData.desiredJog = ctrl_cxt_msg.desired_jog;
 
         if (status_cxt.vehicle_state != ulisse::states::ID::halt) {

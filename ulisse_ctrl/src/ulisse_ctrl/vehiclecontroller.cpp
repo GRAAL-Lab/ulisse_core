@@ -19,7 +19,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     ctrlCxt_ = std::make_shared<ControlContext>();
     goalCxt_ = std::make_shared<GoalContext>();
     statusCxt_ = std::make_shared<StatusContext>();
-    conf_ = std::make_shared<ConfigurationData>();
+    conf_ = std::make_shared<ControllerConfiguration>();
 
     while (!par_client_->wait_for_service(1ms)) {
         if (!rclcpp::ok()) {
@@ -54,23 +54,14 @@ std::shared_ptr<ControlContext> VehicleController::CtrlContext() const { return 
 
 int VehicleController::LoadConfiguration()
 {
-    // Finish to LOAD all Config DATA !!!!!!! //
-    LoadConfFromParameterClient(conf_, par_client_);
 
-    std::cout << *conf_ << std::endl;
+    LoadControllerConfiguration(conf_, par_client_);
 
-    // /  Routing conf to contexts  / //
-    //ctrlCxt_->ulisseModel_.SetMappingParams(conf_->thrusterMap);
+    std::cout << tc::grayD << *conf_ << tc::none << std::endl;
 
     ctrlCxt_->pidPosition.Initialize(conf_->pidgains_position, sampleTime_, conf_->pidsat_position);
-    ctrlCxt_->pidSurge.Initialize(conf_->pidgains_surge, sampleTime_, conf_->pidsat_surge);
     ctrlCxt_->pidHeading.Initialize(conf_->pidgains_heading, sampleTime_, conf_->pidsat_heading);
     ctrlCxt_->pidHeading.SetErrorFunction(ctb::HeadingErrorRadFunctor());
-
-    conf_->holdData.hysteresis = par_client_->get_parameter("Hold.Hysteresis", 1.0);
-
-    conf_->holdData.currentMin = par_client_->get_parameter("Hold.CurrentMin", 1.0);
-    conf_->holdData.currentMax = par_client_->get_parameter("Hold.CurrentMax", 1.0);
 
     return true;
 }
@@ -221,9 +212,12 @@ void VehicleController::SetupCommandServer()
 void VehicleController::GPSSensor_cb(const ulisse_msgs::msg::GPSData::SharedPtr msg)
 {
     timestamp_ = msg->time;
-    //std::cout << "GPS (lat, long): " << msg->latitude << ", " << msg->longitude << std::endl;
     statusCxt_->gpsSpeed = msg->speed;
     statusCxt_->gpsTrack = msg->track;
+
+    //std::cout << "GPS (lat, long): " << msg->latitude << ", " << msg->longitude << std::endl;
+    //std::cout << "GPS speed: " << msg->speed << std::endl;
+    //std::cout << "GPS track: " << msg->track << std::endl;
 }
 
 void VehicleController::NavFilter_cb(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)

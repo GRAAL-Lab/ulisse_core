@@ -5,8 +5,8 @@ import launch_ros.actions
 def generate_launch_description():
 
     print('Starting controller...')
-    ctrlconfigfile = '__params:=' + get_package_share_directory('ulisse_ctrl') + '/conf/ulisse.yaml'
-    llcconfigfile = '__params:=' + get_package_share_directory('ulisse_ctrl') + '/conf/llc_ulisse.yaml'
+    ctrlconfigfile = '__params:=' + get_package_share_directory('ulisse_ctrl') + '/conf/kcl_ulisse.yaml'
+    llcconfigfile = '__params:=' + get_package_share_directory('ulisse_ctrl') + '/conf/dcl_ulisse.yaml'
     navconfigfile = '__params:=' + get_package_share_directory('ulisse_ctrl') + '/conf/navfilter.yaml'
     # print("Config file: ", configfile)
     # Node arguments must be comma separated strings

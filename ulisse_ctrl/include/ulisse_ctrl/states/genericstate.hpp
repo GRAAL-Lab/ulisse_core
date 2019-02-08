@@ -13,7 +13,7 @@ namespace states {
 
     class GenericState : public fsm::BaseState {
     protected:
-        std::shared_ptr<ConfigurationData> conf_;
+        std::shared_ptr<ControllerConfiguration> conf_;
         std::shared_ptr<StatusContext> statusCxt_;
         std::shared_ptr<GoalContext> goalCxt_;
         std::shared_ptr<ControlContext> ctrlCxt_;
@@ -23,7 +23,7 @@ namespace states {
         virtual ~GenericState(void);
 
         void CheckRadioController();
-        void SetConf(const std::shared_ptr<ConfigurationData>& conf);
+        void SetConf(const std::shared_ptr<ControllerConfiguration>& conf);
         void SetStatusContext(const std::shared_ptr<StatusContext>& posCxt);
         void SetGoalContext(const std::shared_ptr<GoalContext>& goalCxt);
         void SetCtrlContext(const std::shared_ptr<ControlContext>& ctrlCxt);

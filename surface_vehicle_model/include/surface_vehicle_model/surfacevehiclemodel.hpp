@@ -35,18 +35,20 @@ struct ThrusterMappingParameters {
 
     friend std::ostream& operator<<(std::ostream& os, ThrusterMappingParameters const& a)
     {
-        return os << "surgeMin: " << a.surgeMin << "\n"
-                  << "surgeMax: " << a.surgeMax << "\n"
-                  << "yawRateMin: " << a.yawRateMin << "\n"
-                  << "yawRateMax: " << a.yawRateMax << "\n"
-                  << "lambda_pos: " << (int)a.lambda_pos << "\n"
-                  << "lambda_neg: " << a.lambda_neg << "\n"
-                  << "motors distance: " << a.d << "\n"
-                  << "cX: " << a.cX.transpose() << "\n"
-                  << "cN: " << a.cN.transpose() << "\n"
-                  << "cB: " << a.b1_pos << " " << a.b2_pos << " " << a.b1_neg << " " << a.b2_neg << "\n"
-                  << "Inertia:\n"
-                  << a.Inertia << "\n";
+        Eigen::IOFormat TabbedCleanFmt(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", " ", "\t", "\n", "", "");
+        return os << "Thruster Mapping:\n"
+                  << "\tsurgeMin: " << a.surgeMin << "\n"
+                  << "\tsurgeMax: " << a.surgeMax << "\n"
+                  << "\tyawRateMin: " << a.yawRateMin << "\n"
+                  << "\tyawRateMax: " << a.yawRateMax << "\n"
+                  << "\tlambda_pos: " << (int)a.lambda_pos << "\n"
+                  << "\tlambda_neg: " << a.lambda_neg << "\n"
+                  << "\tmotors distance: " << a.d << "\n"
+                  << "\tcX: " << a.cX.transpose() << "\n"
+                  << "\tcN: " << a.cN.transpose() << "\n"
+                  << "\tcB: " << a.b1_pos << " " << a.b2_pos << " " << a.b1_neg << " " << a.b2_neg << "\n"
+                  << "\tInertia:\n"
+                  << a.Inertia.format(TabbedCleanFmt);
     }
 };
 

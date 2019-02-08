@@ -37,10 +37,6 @@ fsm::retval StateSpeedHeading::OnEntry()
         }
 
         double surgeRef, headingRef;
-        double surgeFbk;
-
-//        double headingTrackDiff = ctb::HeadingErrorRad(statusCxt_->currentHeading, statusCxt_->gpsTrack);
-//        surgeFbk = statusCxt_->gpsSpeed * cos(headingTrackDiff);
 
         surgeRef = goalCxt_->goalSurge;
         headingRef = goalCxt_->goalHeading;
