@@ -63,7 +63,7 @@ ApplicationWindow {
             Layout.fillWidth: true
 
             MapView {
-                id: mapview
+                id: mapView
                 anchors.fill: parent
             }
 

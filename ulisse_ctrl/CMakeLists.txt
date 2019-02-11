@@ -74,13 +74,13 @@ add_executable(control_test test/control_test.cpp)
 ament_target_dependencies(control_test rclcpp std_msgs ulisse_msgs rml)
 target_link_libraries(control_test rml ulisse_ctrl_lib ${ulisse_driver_LIBRARIES})
 
-add_executable(controller_node src/controller_node.cpp)
-ament_target_dependencies(controller_node rclcpp std_msgs ulisse_msgs rml)
-target_link_libraries(controller_node rml ulisse_ctrl_lib)
+add_executable(kinematic_control_node src/kinematic_control_node.cpp)
+ament_target_dependencies(kinematic_control_node rclcpp std_msgs ulisse_msgs rml)
+target_link_libraries(kinematic_control_node rml ulisse_ctrl_lib)
 
-add_executable(low_level_control_node src/low_level_control_node.cpp)
-ament_target_dependencies(low_level_control_node rclcpp std_msgs ulisse_msgs rml)
-target_link_libraries(low_level_control_node rml ulisse_ctrl_lib)
+add_executable(dynamic_control_node src/dynamic_control_node.cpp)
+ament_target_dependencies(dynamic_control_node rclcpp std_msgs ulisse_msgs rml)
+target_link_libraries(dynamic_control_node rml ulisse_ctrl_lib)
 
 add_executable(navigation_filter_node src/navigation_filter_node.cpp)
 ament_target_dependencies(navigation_filter_node rclcpp std_msgs ulisse_msgs rml)
@@ -98,8 +98,8 @@ ament_export_include_directories(include)
 
 ## Install
 install(TARGETS
-  controller_node
-  low_level_control_node
+  kinematic_control_node
+  dynamic_control_node
   navigation_filter_node
   controller_console_node
   monitor_node

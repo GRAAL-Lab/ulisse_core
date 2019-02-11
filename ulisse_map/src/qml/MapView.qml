@@ -9,6 +9,7 @@ import QtQuick.Controls.Universal 2.1
 import QtQuick.Controls.Styles 1.4
 import QtGraphicalEffects 1.0
 import "."
+import "../scripts/dynamicFlag.js" as FlagCreator
 
 RowLayout {
     spacing: 0
@@ -16,8 +17,17 @@ RowLayout {
     property bool ulisse_state_changed: false
     property real myElevation: 6
     property real panesMargin: 14
+    property bool createPathMode: false
 
-    //Material.background: 'white'
+    /*function createWaypointFlag(flagCoord) {
+        var component = Qt.createComponent("qrc:/qml/WaipontFlag.qml");
+        var sprite = component.createObject(mapView, {"coordinate:": flagCoord});
+
+        if (sprite === null) {
+            // Error Handling
+            console.log("Error creating object");
+        }
+    }*/
 
     Plugin {
         id: mapPlugin
@@ -223,6 +233,7 @@ RowLayout {
                 line.width: 1
                 line.color: Material.color(Material.Amber, Material.Shade300)
                 property bool firstRun: true
+                property real traceSize: 500
 
                 Timer {
                     interval: 500; running: true; repeat: true
@@ -232,12 +243,13 @@ RowLayout {
                             ulissePath.addCoordinate(fbkUpdater.ulisse_pos)
                             ulissePath.firstRun = false;
                         }
-
+                        // To reduce the line density (and avoid to overload the gui)
+                        // we add a new point only every 0.5 meters
                         var lastCoord = ulissePath.coordinateAt(ulissePath.pathLength() - 1);
                         var distToNext = lastCoord.distanceTo(fbkUpdater.ulisse_pos);
                         if (distToNext > 0.5){
                             ulissePath.addCoordinate(fbkUpdater.ulisse_pos)
-                            if(ulissePath.pathLength() > 500) {
+                            if(ulissePath.pathLength() > ulissePath.traceSize) {
                                 ulissePath.removeCoordinate(0);
                             }
                         }
@@ -245,18 +257,37 @@ RowLayout {
                 }
             }
 
+            MapPolyline {
+                id: waypointPath
+                line.width: 1
+                line.color: Material.color(Material.Green, Material.Shade400)
+            }
+
             MouseArea {
                 anchors.fill: parent
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
+
                 onClicked: {
                     if(mouse.button & Qt.RightButton) {
-                        marker_coords = map.toCoordinate(Qt.point(mouse.x,mouse.y))
 
-                        markerIcon.opacity = 1.0
-                        markerIcon.coordinate = map.toCoordinate(Qt.point(mouse.x,mouse.y))
+                        if (createPathMode){
+                            var waypoint = map.toCoordinate(Qt.point(mouse.x,mouse.y));
+                            waypointPath.addCoordinate(waypoint);
+                            //FlagCreator.createFlag(waypoint);
 
-                        mapsidebar.markerText = "%1, %2".arg(marker_coords.latitude).arg(marker_coords.longitude)
-                        //mapsidebar.markerTextColor = Material.foreground
+                            var greenFlag = greenFlagComponent.createObject(map, {"center.latitude" : waypoint.latitude, "center.longitude": waypoint.longitude});
+                            if (greenFlagComponent.status === Component.Ready) {
+                                map.addMapItem(greenFlag);
+                                console.log(("Added waypoint! (size: %1)").arg(waypointPath.pathLength()));
+                            } else {
+                                console.log("Error")
+                            }
+                        } else {
+                            marker_coords = map.toCoordinate(Qt.point(mouse.x,mouse.y));
+                            markerIcon.opacity = 1.0;
+                            markerIcon.coordinate = map.toCoordinate(Qt.point(mouse.x,mouse.y));
+                            mapsidebar.markerText = "%1, %2".arg(marker_coords.latitude).arg(marker_coords.longitude);
+                        }
                     }
                 }
             }
@@ -344,4 +375,21 @@ RowLayout {
             }
         }
     }
+
+    Component {
+        id: greenFlagComponent
+        MapQuickItem {
+            sourceItem: Image{
+                id: flagGreenImage
+                width: 72; height: 72
+                source: 'qrc:/images/flag_green.png'
+            }
+            //coordinate: greenFlagComponent.theCoord
+            anchorPoint.x: flagGreenImage.width / 2
+            anchorPoint.y: flagGreenImage.height / 2
+            z: map.z + 3
+        }
+    }
 }
+
+

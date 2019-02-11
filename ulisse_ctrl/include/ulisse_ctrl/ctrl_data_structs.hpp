@@ -164,11 +164,13 @@ struct LowLevelConfiguration {
     double thrusterPercLimit;
 
     ControlMode ctrlMode;
-    ctb::PIDGains pidgains_surge;
-    ctb::PIDGains pidgains_yawrate;
+    ctb::PIDGains mapping_pidgains_surge;
+    double mapping_pidsat_surge;
 
-    double pidsat_surge;
-    double pidsat_yawrate;
+    ctb::PIDGains dynamic_pidgains_surge;
+    ctb::PIDGains dynamic_pidgains_yawrate;
+    double dynamic_pidsat_surge;
+    double dynamic_pidsat_yawrate;
 
     friend std::ostream& operator<<(std::ostream& os, LowLevelConfiguration const& a)
     {

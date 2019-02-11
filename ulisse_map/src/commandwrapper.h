@@ -25,6 +25,8 @@ class CommandWrapper : public QObject {
     rclcpp::Node::SharedPtr np_;
     rclcpp::Client<ulisse_msgs::srv::ControlCommand>::SharedPtr command_srv_;
 
+    QGeoPath waypoint_path_;
+
     void ShowToast(const QVariant message, const QVariant duration);
     bool SendCommandRequest(ulisse_msgs::srv::ControlCommand::Request::SharedPtr req);
     //void SetupCommandClient();

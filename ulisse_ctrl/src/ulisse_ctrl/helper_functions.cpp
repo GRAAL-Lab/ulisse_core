@@ -127,21 +127,13 @@ void LoadLowLevelConfiguration(std::shared_ptr<LowLevelConfiguration> conf, rclc
     conf->enableThrusters = par_client->get_parameter("EnableThrusters", false);
     conf->thrusterPercLimit = par_client->get_parameter("ThrusterPercLimit", 0.0);
 
-    conf->pidgains_surge.Kp = par_client->get_parameter("PIDSurge.Kp", 0.0);
-    conf->pidgains_surge.Ki = par_client->get_parameter("PIDSurge.Ki", 0.0);
-    conf->pidgains_surge.Kd = par_client->get_parameter("PIDSurge.Kd", 0.0);
-    conf->pidgains_surge.Kff = par_client->get_parameter("PIDSurge.Kff", 0.0);
-    conf->pidgains_surge.N = par_client->get_parameter("PIDSurge.N", 0.0);
-    conf->pidgains_surge.Tr = par_client->get_parameter("PIDSurge.Tr", 0.0);
-    conf->pidsat_surge = par_client->get_parameter("SpeedLimiter", 0.0);
-
-    conf->pidgains_yawrate.Kp = par_client->get_parameter("PIDYawRate.Kp", 0.0);
-    conf->pidgains_yawrate.Ki = par_client->get_parameter("PIDYawRate.Ki", 0.0);
-    conf->pidgains_yawrate.Kd = par_client->get_parameter("PIDYawRate.Kd", 0.0);
-    conf->pidgains_yawrate.Kff = par_client->get_parameter("PIDYawRate.Kff", 0.0);
-    conf->pidgains_yawrate.N = par_client->get_parameter("PIDYawRate.N", 0.0);
-    conf->pidgains_yawrate.Tr = par_client->get_parameter("PIDYawRate.Tr", 0.0);
-    conf->pidsat_yawrate = par_client->get_parameter("JogLimiter", 0.0);
+    conf->mapping_pidgains_surge.Kp = par_client->get_parameter("ThrusterMapping.PIDSurge.Kp", 0.0);
+    conf->mapping_pidgains_surge.Ki = par_client->get_parameter("ThrusterMapping.PIDSurge.Ki", 0.0);
+    conf->mapping_pidgains_surge.Kd = par_client->get_parameter("ThrusterMapping.PIDSurge.Kd", 0.0);
+    conf->mapping_pidgains_surge.Kff = par_client->get_parameter("ThrusterMapping.PIDSurge.Kff", 0.0);
+    conf->mapping_pidgains_surge.N = par_client->get_parameter("ThrusterMapping.PIDSurge.N", 0.0);
+    conf->mapping_pidgains_surge.Tr = par_client->get_parameter("ThrusterMapping.PIDSurge.Tr", 0.0);
+    conf->mapping_pidsat_surge = par_client->get_parameter("SpeedLimiter", 0.0);
 
     // THRUSTER MAPPING
     conf->thrusterMap.surgeMin = par_client->get_parameter("ThrusterMapping.SurgeMin", 0.0);
@@ -161,5 +153,22 @@ void LoadLowLevelConfiguration(std::shared_ptr<LowLevelConfiguration> conf, rclc
     conf->thrusterMap.b2_neg = par_client->get_parameter("ThrusterMapping.b2_neg", 0.0);
     conf->thrusterMap.Inertia.diagonal()
         = Eigen::Vector3d((par_client->get_parameter("ThrusterMapping.Inertia", std::vector<double>(3, 0.0))).data());
+
+    // DYNAMIC CONTROL
+    conf->dynamic_pidgains_surge.Kp = par_client->get_parameter("DynamicControl.PIDSurge.Kp", 0.0);
+    conf->dynamic_pidgains_surge.Ki = par_client->get_parameter("DynamicControl.PIDSurge.Ki", 0.0);
+    conf->dynamic_pidgains_surge.Kd = par_client->get_parameter("DynamicControl.PIDSurge.Kd", 0.0);
+    conf->dynamic_pidgains_surge.Kff = par_client->get_parameter("DynamicControl.PIDSurge.Kff", 0.0);
+    conf->dynamic_pidgains_surge.N = par_client->get_parameter("DynamicControl.PIDSurge.N", 0.0);
+    conf->dynamic_pidgains_surge.Tr = par_client->get_parameter("DynamicControl.PIDSurge.Tr", 0.0);
+    conf->dynamic_pidsat_surge = par_client->get_parameter("ForceLimiter", 0.0);
+
+    conf->dynamic_pidgains_yawrate.Kp = par_client->get_parameter("DynamicControl.PIDYawRate.Kp", 0.0);
+    conf->dynamic_pidgains_yawrate.Ki = par_client->get_parameter("DynamicControl.PIDYawRate.Ki", 0.0);
+    conf->dynamic_pidgains_yawrate.Kd = par_client->get_parameter("DynamicControl.PIDYawRate.Kd", 0.0);
+    conf->dynamic_pidgains_yawrate.Kff = par_client->get_parameter("DynamicControl.PIDYawRate.Kff", 0.0);
+    conf->dynamic_pidgains_yawrate.N = par_client->get_parameter("DynamicControl.PIDYawRate.N", 0.0);
+    conf->dynamic_pidgains_yawrate.Tr = par_client->get_parameter("DynamicControl.PIDYawRate.Tr", 0.0);
+    conf->dynamic_pidsat_yawrate = par_client->get_parameter("TorqueLimiter", 0.0);
 }
 }

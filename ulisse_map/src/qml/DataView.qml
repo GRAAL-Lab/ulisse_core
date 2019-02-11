@@ -42,15 +42,13 @@ Rectangle {
                 }
 
                 LabelledText {
-                    //id: batteryPercRight
                     labelColor: 'dodgerblue'
                     label: "Vehicle State"
                     textColor: 'gray'
-                    text: "Text"
+                    text: fbkUpdater.vehicle_state
                 }
 
                 LabelledText {
-                    //id: batteryPercLeft
                     labelColor: 'dodgerblue'
                     label: "GPS time"
                     textColor: 'gray'
@@ -58,7 +56,6 @@ Rectangle {
                 }
 
                 LabelledText {
-                    //id: batteryPercRight
                     labelColor: 'dodgerblue'
                     label: "GPS Pos"
                     textColor: 'gray'
@@ -66,19 +63,17 @@ Rectangle {
                 }
 
                 LabelledText {
-                    //id: batteryPercRight
                     labelColor: 'dodgerblue'
                     label: "Filtered Pos"
                     textColor: 'gray'
-                    text: "Text"
+                    text: "%1, %2".arg(fbkUpdater.ulisse_pos.latitude).arg(fbkUpdater.ulisse_pos.longitude)
                 }
 
                 LabelledText {
-                    //id: batteryPercRight
                     labelColor: 'dodgerblue'
                     label: "Heading"
                     textColor: 'gray'
-                    text: "Text"
+                    text: "%1°".arg(fbkUpdater.ulisse_yaw_deg)
                 }
             }
         }
@@ -105,7 +100,7 @@ Rectangle {
                     labelColor: 'seagreen'
                     label: "Goal Position"
                     textColor: 'gray'
-                    text: "Text"
+                    text: "%1, %2".arg(fbkUpdater.goal_pos.latitude).arg(fbkUpdater.goal_pos.longitude)
                 }
 
                 LabelledText {
@@ -114,6 +109,14 @@ Rectangle {
                     label: "Goal Heading"
                     textColor: 'gray'
                     text: "Text"
+                }
+
+                LabelledText {
+                    //id: batteryPercRight
+                    labelColor: 'seagreen'
+                    label: "Distance to Goal"
+                    textColor: 'gray'
+                    text: "%1 (m)".arg(fbkUpdater.goal_distance)
                 }
             }
         }

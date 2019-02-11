@@ -198,3 +198,7 @@ void SurfaceVehicleModel::ThrusterMapping(const Eigen::Vector6d& linAngVel, doub
 
     std::cout << "****************************" << std::endl;*/
 }
+
+void SurfaceVehicleModel::ThrusterDynamicAllocator(const double f_des, const double n_des, double &h_s, double& h_p){
+
+}

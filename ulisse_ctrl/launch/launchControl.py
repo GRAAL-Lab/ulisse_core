@@ -5,21 +5,21 @@ import launch_ros.actions
 def generate_launch_description():
 
     print('Starting controller...')
-    ctrlconfigfile = '__params:=' + get_package_share_directory('ulisse_ctrl') + '/conf/kcl_ulisse.yaml'
-    llcconfigfile = '__params:=' + get_package_share_directory('ulisse_ctrl') + '/conf/dcl_ulisse.yaml'
+    kclconfigfile = '__params:=' + get_package_share_directory('ulisse_ctrl') + '/conf/kcl_ulisse.yaml'
+    dclconfigfile = '__params:=' + get_package_share_directory('ulisse_ctrl') + '/conf/dcl_ulisse.yaml'
     navconfigfile = '__params:=' + get_package_share_directory('ulisse_ctrl') + '/conf/navfilter.yaml'
     # print("Config file: ", configfile)
     # Node arguments must be comma separated strings
-    ctrl_node = launch_ros.actions.Node(
-            package='ulisse_ctrl', node_executable='controller_node', output='screen', arguments=[ctrlconfigfile])
-    llc_node = launch_ros.actions.Node(
-            package='ulisse_ctrl', node_executable='low_level_control_node', output='screen', arguments=[llcconfigfile])
+    dcl_node = launch_ros.actions.Node(
+            package='ulisse_ctrl', node_executable='dynamic_control_node', output='screen', arguments=[dclconfigfile])
+    kcl_node = launch_ros.actions.Node(
+            package='ulisse_ctrl', node_executable='kinematic_control_node', output='screen', arguments=[kclconfigfile])
     nav_filter_node = launch_ros.actions.Node(
             package='ulisse_ctrl', node_executable='navigation_filter_node', output='screen', arguments=[navconfigfile])
 
     return LaunchDescription([
-        ctrl_node,
-        llc_node,
+        dcl_node,
+        kcl_node,
         nav_filter_node
         # more nodes can be added here
     ])

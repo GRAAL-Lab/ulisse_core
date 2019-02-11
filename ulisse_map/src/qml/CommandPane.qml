@@ -191,7 +191,7 @@ Pane {
             id: waypointsRow
             Layout.fillWidth: true
 
-            property bool creatingPath: false
+            //property bool creatingPath: false
 
             Button {
                 id: waypointsButton
@@ -200,15 +200,15 @@ Pane {
 
                 onClicked: {
                     if(waypointsText.text !== ''){
-                        if (!waypointsRow.creatingPath){
+                        if (!mapView.createPathMode){
                             // TODO: Set Up waypoint path (MouseArea + MapPolyline)
                             waypointsButton.text = "Send Path"
-                            waypointsRow.creatingPath = waypointsButton.highlighted = true;
+                            mapView.createPathMode = waypointsButton.highlighted = true;
 
                         } else {
                             // Send Waypoints (Create a Function in commandWrapper)
                             waypointsButton.text = "Create Path"
-                            waypointsRow.creatingPath = waypointsButton.highlighted = false;
+                            mapView.createPathMode = waypointsButton.highlighted = false;
                         }
                         toast.show("Not yet implemented", 2000)
                     } else {

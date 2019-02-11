@@ -135,3 +135,5 @@ bool CommandWrapper::sendSpeedHeadingCommand(double speed, double heading)
     serviceReq->sh_cmd.timeout.nanosec = 0;
     return SendCommandRequest(serviceReq);
 }
+
+

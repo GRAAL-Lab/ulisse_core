@@ -6,6 +6,10 @@ low_level_control_node:
 
         SpeedLimiter: 2.5               # m/s [Be careful to make the mapping saturation bigger than this values] (to avoid double saturation)
         JogLimiter: 0.3                 # rad/s
+
+        ForceLimiter: 400.0
+        TorqueLimiter: 560.0
+
         ThrusterPercLimit: 70.0         # percent
 
         Speed2ThrusterCoefficient: 210.0
@@ -28,28 +32,27 @@ low_level_control_node:
             b1_neg: 0.00014
             b2_neg: 0.055
             Inertia: [400.0, 400.0, 50.0]
+            PIDSurge:
+                Kp: 0.4
+                Ki: 0.4
+                Kd: 0.0
+                Kff: 0.6
+                N: 10.0
+                Tr: 0.5
 
-        PIDSurge:
-            Kp: 0.4
-            Ki: 0.4
-            Kd: 0.0
-            Kff: 0.6
-            N: 10.0
-            Tr: 0.5
 
-
-        #DynamicControl:
-        #    PIDSurge:
-        #        Kp: 0.4
-        #        Ki: 0.4
-        #        Kd: 0.0
-        #        Kff: 0.6
-        #        N: 10.0
-        #        Tr: 0.5
-        #    PIDYawRate:
-        #        Kp: 0.75
-        #        Ki: 0.0
-        #        Kd: 1.5
-        #        Kff: 0.0
-        #        N: 10.0
-        #        Tr: 0.5
+        DynamicControl:
+            PIDSurge:
+                Kp: 0.4
+                Ki: 0.4
+                Kd: 0.0
+                Kff: 0.6
+                N: 10.0
+                Tr: 0.5
+            PIDYawRate:
+                Kp: 0.75
+                Ki: 0.0
+                Kd: 1.5
+                Kff: 0.0
+                N: 10.0
+                Tr: 0.5

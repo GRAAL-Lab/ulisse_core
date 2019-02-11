@@ -67,8 +67,8 @@ int main(int argc, char* argv[])
 
     std::cout << tc::grayD << *conf << tc::none << std::endl;
 
-    pidSurge.Initialize(conf->pidgains_surge, sampleTime, conf->pidsat_surge);
-    pidSurge.SetSaturation(conf->pidsat_surge);
+    pidSurge.Initialize(conf->mapping_pidgains_surge, sampleTime, conf->mapping_pidsat_surge);
+    pidSurge.SetSaturation(conf->mapping_pidsat_surge);
 
     SurfaceVehicleModel ulisseModel;
     ulisseModel.SetMappingParams(conf->thrusterMap);
