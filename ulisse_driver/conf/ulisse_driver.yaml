@@ -1,6 +1,6 @@
 ees_driver_node:
     ros__parameters:
-        SerialDevice: "/tmp/serial1"
+        SerialDevice: "/dev/ttyS0"
         BaudRate: 115200
         EESHelper:
             DebugBytes: false
@@ -9,7 +9,7 @@ ees_driver_node:
 
 ees_thread_receiver:
     ros__parameters:
-        SerialDevice: "/tmp/serial1"
+        SerialDevice: "/dev/ttyS0"
         BaudRate: 115200
         EESHelper:
             DebugBytes: false
@@ -18,7 +18,7 @@ ees_thread_receiver:
 
 ees_thread_sender:
     ros__parameters:
-        SerialDevice: "/tmp/serial1"
+        SerialDevice: "/dev/ttyS0"
         BaudRate: 115200
         EESHelper:
             DebugBytes: false
@@ -51,5 +51,5 @@ ees_thread_sender:
                 
 gps_setup_node:
     ros__parameters:
-            SerialDevice: "/tmp/serial1"
+            SerialDevice: "/dev/ttyS1"
             BaudRate: 115200
