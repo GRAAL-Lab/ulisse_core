@@ -9,7 +9,6 @@ import QtQuick.Controls.Universal 2.1
 import QtQuick.Controls.Styles 1.4
 import QtGraphicalEffects 1.0
 import "."
-import "../scripts/dynamicFlag.js" as FlagCreator
 
 RowLayout {
     spacing: 0
@@ -17,17 +16,31 @@ RowLayout {
     property bool ulisse_state_changed: false
     property real myElevation: 6
     property real panesMargin: 14
-    property bool createPathMode: false
 
-    /*function createWaypointFlag(flagCoord) {
-        var component = Qt.createComponent("qrc:/qml/WaipontFlag.qml");
-        var sprite = component.createObject(mapView, {"coordinate:": flagCoord});
+    property int createPathState: pathState.empty
+    property var mapCircles: []
+    //property int mapCircleIndex: 0
 
-        if (sprite === null) {
-            // Error Handling
-            console.log("Error creating object");
+    QtObject {
+        id: pathState
+        property int empty: 0
+        property int creating: 1
+        property int active: 2
+    }
+
+    /*Item {
+        id: pathState
+        states: [
+            State { name: "empty" },
+            State { name: "creating" },
+            State { name: "active" }
+        ]
+
+        Component.onCompleted: {
+            state = "empty"
         }
     }*/
+
 
     Plugin {
         id: mapPlugin
@@ -52,13 +65,11 @@ RowLayout {
 
     MapSidebar {
         id: mapsidebar
-        //Layout.fillWidth: true
         Layout.fillHeight: true
         Layout.minimumHeight: 150
         Layout.preferredWidth: 236
         Layout.maximumWidth: 235
         Layout.topMargin: 5
-        //color: 'white'
 
     }
 
@@ -259,39 +270,54 @@ RowLayout {
 
             MapPolyline {
                 id: waypointPath
-                line.width: 1
-                line.color: Material.color(Material.Green, Material.Shade400)
+                line.width: 2
+                line.color: createPathState === pathState.creating ? Material.color(Material.Red, Material.Shade300) : Material.color(Material.Green, Material.Shade400)
+                opacity: createPathState === pathState.empty ? 0.0 : 1.0
             }
 
             MouseArea {
                 anchors.fill: parent
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
 
-                onClicked: {
-                    if(mouse.button & Qt.RightButton) {
 
-                        if (createPathMode){
+                onClicked: {
+
+                    if (createPathState === pathState.creating){
+                        if (mouse.button & Qt.LeftButton) {
                             var waypoint = map.toCoordinate(Qt.point(mouse.x,mouse.y));
                             waypointPath.addCoordinate(waypoint);
-                            //FlagCreator.createFlag(waypoint);
+                            mapCircles[waypointPath.pathLength() - 1] =
+                                    mapCircleComponent.createObject(map,
+                                                                    {"center.latitude" : waypoint.latitude,
+                                                                        "center.longitude": waypoint.longitude});
 
-                            var greenFlag = greenFlagComponent.createObject(map, {"center.latitude" : waypoint.latitude, "center.longitude": waypoint.longitude});
-                            if (greenFlagComponent.status === Component.Ready) {
-                                map.addMapItem(greenFlag);
+                            if (mapCircleComponent.status === Component.Ready) {
+                                map.addMapItem(mapCircles[waypointPath.pathLength() - 1]);
+
                                 console.log(("Added waypoint! (size: %1)").arg(waypointPath.pathLength()));
-                            } else {
-                                console.log("Error")
+
                             }
-                        } else {
-                            marker_coords = map.toCoordinate(Qt.point(mouse.x,mouse.y));
-                            markerIcon.opacity = 1.0;
-                            markerIcon.coordinate = map.toCoordinate(Qt.point(mouse.x,mouse.y));
-                            mapsidebar.markerText = "%1, %2".arg(marker_coords.latitude).arg(marker_coords.longitude);
+                        } if (mouse.button & Qt.RightButton) {
+                            if (waypointPath.pathLength() > 0) {
+                                map.removeMapItem(mapCircles[waypointPath.pathLength() - 1]);
+                                mapCircles[waypointPath.pathLength() - 1].destroy();
+
+                                waypointPath.removeCoordinate(waypointPath.pathLength() - 1);
+                                console.log(("Removed waypoint! (size: %1)").arg(waypointPath.pathLength()));
+
+                            }
                         }
+
+                    } else if (mouse.button & Qt.LeftButton) {
+                        marker_coords = map.toCoordinate(Qt.point(mouse.x,mouse.y));
+                        markerIcon.opacity = 1.0;
+                        markerIcon.coordinate = map.toCoordinate(Qt.point(mouse.x,mouse.y));
+                        mapsidebar.markerText = "%1, %2".arg(marker_coords.latitude).arg(marker_coords.longitude);
                     }
                 }
             }
         }
+
 
         Rectangle {
 
@@ -362,7 +388,7 @@ RowLayout {
                 Button {
                     id:clearPathButton
                     Layout.rightMargin: 5
-                    text: "Clear path"
+                    text: "Clear trace"
                     highlighted: true
                     Material.accent: mainAccentColor
                     Layout.alignment: Qt.AlignRight
@@ -376,18 +402,27 @@ RowLayout {
         }
     }
 
-    Component {
+    /*Component {
         id: greenFlagComponent
         MapQuickItem {
-            sourceItem: Image{
+            sourceItem: Image {
                 id: flagGreenImage
                 width: 72; height: 72
                 source: 'qrc:/images/flag_green.png'
             }
-            //coordinate: greenFlagComponent.theCoord
             anchorPoint.x: flagGreenImage.width / 2
             anchorPoint.y: flagGreenImage.height / 2
             z: map.z + 3
+        }
+    }*/
+
+    Component {
+        id: mapCircleComponent
+        MapCircle {
+            radius: mapsidebar.waypointRadius
+            color: 'transparent'
+            border.width: 1
+            border.color: createPathState === pathState.creating ? Material.color(Material.Red, Material.Shade700) : Material.color(Material.Green, Material.Shade700)
         }
     }
 }

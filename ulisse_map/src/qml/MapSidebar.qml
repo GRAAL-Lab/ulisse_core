@@ -8,6 +8,7 @@ Rectangle {
 
     property alias markerText: markerTextLabel.text
     property alias markerTextColor: markerTextLabel.textColor
+    property alias waypointRadius: commandRect.wpRad
     color: Material.background
 
     ColumnLayout {
@@ -97,7 +98,7 @@ Rectangle {
                         id: markerTextLabel
                         labelColor: Material.color(Material.Red, Material.Shade800)
                         label: "Marker Coordinates"
-                        text: "Right click on map"
+                        text: "Left click on map"
                     }
                 }
             }
@@ -112,13 +113,14 @@ Rectangle {
                 width: parent.width
                 font.pointSize: 8
                 color: 'gray'
-                text: "(Right click to set marker)"
+                text: "(Left click to set marker)"
                 horizontalAlignment: Text.AlignHCenter
             }
         }
 
 
         CommandPane {
+
             id: commandRect
             Layout.alignment: Qt.AlignCenter
             Layout.preferredWidth: parent.width - panesMargin

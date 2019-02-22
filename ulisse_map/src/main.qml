@@ -5,6 +5,7 @@ import QtQuick.Controls 2.1
 import QtLocation 5.6
 import QtPositioning 5.6
 import Qt.labs.settings 1.0
+import QtQuick.Dialogs 1.1
 import QtQuick.Controls.Material 2.1
 import QtQuick.Controls.Universal 2.1
 import QtQuick.Controls.Styles 1.4
@@ -84,7 +85,7 @@ ApplicationWindow {
         id: settingsDialog
         x: Math.round((window.width - width) / 2)
         y: Math.round(window.height / 6)
-        width: Math.round(Math.min(window.width, window.height) / 3 * 2)    
+        width: Math.round(Math.min(window.width, window.height) / 3 * 2)
     }
 
     HelpDialog {

@@ -7,6 +7,7 @@ import QtQuick.Controls.Material 2.1
 import QtQuick.Controls.Styles 1.4
 
 Pane {
+    property alias wpRad: waypointsText.text
 
     ColumnLayout {
         id: buttonsColumn
@@ -200,16 +201,41 @@ Pane {
 
                 onClicked: {
                     if(waypointsText.text !== ''){
-                        if (!mapView.createPathMode){
+                        //console.log(("Before: createPathState = %1").arg(mapView.createPathState))
+
+                        if (mapView.createPathState === pathState.empty){
                             // TODO: Set Up waypoint path (MouseArea + MapPolyline)
                             waypointsButton.text = "Send Path"
-                            mapView.createPathMode = waypointsButton.highlighted = true;
-
-                        } else {
-                            // Send Waypoints (Create a Function in commandWrapper)
-                            waypointsButton.text = "Create Path"
-                            mapView.createPathMode = waypointsButton.highlighted = false;
+                            waypointsButton.highlighted = true;
+                            mapView.createPathState = pathState.creating;
                         }
+                        else if (mapView.createPathState === pathState.creating) {
+                            // Send Waypoints (Create a Function in commandWrapper)
+                            waypointsButton.text = "Cancel Path"
+                            waypointsButton.Material.accent = mainAccentColor;
+
+                            mapView.createPathState = pathState.active;
+                        }
+                        else if (mapView.createPathState === pathState.active) {
+
+                            //var pathSize = waypointPath.pathLength();
+                            //console.log(("Begin: pathSize = %1").arg(pathSize))
+                            while (waypointPath.pathLength() > 0){
+                                //waypointPath.opacity = 0.0;
+                                map.removeMapItem(mapCircles[waypointPath.pathLength() - 1]);
+                                mapCircles[waypointPath.pathLength() - 1].destroy();
+                                waypointPath.removeCoordinate(waypointPath.pathLength() - 1);
+                            }
+
+                            console.log(("Destroyed Path: pathLength = %1").arg(waypointPath.pathLength()))
+                            waypointsButton.text = "Create Path";
+                            waypointsButton.highlighted = false;
+                            waypointsButton.Material.accent = secondaryAccentColor;
+
+                            mapView.createPathState = pathState.empty;
+                        }
+
+
                         toast.show("Not yet implemented", 2000)
                     } else {
                         acceptRadDialog.open();

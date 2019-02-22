@@ -29,7 +29,5 @@
         <file>qml/HelpDialog.qml</file>
         <file>images/graal_logo.png</file>
         <file>images/compass_icon.svg</file>
-        <file>qml/WaypointFlag.qml</file>
-        <file>scripts/dynamicFlag.js</file>
     </qresource>
 </RCC>

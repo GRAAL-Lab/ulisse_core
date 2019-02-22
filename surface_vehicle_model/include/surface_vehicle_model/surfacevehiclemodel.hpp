@@ -73,12 +73,12 @@ class SurfaceVehicleModel {
      * second ones are the angular x-y-z velocities.
      */
     Eigen::Vector6d vehvel_;
-    double tauX_, tauN_;
+    //double tauX_, tauN_;
     Eigen::Vector3d tauStar_, nir_;
     ThrusterMappingParameters params_;
 
-    void EvaluateTauX();
-    void EvaluateTauN();
+    double GetTauX();
+    double GetTauN();
     double GetThrusterForceFromRPM(double n, double linXVel);
     double GetThrusterForceFromMapping();
     double PercentageToRPM(double h);

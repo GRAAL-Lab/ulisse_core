@@ -23,8 +23,8 @@ bool SolveSecondOrderEquation(double a, double b, double c, std::pair<double, do
 }
 
 SurfaceVehicleModel::SurfaceVehicleModel()
-    : tauX_(0.0)
-    , tauN_(0.0)
+    //: tauX_(0.0)
+    //, tauN_(0.0)
 {
     nir_.setZero();
     tauStar_.setZero();
@@ -35,22 +35,22 @@ void SurfaceVehicleModel::SetMappingParams(const ThrusterMappingParameters& para
     params_ = params;
 }
 
-void SurfaceVehicleModel::EvaluateTauX()
+double SurfaceVehicleModel::GetTauX()
 {
     Eigen::RowVector3d tempX;
     tempX(0) = vehvel_(5) * vehvel_(5);
     tempX(1) = vehvel_(0);
     tempX(2) = vehvel_(0) * std::fabs(vehvel_(0));
-    tauX_ = tempX * params_.cX;
+    return (tempX * params_.cX);
 }
 
-void SurfaceVehicleModel::EvaluateTauN()
+double SurfaceVehicleModel::GetTauN()
 {
     Eigen::RowVector3d tempN;
     tempN(0) = vehvel_(0) * vehvel_(5);
     tempN(1) = vehvel_(5);
     tempN(2) = vehvel_(5) * std::fabs(vehvel_(5));
-    tauN_ = tempN * params_.cN;
+    return (tempN * params_.cN);
 }
 
 double SurfaceVehicleModel::GetThrusterForceFromRPM(double n, double linXVel)
@@ -67,7 +67,7 @@ double SurfaceVehicleModel::GetThrusterForceFromRPM(double n, double linXVel)
 double SurfaceVehicleModel::GetThrusterForceFromMapping()
 {
     double force;
-    force = 0.5 * (tauX_ + tauN_ / params_.d);
+    force = 0.5 * (GetTauX() + GetTauN() / params_.d);
     return force;
 }
 
@@ -96,12 +96,10 @@ double SurfaceVehicleModel::RPMToPercentage(double rpm)
 void SurfaceVehicleModel::DirectDynamics(double h_p, double h_s, const Eigen::Vector6d& linAngVel, Eigen::Vector6d& linAngAcc)
 {
     vehvel_ = linAngVel;
-    EvaluateTauX();
-    EvaluateTauN();
 
-    tauStar_(0) = tauX_;
+    tauStar_(0) = GetTauX();
     tauStar_(1) = 0.0;
-    tauStar_(2) = tauN_;
+    tauStar_(2) = GetTauN();
 
     double motorlinearXVel_p = vehvel_(0) + vehvel_(5) * params_.d;
     double motorlinearXVel_s = vehvel_(0) - vehvel_(5) * params_.d;
@@ -144,8 +142,8 @@ void SurfaceVehicleModel::DirectDynamics(double h_p, double h_s, const Eigen::Ve
 void SurfaceVehicleModel::SingleThrusterMapping(const Eigen::Vector6d& linAngVel, double& thruster_perc)
 {
     vehvel_ = linAngVel;
-    EvaluateTauX();
-    EvaluateTauN();
+    //GetTauX();
+    //GetTauN();
     double motorlinearXVel = vehvel_(0) + vehvel_(5) * params_.d;
 
     double thrust_force = GetThrusterForceFromMapping();
