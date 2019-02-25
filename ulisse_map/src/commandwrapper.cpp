@@ -5,6 +5,7 @@
 #include <chrono>
 
 using namespace std::chrono_literals;
+using std::placeholders::_1;
 
 CommandWrapper::CommandWrapper(QObject* parent)
     : QObject(parent)
@@ -26,49 +27,63 @@ CommandWrapper::~CommandWrapper()
 void CommandWrapper::Init(QQmlApplicationEngine* engine)
 {
     appEngine_ = engine;
+    myTimer_ = new QTimer(this);
+
+    errorCheckInterval_ = 500;
+
+    QObject::connect(myTimer_, SIGNAL(timeout()), this, SLOT(check_error_slot()));
 
     toastMgrObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("toastManager");
     if (!toastMgrObj_) {
         qDebug("No 'toastManager' found!");
     }
 
-    holdRadiusObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("holdRadiusText");
+    /*holdRadiusObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("holdRadiusText");
     if (!holdRadiusObj_) {
         qDebug("No 'holdRadiusText' found!");
-    }
+    }*/
 
-    moveToRadiusObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("moveToRadiusText");
+    /*moveToRadiusObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("moveToRadiusText");
     if (!moveToRadiusObj_) {
         qDebug("No 'moveToRadiusText' found!");
-    }
+    }*/
 
     speedHeadTimoutObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("speedHeadingTimeout");
     if (!speedHeadTimoutObj_) {
         qDebug("No 'speedHeadingTimeout' found!");
     }
 
+    waypointRadiusObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("waypointRadius");
+    if (!waypointRadiusObj_) {
+        qDebug("No 'waypointRadius' found!");
+    }
+
+    waypointPathObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("waypointPath");
+    if (!waypointPathObj_) {
+        qDebug("No 'waypointPath' found!");
+    }
+
+    goalDistanceObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("goalDistance");
+    if (!goalDistanceObj_) {
+        qDebug("No 'goalDistance' found!");
+    }
+
     command_srv_ = np_->create_client<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service);
+    goal_cxt_sub_ = np_->create_subscription<ulisse_msgs::msg::GoalContext>(
+        ulisse_msgs::topicnames::goal_context, std::bind(&CommandWrapper::GoalContextCB, this, _1));
 }
 
 void CommandWrapper::SetNodeHandle(const rclcpp::Node::SharedPtr& np)
 {
     np_ = np;
+    goalCtxRead_ = false;
 }
 
-/*void CommandWrapper::setup_command_client_slot()
+void CommandWrapper::GoalContextCB(const ulisse_msgs::msg::GoalContext::SharedPtr msg)
 {
-    SetupCommandClient();
+    goal_cxt_msg_ = *msg;
+    goalCtxRead_ = true;
 }
-
-void CommandWrapper::SetupCommandClient()
-{
-    while (!command_srv_->wait_for_service(2s)) {
-        if (!rclcpp::ok()) {
-            RCLCPP_ERROR(np_->get_logger(), "client interrupted while waiting for service to appear.");
-        }
-        RCLCPP_INFO(np_->get_logger(), "waiting for Controller service to appear...");
-    }
-}*/
 
 void CommandWrapper::ShowToast(const QVariant message, const QVariant duration)
 {
@@ -107,21 +122,21 @@ bool CommandWrapper::sendHaltCommand()
     return SendCommandRequest(serviceReq);
 }
 
-bool CommandWrapper::sendHoldCommand()
+bool CommandWrapper::sendHoldCommand(double radius)
 {
     auto serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
     serviceReq->command_type = ulisse::commands::ID::hold;
-    serviceReq->hold_cmd.acceptance_radius = (holdRadiusObj_->property("text")).toDouble();
+    serviceReq->hold_cmd.acceptance_radius = radius; //(holdRadiusObj_->property("text")).toDouble();
     return SendCommandRequest(serviceReq);
 }
 
-bool CommandWrapper::sendLatLongCommand(const QGeoCoordinate& goal)
+bool CommandWrapper::sendLatLongCommand(const QGeoCoordinate& goal, double radius)
 {
     auto serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
     serviceReq->command_type = ulisse::commands::ID::latlong;
     serviceReq->latlong_cmd.goal.latitude = goal.latitude();
     serviceReq->latlong_cmd.goal.longitude = goal.longitude();
-    serviceReq->latlong_cmd.acceptance_radius = (moveToRadiusObj_->property("text")).toDouble();
+    serviceReq->latlong_cmd.acceptance_radius = radius; //(moveToRadiusObj_->property("text")).toDouble();
     return SendCommandRequest(serviceReq);
 }
 
@@ -136,4 +151,62 @@ bool CommandWrapper::sendSpeedHeadingCommand(double speed, double heading)
     return SendCommandRequest(serviceReq);
 }
 
+bool CommandWrapper::startPath()
+{
+    wpCurrentIndex_ = 0;
+    wpRadius_ = (waypointRadiusObj_->property("text")).toInt();
+    waypoint_path_ = (waypointPathObj_->property("path")).value<QVariantList>();
+    qDebug() << "Sending Path ( size: " << waypoint_path_.size() << ")";
+
+    for (int i = 0; i < waypoint_path_.size(); i++) {
+        auto coordinate = qvariant_cast<QGeoCoordinate>(waypoint_path_.at(i));
+        qDebug() << i << ": "
+                 << "LAT " << coordinate.latitude()
+                 << ", LONG " << coordinate.longitude();
+    }
+
+    bool ret = sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), 0);
+
+    if (ret) {
+        myTimer_->start(errorCheckInterval_);
+    }
+    return ret;
+}
+
+void CommandWrapper::stopPath()
+{
+    myTimer_->stop();
+    sendHoldCommand(wpRadius_);
+}
+
+void CommandWrapper::cancelPath(){
+    myTimer_->stop();
+    sendHaltCommand();
+}
+
+void CommandWrapper::resumePath()
+{
+    myTimer_->start(errorCheckInterval_);
+    sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), wpRadius_);
+}
+
+void CommandWrapper::check_error_slot()
+{
+    rclcpp::spin_some(np_);
+
+    if (goalCtxRead_) {
+        //qDebug() << "Check error: goalDistance = " << goal_cxt_msg_.goal_distance << ", radius =  " << wpRadius_;
+
+        if (goal_cxt_msg_.goal_distance < wpRadius_) {
+            wpCurrentIndex_++;
+            if (wpCurrentIndex_ < waypoint_path_.size()) {
+                sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), 0);
+            } else {
+                myTimer_->stop();
+                sendHoldCommand(wpRadius_);
+
+            }
+        }
+    }
+}
 

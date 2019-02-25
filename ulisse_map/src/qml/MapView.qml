@@ -17,7 +17,7 @@ RowLayout {
     property real myElevation: 6
     property real panesMargin: 14
 
-    property int createPathState: pathState.empty
+    property int pathCurrentState: pathState.empty
     property var mapCircles: []
     //property int mapCircleIndex: 0
 
@@ -26,20 +26,8 @@ RowLayout {
         property int empty: 0
         property int creating: 1
         property int active: 2
+        property int stopped: 3
     }
-
-    /*Item {
-        id: pathState
-        states: [
-            State { name: "empty" },
-            State { name: "creating" },
-            State { name: "active" }
-        ]
-
-        Component.onCompleted: {
-            state = "empty"
-        }
-    }*/
 
 
     Plugin {
@@ -67,8 +55,8 @@ RowLayout {
         id: mapsidebar
         Layout.fillHeight: true
         Layout.minimumHeight: 150
-        Layout.preferredWidth: 236
-        Layout.maximumWidth: 235
+        Layout.preferredWidth: 265
+        Layout.maximumWidth: 265
         Layout.topMargin: 5
 
     }
@@ -91,7 +79,7 @@ RowLayout {
             plugin: mapPlugin
             center: QtPositioning.coordinate(44.393, 8.945) // Genoa
 
-            zoomLevel: 14//(maximumZoomLevel - minimumZoomLevel)/2
+            zoomLevel: 15//(maximumZoomLevel - minimumZoomLevel)/2
 
             ColorOverlay {
                 anchors.fill: map
@@ -216,6 +204,24 @@ RowLayout {
             }
 
             MapQuickItem {
+                id: greenFlag
+                objectName: "goalFlag"
+                sourceItem: Image{
+                    id: greenFlagImage
+                    width: 72; height: 72
+                    source: 'qrc:/images/flag_green.png'
+                }
+
+                anchorPoint.x: flagCheckerImage.width / 2
+                anchorPoint.y: flagCheckerImage.height / 2
+                z: goalAcceptRadius.z + 1
+                opacity: (mapView.pathCurrentState === pathState.active) || (mapView.pathCurrentState === pathState.stopped) ? 1.0 : 0.0
+
+            }
+
+
+
+            MapQuickItem {
                 id: overlayText
                 sourceItem: Text {
                     color: 'darkslategray'
@@ -270,19 +276,19 @@ RowLayout {
 
             MapPolyline {
                 id: waypointPath
+                objectName: "waypointPath"
                 line.width: 2
-                line.color: createPathState === pathState.creating ? Material.color(Material.Red, Material.Shade300) : Material.color(Material.Green, Material.Shade400)
-                opacity: createPathState === pathState.empty ? 0.0 : 1.0
+                line.color: pathCurrentState === pathState.creating ? Material.color(Material.Red, Material.Shade300) : Material.color(Material.Green, Material.Shade500)
+                opacity: 0.0
             }
 
             MouseArea {
                 anchors.fill: parent
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
 
-
                 onClicked: {
 
-                    if (createPathState === pathState.creating){
+                    if (pathCurrentState === pathState.creating){
                         if (mouse.button & Qt.LeftButton) {
                             var waypoint = map.toCoordinate(Qt.point(mouse.x,mouse.y));
                             waypointPath.addCoordinate(waypoint);
@@ -293,7 +299,7 @@ RowLayout {
 
                             if (mapCircleComponent.status === Component.Ready) {
                                 map.addMapItem(mapCircles[waypointPath.pathLength() - 1]);
-
+                                waypointPath.opacity = 1.0;
                                 console.log(("Added waypoint! (size: %1)").arg(waypointPath.pathLength()));
 
                             }
@@ -402,27 +408,13 @@ RowLayout {
         }
     }
 
-    /*Component {
-        id: greenFlagComponent
-        MapQuickItem {
-            sourceItem: Image {
-                id: flagGreenImage
-                width: 72; height: 72
-                source: 'qrc:/images/flag_green.png'
-            }
-            anchorPoint.x: flagGreenImage.width / 2
-            anchorPoint.y: flagGreenImage.height / 2
-            z: map.z + 3
-        }
-    }*/
-
     Component {
         id: mapCircleComponent
         MapCircle {
             radius: mapsidebar.waypointRadius
             color: 'transparent'
             border.width: 1
-            border.color: createPathState === pathState.creating ? Material.color(Material.Red, Material.Shade700) : Material.color(Material.Green, Material.Shade700)
+            border.color: pathCurrentState === pathState.creating ? Material.color(Material.Red, Material.Shade700) : Material.color(Material.Green, Material.Shade700)
         }
     }
 }

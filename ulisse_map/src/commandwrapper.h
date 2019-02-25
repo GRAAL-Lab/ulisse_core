@@ -20,13 +20,22 @@ class CommandWrapper : public QObject {
     Q_OBJECT
     QQmlApplicationEngine* appEngine_;
     QTimer* myTimer_;
-    QObject *toastMgrObj_, *holdRadiusObj_, *moveToRadiusObj_, *speedHeadTimoutObj_;
+    QObject *toastMgrObj_, *speedHeadTimoutObj_;
+    QObject *goalDistanceObj_, *waypointPathObj_, *waypointRadiusObj_;
 
     rclcpp::Node::SharedPtr np_;
     rclcpp::Client<ulisse_msgs::srv::ControlCommand>::SharedPtr command_srv_;
+    rclcpp::Subscription<ulisse_msgs::msg::GoalContext>::SharedPtr goal_cxt_sub_;
 
-    QGeoPath waypoint_path_;
+    ulisse_msgs::msg::GoalContext goal_cxt_msg_;
 
+    QVariantList waypoint_path_;
+    int wpCurrentIndex_;
+    int wpRadius_;
+    int errorCheckInterval_;
+    bool goalCtxRead_;
+
+    void GoalContextCB(const ulisse_msgs::msg::GoalContext::SharedPtr msg);
     void ShowToast(const QVariant message, const QVariant duration);
     bool SendCommandRequest(ulisse_msgs::srv::ControlCommand::Request::SharedPtr req);
     //void SetupCommandClient();
@@ -39,12 +48,20 @@ public:
     void SetNodeHandle(const rclcpp::Node::SharedPtr& np);
 
     Q_INVOKABLE bool sendHaltCommand();
-    Q_INVOKABLE bool sendHoldCommand();
-    Q_INVOKABLE bool sendLatLongCommand(const QGeoCoordinate& goal);
+    Q_INVOKABLE bool sendHoldCommand(double radius);
+    Q_INVOKABLE bool sendLatLongCommand(const QGeoCoordinate& goal, double radius);
     Q_INVOKABLE bool sendSpeedHeadingCommand(double speed, double heading);
+    Q_INVOKABLE bool startPath();
+    Q_INVOKABLE void stopPath();
+    Q_INVOKABLE void cancelPath();
+    Q_INVOKABLE void resumePath();
 
 public slots:
-    //void setup_command_client_slot();
+    void check_error_slot();
+    //void process_callbacks_slot();
+
+signals:
+    void callbacks_processed();
 };
 
 #endif // COMMANDWRAPPER_H

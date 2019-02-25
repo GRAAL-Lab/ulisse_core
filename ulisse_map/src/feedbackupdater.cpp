@@ -30,7 +30,6 @@ FeedbackUpdater::FeedbackUpdater(QQmlApplicationEngine* engine, QObject* parent)
 
 FeedbackUpdater::~FeedbackUpdater()
 {
-
     delete myTimer_;
 }
 

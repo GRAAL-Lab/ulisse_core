@@ -29,5 +29,7 @@
         <file>qml/HelpDialog.qml</file>
         <file>images/graal_logo.png</file>
         <file>images/compass_icon.svg</file>
+        <file>images/restart-256.png</file>
+        <file>images/restart-256_grey.png</file>
     </qresource>
 </RCC>

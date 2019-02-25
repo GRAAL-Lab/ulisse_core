@@ -82,6 +82,7 @@ Rectangle {
 
                     LabelledText {
                         id: goalDistLabel
+                        objectName: "goalDistance"
                         labelColor: Material.color(mainColor, Material.Shade700)
                         label: "Distance to Target"
                         text: "%1 (m)".arg(fbkUpdater.goal_distance)

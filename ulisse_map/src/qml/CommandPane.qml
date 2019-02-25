@@ -5,9 +5,10 @@ import QtLocation 5.6
 import QtPositioning 5.6
 import QtQuick.Controls.Material 2.1
 import QtQuick.Controls.Styles 1.4
+import QtGraphicalEffects 1.0
 
 Pane {
-    property alias wpRad: waypointsText.text
+    property alias wpRad: waypointRadius.text
 
     ColumnLayout {
         id: buttonsColumn
@@ -101,8 +102,8 @@ Pane {
                 text: "Hold Position"
 
                 onClicked: {
-                    if(holdRadiusText.text !== ''){
-                        cmdWrapper.sendHoldCommand()
+                    if(holdRadius.text !== ''){
+                        cmdWrapper.sendHoldCommand(parseFloat(holdRadius.text));
                     } else {
                         acceptRadDialog.open();
                     }
@@ -111,7 +112,7 @@ Pane {
 
             Rectangle {
                 id: holdSpacer
-                width: buttonsColumn.width - holdButton.width - holdRadiusText.width
+                width: buttonsColumn.width - holdButton.width - holdRadius.width
                 height: parent.height
                 anchors.left: holdButton.right
                 color: 'transparent'
@@ -119,7 +120,7 @@ Pane {
 
 
             TextField {
-                id: holdRadiusText
+                id: holdRadius
                 objectName: "holdRadiusText"
                 Layout.preferredWidth: 45
                 Layout.minimumWidth: 45
@@ -148,8 +149,8 @@ Pane {
                 text: "Move To Marker"
 
                 onClicked: {
-                    if(moveToRadiusText.text !== ''){
-                        if(cmdWrapper.sendLatLongCommand(marker_coords)){
+                    if(moveToRadius.text !== ''){
+                        if(cmdWrapper.sendLatLongCommand(marker_coords, parseFloat(moveToRadius.text))){
                             markerIcon.opacity = 0.2
                         }
                     } else {
@@ -161,7 +162,7 @@ Pane {
 
             Rectangle {
                 id: moveToSpacer
-                width: buttonsColumn.width - moveToButton.width - moveToRadiusText.width
+                width: buttonsColumn.width - moveToButton.width - moveToRadius.width
                 height: parent.height
                 anchors.left: moveToButton.right
                 color: 'transparent'
@@ -169,7 +170,7 @@ Pane {
 
 
             TextField {
-                id: moveToRadiusText
+                id: moveToRadius
                 objectName: "moveToRadiusText"
                 Layout.preferredWidth: 45
                 Layout.minimumWidth: 45
@@ -192,69 +193,114 @@ Pane {
             id: waypointsRow
             Layout.fillWidth: true
 
-            //property bool creatingPath: false
-
             Button {
                 id: waypointsButton
                 Material.accent: secondaryAccentColor
                 text: "Create Path"
+                Layout.preferredWidth: 110
 
                 onClicked: {
-                    if(waypointsText.text !== ''){
-                        //console.log(("Before: createPathState = %1").arg(mapView.createPathState))
-
-                        if (mapView.createPathState === pathState.empty){
-                            // TODO: Set Up waypoint path (MouseArea + MapPolyline)
+                    if(waypointRadius.text !== ''){
+                        if (mapView.pathCurrentState === pathState.empty){
                             waypointsButton.text = "Send Path"
                             waypointsButton.highlighted = true;
-                            mapView.createPathState = pathState.creating;
+                            mapView.pathCurrentState = pathState.creating;
                         }
-                        else if (mapView.createPathState === pathState.creating) {
-                            // Send Waypoints (Create a Function in commandWrapper)
-                            waypointsButton.text = "Cancel Path"
+                        else if (mapView.pathCurrentState === pathState.creating) {
+                            waypointsButton.text = "Pause Path"
                             waypointsButton.Material.accent = mainAccentColor;
-
-                            mapView.createPathState = pathState.active;
+                            greenFlag.coordinate = waypointPath.path[waypointPath.pathLength() - 1];
+                            mapView.pathCurrentState = pathState.active;
+                            cmdWrapper.startPath();
                         }
-                        else if (mapView.createPathState === pathState.active) {
-
-                            //var pathSize = waypointPath.pathLength();
-                            //console.log(("Begin: pathSize = %1").arg(pathSize))
-                            while (waypointPath.pathLength() > 0){
-                                //waypointPath.opacity = 0.0;
-                                map.removeMapItem(mapCircles[waypointPath.pathLength() - 1]);
-                                mapCircles[waypointPath.pathLength() - 1].destroy();
-                                waypointPath.removeCoordinate(waypointPath.pathLength() - 1);
-                            }
-
-                            console.log(("Destroyed Path: pathLength = %1").arg(waypointPath.pathLength()))
-                            waypointsButton.text = "Create Path";
-                            waypointsButton.highlighted = false;
-                            waypointsButton.Material.accent = secondaryAccentColor;
-
-                            mapView.createPathState = pathState.empty;
+                        else if (mapView.pathCurrentState === pathState.active) {
+                            waypointsButton.text = "Resume Path"
+                            mapView.pathCurrentState = pathState.stopped;
+                            cmdWrapper.stopPath();
+                        }
+                        else if (mapView.pathCurrentState === pathState.stopped) {
+                            waypointsButton.text = "Pause Path"
+                            mapView.pathCurrentState = pathState.active;
+                            cmdWrapper.resumePath();
                         }
 
-
-                        toast.show("Not yet implemented", 2000)
                     } else {
                         acceptRadDialog.open();
                     }
                 }
             }
 
+            Button {
+                id: wpRestartButton
+                Material.accent: secondaryAccentColor
+                Layout.preferredWidth: 28
+                enabled: (mapView.pathCurrentState === pathState.active) || (mapView.pathCurrentState === pathState.stopped)  ? true : false
+
+                ToolTip.text: qsTr("Restart path from beginning")
+                ToolTip.delay: 500
+                ToolTip.timeout: 5000
+                ToolTip.visible: hovered
+
+                Image {
+                    id: restartIco
+                    anchors.fill: parent
+                    source: wpRestartButton.enabled ? "qrc:/images/restart-256.png" : "qrc:/images/restart-256_grey.png"
+                    mipmap: true
+                    fillMode: Image.PreserveAspectFit
+                    horizontalAlignment: Image.AlignHCenter
+                    verticalAlignment: Image.AlignVCenter
+                }
+
+                onClicked: {
+                    cmdWrapper.startPath();
+                }
+            }
+
+            Button {
+                id: wpDeleteButton
+                Material.accent: Material.Red
+                highlighted: true
+                Layout.preferredWidth: 28
+                text: "X"
+                font.weight: Font.Bold
+                font.pointSize: 12
+                enabled: (mapView.pathCurrentState === pathState.active) || (mapView.pathCurrentState === pathState.stopped)  ? true : false
+
+                ToolTip.text: qsTr("Delete the current path and stop")
+                ToolTip.delay: 500
+                ToolTip.timeout: 5000
+                ToolTip.visible: hovered
+
+                onClicked: {
+                    while (waypointPath.pathLength() > 0){
+                        map.removeMapItem(mapCircles[waypointPath.pathLength() - 1]);
+                        mapCircles[waypointPath.pathLength() - 1].destroy();
+                        waypointPath.removeCoordinate(waypointPath.pathLength() - 1);
+                    }
+
+                    console.log(("Destroyed Path: pathLength = %1").arg(waypointPath.pathLength()))
+                    waypointsButton.text = "Create Path";
+                    waypointsButton.highlighted = false;
+                    waypointsButton.Material.accent = secondaryAccentColor;
+                    waypointPath.opacity = 0.0;
+                    mapView.pathCurrentState = pathState.empty;
+
+                    cmdWrapper.cancelPath();
+                }
+            }
+
             Rectangle {
                 id: waypointsSpacer
-                width: buttonsColumn.width - waypointsButton.width - waypointsText.width
+                width: buttonsColumn.width - waypointsButton.width - waypointRadius.width - wpDeleteButton.width - wpRestartButton.width - 10
                 height: parent.height
-                anchors.left: waypointsButton.right
+                anchors.left: wpDeleteButton.right
                 color: 'transparent'
             }
 
 
             TextField {
-                id: waypointsText
-                objectName: "waypointsText"
+                id: waypointRadius
+                objectName: "waypointRadius"
                 Layout.preferredWidth: 45
                 Layout.minimumWidth: 45
                 Layout.maximumWidth: 45
