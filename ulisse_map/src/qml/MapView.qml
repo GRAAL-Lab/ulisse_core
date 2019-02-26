@@ -198,7 +198,7 @@ RowLayout {
                 coordinate: QtPositioning.coordinate(fbkUpdater.goal_pos.latitude, fbkUpdater.goal_pos.longitude)
                 anchorPoint.x: flagCheckerImage.width / 2
                 anchorPoint.y: flagCheckerImage.height / 2
-                z: goalAcceptRadius.z + 1
+                z: goalAcceptRadius.z + 2
                 opacity: 0.0
 
             }
@@ -219,7 +219,18 @@ RowLayout {
 
             }
 
-
+            Text {
+                anchors.leftMargin: 10
+                anchors.bottomMargin: altezzaScrittaDemmerda + 10
+                anchors.left: parent.left
+                anchors.bottom: parent.bottom
+                color: "steelblue"
+                font.weight: Font.DemiBold
+                font.pointSize: 10
+                textFormat: Text.StyledText
+                text: 'LEFT Click: <font color="#008000">Add Waypoint</font><br>RIGHT Click: <font color="#C00000">Remove Waypoint</font>'
+                opacity: mapView.pathCurrentState === pathState.creating ? 1.0 : 0.0
+            }
 
             MapQuickItem {
                 id: overlayText
@@ -250,7 +261,7 @@ RowLayout {
                 line.width: 1
                 line.color: Material.color(Material.Amber, Material.Shade300)
                 property bool firstRun: true
-                property real traceSize: 500
+                property real traceSize: 1000
 
                 Timer {
                     interval: 500; running: true; repeat: true
@@ -413,7 +424,7 @@ RowLayout {
         MapCircle {
             radius: mapsidebar.waypointRadius
             color: 'transparent'
-            border.width: 1
+            border.width: 2
             border.color: pathCurrentState === pathState.creating ? Material.color(Material.Red, Material.Shade700) : Material.color(Material.Green, Material.Shade700)
         }
     }

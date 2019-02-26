@@ -264,7 +264,7 @@ Pane {
                 text: "X"
                 font.weight: Font.Bold
                 font.pointSize: 12
-                enabled: (mapView.pathCurrentState === pathState.active) || (mapView.pathCurrentState === pathState.stopped)  ? true : false
+                enabled: mapView.pathCurrentState === pathState.empty ? false : true
 
                 ToolTip.text: qsTr("Delete the current path and stop")
                 ToolTip.delay: 500
@@ -307,6 +307,7 @@ Pane {
                 font.pointSize: 10
                 placeholderText: "Radius"
                 selectByMouse: true
+                enabled: mapView.pathCurrentState === pathState.empty |  mapView.pathCurrentState === pathState.creating ? true : false
 
                 anchors.left: waypointsSpacer.right
                 validator: DoubleValidator {
