@@ -22,9 +22,11 @@ namespace states {
         ctrlCxt_->pidSurge.Reset();
         ctrlCxt_->pidHeading.Reset();
 
+        ctrlCxt_->desiredSurge = 0.0;
+        ctrlCxt_->desiredJog = 0.0;
+
         return fsm::ok;
     }
-
 
     fsm::retval StateHalt::Execute()
     {

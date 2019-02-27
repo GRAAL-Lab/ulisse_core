@@ -276,10 +276,10 @@ RowLayout {
                             ulissePath.firstRun = false;
                         }
                         // To reduce the line density (and avoid to overload the gui)
-                        // we add a new point only every 0.5 meters
+                        // we add a new point only every 1.0 meter
                         var lastCoord = ulissePath.coordinateAt(ulissePath.pathLength() - 1);
                         var distToNext = lastCoord.distanceTo(fbkUpdater.ulisse_pos);
-                        if (distToNext > 0.5){
+                        if (distToNext > 1.0){
                             ulissePath.addCoordinate(fbkUpdater.ulisse_pos)
                             if(ulissePath.pathLength() > ulissePath.traceSize) {
                                 ulissePath.removeCoordinate(0);

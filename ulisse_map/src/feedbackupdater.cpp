@@ -1,5 +1,7 @@
 #include <QQmlContext>
+#include <ctime>
 #include <iostream>
+#include <sstream>
 
 #include "feedbackupdater.h"
 #include "ulisse_ctrl/fsm_defines.hpp"
@@ -44,14 +46,17 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
 
     q_ulisse_pos_.setLatitude(44.392);
     q_ulisse_pos_.setLongitude(8.945);
-    q_ulisse_yaw_deg_ = 0.0;
+    q_goal_heading_deg_ = q_ulisse_yaw_deg_ = 0.0;
     q_vehicle_state_ = "undefined";
     q_goal_distance_ = 0.0;
     q_ulisse_surge_ = 0.0;
     q_battery_perc_L_ = 99.9;
     q_battery_perc_R_ = 99.9;
 
-    q_goal_pos_ = q_ulisse_pos_;
+    q_desired_jog_ = q_desired_surge_ = 0.0;
+
+    q_gps_pos_ = q_goal_pos_ = q_ulisse_pos_;
+    q_gps_time_ = "undefined";
 
     goalFlagObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("goalFlag");
     if (!goalFlagObj_) {
@@ -65,11 +70,51 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
         ulisse_msgs::topicnames::goal_context, std::bind(&FeedbackUpdater::GoalContextCB, this, _1));
     control_cxt_sub_ = np_->create_subscription<ulisse_msgs::msg::ControlContext>(
         ulisse_msgs::topicnames::control_context, std::bind(&FeedbackUpdater::ControlContextCB, this, _1));
+
+    gps_data_sub_ = np_->create_subscription<ulisse_msgs::msg::GPSData>(
+        ulisse_msgs::topicnames::sensor_gps_data, std::bind(&FeedbackUpdater::GPSDataCB, this, _1));
+
+    battery_left_sub_ = np_->create_subscription<ulisse_msgs::msg::EESBattery>(
+        ulisse_msgs::topicnames::ees_battery_left, std::bind(&FeedbackUpdater::EESBatteryLeftCB, this, _1));
+    battery_right_sub_ = np_->create_subscription<ulisse_msgs::msg::EESBattery>(
+        ulisse_msgs::topicnames::ees_battery_right, std::bind(&FeedbackUpdater::EESBatteryRightCB, this, _1));
+
+    thruster_data_sub_ = np_->create_subscription<ulisse_msgs::msg::ThrustersData>(
+                ulisse_msgs::topicnames::thrusters_data, std::bind(&FeedbackUpdater::ThrusterDataCB, this, _1));
 }
 
 void FeedbackUpdater::SetNodeHandle(const rclcpp::Node::SharedPtr& np)
 {
     np_ = np;
+}
+
+void FeedbackUpdater::GPSDataCB(const ulisse_msgs::msg::GPSData::SharedPtr msg)
+{
+    gps_data_msg_ = *msg;
+
+    long now_secs = static_cast<long>(gps_data_msg_.time);
+    std::time_t current = now_secs;
+    std::string timedate = std::ctime(&current);
+    timedate.erase(std::remove(timedate.begin(), timedate.end(), '\n'), timedate.end());
+    q_gps_time_ = QString::fromStdString(timedate);
+
+    q_gps_pos_.setLatitude(gps_data_msg_.latitude);
+    q_gps_pos_.setLongitude(gps_data_msg_.longitude);
+}
+
+void FeedbackUpdater::EESBatteryLeftCB(const ulisse_msgs::msg::EESBattery::SharedPtr msg)
+{
+    q_battery_perc_L_ = msg->charge_percent;
+}
+void FeedbackUpdater::EESBatteryRightCB(const ulisse_msgs::msg::EESBattery::SharedPtr msg)
+{
+    q_battery_perc_R_ = msg->charge_percent;
+}
+
+void FeedbackUpdater::ThrusterDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg)
+{
+    q_thrust_ref_left_ = msg->motor_ctrlref.left;
+    q_thrust_ref_right_ = msg->motor_ctrlref.right;
 }
 
 void FeedbackUpdater::GoalContextCB(const ulisse_msgs::msg::GoalContext::SharedPtr msg)
@@ -80,11 +125,14 @@ void FeedbackUpdater::GoalContextCB(const ulisse_msgs::msg::GoalContext::SharedP
     q_goal_pos_.setLongitude(goal_cxt_msg_.current_goal.longitude);
     q_goal_distance_ = goal_cxt_msg_.goal_distance;
     q_accept_radius_ = goal_cxt_msg_.accept_radius;
+    q_goal_heading_deg_ = goal_cxt_msg_.goal_heading * 180 / M_PI;
 }
 
 void FeedbackUpdater::ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg)
 {
     control_cxt_msg_ = *msg;
+    q_desired_surge_ = (int)(control_cxt_msg_.desired_speed * 1E3) / 1E3;
+    q_desired_jog_ = (int)(control_cxt_msg_.desired_jog * 1E3) / 1E3;
 }
 
 void FeedbackUpdater::StatusContextCB(const ulisse_msgs::msg::StatusContext::SharedPtr msg)
@@ -147,6 +195,11 @@ double FeedbackUpdater::get_goal_distance()
     return q_goal_distance_;
 }
 
+double FeedbackUpdater::get_goal_heading()
+{
+    return q_goal_heading_deg_;
+}
+
 double FeedbackUpdater::get_accept_radius()
 {
     return q_accept_radius_;
@@ -160,6 +213,36 @@ double FeedbackUpdater::get_battery_perc_L()
 double FeedbackUpdater::get_battery_perc_R()
 {
     return q_battery_perc_R_;
+}
+
+QString FeedbackUpdater::get_gps_time()
+{
+    return q_gps_time_;
+}
+
+QGeoCoordinate FeedbackUpdater::get_gps_pos()
+{
+    return q_gps_pos_;
+}
+
+double FeedbackUpdater::get_desired_surge()
+{
+    return q_desired_surge_;
+}
+
+double FeedbackUpdater::get_desired_jog()
+{
+    return q_desired_jog_;
+}
+
+double FeedbackUpdater::get_thrust_ref_left()
+{
+    return q_thrust_ref_left_;
+}
+
+double FeedbackUpdater::get_thrust_ref_right()
+{
+    return q_thrust_ref_right_;
 }
 
 void FeedbackUpdater::process_callbacks_slot()

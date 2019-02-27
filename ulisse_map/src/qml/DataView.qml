@@ -52,14 +52,14 @@ Rectangle {
                     labelColor: 'dodgerblue'
                     label: "GPS time"
                     textColor: 'gray'
-                    text: "Text"
+                    text: fbkUpdater.gps_time
                 }
 
                 LabelledText {
                     labelColor: 'dodgerblue'
                     label: "GPS Pos"
                     textColor: 'gray'
-                    text: "Text"
+                    text: "%1, %2".arg(fbkUpdater.gps_pos.latitude).arg(fbkUpdater.gps_pos.longitude)
                 }
 
                 LabelledText {
@@ -67,6 +67,13 @@ Rectangle {
                     label: "Filtered Pos"
                     textColor: 'gray'
                     text: "%1, %2".arg(fbkUpdater.ulisse_pos.latitude).arg(fbkUpdater.ulisse_pos.longitude)
+                }
+
+                LabelledText {
+                    labelColor: 'dodgerblue'
+                    label: "Surge"
+                    textColor: 'gray'
+                    text: "%1 m/s".arg(fbkUpdater.ulisse_surge)
                 }
 
                 LabelledText {
@@ -108,7 +115,7 @@ Rectangle {
                     labelColor: 'seagreen'
                     label: "Goal Heading"
                     textColor: 'gray'
-                    text: "Text"
+                    text: "%1°".arg(fbkUpdater.goal_heading)
                 }
 
                 LabelledText {
@@ -141,9 +148,9 @@ Rectangle {
                 LabelledText {
                     //id: batteryPercLeft
                     labelColor: 'orange'
-                    label: "Desired Speed"
+                    label: "Desired Surge"
                     textColor: 'gray'
-                    text: "Text"
+                    text: "%1 m/s".arg(fbkUpdater.desired_surge)
                 }
 
                 LabelledText {
@@ -151,7 +158,7 @@ Rectangle {
                     labelColor: 'orange'
                     label: "Desired Jog"
                     textColor: 'gray'
-                    text: "Text"
+                    text:  "%1 rad/s".arg(fbkUpdater.desired_jog)
                 }
 
                 LabelledText {
@@ -159,7 +166,7 @@ Rectangle {
                     labelColor: 'orange'
                     label: "Motor Control Ref"
                     textColor: 'gray'
-                    text: "Text"
+                    text: "L: %1\nR: %2".arg(fbkUpdater.thrust_ref_left).arg(fbkUpdater.thrust_ref_right)
                 }
             }
         }

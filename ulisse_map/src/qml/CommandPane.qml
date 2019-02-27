@@ -147,6 +147,7 @@ Pane {
             Button {
                 id: moveToButton
                 text: "Move To Marker"
+                enabled: markerIcon.opacity > 0 ? true : false
 
                 onClicked: {
                     if(moveToRadius.text !== ''){
