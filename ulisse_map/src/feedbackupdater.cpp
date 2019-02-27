@@ -54,6 +54,7 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
     q_battery_perc_R_ = 99.9;
 
     q_desired_jog_ = q_desired_surge_ = 0.0;
+    q_thrust_ref_left_ = q_thrust_ref_right_ = 0.0;
 
     q_gps_pos_ = q_goal_pos_ = q_ulisse_pos_;
     q_gps_time_ = "undefined";

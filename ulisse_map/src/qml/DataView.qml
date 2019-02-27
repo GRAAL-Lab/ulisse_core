@@ -166,7 +166,7 @@ Rectangle {
                     labelColor: 'orange'
                     label: "Motor Control Ref"
                     textColor: 'gray'
-                    text: "L: %1\nR: %2".arg(fbkUpdater.thrust_ref_left).arg(fbkUpdater.thrust_ref_right)
+                    text: "L: %1 \%\nR: %2 \%".arg(fbkUpdater.thrust_ref_left).arg(fbkUpdater.thrust_ref_right)
                 }
             }
         }

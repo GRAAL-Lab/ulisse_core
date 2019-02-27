@@ -266,6 +266,7 @@ RowLayout {
                 line.color: Material.color(Material.Amber, Material.Shade300)
                 property bool firstRun: true
                 property real traceSize: 1000
+                z: map.z + 2
 
                 Timer {
                     interval: 500; running: true; repeat: true
@@ -295,6 +296,7 @@ RowLayout {
                 line.width: 2
                 line.color: pathCurrentState === pathState.creating ? Material.color(Material.DeepOrange, Material.Shade300) : Material.color(Material.Green, Material.Shade500)
                 opacity: 0.0
+                z: map.z + 1
             }
 
             MouseArea {

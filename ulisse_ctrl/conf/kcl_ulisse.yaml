@@ -39,7 +39,7 @@ controller_node:
             BetaMax: 1.0
 
         PIDPosition:
-            Kp: 0.05
+            Kp: 0.1
             Ki: 0.0
             Kd: 0.0
             Kff: 0.0
