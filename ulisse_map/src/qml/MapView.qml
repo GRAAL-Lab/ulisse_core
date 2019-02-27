@@ -79,7 +79,7 @@ RowLayout {
             plugin: mapPlugin
             center: QtPositioning.coordinate(44.393, 8.945) // Genoa
 
-            zoomLevel: 15//(maximumZoomLevel - minimumZoomLevel)/2
+            zoomLevel: 16//(maximumZoomLevel - minimumZoomLevel)/2
 
             ColorOverlay {
                 anchors.fill: map
@@ -152,11 +152,15 @@ RowLayout {
                     source: 'qrc:/images/map-marker-64.png'
 
                 }
-                coordinate: map.center
+                //coordinate: map.center
                 z: ulisseIcon.z + 1
                 anchorPoint.x: markerImage.width / 2
                 anchorPoint.y: markerImage.height
                 opacity: 0.0
+
+                onCoordinateChanged: {
+                    mapsidebar.markerText = "%1, %2".arg(marker_coords.latitude).arg(marker_coords.longitude);
+                }
             }
 
             MapQuickItem {
@@ -205,15 +209,14 @@ RowLayout {
 
             MapQuickItem {
                 id: greenFlag
-                objectName: "goalFlag"
                 sourceItem: Image{
                     id: greenFlagImage
                     width: 72; height: 72
                     source: 'qrc:/images/flag_green.png'
                 }
 
-                anchorPoint.x: flagCheckerImage.width / 2
-                anchorPoint.y: flagCheckerImage.height / 2
+                anchorPoint.x: greenFlagImage.width / 2
+                anchorPoint.y: greenFlagImage.height / 2
                 z: goalAcceptRadius.z + 1
                 opacity: (mapView.pathCurrentState === pathState.active) || (mapView.pathCurrentState === pathState.stopped) ? 1.0 : 0.0
 
@@ -226,10 +229,11 @@ RowLayout {
                 anchors.bottom: parent.bottom
                 color: "steelblue"
                 font.weight: Font.DemiBold
-                font.pointSize: 10
+                font.pointSize: 11
                 textFormat: Text.StyledText
                 text: 'LEFT Click: <font color="#008000">Add Waypoint</font><br>RIGHT Click: <font color="#C00000">Remove Waypoint</font>'
                 opacity: mapView.pathCurrentState === pathState.creating ? 1.0 : 0.0
+                z: goalAcceptRadius.z + 2
             }
 
             MapQuickItem {
@@ -289,7 +293,7 @@ RowLayout {
                 id: waypointPath
                 objectName: "waypointPath"
                 line.width: 2
-                line.color: pathCurrentState === pathState.creating ? Material.color(Material.Red, Material.Shade300) : Material.color(Material.Green, Material.Shade500)
+                line.color: pathCurrentState === pathState.creating ? Material.color(Material.DeepOrange, Material.Shade300) : Material.color(Material.Green, Material.Shade500)
                 opacity: 0.0
             }
 
@@ -313,6 +317,10 @@ RowLayout {
                                 waypointPath.opacity = 1.0;
                                 console.log(("Added waypoint! (size: %1)").arg(waypointPath.pathLength()));
 
+                                marker_coords = map.toCoordinate(Qt.point(mouse.x,mouse.y));
+                                markerIcon.coordinate = map.toCoordinate(Qt.point(mouse.x,mouse.y));
+                                markerIcon.opacity = 1.0;
+
                             }
                         } if (mouse.button & Qt.RightButton) {
                             if (waypointPath.pathLength() > 0) {
@@ -327,9 +335,8 @@ RowLayout {
 
                     } else if (mouse.button & Qt.LeftButton) {
                         marker_coords = map.toCoordinate(Qt.point(mouse.x,mouse.y));
-                        markerIcon.opacity = 1.0;
                         markerIcon.coordinate = map.toCoordinate(Qt.point(mouse.x,mouse.y));
-                        mapsidebar.markerText = "%1, %2".arg(marker_coords.latitude).arg(marker_coords.longitude);
+                        markerIcon.opacity = 1.0;
                     }
                 }
             }
@@ -425,7 +432,7 @@ RowLayout {
             radius: mapsidebar.waypointRadius
             color: 'transparent'
             border.width: 2
-            border.color: pathCurrentState === pathState.creating ? Material.color(Material.Red, Material.Shade700) : Material.color(Material.Green, Material.Shade700)
+            border.color: pathCurrentState === pathState.creating ? Material.color(Material.DeepOrange, Material.Shade600) : Material.color(Material.Green, Material.Shade700)
         }
     }
 }

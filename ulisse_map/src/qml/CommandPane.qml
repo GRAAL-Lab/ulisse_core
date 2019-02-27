@@ -211,6 +211,7 @@ Pane {
                             waypointsButton.Material.accent = mainAccentColor;
                             greenFlag.coordinate = waypointPath.path[waypointPath.pathLength() - 1];
                             mapView.pathCurrentState = pathState.active;
+                            markerIcon.opacity = 0.4;
                             cmdWrapper.startPath();
                         }
                         else if (mapView.pathCurrentState === pathState.active) {
