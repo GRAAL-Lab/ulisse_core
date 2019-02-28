@@ -6,6 +6,7 @@ import QtPositioning 5.6
 import QtQuick.Controls.Material 2.1
 import QtQuick.Controls.Styles 1.4
 import QtGraphicalEffects 1.0
+import QtQuick.Dialogs 1.2
 
 Pane {
     property alias wpRad: wpCommands.wpRadius
@@ -280,6 +281,21 @@ Pane {
 
         }
 
+        FileDialog {
+            id: loadPathDialog
+            title: "Please choose a file"
+            folder: shortcuts.home
+            nameFilters: ["Path Files (*.path)"]
+
+            onAccepted: {
+                if(cmdWrapper.loadPathFromFile(loadPathDialog.fileUrls)){
+                    mapView.pathCurrentState = pathState.empty;
+                    wpCommands.wpButtonText = "Confirm"
+                    wpCommands.wpButtonHighlighted = true;
+                    console.log(("Load Path: pathLength = %1").arg(waypointPath.pathLength()))
+                }
+            }
+        }
 
     }
 }

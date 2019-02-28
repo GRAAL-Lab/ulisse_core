@@ -5,10 +5,13 @@ import QtLocation 5.6
 import QtPositioning 5.6
 import QtQuick.Controls.Material 2.1
 import QtQuick.Controls.Styles 1.4
+import QtQuick.Dialogs 1.2
 
 RowLayout {
 
     property alias wpRadius: waypointRadius.text
+    property alias wpButtonText: waypointsButton.text
+    property alias wpButtonHighlighted: waypointsButton.highlighted
     property bool loopPath: false
 
     function createPath() {
@@ -34,6 +37,7 @@ RowLayout {
 
     function resumePath() {
         waypointsButton.text = "Pause Path"
+        waypointsButton.Material.accent = mainAccentColor;
         mapView.pathCurrentState = pathState.active;
         cmdWrapper.resumePath();
     }
@@ -161,4 +165,6 @@ RowLayout {
             notation: DoubleValidator.StandardNotation
         }
     }
+
+
 }

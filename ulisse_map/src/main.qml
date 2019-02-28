@@ -111,18 +111,6 @@ ApplicationWindow {
 
     }
 
-    FileDialog {
-        id: loadPathDialog
-        title: "Please choose a file"
-        folder: shortcuts.home
-        nameFilters: ["Path Files (*.path)"]
-
-        onAccepted: {
-            //console.log("You chose: " + loadPathDialog.fileUrls)
-            cmdWrapper.loadPathFromFile(loadPathDialog.fileUrls);
-        }
-    }
-
 
     /*Text {
         color: "#2b2b2b"

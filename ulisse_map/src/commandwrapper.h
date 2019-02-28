@@ -21,7 +21,7 @@ class CommandWrapper : public QObject {
     QQmlApplicationEngine* appEngine_;
     QTimer* myTimer_;
     QObject *toastMgrObj_, *speedHeadTimoutObj_;
-    QObject *goalDistanceObj_, *waypointPathObj_, *waypointRadiusObj_, *loopPathObj_;
+    QObject *goalDistanceObj_, *waypointPathObj_, *waypointRadiusObj_, *loopPathObj_, *mapMouseAreaObj_;
 
     rclcpp::Node::SharedPtr np_;
     rclcpp::Client<ulisse_msgs::srv::ControlCommand>::SharedPtr command_srv_;
@@ -56,7 +56,7 @@ public:
     Q_INVOKABLE void cancelPath();
     Q_INVOKABLE void resumePath();
     Q_INVOKABLE void savePathToFile(const QString file);
-    Q_INVOKABLE void loadPathFromFile(const QString file);
+    Q_INVOKABLE bool loadPathFromFile(const QString file);
 
 public slots:
     void check_error_slot();

@@ -8,6 +8,7 @@ import QtQuick.Controls.Material 2.1
 import QtQuick.Controls.Universal 2.1
 import QtQuick.Controls.Styles 1.4
 import QtGraphicalEffects 1.0
+import QtQuick.Dialogs 1.2
 import "."
 
 RowLayout {
@@ -308,47 +309,56 @@ RowLayout {
                 id: waypointPath
                 objectName: "waypointPath"
                 line.width: 2
-                line.color: pathCurrentState === pathState.creating ? Material.color(Material.DeepOrange, Material.Shade300) : Material.color(Material.Green, Material.Shade300)
+                line.color: (pathCurrentState === pathState.creating) | (pathCurrentState === pathState.empty) ? Material.color(Material.DeepOrange, Material.Shade300) : Material.color(Material.Green, Material.Shade300)
                 opacity: 0.0
                 z: map.z + 1
             }
 
             MouseArea {
+                id: mapMouseArea
+                objectName: "mapMouseArea"
                 anchors.fill: parent
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
+
+                function addWaypoint(waypoint) {
+
+                    waypointPath.addCoordinate(waypoint);
+                    mapCircles[waypointPath.pathLength() - 1] =
+                            mapCircleComponent.createObject(map,
+                                                            {"center.latitude" : waypoint.latitude,
+                                                                "center.longitude": waypoint.longitude});
+
+                    if (mapCircleComponent.status === Component.Ready) {
+                        map.addMapItem(mapCircles[waypointPath.pathLength() - 1]);
+                        waypointPath.opacity = 1.0;
+                        console.log(("Added waypoint! (size: %1)").arg(waypointPath.pathLength()));
+
+                        marker_coords = waypoint
+                        markerIcon.coordinate = waypoint;
+                        markerIcon.opacity = 1.0;
+                    }
+                }
+
+                function removeWaypoint(){
+                    if (waypointPath.pathLength() > 0) {
+                        map.removeMapItem(mapCircles[waypointPath.pathLength() - 1]);
+                        mapCircles[waypointPath.pathLength() - 1].destroy();
+
+                        waypointPath.removeCoordinate(waypointPath.pathLength() - 1);
+                        console.log(("Removed waypoint! (size: %1)").arg(waypointPath.pathLength()));
+
+                    }
+                }
 
                 onClicked: {
 
                     if (pathCurrentState === pathState.creating){
                         if (mouse.button & Qt.LeftButton) {
-                            var waypoint = map.toCoordinate(Qt.point(mouse.x,mouse.y));
-                            waypointPath.addCoordinate(waypoint);
-                            mapCircles[waypointPath.pathLength() - 1] =
-                                    mapCircleComponent.createObject(map,
-                                                                    {"center.latitude" : waypoint.latitude,
-                                                                        "center.longitude": waypoint.longitude});
-
-                            if (mapCircleComponent.status === Component.Ready) {
-                                map.addMapItem(mapCircles[waypointPath.pathLength() - 1]);
-                                waypointPath.opacity = 1.0;
-                                console.log(("Added waypoint! (size: %1)").arg(waypointPath.pathLength()));
-
-                                marker_coords = map.toCoordinate(Qt.point(mouse.x,mouse.y));
-                                markerIcon.coordinate = map.toCoordinate(Qt.point(mouse.x,mouse.y));
-                                markerIcon.opacity = 1.0;
-
-                            }
+                            var wp = map.toCoordinate(Qt.point(mouse.x,mouse.y));
+                            addWaypoint(wp);
                         } if (mouse.button & Qt.RightButton) {
-                            if (waypointPath.pathLength() > 0) {
-                                map.removeMapItem(mapCircles[waypointPath.pathLength() - 1]);
-                                mapCircles[waypointPath.pathLength() - 1].destroy();
-
-                                waypointPath.removeCoordinate(waypointPath.pathLength() - 1);
-                                console.log(("Removed waypoint! (size: %1)").arg(waypointPath.pathLength()));
-
-                            }
+                            removeWaypoint();
                         }
-
                     } else if (mouse.button & Qt.LeftButton) {
                         marker_coords = map.toCoordinate(Qt.point(mouse.x,mouse.y));
                         markerIcon.coordinate = map.toCoordinate(Qt.point(mouse.x,mouse.y));
@@ -448,7 +458,7 @@ RowLayout {
             radius: mapsidebar.waypointRadius
             color: 'transparent'
             border.width: 2
-            border.color: pathCurrentState === pathState.creating ? Material.color(Material.DeepOrange, Material.Shade600) : Material.color(Material.Green, Material.Shade500)
+            border.color: (pathCurrentState === pathState.creating) | (pathCurrentState === pathState.empty) ? Material.color(Material.DeepOrange, Material.Shade600) : Material.color(Material.Green, Material.Shade500)
         }
     }
 }

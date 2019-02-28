@@ -64,6 +64,11 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
         qDebug("No 'waypointPath' found!");
     }
 
+    mapMouseAreaObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("mapMouseArea");
+    if (!mapMouseAreaObj_) {
+        qDebug("No 'mapMouseArea' found!");
+    }
+
     loopPathObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("loopPath");
     if (!loopPathObj_) {
         qDebug("No 'loopPath' found!");
@@ -205,7 +210,6 @@ void CommandWrapper::resumePath()
 
 void CommandWrapper::savePathToFile(const QString file)
 {
-    //std::cout << "Saving file: " << file.toStdString() << std::endl;
 
     std::string filename = file.toStdString();
     std::string::size_type extensionDot = filename.find_last_of(".");
@@ -234,31 +238,46 @@ void CommandWrapper::savePathToFile(const QString file)
     }
 }
 
-void CommandWrapper::loadPathFromFile(const QString file)
+bool CommandWrapper::loadPathFromFile(const QString file)
 {
     std::string filename = file.toStdString();
     // Removing the "file://" prefix
     std::string::size_type t1 = 7;
     filename = filename.substr(t1, filename.size());
-    std::ofstream out(filename);
 
     std::cout << "Loading file: " << filename << std::endl;
 
     std::ifstream infile;
     infile.open(filename.c_str());
-    std::vector<std::vector<double>> temp_mat;
 
-    std::string line;
-    while (getline(infile, line)) {
-        if (!line.empty()) {
-            std::istringstream is(line);
-            temp_mat.push_back(std::vector<double>(std::istream_iterator<double>(is), std::istream_iterator<double>()));
+    if (infile.is_open()) {
+        std::vector<double> temp_vec;
+        int i = 0;
+        std::string line;
+
+        while (getline(infile, line)) {
+            if (!line.empty()) {
+                std::istringstream is(line);
+                temp_vec = std::vector<double>(std::istream_iterator<double>(is), std::istream_iterator<double>());
+                QGeoCoordinate wp;
+                wp.setLatitude(temp_vec.at(0));
+                wp.setLongitude(temp_vec.at(1));
+                std::cout << i << ": "
+                          << "LAT " << wp.latitude()
+                          << ", LONG " << wp.longitude() << std::endl;
+                i++;
+                QVariant wpvar = QVariant::fromValue<QGeoCoordinate>(wp);
+                QMetaObject::invokeMethod(mapMouseAreaObj_, "addWaypoint", Qt::QueuedConnection,
+                    Q_ARG(QVariant, wpvar));
+            }
         }
+        wpRadius_ = (waypointRadiusObj_->property("text")).toDouble();
+        waypoint_path_ = (waypointPathObj_->property("path")).value<QVariantList>();
+        infile.close();
+        return true;
+    } else {
+        return false;
     }
-
-    QGeoCoordinate wp;
-    QMetaObject::invokeMethod(waypointPathObj_, "addCoordinate", Qt::QueuedConnection,
-        Q_ARG(QGeoCoordinate, wp));
 }
 
 void CommandWrapper::check_error_slot()
