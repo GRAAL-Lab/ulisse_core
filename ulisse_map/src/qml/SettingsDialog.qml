@@ -11,11 +11,15 @@ Dialog {
     standardButtons: Dialog.Ok | Dialog.Cancel
     onAccepted: {
         settings.theme = styleBox.displayText
+        console.log(mapChooser.displayText)
+        settings.nextMapProvider = mapChooser.displayText
+        console.log("Saved map: %1").arg(settings.nextMapProvider)
         close()
         stackViewContainer.forceActiveFocus()
     }
     onRejected: {
         styleBox.currentIndex = styleBox.styleIndex
+        mapChooser.currentIndex = mapChooser.mapIndex
         close()
         stackViewContainer.forceActiveFocus()
     }
@@ -49,13 +53,31 @@ Dialog {
             }
         }
 
+        /*RowLayout {
+            spacing: 10
+
+            Label {
+                text: "Map Provider:"
+            }
+            ComboBox {
+                id: mapChooser
+                property int mapIndex: -1
+                model: ["osm", "esri"]
+                Component.onCompleted: {
+                    mapIndex = find(settings.mapProvider, Qt.MatchFixedString)
+                    if (mapIndex !== -1)
+                        currentIndex = mapIndex
+                }
+                Layout.fillWidth: true
+            }
+        }*/
+
         RowLayout {
             spacing: 10
 
             Label {
                 text: "Application Theme:"
             }
-
             ComboBox {
                 id: styleBox
                 property int styleIndex: -1
@@ -68,6 +90,16 @@ Dialog {
                 Layout.fillWidth: true
             }
         }
+
+        /*Label {
+            text: "Restart required"
+            color: "#e41e25"
+            opacity: mapChooser.currentIndex !== mapChooser.mapIndex ? 1.0 : 0.0
+            horizontalAlignment: Label.AlignHCenter
+            verticalAlignment: Label.AlignVCenter
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+        }*/
     }
 }
 

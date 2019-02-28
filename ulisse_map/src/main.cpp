@@ -31,6 +31,9 @@ int main(int argc, char* argv[])
     QIcon icon(":/images/ulisse_icon-48.png");
     app.setWindowIcon(icon);
 
+    //QSettings settings("folderName", "fileName");
+    //qDebug() << "Settings file: " << settings.fileName();
+
     /**
      * Theme styling
      */

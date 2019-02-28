@@ -1,8 +1,9 @@
 #include "commandwrapper.h"
 
-#include "ulisse_ctrl/fsm_defines.hpp"
-
 #include <chrono>
+#include <fstream>
+
+#include "ulisse_ctrl/fsm_defines.hpp"
 
 using namespace std::chrono_literals;
 using std::placeholders::_1;
@@ -61,6 +62,11 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
     waypointPathObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("waypointPath");
     if (!waypointPathObj_) {
         qDebug("No 'waypointPath' found!");
+    }
+
+    loopPathObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("loopPath");
+    if (!loopPathObj_) {
+        qDebug("No 'loopPath' found!");
     }
 
     goalDistanceObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("goalDistance");
@@ -154,7 +160,7 @@ bool CommandWrapper::sendSpeedHeadingCommand(double speed, double heading)
 bool CommandWrapper::startPath()
 {
     wpCurrentIndex_ = 0;
-    wpRadius_ = (waypointRadiusObj_->property("text")).toInt();
+    wpRadius_ = (waypointRadiusObj_->property("text")).toDouble();
     waypoint_path_ = (waypointPathObj_->property("path")).value<QVariantList>();
     qDebug() << "Sending Path ( size: " << waypoint_path_.size() << ")";
 
@@ -164,22 +170,28 @@ bool CommandWrapper::startPath()
                  << "LAT " << coordinate.latitude()
                  << ", LONG " << coordinate.longitude();
     }
+    qDebug() << "Acceptance Radius: " << wpRadius_;
+
+    qDebug() << "Loop Over Path: " << (loopPathObj_->property("checked")).toBool();
 
     bool ret = sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), 0);
 
     if (ret) {
         myTimer_->start(errorCheckInterval_);
     }
+
     return ret;
 }
 
 void CommandWrapper::stopPath()
 {
     myTimer_->stop();
+    wpRadius_ = (waypointRadiusObj_->property("text")).toDouble();
     sendHoldCommand(wpRadius_);
 }
 
-void CommandWrapper::cancelPath(){
+void CommandWrapper::cancelPath()
+{
     myTimer_->stop();
     sendHaltCommand();
 }
@@ -187,7 +199,66 @@ void CommandWrapper::cancelPath(){
 void CommandWrapper::resumePath()
 {
     myTimer_->start(errorCheckInterval_);
+    wpRadius_ = (waypointRadiusObj_->property("text")).toDouble();
     sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), wpRadius_);
+}
+
+void CommandWrapper::savePathToFile(const QString file)
+{
+    //std::cout << "Saving file: " << file.toStdString() << std::endl;
+
+    std::string filename = file.toStdString();
+    std::string::size_type extensionDot = filename.find_last_of(".");
+    std::string extension = filename.substr(extensionDot, filename.size());
+
+    if (extension != ".path") {
+        filename = filename + ".path";
+    }
+
+    // Removing the "file://" prefix
+    std::string::size_type t1 = 7;
+    filename = filename.substr(t1, filename.size());
+    std::ofstream out(filename);
+
+    if (out.is_open()) {
+        for (int i = 0; i < waypoint_path_.size(); i++) {
+            auto coordinate = qvariant_cast<QGeoCoordinate>(waypoint_path_.at(i));
+            out << coordinate.latitude() << " " << coordinate.longitude() << "\n";
+        }
+
+        std::cout << "Saved to file: " << filename << std::endl;
+        ShowToast(std::string("Saved to file: " + filename).c_str(), 3000);
+        out.close();
+    } else {
+        std::cout << "Unable to save" << std::endl;
+    }
+}
+
+void CommandWrapper::loadPathFromFile(const QString file)
+{
+    std::string filename = file.toStdString();
+    // Removing the "file://" prefix
+    std::string::size_type t1 = 7;
+    filename = filename.substr(t1, filename.size());
+    std::ofstream out(filename);
+
+    std::cout << "Loading file: " << filename << std::endl;
+
+    std::ifstream infile;
+    infile.open(filename.c_str());
+    std::vector<std::vector<double>> temp_mat;
+
+    std::string line;
+    while (getline(infile, line)) {
+        if (!line.empty()) {
+            std::istringstream is(line);
+            temp_mat.push_back(std::vector<double>(std::istream_iterator<double>(is), std::istream_iterator<double>()));
+        }
+    }
+
+    QGeoCoordinate wp;
+    QMetaObject::invokeMethod(waypointPathObj_, "addCoordinate", Qt::QueuedConnection,
+        Q_ARG(QGeoCoordinate, wp));
 }
 
 void CommandWrapper::check_error_slot()
@@ -202,11 +273,13 @@ void CommandWrapper::check_error_slot()
             if (wpCurrentIndex_ < waypoint_path_.size()) {
                 sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), 0);
             } else {
-                myTimer_->stop();
-                sendHoldCommand(wpRadius_);
-
+                if ((loopPathObj_->property("checked")).toBool()) {
+                    startPath();
+                } else {
+                    myTimer_->stop();
+                    sendHoldCommand(wpRadius_);
+                }
             }
         }
     }
 }
-

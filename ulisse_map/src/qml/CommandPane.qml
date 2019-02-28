@@ -8,7 +8,7 @@ import QtQuick.Controls.Styles 1.4
 import QtGraphicalEffects 1.0
 
 Pane {
-    property alias wpRad: waypointRadius.text
+    property alias wpRad: wpCommands.wpRadius
 
     ColumnLayout {
         id: buttonsColumn
@@ -29,8 +29,12 @@ Pane {
 
         Button {
             text: "Halt"
-            onClicked: cmdWrapper.sendHaltCommand()
+            onClicked: {
+                wpCommands.interruptPath();
+                cmdWrapper.sendHaltCommand()
+            }
         }
+
 
         RowLayout {
             id: speedHeadingRow
@@ -42,6 +46,7 @@ Pane {
 
                 onClicked: {
                     if(speedText.text !== '' && headingText.text !== ''){
+                        wpCommands.interruptPath();
                         cmdWrapper.sendSpeedHeadingCommand(speedText.text, headingText.text)
                     } else {
                         speedHeadingDialog.open();
@@ -68,6 +73,12 @@ Pane {
                 placeholderText: "S"
                 selectByMouse: true
 
+                ToolTip.text: qsTr("Speed (m/s)")
+                ToolTip.delay: 500
+                ToolTip.timeout: 5000
+                ToolTip.visible: hovered
+
+
                 validator: DoubleValidator {
                     bottom: -5.0;
                     top: +5.0;
@@ -84,6 +95,11 @@ Pane {
                 font.pointSize: 10
                 placeholderText: "H°"
                 selectByMouse: true
+
+                ToolTip.text: qsTr("Heading (m/s)")
+                ToolTip.delay: 500
+                ToolTip.timeout: 5000
+                ToolTip.visible: hovered
 
                 validator: IntValidator {
                     bottom: 0;
@@ -103,6 +119,7 @@ Pane {
 
                 onClicked: {
                     if(holdRadius.text !== ''){
+                        wpCommands.interruptPath();
                         cmdWrapper.sendHoldCommand(parseFloat(holdRadius.text));
                     } else {
                         acceptRadDialog.open();
@@ -128,8 +145,14 @@ Pane {
                 font.pointSize: 10
                 placeholderText: "Radius"
                 selectByMouse: true
-
                 anchors.left: holdSpacer.right
+                text: "5.0"
+
+                ToolTip.text: qsTr("Acceptance Radius (meters)")
+                ToolTip.delay: 500
+                ToolTip.timeout: 5000
+                ToolTip.visible: hovered
+
 
                 validator: DoubleValidator {
                     bottom: 0.0;
@@ -151,6 +174,7 @@ Pane {
 
                 onClicked: {
                     if(moveToRadius.text !== ''){
+                        wpCommands.interruptPath();
                         if(cmdWrapper.sendLatLongCommand(marker_coords, parseFloat(moveToRadius.text))){
                             markerIcon.opacity = 0.2
                         }
@@ -179,6 +203,13 @@ Pane {
                 font.pointSize: 10
                 placeholderText: "Radius"
                 selectByMouse: true
+                text: "5.0"
+
+                ToolTip.text: qsTr("Acceptance Radius (meters)")
+                ToolTip.delay: 500
+                ToolTip.timeout: 5000
+                ToolTip.visible: hovered
+
 
                 anchors.left: moveToSpacer.right
                 validator: DoubleValidator {
@@ -190,135 +221,65 @@ Pane {
             }
         }
 
-        RowLayout {
-            id: waypointsRow
+        Rectangle {
+            property real margin: 8
+
+            Layout.preferredHeight: 2
+            Layout.preferredWidth: parent.width - margin*2
+            Layout.leftMargin: margin
+            Layout.rightMargin: margin
+            Layout.topMargin: 6
+            Layout.bottomMargin: 6
+            border.color: "lightgrey"
+        }
+
+        WaypointControls {
+            id: wpCommands
             Layout.fillWidth: true
-
-            Button {
-                id: waypointsButton
-                Material.accent: secondaryAccentColor
-                text: "Create Path"
-                Layout.preferredWidth: 110
-
-                onClicked: {
-                    if(waypointRadius.text !== ''){
-                        if (mapView.pathCurrentState === pathState.empty){
-                            waypointsButton.text = "Send Path"
-                            waypointsButton.highlighted = true;
-                            mapView.pathCurrentState = pathState.creating;
-                        }
-                        else if (mapView.pathCurrentState === pathState.creating) {
-                            waypointsButton.text = "Pause Path"
-                            waypointsButton.Material.accent = mainAccentColor;
-                            greenFlag.coordinate = waypointPath.path[waypointPath.pathLength() - 1];
-                            mapView.pathCurrentState = pathState.active;
-                            markerIcon.opacity = 0.4;
-                            cmdWrapper.startPath();
-                        }
-                        else if (mapView.pathCurrentState === pathState.active) {
-                            waypointsButton.text = "Resume Path"
-                            mapView.pathCurrentState = pathState.stopped;
-                            cmdWrapper.stopPath();
-                        }
-                        else if (mapView.pathCurrentState === pathState.stopped) {
-                            waypointsButton.text = "Pause Path"
-                            mapView.pathCurrentState = pathState.active;
-                            cmdWrapper.resumePath();
-                        }
-
-                    } else {
-                        acceptRadDialog.open();
-                    }
-                }
-            }
-
-            Button {
-                id: wpRestartButton
-                Material.accent: secondaryAccentColor
-                Layout.preferredWidth: 28
-                enabled: (mapView.pathCurrentState === pathState.active) || (mapView.pathCurrentState === pathState.stopped)  ? true : false
-
-                ToolTip.text: qsTr("Restart path from beginning")
-                ToolTip.delay: 500
-                ToolTip.timeout: 5000
-                ToolTip.visible: hovered
-
-                Image {
-                    id: restartIco
-                    anchors.fill: parent
-                    source: wpRestartButton.enabled ? "qrc:/images/restart-256.png" : "qrc:/images/restart-256_grey.png"
-                    mipmap: true
-                    fillMode: Image.PreserveAspectFit
-                    horizontalAlignment: Image.AlignHCenter
-                    verticalAlignment: Image.AlignVCenter
-                }
-
-                onClicked: {
-                    cmdWrapper.startPath();
-                }
-            }
-
-            Button {
-                id: wpDeleteButton
-                Material.accent: Material.Red
-                highlighted: true
-                Layout.preferredWidth: 28
-                text: "X"
-                font.weight: Font.Bold
-                font.pointSize: 12
-                enabled: mapView.pathCurrentState === pathState.empty ? false : true
-
-                ToolTip.text: qsTr("Delete the current path and stop")
-                ToolTip.delay: 500
-                ToolTip.timeout: 5000
-                ToolTip.visible: hovered
-
-                onClicked: {
-                    while (waypointPath.pathLength() > 0){
-                        map.removeMapItem(mapCircles[waypointPath.pathLength() - 1]);
-                        mapCircles[waypointPath.pathLength() - 1].destroy();
-                        waypointPath.removeCoordinate(waypointPath.pathLength() - 1);
-                    }
-
-                    console.log(("Destroyed Path: pathLength = %1").arg(waypointPath.pathLength()))
-                    waypointsButton.text = "Create Path";
-                    waypointsButton.highlighted = false;
-                    waypointsButton.Material.accent = secondaryAccentColor;
-                    waypointPath.opacity = 0.0;
-                    mapView.pathCurrentState = pathState.empty;
-
-                    cmdWrapper.cancelPath();
-                }
-            }
-
-            Rectangle {
-                id: waypointsSpacer
-                width: buttonsColumn.width - waypointsButton.width - waypointRadius.width - wpDeleteButton.width - wpRestartButton.width - 10
-                height: parent.height
-                anchors.left: wpDeleteButton.right
-                color: 'transparent'
-            }
+        }
 
 
-            TextField {
-                id: waypointRadius
-                objectName: "waypointRadius"
-                Layout.preferredWidth: 45
-                Layout.minimumWidth: 45
-                Layout.maximumWidth: 45
-                font.pointSize: 10
-                placeholderText: "Radius"
-                selectByMouse: true
-                enabled: mapView.pathCurrentState === pathState.empty |  mapView.pathCurrentState === pathState.creating ? true : false
+        CheckBox {
+            objectName: "loopPath"
+            id: loopPathCB
+            text: "Loop over path"
+            //anchors.left: followMeCheckbox.right
+            //Material.accent: mainColor
+            checked: false
 
-                anchors.left: waypointsSpacer.right
-                validator: DoubleValidator {
-                    bottom: 0.0;
-                    top: 50.0;
-                    decimals: 1;
-                    notation: DoubleValidator.StandardNotation
+            onCheckStateChanged: {
+                if (checked === true){
+                    wpCommands.loopPath = true;
+                } else {
+                    wpCommands.loopPath = false;
                 }
             }
         }
+
+        RowLayout {
+            id: additionalWpControls
+            Button {
+                id: savePath
+                text: "Save Path"
+                enabled: (mapView.pathCurrentState === pathState.empty) |  (mapView.pathCurrentState === pathState.creating) ? false : true
+
+                onClicked: {
+                    savePathDialog.open()
+                }
+            }
+
+            Button {
+                id: loadPath
+                text: "Load Path"
+                enabled: (mapView.pathCurrentState === pathState.empty) ? true : false
+
+                onClicked: {
+                    loadPathDialog.open()
+                }
+            }
+
+        }
+
+
     }
 }

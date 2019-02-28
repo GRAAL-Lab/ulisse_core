@@ -32,11 +32,23 @@ RowLayout {
 
     Plugin {
         id: mapPlugin
-        name: "osm"
+        name: "esri"
+
         /*PluginParameter {
             name: "osm.mapping.offline.directory"
             value: "/home/graal/.cache/QtLocation/5.8/tiles/osm/"
         }*/
+
+        /*PluginParameter {
+            name: "esri.mapping.cache.directory"
+            value: "/home/graal/.cache/QtLocation/5.8/tiles/esri/"
+        }*/
+
+        PluginParameter {
+            name: "esri.mapping.maximumZoomLevel"
+            value: 19.9
+        }
+
     }
 
     ModalPopup {
@@ -79,7 +91,9 @@ RowLayout {
             plugin: mapPlugin
             center: QtPositioning.coordinate(44.393, 8.945) // Genoa
 
-            zoomLevel: 16//(maximumZoomLevel - minimumZoomLevel)/2
+            zoomLevel: 17.5//(maximumZoomLevel - minimumZoomLevel)/2
+
+
 
             ColorOverlay {
                 anchors.fill: map
@@ -255,7 +269,7 @@ RowLayout {
                 radius: fbkUpdater.accept_radius
                 color: 'transparent'
                 border.width: 1
-                border.color: 'lightgray'
+                border.color: 'gray'
                 opacity: goalFlag.opacity == 1.0 ? goalFlag.opacity : 0.0
             }
 
@@ -263,7 +277,7 @@ RowLayout {
             MapPolyline {
                 id: ulissePath
                 line.width: 1
-                line.color: Material.color(Material.Amber, Material.Shade300)
+                line.color: Material.color(Material.Amber, Material.Shade500)
                 property bool firstRun: true
                 property real traceSize: 1000
                 z: map.z + 2
@@ -294,7 +308,7 @@ RowLayout {
                 id: waypointPath
                 objectName: "waypointPath"
                 line.width: 2
-                line.color: pathCurrentState === pathState.creating ? Material.color(Material.DeepOrange, Material.Shade300) : Material.color(Material.Green, Material.Shade500)
+                line.color: pathCurrentState === pathState.creating ? Material.color(Material.DeepOrange, Material.Shade300) : Material.color(Material.Green, Material.Shade300)
                 opacity: 0.0
                 z: map.z + 1
             }
@@ -434,7 +448,7 @@ RowLayout {
             radius: mapsidebar.waypointRadius
             color: 'transparent'
             border.width: 2
-            border.color: pathCurrentState === pathState.creating ? Material.color(Material.DeepOrange, Material.Shade600) : Material.color(Material.Green, Material.Shade700)
+            border.color: pathCurrentState === pathState.creating ? Material.color(Material.DeepOrange, Material.Shade600) : Material.color(Material.Green, Material.Shade500)
         }
     }
 }

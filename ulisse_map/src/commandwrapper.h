@@ -21,7 +21,7 @@ class CommandWrapper : public QObject {
     QQmlApplicationEngine* appEngine_;
     QTimer* myTimer_;
     QObject *toastMgrObj_, *speedHeadTimoutObj_;
-    QObject *goalDistanceObj_, *waypointPathObj_, *waypointRadiusObj_;
+    QObject *goalDistanceObj_, *waypointPathObj_, *waypointRadiusObj_, *loopPathObj_;
 
     rclcpp::Node::SharedPtr np_;
     rclcpp::Client<ulisse_msgs::srv::ControlCommand>::SharedPtr command_srv_;
@@ -31,7 +31,7 @@ class CommandWrapper : public QObject {
 
     QVariantList waypoint_path_;
     int wpCurrentIndex_;
-    int wpRadius_;
+    double wpRadius_;
     int errorCheckInterval_;
     bool goalCtxRead_;
 
@@ -55,6 +55,8 @@ public:
     Q_INVOKABLE void stopPath();
     Q_INVOKABLE void cancelPath();
     Q_INVOKABLE void resumePath();
+    Q_INVOKABLE void savePathToFile(const QString file);
+    Q_INVOKABLE void loadPathFromFile(const QString file);
 
 public slots:
     void check_error_slot();

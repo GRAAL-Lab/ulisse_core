@@ -5,7 +5,7 @@ import QtQuick.Controls 2.1
 import QtLocation 5.6
 import QtPositioning 5.6
 import Qt.labs.settings 1.0
-import QtQuick.Dialogs 1.1
+import QtQuick.Dialogs 1.2
 import QtQuick.Controls.Material 2.1
 import QtQuick.Controls.Universal 2.1
 import QtQuick.Controls.Styles 1.4
@@ -13,8 +13,8 @@ import "./qml"
 
 ApplicationWindow {
     id: window
-    width: 840
-    height: 680
+    width: 900
+    height: 760
     visible: true
 
     minimumHeight: 500
@@ -26,6 +26,7 @@ ApplicationWindow {
 
     Material.theme: settings.theme
     Material.accent: mainColor
+
 
     /* Halting catamaran when space is pressed */
     Shortcut {
@@ -39,7 +40,6 @@ ApplicationWindow {
     Settings {
         id: settings
         property string theme: "Light"
-
     }
 
     header: CustomHeader {
@@ -96,6 +96,33 @@ ApplicationWindow {
         height: Math.round(window.height * 0.7)
 
     }
+
+    FileDialog {
+        id: savePathDialog
+        title: "Please choose a file"
+        folder: shortcuts.home
+        selectExisting: false
+
+        onAccepted: {
+            console.log("You chose: " + savePathDialog.fileUrls)
+            cmdWrapper.savePathToFile(savePathDialog.fileUrls);
+        }
+
+
+    }
+
+    FileDialog {
+        id: loadPathDialog
+        title: "Please choose a file"
+        folder: shortcuts.home
+        nameFilters: ["Path Files (*.path)"]
+
+        onAccepted: {
+            //console.log("You chose: " + loadPathDialog.fileUrls)
+            cmdWrapper.loadPathFromFile(loadPathDialog.fileUrls);
+        }
+    }
+
 
     /*Text {
         color: "#2b2b2b"

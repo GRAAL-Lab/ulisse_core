@@ -27,7 +27,7 @@ Rectangle {
 
                 width: parent.width
                 height: statusdatalayout.height + goaldatalayout.height + markerlayout.height
-                spacing: 20
+                spacing: 10
 
                 ColumnLayout {
                     id: statusdatalayout
