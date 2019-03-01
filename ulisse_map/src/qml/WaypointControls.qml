@@ -49,6 +49,25 @@ RowLayout {
         }
     }
 
+    function deletePath() {
+        while (waypointPath.pathLength() > 0){
+            map.removeMapItem(mapCircles[waypointPath.pathLength() - 1]);
+            mapCircles[waypointPath.pathLength() - 1].destroy();
+            waypointPath.removeCoordinate(waypointPath.pathLength() - 1);
+        }
+
+        console.log(("Destroyed Path: pathLength = %1").arg(waypointPath.pathLength()))
+        waypointsButton.text = "Create Path";
+        waypointsButton.highlighted = false;
+        waypointsButton.Material.accent = secondaryAccentColor;
+        waypointPath.opacity = 0.0;
+        if (mapView.pathCurrentState != pathState.empty){
+            cmdWrapper.cancelPath();
+            mapView.pathCurrentState = pathState.empty;
+        }
+
+    }
+
     Button {
         id: waypointsButton
         Material.accent: secondaryAccentColor
@@ -114,20 +133,7 @@ RowLayout {
         ToolTip.visible: hovered
 
         onClicked: {
-            while (waypointPath.pathLength() > 0){
-                map.removeMapItem(mapCircles[waypointPath.pathLength() - 1]);
-                mapCircles[waypointPath.pathLength() - 1].destroy();
-                waypointPath.removeCoordinate(waypointPath.pathLength() - 1);
-            }
-
-            console.log(("Destroyed Path: pathLength = %1").arg(waypointPath.pathLength()))
-            waypointsButton.text = "Create Path";
-            waypointsButton.highlighted = false;
-            waypointsButton.Material.accent = secondaryAccentColor;
-            waypointPath.opacity = 0.0;
-            mapView.pathCurrentState = pathState.empty;
-
-            cmdWrapper.cancelPath();
+            deletePath();
         }
     }
 
@@ -160,8 +166,8 @@ RowLayout {
         anchors.left: waypointsSpacer.right
         validator: DoubleValidator {
             bottom: 0.0;
-            top: 50.0;
-            decimals: 1;
+            top: 101.0;
+            decimals: 3;
             notation: DoubleValidator.StandardNotation
         }
     }

@@ -14,7 +14,7 @@ Rectangle {
     color: Material.background
 
     function getPaneWidth(parentID){
-        var itemsPerRow = 3
+        var itemsPerRow = 2
         var paneWidth = responsive ? panesWidth : parentID.width / itemsPerRow - panesMargin / 2
         return paneWidth;
     }
@@ -35,7 +35,7 @@ Rectangle {
 
                 Label {
                     Layout.alignment: Qt.AlignHCenter
-                    font.pointSize: 11
+                    font.pointSize: 12
                     font.weight: Font.DemiBold
                     color: 'gray'
                     text: "Status"
@@ -96,7 +96,7 @@ Rectangle {
 
                 Label {
                     Layout.alignment: Qt.AlignHCenter
-                    font.pointSize: 11
+                    font.pointSize: 12
                     font.weight: Font.DemiBold
                     color: 'gray'
                     text: "Goal"
@@ -139,7 +139,7 @@ Rectangle {
 
                 Label {
                     Layout.alignment: Qt.AlignHCenter
-                    font.pointSize: 11
+                    font.pointSize: 12
                     font.weight: Font.DemiBold
                     color: 'gray'
                     text: "Control"
@@ -172,36 +172,28 @@ Rectangle {
         }
 
         Pane {
-            id: batteryPane
+            id: lowLevelPane
             width: getPaneWidth(parent)
             Material.elevation: myElevation
 
             ColumnLayout {
-                id: batteryData
+                id: lowLevelData
                 width: parent.width
 
                 Label {
                     Layout.alignment: Qt.AlignHCenter
-                    font.pointSize: 11
+                    font.pointSize: 12
                     font.weight: Font.DemiBold
                     color: 'gray'
-                    text: "Battery"
+                    text: "Low Level"
                 }
 
                 LabelledText {
                     id: batteryPercLeft
                     labelColor: 'tomato'
-                    label: "Left"
+                    label: "Battery"
                     textColor: 'gray'
-                    text: "%1 \%".arg(fbkUpdater.battery_perc_L)
-                }
-
-                LabelledText {
-                    id: batteryPercRight
-                    labelColor: 'tomato'
-                    label: "Right"
-                    textColor: 'gray'
-                    text: "%1 \%".arg(fbkUpdater.battery_perc_R)
+                    text: "L: %1 \%\nR: %2 \%".arg(fbkUpdater.battery_perc_L).arg(fbkUpdater.battery_perc_R)
                 }
             }
         }

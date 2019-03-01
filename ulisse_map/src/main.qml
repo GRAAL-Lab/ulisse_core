@@ -13,8 +13,8 @@ import "./qml"
 
 ApplicationWindow {
     id: window
-    width: 900
-    height: 760
+    width: 940
+    height: 720
     visible: true
 
     minimumHeight: 500
@@ -97,19 +97,7 @@ ApplicationWindow {
 
     }
 
-    FileDialog {
-        id: savePathDialog
-        title: "Please choose a file"
-        folder: shortcuts.home
-        selectExisting: false
 
-        onAccepted: {
-            console.log("You chose: " + savePathDialog.fileUrls)
-            cmdWrapper.savePathToFile(savePathDialog.fileUrls);
-        }
-
-
-    }
 
 
     /*Text {

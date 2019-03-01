@@ -26,18 +26,18 @@ Rectangle {
             Column{
 
                 width: parent.width
-                height: statusdatalayout.height + goaldatalayout.height + markerlayout.height
+                height: statusdatalayout.height + markerlayout.height// + goaldatalayout.height
                 spacing: 10
 
                 ColumnLayout {
                     id: statusdatalayout
                     width: parent.width
-                    Layout.preferredHeight: ulisseStateLabel.height + ulissePosLabel.height
+                    Layout.preferredHeight: ulisseStateLabel.height + ulissePosLabel.height + goalDistLabel.height
                     spacing: 2
 
                     Label {
                         Layout.alignment: Qt.AlignHCenter
-                        font.pointSize: 11
+                        font.pointSize: 12
                         font.weight: Font.DemiBold
                         color: 'gray'
                         text: "Status"
@@ -57,9 +57,18 @@ Rectangle {
                         label: "Ulisse Coordinates"
                         text: "%1, %2".arg(fbkUpdater.ulisse_pos.latitude).arg(fbkUpdater.ulisse_pos.longitude)
                     }
+
+                    LabelledText {
+                        id: goalDistLabel
+                        objectName: "goalDistance"
+                        labelColor: Material.color(mainColor, Material.Shade700)
+                        label: "Distance to Target"
+                        text: "%1 (m)".arg(fbkUpdater.goal_distance)
+
+                    }
                 }
 
-                ColumnLayout {
+                /*ColumnLayout {
                     id: goaldatalayout
                     width: parent.width
                     Layout.preferredHeight: goalTextLabel.height + goalDistLabel.height
@@ -80,15 +89,8 @@ Rectangle {
                         text: "%1, %2".arg(fbkUpdater.goal_pos.latitude).arg(fbkUpdater.goal_pos.longitude)
                     }
 
-                    LabelledText {
-                        id: goalDistLabel
-                        objectName: "goalDistance"
-                        labelColor: Material.color(mainColor, Material.Shade700)
-                        label: "Distance to Target"
-                        text: "%1 (m)".arg(fbkUpdater.goal_distance)
 
-                    }
-                }
+                }*/
 
                 ColumnLayout {
                     id: markerlayout
@@ -121,7 +123,6 @@ Rectangle {
 
 
         CommandPane {
-
             id: commandRect
             Layout.alignment: Qt.AlignCenter
             Layout.preferredWidth: parent.width - panesMargin

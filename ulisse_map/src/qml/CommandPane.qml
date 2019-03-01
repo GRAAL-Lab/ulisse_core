@@ -53,7 +53,6 @@ Pane {
                         speedHeadingDialog.open();
                     }
                 }
-
             }
 
             Rectangle {
@@ -97,7 +96,7 @@ Pane {
                 placeholderText: "H°"
                 selectByMouse: true
 
-                ToolTip.text: qsTr("Heading (m/s)")
+                ToolTip.text: qsTr("Heading (rad/s)")
                 ToolTip.delay: 500
                 ToolTip.timeout: 5000
                 ToolTip.visible: hovered
@@ -154,11 +153,10 @@ Pane {
                 ToolTip.timeout: 5000
                 ToolTip.visible: hovered
 
-
                 validator: DoubleValidator {
                     bottom: 0.0;
-                    top: 50.0;
-                    decimals: 1;
+                    top: 101.0;
+                    decimals: 3;
                     notation: DoubleValidator.StandardNotation
                 }
             }
@@ -215,8 +213,8 @@ Pane {
                 anchors.left: moveToSpacer.right
                 validator: DoubleValidator {
                     bottom: 0.0;
-                    top: 50.0;
-                    decimals: 1;
+                    top: 101.0;
+                    decimals: 3;
                     notation: DoubleValidator.StandardNotation
                 }
             }
@@ -229,8 +227,8 @@ Pane {
             Layout.preferredWidth: parent.width - margin*2
             Layout.leftMargin: margin
             Layout.rightMargin: margin
-            Layout.topMargin: 6
-            Layout.bottomMargin: 6
+            Layout.topMargin: margin
+            Layout.bottomMargin: margin
             border.color: "lightgrey"
         }
 
@@ -240,25 +238,63 @@ Pane {
         }
 
 
-        CheckBox {
-            objectName: "loopPath"
-            id: loopPathCB
-            text: "Loop over path"
-            //anchors.left: followMeCheckbox.right
-            //Material.accent: mainColor
-            checked: false
+        RowLayout {
+            id: additionalWpControls
 
-            onCheckStateChanged: {
-                if (checked === true){
-                    wpCommands.loopPath = true;
-                } else {
-                    wpCommands.loopPath = false;
+            Button {
+                id: goToPreviousWp
+                text: "<"
+                font.weight: Font.Bold
+                font.pointSize: 16
+                Layout.preferredWidth: 40
+                enabled: mapView.pathCurrentState === pathState.active ? true : false
+
+                ToolTip.text: qsTr("Go To Previous Waypoint")
+                ToolTip.delay: 500
+                ToolTip.timeout: 5000
+                ToolTip.visible: hovered
+
+                onClicked: {
+                    cmdWrapper.goToPreviousWaypoint()
+                }
+            }
+
+            Button {
+                id: goToNextWp
+                text: ">"
+                font.weight: Font.Bold
+                font.pointSize: 16
+                Layout.preferredWidth: 40
+                enabled: mapView.pathCurrentState === pathState.active ? true : false
+
+                ToolTip.text: qsTr("Go To Next Waypoint")
+                ToolTip.delay: 500
+                ToolTip.timeout: 5000
+                ToolTip.visible: hovered
+
+                onClicked: {
+                    cmdWrapper.goToNextWaypoint()
+                }
+            }
+
+            CheckBox {
+                objectName: "loopPath"
+                id: loopPathCB
+                text: "Loop over path"
+                checked: false
+
+                onCheckStateChanged: {
+                    if (checked === true){
+                        wpCommands.loopPath = true;
+                    } else {
+                        wpCommands.loopPath = false;
+                    }
                 }
             }
         }
 
         RowLayout {
-            id: additionalWpControls
+            id: loadSavePath
             Button {
                 id: savePath
                 text: "Save Path"
@@ -288,12 +324,24 @@ Pane {
             nameFilters: ["Path Files (*.path)"]
 
             onAccepted: {
+                wpCommands.deletePath();
                 if(cmdWrapper.loadPathFromFile(loadPathDialog.fileUrls)){
                     mapView.pathCurrentState = pathState.empty;
-                    wpCommands.wpButtonText = "Confirm"
+                    wpCommands.wpButtonText = "Finalize..."
                     wpCommands.wpButtonHighlighted = true;
                     console.log(("Load Path: pathLength = %1").arg(waypointPath.pathLength()))
                 }
+            }
+        }
+
+        FileDialog {
+            id: savePathDialog
+            title: "Please choose a file"
+            folder: shortcuts.home
+            selectExisting: false
+
+            onAccepted: {
+                cmdWrapper.savePathToFile(savePathDialog.fileUrls);
             }
         }
 

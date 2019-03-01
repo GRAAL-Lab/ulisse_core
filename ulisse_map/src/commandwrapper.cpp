@@ -205,7 +205,10 @@ void CommandWrapper::resumePath()
 {
     myTimer_->start(errorCheckInterval_);
     wpRadius_ = (waypointRadiusObj_->property("text")).toDouble();
-    sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), wpRadius_);
+
+    if (wpCurrentIndex_ < waypoint_path_.size()) {
+        sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), wpRadius_);
+    }
 }
 
 void CommandWrapper::savePathToFile(const QString file)
@@ -234,7 +237,8 @@ void CommandWrapper::savePathToFile(const QString file)
         ShowToast(std::string("Saved to file: " + filename).c_str(), 3000);
         out.close();
     } else {
-        std::cout << "Unable to save" << std::endl;
+        ShowToast("Unable to save file!", 3000);
+        std::cout << "Unable to save file!" << std::endl;
     }
 }
 
@@ -245,12 +249,11 @@ bool CommandWrapper::loadPathFromFile(const QString file)
     std::string::size_type t1 = 7;
     filename = filename.substr(t1, filename.size());
 
-    std::cout << "Loading file: " << filename << std::endl;
-
     std::ifstream infile;
     infile.open(filename.c_str());
 
     if (infile.is_open()) {
+        std::cout << "Loading file: " << filename << std::endl;
         std::vector<double> temp_vec;
         int i = 0;
         std::string line;
@@ -276,6 +279,7 @@ bool CommandWrapper::loadPathFromFile(const QString file)
         infile.close();
         return true;
     } else {
+        std::cout << "Error Loading file!! (" << filename << ")" << std::endl;
         return false;
     }
 }
@@ -285,20 +289,39 @@ void CommandWrapper::check_error_slot()
     rclcpp::spin_some(np_);
 
     if (goalCtxRead_) {
-        //qDebug() << "Check error: goalDistance = " << goal_cxt_msg_.goal_distance << ", radius =  " << wpRadius_;
-
         if (goal_cxt_msg_.goal_distance < wpRadius_) {
-            wpCurrentIndex_++;
-            if (wpCurrentIndex_ < waypoint_path_.size()) {
-                sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), 0);
-            } else {
-                if ((loopPathObj_->property("checked")).toBool()) {
-                    startPath();
-                } else {
-                    myTimer_->stop();
-                    sendHoldCommand(wpRadius_);
-                }
-            }
+            goToNextWaypoint();
         }
+    }
+}
+
+bool CommandWrapper::goToNextWaypoint()
+{
+    wpCurrentIndex_++;
+    if (wpCurrentIndex_ < waypoint_path_.size()) {
+        sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), 0);
+        return true;
+    } else {
+        if ((loopPathObj_->property("checked")).toBool()) {
+            return startPath();
+        } else {
+            myTimer_->stop();
+            wpCurrentIndex_ = waypoint_path_.size() - 1;
+            sendHoldCommand(wpRadius_);
+            return false;
+        }
+    }
+}
+
+bool CommandWrapper::goToPreviousWaypoint()
+{
+    wpCurrentIndex_--;
+    std::cout << "wpCurrentIndex: " << wpCurrentIndex_ << std::endl;
+    if (wpCurrentIndex_ >= 0) {
+        sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), 0);
+        return true;
+    } else {
+        wpCurrentIndex_ = 0;
+        return false;
     }
 }

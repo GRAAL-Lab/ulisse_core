@@ -57,6 +57,8 @@ public:
     Q_INVOKABLE void resumePath();
     Q_INVOKABLE void savePathToFile(const QString file);
     Q_INVOKABLE bool loadPathFromFile(const QString file);
+    Q_INVOKABLE bool goToNextWaypoint();
+    Q_INVOKABLE bool goToPreviousWaypoint();
 
 public slots:
     void check_error_slot();

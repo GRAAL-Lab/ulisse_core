@@ -168,7 +168,7 @@ RowLayout {
 
                 }
                 //coordinate: map.center
-                z: ulisseIcon.z + 1
+                z: map.z + 2
                 anchorPoint.x: markerImage.width / 2
                 anchorPoint.y: markerImage.height
                 opacity: 0.0
@@ -204,6 +204,7 @@ RowLayout {
                 coordinate: QtPositioning.coordinate(fbkUpdater.ulisse_pos.latitude, fbkUpdater.ulisse_pos.longitude)
                 anchorPoint.x: ulisseImage.width / 2
                 anchorPoint.y: ulisseImage.height / 2
+                z: map.z + 2
             }
 
             MapQuickItem {
@@ -272,13 +273,14 @@ RowLayout {
                 border.width: 1
                 border.color: 'gray'
                 opacity: goalFlag.opacity == 1.0 ? goalFlag.opacity : 0.0
+                z: map.z + 2
             }
 
 
             MapPolyline {
                 id: ulissePath
                 line.width: 1
-                line.color: Material.color(Material.Amber, Material.Shade500)
+                line.color: Material.color(Material.Amber, Material.Shade600)
                 property bool firstRun: true
                 property real traceSize: 1000
                 z: map.z + 2
@@ -459,6 +461,7 @@ RowLayout {
             color: 'transparent'
             border.width: 2
             border.color: (pathCurrentState === pathState.creating) | (pathCurrentState === pathState.empty) ? Material.color(Material.DeepOrange, Material.Shade600) : Material.color(Material.Green, Material.Shade500)
+            z: map.z + 1
         }
     }
 }
