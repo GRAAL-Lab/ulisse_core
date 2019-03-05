@@ -13,7 +13,7 @@ Ulisse catamaran controller revamped with ROS2.
 ### Additional packages not coming with ros2
 
 - **colcon**: Follow the guide at https://colcon.readthedocs.io/en/master/user/installation.html
-- **rosbag2**: `sudo apt-get install ros2bag rosbag2*`.
+- **rosbag2**: Follow the guide at https://github.com/ros2/rosbag2
 
 ## Subpackages
 
