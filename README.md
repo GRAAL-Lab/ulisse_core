@@ -9,7 +9,7 @@ Ulisse catamaran controller revamped with ROS2.
 - **ctrl_toolbox**: http://bitbucket.org/isme_robotics/ctrl_toolbox
 - **libgeographic**: ` sudo apt install libgeographic-*`
 - **libgps**: `sudo apt install libgps-dev`
-- **qt5-libraries**: `sudo apt install qtquickcontrols2-5-dev qtlocation5-dev qtpositioning5-dev qml-module-qtquick-controls2 qml-module-qtlocation qml-module-qt-labs-* qml-module-qtpositioning qml-module-qtquick-extras qml-module-qtgraphicaleffects qml-module-qtquick-dialogs qml-module-qtquick-controls
+- **qt5-libraries**: `sudo apt install qtquickcontrols2-5-dev qtlocation5-dev qtpositioning5-dev qml-module-qtquick-controls2 qml-module-qtlocation qml-module-qt-labs-* qml-module-qtpositioning qml-module-qtquick-extras qml-module-qtgraphicaleffects qml-module-qtquick-dialogs qml-module-qtquick-controls`
 
 ### Additional packages not coming with ros2
 
