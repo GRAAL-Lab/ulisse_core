@@ -95,7 +95,7 @@ RowLayout {
         id: wpRestartButton
         Material.accent: secondaryAccentColor
         Layout.preferredWidth: 28
-        enabled: (mapView.pathCurrentState === pathState.active) || (mapView.pathCurrentState === pathState.stopped)  ? true : false
+        enabled: (mapView.pathCurrentState === pathState.active) || (mapView.pathCurrentState === pathState.stopped) ? true : false
 
         ToolTip.text: qsTr("Restart path from beginning")
         ToolTip.delay: 500

@@ -215,12 +215,17 @@ void CommandWrapper::savePathToFile(const QString file)
 {
 
     std::string filename = file.toStdString();
-    std::string::size_type extensionDot = filename.find_last_of(".");
-    std::string extension = filename.substr(extensionDot, filename.size());
+    std::string::size_type extensionDotPos = filename.find_last_of(".");
+    std::string extension;
 
-    if (extension != ".path") {
+    if (extensionDotPos != std::string::npos){
+        extension = filename.substr(extensionDotPos, filename.size());
+    }
+
+    if ((extensionDotPos == std::string::npos) | (extension != ".path")) {
         filename = filename + ".path";
     }
+
 
     // Removing the "file://" prefix
     std::string::size_type t1 = 7;
