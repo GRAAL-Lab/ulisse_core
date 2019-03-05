@@ -2,6 +2,17 @@
 
 Ulisse catamaran controller revamped with ROS2.
 
+## Subpackages
+
+Short description of all the packages included in this meta package:
+
+- **surface_vehicle_model**: Dynamic model of a surface vehicle with two thrusters.
+- **ulisse_msgs**: Interface and services messages package with headers for topic names and common variables.
+- **ulisse_core**: The catamaran controller.
+- **ulisse_driver**: The low level driver that communicate.
+- **ulisse_sim**: The dynamic simulator, which makes use of `surface_vehicle_model` library.
+- **ulisse_map**: Graphical interface (Qt based) for controlling the catamaran.
+
 ## Dependencies
 
 - **rml**: http://bitbucket.org/isme_robotics/rml
@@ -15,15 +26,6 @@ Ulisse catamaran controller revamped with ROS2.
 
 - **colcon**: Follow the guide at https://colcon.readthedocs.io/en/master/user/installation.html
 - **rosbag2**: Follow the guide at https://github.com/ros2/rosbag2
-
-## Subpackages
-
-- **surface_vehicle_model**: Dynamic model of a surface vehicle with two thrusters.
-- **ulisse_msgs**: Interface and services messages package with headers for topic names and common variables.
-- **ulisse_core**: The catamaran controller.
-- **ulisse_driver**: The low level driver that communicate.
-- **ulisse_sim**: The dynamic simulator, which makes use of `surface_vehicle_model` library.
-- **ulisse_map**: Graphical interface (Qt based) for controlling the catamaran.
 
 ## Build
 
