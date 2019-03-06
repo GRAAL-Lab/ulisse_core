@@ -21,6 +21,7 @@ Short description of all the packages included in this meta package:
 - **libgeographic**: `sudo apt install libgeographic-*`
 - **libgps**: `sudo apt install libgps-dev`
 - **qt5-libraries**: When building the package on the catamaran you don't need the **ulisse_map** sub-package (so you can add a COLCON_IGNORE file inside it), and these dependencies can be skipped.Otherwise, to use the interface, type:
+
     `sudo apt install qtquickcontrols2-5-dev qtlocation5-dev qtpositioning5-dev qml-module-qtquick-controls2 qml-module-qtlocation qml-module-qt-labs-* qml-module-qtpositioning qml-module-qtquick-extras qml-module-qtgraphicaleffects qml-module-qtquick-dialogs qml-module-qtquick-controls`
 
 ### Additional packages not coming with ros2
@@ -33,7 +34,7 @@ Short description of all the packages included in this meta package:
 ## Build
 
 In the following instructions, the `sourceros#` commands are placeholders for your ROS sourcing commands.
-If you're using both ROS1 and ROS2 it's important that you define separate aliases in your `.bashrc` to source your workspace, that are **not** automatically called when launching new terminals, otherwise you will mix environment variables from different ROS versions.
+If you're using both ROS1 and ROS2 it's important that you define separate aliases in your **~/.bashrc** to source your workspace, that are **not** automatically called when launching new terminals, otherwise you will mix environment variables from different ROS versions.
 
 ### ROS2 only
 
