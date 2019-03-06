@@ -65,23 +65,34 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
     }
     qDebug() << "INITIAL POS: LatLong = " << q_ulisse_pos_ << "- Compass = " << q_ulisse_yaw_deg_;
 
+    // Set the QoS. ROS 2 will provide QoS profiles based on the following use cases:
+    // Default QoS settings for publishers and subscriptions (rmw_qos_profile_default).
+    // Services (rmw_qos_profile_services_default).
+    // Sensor data (rmw_qos_profile_sensor_data).
+    rmw_qos_profile_t custom_qos_profile = rmw_qos_profile_sensor_data;
+
+    //custom_qos_profile.durability = RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL;
+    // set the depth to the QoS profile
+    //custom_qos_profile.depth = 7;
+
+
     status_cxt_sub_ = np_->create_subscription<ulisse_msgs::msg::StatusContext>(
-        ulisse_msgs::topicnames::status_context, std::bind(&FeedbackUpdater::StatusContextCB, this, _1));
+        ulisse_msgs::topicnames::status_context, std::bind(&FeedbackUpdater::StatusContextCB, this, _1), custom_qos_profile);
     goal_cxt_sub_ = np_->create_subscription<ulisse_msgs::msg::GoalContext>(
-        ulisse_msgs::topicnames::goal_context, std::bind(&FeedbackUpdater::GoalContextCB, this, _1));
+        ulisse_msgs::topicnames::goal_context, std::bind(&FeedbackUpdater::GoalContextCB, this, _1), custom_qos_profile);
     control_cxt_sub_ = np_->create_subscription<ulisse_msgs::msg::ControlContext>(
-        ulisse_msgs::topicnames::control_context, std::bind(&FeedbackUpdater::ControlContextCB, this, _1));
+        ulisse_msgs::topicnames::control_context, std::bind(&FeedbackUpdater::ControlContextCB, this, _1), custom_qos_profile);
 
     gps_data_sub_ = np_->create_subscription<ulisse_msgs::msg::GPSData>(
-        ulisse_msgs::topicnames::sensor_gps_data, std::bind(&FeedbackUpdater::GPSDataCB, this, _1));
+        ulisse_msgs::topicnames::sensor_gps_data, std::bind(&FeedbackUpdater::GPSDataCB, this, _1), custom_qos_profile);
 
     battery_left_sub_ = np_->create_subscription<ulisse_msgs::msg::EESBattery>(
-        ulisse_msgs::topicnames::ees_battery_left, std::bind(&FeedbackUpdater::EESBatteryLeftCB, this, _1));
+        ulisse_msgs::topicnames::ees_battery_left, std::bind(&FeedbackUpdater::EESBatteryLeftCB, this, _1), custom_qos_profile);
     battery_right_sub_ = np_->create_subscription<ulisse_msgs::msg::EESBattery>(
-        ulisse_msgs::topicnames::ees_battery_right, std::bind(&FeedbackUpdater::EESBatteryRightCB, this, _1));
+        ulisse_msgs::topicnames::ees_battery_right, std::bind(&FeedbackUpdater::EESBatteryRightCB, this, _1), custom_qos_profile);
 
     thruster_data_sub_ = np_->create_subscription<ulisse_msgs::msg::ThrustersData>(
-                ulisse_msgs::topicnames::thrusters_data, std::bind(&FeedbackUpdater::ThrusterDataCB, this, _1));
+                ulisse_msgs::topicnames::thrusters_data, std::bind(&FeedbackUpdater::ThrusterDataCB, this, _1), custom_qos_profile);
 }
 
 void FeedbackUpdater::SetNodeHandle(const rclcpp::Node::SharedPtr& np)

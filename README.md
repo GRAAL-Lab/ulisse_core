@@ -18,6 +18,8 @@ Short description of all the packages included in this meta package:
 - **rml**: http://bitbucket.org/isme_robotics/rml
 - **fsm**: http://bitbucket.org/isme_robotics/fsm
 - **ctrl_toolbox**: http://bitbucket.org/isme_robotics/ctrl_toolbox
+- **tpiklib**: http://bitbucket.org/isme_robotics/tpiklib
+- **ikcl**: http://bitbucket.org/isme_robotics/ikcl
 - **libgeographic**: `sudo apt install libgeographic-*`
 - **libgps**: `sudo apt install libgps-dev`
 - **qt5-libraries**: When building the package on the catamaran you don't need the **ulisse_map** sub-package (so you can add a COLCON_IGNORE file inside it), and these dependencies can be skipped.Otherwise, to use the interface, type:

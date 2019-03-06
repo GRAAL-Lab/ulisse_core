@@ -19,6 +19,9 @@ find_package(ulisse_driver REQUIRED)
 find_package(rml REQUIRED)
 find_package(fsm REQUIRED)
 find_package(ctrl_toolbox REQUIRED)
+find_package(tpik REQUIRED)
+find_package(ikcl REQUIRED)
+
 
 
 # Add files in the tree of "Projects" view in QtCreator
