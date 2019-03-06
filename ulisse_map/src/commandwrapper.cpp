@@ -70,8 +70,11 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
     }
 
     command_srv_ = np_->create_client<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service);
+
+    rmw_qos_profile_t custom_qos_profile = rmw_qos_profile_sensor_data;
+
     goal_cxt_sub_ = np_->create_subscription<ulisse_msgs::msg::GoalContext>(
-        ulisse_msgs::topicnames::goal_context, std::bind(&CommandWrapper::GoalContextCB, this, _1));
+        ulisse_msgs::topicnames::goal_context, std::bind(&CommandWrapper::GoalContextCB, this, _1), custom_qos_profile);
 }
 
 void CommandWrapper::SetNodeHandle(const rclcpp::Node::SharedPtr& np)
