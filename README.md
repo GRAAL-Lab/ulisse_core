@@ -18,16 +18,31 @@ Short description of all the packages included in this meta package:
 - **rml**: http://bitbucket.org/isme_robotics/rml
 - **fsm**: http://bitbucket.org/isme_robotics/fsm
 - **ctrl_toolbox**: http://bitbucket.org/isme_robotics/ctrl_toolbox
-- **libgeographic**: ` sudo apt install libgeographic-*`
+- **libgeographic**: `sudo apt install libgeographic-*`
 - **libgps**: `sudo apt install libgps-dev`
-- **qt5-libraries**: When building the package on the catamaran you don't need the **ulisse_map** sub-package (so you can add a COLCON_IGNORE file inside it), and these dependencies can be skipped. Otherwise, to use the interface, type: `sudo apt install qtquickcontrols2-5-dev qtlocation5-dev qtpositioning5-dev qml-module-qtquick-controls2 qml-module-qtlocation qml-module-qt-labs-* qml-module-qtpositioning qml-module-qtquick-extras qml-module-qtgraphicaleffects qml-module-qtquick-dialogs qml-module-qtquick-controls`
+- **qt5-libraries**: When building the package on the catamaran you don't need the **ulisse_map** sub-package (so you can add a COLCON_IGNORE file inside it), and these dependencies can be skipped.Otherwise, to use the interface, type:
+    `sudo apt install qtquickcontrols2-5-dev qtlocation5-dev qtpositioning5-dev qml-module-qtquick-controls2 qml-module-qtlocation qml-module-qt-labs-* qml-module-qtpositioning qml-module-qtquick-extras qml-module-qtgraphicaleffects qml-module-qtquick-dialogs qml-module-qtquick-controls`
 
 ### Additional packages not coming with ros2
 
 - **colcon**: Follow the guide at https://colcon.readthedocs.io/en/master/user/installation.html
 - **rosbag2**: Follow the guide at https://github.com/ros2/rosbag2
 
+
+
 ## Build
+
+### ROS2 only
+
+After installing all the needed dependencies, just execute the following commands:
+
+```
+#!bash
+sourceros2
+colcon build --symlink-install
+```
+
+### Alongside ROS 1
 
 Be sure to start from a clean workspace, with no _log_, _install_ or _build_ folders. First install the needed dependencies, and download the ros_bridge (from the ros official repo https://github.com/ros2/ros1_bridge). Navigate to your ROS1 workspace and build the `ulisse_rosbag_ros1` package (https://bitbucket.org/isme_robotics/ulisse_rosbag_ros1/):
 
@@ -67,7 +82,10 @@ ros2 launch ulisse_sim launchSim.py        # simulating
 # Shell B (controller)
 ros2 launch ulisse_ctrl launchControl.py
 
-# Shell C (data monitor)
+# Shell C (optional, GUI)
+ros2 run ulisse_map ulisse_map_node
+
+# Shell D (optional, data monitor)
 ros2 run ulisse_ctrl monitor_node
 ```
 

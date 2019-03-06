@@ -336,7 +336,7 @@ Pane {
 
         FileDialog {
             id: savePathDialog
-            title: "Please choose a file"
+            title: "Saving path..."
             folder: shortcuts.home
             selectExisting: false
 

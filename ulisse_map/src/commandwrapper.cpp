@@ -39,16 +39,6 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
         qDebug("No 'toastManager' found!");
     }
 
-    /*holdRadiusObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("holdRadiusText");
-    if (!holdRadiusObj_) {
-        qDebug("No 'holdRadiusText' found!");
-    }*/
-
-    /*moveToRadiusObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("moveToRadiusText");
-    if (!moveToRadiusObj_) {
-        qDebug("No 'moveToRadiusText' found!");
-    }*/
-
     speedHeadTimoutObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("speedHeadingTimeout");
     if (!speedHeadTimoutObj_) {
         qDebug("No 'speedHeadingTimeout' found!");
@@ -137,7 +127,7 @@ bool CommandWrapper::sendHoldCommand(double radius)
 {
     auto serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
     serviceReq->command_type = ulisse::commands::ID::hold;
-    serviceReq->hold_cmd.acceptance_radius = radius; //(holdRadiusObj_->property("text")).toDouble();
+    serviceReq->hold_cmd.acceptance_radius = radius;
     return SendCommandRequest(serviceReq);
 }
 
@@ -147,7 +137,7 @@ bool CommandWrapper::sendLatLongCommand(const QGeoCoordinate& goal, double radiu
     serviceReq->command_type = ulisse::commands::ID::latlong;
     serviceReq->latlong_cmd.goal.latitude = goal.latitude();
     serviceReq->latlong_cmd.goal.longitude = goal.longitude();
-    serviceReq->latlong_cmd.acceptance_radius = radius; //(moveToRadiusObj_->property("text")).toDouble();
+    serviceReq->latlong_cmd.acceptance_radius = radius;
     return SendCommandRequest(serviceReq);
 }
 
@@ -176,7 +166,6 @@ bool CommandWrapper::startPath()
                  << ", LONG " << coordinate.longitude();
     }
     qDebug() << "Acceptance Radius: " << wpRadius_;
-
     qDebug() << "Loop Over Path: " << (loopPathObj_->property("checked")).toBool();
 
     bool ret = sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), 0);
@@ -213,19 +202,19 @@ void CommandWrapper::resumePath()
 
 void CommandWrapper::savePathToFile(const QString file)
 {
-
+    // Here we check whether the file has already an extension ".path"
+    // and in case it doesn't we add it
     std::string filename = file.toStdString();
     std::string::size_type extensionDotPos = filename.find_last_of(".");
-    std::string extension;
+    std::string filePrevExtension;
 
-    if (extensionDotPos != std::string::npos){
-        extension = filename.substr(extensionDotPos, filename.size());
+    if (extensionDotPos != std::string::npos) {
+        filePrevExtension = filename.substr(extensionDotPos, filename.size());
     }
 
-    if ((extensionDotPos == std::string::npos) | (extension != ".path")) {
+    if ((extensionDotPos == std::string::npos) | (filePrevExtension != ".path")) {
         filename = filename + ".path";
     }
-
 
     // Removing the "file://" prefix
     std::string::size_type t1 = 7;
@@ -254,38 +243,51 @@ bool CommandWrapper::loadPathFromFile(const QString file)
     std::string::size_type t1 = 7;
     filename = filename.substr(t1, filename.size());
 
-    std::ifstream infile;
-    infile.open(filename.c_str());
-
-    if (infile.is_open()) {
-        std::cout << "Loading file: " << filename << std::endl;
-        std::vector<double> temp_vec;
-        int i = 0;
-        std::string line;
-
-        while (getline(infile, line)) {
-            if (!line.empty()) {
-                std::istringstream is(line);
-                temp_vec = std::vector<double>(std::istream_iterator<double>(is), std::istream_iterator<double>());
-                QGeoCoordinate wp;
-                wp.setLatitude(temp_vec.at(0));
-                wp.setLongitude(temp_vec.at(1));
-                std::cout << i << ": "
-                          << "LAT " << wp.latitude()
-                          << ", LONG " << wp.longitude() << std::endl;
-                i++;
-                QVariant wpvar = QVariant::fromValue<QGeoCoordinate>(wp);
-                QMetaObject::invokeMethod(mapMouseAreaObj_, "addWaypoint", Qt::QueuedConnection,
-                    Q_ARG(QVariant, wpvar));
-            }
-        }
-        wpRadius_ = (waypointRadiusObj_->property("text")).toDouble();
-        waypoint_path_ = (waypointPathObj_->property("path")).value<QVariantList>();
-        infile.close();
-        return true;
-    } else {
-        std::cout << "Error Loading file!! (" << filename << ")" << std::endl;
+    // Here we check wether the loaded file has the .path extension
+    std::string::size_type extensionDotPos = filename.find_last_of(".");
+    std::string fileExtension;
+    if (extensionDotPos != std::string::npos) {
+        fileExtension = filename.substr(extensionDotPos, filename.size());
+    }
+    if ((extensionDotPos == std::string::npos) | (fileExtension != ".path")) {
+        std::cout << "Invalid file!" << std::endl;
+        ShowToast("Invalid file!", 3000);
         return false;
+    } else {
+        // If the path extensione is found we proceed loading the file
+        std::ifstream infile;
+        infile.open(filename.c_str());
+
+        if (infile.is_open()) {
+            std::cout << "Loading file: " << filename << std::endl;
+            std::vector<double> temp_vec;
+            int i = 0;
+            std::string line;
+
+            while (getline(infile, line)) {
+                if (!line.empty()) {
+                    std::istringstream is(line);
+                    temp_vec = std::vector<double>(std::istream_iterator<double>(is), std::istream_iterator<double>());
+                    QGeoCoordinate wp;
+                    wp.setLatitude(temp_vec.at(0));
+                    wp.setLongitude(temp_vec.at(1));
+                    std::cout << i << ": "
+                              << "LAT " << wp.latitude()
+                              << ", LONG " << wp.longitude() << std::endl;
+                    i++;
+                    QVariant wpvar = QVariant::fromValue<QGeoCoordinate>(wp);
+                    QMetaObject::invokeMethod(mapMouseAreaObj_, "addWaypoint", Qt::QueuedConnection,
+                        Q_ARG(QVariant, wpvar));
+                }
+            }
+            wpRadius_ = (waypointRadiusObj_->property("text")).toDouble();
+            waypoint_path_ = (waypointPathObj_->property("path")).value<QVariantList>();
+            infile.close();
+            return true;
+        } else {
+            std::cout << "Error Loading file!! (" << filename << ")" << std::endl;
+            return false;
+        }
     }
 }
 
