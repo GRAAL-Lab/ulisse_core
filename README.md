@@ -32,6 +32,9 @@ Short description of all the packages included in this meta package:
 
 ## Build
 
+In the following instructions, the `sourceros#` commands are placeholders for your ROS sourcing commands.
+If you're using both ROS1 and ROS2 it's important that you define separate aliases in your `.bashrc` to source your workspace, that are **not** automatically called when launching new terminals, otherwise you will mix environment variables from different ROS versions.
+
 ### ROS2 only
 
 After installing all the needed dependencies, just execute the following commands:
@@ -42,7 +45,7 @@ sourceros2
 colcon build --symlink-install
 ```
 
-### Alongside ROS 1
+### Alongside ROS1
 
 Be sure to start from a clean workspace, with no _log_, _install_ or _build_ folders. First install the needed dependencies, and download the ros_bridge (from the ros official repo https://github.com/ros2/ros1_bridge). Navigate to your ROS1 workspace and build the `ulisse_rosbag_ros1` package (https://bitbucket.org/isme_robotics/ulisse_rosbag_ros1/):
 
