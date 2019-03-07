@@ -177,9 +177,9 @@ void VehicleSimulator::SimulateSensors(double h_p, double h_s)
 
     compassdata_msg_.stamp.sec = now_stamp_secs;
     compassdata_msg_.stamp.nanosec = now_stamp_nanosecs;
-    compassdata_msg_.roll = 0.0;
-    compassdata_msg_.pitch = 0.0;
-    compassdata_msg_.yaw = vehAtt_now_.GetYaw(); // * M_PI / 180.0 ;
+    compassdata_msg_.orientation.roll = 0.0;
+    compassdata_msg_.orientation.pitch = 0.0;
+    compassdata_msg_.orientation.yaw = vehAtt_now_.GetYaw(); // * M_PI / 180.0 ;
 
     imudata_msg_.stamp.sec = now_stamp_secs;
     imudata_msg_.stamp.nanosec = now_stamp_nanosecs;

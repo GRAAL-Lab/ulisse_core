@@ -123,9 +123,9 @@ namespace llc {
 
                 if (sensorStatus & EMB_SNSSTSMASK_UPDATEDCOMPASS) {
                     compass_msg_.stamp = time_msg;
-                    compass_msg_.roll = llcData_.sensors.compassRoll;
-                    compass_msg_.pitch = llcData_.sensors.compassPitch;
-                    compass_msg_.yaw = llcData_.sensors.compassHeading;
+                    compass_msg_.orientation.roll = llcData_.sensors.compassRoll;
+                    compass_msg_.orientation.pitch = llcData_.sensors.compassPitch;
+                    compass_msg_.orientation.yaw = llcData_.sensors.compassHeading;
                     compass_pub_->publish(compass_msg_);
                 }
 

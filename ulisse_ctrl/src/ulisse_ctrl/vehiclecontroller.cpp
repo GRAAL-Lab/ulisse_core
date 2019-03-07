@@ -227,7 +227,7 @@ void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::Share
 
 void VehicleController::CompassSensorCB(const ulisse_msgs::msg::Compass::SharedPtr msg)
 {
-    statusCxt_->vehicleHeading = msg->yaw;
+    statusCxt_->vehicleHeading = msg->orientation.yaw;
     // std::cout << "Current yaw: " << posCxt_->currentHeading << std::endl;
 }
 

@@ -6,14 +6,16 @@ namespace ulisse_msgs {
 
 namespace topicnames {
 
-    const std::string micro_loop_count = "/ulisse/llc/time/micro_loop_count";
-    const std::string sensor_gps_data = "/ulisse/gps/data";
-    const std::string sensor_gps_status = "/ulisse/gps/status";
+    const std::string micro_loop_count = "/ulisse/llc/micro_loop_count";
+
+    const std::string sensor_gps_data = "/ulisse/llc/sensor/gps_data";
+    const std::string sensor_gps_status = "/ulisse/llc/sensor/gps_status";
     const std::string sensor_compass = "/ulisse/llc/sensor/compass";
     const std::string sensor_imu = "/ulisse/llc/sensor/imu";
     const std::string sensor_ambient = "/ulisse/llc/sensor/ambient";
     const std::string sensor_magnetometer = "/ulisse/llc/sensor/magnetometer";
-    const std::string motor_applied_ref = "/ulisse/llc/vehicle/applied_reference";
+
+    const std::string motor_applied_ref = "/ulisse/llc/motor_applied_ref";
     const std::string llc_status = "/ulisse/llc/status";
     const std::string llc_config = "/ulisse/llc/config";
     const std::string llc_motors = "/ulisse/llc/motors";
@@ -23,15 +25,14 @@ namespace topicnames {
     const std::string llc_battery_right = "/ulisse/llc/battery_right";
     const std::string llc_sw485status = "/ulisse/llc/sw485status";
 
-    const std::string nav_filter_data = "/ulisse/nav_filter_data";
+    const std::string nav_filter_data = "/ulisse/nav_filter/data";
 
-    const std::string thrusters_data = "/ulisse/vehicle/thruster_data";
+    const std::string control_context = "/ulisse/ctrl/ctrl_context";
+    const std::string status_context = "/ulisse/ctrl/status_context";
+    const std::string goal_context = "/ulisse/ctrl/pos_context";
+    const std::string thrusters_data = "/ulisse/ctrl/thruster_ref";
 
-    const std::string control_context = "/ulisse/vehicle/ctrl_context";
-    const std::string status_context = "/ulisse/vehicle/status_context";
-    const std::string goal_context = "/ulisse/vehicle/pos_context";
-
-    const std::string rosbag_service = "/ulisse/record/record_bag";
+    const std::string rosbag_service = "/record_bag";
     const std::string llc_cmd_service = "/ulisse/service/llc_cmd";
     const std::string control_cmd_service = "/ulisse/service/control_cmd";
     const std::string navfilter_cmd_service = "/ulisse/service/navfilter_cmd";

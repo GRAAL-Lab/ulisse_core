@@ -29,6 +29,7 @@ add_custom_target(.Files. SOURCES ${SOURCE_FILES})
 rosidl_generate_interfaces(ulisse_msgs
   # Sensors
   "msg/Time.msg"
+  "msg/RPY.msg"
   "msg/LatLong.msg"
   "msg/PIDData.msg"
   "msg/StatusContext.msg"

@@ -103,7 +103,7 @@ int main(int argc, char* argv[])
                     if (filterEnable) {
                         // The geographic lib conversion outputs UTM coordinates but
                         //
-                        obs.Update(speedRef, compass.yaw, x_ned, y_ned);
+                        obs.Update(speedRef, compass.orientation.yaw, x_ned, y_ned);
                         obs.GetCurrent(filterData.current[0], filterData.current[1]);
                         obs.GetSpeed(filterData.speed[0], filterData.speed[1]);
                         obs.GetPosition(x_ned, y_ned);
