@@ -1,8 +1,8 @@
 /*
- * taskEESHelper.cc
+ * llc_driver_node.cpp
  *
- *  Created on: Jun 27, 2016
- *      Author: wonder
+ *  Created on: Nov 01, 2018
+ *      Author: wanderfra
  */
 
 #include "rclcpp/rclcpp.hpp"
@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
         executor1.spin();
     };
     std::thread execution1_thread(spin_executor1);
-    RCLCPP_INFO(nh->get_logger(), "EES receiver thread created");
+    RCLCPP_INFO(nh->get_logger(), "LLC receiver thread created");
 
     rclcpp::executors::SingleThreadedExecutor executor2;
     auto thread_sender = std::make_shared<ThreadSender>(); // Sync Node
@@ -62,16 +62,16 @@ int main(int argc, char* argv[])
         executor2.spin();
     };
     std::thread execution2_thread(spin_executor2);
-    RCLCPP_INFO(nh->get_logger(), "EES sender thread created");
+    RCLCPP_INFO(nh->get_logger(), "LLC sender thread created");
 
     execution1_thread.join();
     execution2_thread.join();*/
 
     rclcpp::executors::MultiThreadedExecutor executor;
     auto thread_receiver = std::make_shared<ThreadReceiver>(); // Async Node
-    RCLCPP_INFO(nh->get_logger(), "EES receiver thread created");
+    RCLCPP_INFO(nh->get_logger(), "LLC receiver thread created");
     auto thread_sender = std::make_shared<ThreadSender>(); // Sync Node
-    RCLCPP_INFO(nh->get_logger(), "EES sender thread created");
+    RCLCPP_INFO(nh->get_logger(), "LLC sender thread created");
     executor.add_node(thread_receiver);
     executor.add_node(thread_sender);
     executor.spin();
