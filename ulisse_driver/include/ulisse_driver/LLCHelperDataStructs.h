@@ -1,24 +1,24 @@
 /*
- * EESHelperDataStructs.h
+ * LLCHelperDataStructs.h
  *
  *  Created on: Nov 1, 2018
  *      Author: francescow
  */
 
-#ifndef SRC_COMM_EESHELPERDATASTRUCTS_H_
-#define SRC_COMM_EESHELPERDATASTRUCTS_H_
+#ifndef SRC_COMM_LLCHELPERDATASTRUCTS_H_
+#define SRC_COMM_LLCHELPERDATASTRUCTS_H_
 
 #include <cmath>
 #include <inttypes.h>
 #include <rclcpp/rclcpp.hpp>
 #include <string>
 
-#include "ulisse_driver/EESHelperDefines.h"
+#include "ulisse_driver/LLCHelperDefines.h"
 #include "ulisse_driver/driver_defines.h"
 
 namespace ulisse {
 
-namespace ees {
+namespace llc {
 
     enum class RetVal {
         ok,
@@ -74,7 +74,7 @@ namespace ees {
         }
     };
 
-    //PLEASE UPDATE GetSize method AND om2ctrl::ees::CommandContainer on fields change
+    //PLEASE UPDATE GetSize method AND om2ctrl::llc::CommandContainer on fields change
     struct beepData {
         uint8_t numberOfBeeps;
         uint8_t loop;
@@ -91,7 +91,7 @@ namespace ees {
         }
     };
 
-    //PLEASE UPDATE GetSize method AND om2ctrl::ees::CommandContainer on fields change
+    //PLEASE UPDATE GetSize method AND om2ctrl::llc::CommandContainer on fields change
     struct enableRefData {
         uint8_t enable;
 
@@ -196,7 +196,7 @@ namespace ees {
         }
     };
 
-    //PLEASE UPDATE GetSize method AND om2ctrl::ees::CommandContainer AND om2ctrl::enet::ENETContainer on fields change
+    //PLEASE UPDATE GetSize method AND om2ctrl::llc::CommandContainer AND om2ctrl::enet::ENETContainer on fields change
     //LoggerContainers too
     struct LowLevelConfiguration {
         uint16_t hbCompass0;
@@ -330,7 +330,7 @@ namespace ees {
     //PLEASE UPDATE GetSize method AND om2ctrl::enet::ENETContainer on fields change
     //LoggerContainers too
     struct motorData {
-        uint32_t timestamp; // [1/200 s] since EES power-on
+        uint32_t timestamp; // [1/200 s] since LLC power-on
         uint8_t flags0;
         uint8_t flags1;
         uint8_t master_state;
@@ -387,7 +387,7 @@ namespace ees {
     //PLEASE UPDATE GetSize method AND om2ctrl::enet::ENETContainer on fields change
     //LoggerContainers too
     struct motorsData {
-        uint32_t timestamp; // [1/200 s] since EES power-on
+        uint32_t timestamp; // [1/200 s] since LLC power-on
         motorData left;
         motorData right;
 
@@ -406,7 +406,7 @@ namespace ees {
         }
     };
 
-    //PLEASE UPDATE GetSize method AND om2ctrl::ees::CommandContainer AND om2ctrl::enet::ENETContainer on fields change
+    //PLEASE UPDATE GetSize method AND om2ctrl::llc::CommandContainer AND om2ctrl::enet::ENETContainer on fields change
     struct pumpsData {
         uint8_t pumpsFlag[2];
 
@@ -430,7 +430,7 @@ namespace ees {
         }
     };
 
-    //PLEASE UPDATE GetSize method AND om2ctrl::ees::CommandContainer AND om2ctrl::enet::ENETContainer on fields change
+    //PLEASE UPDATE GetSize method AND om2ctrl::llc::CommandContainer AND om2ctrl::enet::ENETContainer on fields change
     struct pwrButtonsData {
         uint8_t pwrButtonsFlag;
 
@@ -450,7 +450,7 @@ namespace ees {
     //PLEASE UPDATE GetSize method AND om2ctrl::enet::ENETContainer on fields change
     //LoggerContainers too
     struct batteryData {
-        uint32_t timestamp; // [1/200 s] since EES power-on
+        uint32_t timestamp; // [1/200 s] since LLC power-on
         uint8_t id; // 0->left 1->right
         uint64_t timestampSW485; // [1/200 s] since sw485 power-on
         uint64_t timestampSatellite; // [1/200 s] since satellite power-on
@@ -530,8 +530,8 @@ namespace ees {
     };
 
     //PLEASE UPDATE GetSize method on fields change
-    struct EESData {
-        EESData()
+    struct LLCData {
+        LLCData()
             : messageType(MessageType::undefined)
         {
         }
@@ -617,7 +617,7 @@ namespace ees {
                 //			RCLCPP_INFO(logger, "GetConfig by Embedded Console");
                 //			break;
             case MessageType::undefined:
-                RCLCPP_WARN(logger, "eesData::DebugPrint");
+                RCLCPP_WARN(logger, "llcData::DebugPrint");
                 break;
             }
         }
@@ -705,8 +705,8 @@ namespace ees {
 
     std::string CommandAnswerToString(CommandAnswer type);
 
-} //namespace ees
+} //namespace llc
 
 } //namespace ulisse
 
-#endif /* SRC_COMM_EESHELPERDATASTRUCTS_H_ */
+#endif /* SRC_COMM_LLCHELPERDATASTRUCTS_H_ */

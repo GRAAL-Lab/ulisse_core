@@ -12,13 +12,13 @@
 #include <thread>
 
 #include "ulisse_driver/CSerialHelper.h"
-#include "ulisse_driver/EESHelper.h"
+#include "ulisse_driver/LLCHelper.h"
 
 #include "ulisse_driver/thread_receiver.hpp"
 #include "ulisse_driver/thread_sender.hpp"
 
 
-using namespace ulisse::ees;
+using namespace ulisse::llc;
 using namespace std::chrono_literals;
 
 int32_t ReloadConfigFile(LowLevelConfiguration& configOut_, std::string configFile);
@@ -27,7 +27,7 @@ void* ThreadSenderFunction(void* dataIn);
 int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
-    auto nh = rclcpp::Node::make_shared("ees_driver_node");
+    auto nh = rclcpp::Node::make_shared("llc_driver_node");
 
     std::string serialDevice = "/dev/ttyS0";
     int baudRate = 115200;

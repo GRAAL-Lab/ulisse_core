@@ -3,16 +3,16 @@
 #include "ulisse_msgs/msg/compass.hpp"
 #include "ulisse_msgs/msg/gps_data.hpp"
 #include "ulisse_msgs/msg/motor_reference.hpp"
-#include "ulisse_msgs/srv/ees_command.hpp"
+#include "ulisse_msgs/srv/llc_command.hpp"
 #include "ulisse_msgs/srv/rosbag_cmd.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 
 #include "ulisse_ctrl/ctrl_data_structs.hpp"
-#include "ulisse_driver/EESHelperDataStructs.h"
+#include "ulisse_driver/LLCHelperDataStructs.h"
 
 #include "rml/RML.h"
 
-using namespace ulisse::ees;
+using namespace ulisse::llc;
 using namespace std::chrono_literals;
 
 int main(int argc, char* argv[])
@@ -51,27 +51,27 @@ int main(int argc, char* argv[])
     }
     //////////////////////////////////////////////////
 
-    /// SEND REQUEST TO EES DRIVER COMMAND SERVICE ///
+    /// SEND REQUEST TO LLC DRIVER COMMAND SERVICE ///
     tryCount = 0;
-    auto eesClient = node->create_client<ulisse_msgs::srv::EESCommand>(ulisse_msgs::topicnames::ees_cmd_service);
-    while (!eesClient->wait_for_service(1s) && tryCount < 5) {
+    auto llcClient = node->create_client<ulisse_msgs::srv::LLCCommand>(ulisse_msgs::topicnames::llc_cmd_service);
+    while (!llcClient->wait_for_service(1s) && tryCount < 5) {
         if (!rclcpp::ok()) {
             RCLCPP_ERROR(node->get_logger(), "client interrupted while waiting for service to appear.");
             return 1;
         }
-        RCLCPP_INFO(node->get_logger(), "waiting for EES Driver service to appear...");
+        RCLCPP_INFO(node->get_logger(), "waiting for LLC Driver service to appear...");
         tryCount++;
     }
-    if (eesClient->service_is_ready()) {
-        auto eesRequest = std::make_shared<ulisse_msgs::srv::EESCommand::Request>();
-        eesRequest->command_type = static_cast<uint16_t>(CommandType::reloadconfig);
-        auto result_future_ees = eesClient->async_send_request(eesRequest);
-        if (rclcpp::spin_until_future_complete(node, result_future_ees) != rclcpp::executor::FutureReturnCode::SUCCESS) {
+    if (llcClient->service_is_ready()) {
+        auto llcRequest = std::make_shared<ulisse_msgs::srv::LLCCommand::Request>();
+        llcRequest->command_type = static_cast<uint16_t>(CommandType::reloadconfig);
+        auto result_future_llc = llcClient->async_send_request(llcRequest);
+        if (rclcpp::spin_until_future_complete(node, result_future_llc) != rclcpp::executor::FutureReturnCode::SUCCESS) {
             RCLCPP_ERROR(node->get_logger(), "service call failed :(");
             return 1;
         }
-        auto result_ees = result_future_ees.get();
-        std::cout << "SENT REQUEST TO EES COMMAND SERVICE" << std::endl;
+        auto result_llc = result_future_llc.get();
+        std::cout << "SENT REQUEST TO LLC COMMAND SERVICE" << std::endl;
     }
     //////////////////////////////////////////////////
 

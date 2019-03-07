@@ -59,21 +59,6 @@ struct HoldCurrentData {
     double currentMax;
 };
 
-struct NavFilterData {
-    ctb::LatLong pos;
-    double speed[2];
-    double current[2];
-};
-
-struct NavFilterConfigData {
-    //bool debugMessages;
-    double k[4];
-    /*void DebugPrint(const char* string) {
-        ortos::DebugConsole::Write(ortos::LogLevel::info, string, "AHRSconfigData: debugMessages %c", debugMessages ? 'T' : 'F');
-        ortos::DebugConsole::Write(ortos::LogLevel::info, string, "AHRSconfigData: k: [%lf %lf %lf %lf]", k[0], k[1], k[2], k[3]);
-    }*/
-};
-
 struct Waypoint {
     ctb::LatLong pos;
     double acceptRadius;
@@ -84,27 +69,30 @@ struct Waypoint {
 };
 
 struct StatusContext {
-    NavFilterData filterData;
+    ctb::LatLong vehiclePos;
     double gpsTrack, gpsSpeed;
-    double currentHeading;
-    uint16_t eesStatus;
+    double vehicleHeading;
+
+    double seacurrent[2];
+
+    uint16_t llcStatus;
+    uint16_t sw485Status;
+
     std::string vehicleState;
 
     StatusContext()
-        : currentHeading(0.0)
-        , eesStatus(0)
+        : vehicleHeading(0.0)
+        , llcStatus(0)
     {
     }
 };
 
 struct ControlContext {
-    //SurfaceVehicleModel ulisseModel_;
     ctb::DigitalPID pidSurge;
     ctb::DigitalPID pidPosition;
     ctb::DigitalPID pidHeading;
     double desiredSurge;
     double desiredJog;
-    //ThrusterControlData thrusterData;
 };
 
 struct GoalContext {
@@ -132,7 +120,7 @@ struct ControllerConfiguration {
     double pidsat_position;
     double pidsat_heading;
 
-    NavFilterConfigData navFilter;
+    //NavFilterConfigData navFilter;
     HoldCurrentData holdData;
 
     ControllerConfiguration()

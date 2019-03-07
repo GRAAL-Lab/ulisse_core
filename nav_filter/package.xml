@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="2">
-  <name>ulisse_ctrl</name>
+  <name>nav_filter</name>
   <version>0.0.1</version>
-  <description>Ulisse Controller</description>
+  <description>Navigation Filter</description>
   <maintainer email="enrico.simetti@unige.it">Enrico Simetti</maintainer>
   <license>Apache License 2.0</license>
   <author>Francesco Wanderlingh</author>

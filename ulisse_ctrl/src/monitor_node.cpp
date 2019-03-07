@@ -5,7 +5,7 @@
 #include "ulisse_msgs/msg/control_context.hpp"
 #include "ulisse_msgs/msg/goal_context.hpp"
 #include "ulisse_msgs/msg/status_context.hpp"
-#include "ulisse_msgs/msg/ees_battery.hpp"
+#include "ulisse_msgs/msg/llc_battery.hpp"
 #include "ulisse_msgs/msg/gps_data.hpp"
 #include "ulisse_msgs/msg/thrusters_data.hpp"
 
@@ -23,8 +23,8 @@ static ulisse_msgs::msg::GoalContext goal_cxt;
 static ulisse_msgs::msg::ControlContext control_cxt;
 static ulisse_msgs::msg::StatusContext status_cxt;
 static ulisse_msgs::msg::ThrustersData thrusters_data;
-static ulisse_msgs::msg::EESBattery battery_left;
-static ulisse_msgs::msg::EESBattery battery_right;
+static ulisse_msgs::msg::LLCBattery battery_left;
+static ulisse_msgs::msg::LLCBattery battery_right;
 
 void GpsCB(const ulisse_msgs::msg::GPSData::SharedPtr msg);
 void GoalContextCB(const ulisse_msgs::msg::GoalContext::SharedPtr msg);
@@ -32,8 +32,8 @@ void ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg);
 void StatusContextCB(const ulisse_msgs::msg::StatusContext::SharedPtr msg);
 void ThrustersDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg);
 
-void BatteryLeftCB(const ulisse_msgs::msg::EESBattery::SharedPtr msg);
-void BatteryRightCB(const ulisse_msgs::msg::EESBattery::SharedPtr msg);
+void BatteryLeftCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg);
+void BatteryRightCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg);
 
 int main(int argc, char* argv[])
 {
@@ -55,10 +55,10 @@ int main(int argc, char* argv[])
     auto thrusterdata_sub = nh->create_subscription<ulisse_msgs::msg::ThrustersData>(
         ulisse_msgs::topicnames::thrusters_data, ThrustersDataCB);
 
-    auto batteryleft_sub = nh->create_subscription<ulisse_msgs::msg::EESBattery>(
-        ulisse_msgs::topicnames::ees_battery_left, BatteryLeftCB);
-    auto batteryright_sub = nh->create_subscription<ulisse_msgs::msg::EESBattery>(
-        ulisse_msgs::topicnames::ees_battery_right, BatteryRightCB);
+    auto batteryleft_sub = nh->create_subscription<ulisse_msgs::msg::LLCBattery>(
+        ulisse_msgs::topicnames::llc_battery_left, BatteryLeftCB);
+    auto batteryright_sub = nh->create_subscription<ulisse_msgs::msg::LLCBattery>(
+        ulisse_msgs::topicnames::llc_battery_right, BatteryRightCB);
 
 
     while (rclcpp::ok()) {
@@ -119,12 +119,12 @@ void ThrustersDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg)
     thrusters_data = *msg;
 }
 
-void BatteryLeftCB(const ulisse_msgs::msg::EESBattery::SharedPtr msg)
+void BatteryLeftCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg)
 {
     battery_left = *msg;
 }
 
-void BatteryRightCB(const ulisse_msgs::msg::EESBattery::SharedPtr msg)
+void BatteryRightCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg)
 {
     battery_right = *msg;
 }

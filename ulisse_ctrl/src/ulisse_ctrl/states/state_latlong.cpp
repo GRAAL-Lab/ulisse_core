@@ -23,7 +23,7 @@ namespace states {
     {
         CheckRadioController();
 
-        ctb::DistanceAndAzimuthRad(statusCxt_->filterData.pos, goalCxt_->currentGoal.pos, goalCxt_->goalDistance, goalCxt_->goalHeading);
+        ctb::DistanceAndAzimuthRad(statusCxt_->vehiclePos, goalCxt_->currentGoal.pos, goalCxt_->goalDistance, goalCxt_->goalHeading);
 
         if (goalCxt_->goalDistance < goalCxt_->currentGoal.acceptRadius) {
             std::cout << "*** GOAL REACHED! ***" << std::endl;
@@ -36,14 +36,14 @@ namespace states {
 
         double goalDistance = goalCxt_->goalDistance;
         if (conf_->enableSlowDownOnTurns) {
-            double headingError = ctb::HeadingErrorRad(goalCxt_->goalHeading, statusCxt_->currentHeading);
+            double headingError = ctb::HeadingErrorRad(goalCxt_->goalHeading, statusCxt_->vehicleHeading);
             goalDistance = SlowDownWhenTurning(headingError, goalDistance, *conf_);
         }
 
         ctrlCxt_->desiredSurge = ctrlCxt_->pidPosition.Compute(goalDistance, 0.0);
-        ctrlCxt_->desiredJog = ctrlCxt_->pidHeading.Compute(goalCxt_->goalHeading, statusCxt_->currentHeading);
+        ctrlCxt_->desiredJog = ctrlCxt_->pidHeading.Compute(goalCxt_->goalHeading, statusCxt_->vehicleHeading);
 
-        std::cout << "Current Heading: " << statusCxt_->currentHeading << std::endl;
+        std::cout << "Current Heading: " << statusCxt_->vehicleHeading << std::endl;
         std::cout << "Goal Heading: " << goalCxt_->goalHeading << std::endl;
         std::cout << "Desired speed: " << ctrlCxt_->desiredSurge << std::endl;
         std::cout << "Desired jog: " << ctrlCxt_->desiredJog << std::endl;

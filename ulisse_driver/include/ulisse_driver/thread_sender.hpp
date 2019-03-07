@@ -19,14 +19,14 @@
 #include "std_msgs/msg/string.hpp"
 
 #include "ulisse_msgs/msg/thrusters_data.hpp"
-#include "ulisse_msgs/srv/ees_command.hpp"
+#include "ulisse_msgs/srv/llc_command.hpp"
 
-#include "ulisse_driver/EESHelper.h"
+#include "ulisse_driver/LLCHelper.h"
 #include "ulisse_driver/visibility.h"
 
 namespace ulisse {
 
-namespace ees {
+namespace llc {
 
     class ThreadSender : public rclcpp::Node {
     public:
@@ -36,14 +36,14 @@ namespace ees {
         void SetupCommandServer();
         void ReloadConfigFile();
         void ThrustersDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg);
-        void CopyConfigMsg2EESStruct(const std::shared_ptr<ulisse_msgs::srv::EESCommand::Request> request);
+        void CopyConfigMsg2LLCStruct(const std::shared_ptr<ulisse_msgs::srv::LLCCommand::Request> request);
 
-        EESData data_;
-        EESHelper eesHlp_;
+        LLCData data_;
+        LLCHelper llcHlp_;
         LowLevelConfiguration lowlevelconf_;
 
         rclcpp::AsyncParametersClient::SharedPtr par_client_;
-        rclcpp::Service<ulisse_msgs::srv::EESCommand>::SharedPtr srv_;
+        rclcpp::Service<ulisse_msgs::srv::LLCCommand>::SharedPtr srv_;
         rclcpp::Subscription<ulisse_msgs::msg::ThrustersData>::SharedPtr thruster_data_sub_;
         rclcpp::TimerBase::SharedPtr timer_;
 

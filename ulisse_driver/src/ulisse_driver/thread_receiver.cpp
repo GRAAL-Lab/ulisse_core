@@ -11,10 +11,10 @@ using namespace std::chrono_literals;
 
 namespace ulisse {
 
-namespace ees {
+namespace llc {
 
     ThreadReceiver::ThreadReceiver()
-        : Node("ees_thread_receiver")
+        : Node("llc_thread_receiver")
     {
         par_client_ = std::make_shared<rclcpp::AsyncParametersClient>(this);
 
@@ -33,8 +33,8 @@ namespace ees {
         bool debugIncomingValidMessageType = false;
         bool debugFailedCrc = false;
 
-        auto parameters = par_client_->get_parameters({ "SerialDevice", "BaudRate", "EESHelper.DebugBytes",
-            "EESHelper.DebugIncomingValidMessageType", "EESHelper.DebugFailedCrc" });
+        auto parameters = par_client_->get_parameters({ "SerialDevice", "BaudRate", "LLCHelper.DebugBytes",
+            "LLCHelper.DebugIncomingValidMessageType", "LLCHelper.DebugFailedCrc" });
         if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), parameters) != rclcpp::executor::FutureReturnCode::SUCCESS) {
             RCLCPP_ERROR(this->get_logger(), "get_parameters service call failed. Exiting.");
             exit(EXIT_FAILURE);
@@ -46,18 +46,18 @@ namespace ees {
 
         this->get_parameter_or("SerialDevice", serialDevice, std::string());
         this->get_parameter_or("BaudRate", baudRate, 0);
-        this->get_parameter_or("EESHelper.DebugBytes", debugBytes, false);
-        this->get_parameter_or("EESHelper.DebugIncomingValidMessageType", debugIncomingValidMessageType, false);
-        this->get_parameter_or("EESHelper.DebugFailedCrc", debugFailedCrc, false);
+        this->get_parameter_or("LLCHelper.DebugBytes", debugBytes, false);
+        this->get_parameter_or("LLCHelper.DebugIncomingValidMessageType", debugIncomingValidMessageType, false);
+        this->get_parameter_or("LLCHelper.DebugFailedCrc", debugFailedCrc, false);
 
         RCLCPP_INFO(this->get_logger(), "Trying to open: serialDevice %s, baudRate %d ", serialDevice.c_str(), baudRate);
         std::cout << "===================================" << std::endl;
 
-        eesHlp_.DebugBytes(debugBytes);
-        eesHlp_.DebugIncomingValidMessageType(debugIncomingValidMessageType);
-        eesHlp_.DebugFailedCrc(debugFailedCrc);
+        llcHlp_.DebugBytes(debugBytes);
+        llcHlp_.DebugIncomingValidMessageType(debugIncomingValidMessageType);
+        llcHlp_.DebugFailedCrc(debugFailedCrc);
 
-        ret = eesHlp_.SetSerial(serialDevice, baudRate);
+        ret = llcHlp_.SetSerial(serialDevice, baudRate);
         if (ret != RetVal::ok) {
             RCLCPP_ERROR(this->get_logger(), "Error opening serial %s %d", serialDevice.c_str(), baudRate);
             exit(0);
@@ -71,14 +71,14 @@ namespace ees {
         magneto_pub_ = this->create_publisher<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer);
         applied_motorref_pub_ = this->create_publisher<ulisse_msgs::msg::MotorReference>(ulisse_msgs::topicnames::motor_applied_ref);
 
-        ees_status_pub_ = this->create_publisher<ulisse_msgs::msg::EESStatus>(ulisse_msgs::topicnames::ees_status);
-        ees_config_pub_ = this->create_publisher<ulisse_msgs::msg::EESConfig>(ulisse_msgs::topicnames::ees_config);
-        ees_motors_pub_ = this->create_publisher<ulisse_msgs::msg::EESMotors>(ulisse_msgs::topicnames::ees_motors);
-        ees_version_pub_ = this->create_publisher<ulisse_msgs::msg::EESVersion>(ulisse_msgs::topicnames::ees_version);
-        ees_ack_pub_ = this->create_publisher<ulisse_msgs::msg::EESAck>(ulisse_msgs::topicnames::ees_ack);
-        ees_battery_left_pub_ = this->create_publisher<ulisse_msgs::msg::EESBattery>(ulisse_msgs::topicnames::ees_battery_left);
-        ees_battery_right_pub_ = this->create_publisher<ulisse_msgs::msg::EESBattery>(ulisse_msgs::topicnames::ees_battery_right);
-        ees_sw485_pub_ = this->create_publisher<ulisse_msgs::msg::EESSw485Status>(ulisse_msgs::topicnames::ees_sw485status);
+        llc_status_pub_ = this->create_publisher<ulisse_msgs::msg::LLCStatus>(ulisse_msgs::topicnames::llc_status);
+        llc_config_pub_ = this->create_publisher<ulisse_msgs::msg::LLCConfig>(ulisse_msgs::topicnames::llc_config);
+        llc_motors_pub_ = this->create_publisher<ulisse_msgs::msg::LLCMotors>(ulisse_msgs::topicnames::llc_motors);
+        llc_version_pub_ = this->create_publisher<ulisse_msgs::msg::LLCVersion>(ulisse_msgs::topicnames::llc_version);
+        llc_ack_pub_ = this->create_publisher<ulisse_msgs::msg::LLCAck>(ulisse_msgs::topicnames::llc_ack);
+        llc_battery_left_pub_ = this->create_publisher<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_left);
+        llc_battery_right_pub_ = this->create_publisher<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_right);
+        llc_sw485_pub_ = this->create_publisher<ulisse_msgs::msg::LLCSw485Status>(ulisse_msgs::topicnames::llc_sw485status);
 
         timer_ = create_wall_timer(50ms, std::bind(&ThreadReceiver::ReadLoop, this));
     }
@@ -92,13 +92,13 @@ namespace ees {
             long epoch_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
             auto fraction_nanosecs = static_cast<unsigned int>(epoch_nanosecs % (int)1E9);
 
-            eesHlp_.CollectValidMessage(eesData_);
+            llcHlp_.CollectValidMessage(llcData_);
             //std::cout << "ThreadReceiver::ReadLoop(), Collected Valid Message" << std::endl;
-            uint8_t sensorStatus = eesData_.sensors.sensorStatus;
+            uint8_t sensorStatus = llcData_.sensors.sensorStatus;
 
             ulisse_msgs::msg::Time time_msg;
             time_msg.sec = static_cast<unsigned int>(epoch_nanosecs / (int)1E9);
-            unsigned int stepsnanosecs = static_cast<unsigned int>(eesData_.sensors.stepsSincePPS * 1E9 / 200.0);
+            unsigned int stepsnanosecs = static_cast<unsigned int>(llcData_.sensors.stepsSincePPS * 1E9 / 200.0);
             // Assuming that the time of the control PC is synchronized with the GPS time,
             // if the stepsSincePPS (time since last gps 'seconds' pulse) gives an elapsed intrasecond
             // time which is greater that the current intrasecond time, it means that the measures are
@@ -115,191 +115,191 @@ namespace ees {
             PRINT_INT(sensorStatus & EMB_SNSSTSMASK_UPDATEDMAGNETOMETER),
             PRINT_INT(sensorStatus & EMB_SNSSTSMASK_UPDATEDANALOG));*/
 
-            switch (eesData_.messageType) {
+            switch (llcData_.messageType) {
             case MessageType::sensor:
-                microloopcount_msg_.timestamp = eesData_.sensors.timestamp;
-                microloopcount_msg_.stepssincepps = eesData_.sensors.stepsSincePPS;
+                microloopcount_msg_.timestamp = llcData_.sensors.timestamp;
+                microloopcount_msg_.stepssincepps = llcData_.sensors.stepsSincePPS;
                 micro_loop_count_pub_->publish(microloopcount_msg_);
 
                 if (sensorStatus & EMB_SNSSTSMASK_UPDATEDCOMPASS) {
                     compass_msg_.stamp = time_msg;
-                    compass_msg_.roll = eesData_.sensors.compassRoll;
-                    compass_msg_.pitch = eesData_.sensors.compassPitch;
-                    compass_msg_.yaw = eesData_.sensors.compassHeading;
+                    compass_msg_.roll = llcData_.sensors.compassRoll;
+                    compass_msg_.pitch = llcData_.sensors.compassPitch;
+                    compass_msg_.yaw = llcData_.sensors.compassHeading;
                     compass_pub_->publish(compass_msg_);
                 }
 
                 if (sensorStatus & EMB_SNSSTSMASK_UPDATEDMAGNETOMETER) {
                     magneto_msg_.stamp = time_msg;
-                    magneto_msg_.orthogonalstrength.at(0) = eesData_.sensors.magnetometer[0];
-                    magneto_msg_.orthogonalstrength.at(1) = eesData_.sensors.magnetometer[1];
-                    magneto_msg_.orthogonalstrength.at(2) = eesData_.sensors.magnetometer[2];
+                    magneto_msg_.orthogonalstrength.at(0) = llcData_.sensors.magnetometer[0];
+                    magneto_msg_.orthogonalstrength.at(1) = llcData_.sensors.magnetometer[1];
+                    magneto_msg_.orthogonalstrength.at(2) = llcData_.sensors.magnetometer[2];
                     magneto_pub_->publish(magneto_msg_);
                 }
 
                 // Separate accelerometer and gyro msg?
                 if (sensorStatus & EMB_SNSSTSMASK_UPDATEDACCELEROMETER || sensorStatus & EMB_SNSSTSMASK_UPDATEDANALOG) {
                     imu_msg_.stamp = time_msg;
-                    imu_msg_.accelerometer.at(0) = eesData_.sensors.accelerometer[0];
-                    imu_msg_.accelerometer.at(1) = eesData_.sensors.accelerometer[1];
-                    imu_msg_.accelerometer.at(2) = eesData_.sensors.accelerometer[2];
-                    imu_msg_.gyro.at(0) = eesData_.sensors.gyro[0];
-                    imu_msg_.gyro.at(1) = eesData_.sensors.gyro[1];
-                    imu_msg_.gyro.at(2) = eesData_.sensors.gyro[2];
-                    imu_msg_.gyro4x.at(0) = eesData_.sensors.gyro4x[0];
-                    imu_msg_.gyro4x.at(1) = eesData_.sensors.gyro4x[1];
+                    imu_msg_.accelerometer.at(0) = llcData_.sensors.accelerometer[0];
+                    imu_msg_.accelerometer.at(1) = llcData_.sensors.accelerometer[1];
+                    imu_msg_.accelerometer.at(2) = llcData_.sensors.accelerometer[2];
+                    imu_msg_.gyro.at(0) = llcData_.sensors.gyro[0];
+                    imu_msg_.gyro.at(1) = llcData_.sensors.gyro[1];
+                    imu_msg_.gyro.at(2) = llcData_.sensors.gyro[2];
+                    imu_msg_.gyro4x.at(0) = llcData_.sensors.gyro4x[0];
+                    imu_msg_.gyro4x.at(1) = llcData_.sensors.gyro4x[1];
                     imu_pub_->publish(imu_msg_);
                 }
 
                 if (sensorStatus & EMB_SNSSTSMASK_UPDATEDANALOG) {
                     ambsens_msg_.stamp = time_msg;
-                    ambsens_msg_.temperaturectrlbox = eesData_.sensors.temperatureCtrlBox;
-                    ambsens_msg_.humidityctrlbox = eesData_.sensors.humidityCtrlBox;
+                    ambsens_msg_.temperaturectrlbox = llcData_.sensors.temperatureCtrlBox;
+                    ambsens_msg_.humidityctrlbox = llcData_.sensors.humidityCtrlBox;
                     ambsens_pub_->publish(ambsens_msg_);
                 }
 
-                applied_motorref_msg_.left = eesData_.sensors.leftReference;
-                applied_motorref_msg_.right = eesData_.sensors.rightReference;
+                applied_motorref_msg_.left = llcData_.sensors.leftReference;
+                applied_motorref_msg_.right = llcData_.sensors.rightReference;
                 applied_motorref_pub_->publish(applied_motorref_msg_);
                 break;
             case MessageType::status:
-                ees_status_msg_.stamp = time_msg;
-                ees_status_msg_.status = eesData_.status.status;
-                ees_status_msg_.commdataerrorcount = eesData_.status.commDataErrorCount;
-                ees_status_msg_.i2cdatastate = eesData_.status.i2cDataState;
-                ees_status_msg_.misseddeadlines = eesData_.status.missedDeadlines;
-                ees_status_msg_.accelerometertimeouts = eesData_.status.accelerometerTimeouts;
-                ees_status_msg_.compasstimeouts = eesData_.status.compassTimeouts;
-                ees_status_msg_.magnetometertimeouts = eesData_.status.magnetometerTimeouts;
-                ees_status_msg_.i2cbusbusy = eesData_.status.i2cbusBusy;
-                ees_status_msg_.messagesent485 = eesData_.status.messageSent485;
-                ees_status_msg_.messagereceived485 = eesData_.status.messageReceived485;
-                ees_status_msg_.errorcount = eesData_.status.errorCount;
-                ees_status_msg_.overflowcount232 = eesData_.status.overflowCount232; // overflow buffer rs232
-                ees_status_msg_.overflowcount485 = eesData_.status.overflowCount485; // overflow buffer rs485
-                ees_status_pub_->publish(ees_status_msg_);
+                llc_status_msg_.stamp = time_msg;
+                llc_status_msg_.status = llcData_.status.status;
+                llc_status_msg_.commdataerrorcount = llcData_.status.commDataErrorCount;
+                llc_status_msg_.i2cdatastate = llcData_.status.i2cDataState;
+                llc_status_msg_.misseddeadlines = llcData_.status.missedDeadlines;
+                llc_status_msg_.accelerometertimeouts = llcData_.status.accelerometerTimeouts;
+                llc_status_msg_.compasstimeouts = llcData_.status.compassTimeouts;
+                llc_status_msg_.magnetometertimeouts = llcData_.status.magnetometerTimeouts;
+                llc_status_msg_.i2cbusbusy = llcData_.status.i2cbusBusy;
+                llc_status_msg_.messagesent485 = llcData_.status.messageSent485;
+                llc_status_msg_.messagereceived485 = llcData_.status.messageReceived485;
+                llc_status_msg_.errorcount = llcData_.status.errorCount;
+                llc_status_msg_.overflowcount232 = llcData_.status.overflowCount232; // overflow buffer rs232
+                llc_status_msg_.overflowcount485 = llcData_.status.overflowCount485; // overflow buffer rs485
+                llc_status_pub_->publish(llc_status_msg_);
                 break;
             case MessageType::set_config:
-                ees_config_msg_.stamp = time_msg;
-                ees_config_msg_.hbcompass0 = eesData_.config.hbCompass0;
-                ees_config_msg_.hbcompassmax = eesData_.config.hbCompassMax;
-                ees_config_msg_.hbmagnetometer0 = eesData_.config.hbMagnetometer0;
-                ees_config_msg_.hbmagnetometermax = eesData_.config.hbMagnetometerMax;
-                ees_config_msg_.hbpacketsensors0 = eesData_.config.hbPacketSensors0;
-                ees_config_msg_.hbpacketsensorsmax = eesData_.config.hbPacketSensorsMax;
-                ees_config_msg_.hbpacketstatus0 = eesData_.config.hbPacketStatus0;
-                ees_config_msg_.hbpacketstatusmax = eesData_.config.hbPacketStatusMax;
-                ees_config_msg_.hbpacketmotors0 = eesData_.config.hbPacketMotors0;
-                ees_config_msg_.hbpacketmotorsmax = eesData_.config.hbPacketMotorsMax;
-                ees_config_msg_.hbpacketbattery0 = eesData_.config.hbPacketBattery0;
-                ees_config_msg_.hbpacketbatterymax = eesData_.config.hbPacketBatteryMax;
-                ees_config_msg_.timeoutaccelerometer = eesData_.config.timeoutAccelerometer;
-                ees_config_msg_.timeoutcompass = eesData_.config.timeoutCompass;
-                ees_config_msg_.timeoutmagnetometer = eesData_.config.timeoutMagnetometer;
-                ees_config_msg_.pwmupmin = eesData_.config.pwmUpMin;
-                ees_config_msg_.pwmupmax = eesData_.config.pwmUpMax;
-                ees_config_msg_.pwmperiodmin = eesData_.config.pwmPeriodMin;
-                ees_config_msg_.pwmperiodmax = eesData_.config.pwmPeriodMax;
-                ees_config_msg_.pwmtimethreshold = eesData_.config.pwmTimeThreshold;
-                ees_config_msg_.pwmzerothreshold = eesData_.config.pwmZeroThreshold;
-                ees_config_msg_.deadzonetime = eesData_.config.deadzoneTime;
-                ees_config_msg_.thrustersaturation = eesData_.config.thrusterSaturation;
-                ees_config_pub_->publish(ees_config_msg_);
+                llc_config_msg_.stamp = time_msg;
+                llc_config_msg_.hbcompass0 = llcData_.config.hbCompass0;
+                llc_config_msg_.hbcompassmax = llcData_.config.hbCompassMax;
+                llc_config_msg_.hbmagnetometer0 = llcData_.config.hbMagnetometer0;
+                llc_config_msg_.hbmagnetometermax = llcData_.config.hbMagnetometerMax;
+                llc_config_msg_.hbpacketsensors0 = llcData_.config.hbPacketSensors0;
+                llc_config_msg_.hbpacketsensorsmax = llcData_.config.hbPacketSensorsMax;
+                llc_config_msg_.hbpacketstatus0 = llcData_.config.hbPacketStatus0;
+                llc_config_msg_.hbpacketstatusmax = llcData_.config.hbPacketStatusMax;
+                llc_config_msg_.hbpacketmotors0 = llcData_.config.hbPacketMotors0;
+                llc_config_msg_.hbpacketmotorsmax = llcData_.config.hbPacketMotorsMax;
+                llc_config_msg_.hbpacketbattery0 = llcData_.config.hbPacketBattery0;
+                llc_config_msg_.hbpacketbatterymax = llcData_.config.hbPacketBatteryMax;
+                llc_config_msg_.timeoutaccelerometer = llcData_.config.timeoutAccelerometer;
+                llc_config_msg_.timeoutcompass = llcData_.config.timeoutCompass;
+                llc_config_msg_.timeoutmagnetometer = llcData_.config.timeoutMagnetometer;
+                llc_config_msg_.pwmupmin = llcData_.config.pwmUpMin;
+                llc_config_msg_.pwmupmax = llcData_.config.pwmUpMax;
+                llc_config_msg_.pwmperiodmin = llcData_.config.pwmPeriodMin;
+                llc_config_msg_.pwmperiodmax = llcData_.config.pwmPeriodMax;
+                llc_config_msg_.pwmtimethreshold = llcData_.config.pwmTimeThreshold;
+                llc_config_msg_.pwmzerothreshold = llcData_.config.pwmZeroThreshold;
+                llc_config_msg_.deadzonetime = llcData_.config.deadzoneTime;
+                llc_config_msg_.thrustersaturation = llcData_.config.thrusterSaturation;
+                llc_config_pub_->publish(llc_config_msg_);
                 break;
             case MessageType::motors:
-                ees_motors_msg_.stamp = time_msg; // since EES power-on
-                EESData2RosMsg(eesData_.motors.left, ees_motors_msg_.left);
-                EESData2RosMsg(eesData_.motors.right, ees_motors_msg_.right);
-                ees_motors_pub_->publish(ees_motors_msg_);
+                llc_motors_msg_.stamp = time_msg; // since LLC power-on
+                LLCData2RosMsg(llcData_.motors.left, llc_motors_msg_.left);
+                LLCData2RosMsg(llcData_.motors.right, llc_motors_msg_.right);
+                llc_motors_pub_->publish(llc_motors_msg_);
                 break;
             case MessageType::version:
-                ees_version_msg_.md_version = eesData_.version.mdVersion;
-                ees_version_msg_.sw_version = eesData_.version.swVersion;
-                ees_version_msg_.lsat_version = eesData_.version.lsatVersion;
-                ees_version_msg_.rsat_version = eesData_.version.rsatVersion;
-                ees_version_pub_->publish(ees_version_msg_);
+                llc_version_msg_.md_version = llcData_.version.mdVersion;
+                llc_version_msg_.sw_version = llcData_.version.swVersion;
+                llc_version_msg_.lsat_version = llcData_.version.lsatVersion;
+                llc_version_msg_.rsat_version = llcData_.version.rsatVersion;
+                llc_version_pub_->publish(llc_version_msg_);
                 break;
             case MessageType::ack:
-                ees_ack_msg_.stamp = time_msg;
-                ees_ack_msg_.messagetype = eesData_.ack.messagetype;
-                ees_ack_msg_.ack = eesData_.ack.ack;
-                ees_ack_pub_->publish(ees_ack_msg_);
+                llc_ack_msg_.stamp = time_msg;
+                llc_ack_msg_.messagetype = llcData_.ack.messagetype;
+                llc_ack_msg_.ack = llcData_.ack.ack;
+                llc_ack_pub_->publish(llc_ack_msg_);
                 break;
             case MessageType::battery:
 
-                if (eesData_.battery.id == 0) {
-                    ees_battery_left_msg_.stamp = time_msg;
-                    EESData2RosMsg(eesData_.battery, ees_battery_left_msg_);
-                    ees_battery_left_pub_->publish(ees_battery_left_msg_);
-                } else if (eesData_.battery.id == 1) {
-                    ees_battery_right_msg_.stamp = time_msg;
-                    EESData2RosMsg(eesData_.battery, ees_battery_right_msg_);
-                    ees_battery_right_pub_->publish(ees_battery_right_msg_);
+                if (llcData_.battery.id == 0) {
+                    llc_battery_left_msg_.stamp = time_msg;
+                    LLCData2RosMsg(llcData_.battery, llc_battery_left_msg_);
+                    llc_battery_left_pub_->publish(llc_battery_left_msg_);
+                } else if (llcData_.battery.id == 1) {
+                    llc_battery_right_msg_.stamp = time_msg;
+                    LLCData2RosMsg(llcData_.battery, llc_battery_right_msg_);
+                    llc_battery_right_pub_->publish(llc_battery_right_msg_);
                 } else {
-                    RCLCPP_INFO(this->get_logger(), "Unsupported battery id %d", eesData_.battery.id);
+                    RCLCPP_INFO(this->get_logger(), "Unsupported battery id %d", llcData_.battery.id);
                 }
                 break;
             case MessageType::sw485Status:
-                ees_sw485_msg_.stamp = time_msg;
-                ees_sw485_msg_.timestamp_sw_485 = eesData_.sw485Status.timestampSW485;
-                ees_sw485_msg_.missed_deadlines = eesData_.sw485Status.missedDeadlines;
-                ees_sw485_msg_.left_motor.received = eesData_.sw485Status.leftMotor.received;
-                ees_sw485_msg_.right_motor.received = eesData_.sw485Status.rightMotor.received;
-                ees_sw485_msg_.left_satellite.received = eesData_.sw485Status.leftSatellite.received;
-                ees_sw485_msg_.right_satellite.received = eesData_.sw485Status.rightSatellite.received;
-                ees_sw485_msg_.left_motor.sent = eesData_.sw485Status.leftMotor.sent;
-                ees_sw485_msg_.right_motor.sent = eesData_.sw485Status.rightMotor.sent;
-                ees_sw485_msg_.left_satellite.sent = eesData_.sw485Status.leftSatellite.sent;
-                ees_sw485_msg_.right_satellite.sent = eesData_.sw485Status.rightSatellite.sent;
-                ees_sw485_pub_->publish(ees_sw485_msg_);
+                llc_sw485_msg_.stamp = time_msg;
+                llc_sw485_msg_.timestamp_sw_485 = llcData_.sw485Status.timestampSW485;
+                llc_sw485_msg_.missed_deadlines = llcData_.sw485Status.missedDeadlines;
+                llc_sw485_msg_.left_motor.received = llcData_.sw485Status.leftMotor.received;
+                llc_sw485_msg_.right_motor.received = llcData_.sw485Status.rightMotor.received;
+                llc_sw485_msg_.left_satellite.received = llcData_.sw485Status.leftSatellite.received;
+                llc_sw485_msg_.right_satellite.received = llcData_.sw485Status.rightSatellite.received;
+                llc_sw485_msg_.left_motor.sent = llcData_.sw485Status.leftMotor.sent;
+                llc_sw485_msg_.right_motor.sent = llcData_.sw485Status.rightMotor.sent;
+                llc_sw485_msg_.left_satellite.sent = llcData_.sw485Status.leftSatellite.sent;
+                llc_sw485_msg_.right_satellite.sent = llcData_.sw485Status.rightSatellite.sent;
+                llc_sw485_pub_->publish(llc_sw485_msg_);
                 break;
             default:
-                RCLCPP_WARN(this->get_logger(), "Unhandled message type %d", eesData_.messageType);
+                RCLCPP_WARN(this->get_logger(), "Unhandled message type %d", llcData_.messageType);
                 break;
             }
             std::this_thread::sleep_for(1ms);
         }
     }
 
-    void ThreadReceiver::EESData2RosMsg(const batteryData& ees_batt, ulisse_msgs::msg::EESBattery& batt_msg)
+    void ThreadReceiver::LLCData2RosMsg(const batteryData& llc_batt, ulisse_msgs::msg::LLCBattery& batt_msg)
     {
-        batt_msg.id = ees_batt.id;
-        batt_msg.timestamp_485 = ees_batt.timestampSW485;
-        batt_msg.timestamp_satellite = ees_batt.timestampSatellite;
-        batt_msg.voltage = ees_batt.voltage;
-        batt_msg.current = ees_batt.current;
-        batt_msg.charge_percent = ees_batt.chargePercent;
-        batt_msg.temperature = ees_batt.temperature;
-        batt_msg.equalisation_cells = ees_batt.equalisationCells;
-        batt_msg.command_state = ees_batt.commandState;
-        batt_msg.alarm_state = ees_batt.alarmState;
-        std::copy(ees_batt.cells, ees_batt.cells + 14, batt_msg.cells.begin());
+        batt_msg.id = llc_batt.id;
+        batt_msg.timestamp_485 = llc_batt.timestampSW485;
+        batt_msg.timestamp_satellite = llc_batt.timestampSatellite;
+        batt_msg.voltage = llc_batt.voltage;
+        batt_msg.current = llc_batt.current;
+        batt_msg.charge_percent = llc_batt.chargePercent;
+        batt_msg.temperature = llc_batt.temperature;
+        batt_msg.equalisation_cells = llc_batt.equalisationCells;
+        batt_msg.command_state = llc_batt.commandState;
+        batt_msg.alarm_state = llc_batt.alarmState;
+        std::copy(llc_batt.cells, llc_batt.cells + 14, batt_msg.cells.begin());
     }
 
-    void ThreadReceiver::EESData2RosMsg(const motorData& ees_motor, ulisse_msgs::msg::MotorData& motor_msg)
+    void ThreadReceiver::LLCData2RosMsg(const motorData& llc_motor, ulisse_msgs::msg::MotorData& motor_msg)
     {
-        motor_msg.flags0 = ees_motor.flags0;
-        motor_msg.flags1 = ees_motor.flags1;
-        motor_msg.master_state = ees_motor.master_state;
-        motor_msg.master_error_code = ees_motor.master_error_code;
-        motor_msg.motor_voltage = ees_motor.motor_voltage; // [1/100 V]
-        motor_msg.motor_current = ees_motor.motor_current;
-        motor_msg.motor_power = ees_motor.motor_power;
-        motor_msg.motor_speed = ees_motor.motor_speed; // [RPM]
-        motor_msg.motor_pcb_temp = ees_motor.motor_pcb_temp; // [° celsius]
-        motor_msg.motor_stator_temp = ees_motor.motor_stator_temp; // [° celsius]
-        motor_msg.battery_charge = ees_motor.battery_charge;
-        motor_msg.battery_voltage = ees_motor.battery_voltage; // [1/100 V]
-        motor_msg.battery_current = ees_motor.battery_current; // [1/10 A]
-        motor_msg.gps_speed = ees_motor.gps_speed;
-        motor_msg.range_miles = ees_motor.range_miles;
-        motor_msg.range_minutes = ees_motor.range_minutes;
-        motor_msg.temperature_sw = ees_motor.temperature_sw; // sembra fissa a 0
-        motor_msg.temperature_rp = ees_motor.temperature_rp; // [° celsius]*/
+        motor_msg.flags0 = llc_motor.flags0;
+        motor_msg.flags1 = llc_motor.flags1;
+        motor_msg.master_state = llc_motor.master_state;
+        motor_msg.master_error_code = llc_motor.master_error_code;
+        motor_msg.motor_voltage = llc_motor.motor_voltage; // [1/100 V]
+        motor_msg.motor_current = llc_motor.motor_current;
+        motor_msg.motor_power = llc_motor.motor_power;
+        motor_msg.motor_speed = llc_motor.motor_speed; // [RPM]
+        motor_msg.motor_pcb_temp = llc_motor.motor_pcb_temp; // [° celsius]
+        motor_msg.motor_stator_temp = llc_motor.motor_stator_temp; // [° celsius]
+        motor_msg.battery_charge = llc_motor.battery_charge;
+        motor_msg.battery_voltage = llc_motor.battery_voltage; // [1/100 V]
+        motor_msg.battery_current = llc_motor.battery_current; // [1/10 A]
+        motor_msg.gps_speed = llc_motor.gps_speed;
+        motor_msg.range_miles = llc_motor.range_miles;
+        motor_msg.range_minutes = llc_motor.range_minutes;
+        motor_msg.temperature_sw = llc_motor.temperature_sw; // sembra fissa a 0
+        motor_msg.temperature_rp = llc_motor.temperature_rp; // [° celsius]*/
     }
 }
 }
 
 #include "class_loader/register_macro.hpp"
 
-CLASS_LOADER_REGISTER_CLASS(ulisse::ees::ThreadReceiver, rclcpp::Node)
+CLASS_LOADER_REGISTER_CLASS(ulisse::llc::ThreadReceiver, rclcpp::Node)

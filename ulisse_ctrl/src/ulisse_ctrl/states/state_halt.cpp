@@ -15,7 +15,7 @@ namespace states {
     fsm::retval StateHalt::OnEntry()
     {
         std::cout << "- Switched to state HALT -" << std::endl;
-        goalCxt_->currentGoal.pos = statusCxt_->filterData.pos;
+        goalCxt_->currentGoal.pos = statusCxt_->vehiclePos;
         goalCxt_->goalDistance = 0.0;
 
         ctrlCxt_->pidPosition.Reset();

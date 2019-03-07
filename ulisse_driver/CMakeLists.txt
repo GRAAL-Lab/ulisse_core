@@ -33,8 +33,8 @@ include_directories(
 
 set(ulisse_driver_lib_sources
     src/ulisse_driver/CSerialHelper.cc
-    src/ulisse_driver/EESHelper.cc
-    src/ulisse_driver/EESHelperDataStructs.cc
+    src/ulisse_driver/LLCHelper.cc
+    src/ulisse_driver/LLCHelperDataStructs.cc
 )
 
 
@@ -43,18 +43,18 @@ add_library(ulisse_driver_lib SHARED ${ulisse_driver_lib_sources})
 ament_target_dependencies(ulisse_driver_lib rclcpp std_msgs ulisse_msgs)
 target_link_libraries(ulisse_driver_lib Geographic rml ctrl_toolbox)
 
-add_library(ees_driver_threads SHARED
+add_library(llc_driver_threads SHARED
             src/ulisse_driver/thread_sender.cpp
             src/ulisse_driver/thread_receiver.cpp)
-target_compile_definitions(ees_driver_threads
+target_compile_definitions(llc_driver_threads
   PRIVATE "MINIMAL_COMPOSITION_DLL")
-ament_target_dependencies(ees_driver_threads rclcpp std_msgs class_loader)
-target_link_libraries(ees_driver_threads ulisse_driver_lib)
+ament_target_dependencies(llc_driver_threads rclcpp std_msgs class_loader)
+target_link_libraries(llc_driver_threads ulisse_driver_lib)
 
 ## Executables
-add_executable(ees_driver_node src/ees_driver_node.cpp)
-ament_target_dependencies(ees_driver_node rclcpp std_msgs ulisse_msgs rml)
-target_link_libraries(ees_driver_node rml ulisse_driver_lib ees_driver_threads)
+add_executable(llc_driver_node src/llc_driver_node.cpp)
+ament_target_dependencies(llc_driver_node rclcpp std_msgs ulisse_msgs rml)
+target_link_libraries(llc_driver_node rml ulisse_driver_lib llc_driver_threads)
 
 add_executable(gps_setup_node src/gps_setup_node.cpp)
 ament_target_dependencies(gps_setup_node rclcpp std_msgs ulisse_msgs rml)
@@ -66,7 +66,7 @@ target_link_libraries(gps_publisher_node ulisse_driver_lib gps)
 
 add_executable(driver_console_node src/driver_console_node.cpp)
 ament_target_dependencies(driver_console_node rclcpp std_msgs ulisse_msgs rml)
-target_link_libraries(driver_console_node rml ulisse_driver_lib ees_driver_threads)
+target_link_libraries(driver_console_node rml ulisse_driver_lib llc_driver_threads)
 
 install(TARGETS
   ulisse_driver_lib
@@ -76,8 +76,8 @@ install(TARGETS
 )
 
 install(TARGETS
-  ees_driver_node
-  ees_driver_threads
+  llc_driver_node
+  llc_driver_threads
   gps_setup_node
   gps_publisher_node
   driver_console_node

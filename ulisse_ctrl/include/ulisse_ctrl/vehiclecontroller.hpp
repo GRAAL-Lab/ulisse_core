@@ -9,7 +9,7 @@
 #include "ulisse_msgs/msg/ambient_sensors.hpp"
 #include "ulisse_msgs/msg/compass.hpp"
 #include "ulisse_msgs/msg/control_context.hpp"
-#include "ulisse_msgs/msg/ees_status.hpp"
+#include "ulisse_msgs/msg/llc_status.hpp"
 #include "ulisse_msgs/msg/goal_context.hpp"
 #include "ulisse_msgs/msg/gps_data.hpp"
 #include "ulisse_msgs/msg/imu_data.hpp"
@@ -40,7 +40,7 @@ class VehicleController {
 
     rclcpp::Subscription<ulisse_msgs::msg::GPSData>::SharedPtr gps_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::Compass>::SharedPtr compass_sub_;
-    rclcpp::Subscription<ulisse_msgs::msg::EESStatus>::SharedPtr ees_status_sub_;
+    rclcpp::Subscription<ulisse_msgs::msg::LLCStatus>::SharedPtr llc_status_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr nav_filter_sub_;
 
     rclcpp::Publisher<ulisse_msgs::msg::StatusContext>::SharedPtr statuscxt_pub_;
@@ -78,7 +78,7 @@ class VehicleController {
     void GPSSensorCB(const ulisse_msgs::msg::GPSData::SharedPtr msg);
     void CompassSensorCB(const ulisse_msgs::msg::Compass::SharedPtr msg);
     void NavFilterCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
-    void EESStatusCB(const ulisse_msgs::msg::EESStatus::SharedPtr msg);
+    void LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg);
 
 public:
     VehicleController(const rclcpp::Node::SharedPtr& nh, double sampleTime);

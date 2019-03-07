@@ -1,26 +1,26 @@
-ees_driver_node:
+llc_driver_node:
     ros__parameters:
         SerialDevice: "/dev/ttyS0"
         BaudRate: 115200
-        EESHelper:
+        LLCHelper:
             DebugBytes: false
             DebugIncomingValidMessageType: false
             DebugFailedCrc: true
 
-ees_thread_receiver:
+llc_thread_receiver:
     ros__parameters:
         SerialDevice: "/dev/ttyS0"
         BaudRate: 115200
-        EESHelper:
+        LLCHelper:
             DebugBytes: false
             DebugIncomingValidMessageType: false
             DebugFailedCrc: true
 
-ees_thread_sender:
+llc_thread_sender:
     ros__parameters:
         SerialDevice: "/dev/ttyS0"
         BaudRate: 115200
-        EESHelper:
+        LLCHelper:
             DebugBytes: false
             DebugIncomingValidMessageType: false
             DebugFailedCrc: true

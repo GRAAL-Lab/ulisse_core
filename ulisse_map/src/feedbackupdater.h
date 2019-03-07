@@ -10,7 +10,7 @@
 #include "rclcpp/rclcpp.hpp"
 
 #include "ulisse_msgs/msg/control_context.hpp"
-#include "ulisse_msgs/msg/ees_battery.hpp"
+#include "ulisse_msgs/msg/llc_battery.hpp"
 #include "ulisse_msgs/msg/goal_context.hpp"
 #include "ulisse_msgs/msg/gps_data.hpp"
 #include "ulisse_msgs/msg/status_context.hpp"
@@ -59,15 +59,15 @@ class FeedbackUpdater : public QObject {
     rclcpp::Subscription<ulisse_msgs::msg::GoalContext>::SharedPtr goal_cxt_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::ControlContext>::SharedPtr control_cxt_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::GPSData>::SharedPtr gps_data_sub_;
-    rclcpp::Subscription<ulisse_msgs::msg::EESBattery>::SharedPtr battery_left_sub_;
-    rclcpp::Subscription<ulisse_msgs::msg::EESBattery>::SharedPtr battery_right_sub_;
+    rclcpp::Subscription<ulisse_msgs::msg::LLCBattery>::SharedPtr battery_left_sub_;
+    rclcpp::Subscription<ulisse_msgs::msg::LLCBattery>::SharedPtr battery_right_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::ThrustersData>::SharedPtr thruster_data_sub_;
 
     ulisse_msgs::msg::StatusContext status_cxt_msg_;
     ulisse_msgs::msg::GoalContext goal_cxt_msg_;
     ulisse_msgs::msg::ControlContext control_cxt_msg_;
     ulisse_msgs::msg::GPSData gps_data_msg_;
-    ulisse_msgs::msg::EESBattery ees_batt_left_msg_, ees_batt_right_msg_;
+    ulisse_msgs::msg::LLCBattery llc_batt_left_msg_, llc_batt_right_msg_;
 
     QVector<double> GenerateRandFloatVector(int size);
 
@@ -79,8 +79,8 @@ public:
     void SetNodeHandle(const rclcpp::Node::SharedPtr& np);
 
     void GPSDataCB(const ulisse_msgs::msg::GPSData::SharedPtr msg);
-    void EESBatteryLeftCB(const ulisse_msgs::msg::EESBattery::SharedPtr msg);
-    void EESBatteryRightCB(const ulisse_msgs::msg::EESBattery::SharedPtr msg);
+    void LLCBatteryLeftCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg);
+    void LLCBatteryRightCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg);
     void ThrusterDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg);
     void GoalContextCB(const ulisse_msgs::msg::GoalContext::SharedPtr msg);
     void ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg);

@@ -221,19 +221,19 @@ void VehicleController::GPSSensorCB(const ulisse_msgs::msg::GPSData::SharedPtr m
 
 void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)
 {
-    statusCxt_->filterData.pos.latitude = msg->latitude;
-    statusCxt_->filterData.pos.longitude = msg->longitude;
+    statusCxt_->vehiclePos.latitude = msg->latitude;
+    statusCxt_->vehiclePos.longitude = msg->longitude;
 }
 
 void VehicleController::CompassSensorCB(const ulisse_msgs::msg::Compass::SharedPtr msg)
 {
-    statusCxt_->currentHeading = msg->yaw;
+    statusCxt_->vehicleHeading = msg->yaw;
     // std::cout << "Current yaw: " << posCxt_->currentHeading << std::endl;
 }
 
-void VehicleController::EESStatusCB(const ulisse_msgs::msg::EESStatus::SharedPtr msg)
+void VehicleController::LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg)
 {
-    statusCxt_->eesStatus = msg->status;
+    statusCxt_->llcStatus = msg->status;
 }
 
 void VehicleController::Run()
@@ -249,9 +249,9 @@ void VehicleController::Run()
 void VehicleController::PublishControl()
 {
     ulisse_msgs::msg::StatusContext statuscxt_msg;
-    statuscxt_msg.vehicle_pos.latitude = statusCxt_->filterData.pos.latitude;
-    statuscxt_msg.vehicle_pos.longitude = statusCxt_->filterData.pos.longitude;
-    statuscxt_msg.vehicle_heading = statusCxt_->currentHeading;
+    statuscxt_msg.vehicle_pos.latitude = statusCxt_->vehiclePos.latitude;
+    statuscxt_msg.vehicle_pos.longitude = statusCxt_->vehiclePos.longitude;
+    statuscxt_msg.vehicle_heading = statusCxt_->vehicleHeading;
     statuscxt_msg.vehicle_speed = statusCxt_->gpsSpeed;
     statuscxt_msg.vehicle_track = statusCxt_->gpsTrack;
     statuscxt_msg.vehicle_state = u_fsm_.GetCurrentStateName();

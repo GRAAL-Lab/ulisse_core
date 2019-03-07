@@ -1,12 +1,12 @@
 /*
- * EESHelperDefines.h
+ * LLCHelperDefines.h
  *
  *  Created on: Jun 16, 2016
  *      Author: wonder
  */
 
-#ifndef SRC_COMM_EESHELPERDEFINES_H_
-#define SRC_COMM_EESHELPERDEFINES_H_
+#ifndef SRC_COMM_LLCHELPERDEFINES_H_
+#define SRC_COMM_LLCHELPERDEFINES_H_
 
 
 //TODO esprimere in altri modi piu' moderni?
@@ -67,4 +67,4 @@
 #define EMB_RV_ACK                  (0)
 
 
-#endif /* SRC_COMM_EESHELPERDEFINES_H_ */
+#endif /* SRC_COMM_LLCHELPERDEFINES_H_ */

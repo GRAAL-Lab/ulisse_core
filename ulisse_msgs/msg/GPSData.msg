@@ -13,7 +13,7 @@ float64 err_time       # Expected time uncertainty */
 float64 err_latitude   # Latitude position uncertainty, meters */
 float64 err_longitude  # Longitude position uncertainty, meters */
 float64 err_altitude   # Vertical position uncertainty, meters */
-float64 err_track      # Track uncertainty, degrees */
+float64 err_track      # Track uncertainty, degrllc */
 float64 err_speed      # Speed uncertainty, meters/sec */
 float64 err_climb      # Vertical speed uncertainty */
 

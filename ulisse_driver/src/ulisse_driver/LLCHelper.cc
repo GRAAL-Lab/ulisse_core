@@ -1,22 +1,22 @@
 /*
- * EESHelper.cc
+ * LLCHelper.cc
  *
  *  Created on: Jun 16, 2016
  *      Author: wonder
  */
 
-#include "ulisse_driver/EESHelper.h"
+#include "ulisse_driver/LLCHelper.h"
 #include <iostream>
 
 namespace ulisse {
 
-namespace ees {
+namespace llc {
 
-    EESHelper::EESHelper()
+    LLCHelper::LLCHelper()
     {
         serial_ = NULL;
 
-        EESData tmp;
+        LLCData tmp;
 
         maxPayloadSize_ = tmp.GetMaxSize() + 8; // max data + 0a0b + size + type + crc
 
@@ -30,13 +30,13 @@ namespace ees {
         Init();
     }
 
-    EESHelper::~EESHelper()
+    LLCHelper::~LLCHelper()
     {
         delete[] outgoingPacketBuffer_;
         delete[] incomingPacketBuffer_;
     }
 
-    RetVal EESHelper::SetSerial(std::string serialDevice, int baudRate)
+    RetVal LLCHelper::SetSerial(std::string serialDevice, int baudRate)
     {
         serial_ = CSerialHelper::getInstance(serialDevice.c_str(), baudRate);
 
@@ -48,7 +48,7 @@ namespace ees {
         }
     }
 
-    RetVal EESHelper::CollectValidMessage(EESData& data)
+    RetVal LLCHelper::CollectValidMessage(LLCData& data)
     {
         //TODO portare fuori i vari GetAck e soci per evitare il passaggio inutile dalla union
         if (serial_->IsOpen()) {
@@ -127,27 +127,27 @@ namespace ees {
                             return RetVal::ok;
                         };
                         default:
-                            printf("EESHelper::CollectValidMessage, unsupported message id %hu", (uint16_t)messageId);
+                            printf("LLCHelper::CollectValidMessage, unsupported message id %hu", (uint16_t)messageId);
                             break;
                         }
                     }
                 } else {
-                    printf("EESHelper::CollectValidMessage, serial->ReadBlocking returned %d", ret);
+                    printf("LLCHelper::CollectValidMessage, serial->ReadBlocking returned %d", ret);
                 }
             }
         } else {
-            printf("EESHelper::CollectValidMessage, Invalid or closed channel");
+            printf("LLCHelper::CollectValidMessage, Invalid or closed channel");
             return RetVal::fail;
         }
     }
 
-    RetVal EESHelper::SendMessage(EESData& data)
+    RetVal LLCHelper::SendMessage(LLCData& data)
     {
 
         if (serial_->IsOpen()) {
             uint16_t size = 0;
 
-            RetVal ret = CreateEESMessage(outgoingPacketBuffer_, size, data);
+            RetVal ret = CreateLLCMessage(outgoingPacketBuffer_, size, data);
 
             if (ret == RetVal::ok) {
 
@@ -164,13 +164,13 @@ namespace ees {
             }
 
         } else {
-            printf("EESHelper::SendMessage, Invalid or closed channel\n");
+            printf("LLCHelper::SendMessage, Invalid or closed channel\n");
             return RetVal::fail;
         }
         return RetVal::ok;
     }
 
-    void EESHelper::DebugBytes(bool enable)
+    void LLCHelper::DebugBytes(bool enable)
     {
         debugBytes_ = enable;
 
@@ -178,7 +178,7 @@ namespace ees {
             fprintf(stderr, "Debug Bytes Activated\n");
     }
 
-    void EESHelper::DebugIncomingValidMessageType(bool enable)
+    void LLCHelper::DebugIncomingValidMessageType(bool enable)
     {
         debugIncomingValidMessageType_ = enable;
 
@@ -186,7 +186,7 @@ namespace ees {
             fprintf(stderr, "Debug Incoming Valid Message Type Activated\n");
     }
 
-    void EESHelper::DebugFailedCrc(bool enable)
+    void LLCHelper::DebugFailedCrc(bool enable)
     {
         debugFailedCrc_ = enable;
 
@@ -194,7 +194,7 @@ namespace ees {
             fprintf(stderr, "Debug Failed CRC Activated\n");
     }
 
-    void EESHelper::Init()
+    void LLCHelper::Init()
     {
         state_ = ParseState::header;
         headerCount_ = 0;
@@ -203,7 +203,7 @@ namespace ees {
         errorCount_ = 0;
     }
 
-    RetVal EESHelper::ParseByte(uint8_t byte)
+    RetVal LLCHelper::ParseByte(uint8_t byte)
     {
         uint8_t* payload_ptr;
 
@@ -240,7 +240,7 @@ namespace ees {
                 headerCount_++;
 
                 if (payloadSize_ > maxPayloadSize_) {
-                    printf("EESHelper, Payload size too big (%u > %u)", payloadSize_, maxPayloadSize_);
+                    printf("LLCHelper, Payload size too big (%u > %u)", payloadSize_, maxPayloadSize_);
 
                     state_ = ParseState::header;
                     headerCount_ = 0;
@@ -316,7 +316,7 @@ namespace ees {
 
                     return RetVal::complete;
                 } else {
-                    printf("EESHelper, ERROR: message %u size %u CHECKSUM FAIL, received %u computed %u sum %u", type_, size_, recvChecksum_,
+                    printf("LLCHelper, ERROR: message %u size %u CHECKSUM FAIL, received %u computed %u sum %u", type_, size_, recvChecksum_,
                         ComputeByteSum(ptr, size_), ComputeByteSum(ptr, size_) + recvChecksum_);
 
                     if (debugFailedCrc_) {
@@ -349,12 +349,12 @@ namespace ees {
         return RetVal::nodata;
     }
 
-    MessageType EESHelper::GetLastMessage()
+    MessageType LLCHelper::GetLastMessage()
     {
         return lastReceived_;
     }
 
-    RetVal EESHelper::CreateEESMessage(uint8_t*, uint16_t& size, EESData& data)
+    RetVal LLCHelper::CreateLLCMessage(uint8_t*, uint16_t& size, LLCData& data)
     {
         switch (data.messageType) {
         case MessageType::reference:
@@ -391,13 +391,13 @@ namespace ees {
             CreatePwrButtons(outgoingPacketBuffer_, size, data.pwrButtons);
             break;
         default:
-            printf("EESHelper::CreateEESMessage, type unknown (%hu)", (uint16_t)data.messageType);
+            printf("LLCHelper::CreateLLCMessage, type unknown (%hu)", (uint16_t)data.messageType);
             return RetVal::fail;
         }
         return RetVal::ok;
     }
 
-    void EESHelper::CreateReferences(uint8_t* packetPointer, uint16_t& size, referencesData& references)
+    void LLCHelper::CreateReferences(uint8_t* packetPointer, uint16_t& size, referencesData& references)
     {
         uint16_t offset = 0;
 
@@ -413,7 +413,7 @@ namespace ees {
         return FinalizePacket(packetPointer, offset, size);
     }
 
-    void EESHelper::CreateSetConfig(uint8_t* packetPointer, uint16_t& size, LowLevelConfiguration& config)
+    void LLCHelper::CreateSetConfig(uint8_t* packetPointer, uint16_t& size, LowLevelConfiguration& config)
     {
         uint16_t offset = 0;
 
@@ -448,7 +448,7 @@ namespace ees {
         return FinalizePacket(packetPointer, offset, size);
     }
 
-    void EESHelper::CreateBeep(uint8_t* packetPointer, uint16_t& size, beepData& beep)
+    void LLCHelper::CreateBeep(uint8_t* packetPointer, uint16_t& size, beepData& beep)
     {
         uint16_t offset = 0;
 
@@ -463,7 +463,7 @@ namespace ees {
         return FinalizePacket(packetPointer, offset, size);
     }
 
-    void EESHelper::CreateGetVersion(uint8_t* packetPointer, uint16_t& size)
+    void LLCHelper::CreateGetVersion(uint8_t* packetPointer, uint16_t& size)
     {
         uint16_t offset = 0;
 
@@ -475,7 +475,7 @@ namespace ees {
         return FinalizePacket(packetPointer, offset, size);
     }
 
-    void EESHelper::CreateEnableReferences(uint8_t* packetPointer, uint16_t& size, enableRefData& enable)
+    void LLCHelper::CreateEnableReferences(uint8_t* packetPointer, uint16_t& size, enableRefData& enable)
     {
         uint16_t offset = 0;
 
@@ -488,7 +488,7 @@ namespace ees {
         return FinalizePacket(packetPointer, offset, size);
     }
 
-    void EESHelper::CreateStartCompassCalibration(uint8_t* packetPointer, uint16_t& size)
+    void LLCHelper::CreateStartCompassCalibration(uint8_t* packetPointer, uint16_t& size)
     {
         uint16_t offset = 0;
 
@@ -500,7 +500,7 @@ namespace ees {
         return FinalizePacket(packetPointer, offset, size);
     }
 
-    void EESHelper::CreateStopCompassCalibration(uint8_t* packetPointer, uint16_t& size)
+    void LLCHelper::CreateStopCompassCalibration(uint8_t* packetPointer, uint16_t& size)
     {
         uint16_t offset = 0;
 
@@ -512,7 +512,7 @@ namespace ees {
         return FinalizePacket(packetPointer, offset, size);
     }
 
-    void EESHelper::CreateReset(uint8_t* packetPointer, uint16_t& size)
+    void LLCHelper::CreateReset(uint8_t* packetPointer, uint16_t& size)
     {
         uint16_t offset = 0;
 
@@ -524,7 +524,7 @@ namespace ees {
         return FinalizePacket(packetPointer, offset, size);
     }
 
-    void EESHelper::CreateGetConfig(uint8_t* packetPointer, uint16_t& size)
+    void LLCHelper::CreateGetConfig(uint8_t* packetPointer, uint16_t& size)
     {
         uint16_t offset = 0;
 
@@ -536,7 +536,7 @@ namespace ees {
         return FinalizePacket(packetPointer, offset, size);
     }
 
-    void EESHelper::CreatePumps(uint8_t* packetPointer, uint16_t& size, pumpsData& pumps)
+    void LLCHelper::CreatePumps(uint8_t* packetPointer, uint16_t& size, pumpsData& pumps)
     {
         uint16_t offset = 0;
 
@@ -550,7 +550,7 @@ namespace ees {
         return FinalizePacket(packetPointer, offset, size);
     }
 
-    void EESHelper::CreatePwrButtons(uint8_t* packetPointer, uint16_t& size, pwrButtonsData& pwrButtons)
+    void LLCHelper::CreatePwrButtons(uint8_t* packetPointer, uint16_t& size, pwrButtonsData& pwrButtons)
     {
         uint16_t offset = 0;
 
@@ -563,7 +563,7 @@ namespace ees {
         return FinalizePacket(packetPointer, offset, size);
     }
 
-    void EESHelper::GetAck(ackData& ack)
+    void LLCHelper::GetAck(ackData& ack)
     {
         uint8_t* packetPointer = &incomingPacketBuffer_[0];
         uint16_t offset = 4;
@@ -572,7 +572,7 @@ namespace ees {
         offset = PacketExtract_uint8(packetPointer, offset, &ack.ack);
     }
 
-    void EESHelper::GetStatus(statusData& status)
+    void LLCHelper::GetStatus(statusData& status)
     {
         uint8_t* packetPointer = &incomingPacketBuffer_[0];
         uint16_t offset = 4;
@@ -593,7 +593,7 @@ namespace ees {
         offset = PacketExtract_uint16(packetPointer, offset, &status.overflowCount485);
     }
 
-    void EESHelper::GetSensors(sensorData& sensors)
+    void LLCHelper::GetSensors(sensorData& sensors)
     {
         uint8_t* packetPointer = &incomingPacketBuffer_[0];
         uint16_t offset = 4;
@@ -621,7 +621,7 @@ namespace ees {
     }
 
     /**               |
-* Vehicle frame   | EES Sensor frame
+* Vehicle frame   | LLC Sensor frame
 *                 |
 *        ^ x      |  y ^
 *        |        |    |
@@ -630,7 +630,7 @@ namespace ees {
 *                 |
 */
 
-    void EESHelper::ConvertSensors(sensorData& sensors)
+    void LLCHelper::ConvertSensors(sensorData& sensors)
     {
         float32_t tmp;
 
@@ -661,7 +661,7 @@ namespace ees {
             sensors.compassHeading -= 2 * M_PI;
     }
 
-    void EESHelper::GetVersion(versionData& version)
+    void LLCHelper::GetVersion(versionData& version)
     {
         uint8_t* packetPointer = &incomingPacketBuffer_[0];
         uint16_t offset = 4;
@@ -672,7 +672,7 @@ namespace ees {
         offset = PacketExtract_uint16(packetPointer, offset, &version.rsatVersion);
     }
 
-    void EESHelper::GetConfig(LowLevelConfiguration& config)
+    void LLCHelper::GetConfig(LowLevelConfiguration& config)
     {
         uint8_t* packetPointer = &incomingPacketBuffer_[0];
         uint16_t offset = 4;
@@ -702,7 +702,7 @@ namespace ees {
         offset = PacketExtract_uint16(packetPointer, offset, &config.thrusterSaturation);
     }
 
-    void EESHelper::GetMotors(motorsData& motors)
+    void LLCHelper::GetMotors(motorsData& motors)
     {
         uint8_t* packetPointer = &incomingPacketBuffer_[0];
         uint16_t offset = 4;
@@ -750,7 +750,7 @@ namespace ees {
         offset = PacketExtract_uint8(packetPointer, offset, &motors.right.temperature_rp);
     }
 
-    void EESHelper::GetBattery(batteryData& battery)
+    void LLCHelper::GetBattery(batteryData& battery)
     {
         uint8_t* packetPointer = &incomingPacketBuffer_[0];
         uint16_t offset = 4;
@@ -772,7 +772,7 @@ namespace ees {
         }
     }
 
-    void EESHelper::GetSw485Status(sw485StatusData& sw485Status)
+    void LLCHelper::GetSw485Status(sw485StatusData& sw485Status)
     {
         uint8_t* packetPointer = &incomingPacketBuffer_[0];
         uint16_t offset = 4;
@@ -790,7 +790,7 @@ namespace ees {
         offset = PacketExtract_uint64(packetPointer, offset, &sw485Status.rightSatellite.sent);
     }
 
-    uint16_t EESHelper::ComputeByteSum(const uint8_t* bytes, uint16_t size)
+    uint16_t LLCHelper::ComputeByteSum(const uint8_t* bytes, uint16_t size)
     {
         int32_t remainder;
         uint16_t word;
@@ -822,7 +822,7 @@ namespace ees {
         return sum;
     }
 
-    uint16_t EESHelper::CalculateChecksum(const uint8_t* bytes, uint16_t size)
+    uint16_t LLCHelper::CalculateChecksum(const uint8_t* bytes, uint16_t size)
     {
         uint16_t checksum = ComputeByteSum(bytes, size);
 
@@ -831,7 +831,7 @@ namespace ees {
         return checksum;
     }
 
-    uint16_t EESHelper::CheckChecksum(const uint8_t* bytes, uint16_t size, uint16_t checksum)
+    uint16_t LLCHelper::CheckChecksum(const uint8_t* bytes, uint16_t size, uint16_t checksum)
     {
         uint16_t sum = ComputeByteSum(bytes, size);
 
@@ -844,189 +844,189 @@ namespace ees {
         }
     }
 
-    uint16_t EESHelper::PacketAdd_char(uint8_t* buffer, uint16_t offset, char value)
+    uint16_t LLCHelper::PacketAdd_char(uint8_t* buffer, uint16_t offset, char value)
     {
         memcpy(buffer + offset, &value, sizeof(char));
         offset += sizeof(char);
         return offset;
     }
 
-    uint16_t EESHelper::PacketAdd_int8(uint8_t* buffer, uint16_t offset, int8_t value)
+    uint16_t LLCHelper::PacketAdd_int8(uint8_t* buffer, uint16_t offset, int8_t value)
     {
         memcpy(buffer + offset, &value, sizeof(int8_t));
         offset += sizeof(int8_t);
         return offset;
     }
 
-    uint16_t EESHelper::PacketAdd_int16(uint8_t* buffer, uint16_t offset, int16_t value)
+    uint16_t LLCHelper::PacketAdd_int16(uint8_t* buffer, uint16_t offset, int16_t value)
     {
         memcpy(buffer + offset, &value, sizeof(int16_t));
         offset += sizeof(int16_t);
         return offset;
     }
 
-    uint16_t EESHelper::PacketAdd_int32(uint8_t* buffer, uint16_t offset, int32_t value)
+    uint16_t LLCHelper::PacketAdd_int32(uint8_t* buffer, uint16_t offset, int32_t value)
     {
         memcpy(buffer + offset, &value, sizeof(int32_t));
         offset += sizeof(int32_t);
         return offset;
     }
 
-    uint16_t EESHelper::PacketAdd_int64(uint8_t* buffer, uint16_t offset, int64_t value)
+    uint16_t LLCHelper::PacketAdd_int64(uint8_t* buffer, uint16_t offset, int64_t value)
     {
         memcpy(buffer + offset, &value, sizeof(int64_t));
         offset += sizeof(int64_t);
         return offset;
     }
 
-    uint16_t EESHelper::PacketAdd_uint8(uint8_t* buffer, uint16_t offset, uint8_t value)
+    uint16_t LLCHelper::PacketAdd_uint8(uint8_t* buffer, uint16_t offset, uint8_t value)
     {
         memcpy(buffer + offset, &value, sizeof(uint8_t));
         offset += sizeof(uint8_t);
         return offset;
     }
 
-    uint16_t EESHelper::PacketAdd_uint16(uint8_t* buffer, uint16_t offset, uint16_t value)
+    uint16_t LLCHelper::PacketAdd_uint16(uint8_t* buffer, uint16_t offset, uint16_t value)
     {
         memcpy(buffer + offset, &value, sizeof(uint16_t));
         offset += sizeof(uint16_t);
         return offset;
     }
 
-    uint16_t EESHelper::PacketAdd_uint32(uint8_t* buffer, uint16_t offset, uint32_t value)
+    uint16_t LLCHelper::PacketAdd_uint32(uint8_t* buffer, uint16_t offset, uint32_t value)
     {
         memcpy(buffer + offset, &value, sizeof(uint32_t));
         offset += sizeof(uint32_t);
         return offset;
     }
 
-    uint16_t EESHelper::PacketAdd_uint64(uint8_t* buffer, uint16_t offset, uint64_t value)
+    uint16_t LLCHelper::PacketAdd_uint64(uint8_t* buffer, uint16_t offset, uint64_t value)
     {
         memcpy(buffer + offset, &value, sizeof(uint64_t));
         offset += sizeof(uint64_t);
         return offset;
     }
 
-    uint16_t EESHelper::PacketAdd_float32(uint8_t* buffer, uint16_t offset, float32_t value)
+    uint16_t LLCHelper::PacketAdd_float32(uint8_t* buffer, uint16_t offset, float32_t value)
     {
         memcpy(buffer + offset, &value, sizeof(float32_t));
         offset += sizeof(float32_t);
         return offset;
     }
 
-    uint16_t EESHelper::PacketAdd_float64(uint8_t* buffer, uint16_t offset, float64_t value)
+    uint16_t LLCHelper::PacketAdd_float64(uint8_t* buffer, uint16_t offset, float64_t value)
     {
         memcpy(buffer + offset, &value, sizeof(float64_t));
         offset += sizeof(float64_t);
         return offset;
     }
 
-    uint16_t EESHelper::PacketAdd_charArray(uint8_t* buffer, uint16_t offset, char* value, uint16_t size)
+    uint16_t LLCHelper::PacketAdd_charArray(uint8_t* buffer, uint16_t offset, char* value, uint16_t size)
     {
         memcpy(buffer + offset, value, size);
         offset += size;
         return offset;
     }
 
-    uint16_t EESHelper::PacketAdd_uint16Array(uint8_t* buffer, uint16_t offset, uint16_t* value, uint16_t size)
+    uint16_t LLCHelper::PacketAdd_uint16Array(uint8_t* buffer, uint16_t offset, uint16_t* value, uint16_t size)
     {
         memcpy(buffer + offset, value, size * sizeof(uint16_t));
         offset += size * sizeof(uint16_t);
         return offset;
     }
 
-    uint16_t EESHelper::PacketExtract_char(uint8_t* buffer, uint16_t offset, char* value)
+    uint16_t LLCHelper::PacketExtract_char(uint8_t* buffer, uint16_t offset, char* value)
     {
         memcpy(value, buffer + offset, sizeof(char));
         offset += sizeof(char);
         return offset;
     }
 
-    uint16_t EESHelper::PacketExtract_int8(uint8_t* buffer, uint16_t offset, int8_t* value)
+    uint16_t LLCHelper::PacketExtract_int8(uint8_t* buffer, uint16_t offset, int8_t* value)
     {
         memcpy(value, buffer + offset, sizeof(int8_t));
         offset += sizeof(int8_t);
         return offset;
     }
 
-    uint16_t EESHelper::PacketExtract_int16(uint8_t* buffer, uint16_t offset, int16_t* value)
+    uint16_t LLCHelper::PacketExtract_int16(uint8_t* buffer, uint16_t offset, int16_t* value)
     {
         memcpy(value, buffer + offset, sizeof(int16_t));
         offset += sizeof(int16_t);
         return offset;
     }
 
-    uint16_t EESHelper::PacketExtract_int32(uint8_t* buffer, uint16_t offset, int32_t* value)
+    uint16_t LLCHelper::PacketExtract_int32(uint8_t* buffer, uint16_t offset, int32_t* value)
     {
         memcpy(value, buffer + offset, sizeof(int32_t));
         offset += sizeof(int32_t);
         return offset;
     }
 
-    uint16_t EESHelper::PacketExtract_int64(uint8_t* buffer, uint16_t offset, int64_t* value)
+    uint16_t LLCHelper::PacketExtract_int64(uint8_t* buffer, uint16_t offset, int64_t* value)
     {
         memcpy(value, buffer + offset, sizeof(int64_t));
         offset += sizeof(int64_t);
         return offset;
     }
 
-    uint16_t EESHelper::PacketExtract_uint8(uint8_t* buffer, uint16_t offset, uint8_t* value)
+    uint16_t LLCHelper::PacketExtract_uint8(uint8_t* buffer, uint16_t offset, uint8_t* value)
     {
         memcpy(value, buffer + offset, sizeof(uint8_t));
         offset += sizeof(uint8_t);
         return offset;
     }
 
-    uint16_t EESHelper::PacketExtract_uint16(uint8_t* buffer, uint16_t offset, uint16_t* value)
+    uint16_t LLCHelper::PacketExtract_uint16(uint8_t* buffer, uint16_t offset, uint16_t* value)
     {
         memcpy(value, buffer + offset, sizeof(uint16_t));
         offset += sizeof(uint16_t);
         return offset;
     }
 
-    uint16_t EESHelper::PacketExtract_uint32(uint8_t* buffer, uint16_t offset, uint32_t* value)
+    uint16_t LLCHelper::PacketExtract_uint32(uint8_t* buffer, uint16_t offset, uint32_t* value)
     {
         memcpy(value, buffer + offset, sizeof(uint32_t));
         offset += sizeof(uint32_t);
         return offset;
     }
 
-    uint16_t EESHelper::PacketExtract_uint64(uint8_t* buffer, uint16_t offset, uint64_t* value)
+    uint16_t LLCHelper::PacketExtract_uint64(uint8_t* buffer, uint16_t offset, uint64_t* value)
     {
         memcpy(value, buffer + offset, sizeof(uint64_t));
         offset += sizeof(uint64_t);
         return offset;
     }
 
-    uint16_t EESHelper::PacketExtract_float32(uint8_t* buffer, uint16_t offset, float32_t* value)
+    uint16_t LLCHelper::PacketExtract_float32(uint8_t* buffer, uint16_t offset, float32_t* value)
     {
         memcpy(value, buffer + offset, sizeof(float32_t));
         offset += sizeof(float32_t);
         return offset;
     }
 
-    uint16_t EESHelper::PacketExtract_float64(uint8_t* buffer, uint16_t offset, float64_t* value)
+    uint16_t LLCHelper::PacketExtract_float64(uint8_t* buffer, uint16_t offset, float64_t* value)
     {
         memcpy(value, buffer + offset, sizeof(float64_t));
         offset += sizeof(float64_t);
         return offset;
     }
 
-    uint16_t EESHelper::PacketExtract_charArray(uint8_t* buffer, uint16_t offset, char* value, uint16_t size)
+    uint16_t LLCHelper::PacketExtract_charArray(uint8_t* buffer, uint16_t offset, char* value, uint16_t size)
     {
         memcpy(value, buffer + offset, size);
         offset += size;
         return offset;
     }
 
-    uint16_t EESHelper::PacketExtract_uint16Array(uint8_t* buffer, uint16_t offset, uint16_t* value, uint16_t size)
+    uint16_t LLCHelper::PacketExtract_uint16Array(uint8_t* buffer, uint16_t offset, uint16_t* value, uint16_t size)
     {
         memcpy(value, buffer + offset, size * sizeof(uint16_t));
         offset += size * sizeof(uint16_t);
         return offset;
     }
 
-    void EESHelper::FinalizePacket(uint8_t* packetPointer, uint16_t offset, uint16_t& size)
+    void LLCHelper::FinalizePacket(uint8_t* packetPointer, uint16_t offset, uint16_t& size)
     {
         uint16_t checksum;
 
@@ -1040,6 +1040,6 @@ namespace ees {
         size = offset;
     }
 
-} //namespace ees
+} //namespace llc
 
 } //namespace ulisse

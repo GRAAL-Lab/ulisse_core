@@ -1,5 +1,5 @@
 #include "ulisse_ctrl/states/genericstate.hpp"
-#include "ulisse_driver/EESHelperDefines.h"
+#include "ulisse_driver/LLCHelperDefines.h"
 
 namespace  ulisse {
 
@@ -17,7 +17,7 @@ GenericState::~GenericState()
 
 void GenericState::CheckRadioController() {
 
-    if ((statusCxt_->eesStatus & EMB_STSMASK_PPM_ENABLED) != 0) {
+    if ((statusCxt_->llcStatus & EMB_STSMASK_PPM_ENABLED) != 0) {
         fsm_->EmitEvent(ulisse::events::names::rcenabled, ulisse::events::priority::high);
     }
 }

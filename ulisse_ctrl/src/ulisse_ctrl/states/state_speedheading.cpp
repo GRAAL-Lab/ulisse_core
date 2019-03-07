@@ -42,14 +42,14 @@ fsm::retval StateSpeedHeading::OnEntry()
         headingRef = goalCxt_->goalHeading;
 
         if (conf_->enableSlowDownOnTurns) {
-            double headingError = ctb::HeadingErrorRad(statusCxt_->currentHeading, headingRef);
+            double headingError = ctb::HeadingErrorRad(statusCxt_->vehicleHeading, headingRef);
             goalCxt_->goalSurge = SlowDownWhenTurning(headingError, surgeRef, *conf_);
         }
 
         ctrlCxt_->desiredSurge = goalCxt_->goalSurge;//ctrlCxt_->pidSurge.Compute(, surgeFbk);
-        ctrlCxt_->desiredJog = ctrlCxt_->pidHeading.Compute(goalCxt_->goalHeading, statusCxt_->currentHeading);
+        ctrlCxt_->desiredJog = ctrlCxt_->pidHeading.Compute(goalCxt_->goalHeading, statusCxt_->vehicleHeading);
 
-        std::cout << "Current Heading: " << statusCxt_->currentHeading << std::endl;
+        std::cout << "Current Heading: " << statusCxt_->vehicleHeading << std::endl;
         std::cout << "Current Surge: " << statusCxt_->gpsSpeed << std::endl;
         std::cout << "Goal Heading: " << goalCxt_->goalHeading << std::endl;
         std::cout << "Desired Surge: " << ctrlCxt_->desiredSurge << std::endl;

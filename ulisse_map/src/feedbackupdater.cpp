@@ -75,7 +75,6 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
     // set the depth to the QoS profile
     //custom_qos_profile.depth = 7;
 
-
     status_cxt_sub_ = np_->create_subscription<ulisse_msgs::msg::StatusContext>(
         ulisse_msgs::topicnames::status_context, std::bind(&FeedbackUpdater::StatusContextCB, this, _1), custom_qos_profile);
     goal_cxt_sub_ = np_->create_subscription<ulisse_msgs::msg::GoalContext>(
@@ -86,10 +85,10 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
     gps_data_sub_ = np_->create_subscription<ulisse_msgs::msg::GPSData>(
         ulisse_msgs::topicnames::sensor_gps_data, std::bind(&FeedbackUpdater::GPSDataCB, this, _1), custom_qos_profile);
 
-    battery_left_sub_ = np_->create_subscription<ulisse_msgs::msg::EESBattery>(
-        ulisse_msgs::topicnames::ees_battery_left, std::bind(&FeedbackUpdater::EESBatteryLeftCB, this, _1), custom_qos_profile);
-    battery_right_sub_ = np_->create_subscription<ulisse_msgs::msg::EESBattery>(
-        ulisse_msgs::topicnames::ees_battery_right, std::bind(&FeedbackUpdater::EESBatteryRightCB, this, _1), custom_qos_profile);
+    battery_left_sub_ = np_->create_subscription<ulisse_msgs::msg::LLCBattery>(
+        ulisse_msgs::topicnames::llc_battery_left, std::bind(&FeedbackUpdater::LLCBatteryLeftCB, this, _1), custom_qos_profile);
+    battery_right_sub_ = np_->create_subscription<ulisse_msgs::msg::LLCBattery>(
+        ulisse_msgs::topicnames::llc_battery_right, std::bind(&FeedbackUpdater::LLCBatteryRightCB, this, _1), custom_qos_profile);
 
     thruster_data_sub_ = np_->create_subscription<ulisse_msgs::msg::ThrustersData>(
                 ulisse_msgs::topicnames::thrusters_data, std::bind(&FeedbackUpdater::ThrusterDataCB, this, _1), custom_qos_profile);
@@ -114,11 +113,11 @@ void FeedbackUpdater::GPSDataCB(const ulisse_msgs::msg::GPSData::SharedPtr msg)
     q_gps_pos_.setLongitude(gps_data_msg_.longitude);
 }
 
-void FeedbackUpdater::EESBatteryLeftCB(const ulisse_msgs::msg::EESBattery::SharedPtr msg)
+void FeedbackUpdater::LLCBatteryLeftCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg)
 {
     q_battery_perc_L_ = msg->charge_percent;
 }
-void FeedbackUpdater::EESBatteryRightCB(const ulisse_msgs::msg::EESBattery::SharedPtr msg)
+void FeedbackUpdater::LLCBatteryRightCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg)
 {
     q_battery_perc_R_ = msg->charge_percent;
 }

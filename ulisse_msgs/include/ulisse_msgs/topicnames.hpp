@@ -6,40 +6,35 @@ namespace ulisse_msgs {
 
 namespace topicnames {
 
-    const std::string micro_loop_count = "/ees/time/micro_loop_count";
-    const std::string sensor_gps_data = "/gps/data";
-    const std::string sensor_gps_status = "/gps/status";
-    const std::string sensor_compass = "/ees/sensor/compass";
-    const std::string sensor_imu = "/ees/sensor/imu";
-    const std::string sensor_ambient = "/ees/sensor/ambient";
-    const std::string sensor_magnetometer = "/ees/sensor/magnetometer";
-    const std::string motor_applied_ref = "/ees/vehicle/applied_reference";
-    const std::string ees_status = "/ees/status";
-    const std::string ees_config = "/ees/config";
-    const std::string ees_motors = "/ees/motors";
-    const std::string ees_version = "/ees/version";
-    const std::string ees_ack = "/ees/ack";
-    const std::string ees_battery_left = "/ees/battery_left";
-    const std::string ees_battery_right = "/ees/battery_right";
-    const std::string ees_sw485status = "/ees/sw485status";
+    const std::string micro_loop_count = "/ulisse/llc/time/micro_loop_count";
+    const std::string sensor_gps_data = "/ulisse/gps/data";
+    const std::string sensor_gps_status = "/ulisse/gps/status";
+    const std::string sensor_compass = "/ulisse/llc/sensor/compass";
+    const std::string sensor_imu = "/ulisse/llc/sensor/imu";
+    const std::string sensor_ambient = "/ulisse/llc/sensor/ambient";
+    const std::string sensor_magnetometer = "/ulisse/llc/sensor/magnetometer";
+    const std::string motor_applied_ref = "/ulisse/llc/vehicle/applied_reference";
+    const std::string llc_status = "/ulisse/llc/status";
+    const std::string llc_config = "/ulisse/llc/config";
+    const std::string llc_motors = "/ulisse/llc/motors";
+    const std::string llc_version = "/ulisse/llc/version";
+    const std::string llc_ack = "/ulisse/llc/ack";
+    const std::string llc_battery_left = "/ulisse/llc/battery_left";
+    const std::string llc_battery_right = "/ulisse/llc/battery_right";
+    const std::string llc_sw485status = "/ulisse/llc/sw485status";
 
-    const std::string nav_filter_data = "/nav_filter_data";
+    const std::string nav_filter_data = "/ulisse/nav_filter_data";
 
-    const std::string thrusters_data = "/vehicle/thruster_data";
+    const std::string thrusters_data = "/ulisse/vehicle/thruster_data";
 
-    const std::string motorref = "/motor/ctrlref";
-    //const std::string vehicle_ctrl_state = "/vehicle/ctrl_state";
-    const std::string control_context = "/vehicle/ctrl_context";
-    const std::string status_context = "/vehicle/status_context";
-    const std::string goal_context = "/vehicle/pos_context";
+    const std::string control_context = "/ulisse/vehicle/ctrl_context";
+    const std::string status_context = "/ulisse/vehicle/status_context";
+    const std::string goal_context = "/ulisse/vehicle/pos_context";
 
-    const std::string command_halt = "/command/halt";
-    const std::string command_move = "/command/move";
-
-    const std::string rosbag_service = "/record/record_bag";
-    const std::string ees_cmd_service = "/ees_cmd_service";
-    const std::string control_cmd_service = "/control_cmd_service";
-    const std::string navfilter_cmd_service = "/navfilter_cmd_service";
+    const std::string rosbag_service = "/ulisse/record/record_bag";
+    const std::string llc_cmd_service = "/ulisse/service/llc_cmd";
+    const std::string control_cmd_service = "/ulisse/service/control_cmd";
+    const std::string navfilter_cmd_service = "/ulisse/service/navfilter_cmd";
 }
 }
 

@@ -1,5 +1,5 @@
 /*
- * taskEESConsole.cc
+ * taskLLCConsole.cc
  *
  *  Created on: Jul 6, 2016
  *      Author: wonder
@@ -10,11 +10,11 @@
 #include <stdio.h>
 
 #include "ulisse_msgs/msg/thrusters_data.hpp"
-#include "ulisse_msgs/srv/ees_command.hpp"
+#include "ulisse_msgs/srv/llc_command.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 #include "ulisse_msgs/terminal_utils.hpp"
 
-#include "ulisse_driver/EESHelperDataStructs.h"
+#include "ulisse_driver/LLCHelperDataStructs.h"
 
 using namespace ulisse;
 using namespace std::chrono_literals;
@@ -25,13 +25,13 @@ int main(int argc, char* argv[])
     rclcpp::init(argc, argv);
     auto node = rclcpp::Node::make_shared("driver_console_node");
 
-    auto eesClient = node->create_client<ulisse_msgs::srv::EESCommand>(ulisse_msgs::topicnames::ees_cmd_service);
-    while (!eesClient->wait_for_service(2s)) {
+    auto llcClient = node->create_client<ulisse_msgs::srv::LLCCommand>(ulisse_msgs::topicnames::llc_cmd_service);
+    while (!llcClient->wait_for_service(2s)) {
         if (!rclcpp::ok()) {
             RCLCPP_ERROR(node->get_logger(), "client interrupted while waiting for service to appear.");
             return 1;
         }
-        RCLCPP_INFO(node->get_logger(), "waiting for EES Driver service to appear...");
+        RCLCPP_INFO(node->get_logger(), "waiting for LLC Driver service to appear...");
     }
     auto thruster_data_pub_ = node->create_publisher<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data);
 
@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
         bool repeat(false);
         int repetitions(0), delayMs(1000);
 
-        auto eesRequest = std::make_shared<ulisse_msgs::srv::EESCommand::Request>();
+        auto llcRequest = std::make_shared<ulisse_msgs::srv::LLCCommand::Request>();
 
         std::cout << tc::bluL << "1)  " << tc::none << "Ref send" << std::endl;
         std::cout << tc::bluL << "2)  " << tc::none << "Beep" << std::endl;
@@ -91,41 +91,41 @@ int main(int argc, char* argv[])
             } while (repeat);
         } break;
         case 2: {
-            eesRequest->command_type = static_cast<uint16_t>(ees::CommandType::beep);
+            llcRequest->command_type = static_cast<uint16_t>(llc::CommandType::beep);
             //uint8_t numberOfBeeps;
             //uint8_t loop;
             std::cout << "number of beeps: ";
-            std::cin >> eesRequest->beep_data.numberofbeeps;
+            std::cin >> llcRequest->beep_data.numberofbeeps;
             std::cout << "loop: ";
-            std::cin >> eesRequest->beep_data.loop;
+            std::cin >> llcRequest->beep_data.loop;
             std::cout << "delay: ";
-            std::cin >> eesRequest->beep_data.delay;
+            std::cin >> llcRequest->beep_data.delay;
         } break;
         case 3: {
-            eesRequest->command_type = static_cast<uint16_t>(ees::CommandType::enableref);
+            llcRequest->command_type = static_cast<uint16_t>(llc::CommandType::enableref);
             std::cout << "enable: ";
-            std::cin >> eesRequest->enable_ref_data.enable;
+            std::cin >> llcRequest->enable_ref_data.enable;
         } break;
         case 4: {
-            eesRequest->command_type = static_cast<uint16_t>(ees::CommandType::reloadconfig);
+            llcRequest->command_type = static_cast<uint16_t>(llc::CommandType::reloadconfig);
         } break;
         case 5: {
-            eesRequest->command_type = static_cast<uint16_t>(ees::CommandType::getversion);
+            llcRequest->command_type = static_cast<uint16_t>(llc::CommandType::getversion);
         } break;
         case 6: {
-            eesRequest->command_type = static_cast<uint16_t>(ees::CommandType::startcompasscal);
+            llcRequest->command_type = static_cast<uint16_t>(llc::CommandType::startcompasscal);
         } break;
         case 7: {
-            eesRequest->command_type = static_cast<uint16_t>(ees::CommandType::stopcompasscal);
+            llcRequest->command_type = static_cast<uint16_t>(llc::CommandType::stopcompasscal);
         } break;
         case 8: {
-            eesRequest->command_type = static_cast<uint16_t>(ees::CommandType::reset);
+            llcRequest->command_type = static_cast<uint16_t>(llc::CommandType::reset);
         } break;
         case 9: {
-            eesRequest->command_type = static_cast<uint16_t>(ees::CommandType::getconfig);
+            llcRequest->command_type = static_cast<uint16_t>(llc::CommandType::getconfig);
         } break;
         case 10: {
-            eesRequest->command_type = static_cast<uint16_t>(ees::CommandType::setpumps);
+            llcRequest->command_type = static_cast<uint16_t>(llc::CommandType::setpumps);
             std::cout << "0: stop all\n1: left\n2: right\n3: left+right\n";
             uint8_t flagaction;
             int posizione, azione;
@@ -162,24 +162,24 @@ int main(int argc, char* argv[])
             switch (posizione) {
 
             case 0:
-                eesRequest->pumps_data.pumpsflag[EMB_PUMPS_LEFT_IDX] = 0;
-                eesRequest->pumps_data.pumpsflag[EMB_PUMPS_RIGHT_IDX] = 0;
+                llcRequest->pumps_data.pumpsflag[EMB_PUMPS_LEFT_IDX] = 0;
+                llcRequest->pumps_data.pumpsflag[EMB_PUMPS_RIGHT_IDX] = 0;
                 break;
             case 1:
-                eesRequest->pumps_data.pumpsflag[EMB_PUMPS_LEFT_IDX] = flagaction;
-                eesRequest->pumps_data.pumpsflag[EMB_PUMPS_RIGHT_IDX] = 0;
+                llcRequest->pumps_data.pumpsflag[EMB_PUMPS_LEFT_IDX] = flagaction;
+                llcRequest->pumps_data.pumpsflag[EMB_PUMPS_RIGHT_IDX] = 0;
                 break;
             case 2:
-                eesRequest->pumps_data.pumpsflag[EMB_PUMPS_LEFT_IDX] = 0;
-                eesRequest->pumps_data.pumpsflag[EMB_PUMPS_RIGHT_IDX] = flagaction;
+                llcRequest->pumps_data.pumpsflag[EMB_PUMPS_LEFT_IDX] = 0;
+                llcRequest->pumps_data.pumpsflag[EMB_PUMPS_RIGHT_IDX] = flagaction;
                 break;
             case 3:
-                eesRequest->pumps_data.pumpsflag[EMB_PUMPS_LEFT_IDX] = flagaction;
-                eesRequest->pumps_data.pumpsflag[EMB_PUMPS_RIGHT_IDX] = flagaction;
+                llcRequest->pumps_data.pumpsflag[EMB_PUMPS_LEFT_IDX] = flagaction;
+                llcRequest->pumps_data.pumpsflag[EMB_PUMPS_RIGHT_IDX] = flagaction;
                 break;
             default:
-                eesRequest->pumps_data.pumpsflag[EMB_PUMPS_LEFT_IDX] = 0;
-                eesRequest->pumps_data.pumpsflag[EMB_PUMPS_RIGHT_IDX] = 0;
+                llcRequest->pumps_data.pumpsflag[EMB_PUMPS_LEFT_IDX] = 0;
+                llcRequest->pumps_data.pumpsflag[EMB_PUMPS_RIGHT_IDX] = 0;
                 break;
             }
 
@@ -194,23 +194,23 @@ int main(int argc, char* argv[])
 
         } break;
         case 11: {
-            eesRequest->command_type = static_cast<uint16_t>(ees::CommandType::setpowerbuttons);
+            llcRequest->command_type = static_cast<uint16_t>(llc::CommandType::setpowerbuttons);
             std::cout << "1: left\n2: right\n3: left+right\n";
             int scelta;
             std::cin >> scelta;
 
             switch (scelta) {
             case 1:
-                eesRequest->pwr_buttons_data.pwrbuttonsflag = EMB_PWRBUTTONS_FLAG_LEFT;
+                llcRequest->pwr_buttons_data.pwrbuttonsflag = EMB_PWRBUTTONS_FLAG_LEFT;
                 break;
             case 2:
-                eesRequest->pwr_buttons_data.pwrbuttonsflag = EMB_PWRBUTTONS_FLAG_RIGHT;
+                llcRequest->pwr_buttons_data.pwrbuttonsflag = EMB_PWRBUTTONS_FLAG_RIGHT;
                 break;
             case 3:
-                eesRequest->pwr_buttons_data.pwrbuttonsflag = EMB_PWRBUTTONS_FLAG_LEFT | EMB_PWRBUTTONS_FLAG_RIGHT;
+                llcRequest->pwr_buttons_data.pwrbuttonsflag = EMB_PWRBUTTONS_FLAG_LEFT | EMB_PWRBUTTONS_FLAG_RIGHT;
                 break;
             default:
-                eesRequest->pwr_buttons_data.pwrbuttonsflag = 0;
+                llcRequest->pwr_buttons_data.pwrbuttonsflag = 0;
                 break;
             }
 
@@ -223,13 +223,13 @@ int main(int argc, char* argv[])
         }
 
         if (send) {
-            auto result_future_ees = eesClient->async_send_request(eesRequest);
-            if (rclcpp::spin_until_future_complete(node, result_future_ees) != rclcpp::executor::FutureReturnCode::SUCCESS) {
+            auto result_future_llc = llcClient->async_send_request(llcRequest);
+            if (rclcpp::spin_until_future_complete(node, result_future_llc) != rclcpp::executor::FutureReturnCode::SUCCESS) {
                 RCLCPP_ERROR(node->get_logger(), "service call failed :(");
                 return 1;
             }
-            auto result_ees = result_future_ees.get();
-            RCLCPP_INFO(node->get_logger(), "SendAnswer returned %s", CommandAnswerToString((ees::CommandAnswer)(result_ees->res)).c_str());
+            auto result_llc = result_future_llc.get();
+            RCLCPP_INFO(node->get_logger(), "SendAnswer returned %s", CommandAnswerToString((llc::CommandAnswer)(result_llc->res)).c_str());
         }
     }
 

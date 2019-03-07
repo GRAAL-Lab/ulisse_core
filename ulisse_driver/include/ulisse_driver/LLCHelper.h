@@ -1,30 +1,30 @@
 /*
- * EESHelper.h
+ * LLCHelper.h
  *
  *  Created on: Jun 16, 2016
  *      Author: wonder
  */
 
-#ifndef SRC_COMM_EESHELPER_H_
-#define SRC_COMM_EESHELPER_H_
+#ifndef SRC_COMM_LLCHELPER_H_
+#define SRC_COMM_LLCHELPER_H_
 
 #include <cstdio>
 
 #include "ulisse_driver/CSerialHelper.h"
-#include "ulisse_driver/EESHelperDataStructs.h"
+#include "ulisse_driver/LLCHelperDataStructs.h"
 //#include "Functions.h"
 
 namespace ulisse {
 
-namespace ees {
+namespace llc {
 
-    class EESHelper {
+    class LLCHelper {
     public:
-        EESHelper();
-        ~EESHelper();
+        LLCHelper();
+        ~LLCHelper();
         RetVal SetSerial(std::string serialDevice, int baudRate);
-        RetVal CollectValidMessage(EESData& data);
-        RetVal SendMessage(EESData& data);
+        RetVal CollectValidMessage(LLCData& data);
+        RetVal SendMessage(LLCData& data);
 
         void DebugBytes(bool enable);
         void DebugIncomingValidMessageType(bool enable);
@@ -34,7 +34,7 @@ namespace ees {
         void Init();
         RetVal ParseByte(uint8_t byte);
         MessageType GetLastMessage();
-        RetVal CreateEESMessage(uint8_t*, uint16_t& size, EESData& data);
+        RetVal CreateLLCMessage(uint8_t*, uint16_t& size, LLCData& data);
 
         void CreateReferences(uint8_t* packetPointer, uint16_t& size, referencesData& references);
         void CreateSetConfig(uint8_t* packetPointer, uint16_t& size, LowLevelConfiguration& config);
@@ -114,8 +114,8 @@ namespace ees {
         bool debugFailedCrc_;
     };
 
-} //namespace ees
+} //namespace llc
 
 } //namespace ulisse
 
-#endif /* SRC_COMM_EESHELPER_H_ */
+#endif /* SRC_COMM_LLCHELPER_H_ */

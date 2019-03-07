@@ -47,7 +47,6 @@ include_directories(
 set(ulisse_ctrl_lib_sources
     # Main Classes
     src/ulisse_ctrl/vehiclecontroller.cpp
-    src/ulisse_ctrl/pos_vel_observer.cpp
     # Helpers
     src/ulisse_ctrl/helper_functions.cpp
     # States
@@ -85,9 +84,9 @@ add_executable(dynamic_control_node src/dynamic_control_node.cpp)
 ament_target_dependencies(dynamic_control_node rclcpp std_msgs ulisse_msgs rml)
 target_link_libraries(dynamic_control_node rml ulisse_ctrl_lib)
 
-add_executable(navigation_filter_node src/navigation_filter_node.cpp)
-ament_target_dependencies(navigation_filter_node rclcpp std_msgs ulisse_msgs rml)
-target_link_libraries(navigation_filter_node rml ulisse_ctrl_lib)
+#add_executable(navigation_filter_node src/navigation_filter_node.cpp)
+#ament_target_dependencies(navigation_filter_node rclcpp std_msgs ulisse_msgs rml)
+#target_link_libraries(navigation_filter_node rml ulisse_ctrl_lib)
 
 add_executable(controller_console_node src/controller_console_node.cpp)
 ament_target_dependencies(controller_console_node rclcpp std_msgs ulisse_msgs rml)
@@ -103,7 +102,7 @@ ament_export_include_directories(include)
 install(TARGETS
   kinematic_control_node
   dynamic_control_node
-  navigation_filter_node
+#  navigation_filter_node
   controller_console_node
   monitor_node
   control_test

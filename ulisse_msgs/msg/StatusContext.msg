@@ -3,4 +3,4 @@ float64 vehicle_heading
 float64 vehicle_track
 float64 vehicle_speed
 string vehicle_state
-uint16 ees_status
+uint16 llc_status

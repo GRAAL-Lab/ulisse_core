@@ -100,8 +100,8 @@ struct GpsData {
 	float64_t time;       /* Time of update */
 	GpsFixMode mode;
 	uint64_t flags;
-	float64_t latitude;   /* Latitude in degrees (valid if mode >= 2) */
-	float64_t longitude;  /* Longitude in degrees (valid if mode >= 2) */
+	float64_t latitude;   /* Latitude in degrllc (valid if mode >= 2) */
+	float64_t longitude;  /* Longitude in degrllc (valid if mode >= 2) */
 	float64_t altitude;   /* Altitude in meters (valid if mode == 3) */
 	float64_t track;      /* Course made good (relative to true north) */
 	float64_t speed;      /* Speed over ground, meters/sec */
@@ -112,7 +112,7 @@ struct GpsData {
     float64_t err_latitude;  /* Latitude position uncertainty, meters */
     float64_t err_longitude; /* Longitude position uncertainty, meters */
     float64_t err_altitude;  /* Vertical position uncertainty, meters */
-    float64_t err_track;     /* Track uncertainty, degrees */
+    float64_t err_track;     /* Track uncertainty, degrllc */
     float64_t err_speed;     /* Speed uncertainty, meters/sec */
     float64_t err_climb;     /* Vertical speed uncertainty */
 

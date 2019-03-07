@@ -1,15 +1,15 @@
 /*
- * EESHelperDataStructs.cc
+ * LLCHelperDataStructs.cc
  *
  *  Created on: Jun 22, 2016
  *      Author: wonder
  */
 
-#include "ulisse_driver/EESHelperDataStructs.h"
+#include "ulisse_driver/LLCHelperDataStructs.h"
 
 namespace ulisse {
 
-namespace ees {
+namespace llc {
 
     std::string CommandTypeToString(CommandType type)
     {
@@ -54,7 +54,7 @@ namespace ees {
             name = "reloadconfig";
             break;
         default:
-            name = "Unhandled...please update ulisse::ees::CommandTypeToString method adding command type " + std::to_string(type_uint);
+            name = "Unhandled...please update ulisse::llc::CommandTypeToString method adding command type " + std::to_string(type_uint);
             break;
         }
 
@@ -77,13 +77,13 @@ namespace ees {
             name = "ok";
             break;
         default:
-            name = "Unhandled...please update ulisse::ees::CommandAnswerToString() method adding answer type " + std::to_string(ans_int);
+            name = "Unhandled...please update ulisse::llc::CommandAnswerToString() method adding answer type " + std::to_string(ans_int);
             break;
         }
 
         return name;
     }
 
-} //namespace ees
+} //namespace llc
 
 } //namespace ulisse
