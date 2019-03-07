@@ -1,8 +1,8 @@
 /*
- * taskLLCHelper.cc
+ * gps_publisher_node.cc
  *
- *  Created on: Jun 27, 2016
- *      Author: wonder
+ *  Created on: Nov 01, 2018
+ *      Author: wanderfra
  */
 
 #include "rclcpp/rclcpp.hpp"

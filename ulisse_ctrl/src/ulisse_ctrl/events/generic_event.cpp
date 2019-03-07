@@ -1,8 +1,8 @@
 /*
  * GenericEvent.cc
  *
- *  Created on: Jul 19, 2016
- *      Author: wonder
+ *  Created on: Nov 01, 2018
+ *      Author: wanderfra
  */
 
 #include "ulisse_ctrl/events/generic_event.hpp"

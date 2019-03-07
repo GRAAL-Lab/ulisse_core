@@ -1,12 +1,12 @@
 /*
  * GPSDHelperDataStructs.h
  *
- *  Created on: Jun 21, 2016
- *      Author: wonder
+ *  Created on: Nov 01, 2018
+ *      Author: wanderfra
  */
 
-#ifndef SRC_COMM_GPSDHELPERDATASTRUCTS_H_
-#define SRC_COMM_GPSDHELPERDATASTRUCTS_H_
+#ifndef ULISSE_DRIVER_GPSDHELPERDATASTRUCTS_H_
+#define ULISSE_DRIVER_GPSDHELPERDATASTRUCTS_H_
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -151,4 +151,4 @@ struct GpsData {
 
 } //namespace ulisse
 
-#endif /* SRC_COMM_GPSDHELPERDATASTRUCTS_H_ */
+#endif /* ULISSE_DRIVER_GPSDHELPERDATASTRUCTS_H_ */

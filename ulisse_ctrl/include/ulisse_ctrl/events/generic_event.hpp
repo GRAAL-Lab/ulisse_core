@@ -1,12 +1,12 @@
 /*
  * GenericEvent.h
  *
- *  Created on: Jul 19, 2016
- *      Author: wonder
+ *  Created on: Nov 01, 2018
+ *      Author: wanderfra
  */
 
-#ifndef SRC_CTRL_EVENTS_GENERICEVENT_H_
-#define SRC_CTRL_EVENTS_GENERICEVENT_H_
+#ifndef ULISSE_CTRL_EVENTS_GENERICEVENT_H_
+#define ULISSE_CTRL_EVENTS_GENERICEVENT_H_
 
 #include <fsm/fsm.h>
 #include "ulisse_ctrl/fsm_defines.hpp"
@@ -40,4 +40,4 @@ namespace events {
 
 } // namespace ulisse
 
-#endif /* SRC_CTRL_EVENTS_GENERICEVENT_H_ */
+#endif /* ULISSE_CTRL_EVENTS_GENERICEVENT_H_ */

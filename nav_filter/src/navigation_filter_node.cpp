@@ -9,20 +9,16 @@
 
 #include "ulisse_msgs/msg/compass.hpp"
 #include "ulisse_msgs/msg/control_context.hpp"
-//#include "ulisse_msgs/msg/llc_motors.hpp"
 #include "ulisse_msgs/msg/gps_data.hpp"
-//#include "ulisse_msgs/msg/position_context.hpp"
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
 #include "ulisse_msgs/srv/nav_filter_command.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 
 #include "ulisse_driver/GPSDHelperDataStructs.h"
 
-//#include "ulisse_ctrl/ctrl_data_structs.hpp"
 #include "nav_filter/nav_data_structs.hpp"
 #include "nav_filter/pos_vel_observer.hpp"
 
-//using namespace ulisse;
 using namespace ulisse::nav;
 using namespace std::chrono_literals;
 
@@ -31,16 +27,16 @@ static rclcpp::Node::SharedPtr node = nullptr;
 static std::shared_ptr<rclcpp::SyncParametersClient> par_client;
 static ulisse_msgs::msg::Compass compass;
 static ulisse_msgs::msg::GPSData gpsData;
-//static ulisse_msgs::msg::PositionContext positionData;
-static ulisse_msgs::msg::ControlContext controlData;
+static ulisse_msgs::msg::ControlContext controlCxt;
 static int rate = 10;
 
 void ReloadConfig();
+
 void handle_navfilter_commands(const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<ulisse_msgs::srv::NavFilterCommand::Request> request,
     std::shared_ptr<ulisse_msgs::srv::NavFilterCommand::Response> response);
+
 void controlcontext_cb(const ulisse_msgs::msg::ControlContext::SharedPtr msg);
-//void positioncontext_cb(const ulisse_msgs::msg::PositionContext::SharedPtr msg);
 void compass_cb(const ulisse_msgs::msg::Compass::SharedPtr msg);
 void gpsdata_cb(const ulisse_msgs::msg::GPSData::SharedPtr msg);
 
@@ -69,7 +65,6 @@ int main(int argc, char* argv[])
     auto navfilter_pub = node->create_publisher<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data);
 
     auto ctrlcxt_sub = node->create_subscription<ulisse_msgs::msg::ControlContext>(ulisse_msgs::topicnames::control_context, controlcontext_cb);
-    //auto poscxt_sub = node->create_subscription<ulisse_msgs::msg::PositionContext>(ulisse_msgs::topicnames::position_context, positioncontext_cb);
     auto compass_sub = node->create_subscription<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass, compass_cb);
     auto gpsdata_sub = node->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data, gpsdata_cb);
 
@@ -88,7 +83,7 @@ int main(int argc, char* argv[])
 
                 float64_t speedRef;
 
-                speedRef = controlData.desired_speed;
+                speedRef = controlCxt.desired_speed;
 
                 int zone;
                 bool northp;
@@ -182,13 +177,8 @@ void handle_navfilter_commands(const std::shared_ptr<rmw_request_id_t> request_h
 
 void controlcontext_cb(const ulisse_msgs::msg::ControlContext::SharedPtr msg)
 {
-    controlData = *msg;
+    controlCxt = *msg;
 }
-
-/*void positioncontext_cb(const ulisse_msgs::msg::PositionContext::SharedPtr msg)
-{
-    positionData = *msg;
-}*/
 
 void compass_cb(const ulisse_msgs::msg::Compass::SharedPtr msg)
 {

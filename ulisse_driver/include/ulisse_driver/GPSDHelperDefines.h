@@ -1,12 +1,12 @@
 /*
  * GPSDHelperDefines.h
  *
- *  Created on: Jun 23, 2016
- *      Author: wonder
+ *  Created on: Nov 01, 2018
+ *      Author: wanderfra
  */
 
-#ifndef SRC_TESTS_GPSDHELPERDEFINES_H_
-#define SRC_TESTS_GPSDHELPERDEFINES_H_
+#ifndef ULISSE_DRIVER_GPSDHELPERDEFINES_H_
+#define ULISSE_DRIVER_GPSDHELPERDEFINES_H_
 
 #include <libgpsmm.h>
 
@@ -37,4 +37,4 @@ const int maxChannels = 72;
 
 
 
-#endif /* SRC_TESTS_GPSDHELPERDEFINES_H_ */
+#endif /* ULISSE_DRIVER_GPSDHELPERDEFINES_H_ */

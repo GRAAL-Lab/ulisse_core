@@ -2,7 +2,7 @@
  * taskGPSSetup.cc
  *
  *  Created on: Feb 27, 2017
- *      Author: wonder
+ *      Author: wanderfra
  */
 
 #include <memory>

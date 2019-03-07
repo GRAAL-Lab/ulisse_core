@@ -1,8 +1,8 @@
 /*
  * LLCHelperDataStructs.cc
  *
- *  Created on: Jun 22, 2016
- *      Author: wonder
+ *  Created on: Nov 01, 2018
+ *      Author: wanderfra
  */
 
 #include "ulisse_driver/LLCHelperDataStructs.h"

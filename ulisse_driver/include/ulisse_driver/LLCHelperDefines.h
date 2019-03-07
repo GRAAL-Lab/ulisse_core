@@ -2,11 +2,11 @@
  * LLCHelperDefines.h
  *
  *  Created on: Jun 16, 2016
- *      Author: wonder
+ *      Author: wanderfra
  */
 
-#ifndef SRC_COMM_LLCHELPERDEFINES_H_
-#define SRC_COMM_LLCHELPERDEFINES_H_
+#ifndef ULISSE_DRIVER_LLCHELPERDEFINES_H_
+#define ULISSE_DRIVER_LLCHELPERDEFINES_H_
 
 
 //TODO esprimere in altri modi piu' moderni?
@@ -67,4 +67,4 @@
 #define EMB_RV_ACK                  (0)
 
 
-#endif /* SRC_COMM_LLCHELPERDEFINES_H_ */
+#endif /* ULISSE_DRIVER_LLCHELPERDEFINES_H_ */

@@ -1,12 +1,12 @@
 /*
  * LLCHelper.h
  *
- *  Created on: Jun 16, 2016
- *      Author: wonder
+ *  Created on: Nov 01, 2018
+ *      Author: wanderfra
  */
 
-#ifndef SRC_COMM_LLCHELPER_H_
-#define SRC_COMM_LLCHELPER_H_
+#ifndef ULISSE_DRIVER_LLCHELPER_H_
+#define ULISSE_DRIVER_LLCHELPER_H_
 
 #include <cstdio>
 
@@ -118,4 +118,4 @@ namespace llc {
 
 } //namespace ulisse
 
-#endif /* SRC_COMM_LLCHELPER_H_ */
+#endif /* ULISSE_DRIVER_LLCHELPER_H_ */
