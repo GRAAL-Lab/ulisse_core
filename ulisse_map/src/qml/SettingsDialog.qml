@@ -13,17 +13,20 @@ Dialog {
     standardButtons: Dialog.Ok | Dialog.Cancel
     onAccepted: {
         settings.shTimeout = speedHeadingTimeout.displayText
-        futureMapPlugin = mapTypeBox.displayText
-        settings.theme = styleBox.displayText
 
+        if (mapTypeBox.displayText != futureMapPlugin){
+            futureMapPlugin = mapTypeBox.displayText
+            toast.show("Changes will take effect on restart...", 2000)
+        }
 
         if (mapCacheDirectory.displayText != settings.esriMapCacheDir){
             console.log(("Previous chache dir: %1").arg(settings.esriMapCacheDir))
             settings.esriMapCacheDir = mapCacheDirectory.displayText
             console.log(("Changed cache dir to: %1").arg(settings.esriMapCacheDir))
+            toast.show("Changes will take effect on restart...", 2000)
         }
 
-
+        settings.theme = styleBox.displayText
 
         close()
         stackViewContainer.forceActiveFocus()
@@ -122,7 +125,6 @@ Dialog {
                     } else {
                         cacheDirChanged = false;
                     }
-                    //console.log("cacheDirChanged=%1".arg(cacheDirChanged))
                 }
             }
 

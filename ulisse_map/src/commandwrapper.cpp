@@ -219,9 +219,6 @@ void CommandWrapper::savePathToFile(const QString file)
         filename = filename + ".path";
     }
 
-    // Removing the "file://" prefix
-    //std::string::size_type t1 = 7;
-    //filename = filename.substr(t1, filename.size());
     std::ofstream out(filename);
 
     if (out.is_open()) {
@@ -242,9 +239,6 @@ void CommandWrapper::savePathToFile(const QString file)
 bool CommandWrapper::loadPathFromFile(const QString file)
 {
     std::string filename = file.toStdString();
-    // Removing the "file://" prefix
-    //std::string::size_type t1 = 7;
-    //filename = filename.substr(t1, filename.size());
 
     // Here we check wether the loaded file has the .path extension
     std::string::size_type extensionDotPos = filename.find_last_of(".");

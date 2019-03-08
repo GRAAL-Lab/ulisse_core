@@ -29,11 +29,15 @@ ApplicationWindow {
     Material.accent: mainColor
 
     onClosing: {
+        // This onClosing function is needed since the map
+        // plugin cannot be changed 'live', so we will register
+        // the new setting only when closing the app
         settings.mapPluginType = futureMapPlugin;
     }
 
-    /* Halting catamaran when space is pressed */
+
     Shortcut {
+        // Halting catamaran when space is pressed
         sequence: " "
         onActivated: {
             toast.show("Sent Halt Command")
@@ -76,6 +80,9 @@ ApplicationWindow {
             Layout.fillWidth: true
 
             Loader {
+                // This loader is need to dynamically load the map plugin
+                // only once the settings are loaded (so to be able to
+                // correctly read 'mapPluginType' and 'esriMapCacheDir').
                 id: mapViewLoader
                 sourceComponent: mapViewComponent
                 active: false
@@ -99,6 +106,7 @@ ApplicationWindow {
     }
 
     ToastManager {
+        // The object that makes appear temporary messages on the window
         id: toast
         objectName: "toastManager"
     }
@@ -126,17 +134,12 @@ ApplicationWindow {
         selectFolder: true
 
         onAccepted: {
-
             var path = browseCacheDirDialog.fileUrl.toString();
             // remove prefixed "file://"
             path = path.replace(/^(file:\/{2})/,"");
             // unescape html codes like '%23' for '#'
             var cleanPath = decodeURIComponent(path);
-            console.log(cleanPath)
-
-            console.log("Selected: %1".arg(cleanPath))
             settingsDialog.mapCacheDirText = cleanPath
-
         }
     }
 
