@@ -23,10 +23,14 @@ ApplicationWindow {
     property var mainColor: (settings.theme == "Light" ? Material.Cyan : Material.Red)
     property var mainAccentColor: Material.color(Material.Amber, Material.Shade700)
     property var secondaryAccentColor: Material.color(Material.Green, Material.Shade600)
+    property string futureMapPlugin: ""
 
     Material.theme: settings.theme
     Material.accent: mainColor
 
+    onClosing: {
+        settings.mapPluginType = futureMapPlugin;
+    }
 
     /* Halting catamaran when space is pressed */
     Shortcut {
@@ -39,7 +43,15 @@ ApplicationWindow {
 
     Settings {
         id: settings
+        property int shTimeout: 120
+        property string mapPluginType: "esri"
+        property string esriMapCacheDir: "/home/graal/Documents/map_offline_tiles/esri/"
         property string theme: "Light"
+
+        Component.onCompleted: {
+            futureMapPlugin = mapPluginType
+            mapViewLoader.active = true
+        }
     }
 
     header: CustomHeader {
@@ -63,8 +75,10 @@ ApplicationWindow {
             Layout.fillHeight: true
             Layout.fillWidth: true
 
-            MapView {
-                id: mapView
+            Loader {
+                id: mapViewLoader
+                sourceComponent: mapViewComponent
+                active: false
                 anchors.fill: parent
             }
 
@@ -73,6 +87,14 @@ ApplicationWindow {
                 anchors.fill: parent
                 anchors.margins: 10
             }
+        }
+    }
+
+    Component {
+        id: mapViewComponent
+        MapView {
+            id: mapView
+            anchors.fill: parent
         }
     }
 
@@ -85,7 +107,7 @@ ApplicationWindow {
         id: settingsDialog
         x: Math.round((window.width - width) / 2)
         y: Math.round(window.height / 6)
-        width: Math.round(Math.min(window.width, window.height) / 3 * 2)
+        width: Math.round(Math.min(window.width, window.height) / 4 * 3)
     }
 
     HelpDialog {
@@ -97,15 +119,37 @@ ApplicationWindow {
 
     }
 
+    FileDialog {
+        id: browseCacheDirDialog
+        title: "Please choose a folder"
+        folder: shortcuts.home
+        selectFolder: true
+
+        onAccepted: {
+
+            var path = browseCacheDirDialog.fileUrl.toString();
+            // remove prefixed "file://"
+            path = path.replace(/^(file:\/{2})/,"");
+            // unescape html codes like '%23' for '#'
+            var cleanPath = decodeURIComponent(path);
+            console.log(cleanPath)
+
+            console.log("Selected: %1".arg(cleanPath))
+            settingsDialog.mapCacheDirText = cleanPath
+
+        }
+    }
 
 
 
     /*Text {
-        color: "#2b2b2b"
+        id: loadingText
+        //color: "#2b2b2b"
         z: 10
         anchors.centerIn: parent
         //anchors.fill: parent
-        text: "%1 x %2".arg(window.width).arg(window.height)
+        color: 'white'
+        text: "Loading... (%1 x %2)".arg(window.width).arg(window.height)
         font.family: "Ubuntu Mono"
     }*/
 

@@ -1,5 +1,5 @@
-#ifndef ULISSE_DRIVER_THREAD_RECEIVER_HPP_
-#define ULISSE_DRIVER_THREAD_RECEIVER_HPP_
+#ifndef ULISSE_DRIVER_THREAD_RECEIVER_HPP
+#define ULISSE_DRIVER_THREAD_RECEIVER_HPP
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -28,7 +28,7 @@ namespace llc {
 
     class ThreadReceiver : public rclcpp::Node {
     public:
-        MINIMAL_COMPOSITION_PUBLIC ThreadReceiver();
+        THREADS_COMPOSITION_PUBLIC ThreadReceiver();
 
     private:
         void ReadLoop();
@@ -80,4 +80,4 @@ namespace llc {
 }
 }
 
-#endif // ULISSE_DRIVER_THREAD_RECEIVER_HPP_
+#endif // ULISSE_DRIVER_THREAD_RECEIVER_HPP

@@ -23,7 +23,7 @@ namespace llc {
 
     class ThreadSender : public rclcpp::Node {
     public:
-        MINIMAL_COMPOSITION_PUBLIC ThreadSender();
+        THREADS_COMPOSITION_PUBLIC ThreadSender();
 
     private:
         void SetupCommandServer();

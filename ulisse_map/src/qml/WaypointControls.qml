@@ -4,7 +4,6 @@ import QtQuick.Controls 2.2
 import QtLocation 5.6
 import QtPositioning 5.6
 import QtQuick.Controls.Material 2.1
-import QtQuick.Controls.Styles 1.4
 import QtQuick.Dialogs 1.2
 
 RowLayout {
@@ -14,59 +13,7 @@ RowLayout {
     property alias wpButtonHighlighted: waypointsButton.highlighted
     property bool loopPath: false
 
-    function createPath() {
-        waypointsButton.text = "Send Path"
-        waypointsButton.highlighted = true;
-        mapView.pathCurrentState = pathState.creating;
-    }
 
-    function startPath() {
-        waypointsButton.text = "Pause Path"
-        waypointsButton.Material.accent = mainAccentColor;
-        greenFlag.coordinate = waypointPath.path[waypointPath.pathLength() - 1];
-        mapView.pathCurrentState = pathState.active;
-        markerIcon.opacity = 0.4;
-        cmdWrapper.startPath();
-    }
-
-    function stopPath() {
-        waypointsButton.text = "Resume Path"
-        mapView.pathCurrentState = pathState.stopped;
-        cmdWrapper.stopPath();
-    }
-
-    function resumePath() {
-        waypointsButton.text = "Pause Path"
-        waypointsButton.Material.accent = mainAccentColor;
-        mapView.pathCurrentState = pathState.active;
-        cmdWrapper.resumePath();
-    }
-
-    function interruptPath() {
-        if (mapView.pathCurrentState == pathState.active){
-            stopPath();
-            toast.show("Path Interrupted!", 3000);
-        }
-    }
-
-    function deletePath() {
-        while (waypointPath.pathLength() > 0){
-            map.removeMapItem(mapCircles[waypointPath.pathLength() - 1]);
-            mapCircles[waypointPath.pathLength() - 1].destroy();
-            waypointPath.removeCoordinate(waypointPath.pathLength() - 1);
-        }
-
-        console.log(("Destroyed Path: pathLength = %1").arg(waypointPath.pathLength()))
-        waypointsButton.text = "Create Path";
-        waypointsButton.highlighted = false;
-        waypointsButton.Material.accent = secondaryAccentColor;
-        waypointPath.opacity = 0.0;
-        if (mapView.pathCurrentState != pathState.empty){
-            cmdWrapper.cancelPath();
-            mapView.pathCurrentState = pathState.empty;
-        }
-
-    }
 
     Button {
         id: waypointsButton
@@ -77,13 +24,20 @@ RowLayout {
         onClicked: {
             if(waypointRadius.text !== ''){
                 if (mapView.pathCurrentState === pathState.empty){
-                    wpCommands.createPath();
+                    map.createPath();
+                    waypointsButton.text = "Send Path"
+                    waypointsButton.highlighted = true;
                 } else if (mapView.pathCurrentState === pathState.creating) {
-                    wpCommands.startPath();
+                    map.startPath();
+                    waypointsButton.text = "Pause Path"
+                    waypointsButton.Material.accent = mainAccentColor;
                 } else if (mapView.pathCurrentState === pathState.active) {
-                    wpCommands.stopPath();
+                    waypointsButton.text = "Resume Path"
+                    map.stopPath();
                 } else if (mapView.pathCurrentState === pathState.stopped) {
-                    wpCommands.resumePath();
+                    waypointsButton.text = "Pause Path"
+                    waypointsButton.Material.accent = mainAccentColor;
+                    map.resumePath();
                 }
             } else {
                 acceptRadDialog.open();
@@ -133,7 +87,10 @@ RowLayout {
         ToolTip.visible: hovered
 
         onClicked: {
-            deletePath();
+            map.deletePath();
+            waypointsButton.text = "Create Path";
+            waypointsButton.highlighted = false;
+            waypointsButton.Material.accent = secondaryAccentColor;
         }
     }
 

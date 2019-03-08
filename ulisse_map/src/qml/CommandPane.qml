@@ -4,7 +4,6 @@ import QtQuick.Controls 2.2
 import QtLocation 5.6
 import QtPositioning 5.6
 import QtQuick.Controls.Material 2.1
-import QtQuick.Controls.Styles 1.4
 import QtGraphicalEffects 1.0
 import QtQuick.Dialogs 1.2
 
@@ -169,7 +168,7 @@ Pane {
             Button {
                 id: moveToButton
                 text: "Move To Marker"
-                enabled: markerIcon.opacity > 0 ? true : false
+                enabled: map.markerIconOpacity > 0 ? true : false
 
                 onClicked: {
                     if(moveToRadius.text !== ''){
@@ -181,7 +180,6 @@ Pane {
                         acceptRadDialog.open();
                     }
                 }
-
             }
 
             Rectangle {
@@ -221,6 +219,7 @@ Pane {
         }
 
         Rectangle {
+            id: divider
             property real margin: 8
 
             Layout.preferredHeight: 2
@@ -316,34 +315,45 @@ Pane {
             }
 
         }
+    }
 
-        FileDialog {
-            id: loadPathDialog
-            title: "Please choose a file"
-            folder: shortcuts.home
-            nameFilters: ["Path Files (*.path)"]
+    FileDialog {
+        id: loadPathDialog
+        title: "Please choose a file"
+        folder: shortcuts.home
+        nameFilters: ["Path Files (*.path)"]
 
-            onAccepted: {
-                wpCommands.deletePath();
-                if(cmdWrapper.loadPathFromFile(loadPathDialog.fileUrls)){
-                    mapView.pathCurrentState = pathState.empty;
-                    wpCommands.wpButtonText = "Finalize..."
-                    wpCommands.wpButtonHighlighted = true;
-                    console.log(("Load Path: pathLength = %1").arg(waypointPath.pathLength()))
-                }
+        onAccepted: {
+            map.deletePath();
+            var path = loadPathDialog.fileUrl.toString();
+            // remove prefixed "file://"
+            path = path.replace(/^(file:\/{2})/,"");
+            // unescape html codes like '%23' for '#'
+            var cleanPath = decodeURIComponent(path);
+            // console.log("Loaded file path: %1".arg(cleanPath))
+
+            if(cmdWrapper.loadPathFromFile(cleanPath)){
+                mapView.pathCurrentState = pathState.empty;
+                wpCommands.wpButtonText = "Finalize..."
+                wpCommands.wpButtonHighlighted = true;
             }
         }
+    }
 
-        FileDialog {
-            id: savePathDialog
-            title: "Saving path..."
-            folder: shortcuts.home
-            selectExisting: false
+    FileDialog {
+        id: savePathDialog
+        title: "Saving path..."
+        folder: shortcuts.home
+        selectExisting: false
 
-            onAccepted: {
-                cmdWrapper.savePathToFile(savePathDialog.fileUrls);
-            }
+        onAccepted: {
+            var path = savePathDialog.fileUrl.toString();
+            // remove prefixed "file://"
+            path = path.replace(/^(file:\/{2})/,"");
+            // unescape html codes like '%23' for '#'
+            var cleanPath = decodeURIComponent(path);
+
+            cmdWrapper.savePathToFile(cleanPath);
         }
-
     }
 }

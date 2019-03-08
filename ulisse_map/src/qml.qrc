@@ -32,5 +32,6 @@
         <file>images/restart-256.png</file>
         <file>images/restart-256_grey.png</file>
         <file>qml/WaypointControls.qml</file>
+        <file>qml/MapComponent.qml</file>
     </qresource>
 </RCC>

@@ -50,7 +50,7 @@
 
 import QtQuick 2.6
 import QtQuick.Controls 1.4 as C1
-import QtQuick.Controls.Styles 1.4
+import QtQuick.Controls.Styles 1.4 as C1S
 import QtQuick.Controls 2.2
 import QtQuick.Controls.Material 2.1
 
@@ -87,7 +87,7 @@ Row {
             xScale: rightEdge() ? 1 : -1
         }
 
-        style:  ButtonStyle {
+        style:  C1S.ButtonStyle {
             background: Rectangle {
                 color: "transparent"
             }

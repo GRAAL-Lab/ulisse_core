@@ -4,22 +4,36 @@ import QtQuick.Layouts 1.1
 
 Dialog {
 
+    property alias mapCacheDirText: mapCacheDirectory.text
+
     modal: true
     focus: true
     title: "Settings"
 
     standardButtons: Dialog.Ok | Dialog.Cancel
     onAccepted: {
+        settings.shTimeout = speedHeadingTimeout.displayText
+        futureMapPlugin = mapTypeBox.displayText
         settings.theme = styleBox.displayText
-        console.log(mapChooser.displayText)
-        settings.nextMapProvider = mapChooser.displayText
-        console.log("Saved map: %1").arg(settings.nextMapProvider)
+
+
+        if (mapCacheDirectory.displayText != settings.esriMapCacheDir){
+            console.log(("Previous chache dir: %1").arg(settings.esriMapCacheDir))
+            settings.esriMapCacheDir = mapCacheDirectory.displayText
+            console.log(("Changed cache dir to: %1").arg(settings.esriMapCacheDir))
+        }
+
+
+
         close()
         stackViewContainer.forceActiveFocus()
     }
     onRejected: {
+        speedHeadingTimeout.text = settings.shTimeout
         styleBox.currentIndex = styleBox.styleIndex
-        mapChooser.currentIndex = mapChooser.mapIndex
+        mapTypeBox.currentIndex = mapTypeBox.mapTypeIndex
+        mapCacheDirectory.text = settings.esriMapCacheDir
+
         close()
         stackViewContainer.forceActiveFocus()
     }
@@ -29,6 +43,7 @@ Dialog {
         spacing: 20
 
         RowLayout {
+            id: shtimeoutsetting
             spacing: 10
             width: parent.width
 
@@ -42,7 +57,7 @@ Dialog {
                 Layout.preferredWidth: 45
                 Layout.fillWidth: true
                 font.pointSize: 11
-                text: "120"
+                text: settings.shTimeout
                 placeholderText: "Timeout"
                 selectByMouse: true
 
@@ -53,26 +68,77 @@ Dialog {
             }
         }
 
-        /*RowLayout {
+        RowLayout {
+            id: mapTypesetting
             spacing: 10
 
             Label {
-                text: "Map Provider:"
+                text: "Map Plugin Type:"
             }
             ComboBox {
-                id: mapChooser
-                property int mapIndex: -1
-                model: ["osm", "esri"]
-                Component.onCompleted: {
-                    mapIndex = find(settings.mapProvider, Qt.MatchFixedString)
-                    if (mapIndex !== -1)
-                        currentIndex = mapIndex
-                }
+                id: mapTypeBox
+                property int mapTypeIndex: -1
+                property bool mapTypeSettingChanged: false
                 Layout.fillWidth: true
+                model: ["osm", "esri"]
+
+                Component.onCompleted: {
+                    mapTypeIndex = find(settings.mapPluginType, Qt.MatchFixedString)
+                    if (mapTypeIndex !== -1)
+                        currentIndex = mapTypeIndex
+                }
+
+                onCurrentIndexChanged: {
+                    if (mapTypeIndex !== -1){
+                        mapTypeSettingChanged = (mapTypeIndex !== currentIndex) ? true : false
+                    }
+                }
             }
-        }*/
+        }
 
         RowLayout {
+            id: mapCacheSetting
+            spacing: 10
+            enabled: settings.mapPluginType === "esri" ? true : false
+
+            Label {
+                text: "Map Cache Directory:"
+            }
+
+            TextField {
+                property bool cacheDirChanged: false
+
+                id: mapCacheDirectory
+                Layout.preferredWidth: 45
+                Layout.fillWidth: true
+                font.pointSize: 10
+                text: settings.esriMapCacheDir
+                placeholderText: "Folder path"
+                selectByMouse: true
+
+                onTextChanged: {
+                    if (text != settings.esriMapCacheDir){
+                        cacheDirChanged = true;
+                    } else {
+                        cacheDirChanged = false;
+                    }
+                    //console.log("cacheDirChanged=%1".arg(cacheDirChanged))
+                }
+            }
+
+            Button {
+                id: selectMapCache
+                text: "Browse"
+                font.pointSize: 10
+
+                onClicked: {
+                    browseCacheDirDialog.open()
+                }
+            }
+        }
+
+        RowLayout {
+            id: appStyleSetting
             spacing: 10
 
             Label {
@@ -91,15 +157,17 @@ Dialog {
             }
         }
 
-        /*Label {
-            text: "Restart required"
+        Label {
+            id: restartText
+            text: "Restart required!"
             color: "#e41e25"
-            opacity: mapChooser.currentIndex !== mapChooser.mapIndex ? 1.0 : 0.0
+            opacity: mapCacheDirectory.cacheDirChanged | mapTypeBox.mapTypeSettingChanged ? 1.0 : 0.0
+            font.weight: Font.DemiBold
             horizontalAlignment: Label.AlignHCenter
             verticalAlignment: Label.AlignVCenter
             Layout.fillWidth: true
             Layout.fillHeight: true
-        }*/
+        }
     }
 }
 

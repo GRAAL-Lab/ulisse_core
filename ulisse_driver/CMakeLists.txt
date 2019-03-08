@@ -47,7 +47,7 @@ add_library(llc_driver_threads SHARED
             src/ulisse_driver/thread_sender.cpp
             src/ulisse_driver/thread_receiver.cpp)
 target_compile_definitions(llc_driver_threads
-  PRIVATE "MINIMAL_COMPOSITION_DLL")
+  PRIVATE "THREADS_COMPOSITION_DLL")
 ament_target_dependencies(llc_driver_threads rclcpp std_msgs class_loader)
 target_link_libraries(llc_driver_threads ulisse_driver_lib)
 
