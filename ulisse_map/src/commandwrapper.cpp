@@ -301,31 +301,36 @@ void CommandWrapper::check_error_slot()
 
 bool CommandWrapper::goToNextWaypoint()
 {
+    bool ret = false;
     wpCurrentIndex_++;
+
     if (wpCurrentIndex_ < waypoint_path_.size()) {
-        sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), 0);
-        return true;
+        ret = sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), 0);
     } else {
         if ((loopPathObj_->property("checked")).toBool()) {
-            return startPath();
+            ret = startPath();
         } else {
             myTimer_->stop();
             wpCurrentIndex_ = waypoint_path_.size() - 1;
             sendHoldCommand(wpRadius_);
-            return false;
+            ret = false;
         }
     }
+    std::cout << "[Next] wpCurrentIndex: " << wpCurrentIndex_ << std::endl;
+
+    return ret;
 }
 
 bool CommandWrapper::goToPreviousWaypoint()
 {
+    bool ret = false;
     wpCurrentIndex_--;
-    std::cout << "wpCurrentIndex: " << wpCurrentIndex_ << std::endl;
+
     if (wpCurrentIndex_ >= 0) {
-        sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), 0);
-        return true;
+        ret = sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), 0);
     } else {
         wpCurrentIndex_ = 0;
-        return false;
     }
+    std::cout << "[Prev] wpCurrentIndex: " << wpCurrentIndex_ << std::endl;
+    return ret;
 }

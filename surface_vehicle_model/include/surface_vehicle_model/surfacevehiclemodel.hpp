@@ -91,7 +91,7 @@ public:
     void SetMappingParams(const ThrusterMappingParameters& params);
     void DirectDynamics(double h_p, double h_s, const Eigen::Vector6d& linAngVel_, Eigen::Vector6d& linAngAcc_);
     void ThrusterMapping(const Eigen::Vector6d& linAngVel, double& h_p, double& h_s);
-    void ThrusterDynamicAllocator(const double f_des, const double n_des, double& h_s, double &h_p);
+    //void ThrusterDynamicAllocator(const double f_des, const double n_des, double& h_s, double &h_p);
 };
 
 #endif // SURFACEVEHICLEMODEL_H

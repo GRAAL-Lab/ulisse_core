@@ -51,7 +51,14 @@ colcon build --symlink-install
 
 ### Alongside ROS1
 
-Be sure to start from a clean workspace, with no _log_, _install_ or _build_ folders. First install the needed dependencies, and download the ros_bridge (from the ros official repo https://github.com/ros2/ros1_bridge). Navigate to your ROS1 workspace and build the `ulisse_rosbag_ros1` package (https://bitbucket.org/isme_robotics/ulisse_rosbag_ros1/):
+Be sure to start from a clean workspace, with no _log_, _install_ or _build_ folders. First install the needed dependencies, and clone the ros_bridge in your ROS2 workspace (for more info visit the official repo https://github.com/ros2/ros1_bridge):
+
+
+```
+git clone -b <ros2-version> https://github.com/ros2/ros1_bridge.git
+```
+
+ Navigate to your ROS1 workspace and build the `ulisse_rosbag_ros1` package (https://bitbucket.org/isme_robotics/ulisse_rosbag_ros1/):
 
 ```
 #!bash
@@ -59,19 +66,51 @@ sourceros1
 catkin_make
 ```
 
-Then, navigate to your ROS2 workspace and execute the following commands to build this package:
+Building the ROS 1 bridge can consume a tremendous amount of memory (almost 4 GB of free RAM per thread while compiling) to the point that it can easily overwhelm a computer if done with parallel compilation enabled.
+As such, we recommend first building everything else as usual, then coming back to build the ROS 1 bridge without parallel compilation.
+
+The bridge uses `pkg-config` to find ROS 1 packages.
+ROS 2 packages are found through CMake using `find_package()`.
+Therefore the `CMAKE_PREFIX_PATH` must not contain paths from ROS 1 which would overlay ROS 2 packages.
+
+You should first build everything but the ROS 1 bridge with normal make arguments.
+We don't recommend having your ROS 1 environment sourced during this step as it can add OpenCV 3 to your path.
+The ROS 2 image demos you build in this step would then use OpenCV 3 and require it to be on your path when you run them, while the standard installation on Ubuntu Xenial is OpenCV 2.
 
 ```
-#!bash
-sourceros2
+source /opt/ros/crystal/setup.bash
 colcon build --symlink-install --packages-skip ros1_bridge
+```
+
+Next you need to source the ROS 1 environment, for Linux and ROS Melodic that would be:
+
+```
 source /opt/ros/melodic/setup.bash
-source ~/ros_ws/devel/setup.bash
-source ~/ros2_ws/install/setup.bash 
+```
+
+The bridge will be built with support for any message/service packages that are on your path and have an associated mapping between ROS 1 and ROS 2.
+Therefore you must add any ROS 1 or ROS 2 workspaces that have message/service packages that you want to be bridged to your path before building the bridge.
+This can be done by adding explicit dependencies on the message/service packages to the `package.xml` of the bridge, so that `colcon` will add them to the path before it builds the bridge.
+Alternatively you can do it manually by sourcing the relevant workspaces yourself, e.g.:
+
+```
+# You have already sourced your ROS installation.
+# Source your ROS 2 installation:
+. <install-space-with-ros2>/local_setup.bash
+# And if you have a ROS 1 overlay workspace, something like:
+# . <install-space-to-ros1-overlay-ws>/setup.bash
+# And if you have a ROS 2 overlay workspace, something like:
+# . <install-space-to-ros2-overlay-ws>/local_setup.bash
+```
+
+Then build just the ROS 1 bridge:
+
+```
 colcon build --symlink-install --packages-select ros1_bridge --cmake-force-configure
 ```
 
-*Note*: If you are building on a memory constrained system you might want to limit the number of parallel jobs by setting e.g. the environment variable `MAKEFLAGS=-j2` (more info on https://github.com/ros2/ros1_bridge/).
+*Note:* If you are building on a memory constrained system you might want to limit the number of parallel jobs by setting e.g. the environment variable `MAKEFLAGS=-j1`.
+
 
 ## Usage
 

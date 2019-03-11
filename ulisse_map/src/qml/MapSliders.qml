@@ -146,7 +146,7 @@ Row {
         Material.foreground: Material.color(Material.BlueGrey, Material.Shade600)
 
         property var labelBorderColor: "transparent"
-        property var slidersHeight : sliderContainer.height
+        property real slidersHeight : sliderContainer.height
                                      - rowSliderValues.height
                                      - rowSliderLabels.height
                                      - sliderColumn.spacing * 2

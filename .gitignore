@@ -208,7 +208,8 @@ qtcreator-*
 # Emacs
 .#*
 
-# Catkin custom files
+# ROS custom files
 CATKIN_IGNORE
+COLCON_IGNORE
 
 
