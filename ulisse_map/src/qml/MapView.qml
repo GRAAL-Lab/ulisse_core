@@ -107,7 +107,7 @@ RowLayout {
                     Material.accent: mainColor
                     Layout.leftMargin: 5
                     onClicked: {
-                        map.center = ulisseIcon.coordinate;
+                        map.center = QtPositioning.coordinate(fbkUpdater.ulisse_pos.latitude, fbkUpdater.ulisse_pos.longitude)
                     }
                 }
 
@@ -123,7 +123,7 @@ RowLayout {
                         interval: 250; running: false; repeat: true
 
                         onTriggered: {
-                            map.center = ulisseIcon.coordinate;
+                            map.center = QtPositioning.coordinate(fbkUpdater.ulisse_pos.latitude, fbkUpdater.ulisse_pos.longitude)
                         }
                     }
 
@@ -146,9 +146,9 @@ RowLayout {
 
                     onCheckStateChanged: {
                         if (checked === true){
-                            overlayText.opacity = 1.0;
+                            map.overlayTextOpacity = 1.0;
                         } else {
-                            overlayText.opacity = 0.0;
+                            map.overlayTextOpacity = 0.0;
                         }
                     }
 
@@ -163,8 +163,7 @@ RowLayout {
                     Layout.alignment: Qt.AlignRight
 
                     onClicked: {
-                        ulissePath.path = [];
-                        ulissePath.firstRun = true;
+                        map.clearUlisseTrace()
                     }
                 }
             }

@@ -14,6 +14,12 @@ import "."
 Map {
 
     property real markerIconOpacity: markerIcon.opacity
+    property alias overlayTextOpacity: overlayText.opacity
+
+    function clearUlisseTrace() {
+        ulissePath.path = [];
+        ulissePath.firstRun = true;
+    }
 
     function createPath() {
         mapView.pathCurrentState = pathState.creating;

@@ -56,6 +56,16 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
     q_desired_jog_ = q_desired_surge_ = 0.0;
     q_thrust_ref_left_ = q_thrust_ref_right_ = 0.0;
 
+    missed_deadlines_ = 0;
+    left_motor_received_ = 0;
+    left_motor_sent_ = 0;
+    right_motor_received_ = 0;
+    right_motor_sent_ = 0;
+    left_satellite_received_ = 0;
+    left_satellite_sent_ = 0;
+    right_satellite_received_ = 0;
+    right_satellite_sent_ = 0;
+
     q_gps_pos_ = q_goal_pos_ = q_ulisse_pos_;
     q_gps_time_ = "undefined";
 
@@ -84,14 +94,15 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
 
     gps_data_sub_ = np_->create_subscription<ulisse_msgs::msg::GPSData>(
         ulisse_msgs::topicnames::sensor_gps_data, std::bind(&FeedbackUpdater::GPSDataCB, this, _1), custom_qos_profile);
-
     battery_left_sub_ = np_->create_subscription<ulisse_msgs::msg::LLCBattery>(
         ulisse_msgs::topicnames::llc_battery_left, std::bind(&FeedbackUpdater::LLCBatteryLeftCB, this, _1), custom_qos_profile);
     battery_right_sub_ = np_->create_subscription<ulisse_msgs::msg::LLCBattery>(
         ulisse_msgs::topicnames::llc_battery_right, std::bind(&FeedbackUpdater::LLCBatteryRightCB, this, _1), custom_qos_profile);
-
     thruster_data_sub_ = np_->create_subscription<ulisse_msgs::msg::ThrustersData>(
-                ulisse_msgs::topicnames::thrusters_data, std::bind(&FeedbackUpdater::ThrusterDataCB, this, _1), custom_qos_profile);
+        ulisse_msgs::topicnames::thrusters_data, std::bind(&FeedbackUpdater::ThrusterDataCB, this, _1), custom_qos_profile);
+
+    sw485_status_sub_ = np_->create_subscription<ulisse_msgs::msg::LLCSw485Status>(
+        ulisse_msgs::topicnames::llc_sw485status, std::bind(&FeedbackUpdater::LLCSw485StatusCB, this, _1));
 }
 
 void FeedbackUpdater::SetNodeHandle(const rclcpp::Node::SharedPtr& np)
@@ -126,6 +137,15 @@ void FeedbackUpdater::ThrusterDataCB(const ulisse_msgs::msg::ThrustersData::Shar
 {
     q_thrust_ref_left_ = msg->motor_ctrlref.left;
     q_thrust_ref_right_ = msg->motor_ctrlref.right;
+}
+
+void FeedbackUpdater::LLCSw485StatusCB(const ulisse_msgs::msg::LLCSw485Status::SharedPtr msg)
+{
+    //sw485_status_msg_ = *msg;
+    missed_deadlines_ = msg->missed_deadlines;
+    right_satellite_received_ = msg->right_satellite.received;
+
+    //std::cout << "right motor received: " << right_motor_received_ << std::endl;
 }
 
 void FeedbackUpdater::GoalContextCB(const ulisse_msgs::msg::GoalContext::SharedPtr msg)
@@ -254,6 +274,51 @@ double FeedbackUpdater::get_thrust_ref_left()
 double FeedbackUpdater::get_thrust_ref_right()
 {
     return q_thrust_ref_right_;
+}
+
+int FeedbackUpdater::get_missed_deadlines()
+{
+    return missed_deadlines_;
+}
+
+int FeedbackUpdater::get_left_motor_received()
+{
+    return left_motor_received_;
+}
+
+int FeedbackUpdater::get_left_motor_sent()
+{
+    return left_motor_sent_;
+}
+
+int FeedbackUpdater::get_right_motor_received()
+{
+    return right_motor_received_;
+}
+
+int FeedbackUpdater::get_right_motor_sent()
+{
+    return right_motor_sent_;
+}
+
+int FeedbackUpdater::get_left_satellite_received()
+{
+    return left_satellite_received_;
+}
+
+int FeedbackUpdater::get_left_satellite_sent()
+{
+    return left_satellite_sent_;
+}
+
+int FeedbackUpdater::get_right_satellite_received()
+{
+    return right_satellite_received_;
+}
+
+int FeedbackUpdater::get_right_satellite_sent()
+{
+    return right_satellite_sent_;
 }
 
 void FeedbackUpdater::process_callbacks_slot()

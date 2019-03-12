@@ -10,9 +10,10 @@
 #include "rclcpp/rclcpp.hpp"
 
 #include "ulisse_msgs/msg/control_context.hpp"
-#include "ulisse_msgs/msg/llc_battery.hpp"
 #include "ulisse_msgs/msg/goal_context.hpp"
 #include "ulisse_msgs/msg/gps_data.hpp"
+#include "ulisse_msgs/msg/llc_battery.hpp"
+#include "ulisse_msgs/msg/llc_sw485_status.hpp"
 #include "ulisse_msgs/msg/status_context.hpp"
 
 #include "ulisse_msgs/msg/thrusters_data.hpp"
@@ -43,6 +44,16 @@ class FeedbackUpdater : public QObject {
     Q_PROPERTY(double battery_perc_L READ get_battery_perc_L NOTIFY callbacks_processed)
     Q_PROPERTY(double battery_perc_R READ get_battery_perc_R NOTIFY callbacks_processed)
 
+    Q_PROPERTY(int missed_deadlines485 READ get_missed_deadlines NOTIFY callbacks_processed)
+    Q_PROPERTY(int left_motor_received485 READ get_left_motor_received NOTIFY callbacks_processed)
+    Q_PROPERTY(int left_motor_sent485 READ get_left_motor_sent NOTIFY callbacks_processed)
+    Q_PROPERTY(int right_motor_received485 READ get_right_motor_received NOTIFY callbacks_processed)
+    Q_PROPERTY(int right_motor_sent485 READ get_right_motor_sent NOTIFY callbacks_processed)
+    Q_PROPERTY(int left_satellite_received485 READ get_left_satellite_received NOTIFY callbacks_processed)
+    Q_PROPERTY(int left_satellite_sent485 READ get_left_satellite_sent NOTIFY callbacks_processed)
+    Q_PROPERTY(int right_satellite_received485 READ get_right_satellite_received NOTIFY callbacks_processed)
+    Q_PROPERTY(int right_satellite_sent485 READ get_right_satellite_sent NOTIFY callbacks_processed)
+
     QGeoCoordinate q_ulisse_pos_, q_goal_pos_, q_gps_pos_;
     double q_goal_distance_, q_goal_heading_deg_;
     double q_ulisse_surge_;
@@ -54,6 +65,16 @@ class FeedbackUpdater : public QObject {
     double q_desired_surge_, q_desired_jog_;
     double q_thrust_ref_left_, q_thrust_ref_right_;
 
+    int missed_deadlines_;
+    int left_motor_received_;
+    int left_motor_sent_;
+    int right_motor_received_;
+    int right_motor_sent_;
+    int left_satellite_received_;
+    int left_satellite_sent_;
+    int right_satellite_received_;
+    int right_satellite_sent_;
+
     rclcpp::Node::SharedPtr np_;
     rclcpp::Subscription<ulisse_msgs::msg::StatusContext>::SharedPtr status_cxt_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::GoalContext>::SharedPtr goal_cxt_sub_;
@@ -62,12 +83,14 @@ class FeedbackUpdater : public QObject {
     rclcpp::Subscription<ulisse_msgs::msg::LLCBattery>::SharedPtr battery_left_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::LLCBattery>::SharedPtr battery_right_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::ThrustersData>::SharedPtr thruster_data_sub_;
+    rclcpp::Subscription<ulisse_msgs::msg::LLCSw485Status>::SharedPtr sw485_status_sub_;
 
     ulisse_msgs::msg::StatusContext status_cxt_msg_;
     ulisse_msgs::msg::GoalContext goal_cxt_msg_;
     ulisse_msgs::msg::ControlContext control_cxt_msg_;
     ulisse_msgs::msg::GPSData gps_data_msg_;
     ulisse_msgs::msg::LLCBattery llc_batt_left_msg_, llc_batt_right_msg_;
+    ulisse_msgs::msg::LLCSw485Status sw485_status_msg_;
 
     QVector<double> GenerateRandFloatVector(int size);
 
@@ -82,6 +105,7 @@ public:
     void LLCBatteryLeftCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg);
     void LLCBatteryRightCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg);
     void ThrusterDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg);
+    void LLCSw485StatusCB(const ulisse_msgs::msg::LLCSw485Status::SharedPtr msg);
     void GoalContextCB(const ulisse_msgs::msg::GoalContext::SharedPtr msg);
     void ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg);
     void StatusContextCB(const ulisse_msgs::msg::StatusContext::SharedPtr msg);
@@ -106,6 +130,16 @@ public:
 
     double get_thrust_ref_left();
     double get_thrust_ref_right();
+
+    int get_missed_deadlines();
+    int get_left_motor_received();
+    int get_left_motor_sent();
+    int get_right_motor_received();
+    int get_right_motor_sent();
+    int get_left_satellite_received();
+    int get_left_satellite_sent();
+    int get_right_satellite_received();
+    int get_right_satellite_sent();
 
 signals:
     void callbacks_processed();

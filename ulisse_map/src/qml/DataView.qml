@@ -195,6 +195,27 @@ Rectangle {
                     textColor: 'gray'
                     text: "L: %1 \%\nR: %2 \%".arg(fbkUpdater.battery_perc_L).arg(fbkUpdater.battery_perc_R)
                 }
+
+                LabelledText {
+                    id: sw485status
+                    labelColor: 'tomato'
+                    label: "SW 485 Status"
+                    textColor: 'gray'
+                    text: "right_satellite_received: %1".arg(fbkUpdater.right_satellite_received485);
+/* "missed_deadlines: %1
+left_motor_received: %2
+left_motor_sent: %3
+right_motor_received: %4
+right_motor_sent: %5
+left_satellite_received: %6
+left_satellite_sent: %7
+right_satellite_received: %8
+right_satellite_sent: %9".arg(fbkUpdater.missed_deadlines485).arg(fbkUpdater.left_motor_received485)
+.arg(fbkUpdater.left_motor_sent485).arg(fbkUpdater.right_motor_received485).arg(fbkUpdater.right_motor_sent485)
+.arg(fbkUpdater.left_satellite_received485).arg(fbkUpdater.left_satellite_sent485)
+.arg(fbkUpdater.right_satellite_received485).arg(fbkUpdater.right_satellite_sent485); */
+
+                }
             }
         }
         /*
