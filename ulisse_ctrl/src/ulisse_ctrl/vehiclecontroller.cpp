@@ -35,8 +35,8 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     // Sensor Subscriptions
     gps_sub_ = nh_->create_subscription<ulisse_msgs::msg::GPSData>(
         ulisse_msgs::topicnames::sensor_gps_data, std::bind(&VehicleController::GPSSensorCB, this, _1));
-    compass_sub_ = nh_->create_subscription<ulisse_msgs::msg::Compass>(
-        ulisse_msgs::topicnames::sensor_compass, std::bind(&VehicleController::CompassSensorCB, this, _1));
+//    compass_sub_ = nh_->create_subscription<ulisse_msgs::msg::Compass>(
+//        ulisse_msgs::topicnames::sensor_compass, std::bind(&VehicleController::CompassSensorCB, this, _1));
     nav_filter_sub_ = nh_->create_subscription<ulisse_msgs::msg::NavFilterData>(
         ulisse_msgs::topicnames::nav_filter_data, std::bind(&VehicleController::NavFilterCB, this, _1));
 
