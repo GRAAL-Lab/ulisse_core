@@ -10,6 +10,7 @@
 #include "ulisse_msgs/msg/compass.hpp"
 #include "ulisse_msgs/msg/control_context.hpp"
 #include "ulisse_msgs/msg/gps_data.hpp"
+#include "ulisse_msgs/msg/imu_data.hpp"
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
 #include "ulisse_msgs/srv/nav_filter_command.hpp"
 #include "ulisse_msgs/topicnames.hpp"
@@ -27,6 +28,7 @@ static rclcpp::Node::SharedPtr node = nullptr;
 static std::shared_ptr<rclcpp::SyncParametersClient> par_client;
 static ulisse_msgs::msg::Compass compass;
 static ulisse_msgs::msg::GPSData gpsData;
+static ulisse_msgs::msg::IMUData imuData;
 static ulisse_msgs::msg::ControlContext controlCxt;
 static int rate = 10;
 
@@ -39,6 +41,7 @@ void handle_navfilter_commands(const std::shared_ptr<rmw_request_id_t> request_h
 void controlcontext_cb(const ulisse_msgs::msg::ControlContext::SharedPtr msg);
 void compass_cb(const ulisse_msgs::msg::Compass::SharedPtr msg);
 void gpsdata_cb(const ulisse_msgs::msg::GPSData::SharedPtr msg);
+void imu_cb(const ulisse_msgs::msg::IMUData::SharedPtr msg);
 
 int main(int argc, char* argv[])
 {
@@ -92,12 +95,12 @@ int main(int argc, char* argv[])
                 try {
                     GeographicLib::UTMUPS::Forward(gpsData.latitude, gpsData.longitude, zone, northp, x_utm, y_utm);
 
+                    // The geographic lib conversion outputs UTM coordinates but
+                    // the filter uses NED.
                     double x_ned = y_utm;
                     double y_ned = x_utm;
 
                     if (filterEnable) {
-                        // The geographic lib conversion outputs UTM coordinates but
-                        //
                         obs.Update(speedRef, compass.orientation.yaw, x_ned, y_ned);
                         obs.GetCurrent(filterData.current[0], filterData.current[1]);
                         obs.GetSpeed(filterData.speed[0], filterData.speed[1]);
@@ -111,7 +114,16 @@ int main(int argc, char* argv[])
                     } else {
                         filterData.latitude = gpsData.latitude;
                         filterData.longitude = gpsData.longitude;
+                        filterData.speed.fill(0.0);
+                        filterData.current.fill(0.0);
                     }
+
+                    /// FILL THE MSG WITH ALL THE REST OF UNMANAGED DATA
+                    filterData.altitude = 0.0;
+                    filterData.orientation = compass.orientation;
+                    filterData.accelerometer = imuData.accelerometer;
+                    filterData.gyro = imuData.gyro;
+
                     navfilter_pub->publish(filterData);
 
                 } catch (const GeographicLib::GeographicErr& e) {
@@ -188,4 +200,9 @@ void compass_cb(const ulisse_msgs::msg::Compass::SharedPtr msg)
 void gpsdata_cb(const ulisse_msgs::msg::GPSData::SharedPtr msg)
 {
     gpsData = *msg;
+}
+
+void imu_cb(const ulisse_msgs::msg::IMUData::SharedPtr msg)
+{
+    imuData = *msg;
 }

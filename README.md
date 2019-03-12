@@ -117,6 +117,12 @@ colcon build --symlink-install --packages-select ros1_bridge --cmake-force-confi
 First of all you need to export the ROS1 master URI for all your bashes, so it can be convenient to add this line to your **~/.bashrc**: `export ROS_MASTER_URI=http://localhost:11311/`.
 
 ### Run the architecture
+Firstly be sure to **synchronize your system** time using the GPS, by running this command in the root of the repository:
+
+```
+python gpstime.py
+```
+
 The following launch files will run all the necessary nodes (all with `sourceros2`):
 ```
 #!bash
@@ -166,6 +172,14 @@ rosservice call /record_bag "cmd: 'stop'"
 sourceros2
 ros2 service call /record_bag ulisse_msgs/RosbagCmd 'cmd: start'
 ros2 service call /record_bag ulisse_msgs/RosbagCmd 'cmd: stop'
+```
+
+## Available textual consoles
+
+```
+ros2 run ulisse_driver driver_console_node
+
+ros2 run ulisse_ctrl controller_console_node
 ```
 
 ### Testing the serial

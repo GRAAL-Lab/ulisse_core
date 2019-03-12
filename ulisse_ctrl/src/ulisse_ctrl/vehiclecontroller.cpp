@@ -223,12 +223,7 @@ void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::Share
 {
     statusCxt_->vehiclePos.latitude = msg->latitude;
     statusCxt_->vehiclePos.longitude = msg->longitude;
-}
-
-void VehicleController::CompassSensorCB(const ulisse_msgs::msg::Compass::SharedPtr msg)
-{
     statusCxt_->vehicleHeading = msg->orientation.yaw;
-    // std::cout << "Current yaw: " << posCxt_->currentHeading << std::endl;
 }
 
 void VehicleController::LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg)

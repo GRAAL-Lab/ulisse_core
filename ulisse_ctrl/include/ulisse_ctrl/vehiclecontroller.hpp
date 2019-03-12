@@ -76,7 +76,6 @@ class VehicleController {
     void SetupCommandServer();
 
     void GPSSensorCB(const ulisse_msgs::msg::GPSData::SharedPtr msg);
-    void CompassSensorCB(const ulisse_msgs::msg::Compass::SharedPtr msg);
     void NavFilterCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
     void LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg);
 
