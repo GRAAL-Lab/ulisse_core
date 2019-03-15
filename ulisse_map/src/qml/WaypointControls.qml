@@ -13,8 +13,6 @@ RowLayout {
     property alias wpButtonHighlighted: waypointsButton.highlighted
     property bool loopPath: false
 
-
-
     Button {
         id: waypointsButton
         Material.accent: secondaryAccentColor

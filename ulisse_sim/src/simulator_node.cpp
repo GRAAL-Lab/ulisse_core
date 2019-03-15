@@ -2,8 +2,8 @@
 
 #include "ulisse_msgs/msg/thrusters_data.hpp"
 #include "ulisse_msgs/topicnames.hpp"
-#include "ulisse_sim/vehiclesimulator.hpp"
 #include "ulisse_sim/futils.h"
+#include "ulisse_sim/vehiclesimulator.hpp"
 
 #include <chrono>
 #include <cmath>
@@ -19,7 +19,6 @@ using namespace std::chrono_literals;
 
 static double test_h_p(0.0), test_h_s(0.0);
 static futils::Timer motor_timeout;
-
 
 void ReadMappingParameters(const std::shared_ptr<rclcpp::SyncParametersClient> pc, ThrusterMappingParameters& tmp);
 
@@ -78,20 +77,15 @@ int main(int argc, char* argv[])
 
     Eigen::IOFormat CommaInitFmt(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", ", ", "", "", "", "");
 
+    futils::Timer print_timeout;
+    print_timeout.Start();
+
     while (rclcpp::ok()) {
 
         // We reset the motor reference in case we don't receive any message for more than one second
-        if(motor_timeout.Elapsed() > 1.0){
+        if (motor_timeout.Elapsed() > 1.0) {
             test_h_p = test_h_s = 0.0;
         }
-
-        std::cout << "----------------------------------" << std::endl;
-        std::cout << "time: " << std::setprecision(1) << myVehSim.GetCurrentTimestamp() << std::endl;
-        std::cout << "lat, long: " << std::setprecision(8) << myVehSim.VehLatitude() << ", " << myVehSim.VehLongitude()
-                  << std::endl;
-        std::cout << "compass (deg): " << myVehSim.VehAtt().GetYaw() * 180.0 / M_PI << std::endl;
-        std::cout << "velocity: " << myVehSim.VehVel_world().transpose() << std::endl;
-        std::cout << "motorref: " << test_h_p << ", " << test_h_s << std::endl;
 
         /* LOGGING */
         logss.str(std::string());
@@ -104,6 +98,16 @@ int main(int argc, char* argv[])
         myVehSim.ExecuteStep(test_h_p, test_h_s);
         myVehSim.PublishSensors();
 
+        if (print_timeout.GetCurrentLapTime() > 0.1) {
+            print_timeout.Lap();
+            std::cout << "----------------------------------" << std::endl;
+            std::cout << "time: " << std::setprecision(1) << myVehSim.GetCurrentTimestamp() << std::endl;
+            std::cout << "lat, long: " << std::setprecision(8) << myVehSim.VehLatitude() << ", " << myVehSim.VehLongitude()
+                      << std::endl;
+            std::cout << "compass (deg): " << myVehSim.VehAtt().GetYaw() * 180.0 / M_PI << std::endl;
+            std::cout << "velocity: " << myVehSim.VehVel_world().transpose() << std::endl;
+            std::cout << "motorref: " << test_h_p << ", " << test_h_s << std::endl;
+        }
         rclcpp::spin_some(node);
         loop_rate.sleep();
     }

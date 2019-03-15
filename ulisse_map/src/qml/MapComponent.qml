@@ -42,7 +42,7 @@ Map {
         cmdWrapper.resumePath();
     }
 
-    function interruptPath() {
+    function interruptPathIfActive() {
         if (mapView.pathCurrentState == pathState.active){
             stopPath();
             toast.show("Path Interrupted!", 3000);
