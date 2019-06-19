@@ -29,9 +29,9 @@ Pane {
         Button {
 
             text: "Halt"
-            Layout.minimumWidth: 130
-            Layout.maximumWidth: 130
-            Layout.preferredWidth: 130
+            Layout.minimumWidth: 150
+            Layout.maximumWidth: 150
+            Layout.preferredWidth: 150
             onClicked: {
                 map.interruptPathIfActive()
                 cmdWrapper.sendHaltCommand()
@@ -44,9 +44,9 @@ Pane {
 
             Button {
                 id: speedHeadButton
-                Layout.minimumWidth: 130
-                Layout.maximumWidth: 130
-                Layout.preferredWidth: 130
+                Layout.minimumWidth: 150
+                Layout.maximumWidth: 150
+                Layout.preferredWidth: 150
                 text: "Speed-Heading"
 
                 onClicked: {
@@ -121,9 +121,9 @@ Pane {
 
             Button {
                 id: holdButton
-                Layout.minimumWidth: 130
-                Layout.maximumWidth: 130
-                Layout.preferredWidth: 130
+                Layout.minimumWidth: 150
+                Layout.maximumWidth: 150
+                Layout.preferredWidth: 150
                 text: "Hold Position"
 
                 onClicked: {
@@ -176,9 +176,9 @@ Pane {
 
             Button {
                 id: moveToButton
-                Layout.minimumWidth: 130
-                Layout.maximumWidth: 130
-                Layout.preferredWidth: 130
+                Layout.minimumWidth: 150
+                Layout.maximumWidth: 150
+                Layout.preferredWidth: 150
                 text: "Move To Marker"
                 enabled: map.markerIconOpacity > 0 ? true : false
 

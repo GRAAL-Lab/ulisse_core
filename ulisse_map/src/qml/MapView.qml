@@ -63,8 +63,9 @@ RowLayout {
         id: mapsidebar
         Layout.fillHeight: true
         Layout.minimumHeight: 150
-        Layout.preferredWidth: 265
-        Layout.maximumWidth: 265
+        Layout.minimumWidth: 300
+        Layout.preferredWidth: 300
+        Layout.maximumWidth: 300
     }
 
     property real altezzaScrittaDemmerda: 17

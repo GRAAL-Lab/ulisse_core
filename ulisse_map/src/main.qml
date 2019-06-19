@@ -88,13 +88,15 @@ ApplicationWindow {
                 id: mapViewLoader
                 sourceComponent: mapViewComponent
                 active: false
-                anchors.fill: parent
+                Layout.fillHeight: true
+                Layout.fillWidth: true
             }
 
             DataView {
                 id: dataView
-                anchors.fill: parent
-                anchors.margins: 10
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+                Layout.margins: 10
             }
         }
     }
