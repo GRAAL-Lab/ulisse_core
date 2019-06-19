@@ -5,7 +5,6 @@ import QtQuick.Controls.Material 2.1
 import "."
 
 Rectangle {
-
     property alias markerText: markerTextLabel.text
     property alias markerTextColor: markerTextLabel.textColor
     property alias waypointRadius: commandRect.wpRad
@@ -16,26 +15,34 @@ Rectangle {
         anchors.fill: parent
         spacing: 6
         Layout.leftMargin: 15
+        width: parent.width
 
         Pane {
             id: statusdatarect
-            Layout.alignment: Qt.AlignCenter
+            Layout.minimumWidth: leftbarlayout.width
+            Layout.minimumHeight: mycol.height
+            Layout.alignment: Qt.AlignLeft
+            Layout.bottomMargin: 20
             Layout.preferredWidth: parent.width - panesMargin
             Material.elevation: myElevation
 
-            Column{
-
-                width: parent.width
-                height: statusdatalayout.height + markerlayout.height// + goaldatalayout.height
+            ColumnLayout {
+                id: mycol
+                width: statusdatarect.width - 30
                 spacing: 10
+                Layout.alignment: Qt.AlignLeft
 
                 ColumnLayout {
                     id: statusdatalayout
-                    width: parent.width
-                    Layout.preferredHeight: ulisseStateLabel.height + ulissePosLabel.height + goalDistLabel.height
-                    spacing: 2
+                    width: mycol.width
+                    Layout.minimumWidth: width
+                    Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignLeft
+                    Layout.bottomMargin: 20
+                    height: my_label.Top - goalDistLabel.Bottom
 
                     Label {
+                        id: my_label
                         Layout.alignment: Qt.AlignHCenter
                         font.pointSize: 12
                         font.weight: Font.DemiBold
@@ -45,6 +52,7 @@ Rectangle {
 
                     LabelledText {
                         id: ulisseStateLabel
+                        Layout.minimumWidth: statusdatalayout.width
                         labelColor: Material.color(mainColor, Material.Shade700)
                         label: "Ulisse State"
                         text: "%1".arg(fbkUpdater.vehicle_state)
@@ -53,18 +61,20 @@ Rectangle {
 
                     LabelledText {
                         id: ulissePosLabel
+                        Layout.minimumWidth: statusdatalayout.width
                         labelColor: Material.color(mainColor, Material.Shade700)
                         label: "Ulisse Coordinates"
-                        text: "%1, %2".arg(fbkUpdater.ulisse_pos.latitude).arg(fbkUpdater.ulisse_pos.longitude)
+                        text: "%1, %2".arg(fbkUpdater.ulisse_pos.latitude).arg(
+                                  fbkUpdater.ulisse_pos.longitude)
                     }
 
                     LabelledText {
                         id: goalDistLabel
+                        Layout.minimumWidth: statusdatalayout.width
                         objectName: "goalDistance"
                         labelColor: Material.color(mainColor, Material.Shade700)
                         label: "Distance to Target"
                         text: "%1 (m)".arg(fbkUpdater.goal_distance)
-
                     }
                 }
 
@@ -91,46 +101,38 @@ Rectangle {
 
 
                 }*/
-
                 ColumnLayout {
                     id: markerlayout
-                    width: parent.width
-                    Layout.preferredHeight: markerTextLabel.height
+                    Layout.minimumWidth: mycol.width
+                    Layout.minimumHeight: markerTextLabel.Top - markerText.Bottom
 
                     LabelledText {
                         id: markerTextLabel
-                        labelColor: Material.color(Material.Red, Material.Shade800)
+                        Layout.minimumWidth: markerlayout.width
+                        labelColor: Material.color(Material.Red,
+                                                   Material.Shade800)
                         label: "Marker Coordinates"
                         text: "Left click on map"
+                    }
+                    Text {
+                        id: markerText
+                        width: markerlayout.width
+                        font.pointSize: 8
+                        color: 'gray'
+                        text: "(Left click to set marker)"
+                        horizontalAlignment: Text.AlignHCenter
                     }
                 }
             }
         }
 
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            Layout.minimumHeight: 14
-            color: 'transparent'
-            Text {
-                width: parent.width
-                font.pointSize: 8
-                color: 'gray'
-                text: "(Left click to set marker)"
-                horizontalAlignment: Text.AlignHCenter
-            }
-        }
-
-
         CommandPane {
             id: commandRect
-            Layout.alignment: Qt.AlignCenter
+            Layout.alignment: Qt.AlignLeft
             Layout.preferredWidth: parent.width - panesMargin
             Layout.bottomMargin: 10
             Material.elevation: myElevation
             //Material.background: Material.color(Material.BlueGrey, Material.Shade50)
         }
-
-
     }
 }

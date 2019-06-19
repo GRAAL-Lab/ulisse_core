@@ -32,6 +32,8 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
 
     errorCheckInterval_ = 500;
 
+    // FIXME: use new SIGNAL/SLOT semantic
+    /* connect(my_timer_, &QTimer::timeout, this, &COmmandWrapper::check_error_slot()); */
     QObject::connect(myTimer_, SIGNAL(timeout()), this, SLOT(check_error_slot()));
 
     toastMgrObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("toastManager");
@@ -85,7 +87,7 @@ void CommandWrapper::SetNodeHandle(const rclcpp::Node::SharedPtr& np)
 
 void CommandWrapper::GoalContextCB(const ulisse_msgs::msg::GoalContext::SharedPtr msg)
 {
-    goal_cxt_msg_ = *msg;
+    goal_cxt_msg_ = std::move(*msg);
     goalCtxRead_ = true;
 }
 
@@ -97,7 +99,7 @@ void CommandWrapper::ShowToast(const QVariant message, const QVariant duration)
 
 bool CommandWrapper::SendCommandRequest(ulisse_msgs::srv::ControlCommand::Request::SharedPtr req)
 {
-    std::string result_msg;
+    static std::string result_msg;
     bool serviceAvailable;
     if (command_srv_->service_is_ready()) {
         auto result_future = command_srv_->async_send_request(req);
@@ -201,6 +203,7 @@ void CommandWrapper::resumePath()
     if (wpCurrentIndex_ < waypoint_path_.size()) {
         sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), wpRadius_);
     }
+    // FIXME: what if resuming a loop path, and we were at the last waypoint?
 }
 
 void CommandWrapper::savePathToFile(const QString file)
@@ -262,7 +265,7 @@ bool CommandWrapper::loadPathFromFile(const QString file)
             std::string line;
 
             while (getline(infile, line)) {
-                if (!line.empty()) {
+                if (not line.empty()) {
                     std::istringstream is(line);
                     temp_vec = std::vector<double>(std::istream_iterator<double>(is), std::istream_iterator<double>());
                     QGeoCoordinate wp;
@@ -294,8 +297,9 @@ void CommandWrapper::check_error_slot()
 
     if (goalCtxRead_) {
         if (goal_cxt_msg_.goal_distance < wpRadius_) {
-            goToNextWaypoint();
+            goToNextWaypoint(); //unused return value, see below TODO
         }
+        //TODO: how is the client notified of the end of the path? It is necessary?
     }
 }
 

@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
     int rate = 10;
     rclcpp::WallRate loop_rate(rate);
 
-    QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    //QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QGuiApplication::setApplicationName(name);
     QGuiApplication::setOrganizationName("GRAAL Lab");
 

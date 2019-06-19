@@ -21,8 +21,10 @@ ApplicationWindow {
     minimumWidth: 705
 
     property var mainColor: (settings.theme == "Light" ? Material.Cyan : Material.Red)
-    property var mainAccentColor: Material.color(Material.Amber, Material.Shade700)
-    property var secondaryAccentColor: Material.color(Material.Green, Material.Shade600)
+    property var mainAccentColor: Material.color(Material.Amber,
+                                                 Material.Shade700)
+    property var secondaryAccentColor: Material.color(Material.Green,
+                                                      Material.Shade600)
     property string futureMapPlugin: ""
 
     Material.theme: settings.theme
@@ -32,9 +34,8 @@ ApplicationWindow {
         // This onClosing function is needed since the map
         // plugin cannot be changed 'live', so we will register
         // the new setting only when closing the app
-        settings.mapPluginType = futureMapPlugin;
+        settings.mapPluginType = futureMapPlugin
     }
-
 
     Shortcut {
         // Halting catamaran when space is pressed
@@ -49,6 +50,7 @@ ApplicationWindow {
         id: settings
         property int shTimeout: 120
         property string mapPluginType: "esri"
+        //FIXME: hard path
         property string esriMapCacheDir: "/home/graal/Documents/map_offline_tiles/esri/"
         property string theme: "Light"
 
@@ -62,11 +64,11 @@ ApplicationWindow {
         id: headerBar
     }
 
-    Item{
+    Item {
         // This Item is needed to add margins to the StackLayout and make it correctly resize
         id: stackViewContainer
         anchors.fill: parent
-        anchors.horizontalCenter: parent.horizontalCenter;
+        anchors.horizontalCenter: parent.horizontalCenter
         height: window.height - headerBar.height
         width: window.width
 
@@ -124,7 +126,6 @@ ApplicationWindow {
         y: Math.round((window.height - height) / 2) - headerBar.height
         width: Math.round(window.width * 0.8)
         height: Math.round(window.height * 0.7)
-
     }
 
     FileDialog {
@@ -134,16 +135,14 @@ ApplicationWindow {
         selectFolder: true
 
         onAccepted: {
-            var path = browseCacheDirDialog.fileUrl.toString();
+            var path = browseCacheDirDialog.fileUrl.toString()
             // remove prefixed "file://"
-            path = path.replace(/^(file:\/{2})/,"");
+            path = path.replace(/^(file:\/{2})/, "")
             // unescape html codes like '%23' for '#'
-            var cleanPath = decodeURIComponent(path);
+            var cleanPath = decodeURIComponent(path)
             settingsDialog.mapCacheDirText = cleanPath
         }
     }
-
-
 
     /*Text {
         id: loadingText
@@ -155,5 +154,4 @@ ApplicationWindow {
         text: "Loading... (%1 x %2)".arg(window.width).arg(window.height)
         font.family: "Ubuntu Mono"
     }*/
-
 }

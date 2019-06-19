@@ -8,25 +8,38 @@ import QtQuick.Layouts 1.3
 import QtGraphicalEffects 1.0
 
 ToolBar {
-    property alias tabBarIndex: headerBar.currentIndex
+    property alias tabBarIndex: headerLayout.tabBarIndex
+    id: toolBar
     width: parent.width
     Material.elevation: 4
 
     Material.foreground: Material.color(Material.Grey, Material.Shade300)
-    Material.background: (settings.theme == "Light" ? Material.Cyan : Material.color(Material.Red, Material.Shade600))
+    Material.background: (settings.theme == "Light" ? Material.Cyan : Material.color(
+                                                          Material.Red,
+                                                          Material.Shade600))
     Material.accent: "white"
 
     Layout.alignment: Qt.AlignLeft
 
-    TabBar {
-        id: headerBar
-        anchors.left: parent.left
+    RowLayout {
+        property alias tabBarIndex: headerBar.currentIndex
+        id: headerLayout
         width: parent.width - toolButton.width
-        TabButton {
-            text: qsTr("Map")
-        }
-        TabButton {
-            text: qsTr("Data")
+        spacing: 0
+
+        TabBar {
+            id: headerBar
+            width: headerLayout.width
+            TabButton {
+                text: qsTr("Map")
+                Layout.fillWidth: true
+                width: headerLayout.width / 2
+            }
+            TabButton {
+                text: qsTr("Data")
+                Layout.fillWidth: true
+                width: headerLayout.width / 2
+            }
         }
     }
 
@@ -39,7 +52,6 @@ ToolBar {
         Material.background: Material.color(Material.Cyan, Material.Shade500)
 
         onClicked: optionsMenu.open()
-
         Menu {
             id: optionsMenu
             x: parent.width - width
@@ -49,7 +61,7 @@ ToolBar {
             MenuItem {
                 text: "Settings"
                 onTriggered: {
-                    settingsDialog.open();
+                    settingsDialog.open()
                 }
             }
 
@@ -58,7 +70,8 @@ ToolBar {
                 onTriggered: helpDialog.open()
             }
 
-            MenuSeparator{}
+            MenuSeparator {
+            }
 
             MenuItem {
                 text: "Quit"

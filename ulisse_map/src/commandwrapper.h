@@ -41,8 +41,8 @@ class CommandWrapper : public QObject {
     //void SetupCommandClient();
 
 public:
-    explicit CommandWrapper(QObject* parent = 0);
-    explicit CommandWrapper(QQmlApplicationEngine* engine, QObject* parent = 0);
+    explicit CommandWrapper(QObject* parent = nullptr);
+    explicit CommandWrapper(QQmlApplicationEngine* engine, QObject* parent = nullptr);
     virtual ~CommandWrapper();
     void Init(QQmlApplicationEngine* engine);
     void SetNodeHandle(const rclcpp::Node::SharedPtr& np);

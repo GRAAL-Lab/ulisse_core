@@ -14,15 +14,17 @@ Dialog {
     onAccepted: {
         settings.shTimeout = speedHeadingTimeout.displayText
 
-        if (mapTypeBox.displayText != futureMapPlugin){
+        if (mapTypeBox.displayText != futureMapPlugin) {
             futureMapPlugin = mapTypeBox.displayText
             toast.show("Changes will take effect on restart...", 2000)
         }
 
-        if (mapCacheDirectory.displayText != settings.esriMapCacheDir){
-            console.log(("Previous chache dir: %1").arg(settings.esriMapCacheDir))
+        if (mapCacheDirectory.displayText != settings.esriMapCacheDir) {
+            console.log(("Previous chache dir: %1").arg(
+                            settings.esriMapCacheDir))
             settings.esriMapCacheDir = mapCacheDirectory.displayText
-            console.log(("Changed cache dir to: %1").arg(settings.esriMapCacheDir))
+            console.log(("Changed cache dir to: %1").arg(
+                            settings.esriMapCacheDir))
             toast.show("Changes will take effect on restart...", 2000)
         }
 
@@ -65,8 +67,8 @@ Dialog {
                 selectByMouse: true
 
                 validator: IntValidator {
-                    bottom: 0.0;
-                    top: 5000.0;
+                    bottom: 0.0
+                    top: 5000.0
                 }
             }
         }
@@ -86,13 +88,14 @@ Dialog {
                 model: ["osm", "esri"]
 
                 Component.onCompleted: {
-                    mapTypeIndex = find(settings.mapPluginType, Qt.MatchFixedString)
+                    mapTypeIndex = find(settings.mapPluginType,
+                                        Qt.MatchFixedString)
                     if (mapTypeIndex !== -1)
                         currentIndex = mapTypeIndex
                 }
 
                 onCurrentIndexChanged: {
-                    if (mapTypeIndex !== -1){
+                    if (mapTypeIndex !== -1) {
                         mapTypeSettingChanged = (mapTypeIndex !== currentIndex) ? true : false
                     }
                 }
@@ -120,10 +123,10 @@ Dialog {
                 selectByMouse: true
 
                 onTextChanged: {
-                    if (text != settings.esriMapCacheDir){
-                        cacheDirChanged = true;
+                    if (text != settings.esriMapCacheDir) {
+                        cacheDirChanged = true
                     } else {
-                        cacheDirChanged = false;
+                        cacheDirChanged = false
                     }
                 }
             }
@@ -163,7 +166,8 @@ Dialog {
             id: restartText
             text: "Restart required!"
             color: "#e41e25"
-            opacity: mapCacheDirectory.cacheDirChanged | mapTypeBox.mapTypeSettingChanged ? 1.0 : 0.0
+            opacity: mapCacheDirectory.cacheDirChanged
+                     | mapTypeBox.mapTypeSettingChanged ? 1.0 : 0.0
             font.weight: Font.DemiBold
             horizontalAlignment: Label.AlignHCenter
             verticalAlignment: Label.AlignVCenter
@@ -172,4 +176,3 @@ Dialog {
         }
     }
 }
-

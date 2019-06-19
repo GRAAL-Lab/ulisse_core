@@ -7,7 +7,7 @@ import QtQuick.Controls.Material 2.1
 import QtQuick.Dialogs 1.2
 
 RowLayout {
-
+    width: parent.width
     property alias wpRadius: waypointRadius.text
     property alias wpButtonText: waypointsButton.text
     property alias wpButtonHighlighted: waypointsButton.highlighted
@@ -17,28 +17,30 @@ RowLayout {
         id: waypointsButton
         Material.accent: secondaryAccentColor
         text: "Create Path"
-        Layout.preferredWidth: 110
+        Layout.preferredWidth: 90
+        Layout.alignment: Qt.AlignLeft
+        Layout.fillWidth: true
 
         onClicked: {
-            if(waypointRadius.text !== ''){
-                if (mapView.pathCurrentState === pathState.empty){
-                    map.createPath();
+            if (waypointRadius.text !== '') {
+                if (mapView.pathCurrentState === pathState.empty) {
+                    map.createPath()
                     waypointsButton.text = "Send Path"
-                    waypointsButton.highlighted = true;
+                    waypointsButton.highlighted = true
                 } else if (mapView.pathCurrentState === pathState.creating) {
-                    map.startPath();
+                    map.startPath()
                     waypointsButton.text = "Pause Path"
-                    waypointsButton.Material.accent = mainAccentColor;
+                    waypointsButton.Material.accent = mainAccentColor
                 } else if (mapView.pathCurrentState === pathState.active) {
                     waypointsButton.text = "Resume Path"
-                    map.stopPath();
+                    map.stopPath()
                 } else if (mapView.pathCurrentState === pathState.stopped) {
                     waypointsButton.text = "Pause Path"
-                    waypointsButton.Material.accent = mainAccentColor;
-                    map.resumePath();
+                    waypointsButton.Material.accent = mainAccentColor
+                    map.resumePath()
                 }
             } else {
-                acceptRadDialog.open();
+                acceptRadDialog.open()
             }
         }
     }
@@ -46,8 +48,13 @@ RowLayout {
     Button {
         id: wpRestartButton
         Material.accent: secondaryAccentColor
-        Layout.preferredWidth: 28
-        enabled: (mapView.pathCurrentState === pathState.active) || (mapView.pathCurrentState === pathState.stopped) ? true : false
+        Layout.preferredWidth: 30
+        Layout.minimumWidth: 30
+        Layout.maximumWidth: 30
+
+        Layout.alignment: Qt.AlignLeft
+        enabled: (mapView.pathCurrentState === pathState.active)
+                 || (mapView.pathCurrentState === pathState.stopped) ? true : false
 
         ToolTip.text: qsTr("Restart path from beginning")
         ToolTip.delay: 500
@@ -65,7 +72,7 @@ RowLayout {
         }
 
         onClicked: {
-            cmdWrapper.startPath();
+            cmdWrapper.startPath()
         }
     }
 
@@ -73,7 +80,9 @@ RowLayout {
         id: wpDeleteButton
         Material.accent: Material.Red
         highlighted: true
-        Layout.preferredWidth: 28
+        Layout.preferredWidth: 30
+        Layout.minimumWidth: 30
+        Layout.maximumWidth: 30
         text: "X"
         font.weight: Font.Bold
         font.pointSize: 12
@@ -85,21 +94,12 @@ RowLayout {
         ToolTip.visible: hovered
 
         onClicked: {
-            map.deletePath();
-            waypointsButton.text = "Create Path";
-            waypointsButton.highlighted = false;
-            waypointsButton.Material.accent = secondaryAccentColor;
+            map.deletePath()
+            waypointsButton.text = "Create Path"
+            waypointsButton.highlighted = false
+            waypointsButton.Material.accent = secondaryAccentColor
         }
     }
-
-    Rectangle {
-        id: waypointsSpacer
-        width: buttonsColumn.width - waypointsButton.width - waypointRadius.width - wpDeleteButton.width - wpRestartButton.width - 10
-        height: parent.height
-        anchors.left: wpDeleteButton.right
-        color: 'transparent'
-    }
-
 
     TextField {
         id: waypointRadius
@@ -118,14 +118,11 @@ RowLayout {
         ToolTip.timeout: 5000
         ToolTip.visible: hovered
 
-        anchors.left: waypointsSpacer.right
         validator: DoubleValidator {
-            bottom: 0.0;
-            top: 101.0;
-            decimals: 3;
+            bottom: 0.0
+            top: 101.0
+            decimals: 3
             notation: DoubleValidator.StandardNotation
         }
     }
-
-
 }

@@ -95,8 +95,8 @@ class FeedbackUpdater : public QObject {
     QVector<double> GenerateRandFloatVector(int size);
 
 public:
-    explicit FeedbackUpdater(QObject* parent = 0);
-    explicit FeedbackUpdater(QQmlApplicationEngine* engine, QObject* parent = 0);
+    explicit FeedbackUpdater(QObject* parent = nullptr);
+    explicit FeedbackUpdater(QQmlApplicationEngine* engine, QObject* parent = nullptr);
     virtual ~FeedbackUpdater();
     void Init(QQmlApplicationEngine* engine);
     void SetNodeHandle(const rclcpp::Node::SharedPtr& np);
