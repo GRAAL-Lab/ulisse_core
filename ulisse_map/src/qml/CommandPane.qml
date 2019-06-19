@@ -15,7 +15,7 @@ Pane {
         anchors.verticalCenter: parent.verticalCenter
         anchors.horizontalCenter: parent.horizontalCenter
         width: parent.width
-        spacing: 0
+        spacing: 2
 
         Label {
             Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
@@ -26,15 +26,17 @@ Pane {
             text: "Commands"
         }
 
-
         Button {
+
             text: "Halt"
+            Layout.minimumWidth: 130
+            Layout.maximumWidth: 130
+            Layout.preferredWidth: 130
             onClicked: {
-                map.interruptPathIfActive();
+                map.interruptPathIfActive()
                 cmdWrapper.sendHaltCommand()
             }
         }
-
 
         RowLayout {
             id: speedHeadingRow
@@ -42,32 +44,37 @@ Pane {
 
             Button {
                 id: speedHeadButton
+                Layout.minimumWidth: 130
+                Layout.maximumWidth: 130
+                Layout.preferredWidth: 130
                 text: "Speed-Heading"
 
                 onClicked: {
-                    if(speedText.text !== '' && headingText.text !== ''){
-                        map.interruptPathIfActive();
-                        cmdWrapper.sendSpeedHeadingCommand(speedText.text, headingText.text)
+                    if (speedText.text !== '' && headingText.text !== '') {
+                        map.interruptPathIfActive()
+                        cmdWrapper.sendSpeedHeadingCommand(speedText.text,
+                                                           headingText.text)
                     } else {
-                        speedHeadingDialog.open();
+                        speedHeadingDialog.open()
                     }
                 }
             }
 
             Rectangle {
                 id: speedHeadSpacer
-                width: buttonsColumn.width - speedHeadButton.width - speedText.width - headingText.width
                 height: parent.height
-                anchors.left: speedHeadButton.right
                 color: 'transparent'
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
             }
-
 
             TextField {
                 id: speedText
-                Layout.maximumWidth: 40
-                Layout.fillWidth: true
-                anchors.left: speedHeadSpacer.right
+                Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                Layout.minimumWidth: 45
+                Layout.maximumWidth: 45
+                Layout.preferredWidth: 45
+
                 font.pointSize: 10
                 placeholderText: "S"
                 selectByMouse: true
@@ -77,20 +84,21 @@ Pane {
                 ToolTip.timeout: 5000
                 ToolTip.visible: hovered
 
-
                 validator: DoubleValidator {
-                    bottom: -5.0;
-                    top: +5.0;
-                    decimals: 1;
+                    bottom: -5.0
+                    top: +5.0
+                    decimals: 1
                     notation: DoubleValidator.StandardNotation
                 }
             }
 
             TextField {
                 id: headingText
-                Layout.maximumWidth: 40
-                Layout.fillWidth: true
-                anchors.left: speedText.right
+                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                Layout.minimumWidth: 45
+                Layout.maximumWidth: 45
+                Layout.preferredWidth: 45
+
                 font.pointSize: 10
                 placeholderText: "H°"
                 selectByMouse: true
@@ -101,9 +109,8 @@ Pane {
                 ToolTip.visible: hovered
 
                 validator: IntValidator {
-                    bottom: 0;
-                    top: 360;
-
+                    bottom: 0
+                    top: 360
                 }
             }
         }
@@ -114,26 +121,28 @@ Pane {
 
             Button {
                 id: holdButton
+                Layout.minimumWidth: 130
+                Layout.maximumWidth: 130
+                Layout.preferredWidth: 130
                 text: "Hold Position"
 
                 onClicked: {
-                    if(holdRadius.text !== ''){
+                    if (holdRadius.text !== '') {
                         map.interruptPathIfActive()
-                        cmdWrapper.sendHoldCommand(parseFloat(holdRadius.text));
+                        cmdWrapper.sendHoldCommand(parseFloat(holdRadius.text))
                     } else {
-                        acceptRadDialog.open();
+                        acceptRadDialog.open()
                     }
                 }
             }
 
             Rectangle {
                 id: holdSpacer
-                width: buttonsColumn.width - holdButton.width - holdRadius.width
                 height: parent.height
-                anchors.left: holdButton.right
                 color: 'transparent'
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
             }
-
 
             TextField {
                 id: holdRadius
@@ -144,8 +153,8 @@ Pane {
                 font.pointSize: 10
                 placeholderText: "Radius"
                 selectByMouse: true
-                anchors.left: holdSpacer.right
                 text: "5.0"
+                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
 
                 ToolTip.text: qsTr("Acceptance Radius (meters)")
                 ToolTip.delay: 500
@@ -153,9 +162,9 @@ Pane {
                 ToolTip.visible: hovered
 
                 validator: DoubleValidator {
-                    bottom: 0.0;
-                    top: 101.0;
-                    decimals: 3;
+                    bottom: 0.0
+                    top: 101.0
+                    decimals: 3
                     notation: DoubleValidator.StandardNotation
                 }
             }
@@ -167,29 +176,33 @@ Pane {
 
             Button {
                 id: moveToButton
+                Layout.minimumWidth: 130
+                Layout.maximumWidth: 130
+                Layout.preferredWidth: 130
                 text: "Move To Marker"
                 enabled: map.markerIconOpacity > 0 ? true : false
 
                 onClicked: {
-                    if(moveToRadius.text !== ''){
+                    if (moveToRadius.text !== '') {
                         map.interruptPathIfActive()
-                        if(cmdWrapper.sendLatLongCommand(marker_coords, parseFloat(moveToRadius.text))){
+                        if (cmdWrapper.sendLatLongCommand(
+                                    marker_coords,
+                                    parseFloat(moveToRadius.text))) {
                             markerIcon.opacity = 0.2
                         }
                     } else {
-                        acceptRadDialog.open();
+                        acceptRadDialog.open()
                     }
                 }
             }
 
             Rectangle {
                 id: moveToSpacer
-                width: buttonsColumn.width - moveToButton.width - moveToRadius.width
                 height: parent.height
-                anchors.left: moveToButton.right
                 color: 'transparent'
+                Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                Layout.fillWidth: true
             }
-
 
             TextField {
                 id: moveToRadius
@@ -201,18 +214,17 @@ Pane {
                 placeholderText: "Radius"
                 selectByMouse: true
                 text: "5.0"
+                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
 
                 ToolTip.text: qsTr("Acceptance Radius (meters)")
                 ToolTip.delay: 500
                 ToolTip.timeout: 5000
                 ToolTip.visible: hovered
 
-
-                anchors.left: moveToSpacer.right
                 validator: DoubleValidator {
-                    bottom: 0.0;
-                    top: 101.0;
-                    decimals: 3;
+                    bottom: 0.0
+                    top: 101.0
+                    decimals: 3
                     notation: DoubleValidator.StandardNotation
                 }
             }
@@ -223,7 +235,7 @@ Pane {
             property real margin: 8
 
             Layout.preferredHeight: 2
-            Layout.preferredWidth: parent.width - margin*2
+            Layout.preferredWidth: parent.width - margin * 2
             Layout.leftMargin: margin
             Layout.rightMargin: margin
             Layout.topMargin: margin
@@ -235,7 +247,6 @@ Pane {
             id: wpCommands
             Layout.fillWidth: true
         }
-
 
         RowLayout {
             id: additionalWpControls
@@ -283,10 +294,10 @@ Pane {
                 checked: false
 
                 onCheckStateChanged: {
-                    if (checked === true){
-                        wpCommands.loopPath = true;
+                    if (checked === true) {
+                        wpCommands.loopPath = true
                     } else {
-                        wpCommands.loopPath = false;
+                        wpCommands.loopPath = false
                     }
                 }
             }
@@ -296,8 +307,10 @@ Pane {
             id: loadSavePath
             Button {
                 id: savePath
+                Layout.fillWidth: true
                 text: "Save Path"
-                enabled: (mapView.pathCurrentState === pathState.empty) |  (mapView.pathCurrentState === pathState.creating) ? false : true
+                enabled: (mapView.pathCurrentState === pathState.empty)
+                         | (mapView.pathCurrentState === pathState.creating) ? false : true
 
                 onClicked: {
                     savePathDialog.open()
@@ -306,6 +319,7 @@ Pane {
 
             Button {
                 id: loadPath
+                Layout.fillWidth: true
                 text: "Load Path"
                 enabled: (mapView.pathCurrentState === pathState.empty) ? true : false
 
@@ -313,7 +327,6 @@ Pane {
                     loadPathDialog.open()
                 }
             }
-
         }
     }
 
@@ -324,18 +337,18 @@ Pane {
         nameFilters: ["Path Files (*.path)"]
 
         onAccepted: {
-            map.deletePath();
-            var path = loadPathDialog.fileUrl.toString();
+            map.deletePath()
+            var path = loadPathDialog.fileUrl.toString()
             // remove prefixed "file://"
-            path = path.replace(/^(file:\/{2})/,"");
+            path = path.replace(/^(file:\/{2})/, "")
             // unescape html codes like '%23' for '#'
-            var cleanPath = decodeURIComponent(path);
-            // console.log("Loaded file path: %1".arg(cleanPath))
+            var cleanPath = decodeURIComponent(path)
 
-            if(cmdWrapper.loadPathFromFile(cleanPath)){
-                mapView.pathCurrentState = pathState.empty;
+            // console.log("Loaded file path: %1".arg(cleanPath))
+            if (cmdWrapper.loadPathFromFile(cleanPath)) {
+                mapView.pathCurrentState = pathState.empty
                 wpCommands.wpButtonText = "Finalize..."
-                wpCommands.wpButtonHighlighted = true;
+                wpCommands.wpButtonHighlighted = true
             }
         }
     }
@@ -347,13 +360,13 @@ Pane {
         selectExisting: false
 
         onAccepted: {
-            var path = savePathDialog.fileUrl.toString();
+            var path = savePathDialog.fileUrl.toString()
             // remove prefixed "file://"
-            path = path.replace(/^(file:\/{2})/,"");
+            path = path.replace(/^(file:\/{2})/, "")
             // unescape html codes like '%23' for '#'
-            var cleanPath = decodeURIComponent(path);
+            var cleanPath = decodeURIComponent(path)
 
-            cmdWrapper.savePathToFile(cleanPath);
+            cmdWrapper.savePathToFile(cleanPath)
         }
     }
 }

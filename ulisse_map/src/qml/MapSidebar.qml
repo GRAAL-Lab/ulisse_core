@@ -20,10 +20,10 @@ Rectangle {
         Pane {
             id: statusdatarect
             Layout.minimumWidth: leftbarlayout.width
+            Layout.preferredWidth: parent.width
             Layout.minimumHeight: mycol.height
             Layout.alignment: Qt.AlignLeft
             Layout.bottomMargin: 20
-            Layout.preferredWidth: parent.width - panesMargin
             Material.elevation: myElevation
 
             ColumnLayout {
@@ -129,7 +129,8 @@ Rectangle {
         CommandPane {
             id: commandRect
             Layout.alignment: Qt.AlignLeft
-            Layout.preferredWidth: parent.width - panesMargin
+            Layout.minimumWidth: leftbarlayout.width
+            Layout.preferredWidth: parent.width
             Layout.bottomMargin: 10
             Material.elevation: myElevation
             //Material.background: Material.color(Material.BlueGrey, Material.Shade50)

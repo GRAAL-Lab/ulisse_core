@@ -47,7 +47,6 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
 import QtQuick 2.6
 import QtQuick.Controls 1.4 as C1
 import QtQuick.Controls.Styles 1.4 as C1S
@@ -58,14 +57,14 @@ Row {
     id: containerRow
 
     property var mapSource
-    property real fontSize : 14
-    property color labelBackground : "transparent"
+    property real fontSize: 14
+    property color labelBackground: "transparent"
     property int edge: Qt.RightEdge
     property alias expanded: sliderToggler.checked
     property var togglerColor: mainAccentColor
 
     function rightEdge() {
-        return (containerRow.edge === Qt.RightEdge);
+        return (containerRow.edge === Qt.RightEdge)
     }
 
     layoutDirection: rightEdge() ? Qt.LeftToRight : Qt.RightToLeft
@@ -73,6 +72,7 @@ Row {
     anchors.bottom: parent.bottom
     anchors.right: rightEdge() ? parent.right : undefined
     anchors.left: rightEdge() ? undefined : parent.left
+    width: sliderToggler.width + (sliderToggler.checked ? sliderContainer.width : 0)
 
     C1.Button {
         id: sliderToggler
@@ -82,12 +82,12 @@ Row {
         checked: false
         anchors.verticalCenter: parent.verticalCenter
 
-        transform:  Scale {
+        transform: Scale {
             origin.x: rightEdge() ? 0 : sliderToggler.width / 2
             xScale: rightEdge() ? 1 : -1
         }
 
-        style:  C1S.ButtonStyle {
+        style: C1S.ButtonStyle {
             background: Rectangle {
                 color: "transparent"
             }
@@ -95,7 +95,7 @@ Row {
 
         property real shear: 0.333
         property real buttonOpacity: 0.66
-        property real mirror : rightEdge() ? 1.0 : -1.0
+        property real mirror: rightEdge() ? 1.0 : -1.0
 
         Rectangle {
             width: sliderToggler.width / 2
@@ -104,15 +104,14 @@ Row {
             antialiasing: true
             opacity: sliderToggler.buttonOpacity
             anchors.top: parent.top
-            anchors.left: sliderToggler.checked ?  parent.left : parent.horizontalCenter
+            anchors.left: sliderToggler.checked ? parent.left : parent.horizontalCenter
             anchors.leftMargin: -5
 
             transform: Matrix4x4 {
-                property real d : sliderToggler.checked ? 1.0 : -1.0
-                matrix:    Qt.matrix4x4(1.0,  d * sliderToggler.shear,    0.0,    0.0,
-                                        0.0,    1.0,    0.0,    0.0,
-                                        0.0,    0.0,    1.0,    0.0,
-                                        0.0,    0.0,    0.0,    1.0)
+                property real d: sliderToggler.checked ? 1.0 : -1.0
+                matrix: Qt.matrix4x4(1.0, d * sliderToggler.shear, 0.0,
+                                     0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
+                                     0.0, 0.0, 0.0, 0.0, 1.0)
             }
         }
 
@@ -123,14 +122,13 @@ Row {
             antialiasing: true
             opacity: sliderToggler.buttonOpacity
             anchors.top: parent.verticalCenter
-            anchors.right: sliderToggler.checked ?  parent.right : parent.horizontalCenter
+            anchors.right: sliderToggler.checked ? parent.right : parent.horizontalCenter
             anchors.rightMargin: 5
             transform: Matrix4x4 {
-                property real d : sliderToggler.checked ? -1.0 : 1.0
-                matrix:    Qt.matrix4x4(1.0,  d * sliderToggler.shear,    0.0,    0.0,
-                                        0.0,    1.0,    0.0,    0.0,
-                                        0.0,    0.0,    1.0,    0.0,
-                                        0.0,    0.0,    0.0,    1.0)
+                property real d: sliderToggler.checked ? -1.0 : 1.0
+                matrix: Qt.matrix4x4(1.0, d * sliderToggler.shear, 0.0,
+                                     0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
+                                     0.0, 0.0, 0.0, 0.0, 1.0)
             }
         }
     }
@@ -140,18 +138,17 @@ Row {
         height: parent.height
         width: sliderRow.width + 10
         visible: sliderToggler.checked
-        color: Qt.rgba(0, 0, 0, 0.05)//Qt.rgba( 0, 191 / 255.0, 255 / 255.0, 0.1)
+        color: Qt.rgba(0, 0, 0,
+                       0.05) //Qt.rgba( 0, 191 / 255.0, 255 / 255.0, 0.1)
 
         Material.accent: mainAccentColor
-        Material.foreground: Material.color(Material.BlueGrey, Material.Shade600)
+        Material.foreground: Material.color(Material.BlueGrey,
+                                            Material.Shade600)
 
         property var labelBorderColor: "transparent"
-        property real slidersHeight : sliderContainer.height
-                                     - rowSliderValues.height
-                                     - rowSliderLabels.height
-                                     - sliderColumn.spacing * 2
-                                     - sliderColumn.topPadding
-                                     - sliderColumn.bottomPadding
+        property real slidersHeight: sliderContainer.height - rowSliderValues.height
+                                     - rowSliderLabels.height - sliderColumn.spacing * 2
+                                     - sliderColumn.topPadding - sliderColumn.bottomPadding
 
         Column {
             id: sliderColumn
@@ -168,7 +165,7 @@ Row {
                 height: 32
                 property real entryWidth: zoomSlider.width
 
-                Rectangle{
+                Rectangle {
                     color: labelBackground
                     height: parent.height
                     width: parent.entryWidth
@@ -181,7 +178,7 @@ Row {
                         anchors.centerIn: parent
                     }
                 }
-                Rectangle{
+                Rectangle {
                     color: labelBackground
                     height: parent.height
                     width: parent.entryWidth
@@ -194,7 +191,7 @@ Row {
                         anchors.centerIn: parent
                     }
                 }
-                Rectangle{
+                Rectangle {
                     color: labelBackground
                     height: parent.height
                     width: parent.entryWidth
@@ -207,7 +204,7 @@ Row {
                         anchors.centerIn: parent
                     }
                 }
-                Rectangle{
+                Rectangle {
                     color: labelBackground
                     height: parent.height
                     width: parent.entryWidth
@@ -231,47 +228,45 @@ Row {
                 Slider {
                     id: zoomSlider
                     height: parent.height
-                    orientation : Qt.Vertical
-                    from : containerRow.mapSource.minimumZoomLevel
-                    to : containerRow.mapSource.maximumZoomLevel
-                    value : containerRow.mapSource.zoomLevel
+                    orientation: Qt.Vertical
+                    from: containerRow.mapSource.minimumZoomLevel
+                    to: containerRow.mapSource.maximumZoomLevel
+                    value: containerRow.mapSource.zoomLevel
                     onValueChanged: {
                         containerRow.mapSource.zoomLevel = value
                     }
-
-
                 }
                 Slider {
                     id: bearingSlider
                     height: parent.height
                     from: 0
                     to: 360
-                    orientation : Qt.Vertical
+                    orientation: Qt.Vertical
                     value: containerRow.mapSource.bearing
                     onValueChanged: {
-                        containerRow.mapSource.bearing = value;
+                        containerRow.mapSource.bearing = value
                     }
                 }
                 Slider {
                     id: tiltSlider
                     height: parent.height
-                    orientation : Qt.Vertical
-                    from: containerRow.mapSource.minimumTilt;
+                    orientation: Qt.Vertical
+                    from: containerRow.mapSource.minimumTilt
                     to: containerRow.mapSource.maximumTilt
                     value: containerRow.mapSource.tilt
                     onValueChanged: {
-                        containerRow.mapSource.tilt = value;
+                        containerRow.mapSource.tilt = value
                     }
                 }
                 Slider {
                     id: fovSlider
                     height: parent.height
-                    orientation : Qt.Vertical
+                    orientation: Qt.Vertical
                     from: containerRow.mapSource.minimumFieldOfView
                     to: containerRow.mapSource.maximumFieldOfView
                     value: containerRow.mapSource.fieldOfView
                     onValueChanged: {
-                        containerRow.mapSource.fieldOfView = value;
+                        containerRow.mapSource.fieldOfView = value
                     }
                 }
             } // Row sliders
@@ -284,7 +279,7 @@ Row {
                 property real entryWidth: zoomSlider.width
                 property real entryHeight: 64
 
-                Rectangle{
+                Rectangle {
                     color: labelBackground
                     height: parent.entryHeight
                     width: parent.entryWidth
@@ -298,7 +293,7 @@ Row {
                     }
                 }
 
-                Rectangle{
+                Rectangle {
                     color: labelBackground
                     height: parent.entryHeight
                     width: parent.entryWidth
@@ -311,7 +306,7 @@ Row {
                         anchors.centerIn: parent
                     }
                 }
-                Rectangle{
+                Rectangle {
                     color: labelBackground
                     height: parent.entryHeight
                     width: parent.entryWidth
@@ -324,7 +319,7 @@ Row {
                         anchors.centerIn: parent
                     }
                 }
-                Rectangle{
+                Rectangle {
                     color: labelBackground
                     height: parent.entryHeight
                     width: parent.entryWidth
@@ -339,5 +334,22 @@ Row {
                 }
             } // rowSliderLabels
         } // Column
-    } // sliderContainer
+    }
+    states: [
+        State {
+            name: "opened"
+            PropertyChanges {
+                target: sliderToggler
+                checked: true
+            }
+        },
+        State {
+            name: "closed"
+            PropertyChanges {
+                target: sliderToggler
+                checked: false
+            }
+        }
+    ]
+    // sliderContainer
 } // containerRow

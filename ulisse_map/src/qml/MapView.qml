@@ -36,9 +36,9 @@ RowLayout {
         }
 
         Component.onCompleted: {
-            console.log(("Current cache for ESRI Map plugin: %1").arg(mapCache.value))
+            console.log(("Current cache for ESRI Map plugin: %1").arg(
+                            mapCache.value))
         }
-
     }
 
     QtObject {
@@ -49,11 +49,9 @@ RowLayout {
         property int stopped: 3
     }
 
-
     ModalPopup {
         id: acceptRadDialog
         dialogTitle: "Insert an acceptance radius"
-
     }
 
     ModalPopup {
@@ -61,14 +59,12 @@ RowLayout {
         dialogTitle: "Insert both speed (m/s) and heading (deg)"
     }
 
-
     MapSidebar {
         id: mapsidebar
         Layout.fillHeight: true
         Layout.minimumHeight: 150
         Layout.preferredWidth: 265
         Layout.maximumWidth: 265
-        Layout.topMargin: 5
     }
 
     property real altezzaScrittaDemmerda: 17
@@ -87,7 +83,7 @@ RowLayout {
             height: parent.height - bottomToolbar.height + altezzaScrittaDemmerda
             plugin: mapPlugin
             center: QtPositioning.coordinate(44.393, 8.945) // Genoa
-            zoomLevel: 17.5//(maximumZoomLevel - minimumZoomLevel)/2
+            zoomLevel: 17.5 //(maximumZoomLevel - minimumZoomLevel)/2
         }
 
         Rectangle {
@@ -101,61 +97,66 @@ RowLayout {
                 width: parent.width
 
                 Button {
-                    id:recenterButton
+                    id: recenterButton
                     text: "Recenter"
                     highlighted: true
                     Material.accent: mainColor
                     Layout.leftMargin: 5
                     onClicked: {
-                        map.center = QtPositioning.coordinate(fbkUpdater.ulisse_pos.latitude, fbkUpdater.ulisse_pos.longitude)
+                        map.center = QtPositioning.coordinate(
+                                    fbkUpdater.ulisse_pos.latitude,
+                                    fbkUpdater.ulisse_pos.longitude)
                     }
                 }
 
                 CheckBox {
                     id: followMeCheckbox
                     text: "Follow vehicle"
-                    anchors.left: recenterButton.right
+                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                     Material.accent: mainColor
+
                     checked: false
 
                     Timer {
                         id: followMeTimer
-                        interval: 250; running: false; repeat: true
+                        interval: 250
+                        running: false
+                        repeat: true
 
                         onTriggered: {
-                            map.center = QtPositioning.coordinate(fbkUpdater.ulisse_pos.latitude, fbkUpdater.ulisse_pos.longitude)
+                            map.center = QtPositioning.coordinate(
+                                        fbkUpdater.ulisse_pos.latitude,
+                                        fbkUpdater.ulisse_pos.longitude)
                         }
                     }
 
                     onCheckStateChanged: {
-                        if (checked === true){
+                        if (checked === true) {
                             followMeTimer.start()
                         } else {
                             followMeTimer.stop()
                         }
                     }
-
                 }
 
                 CheckBox {
                     id: overlayStatusCbox
                     text: "Show Overlay"
-                    anchors.left: followMeCheckbox.right
+                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                     Material.accent: mainColor
                     checked: false
 
                     onCheckStateChanged: {
-                        if (checked === true){
-                            map.overlayTextOpacity = 1.0;
+                        if (checked === true) {
+                            map.overlayTextOpacity = 1.0
                         } else {
-                            map.overlayTextOpacity = 0.0;
+                            map.overlayTextOpacity = 0.0
                         }
                     }
-
                 }
 
                 Button {
-                    id:clearPathButton
+                    id: clearPathButton
                     Layout.rightMargin: 5
                     text: "Clear trace"
                     highlighted: true
@@ -176,10 +177,14 @@ RowLayout {
             radius: mapsidebar.waypointRadius
             color: 'transparent'
             border.width: 2
-            border.color: (pathCurrentState === pathState.creating) | (pathCurrentState === pathState.empty) ? Material.color(Material.DeepOrange, Material.Shade600) : Material.color(Material.Green, Material.Shade500)
+            border.color: (pathCurrentState === pathState.creating)
+                          | (pathCurrentState
+                             === pathState.empty) ? Material.color(
+                                                        Material.DeepOrange,
+                                                        Material.Shade600) : Material.color(
+                                                        Material.Green,
+                                                        Material.Shade500)
             z: map.z + 1
         }
     }
 }
-
-

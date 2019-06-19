@@ -101,6 +101,7 @@ Dialog {
             }
         }
 
+        //TODO: remove easter egg
         ModalPopup {
             id: eastereggDialog
             title: "Interfaccia bella assai"

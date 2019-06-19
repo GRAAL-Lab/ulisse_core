@@ -10,22 +10,24 @@ Item {
     //property bool followme: false
     property var scaleLengths: [5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000, 1000000, 2000000]
 
-    function calculateScale()
-    {
+    function calculateScale() {
         var coord1, coord2, dist, text, f
         f = 0
-        coord1 = map.toCoordinate(Qt.point(0,scale.y))
-        coord2 = map.toCoordinate(Qt.point(0+scaleImage.sourceSize.width,scale.y))
+        coord1 = map.toCoordinate(Qt.point(0, my_scale.y))
+        coord2 = map.toCoordinate(Qt.point(0 + scaleImage.sourceSize.width,
+                                           my_scale.y))
         dist = Math.round(coord1.distanceTo(coord2))
 
         if (dist === 0) {
+
+
             // not visible
         } else {
-            for (var i = 0; i < scaleLengths.length-1; i++) {
-                if (dist < (scaleLengths[i] + scaleLengths[i+1]) / 2 ) {
+            for (var i = 0; i < scaleLengths.length - 1; i++) {
+                if (dist < (scaleLengths[i] + scaleLengths[i + 1]) / 2) {
                     f = scaleLengths[i] / dist
                     dist = scaleLengths[i]
-                    break;
+                    break
                 }
             }
             if (f === 0) {
@@ -39,9 +41,7 @@ Item {
         scaleText.text = text
     }
 
-
-
-    PositionSource{
+    PositionSource {
         id: positionSource
         active: false
 
@@ -61,10 +61,10 @@ Item {
     }
 
     Item {
-        id: scale
+        id: my_scale
         z: map.z + 3
         visible: scaleText.text != "0 m"
-        anchors.bottom: parent.bottom;
+        anchors.bottom: parent.bottom
         anchors.right: parent.right
         anchors.margins: 15
         height: scaleText.height * 3
@@ -95,7 +95,7 @@ Item {
             text: "0 m"
         }
         Component.onCompleted: {
-            calculateScale();
+            calculateScale()
         }
     }
 }

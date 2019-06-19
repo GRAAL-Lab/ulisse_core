@@ -10,66 +10,66 @@ import QtGraphicalEffects 1.0
 import QtQuick.Dialogs 1.2
 import "."
 
-
 Map {
 
     property real markerIconOpacity: markerIcon.opacity
     property alias overlayTextOpacity: overlayText.opacity
 
     function clearUlisseTrace() {
-        ulissePath.path = [];
-        ulissePath.firstRun = true;
+        ulissePath.path = []
+        ulissePath.firstRun = true
     }
 
     function createPath() {
-        mapView.pathCurrentState = pathState.creating;
+        mapView.pathCurrentState = pathState.creating
     }
 
     function startPath() {
-        greenFlag.coordinate = waypointPath.path[waypointPath.pathLength() - 1];
-        mapView.pathCurrentState = pathState.active;
-        map.markerIconOpacity = 0.4;
-        cmdWrapper.startPath();
+        greenFlag.coordinate = waypointPath.path[waypointPath.pathLength() - 1]
+        mapView.pathCurrentState = pathState.active
+        map.markerIconOpacity = 0.4
+        cmdWrapper.startPath()
     }
 
     function stopPath() {
-        mapView.pathCurrentState = pathState.stopped;
-        cmdWrapper.stopPath();
+        mapView.pathCurrentState = pathState.stopped
+        cmdWrapper.stopPath()
     }
 
     function resumePath() {
-        mapView.pathCurrentState = pathState.active;
-        cmdWrapper.resumePath();
+        mapView.pathCurrentState = pathState.active
+        cmdWrapper.resumePath()
     }
 
     function interruptPathIfActive() {
-        if (mapView.pathCurrentState == pathState.active){
-            stopPath();
-            toast.show("Path Interrupted!", 3000);
+        if (mapView.pathCurrentState == pathState.active) {
+            stopPath()
+            toast.show("Path Interrupted!", 3000)
         }
     }
 
     function deletePath() {
-        while (waypointPath.pathLength() > 0){
-            map.removeMapItem(mapCircles[waypointPath.pathLength() - 1]);
-            mapCircles[waypointPath.pathLength() - 1].destroy();
-            waypointPath.removeCoordinate(waypointPath.pathLength() - 1);
+        while (waypointPath.pathLength() > 0) {
+            map.removeMapItem(mapCircles[waypointPath.pathLength() - 1])
+            mapCircles[waypointPath.pathLength() - 1].destroy()
+            waypointPath.removeCoordinate(waypointPath.pathLength() - 1)
         }
 
-        console.log(("Destroyed Path: pathLength = %1").arg(waypointPath.pathLength()))
+        console.log(("Destroyed Path: pathLength = %1").arg(
+                        waypointPath.pathLength()))
 
-        waypointPath.opacity = 0.0;
-        if (mapView.pathCurrentState != pathState.empty){
-            cmdWrapper.cancelPath();
-            mapView.pathCurrentState = pathState.empty;
+        waypointPath.opacity = 0.0
+        if (mapView.pathCurrentState != pathState.empty) {
+            cmdWrapper.cancelPath()
+            mapView.pathCurrentState = pathState.empty
         }
-
     }
 
     ColorOverlay {
         anchors.fill: map
         source: map
-        color: (settings.theme === "Light") ? "transparent" : Qt.rgba(1.0, 0.2, 0, 0.1)
+        color: (settings.theme === "Light") ? "transparent" : Qt.rgba(1.0, 0.2,
+                                                                      0, 0.1)
     }
 
     MapRuler {
@@ -84,19 +84,19 @@ Map {
         edge: Qt.RightEdge
     }
 
-    onCenterChanged:{
+    onCenterChanged: {
         ruler.rulerTimer.restart()
     }
 
-    onZoomLevelChanged:{
+    onZoomLevelChanged: {
         ruler.rulerTimer.restart()
     }
 
-    onWidthChanged:{
+    onWidthChanged: {
         ruler.rulerTimer.restart()
     }
 
-    onHeightChanged:{
+    onHeightChanged: {
         ruler.rulerTimer.restart()
     }
 
@@ -113,29 +113,30 @@ Map {
         anchors.rightMargin: 15
         anchors.topMargin: 20
 
-        transform: [ Rotation {
-                origin.x: compass.width / 2 ;
-                origin.y: compass.height / 2;
+        transform: [
+            Rotation {
+                origin.x: compass.width / 2
+                origin.y: compass.height / 2
                 angle: 180.0 - map.bearing
             },
             Rotation {
-                origin.x: ulisseImage.width / 2 ;
-                origin.y: ulisseImage.height / 2;
+                origin.x: ulisseImage.width / 2
+                origin.y: ulisseImage.height / 2
                 angle: map.tilt
                 axis.x: 1
                 axis.y: 0
                 axis.z: 0
-            } ]
-
+            }
+        ]
     }
 
     MapQuickItem {
-        id:markerIcon
-        sourceItem: Image{
+        id: markerIcon
+        sourceItem: Image {
             id: markerImage
-            width: 32; height: 32
+            width: 32
+            height: 32
             source: 'qrc:/images/map-marker-64.png'
-
         }
         //coordinate: map.center
         z: map.z + 2
@@ -144,26 +145,28 @@ Map {
         opacity: 0.0
 
         onCoordinateChanged: {
-            mapsidebar.markerText = "%1, %2".arg(marker_coords.latitude).arg(marker_coords.longitude);
+            mapsidebar.markerText = "%1, %2".arg(marker_coords.latitude).arg(
+                        marker_coords.longitude)
         }
     }
 
     MapQuickItem {
         id: ulisseIcon
-        sourceItem: Image{
+        sourceItem: Image {
             id: ulisseImage
-            width: 38; height: 38
+            width: 38
+            height: 38
             source: 'qrc:/images/catamaran_icon_64_sat.png'
             //mipmap: true
             transform: [
                 Rotation {
-                    origin.x: ulisseImage.width / 2 ;
-                    origin.y: ulisseImage.height / 2;
+                    origin.x: ulisseImage.width / 2
+                    origin.y: ulisseImage.height / 2
                     angle: fbkUpdater.ulisse_yaw_deg - map.bearing
                 },
                 Rotation {
-                    origin.x: ulisseImage.width / 2 ;
-                    origin.y: ulisseImage.height / 2;
+                    origin.x: ulisseImage.width / 2
+                    origin.y: ulisseImage.height / 2
                     angle: map.tilt
                     axis.x: 1
                     axis.y: 0
@@ -171,7 +174,8 @@ Map {
                 }
             ]
         }
-        coordinate: QtPositioning.coordinate(fbkUpdater.ulisse_pos.latitude, fbkUpdater.ulisse_pos.longitude)
+        coordinate: QtPositioning.coordinate(fbkUpdater.ulisse_pos.latitude,
+                                             fbkUpdater.ulisse_pos.longitude)
         anchorPoint.x: ulisseImage.width / 2
         anchorPoint.y: ulisseImage.height / 2
         z: map.z + 2
@@ -180,32 +184,34 @@ Map {
     MapQuickItem {
         id: goalFlag
         objectName: "goalFlag"
-        sourceItem: Image{
+        sourceItem: Image {
             id: flagCheckerImage
-            width: 72; height: 72
+            width: 72
+            height: 72
             source: 'qrc:/images/flag_checker.png'
         }
-        coordinate: QtPositioning.coordinate(fbkUpdater.goal_pos.latitude, fbkUpdater.goal_pos.longitude)
+        coordinate: QtPositioning.coordinate(fbkUpdater.goal_pos.latitude,
+                                             fbkUpdater.goal_pos.longitude)
         anchorPoint.x: flagCheckerImage.width / 2
         anchorPoint.y: flagCheckerImage.height / 2
         z: goalAcceptRadius.z + 2
         opacity: 0.0
-
     }
 
     MapQuickItem {
         id: greenFlag
-        sourceItem: Image{
+        sourceItem: Image {
             id: greenFlagImage
-            width: 72; height: 72
+            width: 72
+            height: 72
             source: 'qrc:/images/flag_green.png'
         }
 
         anchorPoint.x: greenFlagImage.width / 2
         anchorPoint.y: greenFlagImage.height / 2
         z: goalAcceptRadius.z + 1
-        opacity: (mapView.pathCurrentState === pathState.active) || (mapView.pathCurrentState === pathState.stopped) ? 1.0 : 0.0
-
+        opacity: (mapView.pathCurrentState === pathState.active)
+                 || (mapView.pathCurrentState === pathState.stopped) ? 1.0 : 0.0
     }
 
     Text {
@@ -226,11 +232,13 @@ Map {
         id: overlayText
         sourceItem: Text {
             color: 'darkslategray'
-            text: "Surge: %1 m/s\nHeading: %2°".arg(fbkUpdater.ulisse_surge).arg(fbkUpdater.ulisse_yaw_deg)
+            text: "Surge: %1 m/s\nHeading: %2°".arg(
+                      fbkUpdater.ulisse_surge).arg(fbkUpdater.ulisse_yaw_deg)
         }
-        coordinate: QtPositioning.coordinate(fbkUpdater.ulisse_pos.latitude, fbkUpdater.ulisse_pos.longitude)
-        anchorPoint.x: - ulisseImage.width / 2
-        anchorPoint.y: - ulisseImage.height / 2
+        coordinate: QtPositioning.coordinate(fbkUpdater.ulisse_pos.latitude,
+                                             fbkUpdater.ulisse_pos.longitude)
+        anchorPoint.x: -ulisseImage.width / 2
+        anchorPoint.y: -ulisseImage.height / 2
         z: map.z + 3
         opacity: 0.0
     }
@@ -246,7 +254,6 @@ Map {
         z: map.z + 2
     }
 
-
     MapPolyline {
         id: ulissePath
         line.width: 1
@@ -256,21 +263,24 @@ Map {
         z: map.z + 2
 
         Timer {
-            interval: 500; running: true; repeat: true
+            interval: 500
+            running: true
+            repeat: true
 
             onTriggered: {
                 if (ulissePath.firstRun) {
                     ulissePath.addCoordinate(fbkUpdater.ulisse_pos)
-                    ulissePath.firstRun = false;
+                    ulissePath.firstRun = false
                 }
                 // To reduce the line density (and avoid to overload the gui)
                 // we add a new point only every 1.0 meter
-                var lastCoord = ulissePath.coordinateAt(ulissePath.pathLength() - 1);
-                var distToNext = lastCoord.distanceTo(fbkUpdater.ulisse_pos);
-                if (distToNext > 1.0){
+                var lastCoord = ulissePath.coordinateAt(
+                            ulissePath.pathLength() - 1)
+                var distToNext = lastCoord.distanceTo(fbkUpdater.ulisse_pos)
+                if (distToNext > 1.0) {
                     ulissePath.addCoordinate(fbkUpdater.ulisse_pos)
-                    if(ulissePath.pathLength() > ulissePath.traceSize) {
-                        ulissePath.removeCoordinate(0);
+                    if (ulissePath.pathLength() > ulissePath.traceSize) {
+                        ulissePath.removeCoordinate(0)
                     }
                 }
             }
@@ -281,7 +291,13 @@ Map {
         id: waypointPath
         objectName: "waypointPath"
         line.width: 2
-        line.color: (pathCurrentState === pathState.creating) | (pathCurrentState === pathState.empty) ? Material.color(Material.DeepOrange, Material.Shade300) : Material.color(Material.Green, Material.Shade300)
+        line.color: (pathCurrentState === pathState.creating)
+                    | (pathCurrentState
+                       === pathState.empty) ? Material.color(
+                                                  Material.DeepOrange,
+                                                  Material.Shade300) : Material.color(
+                                                  Material.Green,
+                                                  Material.Shade300)
         opacity: 0.0
         z: map.z + 1
     }
@@ -294,50 +310,52 @@ Map {
 
         function addWaypoint(waypoint) {
 
-            waypointPath.addCoordinate(waypoint);
-            mapCircles[waypointPath.pathLength() - 1] =
-                    mapCircleComponent.createObject(map,
-                                                    {"center.latitude" : waypoint.latitude,
-                                                        "center.longitude": waypoint.longitude});
+            waypointPath.addCoordinate(waypoint)
+            mapCircles[waypointPath.pathLength(
+                           ) - 1] = mapCircleComponent.createObject(map, {
+                                                                        "center.latitude": waypoint.latitude,
+                                                                        "center.longitude": waypoint.longitude
+                                                                    })
 
             if (mapCircleComponent.status === Component.Ready) {
-                map.addMapItem(mapCircles[waypointPath.pathLength() - 1]);
-                waypointPath.opacity = 1.0;
-                console.log(("Added waypoint! (size: %1)").arg(waypointPath.pathLength()));
+                map.addMapItem(mapCircles[waypointPath.pathLength() - 1])
+                waypointPath.opacity = 1.0
+                console.log(("Added waypoint! (size: %1)").arg(
+                                waypointPath.pathLength()))
 
                 marker_coords = waypoint
-                markerIcon.coordinate = waypoint;
-                markerIcon.opacity = 1.0;
+                markerIcon.coordinate = waypoint
+                markerIcon.opacity = 1.0
             }
         }
 
-        function removeWaypoint(){
+        function removeWaypoint() {
             if (waypointPath.pathLength() > 0) {
-                map.removeMapItem(mapCircles[waypointPath.pathLength() - 1]);
-                mapCircles[waypointPath.pathLength() - 1].destroy();
+                map.removeMapItem(mapCircles[waypointPath.pathLength() - 1])
+                mapCircles[waypointPath.pathLength() - 1].destroy()
 
-                waypointPath.removeCoordinate(waypointPath.pathLength() - 1);
-                console.log(("Removed waypoint! (size: %1)").arg(waypointPath.pathLength()));
-
+                waypointPath.removeCoordinate(waypointPath.pathLength() - 1)
+                console.log(("Removed waypoint! (size: %1)").arg(
+                                waypointPath.pathLength()))
             }
         }
 
         onClicked: {
 
-            if (pathCurrentState === pathState.creating){
+            if (pathCurrentState === pathState.creating) {
                 if (mouse.button & Qt.LeftButton) {
-                    var wp = map.toCoordinate(Qt.point(mouse.x,mouse.y));
-                    addWaypoint(wp);
-                } if (mouse.button & Qt.RightButton) {
-                    removeWaypoint();
+                    var wp = map.toCoordinate(Qt.point(mouse.x, mouse.y))
+                    addWaypoint(wp)
+                }
+                if (mouse.button & Qt.RightButton) {
+                    removeWaypoint()
                 }
             } else if (mouse.button & Qt.LeftButton) {
-                marker_coords = map.toCoordinate(Qt.point(mouse.x,mouse.y));
-                markerIcon.coordinate = map.toCoordinate(Qt.point(mouse.x,mouse.y));
-                markerIcon.opacity = 1.0;
+                marker_coords = map.toCoordinate(Qt.point(mouse.x, mouse.y))
+                markerIcon.coordinate = map.toCoordinate(Qt.point(mouse.x,
+                                                                  mouse.y))
+                markerIcon.opacity = 1.0
             }
         }
     }
 }
-
-
