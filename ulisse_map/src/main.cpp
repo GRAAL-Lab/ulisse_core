@@ -59,6 +59,7 @@ int main(int argc, char* argv[])
     cmdWrapper->SetNodeHandle(node);
     appEngine.rootContext()->setContextProperty("fbkUpdater", fbkUpdater.data());
     appEngine.rootContext()->setContextProperty("cmdWrapper", cmdWrapper.data());
+    appEngine.rootContext()->setContextProperty("home_dir", QDir::homePath());
 
     appEngine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 

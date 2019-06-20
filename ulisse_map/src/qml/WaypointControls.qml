@@ -9,23 +9,23 @@ import QtQuick.Dialogs 1.2
 WaypointControlsForm {
     id: my_waypoint_ctrl
     waypointsButton.onClicked: {
-        if (waypointRadius.text !== '') {
-            if (mapView.pathCurrentState === pathState.empty) {
-                map.createPath()
-            } else if (mapView.pathCurrentState === pathState.creating) {
-                map.startPath()
-            } else if (mapView.pathCurrentState === pathState.active) {
-                map.stopPath()
-            } else if (mapView.pathCurrentState === pathState.stopped) {
-                map.resumePath()
+            if (waypointRadius.text !== '') {
+                if (mapView.pathCurrentState === pathState.empty) {
+                    map.createPath()
+                } else if (mapView.pathCurrentState === pathState.creating) {
+                    map.startPath()
+                } else if (mapView.pathCurrentState === pathState.active) {
+                    map.stopPath()
+                } else if (mapView.pathCurrentState === pathState.stopped) {
+                    map.resumePath()
+                }
+            } else {
+                acceptRadDialog.open()
             }
-        } else {
-            acceptRadDialog.open()
         }
-    }
 
     wpRestartButton.onClicked: {
-        cmdWrapper.startPath()
+         cmdWrapper.startPath()
     }
 
     wpDeleteButton.onClicked: {

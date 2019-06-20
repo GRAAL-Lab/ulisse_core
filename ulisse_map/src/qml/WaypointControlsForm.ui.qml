@@ -30,23 +30,6 @@ RowLayout {
         Layout.fillWidth: true
         highlighted: true
         Material.accent: secondaryAccentColor
-        /*
-        onClicked: {
-            if (waypointRadius.text !== '') {
-                if (mapView.pathCurrentState === pathState.empty) {
-                    map.createPath()
-                } else if (mapView.pathCurrentState === pathState.creating) {
-                    map.startPath()
-                } else if (mapView.pathCurrentState === pathState.active) {
-                    map.stopPath()
-                } else if (mapView.pathCurrentState === pathState.stopped) {
-                    map.resumePath()
-                }
-            } else {
-                acceptRadDialog.open()
-            }
-        }
-*/
     }
 
     Button {
@@ -73,11 +56,6 @@ RowLayout {
             horizontalAlignment: Image.AlignHCenter
             verticalAlignment: Image.AlignVCenter
         }
-        /*
-        onClicked: {
-            cmdWrapper.startPath()
-        }
-*/
     }
 
     Button {
@@ -96,11 +74,6 @@ RowLayout {
         ToolTip.timeout: 5000
         ToolTip.visible: hovered
         enabled: true
-        /*
-        onClicked: {
-            map.deletePath()
-        }
-        */
     }
 
     TextField {
