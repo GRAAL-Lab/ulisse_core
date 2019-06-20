@@ -20,10 +20,10 @@ ApplicationWindow {
     minimumHeight: 500
     minimumWidth: 705
 
-    property var mainColor: (settings.theme == "Light" ? Material.Cyan : Material.Red)
-    property var mainAccentColor: Material.color(Material.Amber,
+    property int mainColor: (settings.theme == "Light" ? Material.Cyan : Material.Red)
+    property color mainAccentColor: Material.color(Material.Amber,
                                                  Material.Shade700)
-    property var secondaryAccentColor: Material.color(Material.Green,
+    property color secondaryAccentColor: Material.color(Material.Green,
                                                       Material.Shade600)
     property string futureMapPlugin: ""
 
@@ -56,55 +56,6 @@ ApplicationWindow {
         Component.onCompleted: {
             futureMapPlugin = mapPluginType
             mapViewLoader.active = true
-        }
-    }
-
-    header: CustomHeader {
-        id: headerBar
-    }
-
-    Item {
-        // This Item is needed to add margins to the StackLayout and make it correctly resize
-        id: stackViewContainer
-        anchors.fill: parent
-        anchors.horizontalCenter: parent.horizontalCenter
-        height: window.height - headerBar.height
-        width: window.width
-
-        StackLayout {
-            id: mainStackView
-            height: parent.height
-            anchors.fill: parent
-            currentIndex: headerBar.tabBarIndex
-            Layout.alignment: Qt.AlignHCenter
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-
-            Loader {
-                // This loader is need to dynamically load the map plugin
-                // only once the settings are loaded (so to be able to
-                // correctly read 'mapPluginType' and 'esriMapCacheDir').
-                id: mapViewLoader
-                sourceComponent: mapViewComponent
-                active: false
-                Layout.fillHeight: true
-                Layout.fillWidth: true
-            }
-
-            DataView {
-                id: dataView
-                Layout.fillHeight: true
-                Layout.fillWidth: true
-                Layout.margins: 10
-            }
-        }
-    }
-
-    Component {
-        id: mapViewComponent
-        MapView {
-            id: mapView
-            anchors.fill: parent
         }
     }
 
@@ -155,4 +106,54 @@ ApplicationWindow {
         text: "Loading... (%1 x %2)".arg(window.width).arg(window.height)
         font.family: "Ubuntu Mono"
     }*/
+
+    //// UI part ////
+    header: CustomHeader {
+        id: headerBar
+    }
+
+    Item {
+        // This Item is needed to add margins to the StackLayout and make it correctly resize
+        id: stackViewContainer
+        anchors.fill: parent
+        anchors.horizontalCenter: parent.horizontalCenter
+        height: window.height - headerBar.height
+        width: window.width
+
+        Component {
+            id: mapViewComponent
+            MapView {
+                id: mapView
+                anchors.fill: parent
+            }
+        }
+
+        StackLayout {
+            id: mainStackView
+            height: parent.height
+            anchors.fill: parent
+            currentIndex: headerBar.tabBarIndex
+            Layout.alignment: Qt.AlignHCenter
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+
+            Loader {
+                // This loader is need to dynamically load the map plugin
+                // only once the settings are loaded (so to be able to
+                // correctly read 'mapPluginType' and 'esriMapCacheDir').
+                id: mapViewLoader
+                sourceComponent: mapViewComponent
+                active: false
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+            }
+
+            DataView {
+                id: dataView
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+                Layout.margins: 10
+            }
+        }
+    }
 }
