@@ -31,7 +31,8 @@
         <file>images/compass_icon.svg</file>
         <file>images/restart-256.png</file>
         <file>images/restart-256_grey.png</file>
-        <file>qml/WaypointControls.qml</file>
+        <file>qml/WaypointControlsForm.ui.qml</file>
         <file>qml/MapComponent.qml</file>
+        <file>qml/WaypointControls.qml</file>
     </qresource>
 </RCC>

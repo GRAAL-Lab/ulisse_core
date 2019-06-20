@@ -68,7 +68,7 @@ RowLayout {
         Layout.maximumWidth: 300
     }
 
-    property real altezzaScrittaDemmerda: 17
+    property real my_height: 17
 
     Rectangle {
         id: mapContainer
@@ -81,7 +81,7 @@ RowLayout {
         MapComponent {
             id: map
             width: parent.width
-            height: parent.height - bottomToolbar.height + altezzaScrittaDemmerda
+            height: parent.height - bottomToolbar.height + my_height
             plugin: mapPlugin
             center: QtPositioning.coordinate(44.393, 8.945) // Genoa
             zoomLevel: 17.5 //(maximumZoomLevel - minimumZoomLevel)/2

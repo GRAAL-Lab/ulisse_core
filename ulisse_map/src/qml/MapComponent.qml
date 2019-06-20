@@ -66,6 +66,7 @@ Map {
     }
 
     ColorOverlay {
+        id: marker
         anchors.fill: map
         source: map
         color: (settings.theme === "Light") ? "transparent" : Qt.rgba(1.0, 0.2,
@@ -216,7 +217,7 @@ Map {
 
     Text {
         anchors.leftMargin: 10
-        anchors.bottomMargin: altezzaScrittaDemmerda + 10
+        anchors.bottomMargin: my_height + 10
         anchors.left: parent.left
         anchors.bottom: parent.bottom
         color: "steelblue"

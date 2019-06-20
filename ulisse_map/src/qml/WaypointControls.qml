@@ -6,123 +6,31 @@ import QtPositioning 5.6
 import QtQuick.Controls.Material 2.1
 import QtQuick.Dialogs 1.2
 
-RowLayout {
-    width: parent.width
-    property alias wpRadius: waypointRadius.text
-    property alias wpButtonText: waypointsButton.text
-    property alias wpButtonHighlighted: waypointsButton.highlighted
-    property bool loopPath: false
-
-    Button {
-        id: waypointsButton
-        Material.accent: secondaryAccentColor
-        text: "Create Path"
-        Layout.preferredWidth: 90
-        Layout.alignment: Qt.AlignLeft
-        Layout.fillWidth: true
-
-        onClicked: {
-            if (waypointRadius.text !== '') {
-                if (mapView.pathCurrentState === pathState.empty) {
-                    map.createPath()
-                    waypointsButton.text = "Send Path"
-                    waypointsButton.highlighted = true
-                } else if (mapView.pathCurrentState === pathState.creating) {
-                    map.startPath()
-                    waypointsButton.text = "Pause Path"
-                    waypointsButton.Material.accent = mainAccentColor
-                } else if (mapView.pathCurrentState === pathState.active) {
-                    waypointsButton.text = "Resume Path"
-                    map.stopPath()
-                } else if (mapView.pathCurrentState === pathState.stopped) {
-                    waypointsButton.text = "Pause Path"
-                    waypointsButton.Material.accent = mainAccentColor
-                    map.resumePath()
-                }
-            } else {
-                acceptRadDialog.open()
+WaypointControlsForm {
+    id: my_waypoint_ctrl
+    waypointsButton.onClicked: {
+        if (waypointRadius.text !== '') {
+            if (mapView.pathCurrentState === pathState.empty) {
+                map.createPath()
+            } else if (mapView.pathCurrentState === pathState.creating) {
+                map.startPath()
+            } else if (mapView.pathCurrentState === pathState.active) {
+                map.stopPath()
+            } else if (mapView.pathCurrentState === pathState.stopped) {
+                map.resumePath()
             }
+        } else {
+            acceptRadDialog.open()
         }
     }
 
-    Button {
-        id: wpRestartButton
-        Material.accent: secondaryAccentColor
-        Layout.preferredWidth: 30
-        Layout.minimumWidth: 30
-        Layout.maximumWidth: 30
-
-        Layout.alignment: Qt.AlignLeft
-        enabled: (mapView.pathCurrentState === pathState.active)
-                 || (mapView.pathCurrentState === pathState.stopped) ? true : false
-
-        ToolTip.text: qsTr("Restart path from beginning")
-        ToolTip.delay: 500
-        ToolTip.timeout: 5000
-        ToolTip.visible: hovered
-
-        Image {
-            id: restartIco
-            anchors.fill: parent
-            source: wpRestartButton.enabled ? "qrc:/images/restart-256.png" : "qrc:/images/restart-256_grey.png"
-            mipmap: true
-            fillMode: Image.PreserveAspectFit
-            horizontalAlignment: Image.AlignHCenter
-            verticalAlignment: Image.AlignVCenter
-        }
-
-        onClicked: {
-            cmdWrapper.startPath()
-        }
+    wpRestartButton.onClicked: {
+        cmdWrapper.startPath()
     }
 
-    Button {
-        id: wpDeleteButton
-        Material.accent: Material.Red
-        highlighted: true
-        Layout.preferredWidth: 30
-        Layout.minimumWidth: 30
-        Layout.maximumWidth: 30
-        text: "X"
-        font.weight: Font.Bold
-        font.pointSize: 12
-        enabled: mapView.pathCurrentState === pathState.empty ? false : true
-
-        ToolTip.text: qsTr("Delete the current path and stop")
-        ToolTip.delay: 500
-        ToolTip.timeout: 5000
-        ToolTip.visible: hovered
-
-        onClicked: {
-            map.deletePath()
-            waypointsButton.text = "Create Path"
-            waypointsButton.highlighted = false
-            waypointsButton.Material.accent = secondaryAccentColor
-        }
-    }
-
-    TextField {
-        id: waypointRadius
-        objectName: "waypointRadius"
-        Layout.preferredWidth: 45
-        Layout.minimumWidth: 45
-        Layout.maximumWidth: 45
-        font.pointSize: 10
-        placeholderText: "Radius"
-        selectByMouse: true
-        text: "5.0"
-        enabled: mapView.pathCurrentState === pathState.active ? false : true
-
-        ToolTip.text: qsTr("Acceptance Radius (meters)")
-        ToolTip.delay: 500
-        ToolTip.timeout: 5000
-        ToolTip.visible: hovered
-
-        validator: DoubleValidator {
-            bottom: 0.0
-            top: 101.0
-            decimals: 3
-            notation: DoubleValidator.StandardNotation
-        }
+    wpDeleteButton.onClicked: {
+        map.deletePath()
     }
 }
+
+
