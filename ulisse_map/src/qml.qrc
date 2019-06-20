@@ -23,7 +23,7 @@
         <file>scripts/helper.js</file>
         <file>qml/MapRuler.qml</file>
         <file>qml/MapSliders.qml</file>
-        <file>qml/MapSidebar.qml</file>
+        <file>qml/MapSidebarForm.ui.qml</file>
         <file>qml/DataView.qml</file>
         <file>qml/SettingsDialog.qml</file>
         <file>qml/HelpDialog.qml</file>
@@ -35,5 +35,7 @@
         <file>qml/MapComponent.qml</file>
         <file>qml/WaypointControls.qml</file>
         <file>qml/MapRulerForm.ui.qml</file>
+        <file>qml/MapSidebar.qml</file>
+        <file>qml/LabelledTextForm.ui.qml</file>
     </qresource>
 </RCC>
