@@ -5,13 +5,13 @@ import QtQuick.Controls 2.1
 ColumnLayout {
     property alias label: title.text
     property alias labelColor: title.color
-    property alias text: data.text
-    property alias textColor: data.color
-    property alias textBoldness: data.font.weight
+    property alias text: label_data.text
+    property alias textColor: label_data.color
+    property alias textBoldness: label_data.font.weight
 
     //id: markerTextColumn
     width: parent.width
-    Layout.preferredHeight: title.contentHeight + data.contentHeight + 5
+    Layout.preferredHeight: title.contentHeight + label_data.contentHeight + 5
     spacing: 0
 
     Label {
@@ -26,7 +26,7 @@ ColumnLayout {
     }
 
     Label {
-        id: data
+        id: label_data
         width: parent.width
         //color: 'lightgray'
         leftPadding: 5.0

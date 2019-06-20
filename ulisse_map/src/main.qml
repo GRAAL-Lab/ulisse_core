@@ -50,7 +50,6 @@ ApplicationWindow {
         id: settings
         property int shTimeout: 120
         property string mapPluginType: "esri"
-        //FIXME: hard path
         property string esriMapCacheDir: home_dir + "/.map_offline_tiles/esri/"
         property string theme: "Light"
 

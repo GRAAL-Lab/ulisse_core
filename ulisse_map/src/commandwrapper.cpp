@@ -297,7 +297,7 @@ void CommandWrapper::check_error_slot()
 
     if (goalCtxRead_) {
         if (goal_cxt_msg_.goal_distance < wpRadius_) {
-            goToNextWaypoint(); //unused return value, see below TODO
+            goToNextWaypoint();
         }
         //TODO: how is the client notified of the end of the path? It is necessary?
     }

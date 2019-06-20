@@ -34,5 +34,6 @@
         <file>qml/WaypointControlsForm.ui.qml</file>
         <file>qml/MapComponent.qml</file>
         <file>qml/WaypointControls.qml</file>
+        <file>qml/MapRulerForm.ui.qml</file>
     </qresource>
 </RCC>

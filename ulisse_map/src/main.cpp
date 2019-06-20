@@ -14,8 +14,12 @@
 #include "feedbackupdater.h"
 #include "rclcpp/rclcpp.hpp"
 
+#include <QQmlDebuggingEnabler>
+
 int main(int argc, char* argv[])
 {
+    QQmlDebuggingEnabler enabler;
+
     char name[] = { "Ulisse Control GUI" };
 
     rclcpp::init(argc, argv);
