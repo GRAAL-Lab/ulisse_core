@@ -22,6 +22,7 @@ Map {
     property alias ruler: ruler
     property alias waypointPath: waypointPath
     property alias greenFlag: greenFlag
+    property alias rectanglePath: rectanglePath
 
     ColorOverlay {
         id: marker
@@ -114,8 +115,7 @@ Map {
         anchorPoint.x: greenFlagImage.width / 2
         anchorPoint.y: greenFlagImage.height / 2
         z: goalAcceptRadius.z + 1
-        opacity: ((mapView.pathCurrentState === pathState.active)
-                  || (mapView.pathCurrentState === pathState.stopped) ? 1.0 : 0.0)
+        opacity: ((mapView.pathCurrentState === pathState.active) || (mapView.pathCurrentState === pathState.stopped) ? 1.0 : 0.0)
     }
 
     Text {
@@ -168,11 +168,19 @@ Map {
     }
 
     MapPolyline {
+        id: rectanglePath
+        objectName: "rectanglePath"
+        line.width: 3
+        line.color: "#81c784"
+        opacity: 1.0
+        z: map.z + 5
+    }
+
+    MapPolyline {
         id: waypointPath
         objectName: "waypointPath"
         line.width: 2
-        line.color: (pathCurrentState === pathState.creating)
-                    || (pathCurrentState === pathState.empty) ? "#ff8a65" : "#81c784"
+        line.color: ((pathCurrentState === pathState.creating) || (pathCurrentState === pathState.empty) ? "#ff8a65" : "#81c784")
         opacity: 0.0
         z: map.z + 1
     }
