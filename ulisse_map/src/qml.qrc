@@ -38,5 +38,6 @@
         <file>qml/MapSidebar.qml</file>
         <file>qml/LabelledTextForm.ui.qml</file>
         <file>qml/MapViewForm.ui.qml</file>
+        <file>qml/MapComponentForm.ui.qml</file>
     </qresource>
 </RCC>
