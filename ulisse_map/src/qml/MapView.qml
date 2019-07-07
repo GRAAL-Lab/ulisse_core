@@ -57,7 +57,7 @@ MapViewForm {
     Component {
         id: mapCircleComponent
         MapCircle {
-            radius: mapsidebar.waypointRadius
+            radius: 10
             color: 'transparent'
             border.width: 2
             border.color: (pathCurrentState === pathState.creating)

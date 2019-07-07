@@ -7,7 +7,6 @@ import "."
 Rectangle {
     property alias markerText: markerTextLabel.text
     property alias markerTextColor: markerTextLabel.textColor
-    property alias waypointRadius: commandRect.wpRad
     property color labelColor1: "#000000"
     property color labelColor2: "#000000"
     color: Material.background
@@ -79,7 +78,6 @@ Rectangle {
                         text: fbkUpdater.goal_distance + " (m)"
                     }
                 }
-
 
                 /*ColumnLayout {
                     id: goaldatalayout

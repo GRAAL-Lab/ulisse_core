@@ -22,6 +22,7 @@ MapComponentForm {
     function createPath() {
          if (currentState === generalState.empty){
              currentState = generalState.path
+             deletePath() //TEMPORARY
              mapView.pathCurrentState = pathState.creating
              click_handler = path_click_handler
              pos_changed_handler = function(){}
@@ -48,21 +49,7 @@ MapComponentForm {
          }
     }
 
-    function startPath() {
-        greenFlag.coordinate = waypointPath.path[waypointPath.pathLength() - 1]
-        mapView.pathCurrentState = pathState.active
-        map.markerIconOpacity = 0.4
-        cmdWrapper.startPath()
-    }
-
-    function stopPath() {
-         if (currentState === generalState.path){
-            mapView.pathCurrentState = pathState.stopped
-            cmdWrapper.stopPath()
-         }
-    }
-
-    function stopRect() {
+    function endRect() {
          if (currentState === generalState.rect){
              click_handler = function(){}
              pos_changed_handler = function(){}
@@ -70,7 +57,7 @@ MapComponentForm {
          }
     }
 
-    function stopPoly() {
+    function endPoly() {
          if (currentState === generalState.poly){
              click_handler = function(){}
              pos_changed_handler = function(){}
@@ -78,17 +65,11 @@ MapComponentForm {
          }
     }
 
-    function resumePath() {
+    function endPath(){
         if (currentState === generalState.path){
-        mapView.pathCurrentState = pathState.active
-        cmdWrapper.resumePath()
-        }
-    }
-
-    function interruptPathIfActive() {
-        if (mapView.pathCurrentState == pathState.active) {
-            stopPath()
-            toast.show("Path Interrupted!", 3000)
+            click_handler = function(){}
+            pos_changed_handler = function(){}
+            currentState = generalState.empty
         }
     }
 
@@ -99,8 +80,6 @@ MapComponentForm {
                 mapCircles[waypointPath.pathLength() - 1].destroy()
                 waypointPath.removeCoordinate(waypointPath.pathLength() - 1)
             }
-            console.log(("Destroyed Path: pathLength = %1").arg(
-                            waypointPath.pathLength()))
 
             waypointPath.opacity = 0.0
             if (mapView.pathCurrentState != pathState.empty) {
@@ -108,10 +87,8 @@ MapComponentForm {
                 mapView.pathCurrentState = pathState.empty
             }
         }
-        click_handler = function(){}
-        pos_changed_handler = function(){}
-        currentState = generalState.empty
     }
+
 
     compass.transform: [
         Rotation {
@@ -190,7 +167,6 @@ MapComponentForm {
     }
 
     function addWaypoint(waypoint){
-
         waypointPath.addCoordinate(waypoint)
         mapCircles[waypointPath.pathLength(
                        ) - 1] = mapCircleComponent.createObject(map, {
@@ -211,15 +187,13 @@ MapComponentForm {
     }
 
     function removeWaypoint(){
-                if (waypointPath.pathLength() > 0) {
-                    map.removeMapItem(mapCircles[waypointPath.pathLength() - 1])
-                    mapCircles[waypointPath.pathLength() - 1].destroy()
+        if (waypointPath.pathLength() > 0) {
+            map.removeMapItem(mapCircles[waypointPath.pathLength() - 1])
+            mapCircles[waypointPath.pathLength() - 1].destroy()
 
-                    waypointPath.removeCoordinate(waypointPath.pathLength() - 1)
-                    console.log(("Removed waypoint! (size: %1)").arg(
-                                    waypointPath.pathLength()))
-                }
-            }
+            waypointPath.removeCoordinate(waypointPath.pathLength() - 1)
+        }
+    }
 
     property var rect_phase: 0
     property var polygonal_phase: 0
@@ -267,7 +241,7 @@ MapComponentForm {
             poligonalPath.line.color = "#33cc33"
             polygonal_phase = 0
             mapMouseArea.hoverEnabled = false
-            stopPoly()
+            endPoly()
         }
     }
 
@@ -374,7 +348,7 @@ MapComponentForm {
             } else if (rect_phase === 2){
                 rect_phase = 0
                 mapMouseArea.hoverEnabled = false
-                stopRect()
+                endRect()
             }
         }
     }
@@ -382,8 +356,14 @@ MapComponentForm {
     function path_click_handler(mouse){
         if (pathCurrentState === pathState.creating) {
             if (mouse.button & Qt.LeftButton) {
-                var wp = map.toCoordinate(Qt.point(mouse.x, mouse.y))
-                addWaypoint(wp)
+                var p = Qt.point(mouse.x, mouse.y)
+                var wp = map.toCoordinate(p)
+                var lastwp = waypointPath.coordinateAt(waypointPath.pathLength()-1)
+                var lastp = map.fromCoordinate(lastwp)
+                if (Math.sqrt(Math.pow(p.x-lastp.x,2) + Math.pow(p.y-lastp.y,2)) < 10)
+                    endPath()
+                else
+                    addWaypoint(wp)
             }
             if (mouse.button & Qt.RightButton) {
                 removeWaypoint()

@@ -8,7 +8,6 @@ import QtGraphicalEffects 1.0
 import QtQuick.Dialogs 1.2
 
 Pane {
-    property alias wpRad: wpCommands.wpRadius
 
     ColumnLayout {
         id: buttonsColumn
@@ -244,29 +243,26 @@ Pane {
         }
 
         RowLayout {
-            id: rowLayout
-            width: 100
-            height: 100
-
-            WaypointControls {
-                id: wpCommands
-                Layout.fillWidth: true
-            }
-        }
-
-        RowLayout {
             id: rowLayout1
             width: 100
             height: 100
 
             Button {
+                id: b_path
+                text: qsTr("Path")
+                onClicked: {
+                    map.createPath()
+                }
+            }
+
+            Button {
                 id: b_rect
                 text: qsTr("Rectangle")
-                font.family: "Arial"
                 onClicked: {
                     map.createRect()
                 }
             }
+
 
             Button {
                 id: b_poly
@@ -275,6 +271,7 @@ Pane {
                     map.createPoly()
                 }
             }
+
         }
 
         RowLayout {
