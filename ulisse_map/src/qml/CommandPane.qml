@@ -243,9 +243,38 @@ Pane {
             border.color: "lightgrey"
         }
 
-        WaypointControls {
-            id: wpCommands
-            Layout.fillWidth: true
+        RowLayout {
+            id: rowLayout
+            width: 100
+            height: 100
+
+            WaypointControls {
+                id: wpCommands
+                Layout.fillWidth: true
+            }
+        }
+
+        RowLayout {
+            id: rowLayout1
+            width: 100
+            height: 100
+
+            Button {
+                id: b_rect
+                text: qsTr("Rectangle")
+                font.family: "Arial"
+                onClicked: {
+                    map.createRect()
+                }
+            }
+
+            Button {
+                id: b_poly
+                text: qsTr("Polygon")
+                onClicked: {
+                    map.createPoly()
+                }
+            }
         }
 
         RowLayout {
@@ -328,6 +357,11 @@ Pane {
                 }
             }
         }
+
+
+
+
+
     }
 
     FileDialog {

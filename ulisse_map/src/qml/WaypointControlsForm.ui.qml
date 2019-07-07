@@ -30,6 +30,7 @@ RowLayout {
         Layout.fillWidth: true
         highlighted: true
         Material.accent: secondaryAccentColor
+        enabled: true
     }
 
     Button {
@@ -147,6 +148,13 @@ RowLayout {
                 target: waypointsButton
                 Material.accent: mainAccentColor
                 text: "Resume path"
+            }
+        },
+        State {
+            name: "creatingsquare"
+            PropertyChanges {
+                target: waypointsButton
+                enabled: false
             }
         }
     ]
