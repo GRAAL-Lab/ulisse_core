@@ -10,6 +10,7 @@ RowLayout {
     property alias waypointsButton: waypointsButton
     property alias wpRestartButton: wpRestartButton
     property alias wpDeleteButton: wpDeleteButton
+    property alias squaredrawButton: squaredrawButton
     id: my_waypoint_ctrl
     //width: parent.width
     property alias wpRadius: waypointRadius.text
@@ -30,6 +31,7 @@ RowLayout {
         Layout.fillWidth: true
         highlighted: true
         Material.accent: secondaryAccentColor
+        enabled: true
     }
 
     Button {
@@ -100,6 +102,15 @@ RowLayout {
             notation: DoubleValidator.StandardNotation
         }
     }
+    Button {
+        id: squaredrawButton
+        Layout.preferredWidth: 90
+        Layout.alignment: Qt.AlignRight
+        Layout.fillWidth: true
+        highlighted: false
+        Material.accent: secondaryAccentColor
+        enabled: true
+    }
 
     states: [
         State {
@@ -108,6 +119,10 @@ RowLayout {
                 target: waypointsButton
                 text: "Create Path"
                 highlighted: false
+            }
+            PropertyChanges {
+                target: squaredrawButton
+                text: "Draw Square"
             }
             PropertyChanges {
                 target: wpRestartButton
@@ -147,6 +162,13 @@ RowLayout {
                 target: waypointsButton
                 Material.accent: mainAccentColor
                 text: "Resume path"
+            }
+        },
+        State {
+            name: "creatingsquare"
+            PropertyChanges {
+                target: waypointsButton
+                enabled: false
             }
         }
     ]

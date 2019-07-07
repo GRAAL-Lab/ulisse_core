@@ -20,7 +20,22 @@ MapComponentForm {
     }
 
     function createPath() {
-        mapView.pathCurrentState = pathState.creating
+         if (currentState === generalState.empty){
+             currentState = generalState.path
+             mapView.pathCurrentState = pathState.creating
+             click_handler = drawlines
+             pos_changed_handler = function(){}
+         }
+    }
+
+     function createRect() {
+         if (currentState === generalState.empty){
+             currentState = generalState.rect
+             //mapView.rectCurrentState = rectState.creating
+             rect_phase = 0
+             click_handler = rect
+             pos_changed_handler = rect_pos_changed_handler
+         }
     }
 
     function startPath() {
@@ -31,13 +46,25 @@ MapComponentForm {
     }
 
     function stopPath() {
-        mapView.pathCurrentState = pathState.stopped
-        cmdWrapper.stopPath()
+         if (currentState === generalState.path){
+            mapView.pathCurrentState = pathState.stopped
+            cmdWrapper.stopPath()
+         }
+    }
+
+    function stopRect() {
+         if (currentState === generalState.rect){
+             click_handler = function(){}
+             pos_changed_handler = function(){}
+             currentState = generalState.empty
+         }
     }
 
     function resumePath() {
+        if (currentState === generalState.path){
         mapView.pathCurrentState = pathState.active
         cmdWrapper.resumePath()
+        }
     }
 
     function interruptPathIfActive() {
@@ -48,20 +75,24 @@ MapComponentForm {
     }
 
     function deletePath() {
-        while (waypointPath.pathLength() > 0) {
-            map.removeMapItem(mapCircles[waypointPath.pathLength() - 1])
-            mapCircles[waypointPath.pathLength() - 1].destroy()
-            waypointPath.removeCoordinate(waypointPath.pathLength() - 1)
-        }
+        if (currentState === generalState.path){
+            while (waypointPath.pathLength() > 0) {
+                map.removeMapItem(mapCircles[waypointPath.pathLength() - 1])
+                mapCircles[waypointPath.pathLength() - 1].destroy()
+                waypointPath.removeCoordinate(waypointPath.pathLength() - 1)
+            }
+            console.log(("Destroyed Path: pathLength = %1").arg(
+                            waypointPath.pathLength()))
 
-        console.log(("Destroyed Path: pathLength = %1").arg(
-                        waypointPath.pathLength()))
-
-        waypointPath.opacity = 0.0
-        if (mapView.pathCurrentState != pathState.empty) {
-            cmdWrapper.cancelPath()
-            mapView.pathCurrentState = pathState.empty
+            waypointPath.opacity = 0.0
+            if (mapView.pathCurrentState != pathState.empty) {
+                cmdWrapper.cancelPath()
+                mapView.pathCurrentState = pathState.empty
+            }
         }
+        click_handler = function(){}
+        pos_changed_handler = function(){}
+        currentState = generalState.empty
     }
 
     compass.transform: [
@@ -190,73 +221,83 @@ MapComponentForm {
         return p2
     }
 
-    mapMouseArea.onPositionChanged: {
-        if (rect_phase === 1){
-            var p0 = map.fromCoordinate(rectanglePath.coordinateAt(0));
-            var p1 = Qt.point(mouse.x, mouse.y)
-            if (mouse.modifiers & Qt.ShiftModifier){
-                var n_intervals = 16
-                var snap_interval = 2*Math.PI/n_intervals
-                var theta = Math.atan2(p1.y-p0.y, p1.x-p0.x)
-                var snap_idx = Math.floor((theta + snap_interval/2) / snap_interval)
-                var snap_theta = snap_idx*snap_interval
-                var m = Math.tan(snap_theta)
-                p1 = project(p0,m,p1)
-            }
-            rectanglePath.replaceCoordinate(1, map.toCoordinate(p1))
-        } else if (rect_phase === 2){
-            var p0 = map.fromCoordinate(rectanglePath.coordinateAt(0));
-            var p1 = map.fromCoordinate(rectanglePath.coordinateAt(1));
-            var m = (p1.y - p0.y)/(p1.x - p0.x)
-            var m_perp = -1/m
-            var pm = Qt.point(mouse.x, mouse.y)
-            var p2 = project(p1, m_perp, pm)
-            var p3 = project(p0, m_perp, pm)
-            rectanglePath.replaceCoordinate(2, map.toCoordinate(p2))
-            rectanglePath.replaceCoordinate(3, map.toCoordinate(p3))
-        }
-    }
-
+    property var click_handler : function(){}
+    property var pos_changed_handler : function(){}
 
     mapMouseArea.onClicked: {
-        if(pathCurrentState === pathState.empty){
-            if (mouse.button & Qt.LeftButton){
-                if (rect_phase === 0){
-                    for(var i=0; i<5; i++)
-                        rectanglePath.removeCoordinate(0)
-                    var p = map.toCoordinate(Qt.point(mouse.x, mouse.y))
-                    rectanglePath.addCoordinate(p)
-                    rectanglePath.addCoordinate(p)
-                    mapMouseArea.hoverEnabled = true
-                    rect_phase = 1
-                } else if (rect_phase === 1){
-                    var p = map.toCoordinate(Qt.point(mouse.x, mouse.y))
-                    rectanglePath.addCoordinate(p)
-                    rectanglePath.addCoordinate(rectanglePath.coordinateAt(0))
-                    rectanglePath.addCoordinate(rectanglePath.coordinateAt(0))
-                    rect_phase = 2
-                } else if (rect_phase === 2){
-                    rect_phase = 0
-                    mapMouseArea.hoverEnabled = false
-                }
-            }
+        click_handler(mouse)
+    }
+
+    mapMouseArea.onPositionChanged: {
+       pos_changed_handler(mouse)
+    }
+function rect_pos_changed_handler(mouse){
+    if (rect_phase === 1){
+        var p0 = map.fromCoordinate(rectanglePath.coordinateAt(0));
+        var p1 = Qt.point(mouse.x, mouse.y)
+        if (mouse.modifiers & Qt.ShiftModifier){
+            var n_intervals = 16
+            var snap_interval = 2*Math.PI/n_intervals
+            var theta = Math.atan2(p1.y-p0.y, p1.x-p0.x)
+            var snap_idx = Math.floor((theta + snap_interval/2) / snap_interval)
+            var snap_theta = snap_idx*snap_interval
+            var m = Math.tan(snap_theta)
+            p1 = project(p0,m,p1)
+        }
+        rectanglePath.replaceCoordinate(1, map.toCoordinate(p1))
+    } else if (rect_phase === 2){
+        var p0 = map.fromCoordinate(rectanglePath.coordinateAt(0));
+        var p1 = map.fromCoordinate(rectanglePath.coordinateAt(1));
+        var m = (p1.y - p0.y)/(p1.x - p0.x)
+        var m_perp = -1/m
+        var pm = Qt.point(mouse.x, mouse.y)
+        var p2 = project(p1, m_perp, pm)
+        var p3 = project(p0, m_perp, pm)
+        rectanglePath.replaceCoordinate(2, map.toCoordinate(p2))
+        rectanglePath.replaceCoordinate(3, map.toCoordinate(p3))
+    }
         }
 
-        if (pathCurrentState === pathState.creating) {
-            if (mouse.button & Qt.LeftButton) {
-                var wp = map.toCoordinate(Qt.point(mouse.x, mouse.y))
-                addWaypoint(wp)
-            }
-            if (mouse.button & Qt.RightButton) {
-                removeWaypoint()
-            }
-        } else if (mouse.button & Qt.LeftButton) {
-            marker_coords = map.toCoordinate(Qt.point(mouse.x, mouse.y))
-            markerIcon.coordinate = map.toCoordinate(Qt.point(mouse.x,
-                                                              mouse.y))
-            markerIcon.opacity = 1.0
+function rect(mouse){
+    if (mouse.button & Qt.LeftButton){
+        if (rect_phase === 0){
+            for(var i=0; i<5; i++)
+                rectanglePath.removeCoordinate(0)
+            var p = map.toCoordinate(Qt.point(mouse.x, mouse.y))
+            rectanglePath.addCoordinate(p)
+            rectanglePath.addCoordinate(p)
+            mapMouseArea.hoverEnabled = true
+            rect_phase = 1
+        } else if (rect_phase === 1){
+            var p = map.toCoordinate(Qt.point(mouse.x, mouse.y))
+            rectanglePath.addCoordinate(p)
+            rectanglePath.addCoordinate(rectanglePath.coordinateAt(0))
+            rectanglePath.addCoordinate(rectanglePath.coordinateAt(0))
+            rect_phase = 2
+        } else if (rect_phase === 2){
+            rect_phase = 0
+            mapMouseArea.hoverEnabled = false
+            stopRect()
         }
     }
+}
+
+function drawlines(mouse){
+    if (pathCurrentState === pathState.creating) {
+        if (mouse.button & Qt.LeftButton) {
+            var wp = map.toCoordinate(Qt.point(mouse.x, mouse.y))
+            addWaypoint(wp)
+        }
+        if (mouse.button & Qt.RightButton) {
+            removeWaypoint()
+        }
+    } else if (mouse.button & Qt.LeftButton) {
+        marker_coords = map.toCoordinate(Qt.point(mouse.x, mouse.y))
+        markerIcon.coordinate = map.toCoordinate(Qt.point(mouse.x,
+                                                          mouse.y))
+        markerIcon.opacity = 1.0
+   }
+}
 
 
 

@@ -16,6 +16,7 @@ RowLayout {
     property real myElevation: 6
     property real panesMargin: 14
 
+    property int currentState: generalState.empty
     property int pathCurrentState: pathState.empty
     property var mapCircles: []
     property alias recenterButton: recenterButton
@@ -26,7 +27,8 @@ RowLayout {
     property alias map: map
     property alias mapsidebar: mapsidebar
     property alias pathState: pathState
-
+    property alias generalState: generalState
+    property alias rectState: rectState
     spacing: 0
 
     Plugin {
@@ -44,9 +46,23 @@ RowLayout {
             value: 19.9
         }
     }
+    QtObject {
+        id: generalState
+        property int empty: 0
+        property int path: 1
+        property int rect: 2
+        property int poly: 3
+    }
 
     QtObject {
         id: pathState
+        property int empty: 0
+        property int creating: 1
+        property int active: 2
+        property int stopped: 3
+    }
+    QtObject {
+        id: rectState
         property int empty: 0
         property int creating: 1
         property int active: 2

@@ -23,7 +23,9 @@ WaypointControlsForm {
                 acceptRadDialog.open()
             }
         }
-
+    squaredrawButton.onClicked: {
+                map.createRect()
+        }
     wpRestartButton.onClicked: {
          cmdWrapper.startPath()
     }
