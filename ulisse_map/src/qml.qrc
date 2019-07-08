@@ -39,5 +39,7 @@
         <file>qml/LabelledTextForm.ui.qml</file>
         <file>qml/MapViewForm.ui.qml</file>
         <file>qml/MapComponentForm.ui.qml</file>
+        <file>qml/PathRectPoly.qml</file>
+        <file>qml/PathRectPolyForm.ui.qml</file>
     </qresource>
 </RCC>

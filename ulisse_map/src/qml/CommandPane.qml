@@ -242,36 +242,8 @@ Pane {
             border.color: "lightgrey"
         }
 
-        RowLayout {
-            id: rowLayout1
-            width: 100
-            height: 100
-
-            Button {
-                id: b_path
-                text: qsTr("Path")
-                onClicked: {
-                    map.createPath()
-                }
-            }
-
-            Button {
-                id: b_rect
-                text: qsTr("Rectangle")
-                onClicked: {
-                    map.createRect()
-                }
-            }
-
-
-            Button {
-                id: b_poly
-                text: qsTr("Polygon")
-                onClicked: {
-                    map.createPoly()
-                }
-            }
-
+        PathRectPoly {
+            id: pathRectPoly
         }
 
         RowLayout {
@@ -354,6 +326,7 @@ Pane {
                 }
             }
         }
+
 
 
 
