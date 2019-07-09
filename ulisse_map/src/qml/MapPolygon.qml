@@ -47,7 +47,7 @@ MapPolyline {
         var p = Qt.point(mouse.x, mouse.y)
         var pf = map.toCoordinate(Qt.point(mouse.x, mouse.y))
         var last_idx = pathLength()-1
-        var color = "#33cc33"
+        var color = "#81c784"
         if (polygonal_phase === 3 && !map_polygon_point_admissibility(p)){
             pf = coordinateAt(0)
             color = "#ffb300"

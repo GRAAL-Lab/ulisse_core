@@ -43,9 +43,11 @@ MapPolyline {
                 addCoordinate(coordinateAt(0))
                 addCoordinate(coordinateAt(0))
                 rect_phase = 2
+                line.color = "#ffb300"
             } else if (rect_phase === 2){
                 rect_phase = 0
                 mapMouseArea.hoverEnabled = false
+                line.color = "#33cc33"
                 end()
             }
         }

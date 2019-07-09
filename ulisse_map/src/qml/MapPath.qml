@@ -21,6 +21,7 @@ MapPolyline {
                 mapMouseArea.hoverEnabled = true
                 addCoordinate(wp)
                 addCoordinate(wp)
+                line.color = "#ffb300"
                 return
             }
             else if (pathLength() > 1){
@@ -28,11 +29,13 @@ MapPolyline {
                 var lastp = map.fromCoordinate(lastwp)
                 if(distance(p, lastp) < 8){
                     removeCoordinate(pathLength()-1)
+                    line.color = "#33cc33"
                     mapMouseArea.hoverEnabled = false
                     end()
                     return
                 }
             }
+            line.color = "#ffb300"
             addCoordinate(wp)
         }
     }
@@ -41,5 +44,16 @@ MapPolyline {
         var p = Qt.point(mouse.x, mouse.y)
         var wp = map.toCoordinate(p)
         replaceCoordinate(pathLength()-1, wp)
+        if (pathLength() > 1){
+            var lastwp = coordinateAt(pathLength()-2)
+            var lastp = map.fromCoordinate(lastwp)
+            if(distance(p, lastp) < 8){
+                line.color = "#ffb300"
+            } else {
+                line.color = "#81c784"
+            }
+        } else {
+            line.color = "#81c784"
+        }
     }
 }
