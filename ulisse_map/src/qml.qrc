@@ -41,5 +41,7 @@
         <file>qml/MapComponentForm.ui.qml</file>
         <file>qml/PathRectPoly.qml</file>
         <file>qml/PathRectPolyForm.ui.qml</file>
+        <file>qml/MapRectangle.qml</file>
+        <file>qml/MapPolygon.qml</file>
     </qresource>
 </RCC>

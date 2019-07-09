@@ -46,6 +46,7 @@ RowLayout {
             value: 19.9
         }
     }
+
     QtObject {
         id: generalState
         property int empty: 0
@@ -83,9 +84,9 @@ RowLayout {
         id: mapsidebar
         Layout.fillHeight: true
         Layout.minimumHeight: 150
-        Layout.minimumWidth: 300
-        Layout.preferredWidth: 300
-        Layout.maximumWidth: 300
+        Layout.minimumWidth: 400
+        Layout.preferredWidth: 400
+        Layout.maximumWidth: 400
     }
 
     property real my_height: 17
@@ -101,7 +102,7 @@ RowLayout {
         MapComponent {
             id: map
             width: parent.width
-            height: parent.height - bottomToolbar.height + my_height
+            height: parent.height - bottomToolbar.height
             plugin: mapPlugin
             center: marker_coords // Genoa
             zoomLevel: 17.5 //(maximumZoomLevel - minimumZoomLevel)/2

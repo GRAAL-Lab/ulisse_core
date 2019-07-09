@@ -22,8 +22,6 @@ Map {
     property alias ruler: ruler
     property alias waypointPath: waypointPath
     property alias greenFlag: greenFlag
-    property alias rectanglePath: rectanglePath
-    property alias poligonalPath: poligonalPath
 
     ColorOverlay {
         id: marker
@@ -167,24 +165,6 @@ Map {
         property bool firstRun: true
         property real traceSize: 1000
         z: map.z + 2
-    }
-
-    MapPolyline {
-        id: rectanglePath
-        objectName: "rectanglePath"
-        line.width: 3
-        line.color: "#81c784"
-        opacity: 1.0
-        z: map.z + 5
-    }
-
-    MapPolyline {
-        id: poligonalPath
-        objectName: "poligonalPath"
-        line.width: 3
-        line.color: "#81c784"
-        opacity: 1.0
-        z: map.z + 5
     }
 
     MapPolyline {
