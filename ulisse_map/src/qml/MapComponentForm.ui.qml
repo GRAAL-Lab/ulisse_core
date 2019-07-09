@@ -20,7 +20,6 @@ Map {
     property alias ulisseIcon: ulisseIcon
     property alias goalFlag: goalFlag
     property alias ruler: ruler
-    property alias waypointPath: waypointPath
     property alias greenFlag: greenFlag
 
     ColorOverlay {
@@ -165,16 +164,6 @@ Map {
         property bool firstRun: true
         property real traceSize: 1000
         z: map.z + 2
-    }
-
-    MapPolyline {
-        id: waypointPath
-        objectName: "waypointPath"
-        line.width: 2
-        line.color: ((pathCurrentState === pathState.creating)
-                     || (pathCurrentState === pathState.empty) ? "#ff8a65" : "#81c784")
-        opacity: 0.0
-        z: map.z + 1
     }
 
     MouseArea {

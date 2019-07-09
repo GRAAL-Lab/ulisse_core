@@ -14,20 +14,11 @@ MapComponentForm {
 
     id: map_component
 
-    function clearUlisseTrace() {
-        ulissePath.path = []
-        ulissePath.firstRun = true
-    }
+    property var click_handler : function(){}
+    property var pos_changed_handler : function(){}
 
-    function createPath() {
-         if (currentState === generalState.empty){
-             currentState = generalState.path
-             deletePath() //TEMPORARY
-             mapView.pathCurrentState = pathState.creating
-             click_handler = path_click_handler
-             pos_changed_handler = function(){}
-         }
-    }
+    mapMouseArea.onClicked: {click_handler(mouse)}
+    mapMouseArea.onPositionChanged: {pos_changed_handler(mouse)}
 
     property list<MapRectangle> rect_list
     property MapRectangle rect_cur
@@ -35,13 +26,17 @@ MapComponentForm {
     property list<MapPolygon> poly_list
     property MapPolygon poly_cur
 
+    property list<MapPath> path_list
+    property MapPath path_cur
+
     property Component rectComponent
     property Component polyComponent
+    property Component pathComponent
 
     Component.onCompleted: {
         rectComponent = Qt.createComponent("MapRectangle.qml");
         polyComponent = Qt.createComponent("MapPolygon.qml");
-
+        pathComponent = Qt.createComponent("MapPath.qml");
     }
 
     function createRect() {
@@ -72,6 +67,20 @@ MapComponentForm {
          }
     }
 
+    function createPath() {
+        if (currentState === generalState.empty){
+            currentState = generalState.path
+            if (path_cur)
+                path_cur.end.disconnect(endPath)
+            path_cur = pathComponent.createObject(map_component)
+            path_list.push(path_cur)
+            map.addMapItem(path_cur)
+            click_handler = path_cur.click_handler
+            pos_changed_handler = path_cur.pos_changed_handler
+            path_cur.end.connect(endPath)
+        }
+    }
+
     function endRect() {
          if (currentState === generalState.rect){
              click_handler = function(){}
@@ -95,23 +104,6 @@ MapComponentForm {
             currentState = generalState.empty
         }
     }
-
-    function deletePath() {
-        if (currentState === generalState.path){
-            while (waypointPath.pathLength() > 0) {
-                map.removeMapItem(mapCircles[waypointPath.pathLength() - 1])
-                mapCircles[waypointPath.pathLength() - 1].destroy()
-                waypointPath.removeCoordinate(waypointPath.pathLength() - 1)
-            }
-
-            waypointPath.opacity = 0.0
-            if (mapView.pathCurrentState != pathState.empty) {
-                cmdWrapper.cancelPath()
-                mapView.pathCurrentState = pathState.empty
-            }
-        }
-    }
-
 
     compass.transform: [
         Rotation {
@@ -189,66 +181,8 @@ MapComponentForm {
         }
     }
 
-    function addWaypoint(waypoint){
-        waypointPath.addCoordinate(waypoint)
-        mapCircles[waypointPath.pathLength(
-                       ) - 1] = mapCircleComponent.createObject(map, {
-                                                                    "center.latitude": waypoint.latitude,
-                                                                    "center.longitude": waypoint.longitude
-                                                                })
-
-        if (mapCircleComponent.status === Component.Ready) {
-            map.addMapItem(mapCircles[waypointPath.pathLength() - 1])
-            waypointPath.opacity = 1.0
-            console.log(("Added waypoint! (size: %1)").arg(
-                            waypointPath.pathLength()))
-
-            marker_coords = waypoint
-            markerIcon.coordinate = waypoint
-            markerIcon.opacity = 1.0
-        }
-    }
-
-    function removeWaypoint(){
-        if (waypointPath.pathLength() > 0) {
-            map.removeMapItem(mapCircles[waypointPath.pathLength() - 1])
-            mapCircles[waypointPath.pathLength() - 1].destroy()
-
-            waypointPath.removeCoordinate(waypointPath.pathLength() - 1)
-        }
-    }
-
-    property var click_handler : function(){}
-    property var pos_changed_handler : function(){}
-
-    mapMouseArea.onClicked: {
-        click_handler(mouse)
-    }
-
-    mapMouseArea.onPositionChanged: {
-       pos_changed_handler(mouse)
-    }
-
-    function path_click_handler(mouse){
-        if (pathCurrentState === pathState.creating) {
-            if (mouse.button & Qt.LeftButton) {
-                var p = Qt.point(mouse.x, mouse.y)
-                var wp = map.toCoordinate(p)
-                var lastwp = waypointPath.coordinateAt(waypointPath.pathLength()-1)
-                var lastp = map.fromCoordinate(lastwp)
-                if (Math.sqrt(Math.pow(p.x-lastp.x,2) + Math.pow(p.y-lastp.y,2)) < 10)
-                    endPath()
-                else
-                    addWaypoint(wp)
-            }
-            if (mouse.button & Qt.RightButton) {
-                removeWaypoint()
-            }
-        } else if (mouse.button & Qt.LeftButton) {
-            marker_coords = map.toCoordinate(Qt.point(mouse.x, mouse.y))
-            markerIcon.coordinate = map.toCoordinate(Qt.point(mouse.x,
-                                                              mouse.y))
-            markerIcon.opacity = 1.0
-       }
+    function clearUlisseTrace() {
+        ulissePath.path = []
+        ulissePath.firstRun = true
     }
 }

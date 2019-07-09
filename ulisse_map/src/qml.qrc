@@ -43,5 +43,6 @@
         <file>qml/PathRectPolyForm.ui.qml</file>
         <file>qml/MapRectangle.qml</file>
         <file>qml/MapPolygon.qml</file>
+        <file>qml/MapPath.qml</file>
     </qresource>
 </RCC>

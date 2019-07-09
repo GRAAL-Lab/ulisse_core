@@ -2,15 +2,14 @@ import QtQuick 2.0
 import QtLocation 5.6
 
 MapPolyline {
-
-    signal end
-
-    property var rect_phase: 0
-
     line.width: 3
     line.color: "#81c784"
     opacity: 1.0
     z: map.z + 5
+
+    signal end
+
+    property var rect_phase: 0
 
     function project(p0,m,p1){
         var p2 = Qt.point(0,0);
