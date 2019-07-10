@@ -1,7 +1,7 @@
 import QtQuick 2.6
 import QtQuick.Layouts 1.3
 import QtQuick.Controls 2.1
-import QtLocation 5.6
+import QtLocation 5.7
 import QtPositioning 5.6
 import Qt.labs.settings 1.0
 import QtQuick.Controls.Material 2.1
@@ -184,5 +184,15 @@ MapComponentForm {
     function clearUlisseTrace() {
         ulissePath.path = []
         ulissePath.firstRun = true
+    }
+
+    function drawStraightLine(ctx, p1, p2){
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(p1.x,p1.y);
+        ctx.lineTo(p2.x,p2.y);
+        ctx.closePath();
+        ctx.stroke();
+        ctx.restore();
     }
 }
