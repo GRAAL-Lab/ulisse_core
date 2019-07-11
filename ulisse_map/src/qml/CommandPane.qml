@@ -30,7 +30,7 @@ Pane {
         Button {
             text: "Halt"
             onClicked: {
-                wpCommands.interruptPath();
+                map.interruptPathIfActive();
                 cmdWrapper.sendHaltCommand()
             }
         }
@@ -46,7 +46,7 @@ Pane {
 
                 onClicked: {
                     if(speedText.text !== '' && headingText.text !== ''){
-                        wpCommands.interruptPath();
+                        map.interruptPathIfActive();
                         cmdWrapper.sendSpeedHeadingCommand(speedText.text, headingText.text)
                     } else {
                         speedHeadingDialog.open();
@@ -118,7 +118,7 @@ Pane {
 
                 onClicked: {
                     if(holdRadius.text !== ''){
-                        wpCommands.interruptPath();
+                        map.interruptPathIfActive()
                         cmdWrapper.sendHoldCommand(parseFloat(holdRadius.text));
                     } else {
                         acceptRadDialog.open();
@@ -172,7 +172,7 @@ Pane {
 
                 onClicked: {
                     if(moveToRadius.text !== ''){
-                        wpCommands.interruptPath();
+                        map.interruptPathIfActive()
                         if(cmdWrapper.sendLatLongCommand(marker_coords, parseFloat(moveToRadius.text))){
                             markerIcon.opacity = 0.2
                         }
