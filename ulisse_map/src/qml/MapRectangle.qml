@@ -1,5 +1,7 @@
 import QtQuick 2.0
 import QtLocation 5.6
+import QtPositioning 5.6
+
 import "../scripts/helper.js" as Helper
 
 MapPolyline {
@@ -51,6 +53,16 @@ MapPolyline {
         return min
     }
 
+    function coords_centroid(coords){
+        var lat = 0
+        var lon = 0
+        for (var i=0; i<coords.length; i++){
+            lat += coords[i].latitude
+            lon += coords[i].longitude
+        }
+        return QtPositioning.coordinate(lat/coords.length, lon/coords.length)
+    }
+
     function click_handler(mouse){
         if (mouse.button & Qt.LeftButton){
             if (rect_phase === 0){
@@ -77,9 +89,8 @@ MapPolyline {
                 rect_phase = 0
                 mapMouseArea.hoverEnabled = false
                 line.color = "#33cc33"
-                map_to_canvas()
-                draw()
-                canvas_to_map()
+                //draw()
+                draw2()
                 end()
             }
         }
@@ -164,14 +175,12 @@ MapPolyline {
     property var pt
     property var pl
 
-    function map_to_canvas(){
-        for (var i = 0; i<4; i++){
-            points[i]=map.fromCoordinate(coordinateAt(i))
-        }
-        //FIXME ordina in senso orario
+    function set_points_clockwise(){
         if (Helper.three_point_direction(points[0],points[1],points[2]) === 1)
             points.reverse()
+    }
 
+    function find_interesting_features(){
         //FIXME: caso angolo 0?
         var t = Helper.find_top(points)
         var pti = t[1]
@@ -184,6 +193,46 @@ MapPolyline {
             sides.push([points[idx_a], points[idx_b]])
         }
         upper_side = sides[sides.length-1]
+    }
+
+    property var centroid: null
+    property var lam: 0
+    property var lom: 0
+
+    function map_to_screen(){
+        for (var i = 0; i<4; i++){
+            points[i]=map.fromCoordinate(coordinateAt(i))
+        }
+    }
+
+    function map_to_euclidean(){
+        centroid = coords_centroid(path.slice(0,4))
+        lam = Helper.lat_to_m_coeff(centroid.latitude)
+        lom = Helper.lon_to_m_coeff(centroid.longitude)
+        for (var i = 0; i<4; i++){
+            points[i]=Qt.point((coordinateAt(i).longitude - centroid.longitude) * -lom,
+                               (coordinateAt(i).latitude  - centroid.latitude)  * -lam)
+        }
+    }
+
+    function map_to_canvas(){
+        pp = []
+        for (var i=0; i<cc.length; i++){
+            var a = Helper.toCanvasCoordinates(fromCoordinate(cc[i][0]), map, _canvas)
+            var b = Helper.toCanvasCoordinates(fromCoordinate(cc[i][1]), map, _canvas)
+            pp.push([a,b])
+        }
+    }
+
+    property var cc: []
+    property var pp: []
+
+    function euclidean_to_map(){
+        cc = []
+        for (var i=0; i<ii.length; i++){
+            cc.push([QtPositioning.coordinate(centroid.latitude + ii[i][0].y/-lam, centroid.longitude + ii[i][0].x/-lom),
+                     QtPositioning.coordinate(centroid.latitude + ii[i][1].y/-lam, centroid.longitude + ii[i][1].x/-lom)])
+        }
     }
 
     function init_canvas(){
@@ -203,32 +252,37 @@ MapPolyline {
         ctx.stroke()
     }
 
-    function draw(){
-        init_canvas()
+    function draw_bounding_rect(){
         var ctx = _canvas.canvasCtx
         ctx.fillStyle = Qt.rgba(0, 0.4, 0, 0.2)
         ctx.fillRect(0, 0, w, h)
         _canvas.requestPaint()
+    }
 
+    property var times: 0
+    property var ii: []
+
+    function find_intersections(){
         var au_deg = 90-angle
         var at_deg = side_angle(upper_side)
         var offset_on_t = offset/Math.cos(Helper.deg_to_rad(90-au_deg))
 
-        var times = 0
-        var ii = []
+        times=0
+        ii=[]
         while (true){
             ++times
             var p = Helper.interpolate(pt, pl, offset_on_t, times)
-            var _i = intersections(p, at_deg-au_deg, sides) //NB two intersections always if a comvex polygon
+            var _i = intersections(p, at_deg-au_deg, sides) //NB two intersections always if a convex polygon
             if (_i.length < 2) break
             if (_i[0].x < _i[1].x)
                 ii.push([_i[0], _i[1]])
             else
                 ii.push([_i[1], _i[0]])
         }
+    }
 
+    function rectify_dense_winding(){
         var a = 0, b = 1
-
         for (var i = 0; i < times-2; i++){
             var rr = Helper.rectify_parallelogram_side(ii[i][a], ii[i][b], ii[i+1][b], ii[i+1][a])
             ii[i][b] = rr[1]
@@ -236,6 +290,18 @@ MapPolyline {
             a = Helper.flip(a)
             b = Helper.flip(b)
         }
+    }
+/*
+    function draw(){ // first take: map the box to pixels, then draw in pixels on the canvas
+
+        map_to_screen()
+        set_points_clockwise()
+        find_interesting_features()
+        init_canvas()
+        draw_bounding_rect()
+
+        find_intersections()
+        rectify_dense_winding()
 
         for (var i = 0; i < times-1; i++){
             var p0 = Helper.toCanvasCoordinates(ii[i][0], map, _canvas)
@@ -263,6 +329,61 @@ MapPolyline {
         }
         _canvas.requestPaint()
         map.zoomLevelChanged.connect(repaint)
+    }
+*/
+    function draw_path_lines(){
+        var ctx = _canvas.canvasCtx
+        for (var i = 0; i < times-1; i++){
+            var p0 = pp[i][0]
+            var p1 = pp[i][1]
+            draw_line(ctx, p0.x, p0.y, p1.x, p1.y)
+            _canvas.requestPaint()
+        }
+    }
+
+    function draw_path_semicircles(){
+        var ctx = _canvas.canvasCtx
+        for (var i = 0; i < times-2; i++){
+            var dir = (i+1)%2
+            var p0 = pp[i][dir]
+            var p1 = pp[i+1][dir]
+            ctx.beginPath()
+            ctx.moveTo(p1.x, p1.y)
+            ctx.arc((p0.x+p1.x)/2,
+                    (p0.y+p1.y)/2,
+                    Helper.distance(p0, p1)/2,
+                    Math.atan2(p1.y-p0.y, p1.x-p0.x),
+                    Math.atan2(p1.y-p0.y, p1.x-p0.x) + Math.PI,
+                    dir === 1)
+            ctx.moveTo(p1.x, p1.y)
+            ctx.closePath()
+            ctx.stroke()
+        }
+        _canvas.requestPaint()
+    }
+
+    function draw2(){
+        // seconda take: draw in tangent cartesian metric system, project in coordinates, map to canvas at the end
+        // consider the offset in meter
+        // consider point coordinates in meters, relative to the centroid position
+        map_to_euclidean()
+        set_points_clockwise()
+        find_interesting_features()
+
+        init_canvas()
+        draw_bounding_rect()
+
+        find_intersections()
+        rectify_dense_winding()
+
+        // all good up here, now things gonna change wrt v1 func...
+
+        euclidean_to_map()
+        map_to_canvas()
+
+        draw_path_lines()
+        draw_path_semicircles()
+
     }
 
     function repaint(){

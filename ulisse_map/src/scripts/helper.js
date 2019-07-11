@@ -50,6 +50,7 @@
 
 .pragma library
 
+
 function roundNumber(number, digits)
 {
     var multiple = Math.pow(10, digits);
@@ -185,9 +186,19 @@ function rad_to_deg(rad){
 }
 
 function three_point_direction(p1,p2,p3){
-    var a1 = Math.atan2(p1.y-p2.y, p1.x-p2.x)*360/(2*Math.PI)
-    var a2 = Math.atan2(p2.y-p3.y, p2.x-p3.x)*360/(2*Math.PI)
+    var a1 = rad_to_deg(Math.atan2(p1.y-p2.y, p1.x-p2.x))
+    var a2 = rad_to_deg(Math.atan2(p2.y-p3.y, p2.x-p3.x))
     a1 = a1-360*Math.floor(a1/360)
     a2 = a2-360*Math.floor(a2/360)
     return ((a1<a2 && (a2-a1)<180) || (a1>a2 && (a1-a2)>180)) ? 1/*cc*/ : 2/*c*/
+}
+
+function lat_to_m_coeff(lat){
+    lat = deg_to_rad(lat)
+    return 111132.92 - 559.82*Math.cos(2*lat) + 1.175*Math.cos(4*lat) - 0.0023*Math.cos(6*lat)
+}
+
+function lon_to_m_coeff(lon){
+    lon = deg_to_rad(lon)
+    return 111412.84*Math.cos(lon) - 93.5*Math.cos(3*lon) + 0.118*Math.cos(5*lon)
 }
