@@ -110,18 +110,18 @@ namespace llc {
                 data_.beep.delay = request->beep_data.delay;
                 data_.beep.loop = request->beep_data.loop;
                 data_.beep.numberOfBeeps = request->beep_data.numberofbeeps;
-                llcHlp_.SendMessage(data_);
+                ret = llcHlp_.SendMessage(data_);
                 break;
             case (uint16_t)CommandType::enableref:
                 data_.messageType = MessageType::enable_ref;
                 data_.enableRef.enable = request->enable_ref_data.enable;
-                llcHlp_.SendMessage(data_);
+                ret = llcHlp_.SendMessage(data_);
                 break;
             case (uint16_t)CommandType::setconfig:
                 data_.messageType = MessageType::set_config;
                 CopyConfigMsg2LLCStruct(request);
                 data_.config = lowlevelconf_;
-                llcHlp_.SendMessage(data_);
+                ret = llcHlp_.SendMessage(data_);
                 data_.messageType = MessageType::get_config;
                 llcHlp_.SendMessage(data_);
                 break;
@@ -129,50 +129,52 @@ namespace llc {
                 data_.messageType = MessageType::pumps;
                 data_.pumps.pumpsFlag[EMB_PUMPS_LEFT_IDX] = request->pumps_data.pumpsflag[EMB_PUMPS_LEFT_IDX];
                 data_.pumps.pumpsFlag[EMB_PUMPS_RIGHT_IDX] = request->pumps_data.pumpsflag[EMB_PUMPS_RIGHT_IDX];
-                llcHlp_.SendMessage(data_);
+                ret = llcHlp_.SendMessage(data_);
                 break;
             case (uint16_t)CommandType::setpowerbuttons:
                 data_.messageType = MessageType::pwrbuttons;
                 data_.pwrButtons.pwrButtonsFlag = request->pwr_buttons_data.pwrbuttonsflag;
-                llcHlp_.SendMessage(data_);
+                ret = llcHlp_.SendMessage(data_);
                 break;
             case (uint16_t)CommandType::getconfig:
                 data_.messageType = MessageType::get_config;
-                llcHlp_.SendMessage(data_);
+                ret = llcHlp_.SendMessage(data_);
                 break;
             case (uint16_t)CommandType::getversion:
                 data_.messageType = MessageType::get_version;
-                llcHlp_.SendMessage(data_);
+                ret = llcHlp_.SendMessage(data_);
                 break;
             case (uint16_t)CommandType::startcompasscal:
                 data_.messageType = MessageType::start_compass_cal;
-                llcHlp_.SendMessage(data_);
+                ret = llcHlp_.SendMessage(data_);
                 break;
             case (uint16_t)CommandType::stopcompasscal:
                 data_.messageType = MessageType::stop_compass_cal;
-                llcHlp_.SendMessage(data_);
+                ret = llcHlp_.SendMessage(data_);
                 break;
             case (uint16_t)CommandType::reset:
                 data_.messageType = MessageType::reset;
-                llcHlp_.SendMessage(data_);
+                ret = llcHlp_.SendMessage(data_);
                 break;
             case (uint16_t)CommandType::reloadconfig:
                 ReloadConfigFile();
                 data_.messageType = MessageType::set_config;
                 data_.config = lowlevelconf_;
-                llcHlp_.SendMessage(data_);
+                ret = llcHlp_.SendMessage(data_);
                 data_.messageType = MessageType::get_config;
                 llcHlp_.SendMessage(data_);
                 break;
             default:
                 RCLCPP_INFO(this->get_logger(), "Unsupported command! [%s]", CommandTypeToString((CommandType)(request->command_type)).c_str());
-                ret = RetVal::fail;
+                ret = RetVal::undefined;
                 break;
             }
-            if (ret != RetVal::ok) {
-                response->res = (int16_t)(RetVal::fail);
+            if (ret == RetVal::ok) {
+                response->res = static_cast<int16_t>(llc::CommandAnswer::ok); //(int16_t)(RetVal::fail);
+            } else if (ret == RetVal::undefined) {
+                response->res = static_cast<int16_t>(llc::CommandAnswer::undefined);
             } else {
-                response->res = (int16_t)(RetVal::ok);
+                response->res = static_cast<int16_t>(llc::CommandAnswer::fail);
             }
         };
 

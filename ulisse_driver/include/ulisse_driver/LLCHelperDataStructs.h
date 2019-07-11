@@ -25,6 +25,7 @@ namespace llc {
         fail,
         complete,
         nodata,
+        undefined,
     };
 
     enum class ParseState {
