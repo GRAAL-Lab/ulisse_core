@@ -89,3 +89,97 @@ function formatDistance(meters)
     }
     return dist
 }
+
+function project(p0,m,p1){
+    var p2 = Qt.point(0,0);
+    if ( (Math.abs(m) === 16331239353195370) || (Math.abs(m) === Infinity)){
+        p2.x = p0.x
+        p2.y = p1.y
+    } else if (m === 0){
+        p2.x = p1.x
+        p2.y = p0.y
+    } else {
+        var m_perp = -1/m
+        p2.x = (m*p0.x - m_perp*p1.x + p1.y - p0.y)/(m-m_perp)
+        p2.y = m*(p2.x - p0.x) + p0.y
+    }
+    return p2
+}
+
+function distance(p1,p2){
+    return Math.sqrt(Math.pow(p1.x-p2.x,2) + Math.pow(p1.y-p2.y,2))
+}
+
+function interpolate(from, to, offset, times){
+    var a = Math.atan2(from.y - to.y, from.x - to.x)
+    var ox = offset * Math.cos(a) * times
+    var oy = offset * Math.sin(a) * times
+    return Qt.point(from.x-ox, from.y-oy)
+}
+
+function point_in_box(p, p1, p2){
+    return (((p1.x <= p.x && p.x <= p2.x) || p2.x <= p.x && p.x <= p1.x)
+        &&  ((p1.y <= p.y && p.y <= p2.y) || p2.y <= p.y && p.y <= p1.y))
+}
+
+function to_homogeneous_line(m,q){
+    return Qt.vector3d(m, -1, q)
+}
+
+function from_homogeneous_point(p){
+    return Qt.point(p.x/p.z, p.y/p.z)
+}
+
+function slope(p0, p1){
+    return (p0.y - p1.y)/(p0.x - p1.x)
+}
+
+function rectify_parallelogram_side(p0,p1,p2,p3){
+    //p0-p1, p2-p3 must be parallel!
+    //either p1 or p2 will be translated in order to create 90 degrees angles between p1 and p2, p2 and p3
+    var _a = p1.x-p0.x
+    var _b = p1.y-p0.y
+    var _c = p1.x-p2.x
+    var _d = p1.y-p2.y
+    var a = Math.acos((_a*_c+_b*_d)/(Math.sqrt(_a*_a+_b*_b)*Math.sqrt(_c*_c+_d*_d)))
+    var m = slope(p0,p1)
+    if (a > Math.PI/2)
+        p1 = project(p0, m, p2)
+    else
+        p2 = project(p3, m, p1)
+    return [p0, p1, p2, p3]
+}
+
+function find_top(points){
+    var pt = points[0]
+    var t = pt.y
+    for (var i = 1; i<points.length; i++){
+        if (points[i].y > t){
+            t = points[i].y;
+            pt = points[i]
+        }
+    }
+    var pti = points.indexOf(pt)
+    return [pt, pti]
+}
+
+function flip(x){
+    return (x===0) ? 1 : 0
+}
+
+function add_and_wrap(x, mod){
+    return (x+1 < mod) ? x+1 : 0
+}
+
+function toCanvasCoordinates(point, map, canvas){
+    var o = map.fromCoordinate(canvas.coordinate)
+    return Qt.point(point.x-o.x, point.y-o.y)
+}
+
+function deg_to_rad(deg){
+    return (Math.PI/180.0) * deg
+}
+
+function rad_to_deg(rad){
+    return (180.0/Math.PI) * rad
+}
