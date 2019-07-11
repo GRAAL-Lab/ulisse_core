@@ -6,6 +6,7 @@ MapPolyline {
     line.width: 3
     line.color: "#81c784"
     opacity: 1.0
+    id: root
     z: map.z + 5
 
     signal end
@@ -140,7 +141,7 @@ MapPolyline {
 
     function intersections(point, angle, sides){
         var m0 = Math.tan(Helper.deg_to_rad(angle))
-        var q0 = point.y -m0*point.x
+        var q0 = point.y -  m0*point.x
         var l0 = Helper.to_homogeneous_line(m0, q0)
 
         var ii = []
@@ -167,23 +168,27 @@ MapPolyline {
         for (var i = 0; i<4; i++){
             points[i]=map.fromCoordinate(coordinateAt(i))
         }
+        //FIXME ordina in senso orario
+        if (Helper.three_point_direction(points[0],points[1],points[2]) === 1)
+            points.reverse()
+
         //FIXME: caso angolo 0?
         var t = Helper.find_top(points)
         var pti = t[1]
         pt = t[0]
-        pl = points[pti > 1 ? pti : points.length-1]
+        pl = points[pti > 1 ? pti-1 : points.length-1]
 
         for (var i=0, idx_a=pti-1, idx_b; i<points.length; i++){
             idx_a = Helper.add_and_wrap(idx_a, points.length)
             idx_b = Helper.add_and_wrap(idx_a, points.length)
             sides.push([points[idx_a], points[idx_b]])
         }
-        upper_side = sides[0]
+        upper_side = sides[sides.length-1]
     }
 
     function init_canvas(){
-        _canvas.canvasWidth=w
-        _canvas.canvasHeight=h
+        _canvas.canvasWidth = w + 2*offset
+        _canvas.canvasHeight = h + 2*offset
         _canvas.zoomLevel = map.zoomLevel
         _canvas.coordinate = map.toCoordinate(Qt.point(min_x(), min_y()))
         _canvas.anchorPoint.x = 0
@@ -192,8 +197,8 @@ MapPolyline {
 
     function draw_line(ctx,x1,y1,x2,y2){
         ctx.beginPath()
-        ctx.moveTo(x1,y1);
-        ctx.lineTo(x2,y2);
+        ctx.moveTo(x1,y1)
+        ctx.lineTo(x2,y2)
         ctx.closePath()
         ctx.stroke()
     }
@@ -205,7 +210,7 @@ MapPolyline {
         ctx.fillRect(0, 0, w, h)
         _canvas.requestPaint()
 
-        var au_deg = angle
+        var au_deg = 90-angle
         var at_deg = side_angle(upper_side)
         var offset_on_t = offset/Math.cos(Helper.deg_to_rad(90-au_deg))
 
@@ -216,10 +221,14 @@ MapPolyline {
             var p = Helper.interpolate(pt, pl, offset_on_t, times)
             var _i = intersections(p, at_deg-au_deg, sides) //NB two intersections always if a comvex polygon
             if (_i.length < 2) break
-            ii.push([_i[0], _i[1]])
+            if (_i[0].x < _i[1].x)
+                ii.push([_i[0], _i[1]])
+            else
+                ii.push([_i[1], _i[0]])
         }
 
         var a = 0, b = 1
+
         for (var i = 0; i < times-2; i++){
             var rr = Helper.rectify_parallelogram_side(ii[i][a], ii[i][b], ii[i+1][b], ii[i+1][a])
             ii[i][b] = rr[1]
@@ -234,6 +243,31 @@ MapPolyline {
             draw_line(ctx, p0.x, p0.y, p1.x, p1.y)
             _canvas.requestPaint()
         }
+
+        for (var i = 0; i < times-2; i++){
+            var dir = (i+1)%2
+            var p0 = Helper.toCanvasCoordinates(ii[i][dir], map, _canvas)
+            var p1 = Helper.toCanvasCoordinates(ii[i+1][dir], map, _canvas)
+            ctx.beginPath()
+            ctx.moveTo(p1.x, p1.y)
+//            ctx.moveTo((p0.x+p1.x)/2, (p0.y+p1.y)/2)
+            ctx.arc((p0.x+p1.x)/2,
+                    (p0.y+p1.y)/2,
+                    offset/2.0,
+                    Math.atan2(p1.y-p0.y, p1.x-p0.x),
+                    Math.atan2(p1.y-p0.y, p1.x-p0.x) + Math.PI,
+                    dir === 0)
+            ctx.moveTo(p1.x, p1.y)
+            ctx.closePath()
+            ctx.stroke()
+        }
+        _canvas.requestPaint()
+        map.zoomLevelChanged.connect(repaint)
+    }
+
+    function repaint(){
+        var ctx = _canvas.canvasCtx
+        _canvas.requestPaint()
     }
 
     function canvas_to_map(){}
