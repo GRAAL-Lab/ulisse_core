@@ -119,11 +119,19 @@ function interpolate(from, to, offset, times){
 }
 
 function point_in_box(p, p1, p2){
-    return (((p1.x <= p.x && p.x <= p2.x) || p2.x <= p.x && p.x <= p1.x)
-        &&  ((p1.y <= p.y && p.y <= p2.y) || p2.y <= p.y && p.y <= p1.y))
+    return ( (p1.x <= p.x && p.x <= p2.x)
+          || (p2.x <= p.x && p.x <= p1.x)
+          || (p1.y <= p.y && p.y <= p2.y)
+          || (p2.y <= p.y && p.y <= p1.y))
 }
 
-function to_homogeneous_line(m,q){
+function to_homogeneous_line(point, angle){
+    var m = Math.tan(angle)
+    if ( (Math.abs(m) === 16331239353195370) || (Math.abs(m) === Infinity))
+        return Qt.vector3d(1, 0, -point.x)
+    if (m === 0)
+        return Qt.vector3d(0, 1, -point.y)
+    var q = point.y - m * point.x
     return Qt.vector3d(m, -1, q)
 }
 
@@ -155,12 +163,14 @@ function find_top(points){
     var pt = points[0]
     var t = pt.y
     for (var i = 1; i<points.length; i++){
-        if (points[i].y > t){
+        if (points[i].y >= t){
             t = points[i].y;
             pt = points[i]
         }
     }
     var pti = points.indexOf(pt)
+    if (pti === points.length-1 && pt.y === points[0].y && pt.x < points[0].x)
+        return [points[0], 0]
     return [pt, pti]
 }
 
@@ -172,8 +182,13 @@ function add_and_wrap(x, mod){
     return (x+1 < mod) ? x+1 : 0
 }
 
+function rotate(p, a){
+    return Qt.point(p.x*Math.cos(a)-p.y*Math.sin(a), p.x*Math.sin(a)+p.y*Math.cos(a))
+}
+
 function toCanvasCoordinates(point, map, canvas){
     var o = map.fromCoordinate(canvas.coordinate)
+    //return rotate(Qt.point(point.x-o.x, point.y-o.y), deg_to_rad(map.bearing))
     return Qt.point(point.x-o.x, point.y-o.y)
 }
 

@@ -89,8 +89,7 @@ MapPolyline {
                 rect_phase = 0
                 mapMouseArea.hoverEnabled = false
                 line.color = "#33cc33"
-                //draw()
-                draw2()
+                draw()
                 end()
             }
         }
@@ -136,31 +135,22 @@ MapPolyline {
         map.addMapItem(_canvas)
     }
 
-    property var points: []
-    property var upper_side:  []
-
-    property var sides: []
     property var angle: 30
     property var offset: 5
-    property var coordinates: []
 
 
     function side_angle(side){
         var a = Helper.rad_to_deg(Math.atan(Helper.slope(side[0], side[1])))
-        return (a>0) ? a : a+90
+        return (a>=0) ? a : a+90
     }
 
     function intersections(point, angle, sides){
-        var m0 = Math.tan(Helper.deg_to_rad(angle))
-        var q0 = point.y -  m0*point.x
-        var l0 = Helper.to_homogeneous_line(m0, q0)
+        var l0 = Helper.to_homogeneous_line(point, Helper.deg_to_rad(angle))
 
         var ii = []
         for (var i=0; i<sides.length; i++){
             var s = sides[i]
-            var mi = Helper.slope(s[0], s[1])
-            var qi = s[0].y - mi*s[0].x
-            var li = Helper.to_homogeneous_line(mi, qi)
+            var li = Helper.to_homogeneous_line(s[0], Math.atan(Helper.slope(s[0], s[1])))
 
             var intersection = l0.crossProduct(li)
             if (intersection.z !== 0){/*not parallel*/
@@ -172,76 +162,76 @@ MapPolyline {
         return ii
     }
 
-    property var pt
-    property var pl
 
-    function set_points_clockwise(){
+    function set_points_clockwise(points){
         if (Helper.three_point_direction(points[0],points[1],points[2]) === 1)
             points.reverse()
+        return points
     }
 
-    function find_interesting_features(){
-        //FIXME: caso angolo 0?
+    function find_interesting_features(points){
         var t = Helper.find_top(points)
         var pti = t[1]
-        pt = t[0]
-        pl = points[pti > 1 ? pti-1 : points.length-1]
+        var pt = t[0]
+        var pl = points[pti > 0 ? pti-1 : points.length-1]
 
+        var sides = []
         for (var i=0, idx_a=pti-1, idx_b; i<points.length; i++){
             idx_a = Helper.add_and_wrap(idx_a, points.length)
             idx_b = Helper.add_and_wrap(idx_a, points.length)
             sides.push([points[idx_a], points[idx_b]])
         }
-        upper_side = sides[sides.length-1]
-    }
-
-    property var centroid: null
-    property var lam: 0
-    property var lom: 0
-
-    function map_to_screen(){
-        for (var i = 0; i<4; i++){
-            points[i]=map.fromCoordinate(coordinateAt(i))
+        var upper_side = sides[sides.length-1]
+        return {
+            point_top: pt,
+            point_before: pl,
+            upper_side: upper_side,
+            sides: sides
         }
     }
 
     function map_to_euclidean(){
-        centroid = coords_centroid(path.slice(0,4))
-        lam = Helper.lat_to_m_coeff(centroid.latitude)
-        lom = Helper.lon_to_m_coeff(centroid.longitude)
+        var centroid = coords_centroid(path.slice(0,4))
+        var lam = Helper.lat_to_m_coeff(centroid.latitude)
+        var lom = Helper.lon_to_m_coeff(centroid.longitude)
+        var points = []
         for (var i = 0; i<4; i++){
-            points[i]=Qt.point((coordinateAt(i).longitude - centroid.longitude) * -lom,
-                               (coordinateAt(i).latitude  - centroid.latitude)  * -lam)
+            points.push(Qt.point((coordinateAt(i).longitude - centroid.longitude) * -lom,
+                               (coordinateAt(i).latitude  - centroid.latitude)  * -lam))
+        }
+        return {
+            centroid: centroid,
+            points: points,
+            lam: lam,
+            lom: lom
         }
     }
 
-    function map_to_canvas(){
-        pp = []
+    function map_to_canvas(cc, map, canvas){
+        var pp = []
         for (var i=0; i<cc.length; i++){
-            var a = Helper.toCanvasCoordinates(fromCoordinate(cc[i][0]), map, _canvas)
-            var b = Helper.toCanvasCoordinates(fromCoordinate(cc[i][1]), map, _canvas)
+            var a = Helper.toCanvasCoordinates(fromCoordinate(cc[i][0]), map, canvas)
+            var b = Helper.toCanvasCoordinates(fromCoordinate(cc[i][1]), map, canvas)
             pp.push([a,b])
         }
+        return pp
     }
 
-    property var cc: []
-    property var pp: []
-
-    function euclidean_to_map(){
-        cc = []
+    function euclidean_to_map(ii, centroid, lam, lom){
+        var cc = []
         for (var i=0; i<ii.length; i++){
             cc.push([QtPositioning.coordinate(centroid.latitude + ii[i][0].y/-lam, centroid.longitude + ii[i][0].x/-lom),
                      QtPositioning.coordinate(centroid.latitude + ii[i][1].y/-lam, centroid.longitude + ii[i][1].x/-lom)])
         }
+        return cc
     }
 
-    function init_canvas(){
-        _canvas.canvasWidth = w + 2*offset
-        _canvas.canvasHeight = h + 2*offset
-        _canvas.zoomLevel = map.zoomLevel
-        _canvas.coordinate = map.toCoordinate(Qt.point(min_x(), min_y()))
-        _canvas.anchorPoint.x = 0
-        _canvas.anchorPoint.y = 0
+    function init_canvas(canvas, map, width, height, coordinate){
+        canvas.canvasWidth = width
+        canvas.canvasHeight = height
+        canvas.zoomLevel = map.zoomLevel
+        canvas.coordinate = coordinate
+        canvas.canvasAngle = map.bearing
     }
 
     function draw_line(ctx,x1,y1,x2,y2){
@@ -252,23 +242,21 @@ MapPolyline {
         ctx.stroke()
     }
 
-    function draw_bounding_rect(){
-        var ctx = _canvas.canvasCtx
+    function draw_bounding_rect(canvas, w, h){
+        var ctx = canvas.canvasCtx
+        var o = map.fromCoordinate(canvas.coordinate)
         ctx.fillStyle = Qt.rgba(0, 0.4, 0, 0.2)
         ctx.fillRect(0, 0, w, h)
-        _canvas.requestPaint()
+        canvas.requestPaint()
     }
 
-    property var times: 0
-    property var ii: []
-
-    function find_intersections(){
+    function find_intersections(angle, pt, pl, upper_side, sides){
         var au_deg = 90-angle
         var at_deg = side_angle(upper_side)
         var offset_on_t = offset/Math.cos(Helper.deg_to_rad(90-au_deg))
 
-        times=0
-        ii=[]
+        var times=0
+        var ii=[]
         while (true){
             ++times
             var p = Helper.interpolate(pt, pl, offset_on_t, times)
@@ -279,71 +267,34 @@ MapPolyline {
             else
                 ii.push([_i[1], _i[0]])
         }
+        return ii
     }
 
-    function rectify_dense_winding(){
+    function rectify_dense_winding(ii){
         var a = 0, b = 1
-        for (var i = 0; i < times-2; i++){
+        for (var i = 0; i < ii.length-1; i++){
             var rr = Helper.rectify_parallelogram_side(ii[i][a], ii[i][b], ii[i+1][b], ii[i+1][a])
             ii[i][b] = rr[1]
             ii[i+1][b] = rr[2]
             a = Helper.flip(a)
             b = Helper.flip(b)
         }
+        return ii
     }
-/*
-    function draw(){ // first take: map the box to pixels, then draw in pixels on the canvas
 
-        map_to_screen()
-        set_points_clockwise()
-        find_interesting_features()
-        init_canvas()
-        draw_bounding_rect()
-
-        find_intersections()
-        rectify_dense_winding()
-
-        for (var i = 0; i < times-1; i++){
-            var p0 = Helper.toCanvasCoordinates(ii[i][0], map, _canvas)
-            var p1 = Helper.toCanvasCoordinates(ii[i][1], map, _canvas)
-            draw_line(ctx, p0.x, p0.y, p1.x, p1.y)
-            _canvas.requestPaint()
-        }
-
-        for (var i = 0; i < times-2; i++){
-            var dir = (i+1)%2
-            var p0 = Helper.toCanvasCoordinates(ii[i][dir], map, _canvas)
-            var p1 = Helper.toCanvasCoordinates(ii[i+1][dir], map, _canvas)
-            ctx.beginPath()
-            ctx.moveTo(p1.x, p1.y)
-//            ctx.moveTo((p0.x+p1.x)/2, (p0.y+p1.y)/2)
-            ctx.arc((p0.x+p1.x)/2,
-                    (p0.y+p1.y)/2,
-                    offset/2.0,
-                    Math.atan2(p1.y-p0.y, p1.x-p0.x),
-                    Math.atan2(p1.y-p0.y, p1.x-p0.x) + Math.PI,
-                    dir === 0)
-            ctx.moveTo(p1.x, p1.y)
-            ctx.closePath()
-            ctx.stroke()
-        }
-        _canvas.requestPaint()
-        map.zoomLevelChanged.connect(repaint)
-    }
-*/
-    function draw_path_lines(){
-        var ctx = _canvas.canvasCtx
-        for (var i = 0; i < times-1; i++){
+    function draw_path_lines(canvas, pp){
+        var ctx = canvas.canvasCtx
+        for (var i = 0; i < pp.length; i++){
             var p0 = pp[i][0]
             var p1 = pp[i][1]
             draw_line(ctx, p0.x, p0.y, p1.x, p1.y)
-            _canvas.requestPaint()
+            canvas.requestPaint()
         }
     }
 
-    function draw_path_semicircles(){
-        var ctx = _canvas.canvasCtx
-        for (var i = 0; i < times-2; i++){
+    function draw_path_semicircles(canvas, pp){
+        var ctx = canvas.canvasCtx
+        for (var i = 0; i < pp.length-1; i++){
             var dir = (i+1)%2
             var p0 = pp[i][dir]
             var p1 = pp[i+1][dir]
@@ -359,37 +310,53 @@ MapPolyline {
             ctx.closePath()
             ctx.stroke()
         }
-        _canvas.requestPaint()
+        canvas.requestPaint()
     }
 
-    function draw2(){
-        // seconda take: draw in tangent cartesian metric system, project in coordinates, map to canvas at the end
-        // consider the offset in meter
-        // consider point coordinates in meters, relative to the centroid position
-        map_to_euclidean()
-        set_points_clockwise()
-        find_interesting_features()
+    function draw(){
 
-        init_canvas()
-        draw_bounding_rect()
+        // transform shape coordinates and work in a virtual euclidean metric system
+        var r1 = map_to_euclidean()
+        var centroid = r1.centroid
+        var points = set_points_clockwise(r1.points)
+        var lam = r1.lam
+        var lom = r1.lom
 
-        find_intersections()
-        rectify_dense_winding()
+        var r2 = find_interesting_features(points)
+        var pt = r2.point_top
+        var pl = r2.point_before
+        var upper_side = r2.upper_side
+        var sides = r2.sides
 
-        // all good up here, now things gonna change wrt v1 func...
+        var intersections_cartesian = find_intersections(angle, pt, pl, upper_side, sides)
+        intersections_cartesian = rectify_dense_winding(intersections_cartesian)
 
-        euclidean_to_map()
-        map_to_canvas()
+        // transform virtual euclidean reference points in map coordinates
+        var intersections_geographic = euclidean_to_map(intersections_cartesian, centroid, lam, lom)
 
-        draw_path_lines()
-        draw_path_semicircles()
+        var a = map.toCoordinate(Qt.point(0,0))
+        var b = map.toCoordinate(Qt.point(0,100))
+        var p2m = a.distanceTo(b)/100.0
 
+        var offset_px = offset/p2m
+        init_canvas(_canvas, map,
+                    w+2*offset_px, h+2*offset_px,
+                    map.toCoordinate(Qt.point(min_x()-offset_px, min_y()-offset_px)))
+
+        // transform map coordinates in canvas pixel indexes
+        var intersections_canvas = map_to_canvas(intersections_geographic, map, _canvas)
+
+        // draw a bounding box around the area
+        draw_bounding_rect(_canvas, w+2*offset_px, h+2*offset_px)
+
+        // draw parallel lines
+        draw_path_lines(_canvas, intersections_canvas)
+
+        // draw manouvre curves
+        draw_path_semicircles(_canvas, intersections_canvas)
+
+        generate_nurbs(intersections_geographic)
     }
 
-    function repaint(){
-        var ctx = _canvas.canvasCtx
-        _canvas.requestPaint()
-    }
-
-    function canvas_to_map(){}
+    function generate_nurbs(){}
 }
