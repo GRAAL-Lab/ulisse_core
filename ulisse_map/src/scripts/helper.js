@@ -397,3 +397,46 @@ function serialize(object, maxDepth) {
 
     return _processObject(object, maxDepth)
 }
+
+function generate_nurb_circle(p0, p3, dir){
+    var dist = distance(p0, p3)
+    var angle = Math.tan(1/-slope(p0, p3))
+    if (dir === 1){
+        var p1 = Qt.point(p0.x + Math.cos(angle)*dist, p0.y + Math.sin(angle)*dist)
+        var p2 = Qt.point(p3.x + Math.cos(angle)*dist, p3.y + Math.sin(angle)*dist)
+    } else {
+        var p1 = Qt.point(p0.x - Math.cos(angle)*dist, p0.y - Math.sin(angle)*dist)
+        var p2 = Qt.point(p3.x - Math.cos(angle)*dist, p3.y - Math.sin(angle)*dist)
+    }
+    /*
+    console.log(Helper.serialize({
+        "discretization": 100,
+        "degree": 3,
+        "controlPoints": [p0.x, p0.y, 0, 1, p1.x, p1.y, 0, 1/3.0, p2.x, p2.y, 0, 1/3.0, p3.x, p3.y, 0, 1],
+        "knots": [0, 0, 0, 0, 1, 1, 1, 1]
+    }, 10))
+    */
+    return {
+        degree: 3,
+        points: [[p0.x, p0.y], [p1.x, p1.y], [p2.x, p2.y], [p3.x, p3.y]],
+        weigths: [1, 1/3.0, 1/3.0, 1],
+        knots: [0, 0, 0, 0, 1, 1, 1, 1]
+    }
+}
+
+function generate_nurb_line(p0, p1){
+    /*
+    console.log(Helper.serialize({
+        "discretization": 100,
+        "degree": 1,
+        "controlPoints": [p0.x, p0.y, 0, 1, p1.x, p1.y, 0, 1],
+        "knots": [0, 0, 1, 1]
+    }, 10))
+    */
+    return {
+        degree: 1,
+        points: [[p0.x, p0.y], [p1.x, p1.y]],
+        weigths: [1, 1],
+        knots: [0, 0, 1, 1]
+    }
+}
