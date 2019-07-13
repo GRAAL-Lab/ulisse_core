@@ -1,55 +1,198 @@
-/****************************************************************************
-**
-** Copyright (C) 2017 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
-**
-** This file is part of the examples of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:BSD$
-** Commercial License Usage
-** Licensllc holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and The Qt Company. For licensing terms
-** and conditions see https://www.qt.io/terms-conditions. For further
-** information use the contact form at https://www.qt.io/contact-us.
-**
-** BSD License Usage
-** Alternatively, you may use this file under the terms of the BSD license
-** as follows:
-**
-** "Redistribution and use in source and binary forms, with or without
-** modification, are permitted provided that the following conditions are
-** met:
-**   * Redistributions of source code must retain the above copyright
-**     notice, this list of conditions and the following disclaimer.
-**   * Redistributions in binary form must reproduce the above copyright
-**     notice, this list of conditions and the following disclaimer in
-**     the documentation and/or other materials provided with the
-**     distribution.
-**   * Neither the name of The Qt Company Ltd nor the names of its
-**     contributors may be used to endorse or promote products derived
-**     from this software without specific prior written permission.
-**
-**
-** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-** "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-** LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-** A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-** OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-** SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-** LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-** DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-** THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
-
 .pragma library
 
+var QtPositioning
+var QtLocation
+
+function init_lib(qt_positioning){
+    QtPositioning = qt_positioning
+}
+
+function coords_centroid(coords){
+    var lat = 0
+    var lon = 0
+    for (var i=0; i<coords.length; i++){
+        lat += coords[i].latitude
+        lon += coords[i].longitude
+    }
+    return QtPositioning.coordinate(lat/coords.length, lon/coords.length)
+}
+
+function map_to_euclidean(coordinates){
+    var centroid = coords_centroid(coordinates)
+    var lam = lat_to_m_coeff(centroid.latitude)
+    var lom = lon_to_m_coeff(centroid.longitude)
+    var points = []
+    for (var i = 0; i<4; i++){
+        points.push(Qt.point((coordinates[i].longitude - centroid.longitude) * -lom,
+                           (coordinates[i].latitude  - centroid.latitude)  * -lam))
+    }
+    return {
+        centroid: centroid,
+        points: points,
+        lam: lam,
+        lom: lom
+    }
+}
+
+function map_to_canvas(cc, map, canvas){
+    var pp = []
+    for (var i=0; i<cc.length; i++){
+        var a = toCanvasCoordinates(map.fromCoordinate(cc[i][0]), map, canvas)
+        var b = toCanvasCoordinates(map.fromCoordinate(cc[i][1]), map, canvas)
+        pp.push([a,b])
+    }
+    return pp
+}
+
+function euclidean_to_map(ii, centroid, lam, lom){
+    var cc = []
+    for (var i=0; i<ii.length; i++){
+        cc.push([QtPositioning.coordinate(centroid.latitude + ii[i][0].y/-lam, centroid.longitude + ii[i][0].x/-lom),
+                 QtPositioning.coordinate(centroid.latitude + ii[i][1].y/-lam, centroid.longitude + ii[i][1].x/-lom)])
+    }
+    return cc
+}
+
+function side_angle(side){
+    var a = rad_to_deg(Math.atan(slope(side[0], side[1])))
+    return (a>=0) ? a : a+90
+}
+
+function intersections(point, angle, sides){
+    var l0 = to_homogeneous_line(point, deg_to_rad(angle))
+
+    var ii = []
+    for (var i=0; i<sides.length; i++){
+        var s = sides[i]
+        var li = to_homogeneous_line(s[0], Math.atan(slope(s[0], s[1])))
+
+        var intersection = l0.crossProduct(li)
+        if (intersection.z !== 0){/*not parallel*/
+            var pi = from_homogeneous_point(intersection)
+            if (point_in_box(pi, s[0], s[1]))
+                ii.push(pi)
+        }
+    }
+    return ii
+}
+
+
+function set_points_clockwise(points){
+    if (three_point_direction(points[0],points[1],points[2]) === 1)
+        points.reverse()
+    return points
+}
+
+function find_interesting_features(points){
+    var t = find_top(points)
+    var pti = t[1]
+    var pt = t[0]
+    var pl = points[pti > 0 ? pti-1 : points.length-1]
+
+    var sides = []
+    for (var i=0, idx_a=pti-1, idx_b; i<points.length; i++){
+        idx_a = add_and_wrap(idx_a, points.length)
+        idx_b = add_and_wrap(idx_a, points.length)
+        sides.push([points[idx_a], points[idx_b]])
+    }
+    var upper_side = sides[sides.length-1]
+    return {
+        point_top: pt,
+        point_before: pl,
+        upper_side: upper_side,
+        sides: sides
+    }
+}
+
+function init_canvas(canvas, map, width, height, coordinate, px_multiplier){
+    canvas.canvasWidth = width*px_multiplier
+    canvas.canvasHeight = height*px_multiplier
+    canvas.zoomLevel = map.maximumZoomLevel
+    canvas.coordinate = coordinate
+    canvas.canvasAngle = map.bearing
+    canvas.multiplier = px_multiplier
+    canvas.canvasCtx.lineWidth = 6
+    canvas.canvasCtx.lineJoin = "bevel"
+}
+
+function draw_line(ctx,x1,y1,x2,y2){
+    ctx.beginPath()
+    ctx.moveTo(x1,y1)
+    ctx.lineTo(x2,y2)
+    ctx.closePath()
+    ctx.stroke()
+}
+
+function draw_bounding_rect(map, canvas, w, h){
+    var ctx = canvas.canvasCtx
+    var o = map.fromCoordinate(canvas.coordinate)
+    ctx.fillStyle = Qt.rgba(0, 0.4, 0, 0.2)
+    ctx.fillRect(0, 0, w, h)
+    canvas.requestPaint()
+}
+
+function find_intersections(angle, pt, pl, upper_side, sides, offset){
+    var au_deg = 90-angle
+    var at_deg = side_angle(upper_side)
+    var offset_on_t = offset/Math.cos(deg_to_rad(90-au_deg))
+
+    var times=0
+    var ii=[]
+    while (true){
+        ++times
+        var p = interpolate(pt, pl, offset_on_t, times)
+        var _i = intersections(p, at_deg-au_deg, sides) //NB two intersections always if a convex polygon
+        if (_i.length < 2) break
+        if (_i[0].x < _i[1].x)
+            ii.push([_i[0], _i[1]])
+        else
+            ii.push([_i[1], _i[0]])
+    }
+    return ii
+}
+
+function rectify_dense_winding(ii){
+    var a = 0, b = 1
+    for (var i = 0; i < ii.length-1; i++){
+        var rr = rectify_parallelogram_side(ii[i][a], ii[i][b], ii[i+1][b], ii[i+1][a])
+        ii[i][b] = rr[1]
+        ii[i+1][b] = rr[2]
+        a = flip(a)
+        b = flip(b)
+    }
+    return ii
+}
+
+function draw_path_lines(canvas, pp){
+    var ctx = canvas.canvasCtx
+    for (var i = 0; i < pp.length; i++){
+        var p0 = pp[i][0]
+        var p1 = pp[i][1]
+        draw_line(ctx, p0.x, p0.y, p1.x, p1.y)
+        canvas.requestPaint()
+    }
+}
+
+function draw_path_semicircles(canvas, pp){
+    var ctx = canvas.canvasCtx
+    for (var i = 0; i < pp.length-1; i++){
+        var dir = (i+1)%2
+        var p0 = pp[i][dir]
+        var p1 = pp[i+1][dir]
+        ctx.beginPath()
+        ctx.moveTo(p1.x, p1.y)
+        ctx.arc((p0.x+p1.x)/2,
+                (p0.y+p1.y)/2,
+                distance(p0, p1)/2,
+                Math.atan2(p1.y-p0.y, p1.x-p0.x),
+                Math.atan2(p1.y-p0.y, p1.x-p0.x) + Math.PI,
+                dir === 1)
+        ctx.moveTo(p1.x, p1.y)
+        ctx.closePath()
+        ctx.stroke()
+    }
+    canvas.requestPaint()
+}
 
 function roundNumber(number, digits)
 {
@@ -188,8 +331,12 @@ function rotate(p, a){
 
 function toCanvasCoordinates(point, map, canvas){
     var o = map.fromCoordinate(canvas.coordinate)
-    //return rotate(Qt.point(point.x-o.x, point.y-o.y), deg_to_rad(map.bearing))
-    return Qt.point(point.x-o.x, point.y-o.y)
+    return Qt.point((point.x-o.x)*canvas.multiplier, (point.y-o.y)*canvas.multiplier)
+}
+
+function fromCanvasCoordinates(point, map, canvas){
+    var o = map.fromCoordinate(canvas.coordinate)
+    return Qt.point(point.x+o.x, point.y+o.y)
 }
 
 function deg_to_rad(deg){

@@ -45,6 +45,5 @@
         <file>qml/MapPolygon.qml</file>
         <file>qml/MapPath.qml</file>
         <file>qml/MapCanvas.qml</file>
-        <file>scripts/verb.js</file>
     </qresource>
 </RCC>
