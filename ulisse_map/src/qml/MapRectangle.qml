@@ -21,12 +21,15 @@ MapPolyline {
     property MapCanvas _canvas
 
     property var angle: 30
-    property var offset: 5
+    property var offset: 10
 
     property var intersections_canvas: []
     property var centroid_cartesian
     property var intersections_cartesian: []
     property var intersections_geographic: []
+
+    property var px_multiplier
+
 
     Component.onCompleted: {
         Helper.init_lib(QtPositioning)
@@ -63,7 +66,6 @@ MapPolyline {
                 line.color = "#33cc33"
                 generate_path()
                 draw_path()
-                //map.zoomLevelChanged.connect(draw_path)
                 generate_nurbs()
                 end()
             }
@@ -100,8 +102,6 @@ MapPolyline {
             }
         }
     }
-
-    property var px_multiplier
 
     function generate_path(){
         // transform shape coordinates and work in a virtual euclidean metric system

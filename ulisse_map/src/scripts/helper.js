@@ -22,7 +22,7 @@ function map_to_euclidean(coordinates){
     var lam = lat_to_m_coeff(centroid.latitude)
     var lom = lon_to_m_coeff(centroid.longitude)
     var points = []
-    for (var i = 0; i<4; i++){
+    for (var i = 0; i<coordinates.length; i++){
         points.push(Qt.point((coordinates[i].longitude - centroid.longitude) * -lom,
                            (coordinates[i].latitude  - centroid.latitude)  * -lam))
     }
@@ -137,18 +137,35 @@ function find_intersections(angle, pt, pl, upper_side, sides, offset){
     var offset_on_t = offset/Math.cos(deg_to_rad(90-au_deg))
 
     var times=0
-    var ii=[]
+    var ii1=[]
     while (true){
         ++times
         var p = interpolate(pt, pl, offset_on_t, times)
         var _i = intersections(p, at_deg-au_deg, sides) //NB two intersections always if a convex polygon
         if (_i.length < 2) break
         if (_i[0].x < _i[1].x)
-            ii.push([_i[0], _i[1]])
+            ii1.push([_i[0], _i[1]])
         else
-            ii.push([_i[1], _i[0]])
+            ii1.push([_i[1], _i[0]])
     }
-    return ii
+
+    var pr = Qt.point(2*pt.x - pl.x,
+                      2*pt.y - pl.y)
+    times = -1
+    var ii2=[]
+    while (true){
+        ++times
+
+        var p = interpolate(pt, pr, offset_on_t, times)
+        var _i = intersections(p, at_deg-au_deg, sides) //NB two intersections always if a convex polygon
+        if (_i.length < 2) break
+        if (_i[0].x < _i[1].x)
+            ii2.push([_i[0], _i[1]])
+        else
+            ii2.push([_i[1], _i[0]])
+    }
+
+    return ii2.reverse().concat(ii1)
 }
 
 function rectify_dense_winding(ii){
