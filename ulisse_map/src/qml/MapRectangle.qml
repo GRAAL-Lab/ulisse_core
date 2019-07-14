@@ -82,19 +82,48 @@ MapPolyline {
                 var snap_theta = snap_idx*snap_interval
                 var m = Math.tan(snap_theta)
                 p1 = Helper.project(p0,m,p1)
+
             }
             replaceCoordinate(1, map.toCoordinate(p1))
         } else if (rect_phase === 2){
-            var p0 = map.fromCoordinate(coordinateAt(0));
-            var p1 = map.fromCoordinate(coordinateAt(1));
-            var m = Helper.slope(p1, p0)
-            var m_perp = -1/m
-            var pm = Qt.point(mouse.x, mouse.y)
-            var p2 = Helper.project(p1, m_perp, pm)
-            var p3 = Helper.project(p0, m_perp, pm)
-            var cp2 = map.toCoordinate(p2, true)
-            var cp3 = map.toCoordinate(p3, true)
-            if (cp2.isValid && cp3.isValid){
+            var cp0 = coordinateAt(0);
+            var cp1 = coordinateAt(1);
+            var a1 = Helper.path_bearing(cp1, cp0)
+            var a2 = a1+90
+
+            var cpc = map.toCoordinate(Qt.point(mouse.x, mouse.y), false)
+
+            var f = function (i,r){
+                if (i !== null && !isNaN(i.latitude) && !isNaN(i.longitude))
+                    r.push(i)
+            }
+
+            var m = function (r, cpc){
+                if (r.length > 0){
+                    var min_d = r[0].distanceTo(cpc)
+                    var min_c = r[0]
+                    for (var i = 1; i<r.length; i++)
+                        if (r[i].distanceTo(cpc) < min_d)
+                            min_c = r[i]
+                    return min_c
+                } else return null
+            }
+
+            var r = []
+            f(Helper.geo_intersection(cp1, a2, cpc, a1),r)
+            f(Helper.geo_intersection(cp1, a2, cpc, a1+180),r)
+            f(Helper.geo_intersection(cp1, a2+180, cpc, a1),r)
+            f(Helper.geo_intersection(cp1, a2+180, cpc, a1+180),r)
+            var cp2 = m(r, cpc)
+
+            var r = []
+            f(Helper.geo_intersection(cp0, a2, cpc, a1),r)
+            f(Helper.geo_intersection(cp0, a2, cpc, a1+180),r)
+            f(Helper.geo_intersection(cp0, a2+180, cpc, a1),r)
+            f(Helper.geo_intersection(cp0, a2+180, cpc, a1+180),r)
+            var cp3 = m(r, cpc)
+
+            if (cp2 !== null && cp2.isValid && cp3 !== null && cp3.isValid){
                 replaceCoordinate(2, cp2)
                 replaceCoordinate(3, cp3)
             }
@@ -155,7 +184,7 @@ MapPolyline {
         _canvas.canvasCtx.clearRect(0, 0, _canvas.canvasWidth, _canvas.canvasHeight)
 
         // draw a bounding box around the area
-        Helper.draw_bounding_rect(map, _canvas, _canvas.canvasWidth, _canvas.canvasHeight)
+        //Helper.draw_bounding_rect(map, _canvas, _canvas.canvasWidth, _canvas.canvasHeight)
 
         // draw parallel lines
         Helper.draw_path_lines(_canvas, intersections_canvas)

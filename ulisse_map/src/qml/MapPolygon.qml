@@ -163,7 +163,7 @@ MapPolyline {
         _canvas.canvasCtx.clearRect(0, 0, _canvas.canvasWidth, _canvas.canvasHeight)
 
         // draw a bounding box around the area
-        Helper.draw_bounding_rect(map, _canvas, _canvas.canvasWidth, _canvas.canvasHeight)
+        //Helper.draw_bounding_rect(map, _canvas, _canvas.canvasWidth, _canvas.canvasHeight)
 
         // draw parallel lines
         Helper.draw_path_lines(_canvas, intersections_canvas)

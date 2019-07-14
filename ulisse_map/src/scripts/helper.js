@@ -66,6 +66,57 @@ function side_angle(side){
     return (a>=0) ? a : a+90
 }
 
+function path_bearing(c0, c1){
+    var y = Math.sin(c1.longitude-c0.longitude) * Math.cos(c1.latitude);
+    var x = Math.cos(c0.latitude)*Math.sin(c1.latitude) -
+            Math.sin(c0.latitude)*Math.cos(c1.latitude)*Math.cos(c1.longitude-c0.longitude);
+    return rad_to_deg(Math.atan2(y, x));
+}
+
+function geo_intersection(p1, brng1, p2, brng2) {
+    // see www.edwilliams.org/avform.htm#Intersection
+
+    var φ1 = deg_to_rad(p1.latitude), λ1 = deg_to_rad(p1.longitude);
+    var φ2 = deg_to_rad(p2.latitude), λ2 = deg_to_rad(p2.longitude);
+    var θ13 = deg_to_rad(brng1), θ23 = deg_to_rad(brng2);
+    var Δφ = φ2 - φ1, Δλ = λ2 - λ1;
+
+    // angular distance p1-p2
+    var δ12 = 2 * Math.asin(Math.sqrt(Math.sin(Δφ/2) * Math.sin(Δφ/2)
+        + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2) * Math.sin(Δλ/2)));
+    if (Math.abs(δ12) < Number.EPSILON) return QtPositioning.coordinate(p1.latitude, p1.longitude); // coincident points
+
+    // initial/final bearings between points
+    var cosθa = (Math.sin(φ2) - Math.sin(φ1)*Math.cos(δ12)) / (Math.sin(δ12)*Math.cos(φ1));
+    var cosθb = (Math.sin(φ1) - Math.sin(φ2)*Math.cos(δ12)) / (Math.sin(δ12)*Math.cos(φ2));
+    var θa = Math.acos(Math.min(Math.max(cosθa, -1), 1)); // protect against rounding errors
+    var θb = Math.acos(Math.min(Math.max(cosθb, -1), 1)); // protect against rounding errors
+
+    var θ12 = Math.sin(λ2-λ1)>0 ? θa : 2*Math.PI-θa;
+    var θ21 = Math.sin(λ2-λ1)>0 ? 2*Math.PI-θb : θb;
+
+    var α1 = θ13 - θ12; // angle 2-1-3
+    var α2 = θ21 - θ23; // angle 1-2-3
+
+    if (Math.sin(α1) == 0 && Math.sin(α2) == 0) return null; // infinite intersections
+    if (Math.sin(α1) * Math.sin(α2) < 0) return null;        // ambiguous intersection (antipodal?)
+
+    var cosα3 = -Math.cos(α1)*Math.cos(α2) + Math.sin(α1)*Math.sin(α2)*Math.cos(δ12);
+
+    var δ13 = Math.atan2(Math.sin(δ12)*Math.sin(α1)*Math.sin(α2), Math.cos(α2) + Math.cos(α1)*cosα3);
+
+    var φ3 = Math.asin(Math.sin(φ1)*Math.cos(δ13) + Math.cos(φ1)*Math.sin(δ13)*Math.cos(θ13));
+
+    var Δλ13 = Math.atan2(Math.sin(θ13)*Math.sin(δ13)*Math.cos(φ1), Math.cos(δ13) - Math.sin(φ1)*Math.sin(φ3));
+    var λ3 = λ1 + Δλ13;
+
+    var lat = rad_to_deg(φ3);
+    var lon = rad_to_deg(λ3);
+
+    return QtPositioning.coordinate(lat, lon);
+}
+
+
 function intersections(point, angle, sides){
     var l0 = to_homogeneous_line(point, deg_to_rad(angle))
 
