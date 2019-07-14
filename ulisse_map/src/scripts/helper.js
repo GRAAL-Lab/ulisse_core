@@ -117,7 +117,7 @@ function init_canvas(canvas, map, width, height, lat, lon, px_multiplier){
     canvas.canvasHeight = height*px_multiplier
     canvas.zoomLevel = map.maximumZoomLevel
     canvas.coordinate = QtPositioning.coordinate(lat, lon)
-    canvas.canvasAngle = map.bearing
+    canvas.canvasAngle = 0
     canvas.multiplier = px_multiplier
     canvas.canvasCtx.lineWidth = 6
     canvas.canvasCtx.lineJoin = "bevel"
@@ -350,12 +350,14 @@ function add_and_wrap(x, mod){
 }
 
 function rotate(p, a){
-    return Qt.point(p.x*Math.cos(a)-p.y*Math.sin(a), p.x*Math.sin(a)+p.y*Math.cos(a))
+    var x = p.x*Math.cos(a)-p.y*Math.sin(a)
+    var y = p.x*Math.sin(a)+p.y*Math.cos(a)
+    return Qt.point(x,y)
 }
 
 function toCanvasCoordinates(point, map, canvas){
     var o = map.fromCoordinate(canvas.coordinate, false)
-    return Qt.point((point.x-o.x)*canvas.multiplier, (point.y-o.y)*canvas.multiplier)
+    return rotate(Qt.point((point.x-o.x)*canvas.multiplier, (point.y-o.y)*canvas.multiplier), deg_to_rad(map.bearing))
 }
 
 function fromCanvasCoordinates(point, map, canvas){
