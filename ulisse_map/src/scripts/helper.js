@@ -17,40 +17,48 @@ function coords_centroid(coords){
     return QtPositioning.coordinate(lat/coords.length, lon/coords.length)
 }
 
-function map_to_euclidean(coordinates){
-    var centroid = coords_centroid(coordinates)
-    var lam = lat_to_m_coeff(centroid.latitude)
-    var lom = lon_to_m_coeff(centroid.longitude)
+function map_to_euclidean(coordinates, centroid, lam, lom){
     var points = []
     for (var i = 0; i<coordinates.length; i++){
-        points.push(Qt.point((coordinates[i].longitude - centroid.longitude) * -lom,
-                           (coordinates[i].latitude  - centroid.latitude)  * -lam))
+        points.push(Qt.point((centroid.longitude - coordinates[i].longitude) * lom,
+                             (centroid.latitude  - coordinates[i].latitude)  * lam))
     }
-    return {
-        centroid: centroid,
-        points: points,
-        lam: lam,
-        lom: lom
-    }
+    return points
 }
 
-function map_to_canvas(cc, map, canvas){
-    var pp = []
-    for (var i=0; i<cc.length; i++){
-        var a = toCanvasCoordinates(map.fromCoordinate(cc[i][0]), map, canvas)
-        var b = toCanvasCoordinates(map.fromCoordinate(cc[i][1]), map, canvas)
-        pp.push([a,b])
-    }
-    return pp
+function point_euclidean_to_map(x, y, centroid, lam, lom){
+    return QtPositioning.coordinate(centroid.latitude - y/lam, centroid.longitude - x/lom)
 }
 
 function euclidean_to_map(ii, centroid, lam, lom){
     var cc = []
     for (var i=0; i<ii.length; i++){
-        cc.push([QtPositioning.coordinate(centroid.latitude + ii[i][0].y/-lam, centroid.longitude + ii[i][0].x/-lom),
-                 QtPositioning.coordinate(centroid.latitude + ii[i][1].y/-lam, centroid.longitude + ii[i][1].x/-lom)])
+        cc.push([point_euclidean_to_map(ii[i][0].x, ii[i][0].y, centroid, lam ,lom),
+                 point_euclidean_to_map(ii[i][1].x, ii[i][1].y, centroid, lam ,lom)])
     }
     return cc
+}
+
+function map_to_canvas(cc, map, canvas){
+    var pp = []
+    for (var i=0; i<cc.length; i++){
+        var a = toCanvasCoordinates(map.fromCoordinate(cc[i][0], false), map, canvas)
+        var b = toCanvasCoordinates(map.fromCoordinate(cc[i][1], false), map, canvas)
+        pp.push([a,b])
+    }
+    return pp
+}
+
+function relative_zoom_pixel_ratio(map, zoom){
+    //assuming tilt = 0, otherwise nonsense
+    var z = map.zoomLevel
+    map.zoomLevel = zoom
+    var c0 = map.toCoordinate(Qt.point(1,1), false)
+    var c1 = map.toCoordinate(Qt.point(2,1), false)
+    map.zoomLevel = z
+    var p0 = map.fromCoordinate(c0, false)
+    var p1 = map.fromCoordinate(c1, false)
+    return 1.0/(p1.x-p0.x)
 }
 
 function side_angle(side){
@@ -104,11 +112,11 @@ function find_interesting_features(points){
     }
 }
 
-function init_canvas(canvas, map, width, height, coordinate, px_multiplier){
+function init_canvas(canvas, map, width, height, lat, lon, px_multiplier){
     canvas.canvasWidth = width*px_multiplier
     canvas.canvasHeight = height*px_multiplier
     canvas.zoomLevel = map.maximumZoomLevel
-    canvas.coordinate = coordinate
+    canvas.coordinate = QtPositioning.coordinate(lat, lon)
     canvas.canvasAngle = map.bearing
     canvas.multiplier = px_multiplier
     canvas.canvasCtx.lineWidth = 6
@@ -125,7 +133,6 @@ function draw_line(ctx,x1,y1,x2,y2){
 
 function draw_bounding_rect(map, canvas, w, h){
     var ctx = canvas.canvasCtx
-    var o = map.fromCoordinate(canvas.coordinate)
     ctx.fillStyle = Qt.rgba(0, 0.4, 0, 0.2)
     ctx.fillRect(0, 0, w, h)
     canvas.requestPaint()
@@ -347,7 +354,7 @@ function rotate(p, a){
 }
 
 function toCanvasCoordinates(point, map, canvas){
-    var o = map.fromCoordinate(canvas.coordinate)
+    var o = map.fromCoordinate(canvas.coordinate, false)
     return Qt.point((point.x-o.x)*canvas.multiplier, (point.y-o.y)*canvas.multiplier)
 }
 
@@ -456,4 +463,33 @@ function generate_nurb_line(p0, p1){
         weigths: [1, 1],
         knots: [0, 0, 1, 1]
     }
+}
+
+function shape_geo_limits(coords){
+    var min_x = coords[0].longitude
+    var max_x = coords[0].longitude
+    var min_y = coords[0].latitude
+    var max_y = coords[0].latitude
+    for (var i=1; i<coords.length; i++){
+        var p = coords[i]
+        if (p.longitude<min_x) min_x=p.longitude
+        else if (p.longitude>max_x) max_x=p.longitude
+        if (p.latitude<min_y) min_y=p.latitude
+        else if (p.latitude>max_y) max_y=p.latitude
+    }
+    return {
+        min_lon: min_x,
+        max_lon: max_x,
+        min_lat: min_y,
+        max_lat: max_y
+    }
+}
+
+function shape_px_dimensions(limits, map){
+    var p0 = map.fromCoordinate(QtPositioning.coordinate(limits.min_lat, limits.min_lon), false)
+    var p1 = map.fromCoordinate(QtPositioning.coordinate(limits.min_lat, limits.max_lon), false)
+    var p2 = map.fromCoordinate(QtPositioning.coordinate(limits.max_lat, limits.min_lon), false)
+    var w = distance(p0, p1)
+    var h = distance(p0, p2)
+    return [w,h]
 }

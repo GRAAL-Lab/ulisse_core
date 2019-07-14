@@ -1,6 +1,6 @@
 import QtQuick 2.0
-import QtLocation 5.6
-import QtPositioning 5.6
+import QtLocation 5.9
+import QtPositioning 5.9
 
 import "../scripts/helper.js" as Helper
 
@@ -26,7 +26,7 @@ MapPolyline {
     property var offset: 10
 
     property var intersections_canvas: []
-    property var centroid_cartesian
+    property var centroid
     property var intersections_cartesian: []
     property var intersections_geographic: []
 
@@ -102,8 +102,6 @@ MapPolyline {
             mapMouseArea.hoverEnabled = false
             line.color = "#33cc33"
             polygonal_phase = 0
-            h = max_y() - min_y()
-            w = max_x() - min_x()
             generate_path()
             draw_path()
             generate_nurbs()
@@ -112,12 +110,22 @@ MapPolyline {
     }
 
     function generate_path(){
+        var orig_tilt = map.tilt
+        map.tilt = 0
+
         // transform shape coordinates and work in a virtual euclidean metric system
-        var r1 = Helper.map_to_euclidean(path.slice(0, pathLength()-1))
-        centroid_cartesian = r1.centroid
-        var points = Helper.set_points_clockwise(r1.points)
-        var lam = r1.lam
-        var lom = r1.lom
+        var shape_coords = path.slice(0, pathLength()-1)
+
+        var centroid = Helper.coords_centroid(shape_coords)
+        var limits = Helper.shape_geo_limits(shape_coords)
+
+        var dim = Helper.shape_px_dimensions(limits, map)
+
+        var lam = Helper.lat_to_m_coeff(centroid.latitude)
+        var lom = Helper.lon_to_m_coeff(centroid.longitude)
+
+        var points = Helper.map_to_euclidean(shape_coords, centroid, lam, lom)
+        points = Helper.set_points_clockwise(points)
 
         var r2 = Helper.find_interesting_features(points)
         var pt = r2.point_top
@@ -129,29 +137,25 @@ MapPolyline {
         intersections_cartesian = Helper.rectify_dense_winding(intersections_cartesian)
 
         // transform virtual euclidean reference points in map coordinates
-        intersections_geographic = Helper.euclidean_to_map(intersections_cartesian, centroid_cartesian, lam, lom)
+        intersections_geographic = Helper.euclidean_to_map(intersections_cartesian, centroid, lam, lom)
 
         var a = map.toCoordinate(Qt.point(0,0))
-        var b = map.toCoordinate(Qt.point(0,100))
-        var p2m = a.distanceTo(b)/100.0
+        var b = map.toCoordinate(Qt.point(0,1))
+        var c = map.toCoordinate(Qt.point(1,0))
+        var p2m_h = a.distanceTo(b)
+        var p2m_v = a.distanceTo(c)
 
-        var z = map.zoomLevel
-        map.zoomLevel = map.maximumZoomLevel
-        var c0 = map.toCoordinate(Qt.point(1,1))
-        var c1 = map.toCoordinate(Qt.point(2,1))
-        map.zoomLevel = z
-        var p0 = map.fromCoordinate(c0)
-        var p1 = map.fromCoordinate(c1)
-        px_multiplier = 1.0/(p1.x-p0.x)
+        var o_x = offset/p2m_h
+        var o_y = offset/p2m_v
 
-        var offset_px = offset/p2m
         Helper.init_canvas(_canvas, map,
-                           (w+2*offset_px), (h+2*offset_px),
-                           map.toCoordinate(Qt.point(min_x()-offset_px, min_y()-offset_px)),
-                           px_multiplier)
+                           dim[0]+2*o_x, dim[1]+2*o_y,
+                           limits.max_lat + offset/lam, limits.min_lon - offset/lom,
+                           Helper.relative_zoom_pixel_ratio(map, map.maximumZoomLevel))
 
         // transform map coordinates in canvas pixel indexes
         intersections_canvas = Helper.map_to_canvas(intersections_geographic, map, _canvas)
+        map.tilt = orig_tilt
     }
 
     function draw_path(){
@@ -190,41 +194,5 @@ MapPolyline {
             result.push(nurb_l[i+1])
         }
         return result
-    }
-
-    function max_x(){
-        var max = map.fromCoordinate(coordinateAt(0)).x
-        for (var i=1; i<pathLength(); i++){
-            var x = map.fromCoordinate(coordinateAt(i)).x
-            if (x>max) max=x
-        }
-        return max
-    }
-
-    function max_y(){
-        var max = map.fromCoordinate(coordinateAt(0)).y
-        for (var i=1; i<pathLength(); i++){
-            var y = map.fromCoordinate(coordinateAt(i)).y
-            if (y>max) max=y
-        }
-        return max
-    }
-
-    function min_x(){
-        var min = map.fromCoordinate(coordinateAt(0)).x
-        for (var i=1; i<pathLength(); i++){
-            var x = map.fromCoordinate(coordinateAt(i)).x
-            if (x<min) min=x
-        }
-        return min
-    }
-
-    function min_y(){
-        var min = map.fromCoordinate(coordinateAt(0)).y
-        for (var i=1; i<pathLength(); i++){
-            var y = map.fromCoordinate(coordinateAt(i)).y
-            if (y<min) min=y
-        }
-        return min
     }
 }
