@@ -88,13 +88,21 @@ MapPolyline {
         } else if (rect_phase === 2){
             var cp0 = coordinateAt(0);
             var cp1 = coordinateAt(1);
-            var a1 = Helper.path_bearing(cp1, cp0)
-            var a2 = a1+90
-
             var cpc = map.toCoordinate(Qt.point(mouse.x, mouse.y), false)
 
-            var cp2 = Helper.nearest_geo_intersection(cp1, a2, cpc, a1)
-            var cp3 = Helper.nearest_geo_intersection(cp0, a2, cpc, a1)
+
+            var coords = [cp0, cp1, cpc]
+            var centroid = Helper.coords_centroid(coords)
+            var lam = Helper.lat_to_m_coeff(centroid.latitude)
+            var lom = Helper.lon_to_m_coeff(centroid.longitude)
+            var points = Helper.map_to_euclidean(coords, centroid, lam, lom)
+
+            var m = Helper.slope(points[1], points[0])
+            var m_perp = -1/m
+            var p2 = Helper.project(points[1], m_perp, points[2])
+            var p3 = Helper.project(points[0], m_perp, points[2])
+            var cp2 = Helper.point_euclidean_to_map(p2.x, p2.y, centroid, lam, lom)
+            var cp3 = Helper.point_euclidean_to_map(p3.x, p3.y, centroid, lam, lom)
 
             if (cp2 !== null && cp2.isValid && cp3 !== null && cp3.isValid){
                 replaceCoordinate(2, cp2)
