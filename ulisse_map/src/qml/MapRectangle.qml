@@ -24,7 +24,7 @@ MapPolyline {
     property var offset: 10
 
     property var intersections_canvas: []
-    property var centroid_cartesian
+    property var centroid
     property var intersections_cartesian: []
     property var intersections_geographic: []
 
@@ -118,7 +118,7 @@ MapPolyline {
         // transform shape coordinates and work in a virtual euclidean metric system
         var shape_coords = path.slice(0, pathLength()-1)
 
-        var centroid = Helper.coords_centroid(shape_coords)
+        centroid = Helper.coords_centroid(shape_coords)
         var limits = Helper.shape_geo_limits(shape_coords)
 
         var dim = Helper.shape_px_dimensions(limits, map)
@@ -190,11 +190,16 @@ MapPolyline {
             nurb_l.push(Helper.generate_nurb_circle(p0, p3, dir))
         }
 
-        var result = [nurb_l[0]]
+        var curves = [nurb_l[0]]
         for (var i=0; i<intersections_cartesian.length-1; i++){
-            result.push(nurb_l[i])
-            result.push(nurb_l[i+1])
+            curves.push(nurb_l[i])
+            curves.push(nurb_l[i+1])
         }
+        var result = {
+            centroid: [centroid.latitude, centroid.longitude],
+            curves: curves
+        }
+        console.log(JSON.stringify(result))
         return result
     }
 }

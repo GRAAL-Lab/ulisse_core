@@ -1,5 +1,8 @@
 import QtQuick 2.0
 import QtLocation 5.6
+import QtPositioning 5.6
+
+import "../scripts/helper.js" as Helper
 
 MapPolyline {
     line.width: 3
@@ -9,8 +12,8 @@ MapPolyline {
 
     signal end
 
-    function distance(p1,p2){
-        return Math.sqrt(Math.pow(p1.x-p2.x,2) + Math.pow(p1.y-p2.y,2))
+    Component.onCompleted: {
+        Helper.init_lib(QtPositioning)
     }
 
     function click_handler(mouse){
@@ -27,10 +30,11 @@ MapPolyline {
             else if (pathLength() > 1){
                 var lastwp = coordinateAt(pathLength()-2)
                 var lastp = map.fromCoordinate(lastwp)
-                if(distance(p, lastp) < 8){
+                if(Helper.distance(p, lastp) < 8){
                     removeCoordinate(pathLength()-1)
                     line.color = "#33cc33"
                     mapMouseArea.hoverEnabled = false
+                    generate_nurbs()
                     end()
                     return
                 }
@@ -47,7 +51,7 @@ MapPolyline {
         if (pathLength() > 1){
             var lastwp = coordinateAt(pathLength()-2)
             var lastp = map.fromCoordinate(lastwp)
-            if(distance(p, lastp) < 8){
+            if(Helper.distance(p, lastp) < 8){
                 line.color = "#ffb300"
             } else {
                 line.color = "#81c784"
@@ -55,5 +59,20 @@ MapPolyline {
         } else {
             line.color = "#81c784"
         }
+    }
+
+    function generate_nurbs(){
+        var centroid = Helper.coords_centroid(path)
+        var lam = Helper.lat_to_m_coeff(centroid.latitude)
+        var lom = Helper.lon_to_m_coeff(centroid.longitude)
+        var points = Helper.map_to_euclidean(path, centroid, lam, lom)
+
+        var nurb_l = Helper.generate_nurb_broken_line(points)
+        var result = {
+            centroid: [centroid.latitude, centroid.longitude],
+            curves: [nurb_l]
+        }
+        console.log(JSON.stringify(result))
+        return result
     }
 }

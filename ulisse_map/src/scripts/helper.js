@@ -468,39 +468,6 @@ function lon_to_m_coeff(lon){
     return 111412.84*Math.cos(lon) - 93.5*Math.cos(3*lon) + 0.118*Math.cos(5*lon)
 }
 
-
-function serialize(object, maxDepth) {
-    function _processObject(object, maxDepth, level) {
-        var output = []
-        var pad = "  "
-        if (maxDepth == undefined) {
-            maxDepth = -1
-        }
-        if (level == undefined) {
-            level = 0
-        }
-        var padding = new Array(level + 1).join(pad)
-
-        output.push((Array.isArray(object) ? "[" : "{"))
-        var fields = []
-        for (var key in object) {
-            var keyText = Array.isArray(object) ? "" : ("\"" + key + "\": ")
-            if (typeof (object[key]) == "object" && key != "parent" && maxDepth != 0) {
-                var res = _processObject(object[key], maxDepth > 0 ? maxDepth - 1 : -1, level + 1)
-                fields.push(padding + pad + keyText + res)
-            } else {
-                fields.push(padding + pad + keyText + "\"" + object[key] + "\"")
-            }
-        }
-        output.push(fields.join(",\n"))
-        output.push(padding + (Array.isArray(object) ? "]" : "}"))
-
-        return output.join("\n")
-    }
-
-    return _processObject(object, maxDepth)
-}
-
 function generate_nurb_circle(p0, p3, dir){
     var dist = distance(p0, p3)
     var angle = Math.tan(1/-slope(p0, p3))
@@ -511,14 +478,6 @@ function generate_nurb_circle(p0, p3, dir){
         var p1 = Qt.point(p0.x - Math.cos(angle)*dist, p0.y - Math.sin(angle)*dist)
         var p2 = Qt.point(p3.x - Math.cos(angle)*dist, p3.y - Math.sin(angle)*dist)
     }
-    /*
-    console.log(Helper.serialize({
-        "discretization": 100,
-        "degree": 3,
-        "controlPoints": [p0.x, p0.y, 0, 1, p1.x, p1.y, 0, 1/3.0, p2.x, p2.y, 0, 1/3.0, p3.x, p3.y, 0, 1],
-        "knots": [0, 0, 0, 0, 1, 1, 1, 1]
-    }, 10))
-    */
     return {
         degree: 3,
         points: [[p0.x, p0.y], [p1.x, p1.y], [p2.x, p2.y], [p3.x, p3.y]],
@@ -528,19 +487,28 @@ function generate_nurb_circle(p0, p3, dir){
 }
 
 function generate_nurb_line(p0, p1){
-    /*
-    console.log(Helper.serialize({
-        "discretization": 100,
-        "degree": 1,
-        "controlPoints": [p0.x, p0.y, 0, 1, p1.x, p1.y, 0, 1],
-        "knots": [0, 0, 1, 1]
-    }, 10))
-    */
     return {
         degree: 1,
         points: [[p0.x, p0.y], [p1.x, p1.y]],
         weigths: [1, 1],
         knots: [0, 0, 1, 1]
+    }
+}
+
+function generate_nurb_broken_line(pp){
+    var points = []
+    var weights = []
+    var knots = [0]
+    for (var i = 0; i < pp.length; i++){
+        points.push([pp[i].x, pp[i].y])
+        knots.push((i+1)/pp.length)
+        weights.push(1)
+    }
+    return {
+        degree: 1,
+        points: points,
+        weigths: weights,
+        knots: knots
     }
 }
 
