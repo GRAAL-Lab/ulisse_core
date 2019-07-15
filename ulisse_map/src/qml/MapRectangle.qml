@@ -93,35 +93,8 @@ MapPolyline {
 
             var cpc = map.toCoordinate(Qt.point(mouse.x, mouse.y), false)
 
-            var f = function (i,r){
-                if (i !== null && !isNaN(i.latitude) && !isNaN(i.longitude))
-                    r.push(i)
-            }
-
-            var m = function (r, cpc){
-                if (r.length > 0){
-                    var min_d = r[0].distanceTo(cpc)
-                    var min_c = r[0]
-                    for (var i = 1; i<r.length; i++)
-                        if (r[i].distanceTo(cpc) < min_d)
-                            min_c = r[i]
-                    return min_c
-                } else return null
-            }
-
-            var r = []
-            f(Helper.geo_intersection(cp1, a2, cpc, a1),r)
-            f(Helper.geo_intersection(cp1, a2, cpc, a1+180),r)
-            f(Helper.geo_intersection(cp1, a2+180, cpc, a1),r)
-            f(Helper.geo_intersection(cp1, a2+180, cpc, a1+180),r)
-            var cp2 = m(r, cpc)
-
-            var r = []
-            f(Helper.geo_intersection(cp0, a2, cpc, a1),r)
-            f(Helper.geo_intersection(cp0, a2, cpc, a1+180),r)
-            f(Helper.geo_intersection(cp0, a2+180, cpc, a1),r)
-            f(Helper.geo_intersection(cp0, a2+180, cpc, a1+180),r)
-            var cp3 = m(r, cpc)
+            var cp2 = Helper.nearest_geo_intersection(cp1, a2, cpc, a1)
+            var cp3 = Helper.nearest_geo_intersection(cp0, a2, cpc, a1)
 
             if (cp2 !== null && cp2.isValid && cp3 !== null && cp3.isValid){
                 replaceCoordinate(2, cp2)

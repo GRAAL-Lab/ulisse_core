@@ -73,6 +73,32 @@ function path_bearing(c0, c1){
     return rad_to_deg(Math.atan2(y, x));
 }
 
+
+function nearest_geo_intersection(cp1, a1, cp2, a2){
+    var f = function (i,r){
+        if (i !== null && !isNaN(i.latitude) && !isNaN(i.longitude))
+            r.push(i)
+    }
+
+    var m = function (r, cpc){
+        if (r.length > 0){
+            var min_d = r[0].distanceTo(cpc)
+            var min_c = r[0]
+            for (var i = 1; i<r.length; i++)
+                if (r[i].distanceTo(cpc) < min_d)
+                    min_c = r[i]
+            return min_c
+        } else return null
+    }
+
+    var r = []
+    f(geo_intersection(cp1, a1, cp2, a2),r)
+    f(geo_intersection(cp1, a1, cp2, a2+180),r)
+    f(geo_intersection(cp1, a1+180, cp2, a2),r)
+    f(geo_intersection(cp1, a1+180, cp2, a2+180),r)
+    return m(r, cp2)
+}
+
 function geo_intersection(p1, brng1, p2, brng2) {
     // see www.edwilliams.org/avform.htm#Intersection
 
