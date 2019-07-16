@@ -190,19 +190,23 @@ function intersections(point, angle, sides){
     return ii
 }
 
-function find_intersections(angle, points, sides, offset){
-    var au_deg = 90-angle
-    var at_deg = Math.atan(slope(points[1], points[2]))
-    var offset_on_t = offset/Math.cos(deg_to_rad(90-au_deg))
+function find_intersections(angle, points, sides, offset, lam, lom){
+    var step_points = []
+
+    var a_perp = Math.atan(-Math.pow(lam/lom,2)/Math.tan(deg_to_rad(angle)))
+    var p_dir = Qt.point(points[1].x + Math.cos(a_perp)*offset,points[1].y + Math.sin(a_perp)*offset)
+    var p_start = interpolate(points[1], p_dir, -offset/2, 1)
+
 
     var times=0
     var ii1=[]
     while (true){
         ++times
-        var p = interpolate(points[1], points[0], offset_on_t, times)
-        var _i = intersections(p, at_deg-au_deg, sides) //NB two intersections always if a convex polygon
+        var p = interpolate(p_start, p_dir, -offset, times)
+        step_points.push(p)
+        var _i = intersections(p, angle, sides) //NB two intersections always if a convex polygon
         if (_i.length < 2) break
-        if (_i[0].x < _i[1].x)
+        if (_i[0].x < _i[1].x || (_i[0].x === _i[1].x && _i[0].y < _i[1].y))
             ii1.push([_i[0], _i[1]])
         else
             ii1.push([_i[1], _i[0]])
@@ -212,16 +216,20 @@ function find_intersections(angle, points, sides, offset){
     var ii2=[]
     while (true){
         ++times
-        var p = interpolate(points[1], points[0], -offset_on_t, times)
-        var _i = intersections(p, at_deg-au_deg, sides) //NB two intersections always if a convex polygon
+        var p = interpolate(p_start, p_dir, offset, times)
+        step_points.push(p)
+        var _i = intersections(p, angle, sides) //NB two intersections always if a convex polygon
         if (_i.length < 2) break
-        if (_i[0].x < _i[1].x)
+        if (_i[0].x < _i[1].x || (_i[0].x === _i[1].x && _i[0].y < _i[1].y))
             ii2.push([_i[0], _i[1]])
         else
             ii2.push([_i[1], _i[0]])
     }
 
-    return ii2.reverse().concat(ii1)
+    return {
+        intersections: ii2.reverse().concat(ii1),
+        step_points: step_points
+    }
 }
 
 
@@ -543,7 +551,7 @@ function draw_semicircle(ctx, p0, p1, dir){
             distance(p0, p1)/2,
             Math.atan2(p1.y-p0.y, p1.x-p0.x),
             Math.atan2(p1.y-p0.y, p1.x-p0.x) + Math.PI,
-            dir === 1)
+            dir === 0)
     ctx.moveTo(p1.x, p1.y)
     ctx.closePath()
     ctx.stroke()

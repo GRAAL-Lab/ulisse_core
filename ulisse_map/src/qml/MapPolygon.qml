@@ -111,6 +111,7 @@ MapPolyline {
     }
 
     property var points
+    property var __steps
     function generate_path(){
         var orig_tilt = map.tilt
         map.tilt = 0
@@ -131,7 +132,9 @@ MapPolyline {
         points = Helper.set_point_from_upper(points)
         var sides = Helper.make_sides(points)
 
-        intersections_cartesian = Helper.find_intersections(angle, points, sides, offset)
+        var r = Helper.find_intersections(angle, points, sides, offset, lam, lom)
+        intersections_cartesian = r.intersections
+        __steps = r.step_points
         intersections_cartesian = Helper.rectify_dense_winding(intersections_cartesian, lam/lom)
 
         // transform virtual euclidean reference points in map coordinates
@@ -143,6 +146,7 @@ MapPolyline {
         var p2m_h = a.distanceTo(b)
         var p2m_v = a.distanceTo(c)
 
+        offset *= 20
         var o_x = offset/p2m_h
         var o_y = offset/p2m_v
 
@@ -150,6 +154,8 @@ MapPolyline {
                            dim[0]+2*o_x, dim[1]+2*o_y,
                            limits.max_lat + offset/lam, limits.min_lon - offset/lom,
                            Helper.relative_zoom_pixel_ratio(map, map.maximumZoomLevel))
+
+        offset /= 20
 
         // transform map coordinates in canvas pixel indexes
         intersections_canvas = Helper.point_couples_map2canvas(intersections_geographic, map, _canvas)
@@ -177,6 +183,24 @@ MapPolyline {
         _1 = Helper.point_euclidean2map(points[2].x, points[2].y, centroid, lam, lom)
         _2 = Helper.point_screen2canvas(map.fromCoordinate(_1, false), map, _canvas)
         Helper.draw_circle(_canvas.canvasCtx, _2, 20, "#0000ff")
+
+
+        for (var i = 0; i<intersections_canvas.length; i++){
+            var p = intersections_canvas[i]
+            Helper.draw_circle(_canvas.canvasCtx, p[0], i%2?25:50, "#ff00ff")
+            Helper.draw_circle(_canvas.canvasCtx, p[1], i%2?25:50, "#00ffff")
+        }
+
+        Helper.draw_circle(_canvas.canvasCtx, intersections_canvas[0][0], 40, "#ffffff")
+        Helper.draw_circle(_canvas.canvasCtx, intersections_canvas[0][1], 60, "#000000")
+
+
+        for (var i = 0; i<__steps.length; i++){
+            var p = __steps[i]
+            _1 = Helper.point_euclidean2map(p.x, p.y, centroid, lam, lom)
+            _2 = Helper.point_screen2canvas(map.fromCoordinate(_1, false), map, _canvas)
+            Helper.draw_circle(_canvas.canvasCtx, _2, 30, "#ffffff")
+        }
 
         // draw parallel lines
         Helper.draw_path_lines(_canvas, intersections_canvas)
