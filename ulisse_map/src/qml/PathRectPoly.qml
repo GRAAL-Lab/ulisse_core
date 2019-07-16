@@ -10,12 +10,16 @@ import QtQuick.Dialogs 1.2
 PathRectPolyForm {
    id: rowLayout1
     b_path.onClicked:{
-                map.createPath()
-            }
+        map.createPath()
+    }
     b_rect.onClicked: {
-                map.createRect()
-            }
+        var offset = parseInt(offsetField.text)
+        var angle = parseInt(angleField.text)
+        map.createRect(offset, angle)
+    }
     b_poly.onClicked: {
-                map.createPoly()
-            }
+        var offset = parseInt(offsetField.text)
+        var angle = parseInt(angleField.text)
+        map.createPoly(offset, angle)
+    }
 }

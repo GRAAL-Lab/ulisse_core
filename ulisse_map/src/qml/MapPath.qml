@@ -65,7 +65,7 @@ MapPolyline {
         var centroid = Helper.coords_centroid(path)
         var lam = Helper.lat_to_m_coeff(centroid.latitude)
         var lom = Helper.lon_to_m_coeff(centroid.longitude)
-        var points = Helper.map_to_euclidean(path, centroid, lam, lom)
+        var points = Helper.points_map2euclidean(path, centroid, lam, lom)
 
         var nurb_l = Helper.generate_nurb_broken_line(points)
         var result = {

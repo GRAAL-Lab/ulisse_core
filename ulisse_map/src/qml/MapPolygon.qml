@@ -110,11 +110,11 @@ MapPolyline {
         }
     }
 
+    property var points
     function generate_path(){
         var orig_tilt = map.tilt
         map.tilt = 0
 
-        // transform shape coordinates and work in a virtual euclidean metric system
         var shape_coords = path.slice(0, pathLength()-1)
 
         centroid = Helper.coords_centroid(shape_coords)
@@ -125,20 +125,17 @@ MapPolyline {
         var lam = Helper.lat_to_m_coeff(centroid.latitude)
         var lom = Helper.lon_to_m_coeff(centroid.longitude)
 
-        var points = Helper.map_to_euclidean(shape_coords, centroid, lam, lom)
+        // transform shape coordinates and work in a virtual euclidean metric system
+        points = Helper.points_map2euclidean(shape_coords, centroid, lam, lom)
         points = Helper.set_points_clockwise(points)
+        points = Helper.set_point_from_upper(points)
+        var sides = Helper.make_sides(points)
 
-        var r2 = Helper.find_interesting_features(points)
-        var pt = r2.point_top
-        var pl = r2.point_before
-        var upper_side = r2.upper_side
-        var sides = r2.sides
-
-        intersections_cartesian = Helper.find_intersections(angle, pt, pl, upper_side, sides, offset)
-        intersections_cartesian = Helper.rectify_dense_winding(intersections_cartesian)
+        intersections_cartesian = Helper.find_intersections(angle, points, sides, offset)
+        intersections_cartesian = Helper.rectify_dense_winding(intersections_cartesian, lam/lom)
 
         // transform virtual euclidean reference points in map coordinates
-        intersections_geographic = Helper.euclidean_to_map(intersections_cartesian, centroid, lam, lom)
+        intersections_geographic = Helper.point_couples_euclidean2map(intersections_cartesian, centroid, lam, lom)
 
         var a = map.toCoordinate(Qt.point(0,0))
         var b = map.toCoordinate(Qt.point(0,1))
@@ -155,7 +152,7 @@ MapPolyline {
                            Helper.relative_zoom_pixel_ratio(map, map.maximumZoomLevel))
 
         // transform map coordinates in canvas pixel indexes
-        intersections_canvas = Helper.map_to_canvas(intersections_geographic, map, _canvas)
+        intersections_canvas = Helper.point_couples_map2canvas(intersections_geographic, map, _canvas)
         map.tilt = orig_tilt
     }
 
@@ -164,7 +161,22 @@ MapPolyline {
         _canvas.canvasCtx.clearRect(0, 0, _canvas.canvasWidth, _canvas.canvasHeight)
 
         // draw a bounding box around the area
-        //Helper.draw_bounding_rect(map, _canvas, _canvas.canvasWidth, _canvas.canvasHeight)
+        Helper.draw_bounding_rect(map, _canvas, _canvas.canvasWidth, _canvas.canvasHeight)
+
+        var lam = Helper.lat_to_m_coeff(centroid.latitude)
+        var lom = Helper.lon_to_m_coeff(centroid.longitude)
+
+        var _1 = Helper.point_euclidean2map(points[0].x, points[0].y, centroid, lam, lom)
+        var _2 = Helper.point_screen2canvas(map.fromCoordinate(_1, false), map, _canvas)
+        Helper.draw_circle(_canvas.canvasCtx, _2, 20, "#ff0000")
+
+        _1 = Helper.point_euclidean2map(points[1].x, points[1].y, centroid, lam, lom)
+        _2 = Helper.point_screen2canvas(map.fromCoordinate(_1, false), map, _canvas)
+        Helper.draw_circle(_canvas.canvasCtx, _2, 20, "#00ff00")
+
+        _1 = Helper.point_euclidean2map(points[2].x, points[2].y, centroid, lam, lom)
+        _2 = Helper.point_screen2canvas(map.fromCoordinate(_1, false), map, _canvas)
+        Helper.draw_circle(_canvas.canvasCtx, _2, 20, "#0000ff")
 
         // draw parallel lines
         Helper.draw_path_lines(_canvas, intersections_canvas)
@@ -198,7 +210,7 @@ MapPolyline {
             centroid: [centroid.latitude, centroid.longitude],
             curves: curves
         }
-        console.log(JSON.stringify(result))
+        //console.log(JSON.stringify(result))
         return result
     }
 }

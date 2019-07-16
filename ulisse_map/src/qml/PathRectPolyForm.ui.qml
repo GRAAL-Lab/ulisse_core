@@ -7,12 +7,13 @@ import QtQuick.Controls.Material 2.1
 import QtGraphicalEffects 1.0
 import QtQuick.Dialogs 1.2
 
-
-RowLayout {
+ColumnLayout {
     property alias b_path: b_path
     property alias b_rect: b_rect
     property alias b_poly: b_poly
-    id: rowLayout1
+    property alias offsetField: offsetField
+    property alias angleField: angleField
+    id: cl1
     state: {
         0: "empty",
                 1: "path",
@@ -20,26 +21,54 @@ RowLayout {
                 3: "poly"
     }[mapView.currentState]
 
-    Button {
-        id: b_path
-        text: qsTr("Path")
-        enabled: false
-        highlighted: false
+    RowLayout {
+        id: rl1
+        width: 100
+        height: 100
+        Layout.fillWidth: true
+
+        Button {
+            id: b_poly
+            text: qsTr("Polygon")
+            Layout.fillHeight: false
+            Layout.fillWidth: true
+            enabled: false
+            highlighted: false
+        }
+
+        Button {
+            id: b_rect
+            text: qsTr("Rectangle")
+            Layout.fillWidth: true
+            enabled: false
+            highlighted: false
+        }
+
+        Button {
+            id: b_path
+            text: qsTr("Path")
+            Layout.fillWidth: true
+            enabled: false
+            highlighted: false
+        }
     }
 
-    Button {
-        id: b_rect
-        text: qsTr("Rectangle")
-        enabled: false
-        highlighted: false
-    }
+    RowLayout {
+        id: rowLayout
+        width: 100
+        height: 100
 
+        TextField {
+            id: offsetField
+            text: qsTr("10")
+            placeholderText: "Offset"
+        }
 
-    Button {
-        id: b_poly
-        text: qsTr("Polygon")
-        enabled: false
-        highlighted: false
+        TextField {
+            id: angleField
+            text: qsTr("30")
+            placeholderText: "Angle"
+        }
     }
     states: [
         State {
@@ -64,7 +93,6 @@ RowLayout {
                 enabled: true
                 highlighted: true
             }
-
         },
         State {
             name: "rect"
@@ -73,7 +101,6 @@ RowLayout {
                 enabled: true
                 highlighted: true
             }
-
         },
         State {
             name: "poly"
@@ -82,8 +109,6 @@ RowLayout {
                 enabled: true
                 highlighted: true
             }
-
         }
     ]
 }
-

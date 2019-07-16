@@ -39,12 +39,12 @@ MapComponentForm {
         pathComponent = Qt.createComponent("MapPath.qml");
     }
 
-    function createRect() {
+    function createRect(offset, angle) {
          if (currentState === generalState.empty){
              currentState = generalState.rect
              if (rect_cur)
                  rect_cur.end.disconnect(endRect)
-             rect_cur = rectComponent.createObject(map_component)
+             rect_cur = rectComponent.createObject(map_component, {offset:offset, angle:angle})
              rect_list.push(rect_cur)
              map.addMapItem(rect_cur)
              click_handler = rect_cur.click_handler
@@ -53,12 +53,12 @@ MapComponentForm {
          }
     }
 
-    function createPoly() {
+    function createPoly(offset, angle) {
          if (currentState === generalState.empty){
              currentState = generalState.poly
              if (poly_cur)
                  poly_cur.end.disconnect(endPoly)
-             poly_cur = polyComponent.createObject(map_component)
+             poly_cur = polyComponent.createObject(map_component, {offset:offset, angle:angle})
              poly_list.push(poly_cur)
              map.addMapItem(poly_cur)
              click_handler = poly_cur.click_handler
