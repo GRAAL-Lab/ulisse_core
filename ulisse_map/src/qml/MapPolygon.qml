@@ -22,8 +22,10 @@ MapPolyline {
 
     property real angle: 30
     property real offset: 10
-    property var debug_c: null
+    property real jump: 2
+    property string method: "single_winding" //"simple"
 
+    property var debug_c: null
 
     property var intersections_canvas: []
     property var centroid
@@ -111,6 +113,8 @@ MapPolyline {
     }
 
     function generate_path(){
+        if (!(method === "simple" || method === "single_winding")) return
+
         var orig_tilt = map.tilt
         map.tilt = 0
 
@@ -130,8 +134,9 @@ MapPolyline {
         var sides = Helper.make_sides(points)
 
         intersections_cartesian = Helper.convex_polygon_parallel_slices_intersections(angle, offset, sides, lam/lom)
-        intersections_cartesian = Helper.rectify_dense_winding(intersections_cartesian, lam/lom)
 
+        if (method === "simple" || method === "single_winding")
+            intersections_cartesian = Helper.rectify_dense_winding(intersections_cartesian, lam/lom)
 
         // transform virtual euclidean reference points in map coordinates
         intersections_geographic = Helper.segments_euclidean2map(intersections_cartesian, centroid, lam, lom)
@@ -170,33 +175,14 @@ MapPolyline {
         // clear the canvas
         _canvas.canvasCtx.clearRect(0, 0, _canvas.canvasWidth, _canvas.canvasHeight)
 
-
         // draw parallel lines
         Helper.draw_path_lines(_canvas, intersections_canvas)
 
         // draw manouvre curves
-        var a = 0, b = 1
-        for (var i=0; i<intersections_canvas.length-1; i++){
-            a = Helper.flip(a)
-            b = Helper.flip(b)
-            var p0 = intersections_canvas[i][b]
-            var p1 = intersections_canvas[i][a]
-            var p2 = intersections_canvas[i+1][a]
-            var p3 = intersections_canvas[i+1][b]
-            var l1 = Helper.distance(p0, p1)
-            var l2 = Helper.distance(p3, p2)
-            var d = Helper.distance(p1, p2)
-            var c = 0.55191502449 * d/2
-            var pc1a = Helper.interpolate(p0, p1, l1+c, 1)
-            var pc1b = Helper.interpolate(p3, p2, l2+c, 1)
-            var _a = Helper.interpolate(p0, p1, l1+d/2, 1)
-            var _b = Helper.interpolate(p3, p2, l2+d/2, 1)
-            var pc3 = Helper.interpolate(_a, _b, d/2, 1)
-            var pc2a = Helper.interpolate(pc3, _a, c, 1)
-            var pc2b = Helper.interpolate(pc3, _b, c, 1)
-            Helper.draw_cubic_bezier(_canvas.canvasCtx, p1, pc1a, pc2a, pc3)
-            Helper.draw_cubic_bezier(_canvas.canvasCtx, pc3, pc2b, pc1b, p2)
-        }
+        if (method === "simple")
+           Helper.draw_manouvre_simple(_canvas, intersections_canvas)
+        else if (method === "single_winding")
+           Helper.draw_manouvre_single_winding(_canvas, intersections_canvas)
     }
 
     function generate_nurbs(){
@@ -212,7 +198,10 @@ MapPolyline {
             var dir = (i+1)%2
             var p0 = intersections_cartesian[i][dir]
             var p3 = intersections_cartesian[i+1][dir]
-            nurb_l.push(Helper.generate_nurb_circle(p0, p3, dir))
+            if (method === "simple")
+                nurb_l.push(Helper.generate_nurb_line(p0, p3))
+            else if (method === "single_winding")
+                nurb_l.push(Helper.generate_nurb_circle(p0, p3, dir))
         }
 
         var curves = [nurb_l[0]]
@@ -224,7 +213,7 @@ MapPolyline {
             centroid: [centroid.latitude, centroid.longitude],
             curves: curves
         }
-        //console.log(JSON.stringify(result))
+        console.log(JSON.stringify(result))
         return result
     }
 }

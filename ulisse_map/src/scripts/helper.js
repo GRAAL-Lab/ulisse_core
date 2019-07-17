@@ -176,6 +176,49 @@ function rectify_dense_winding(ii, ratio){
     return ii
 }
 
+/*
+function rectify_wide_winding(ii, jump, ratio){
+    var upper_leap = jump
+    var lower_leap = jump-1
+    for (var i=0, a=0, b=1; i<ii.length-upper_leap; i++){
+        var p0 = ii[i][0]
+        var p1 = ii[i][1]
+        var p2 = ii[i+upper_leap][1]
+        var p3 = ii[i+upper_leap][0]
+        var rr = rectify_parallelogram_side(p0, p1, p2, p3, ratio)
+        ii[i][1] = rr[1]
+        ii[i+upper_leap][1] = rr[2]
+
+        p0 = ii[i+1][1]
+        p1 = ii[i+1][0]
+        p2 = ii[i+1+lower_leap][0]
+        p3 = ii[i+1+lower_leap][1]
+        rr = rectify_parallelogram_side(p0, p1, p2, p3, ratio)
+        ii[i+1][0] = rr[1]
+        ii[i+1+lower_leap][0] = rr[2]
+    }
+    return ii
+}
+*/
+
+/*
+function draw_manouvre_double_winding(canvas, pp, jump){
+    var upper_leap = jump
+    var lower_leap = jump-1
+    for (var i=0, a=0, b=1; i<pp.length-upper_leap; i++){
+        var p0 = pp[i][0]
+        var p1 = pp[i][1]
+        var p2 = pp[i+upper_leap][1]
+        var p3 = pp[i+upper_leap][0]
+        draw_semicircle(canvas.canvasCtx, p0, p1, p2, p3)
+        p0 = pp[i][1]
+        p1 = pp[i][0]
+        p2 = pp[i+lower_leap][0]
+        p3 = pp[i+lower_leap][1]
+        draw_semicircle(canvas.canvasCtx, p0, p1, p2, p3)
+    }
+}
+*/
 
 function set_points_clockwise(points){
     if (three_point_direction(points[0],points[1],points[2]) === 1)
@@ -376,7 +419,6 @@ function draw_line(ctx,x1,y1,x2,y2){
     ctx.beginPath()
     ctx.moveTo(x1,y1)
     ctx.lineTo(x2,y2)
-    ctx.closePath()
     ctx.stroke()
 }
 
@@ -401,19 +443,47 @@ function draw_path_lines(canvas, pp){
     canvas.requestPaint()
 }
 
-function draw_semicircle(ctx, p0, p1, dir){
-    ctx.strokeStyle = "#0000ff"
-    ctx.beginPath()
-    ctx.moveTo(p1.x, p1.y)
-    ctx.arc((p0.x+p1.x)/2,
-            (p0.y+p1.y)/2,
-            distance(p0, p1)/2,
-            Math.atan2(p1.y-p0.y, p1.x-p0.x),
-            Math.atan2(p1.y-p0.y, p1.x-p0.x) + Math.PI,
-            dir === 0)
-    ctx.moveTo(p1.x, p1.y)
-    ctx.closePath()
-    ctx.stroke()
+function ctx_draw_manouvre_simple(ctx, pp){
+    for (var i = 0; i < pp.length; i++){
+        var dir = (i+1)%2
+        var p0 = pp[i][dir]
+        var p1 = pp[i+1][dir]
+        draw_line(ctx, p0.x, p0.y, p1.x, p1.y)
+    }
+}
+
+function draw_manouvre_simple(canvas, pp){
+    var ctx = canvas.canvasCtx
+    ctx_draw_manouvre_simple(ctx, pp)
+    canvas.requestPaint()
+}
+
+function draw_manouvre_single_winding(canvas, pp){
+    for (var i=0, a=0, b=1; i<pp.length-1; i++){
+        a = flip(a)
+        b = flip(b)
+        var p0 = pp[i][b]
+        var p1 = pp[i][a]
+        var p2 = pp[i+1][a]
+        var p3 = pp[i+1][b]
+        draw_semicircle(canvas.canvasCtx, p0, p1, p2, p3)
+    }
+}
+
+function draw_semicircle(ctx, p0, p1, p2, p3){
+    var l1 = distance(p0, p1)
+    var l2 = distance(p3, p2)
+    var d = distance(p1, p2)
+    var c = 0.55191502449 * d/2
+    var pc1a = interpolate(p0, p1, l1+c, 1)
+    var pc1b = interpolate(p3, p2, l2+c, 1)
+    var _a = interpolate(p0, p1, l1+d/2, 1)
+    var _b = interpolate(p3, p2, l2+d/2, 1)
+    var pc3 = interpolate(_a, _b, d/2, 1)
+    var pc2a = interpolate(pc3, _a, c, 1)
+    var pc2b = interpolate(pc3, _b, c, 1)
+    draw_cubic_bezier(ctx, p1, pc1a, pc2a, pc3)
+    draw_cubic_bezier(ctx, pc3, pc2b, pc1b, p2)
 }
 
 
@@ -422,11 +492,10 @@ function draw_cubic_bezier(ctx, c0, c1, c2, c3){
     ctx.beginPath()
     ctx.moveTo(c0.x, c0.y)
     ctx.bezierCurveTo(c1.x, c1.y, c2.x, c2.y, c3.x, c3.y)
-    //ctx.closePath()
     ctx.stroke()
 }
 
-function draw_circle(ctx, p0, r, color){
+function draw_circle(ctx, p0, p1, p2, p3, color){
     ctx.strokeStyle = color
     ctx.beginPath()
     ctx.moveTo(p0.x, p0.y)
@@ -436,21 +505,8 @@ function draw_circle(ctx, p0, r, color){
             0,
             2*Math.PI)
     ctx.moveTo(p0.x, p0.y)
-    ctx.closePath()
     ctx.stroke()
 }
-
-function draw_path_semicircles(canvas, pp){
-    var ctx = canvas.canvasCtx
-    for (var i = 0; i < pp.length-1; i++){
-        var dir = (i+1)%2
-        var p0 = pp[i][dir]
-        var p1 = pp[i+1][dir]
-        draw_semicircle(ctx,p0,p1,dir)
-    }
-    canvas.requestPaint()
-}
-
 
 function roundNumber(number, digits){
     var multiple = Math.pow(10, digits);
