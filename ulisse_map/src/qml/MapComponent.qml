@@ -44,7 +44,7 @@ MapComponentForm {
              currentState = generalState.rect
              if (rect_cur)
                  rect_cur.end.disconnect(endRect)
-             rect_cur = rectComponent.createObject(map_component, {offset:offset, angle:angle})
+             rect_cur = rectComponent.createObject(map_component, {offset:offset, angle:angle, debug_c: overlay_canvas})
              rect_list.push(rect_cur)
              map.addMapItem(rect_cur)
              click_handler = rect_cur.click_handler
@@ -58,7 +58,7 @@ MapComponentForm {
              currentState = generalState.poly
              if (poly_cur)
                  poly_cur.end.disconnect(endPoly)
-             poly_cur = polyComponent.createObject(map_component, {offset:offset, angle:angle})
+             poly_cur = polyComponent.createObject(map_component, {offset:offset, angle:angle, debug_c: overlay_canvas})
              poly_list.push(poly_cur)
              map.addMapItem(poly_cur)
              click_handler = poly_cur.click_handler

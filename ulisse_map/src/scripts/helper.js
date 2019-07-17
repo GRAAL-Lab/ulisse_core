@@ -177,8 +177,8 @@ function intersections(point, angle, sides){
         var s = sides[i]
         var li = to_homogeneous_line(s[0], Math.atan(slope(s[0], s[1])))
 
-        var intersection = l0.crossProduct(li)
-        if (intersection.z !== 0){/*not parallel*/
+        var intersection = cross_product(l0, li)
+        if (intersection[2] !== 0){//not parallel
             var pi = from_homogeneous_point(intersection)
             //console.log(JSON.stringify(s[0]))
             //console.log(JSON.stringify(pi))
@@ -190,19 +190,18 @@ function intersections(point, angle, sides){
     return ii
 }
 
-function find_intersections(angle, points, sides, offset, lam, lom){
+function find_intersections(angle, offset, centroid, sides, lam, lom){
     var step_points = []
 
-    var a_perp = Math.atan(-Math.pow(lam/lom,2)/Math.tan(deg_to_rad(angle)))
-    var p_dir = Qt.point(points[1].x + Math.cos(a_perp)*offset,points[1].y + Math.sin(a_perp)*offset)
-    var p_start = interpolate(points[1], p_dir, -offset/2, 1)
-
+//    var a_perp = Math.atan(-Math.pow(lam/lom,2)/Math.tan(deg_to_rad(angle)))
+      var a_perp = Math.atan(-1/Math.tan(deg_to_rad(angle)))
+    var p_dir = Qt.point(centroid.x + Math.cos(a_perp)*offset,centroid.y + Math.sin(a_perp)*offset)
 
     var times=0
     var ii1=[]
     while (true){
         ++times
-        var p = interpolate(p_start, p_dir, -offset, times)
+        var p = interpolate(centroid, p_dir, -offset, times)
         step_points.push(p)
         var _i = intersections(p, angle, sides) //NB two intersections always if a convex polygon
         if (_i.length < 2) break
@@ -216,7 +215,7 @@ function find_intersections(angle, points, sides, offset, lam, lom){
     var ii2=[]
     while (true){
         ++times
-        var p = interpolate(p_start, p_dir, offset, times)
+        var p = interpolate(centroid, p_dir, offset, times)
         step_points.push(p)
         var _i = intersections(p, angle, sides) //NB two intersections always if a convex polygon
         if (_i.length < 2) break
@@ -291,10 +290,10 @@ function rectify_parallelogram_side(p0,p1,p2,p3, ratio){
     else
         p2 = project(p3, m, p1, ratio)
     var result = [p0, p1, p2, p3]
-    console.log(p0.x + "," + p0.y)
-    console.log(p1.x + "," + p1.y)
-    console.log(p2.x + "," + p2.y)
-    console.log(p3.x + "," + p3.y)
+    //console.log(p0.x + "," + p0.y)
+    //console.log(p1.x + "," + p1.y)
+    //console.log(p2.x + "," + p2.y)
+    //console.log(p3.x + "," + p3.y)
     return result
 }
 
@@ -314,27 +313,12 @@ function intersect_two_lines(p0,m0,p1,m1){
     var l0 = to_homogeneous_line(p0, Math.atan(m0))
     var l1 = to_homogeneous_line(p1, Math.atan(m1))
 
-    var intersection = l0.crossProduct(l1)
+    var intersection = cross_product(l0, l1)
     return from_homogeneous_point(intersection)
 }
 
 function project(p0,m,p1,ratio){
-    var p2 = Qt.point(0,0);
-    if ( (Math.abs(m) === 16331239353195370) || (Math.abs(m) === Infinity)){
-        p2.x = p0.x
-        p2.y = p1.y
-    } else if (m === 0){
-        p2.x = p1.x
-        p2.y = p0.y
-    } else {
-        var _m = m
-        var _m_perp = -1/m
-        var m = _m*ratio
-        var m_perp = _m_perp*ratio
-        p2.x = (m*p0.x - m_perp*p1.x + p1.y - p0.y)/(m-m_perp)
-        p2.y = m*(p2.x - p0.x) + p0.y
-    }
-    return p2
+    return intersect_two_lines(p0,m,p1,-1/m)
 }
 
 function distance(p1,p2){
@@ -349,18 +333,24 @@ function interpolate(from, to, offset, times){
 }
 
 
+function cross_product(a, b){
+    return [a[1]*b[2]-a[2]*b[1],
+            a[2]*b[0]-a[0]*b[2],
+            a[0]*b[1]-a[1]*b[0]]
+}
+
 function to_homogeneous_line(point, angle){
     var m = Math.tan(angle)
     if ( (Math.abs(m) === 16331239353195370) || (Math.abs(m) === Infinity))
-        return Qt.vector3d(1, 0, -point.x)
+        return [1, 0, -point.x]
     if (m === 0)
-        return Qt.vector3d(0, 1, -point.y)
+        return [0, 1, -point.y]
     var q = point.y - m * point.x
-    return Qt.vector3d(m, -1, q)
+    return [m, -1, q]
 }
 
 function from_homogeneous_point(p){
-    return Qt.point(p.x/p.z, p.y/p.z)
+    return Qt.point(p[0]/p[2], p[1]/p[2])
 }
 
 function slope(p0, p1){
@@ -532,14 +522,18 @@ function draw_bounding_rect(map, canvas, w, h){
     canvas.requestPaint()
 }
 
-function draw_path_lines(canvas, pp){
-    var ctx = canvas.canvasCtx
+function ctx_draw_path_lines(ctx, pp){
     for (var i = 0; i < pp.length; i++){
         var p0 = pp[i][0]
         var p1 = pp[i][1]
         draw_line(ctx, p0.x, p0.y, p1.x, p1.y)
-        canvas.requestPaint()
     }
+}
+
+function draw_path_lines(canvas, pp){
+    var ctx = canvas.canvasCtx
+    ctx_draw_path_lines(ctx, pp)
+    canvas.requestPaint()
 }
 
 function draw_semicircle(ctx, p0, p1, dir){
