@@ -29,13 +29,20 @@ MapComponentForm {
     property list<MapPath> path_list
     property MapPath path_cur
 
+    property MapPolygonSecurity polysec_cur
+
     property Component rectComponent
     property Component polyComponent
+    property Component polysecComponent
     property Component pathComponent
+
+    property var security_defined : 0
+
 
     Component.onCompleted: {
         rectComponent = Qt.createComponent("MapRectangle.qml");
         polyComponent = Qt.createComponent("MapPolygon.qml");
+        polysecComponent = Qt.createComponent("MapPolygonSecurity.qml");
         pathComponent = Qt.createComponent("MapPath.qml");
     }
 
@@ -54,18 +61,37 @@ MapComponentForm {
     }
 
     function createPoly() {
-         if (currentState === generalState.empty){
-             currentState = generalState.poly
-             if (poly_cur)
-                 poly_cur.end.disconnect(endPoly)
-             poly_cur = polyComponent.createObject(map_component)
-             poly_list.push(poly_cur)
-             map.addMapItem(poly_cur)
-             click_handler = poly_cur.click_handler
-             pos_changed_handler = poly_cur.pos_changed_handler
-             poly_cur.end.connect(endPoly)
-         }
-    }
+        if (currentState === generalState.empty){
+            currentState = generalState.poly
+            if (poly_cur)
+                poly_cur.end.disconnect(endPoly)
+            poly_cur = polyComponent.createObject(map_component)
+            poly_list.push(poly_cur)
+            map.addMapItem(poly_cur)
+            click_handler = poly_cur.click_handler
+            pos_changed_handler = poly_cur.pos_changed_handler
+            poly_cur.end.connect(endPoly)
+        }
+   }
+
+    function createPolySec() {
+            //TODO -> disable the button OR delete the old bounding box
+            if(security_defined === 1){
+                console.log("You have already defined a security box!!!!")
+                return ;
+            }
+             if (currentState === generalState.empty){
+                 currentState = generalState.polysec
+                 if (polysec_cur)
+                     polysec_cur.end.disconnect(endPolySec)
+                 polysec_cur = polysecComponent.createObject(map_component)
+                 map.addMapItem(polysec_cur)
+                 click_handler = polysec_cur.click_handler
+                 pos_changed_handler = polysec_cur.pos_changed_handler
+                 polysec_cur.end.connect(endPolySec)
+                 security_defined = 1
+             }
+        }
 
     function createPath() {
         if (currentState === generalState.empty){
@@ -86,11 +112,26 @@ MapComponentForm {
              click_handler = function(){}
              pos_changed_handler = function(){}
              currentState = generalState.empty
+
+             console.log(map_component.rect_list.length)
+             console.log(map_component.rect_list[0].bottomRight)
+             console.log(map_component.rect_list[0].TopLeft)
+             console.log(map_component.rect_list[0].bottomRight.latitude)
+             console.log(map_component.rect_list[0].TopLeft.longitude)
          }
+
     }
 
     function endPoly() {
          if (currentState === generalState.poly){
+             click_handler = function(){}
+             pos_changed_handler = function(){}
+             currentState = generalState.empty
+         }
+    }
+
+    function endPolySec() {
+         if (currentState === generalState.polysec){
              click_handler = function(){}
              pos_changed_handler = function(){}
              currentState = generalState.empty

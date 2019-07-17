@@ -7,17 +7,18 @@ import QtQuick.Controls.Material 2.1
 import QtGraphicalEffects 1.0
 import QtQuick.Dialogs 1.2
 
-
 RowLayout {
     property alias b_path: b_path
     property alias b_rect: b_rect
     property alias b_poly: b_poly
+    property alias b_polysec: b_polysec
     id: rowLayout1
     state: {
         0: "empty",
                 1: "path",
                 2: "rect",
-                3: "poly"
+                3: "poly",
+                4: "polysec"
     }[mapView.currentState]
 
     Button {
@@ -34,10 +35,16 @@ RowLayout {
         highlighted: false
     }
 
-
     Button {
         id: b_poly
         text: qsTr("Polygon")
+        enabled: false
+        highlighted: false
+    }
+
+    Button {
+        id: b_polysec
+        text: qsTr("Security")
         enabled: false
         highlighted: false
     }
@@ -56,6 +63,10 @@ RowLayout {
                 target: b_poly
                 enabled: true
             }
+            PropertyChanges {
+                target: b_polysec
+                enabled: true
+            }
         },
         State {
             name: "path"
@@ -64,7 +75,6 @@ RowLayout {
                 enabled: true
                 highlighted: true
             }
-
         },
         State {
             name: "rect"
@@ -73,7 +83,6 @@ RowLayout {
                 enabled: true
                 highlighted: true
             }
-
         },
         State {
             name: "poly"
@@ -82,8 +91,14 @@ RowLayout {
                 enabled: true
                 highlighted: true
             }
-
+        },
+        State {
+            name: "polysec"
+            PropertyChanges {
+                target: b_polysec
+                enabled: true
+                highlighted: true
+            }
         }
     ]
 }
-

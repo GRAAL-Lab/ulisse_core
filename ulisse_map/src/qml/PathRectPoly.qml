@@ -18,4 +18,8 @@ PathRectPolyForm {
     b_poly.onClicked: {
                 map.createPoly()
             }
+
+    b_polysec.onClicked: {
+                map.createPolySec()
+            }
 }
