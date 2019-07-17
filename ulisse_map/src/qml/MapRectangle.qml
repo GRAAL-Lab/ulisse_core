@@ -134,11 +134,11 @@ MapPolyline {
         var upper_side = r2.upper_side
         var sides = r2.sides
 
-        intersections_cartesian = Helper.find_intersections(angle, pt, pl, upper_side, sides, offset)
+        intersections_cartesian = Helper.convex_polygon_parallel_slices_intersections(angle, pt, pl, upper_side, sides, offset)
         intersections_cartesian = Helper.rectify_dense_winding(intersections_cartesian, lam/lom)
         console.log(lam/lom)
         // transform virtual euclidean reference points in map coordinates
-        intersections_geographic = Helper.point_couples_euclidean2map(intersections_cartesian, centroid, lam, lom)
+        intersections_geographic = Helper.segments_euclidean2map(intersections_cartesian, centroid, lam, lom)
 
         var a = map.toCoordinate(Qt.point(0,0))
         var b = map.toCoordinate(Qt.point(0,1))
@@ -155,7 +155,7 @@ MapPolyline {
                            Helper.relative_zoom_pixel_ratio(map, map.maximumZoomLevel))
 
         // transform map coordinates in canvas pixel indexes
-        intersections_canvas = Helper.point_couples_map2canvas(intersections_geographic, map, _canvas)
+        intersections_canvas = Helper.segments_map2canvas(intersections_geographic, map, _canvas)
         map.tilt = orig_tilt
     }
 

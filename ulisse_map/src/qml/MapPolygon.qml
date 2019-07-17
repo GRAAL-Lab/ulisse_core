@@ -130,18 +130,14 @@ MapPolyline {
         // transform shape coordinates and work in a virtual euclidean metric system
         points = Helper.points_map2euclidean(shape_coords, centroid, lam, lom)
         points = Helper.set_points_clockwise(points)
-        points = Helper.set_point_from_upper(points)
         var sides = Helper.make_sides(points)
 
-        var r = Helper.find_intersections(angle, offset, Qt.point(0,0), sides, lam, lom)
-        intersections_cartesian = r.intersections
-        __steps = r.step_points
+        intersections_cartesian = Helper.convex_polygon_parallel_slices_intersections(angle, offset, sides, lam/lom)
         intersections_cartesian = Helper.rectify_dense_winding(intersections_cartesian, lam/lom)
-        //intersections_cartesian = Helper.rectify_dense_winding(intersections_cartesian, 1)
 
 
         // transform virtual euclidean reference points in map coordinates
-        intersections_geographic = Helper.point_couples_euclidean2map(intersections_cartesian, centroid, lam, lom)
+        intersections_geographic = Helper.segments_euclidean2map(intersections_cartesian, centroid, lam, lom)
 
         var a = map.toCoordinate(Qt.point(0,0))
         var b = map.toCoordinate(Qt.point(0,1))
@@ -149,7 +145,7 @@ MapPolyline {
         var p2m_h = a.distanceTo(b)
         var p2m_v = a.distanceTo(c)
 
-        offset *= 20
+        offset *= 3
         var o_x = offset/p2m_h
         var o_y = offset/p2m_v
 
@@ -158,10 +154,10 @@ MapPolyline {
                            limits.max_lat + offset/lam, limits.min_lon - offset/lom,
                            Helper.relative_zoom_pixel_ratio(map, map.maximumZoomLevel))
 
-        offset /= 20
+        offset /= 3
 
         // transform map coordinates in canvas pixel indexes
-        intersections_canvas = Helper.point_couples_map2canvas(intersections_geographic, map, _canvas)
+        intersections_canvas = Helper.segments_map2canvas(intersections_geographic, map, _canvas)
         map.tilt = orig_tilt
     }
 
@@ -174,56 +170,36 @@ MapPolyline {
         var lam = Helper.lat_to_m_coeff(centroid.latitude)
         var lom = Helper.lon_to_m_coeff(centroid.longitude)
 
-        var ctx = debug_c.getContext("2d")
-        ctx.clearRect(0, 0, debug_c.canvasSize.width, debug_c.canvasSize.height)
-        for (var i = 0; i<intersections_cartesian.length; i++){
-            var p0 = to_debug_canvas(intersections_cartesian[i][0], limits, lam, lom, debug_c)
-            var p1 = to_debug_canvas(intersections_cartesian[i][1], limits, lam, lom, debug_c)
-            Helper.draw_line(ctx, p0.x, p0.y, p1.x, p1.y)
-        }
-        debug_c.requestPaint()
-
-
         // clear the canvas
         _canvas.canvasCtx.clearRect(0, 0, _canvas.canvasWidth, _canvas.canvasHeight)
 
-        // draw a bounding box around the area
-        Helper.draw_bounding_rect(map, _canvas, _canvas.canvasWidth, _canvas.canvasHeight)
-
-        var _1 = Helper.point_euclidean2map(points[0].x, points[0].y, centroid, lam, lom)
-        var _2 = Helper.point_screen2canvas(map.fromCoordinate(_1, false), map, _canvas)
-        Helper.draw_circle(_canvas.canvasCtx, _2, 20, "#ff0000")
-
-        _1 = Helper.point_euclidean2map(points[1].x, points[1].y, centroid, lam, lom)
-        _2 = Helper.point_screen2canvas(map.fromCoordinate(_1, false), map, _canvas)
-        Helper.draw_circle(_canvas.canvasCtx, _2, 20, "#00ff00")
-
-        _1 = Helper.point_euclidean2map(points[2].x, points[2].y, centroid, lam, lom)
-        _2 = Helper.point_screen2canvas(map.fromCoordinate(_1, false), map, _canvas)
-        Helper.draw_circle(_canvas.canvasCtx, _2, 20, "#0000ff")
-
-        for (var i = 0; i<intersections_canvas.length; i++){
-            var p = intersections_canvas[i]
-            Helper.draw_circle(_canvas.canvasCtx, p[0], i%2?25:50, "#ff00ff")
-            Helper.draw_circle(_canvas.canvasCtx, p[1], i%2?25:50, "#00ffff")
-        }
-
-        Helper.draw_circle(_canvas.canvasCtx, intersections_canvas[0][0], 40, "#ffffff")
-        Helper.draw_circle(_canvas.canvasCtx, intersections_canvas[0][1], 60, "#000000")
-
-
-        for (var i = 0; i<__steps.length; i++){
-            var p = __steps[i]
-            _1 = Helper.point_euclidean2map(p.x, p.y, centroid, lam, lom)
-            _2 = Helper.point_screen2canvas(map.fromCoordinate(_1, false), map, _canvas)
-            Helper.draw_circle(_canvas.canvasCtx, _2, 30, "#ffffff")
-        }
 
         // draw parallel lines
         Helper.draw_path_lines(_canvas, intersections_canvas)
 
         // draw manouvre curves
-        Helper.draw_path_semicircles(_canvas, intersections_canvas)
+        var a = 0, b = 1
+        for (var i=0; i<intersections_canvas.length-1; i++){
+            a = Helper.flip(a)
+            b = Helper.flip(b)
+            var p0 = intersections_canvas[i][b]
+            var p1 = intersections_canvas[i][a]
+            var p2 = intersections_canvas[i+1][a]
+            var p3 = intersections_canvas[i+1][b]
+            var l1 = Helper.distance(p0, p1)
+            var l2 = Helper.distance(p3, p2)
+            var d = Helper.distance(p1, p2)
+            var c = 0.55191502449 * d/2
+            var pc1a = Helper.interpolate(p0, p1, l1+c, 1)
+            var pc1b = Helper.interpolate(p3, p2, l2+c, 1)
+            var _a = Helper.interpolate(p0, p1, l1+d/2, 1)
+            var _b = Helper.interpolate(p3, p2, l2+d/2, 1)
+            var pc3 = Helper.interpolate(_a, _b, d/2, 1)
+            var pc2a = Helper.interpolate(pc3, _a, c, 1)
+            var pc2b = Helper.interpolate(pc3, _b, c, 1)
+            Helper.draw_cubic_bezier(_canvas.canvasCtx, p1, pc1a, pc2a, pc3)
+            Helper.draw_cubic_bezier(_canvas.canvasCtx, pc3, pc2b, pc1b, p2)
+        }
     }
 
     function generate_nurbs(){

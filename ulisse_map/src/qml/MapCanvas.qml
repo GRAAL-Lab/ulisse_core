@@ -8,6 +8,7 @@ MapQuickItem{
     property alias canvasCtx: _c._ctx
     property var canvasAngle: 0
     property var multiplier: 0
+    property alias _canvas: _c
     function requestPaint(){_c.requestPaint()}
     sourceItem: Canvas {
         id: _c
