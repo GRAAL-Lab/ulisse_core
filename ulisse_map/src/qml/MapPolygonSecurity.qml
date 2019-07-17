@@ -61,11 +61,15 @@ MapPolyline {
         var json_data = '{"points":';
 
         var i;
+        //The last one is equals to the first one.
+        //TODO -> mayabe add something like "number of points"
         for(i = 0; i < pathLength(); i++){
-            var p_i = map.fromCoordinate(coordinateAt(i))
-            json_data += '["latitude":'+p_i.x+',"longitude":'+p_i.y+']';
+            var p_i = coordinateAt(i)
+            json_data += '["latitude":'+p_i.latitude+',"longitude":'+p_i.longitude+']';
         }
         json_data += '}';
+
+
 
         console.log(JSON.stringify(json_data));
     }
@@ -88,6 +92,7 @@ MapPolyline {
         if (mouse.button & Qt.LeftButton){
             var m = Qt.point(mouse.x, mouse.y)
             var p = map.toCoordinate(m)
+            console.log(p);
             if (polygonal_phase === 0){
                 var l = pathLength()
                 for(var i=0; i<l; i++)
