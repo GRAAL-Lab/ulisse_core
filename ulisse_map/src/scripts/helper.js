@@ -291,12 +291,12 @@ function flip(x){
 }
 
 function add_and_wrap(x, mod, quota){
-    if (quota === null) quota = 1
+    if (quota == null) quota = 1
     return (x+quota < mod) ? x+quota : quota-1
 }
 
 function sub_and_wrap(x, mod, quota){
-    if (quota === null) quota = 1
+    if (quota == null) quota = 1
     return (x-quota >= 0) ? x-quota : mod-quota
 }
 
@@ -545,4 +545,20 @@ function formatDistance(meters){
         dist = dist + " m"
     }
     return dist
+}
+
+//Taken from https://www.movable-type.co.uk/scripts/latlong.html
+function geo_midpoint(c1, c2){
+    var φ1 = deg_to_rad(c1.latitude)
+    var λ1 = deg_to_rad(c1.longitude)
+    var φ2 = deg_to_rad(c2.latitude)
+    var λ2 = deg_to_rad(c2.longitude)
+
+    var Bx = Math.cos(φ2) * Math.cos(λ2-λ1)
+    var By = Math.cos(φ2) * Math.sin(λ2-λ1)
+    var φ3 = Math.atan2(Math.sin(φ1) + Math.sin(φ2),
+                        Math.sqrt( (Math.cos(φ1)+Bx)*(Math.cos(φ1)+Bx) + By*By ) )
+    var λ3 = λ1 + Math.atan2(By, Math.cos(φ1) + Bx)
+    return QtPositioning.coordinate(rad_to_deg(φ3),
+                                    rad_to_deg((λ3+540)%360-180))
 }

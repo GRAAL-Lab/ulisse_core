@@ -18,9 +18,14 @@ MapPolyline {
 
 
     property Component mapCanvasComponent
+    property Component mapMarkerComponent
+    property Component mapDashedLineComponent
+    property MapDashedLine _dashed_line
     property MapCanvas _canvas
+    property MapMarker _marker
     property var editCircle
-
+    property var vertex_markers: []
+    property var add_markers: []
 
     property real angle: 30
     property real offset: 10
@@ -39,8 +44,72 @@ MapPolyline {
     Component.onCompleted: {
         Helper.init_lib(QtPositioning)
         mapCanvasComponent = Qt.createComponent("MapCanvas.qml");
+        mapMarkerComponent = Qt.createComponent("MapMarker.qml");
+        mapDashedLineComponent = Qt.createComponent("MapDashedLine.qml");
         _canvas = mapCanvasComponent.createObject(map)
         map.addMapItem(_canvas)
+        _marker = mapMarkerComponent.createObject(map)
+        map.addMapItem(_marker)
+        _dashed_line = mapDashedLineComponent.createObject(map)
+        map.addMapItem(_dashed_line)
+        _dashed_line.addCoordinate(QtPositioning.coordinate(0,0))
+        _dashed_line.addCoordinate(QtPositioning.coordinate(0,0))
+    }
+
+    function middle_coord(c1, c2){
+        return QtPositioning.coordinate(c1.latitude - c2.latitude,
+                                        c1.longitude - c2.longitude)
+    }
+
+    function generate_markers(){
+        var _path = path.slice(0,path.length-1)
+        for (var i = 0; i< _path.length; i++){
+            var marker1 = mapMarkerComponent.createObject(map)
+            map.addMapItem(marker1)
+            marker1.center = _path[i]
+            marker1.opacity = 0
+            marker1.color = "#00ff00"
+            vertex_markers.push(marker1)
+            var marker2 = mapMarkerComponent.createObject(map)
+            map.addMapItem(marker2)
+            marker2.center = Helper.geo_midpoint(_path[i],
+                                                 _path[Helper.add_and_wrap(i, _path.length)])
+            marker2.opacity = 0
+            marker2.color = "#bbbb00"
+            add_markers.push(marker2)
+        }
+    }
+
+    function reposition_add_markers(){
+        var _path = path.slice(0,path.length-1)
+        for (var i = 0; i< _path.length; i++){
+            add_markers[i].center = Helper.geo_midpoint(_path[i],
+                                                _path[Helper.add_and_wrap(i,_path.length)])
+        }
+    }
+
+    function enable_markers(){
+        for (var i = 0; i< vertex_markers.length; i++)
+            vertex_markers[i].opacity = 1
+        for (var i = 0; i< add_markers.length; i++)
+            add_markers[i].opacity = 1
+    }
+
+    function enable_add_markers(){
+        for (var i = 0; i< add_markers.length; i++)
+            add_markers[i].opacity = 1
+    }
+
+    function disable_markers(){
+        for (var i = 0; i< vertex_markers.length; i++)
+            vertex_markers[i].opacity = 0
+        for (var i = 0; i< add_markers.length; i++)
+            add_markers[i].opacity = 0
+    }
+
+    function disable_add_markers(){
+        for (var i = 0; i< add_markers.length; i++)
+            add_markers[i].opacity = 0
     }
 
     //FIXME: check it in the euclidean plane
@@ -112,6 +181,7 @@ MapPolyline {
     }
 
     property var moving_idx: -1
+    property var marked: -1
     function pos_changed_mod_handler(mouse){
         var p = Qt.point(mouse.x, mouse.y)
         var pf = map.toCoordinate(p)
@@ -120,18 +190,38 @@ MapPolyline {
             var nearest = -1
             var _path = path.slice(0,path.length-1)
             for (var i=0; i<_path.length; i++){
-                var v = map.fromCoordinate(_path[i])
+                var v = map.fromCoordinate(vertex_markers[i].center)
                 var d = Helper.distance(p,v)
                 if(d < thresh){
                     thresh = d
                     nearest = i
                 }
+                v = map.fromCoordinate(add_markers[i].center)
+                d = Helper.distance(p,v)
+                if(d < thresh){
+                    thresh = d
+                    nearest = i+_path.length
+                }
             }
-            if (nearest >=0){
-                editCircle.opacity = 0.6
-                editCircle.center = coordinateAt(nearest)
-            } else {
-                editCircle.opacity = 0
+            if (marked>=0){
+                if (marked < _path.length){
+                    vertex_markers[marked].color = "#00ff00"
+                    _dashed_line.replaceCoordinate(0, QtPositioning.coordinate(0,0))
+                    _dashed_line.replaceCoordinate(1, QtPositioning.coordinate(0,0))
+                }
+                else
+                    add_markers[marked-_path.length].color = "#bbbb00"
+            }
+            marked = nearest
+            if (marked>=0){
+                if (marked < _path.length){
+                    vertex_markers[marked].color = "#ff0000"
+                    if (_path.length > 3){
+                        _dashed_line.replaceCoordinate(0, _path[Helper.add_and_wrap(marked, _path.length)])
+                        _dashed_line.replaceCoordinate(1, _path[Helper.sub_and_wrap(marked, _path.length)])
+                    }
+                } else
+                    add_markers[marked-_path.length].color = "#ff0000"
             }
         } else {
             var color = "#81c784"
@@ -139,14 +229,17 @@ MapPolyline {
                 color = "#ffb300"
                 pf = coordinateAt(moving_idx)
             }
+
             line.color = color
             replaceCoordinate(moving_idx, pf)
+            vertex_markers[moving_idx].center = pf
             if (moving_idx === 0)
                 replaceCoordinate(pathLength()-1, pf)
         }
     }
 
     function click_mod_handler(mouse){
+        mapMouseArea.hoverEnabled = false
         var p = Qt.point(mouse.x, mouse.y)
         var pf = map.toCoordinate(p)
         if (moving_idx === -1){
@@ -160,14 +253,57 @@ MapPolyline {
                     thresh = d
                     nearest = i
                 }
+                v = map.fromCoordinate(add_markers[i].center)
+                d = Helper.distance(p,v)
+                if(d < thresh){
+                    thresh = d
+                    nearest = i+_path.length
+                }
             }
-            moving_idx = nearest
-            console.log(moving_idx)
-            editCircle.opacity = 0
+            if (mouse.button & Qt.LeftButton){
+                moving_idx = nearest
+                if(moving_idx >=0 && moving_idx < _path.length){
+                    disable_add_markers()
+                } else if (moving_idx >= _path.length){
+                    var _idx = moving_idx-_path.length
+                    var idx = _idx+1
+                    add_markers[_idx].color = "#bbbb00"
+                    var c = add_markers[_idx].center
+                    insertCoordinate(idx, c)
+                    var marker1 = mapMarkerComponent.createObject(map)
+                    map.addMapItem(marker1)
+                    marker1.center = c
+                    marker1.opacity = 1
+                    marker1.color = "#00ff00"
+                    vertex_markers.splice(idx,0,marker1)
+                    var marker2 = mapMarkerComponent.createObject(map)
+                    map.addMapItem(marker2)
+                    marker2.center = c
+                    marker2.opacity = 0
+                    marker2.color = "#bbbb00"
+                    add_markers.splice(idx,0,marker2)
+                    enable_markers()
+                    disable_add_markers()
+                    moving_idx = idx
+                }
+            } else if (mouse.button & Qt.RightButton){
+                if (_path.length > 3 && nearest >=0 && nearest < _path.length){
+                    removeCoordinate(nearest)
+                    if (nearest == 0)
+                        replaceCoordinate(pathLength()-1, coordinateAt(0))
+                    map.removeMapItem(add_markers[nearest])
+                    map.removeMapItem(vertex_markers[nearest])
+                    add_markers.splice(nearest, 1)
+                    vertex_markers.splice(nearest, 1)
+                    reposition_add_markers()
+                }
+            }
         } else {
             moving_idx = -1
-            console.log(moving_idx)
+            reposition_add_markers()
+            enable_add_markers()
         }
+        mapMouseArea.hoverEnabled = true
     }
 
 
@@ -180,6 +316,8 @@ MapPolyline {
             generate_path()
             draw_path()
             generate_nurbs()
+            generate_markers()
+            disable_markers()
             end()
         }
     }
@@ -241,15 +379,24 @@ MapPolyline {
     }
 
     property var backup_path
+    property var backup_vertex_markers
+    property var backup_add_markers
     function begin_edit(){
         _canvas.canvasCtx.clearRect(0, 0, _canvas.canvasWidth, _canvas.canvasHeight)
         _canvas.requestPaint()
+        enable_markers()
         backup_path=path
+        backup_vertex_markers = vertex_markers
+        backup_add_markers = add_markers
+
     }
 
     function discard_edit(){
         moving_idx = -1
         path=backup_path
+        vertex_markers = backup_vertex_markers
+        add_markers = backup_add_markers
+        disable_markers()
         generate_path()
         draw_path()
         generate_nurbs()
@@ -258,6 +405,7 @@ MapPolyline {
     function confirm_edit(angle, offset){
         angle=angle
         offset=offset
+        disable_markers()
         generate_path()
         draw_path()
         generate_nurbs()
