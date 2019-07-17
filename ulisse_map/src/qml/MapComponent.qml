@@ -47,6 +47,10 @@ MapComponentForm {
     }
 
     function createRect() {
+         if( security_defined === 0){
+             toast.show("Define Security Area First!")
+             return ;
+         }
          if (currentState === generalState.empty){
              currentState = generalState.rect
              if (rect_cur)
@@ -61,6 +65,11 @@ MapComponentForm {
     }
 
     function createPoly() {
+        if( security_defined === 0){
+            toast.show("Define Security Area First!")
+            return ;
+        }
+
         if (currentState === generalState.empty){
             currentState = generalState.poly
             if (poly_cur)
@@ -77,6 +86,9 @@ MapComponentForm {
     function createPolySec() {
             //TODO -> disable the button OR delete the old bounding box
             if(security_defined === 1){
+
+                if (polysec_cur)
+                    polysec_cur.end.disconnect(endPolySec())
                 console.log("You have already defined a security box!!!!")
                 return ;
             }
@@ -94,6 +106,11 @@ MapComponentForm {
         }
 
     function createPath() {
+        if( security_defined === 0){
+            toast.show("Define Security Area First!")
+            return ;
+        }
+
         if (currentState === generalState.empty){
             currentState = generalState.path
             if (path_cur)
@@ -112,12 +129,6 @@ MapComponentForm {
              click_handler = function(){}
              pos_changed_handler = function(){}
              currentState = generalState.empty
-
-             console.log(map_component.rect_list.length)
-             console.log(map_component.rect_list[0].bottomRight)
-             console.log(map_component.rect_list[0].TopLeft)
-             console.log(map_component.rect_list[0].bottomRight.latitude)
-             console.log(map_component.rect_list[0].TopLeft.longitude)
          }
 
     }

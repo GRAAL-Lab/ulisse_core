@@ -32,6 +32,8 @@ MapPolyline {
 
     property var px_multiplier
 
+    signal end_security
+
     Component.onCompleted: {
         Helper.init_lib(QtPositioning)
         mapCanvasComponent = Qt.createComponent("MapCanvas.qml");
@@ -56,7 +58,6 @@ MapPolyline {
 
 
     //TODO
-    //console.log(JSON.stringify())
     function create_JSON(){
         var json_data = '{"points":';
 
@@ -74,16 +75,21 @@ MapPolyline {
         console.log(JSON.stringify(json_data));
     }
 
+
+    function distance(p1,p2){
+        return Math.sqrt(Math.pow(p1.x-p2.x,2) + Math.pow(p1.y-p2.y,2))
+    }
+
     function pos_changed_handler(mouse){
         if (polygonal_phase === 0) return;
         var p = Qt.point(mouse.x, mouse.y)
         var pf = map.toCoordinate(Qt.point(mouse.x, mouse.y))
         var last_idx = pathLength()-1
         var color = "#4ac7c0"
-        if (polygonal_phase === 3){
-            pf = coordinateAt(0)
-            color = "#4ac7c0"
-        }
+
+        if(distance(map.fromCoordinate(coordinateAt(0)), p) < 10)
+            color = "#ffb300"
+
         line.color = color
         replaceCoordinate(last_idx, pf)
     }
@@ -92,7 +98,6 @@ MapPolyline {
         if (mouse.button & Qt.LeftButton){
             var m = Qt.point(mouse.x, mouse.y)
             var p = map.toCoordinate(m)
-            console.log(p);
             if (polygonal_phase === 0){
                 var l = pathLength()
                 for(var i=0; i<l; i++)
@@ -111,6 +116,14 @@ MapPolyline {
                 poligonal_direction = Helper.three_point_direction(p1,p2,p3)
                 polygonal_phase = 2
                 addCoordinate(p)
+
+                if(distance(p1, p3) < 10){
+                    removeCoordinate(pathLength()-1)
+                    line.color = "#161fc4"
+                    mapMouseArea.hoverEnabled = false
+                    close_polygon()
+                }
+
             }
         } else if (mouse.button & Qt.RightButton){
             close_polygon()
