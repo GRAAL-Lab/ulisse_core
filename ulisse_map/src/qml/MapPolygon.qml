@@ -240,6 +240,8 @@ MapPolyline {
 
     function click_mod_handler(mouse){
         mapMouseArea.hoverEnabled = false
+        _dashed_line.replaceCoordinate(0, QtPositioning.coordinate(0,0))
+        _dashed_line.replaceCoordinate(1, QtPositioning.coordinate(0,0))
         var p = Qt.point(mouse.x, mouse.y)
         var pf = map.toCoordinate(p)
         if (moving_idx === -1){
