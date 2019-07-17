@@ -110,9 +110,6 @@ MapPolyline {
         }
     }
 
-    property var points
-    property var __steps
-    property var limits
     function generate_path(){
         var orig_tilt = map.tilt
         map.tilt = 0
@@ -120,7 +117,7 @@ MapPolyline {
         var shape_coords = path.slice(0, pathLength()-1)
 
         centroid = Helper.coords_centroid(shape_coords)
-        limits = Helper.shape_geo_limits(shape_coords)
+        var limits = Helper.shape_geo_limits(shape_coords)
 
         var dim = Helper.shape_px_dimensions(limits, map)
 
@@ -128,7 +125,7 @@ MapPolyline {
         var lom = Helper.lon_to_m_coeff(centroid.longitude)
 
         // transform shape coordinates and work in a virtual euclidean metric system
-        points = Helper.points_map2euclidean(shape_coords, centroid, lam, lom)
+        var points = Helper.points_map2euclidean(shape_coords, centroid, lam, lom)
         points = Helper.set_points_clockwise(points)
         var sides = Helper.make_sides(points)
 
