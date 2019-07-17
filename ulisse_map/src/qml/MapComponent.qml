@@ -211,7 +211,7 @@ MapComponentForm {
         for(i = 0; i < rect_list.length; i++){
             var single_path = {}
             single_path.name = 'RectPath'
-            single_path.path = []
+            single_path.values = []
             for(j = 0; j < rect_list[0].pathLength(); j++){
                 var p_i = rect_list[0].coordinateAt(j)
                 l = []
