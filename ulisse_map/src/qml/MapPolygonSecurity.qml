@@ -57,22 +57,36 @@ MapPolyline {
     }
 
 
-    //TODO
-    function create_JSON(){
-        var json_data = '{"points":';
+    //TODO -> send it
+    function create_JSON_OLD_ONE(){
+        var json_data = '{"points":[';
 
         var i;
         //The last one is equals to the first one.
         //TODO -> mayabe add something like "number of points"
         for(i = 0; i < pathLength(); i++){
             var p_i = coordinateAt(i)
-            json_data += '["latitude":'+p_i.latitude+',"longitude":'+p_i.longitude+']';
+            json_data += '{"latitude":'+p_i.latitude+',"longitude":'+p_i.longitude+'}';
+            if(i < pathLength()-1)
+                json_data += ',';
         }
-        json_data += '}';
+        json_data += ']}';
+        //console.log(JSON.stringify(json_data));
+    }
 
+    function create_JSON(){
+        var security_poly = {}
+        security_poly.name = 'SecurityPoly'
+        security_poly.values = []
+        for(j = 0; j < polysec_cur.pathLength(); j++){
+            var p_i = polysec_cur.coordinateAt(j)
+            l = []
+            l.push("latitude:"+p_i.latitude)
+            l.push("longitude:"+p_i.longitude)
+            security_poly.values.push(l)
 
-
-        console.log(JSON.stringify(json_data));
+        }
+        //console.log(JSON.stringify(json_data));
     }
 
 
@@ -87,7 +101,7 @@ MapPolyline {
         var last_idx = pathLength()-1
         var color = "#4ac7c0"
 
-        if(distance(map.fromCoordinate(coordinateAt(0)), p) < 10)
+        if(distance(map.fromCoordinate(coordinateAt(0)), p) < 15)
             color = "#ffb300"
 
         line.color = color
@@ -117,7 +131,7 @@ MapPolyline {
                 polygonal_phase = 2
                 addCoordinate(p)
 
-                if(distance(p1, p3) < 10){
+                if(distance(p1, p3) < 15){
                     removeCoordinate(pathLength()-1)
                     line.color = "#161fc4"
                     mapMouseArea.hoverEnabled = false

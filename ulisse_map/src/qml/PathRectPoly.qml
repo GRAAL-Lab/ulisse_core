@@ -8,18 +8,19 @@ import QtGraphicalEffects 1.0
 import QtQuick.Dialogs 1.2
 
 PathRectPolyForm {
-   id: rowLayout1
+    id: rowLayout1
+
     b_path.onClicked:{
-                map.createPath()
-            }
+        map.createPath()
+    }
     b_rect.onClicked: {
-                map.createRect()
-            }
+        map.createRect()
+    }
     b_poly.onClicked: {
-                map.createPoly()
-            }
+        map.createPoly()
+    }
 
     b_polysec.onClicked: {
-                map.createPolySec()
-            }
+        map.createPolySec()
+    }
 }

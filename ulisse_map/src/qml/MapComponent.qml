@@ -84,13 +84,10 @@ MapComponentForm {
    }
 
     function createPolySec() {
-            //TODO -> disable the button OR delete the old bounding box
+            //TODO -> use a menu for editing the polygon
             if(security_defined === 1){
-
-                if (polysec_cur)
-                    polysec_cur.end.disconnect(endPolySec())
-                console.log("You have already defined a security box!!!!")
-                return ;
+                map.removeMapItem(polysec_cur)
+                security_defined = 0
             }
              if (currentState === generalState.empty){
                  currentState = generalState.polysec
@@ -122,6 +119,7 @@ MapComponentForm {
             pos_changed_handler = path_cur.pos_changed_handler
             path_cur.end.connect(endPath)
         }
+
     }
 
     function endRect() {
@@ -155,6 +153,121 @@ MapComponentForm {
             pos_changed_handler = function(){}
             currentState = generalState.empty
         }
+    }
+
+
+    //TODO !!
+    function loadPath(file){
+
+        var jsondata = '{"paths":[{"name":"SecurityPoly","values":[["latitude:44.403194694213305","longitude:8.932898291650417"],["latitude:44.391009258786504","longitude:8.935386641587797"],["latitude:44.39009850156113","longitude:8.951105730206649"],["latitude:44.400853206086964","longitude:8.949224294887046"],["latitude:44.403194694213305","longitude:8.932898291650417"]]}]}'
+        var data
+        data = JSON.parse(jsondata)
+
+        var i
+        var j
+
+        clearAll()
+
+
+        for(i = 0; i < data.paths.length; i++){
+            switch(data.paths[i].name){
+            case "RectPath":
+                break;
+            case "PolyPath":
+                break;
+            case "PointPath":
+                break;
+            case "SecurityPoly":
+                polysec_cur = polysecComponent.createObject(map_component)
+                map.addMapItem(polysec_cur)
+                for(j = 0; j < data.paths[i].values.length-1; j++){
+
+                    var p = Qt.point(data.paths[i].values[j][0], data.paths[i].values[j][1])
+                }
+                security_defined = 1
+                break;
+
+            }
+        }
+
+    }
+
+
+
+    //TODO -> save to a file
+    function savePath(){
+        var i
+        var j
+
+        var l = []
+        var all_paths = {};
+        all_paths.paths = []
+
+        var single_path = {};
+        single_path.name = 'paths'
+        single_path.values = []
+
+        //Add all the rectangular paths
+        for(i = 0; i < rect_list.length; i++){
+            var single_path = {}
+            single_path.name = 'RectPath'
+            single_path.path = []
+            for(j = 0; j < rect_list[0].pathLength(); j++){
+                var p_i = rect_list[0].coordinateAt(j)
+                l = []
+                l.push("latitude:"+p_i.latitude)
+                l.push("longitude:"+p_i.longitude)
+                single_path.values.push(l)
+            }
+            all_paths.paths.push(single_path)
+        }
+
+        //Add all the polygonal paths
+        for(i = 0; i < poly_list.length; i++){
+            var single_path = {}
+            single_path.name = 'PolyPath'
+            single_path.values = []
+            for(j = 0; j < poly_list[0].pathLength(); j++){
+                var p_i = poly_list[0].coordinateAt(j)
+                l = []
+                l.push("latitude:"+p_i.latitude)
+                l.push("longitude:"+p_i.longitude)
+                single_path.values.push(l)
+            }
+            all_paths.paths.push(single_path)
+        }
+
+        //Add all the point paths
+        for(i = 0; i < path_list.length; i++){
+            var single_path = {}
+            single_path.name = 'PointPath'
+            single_path.values = []
+            for(j = 0; j < path_list[0].pathLength(); j++){
+                var p_i = path_list[0].coordinateAt(j)
+                l = []
+                l.push("latitude:"+p_i.latitude)
+                l.push("longitude:"+p_i.longitude)
+                single_path.values.push(l)
+            }
+            all_paths.paths.push(single_path)
+        }
+
+        if(polysec_cur){
+            var single_path = {}
+            single_path.name = 'SecurityPoly'
+            single_path.values = []
+            for(j = 0; j < polysec_cur.pathLength(); j++){
+                var p_i = polysec_cur.coordinateAt(j)
+                l = []
+                l.push("latitude:"+p_i.latitude)
+                l.push("longitude:"+p_i.longitude)
+                single_path.values.push(l)
+
+            }
+            all_paths.paths.push(single_path)
+        }
+
+        console.log(JSON.stringify(all_paths))
     }
 
     compass.transform: [
@@ -236,6 +349,29 @@ MapComponentForm {
     function clearUlisseTrace() {
         ulissePath.path = []
         ulissePath.firstRun = true
+
+        savePath()
+        loadPath()
+    }
+
+    //TODO -> finish (delete also the lines/circles) and add to a button
+    function clearAll(){
+        //clearUlisseTrace()
+        security_defined = 0
+        var i
+        for(i = 0; i < rect_list.length; i++){
+            map.removeMapItem(rect_list[i])
+        }
+
+        for(i = 0; i < poly_list.length; i++){
+            map.removeMapItem(poly_list[i])
+        }
+
+        for(i = 0; i < path_list.length; i++){
+            map.removeMapItem(path_list[i])
+        }
+
+        map.removeMapItem(polysec_cur)
     }
 
     function drawStraightLine(ctx, p1, p2){
