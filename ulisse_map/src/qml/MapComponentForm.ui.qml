@@ -22,6 +22,7 @@ Map {
     property alias ruler: ruler
     property alias greenFlag: greenFlag
     property alias overlay_canvas: overlay_canvas
+    property alias editCircle: editCircle
 
     ColorOverlay {
         id: marker
@@ -155,6 +156,17 @@ Map {
         border.width: 1
         border.color: 'gray'
         opacity: goalFlag.opacity == 1.0 ? goalFlag.opacity : 0.0
+        z: map.z + 2
+    }
+
+    MapCircle {
+        id: editCircle
+        center: goalFlag.coordinate
+        radius: 5
+        color: "#ff0000"
+        border.width: 1
+        border.color: 'gray'
+        opacity: 0
         z: map.z + 2
     }
 

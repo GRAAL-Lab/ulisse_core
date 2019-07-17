@@ -290,12 +290,14 @@ function flip(x){
     return (x===0) ? 1 : 0
 }
 
-function add_and_wrap(x, mod){
-    return (x+1 < mod) ? x+1 : 0
+function add_and_wrap(x, mod, quota){
+    if (quota === null) quota = 1
+    return (x+quota < mod) ? x+quota : quota-1
 }
 
-function sub_and_wrap(x, mod){
-    return (x-1 >= 0) ? x-1 : mod-1
+function sub_and_wrap(x, mod, quota){
+    if (quota === null) quota = 1
+    return (x-quota >= 0) ? x-quota : mod-quota
 }
 
 function rotate(p, a){

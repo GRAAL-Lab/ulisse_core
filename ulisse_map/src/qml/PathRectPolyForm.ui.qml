@@ -13,6 +13,10 @@ ColumnLayout {
     property alias b_poly: b_poly
     property alias offsetField: offsetField
     property alias angleField: angleField
+    property alias buttonEdit: buttonEdit
+    property alias buttonSave: buttonSave
+    property alias buttonDiscard: buttonDiscard
+    property alias idxField: idxField
     id: cl1
     state: {
         0: "empty",
@@ -60,7 +64,7 @@ ColumnLayout {
 
         TextField {
             id: offsetField
-            text: qsTr("10")
+            text: qsTr("30")
             placeholderText: "Offset"
         }
 
@@ -68,6 +72,33 @@ ColumnLayout {
             id: angleField
             text: qsTr("30")
             placeholderText: "Angle"
+        }
+    }
+
+    RowLayout {
+        id: rowLayout1
+        width: 100
+        height: 100
+
+        Button {
+            id: buttonEdit
+            text: qsTr("edit")
+        }
+
+        Button {
+            id: buttonSave
+            text: qsTr("save")
+        }
+
+        Button {
+            id: buttonDiscard
+            text: qsTr("abort")
+        }
+
+        TextField {
+            id: idxField
+            text: qsTr("0")
+            placeholderText: "Offset"
         }
     }
     states: [

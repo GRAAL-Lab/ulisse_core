@@ -44,7 +44,7 @@ MapComponentForm {
              currentState = generalState.rect
              if (rect_cur)
                  rect_cur.end.disconnect(endRect)
-             rect_cur = rectComponent.createObject(map_component, {offset:offset, angle:angle, debug_c: overlay_canvas})
+             rect_cur = rectComponent.createObject(map_component, {offset:offset, angle:angle, debug_c: overlay_canvas, editCircle: editCircle})
              rect_list.push(rect_cur)
              map.addMapItem(rect_cur)
              click_handler = rect_cur.click_handler
@@ -53,12 +53,33 @@ MapComponentForm {
          }
     }
 
+    function modify(idx){
+        poly_list[idx].begin_edit()
+        mapMouseArea.hoverEnabled = true
+        click_handler = poly_list[idx].click_mod_handler
+        pos_changed_handler = poly_list[idx].pos_changed_mod_handler
+    }
+
+    function save_mod(idx, angle, offset){
+        mapMouseArea.hoverEnabled = false
+        click_handler = null
+        pos_changed_handler = null
+        poly_list[idx].confirm_edit(angle, offset)
+    }
+
+    function abort_mod(idx){
+        mapMouseArea.hoverEnabled = false
+        click_handler = null
+        pos_changed_handler = null
+        poly_list[idx].discard_edit()
+    }
+
     function createPoly(offset, angle) {
          if (currentState === generalState.empty){
              currentState = generalState.poly
              if (poly_cur)
                  poly_cur.end.disconnect(endPoly)
-             poly_cur = polyComponent.createObject(map_component, {offset:offset, angle:angle, debug_c: overlay_canvas})
+             poly_cur = polyComponent.createObject(map_component, {offset:offset, angle:angle, debug_c: overlay_canvas, editCircle: editCircle})
              poly_list.push(poly_cur)
              map.addMapItem(poly_cur)
              click_handler = poly_cur.click_handler

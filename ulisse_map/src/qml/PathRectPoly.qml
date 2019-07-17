@@ -22,4 +22,13 @@ PathRectPolyForm {
         var angle = parseInt(angleField.text)
         map.createPoly(offset, angle)
     }
+    buttonEdit.onClicked: {
+        map.modify(parseInt(idxField.text))
+    }
+    buttonSave.onClicked: {
+        map.save_mod(parseInt(idxField.text))
+    }
+    buttonDiscard.onClicked: {
+        map.abort_mod(parseInt(idxField.text))
+    }
 }

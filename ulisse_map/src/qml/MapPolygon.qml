@@ -19,6 +19,8 @@ MapPolyline {
 
     property Component mapCanvasComponent
     property MapCanvas _canvas
+    property var editCircle
+
 
     property real angle: 30
     property real offset: 10
@@ -50,6 +52,16 @@ MapPolyline {
         return (poligonal_direction === Helper.three_point_direction(pa,pb,pc)
         &&  poligonal_direction === Helper.three_point_direction(pb,pc,pd)
         &&  poligonal_direction === Helper.three_point_direction(pc,pd,pe))
+    }
+
+    function map_polygon_point_mod_admissibility(pc, idx){
+        var _path = path.slice(0,path.length-1)
+        var pa = map.fromCoordinate(_path[Helper.add_and_wrap(idx,_path.length,2)])
+        var pb = map.fromCoordinate(_path[Helper.add_and_wrap(idx,_path.length,1)])
+        var pd = map.fromCoordinate(_path[Helper.sub_and_wrap(idx,_path.length,1)])
+        var pe = map.fromCoordinate(_path[Helper.sub_and_wrap(idx,_path.length,2)])
+        return ((Helper.three_point_direction(pa,pb,pc) === Helper.three_point_direction(pb,pc,pd)) &&
+                Helper.three_point_direction(pb,pc,pd) === Helper.three_point_direction(pc,pd,pe))
     }
 
 
@@ -98,6 +110,66 @@ MapPolyline {
             close_polygon()
         }
     }
+
+    property var moving_idx: -1
+    function pos_changed_mod_handler(mouse){
+        var p = Qt.point(mouse.x, mouse.y)
+        var pf = map.toCoordinate(p)
+        if (moving_idx === -1){
+            var thresh = 7
+            var nearest = -1
+            var _path = path.slice(0,path.length-1)
+            for (var i=0; i<_path.length; i++){
+                var v = map.fromCoordinate(_path[i])
+                var d = Helper.distance(p,v)
+                if(d < thresh){
+                    thresh = d
+                    nearest = i
+                }
+            }
+            if (nearest >=0){
+                editCircle.opacity = 0.6
+                editCircle.center = coordinateAt(nearest)
+            } else {
+                editCircle.opacity = 0
+            }
+        } else {
+            var color = "#81c784"
+            if (!map_polygon_point_mod_admissibility(p, moving_idx)){
+                color = "#ffb300"
+                pf = coordinateAt(moving_idx)
+            }
+            line.color = color
+            replaceCoordinate(moving_idx, pf)
+            if (moving_idx === 0)
+                replaceCoordinate(pathLength()-1, pf)
+        }
+    }
+
+    function click_mod_handler(mouse){
+        var p = Qt.point(mouse.x, mouse.y)
+        var pf = map.toCoordinate(p)
+        if (moving_idx === -1){
+            var thresh = 7
+            var nearest = -1
+            var _path = path.slice(0,path.length-1)
+            for (var i=0; i<_path.length; i++){
+                var v = map.fromCoordinate(_path[i])
+                var d = Helper.distance(p,v)
+                if(d < thresh){
+                    thresh = d
+                    nearest = i
+                }
+            }
+            moving_idx = nearest
+            console.log(moving_idx)
+            editCircle.opacity = 0
+        } else {
+            moving_idx = -1
+            console.log(moving_idx)
+        }
+    }
+
 
     function close_polygon(){
         if (polygonal_phase === 3){
@@ -166,6 +238,29 @@ MapPolyline {
     function to_debug_canvas(pt, limits, lam, lom, canvas){
         var scale = 1
         return Qt.point(canvas.canvasSize.width-(canvas.canvasSize.width/2.0 + pt.x/scale), canvas.canvasSize.height/2.0 + pt.y/scale)
+    }
+
+    property var backup_path
+    function begin_edit(){
+        _canvas.canvasCtx.clearRect(0, 0, _canvas.canvasWidth, _canvas.canvasHeight)
+        _canvas.requestPaint()
+        backup_path=path
+    }
+
+    function discard_edit(){
+        moving_idx = -1
+        path=backup_path
+        generate_path()
+        draw_path()
+        generate_nurbs()
+    }
+
+    function confirm_edit(angle, offset){
+        angle=angle
+        offset=offset
+        generate_path()
+        draw_path()
+        generate_nurbs()
     }
 
     function draw_path(){
