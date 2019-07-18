@@ -16,6 +16,8 @@
 
 #include <QQmlDebuggingEnabler>
 
+#include "fileio.h"
+
 int main(int argc, char* argv[])
 {
     QQmlDebuggingEnabler enabler;
@@ -34,6 +36,11 @@ int main(int argc, char* argv[])
     QGuiApplication app(argc, argv);
     QIcon icon(":/images/ulisse_icon-48.png");
     app.setWindowIcon(icon);
+
+
+    //FOR I/O
+    qmlRegisterType<FileIO, 1>("FileIO", 1, 0, "FileIO");
+
 
     //QSettings settings("folderName", "fileName");
     //qDebug() << "Settings file: " << settings.fileName();

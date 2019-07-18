@@ -10,6 +10,7 @@ import QtGraphicalEffects 1.0
 import QtQuick.Dialogs 1.2
 import "."
 
+
 MapComponentForm {
 
     id: map_component
@@ -38,6 +39,7 @@ MapComponentForm {
 
     property var security_defined : 0
 
+    property var path_file: "/home/alessio/Desktop/Prova"
 
     Component.onCompleted: {
         rectComponent = Qt.createComponent("MapRectangle.qml");
@@ -176,11 +178,29 @@ MapComponentForm {
         }
     }
 
+    function openFile(fileName) {
+        myFile.source = fileName
+        var data = myFile.read()
+        console.log(data)
+        return data
+    }
 
-    //TODO !!
+    function saveFile(fileName, text) {
+        myFile.source = fileName
+        var done = myFile.write(text)
+        if(!done){
+            console.log("Error in writing")
+        }
+
+    }
+
+
+    //TODO, acquire from file
     function loadPath(file){
 
-        var jsondata = '{"paths":[{"name":"RectPath","offset":30,"angle":30,"values":[{"latitude":44.40107591944535,"longitude":8.938550991344044},{"latitude":44.40047969448704,"longitude":8.93841443556687},{"latitude":44.40007608275216,"longitude":8.940176670711962},{"latitude":44.400672307710465,"longitude":8.940313226489137},{"latitude":44.40107591944535,"longitude":8.938550991344044}]},{"name":"RectPath","offset":30,"angle":30,"values":[{"latitude":44.40069108402936,"longitude":8.940477945263183},{"latitude":44.4001436377436,"longitude":8.94060691461786},{"latitude":44.400414241381306,"longitude":8.941755566999255},{"latitude":44.40096168766707,"longitude":8.941626597644579},{"latitude":44.40069108402936,"longitude":8.940477945263183}]},{"name":"PolyPath","offset":30,"angle":30,"values":[{"latitude":44.39993766652866,"longitude":8.940000000000026},{"latitude":44.39943899637509,"longitude":8.939529641180883},{"latitude":44.399243863411584,"longitude":8.940075864332641},{"latitude":44.39940105390387,"longitude":8.940652433217394},{"latitude":44.39993766652866,"longitude":8.940000000000026}]},{"name":"PolyPath","offset":30,"angle":30,"values":[{"latitude":44.400197840578414,"longitude":8.938884794386013},{"latitude":44.3998292603344,"longitude":8.938770997897848},{"latitude":44.39974253523594,"longitude":8.93946894971478},{"latitude":44.40004065222675,"longitude":8.939734474846631},{"latitude":44.40018157973325,"longitude":8.939317221049606},{"latitude":44.400197840578414,"longitude":8.938884794386013}]},{"name":"PolyPath","offset":30,"angle":30,"values":[{"latitude":44.40006775369815,"longitude":8.940971063392823},{"latitude":44.39975879620314,"longitude":8.940743470416521},{"latitude":44.39962870834669,"longitude":8.941008995548373},{"latitude":44.39962870834669,"longitude":8.941600737299694},{"latitude":44.40000271014572,"longitude":8.941684188076295},{"latitude":44.40015989859932,"longitude":8.941426249345454},{"latitude":44.40006775369815,"longitude":8.940971063392823}]},{"name":"PointPath","values":[{"latitude":44.39909751327148,"longitude":8.938892380830026},{"latitude":44.398739766929,"longitude":8.939711715557621},{"latitude":44.39864219936646,"longitude":8.940887612637738},{"latitude":44.39894032196373,"longitude":8.941206242813166}]},{"name":"SecurityPoly","values":[{"latitude":44.40123310500795,"longitude":8.938285466212193},{"latitude":44.39862593808893,"longitude":8.938088218947428},{"latitude":44.39847416595517,"longitude":8.941631083032746},{"latitude":44.401292727013285,"longitude":8.941790398120446},{"latitude":44.40123310500795,"longitude":8.938285466212193}]}]}'
+        var jsondata = openFile(path_file)
+
+        //var jsondata = '{"paths":[{"name":"RectPath","offset":30,"angle":30,"values":[{"latitude":44.40107591944535,"longitude":8.938550991344044},{"latitude":44.40047969448704,"longitude":8.93841443556687},{"latitude":44.40007608275216,"longitude":8.940176670711962},{"latitude":44.400672307710465,"longitude":8.940313226489137},{"latitude":44.40107591944535,"longitude":8.938550991344044}]},{"name":"RectPath","offset":30,"angle":30,"values":[{"latitude":44.40069108402936,"longitude":8.940477945263183},{"latitude":44.4001436377436,"longitude":8.94060691461786},{"latitude":44.400414241381306,"longitude":8.941755566999255},{"latitude":44.40096168766707,"longitude":8.941626597644579},{"latitude":44.40069108402936,"longitude":8.940477945263183}]},{"name":"PolyPath","offset":30,"angle":30,"values":[{"latitude":44.39993766652866,"longitude":8.940000000000026},{"latitude":44.39943899637509,"longitude":8.939529641180883},{"latitude":44.399243863411584,"longitude":8.940075864332641},{"latitude":44.39940105390387,"longitude":8.940652433217394},{"latitude":44.39993766652866,"longitude":8.940000000000026}]},{"name":"PolyPath","offset":30,"angle":30,"values":[{"latitude":44.400197840578414,"longitude":8.938884794386013},{"latitude":44.3998292603344,"longitude":8.938770997897848},{"latitude":44.39974253523594,"longitude":8.93946894971478},{"latitude":44.40004065222675,"longitude":8.939734474846631},{"latitude":44.40018157973325,"longitude":8.939317221049606},{"latitude":44.400197840578414,"longitude":8.938884794386013}]},{"name":"PolyPath","offset":30,"angle":30,"values":[{"latitude":44.40006775369815,"longitude":8.940971063392823},{"latitude":44.39975879620314,"longitude":8.940743470416521},{"latitude":44.39962870834669,"longitude":8.941008995548373},{"latitude":44.39962870834669,"longitude":8.941600737299694},{"latitude":44.40000271014572,"longitude":8.941684188076295},{"latitude":44.40015989859932,"longitude":8.941426249345454},{"latitude":44.40006775369815,"longitude":8.940971063392823}]},{"name":"PointPath","values":[{"latitude":44.39909751327148,"longitude":8.938892380830026},{"latitude":44.398739766929,"longitude":8.939711715557621},{"latitude":44.39864219936646,"longitude":8.940887612637738},{"latitude":44.39894032196373,"longitude":8.941206242813166}]},{"name":"SecurityPoly","values":[{"latitude":44.40123310500795,"longitude":8.938285466212193},{"latitude":44.39862593808893,"longitude":8.938088218947428},{"latitude":44.39847416595517,"longitude":8.941631083032746},{"latitude":44.401292727013285,"longitude":8.941790398120446},{"latitude":44.40123310500795,"longitude":8.938285466212193}]}]}'
         var data
         data = JSON.parse(jsondata)
 
@@ -340,19 +360,20 @@ MapComponentForm {
         var all_paths = {};
         all_paths.paths = []
 
+        var p_i
         var single_path = {};
         single_path.name = 'paths'
         single_path.values = []
 
         //Add all the rectangular paths
         for(i = 0; i < rect_list.length; i++){
-            var single_path = {}
+            single_path = {}
             single_path.name = 'RectPath'
             single_path.offset = rect_list[i].offset
             single_path.angle = rect_list[i].angle
             single_path.values = []
             for(j = 0; j < rect_list[i].pathLength(); j++){
-                var p_i = rect_list[i].coordinateAt(j)
+                p_i = rect_list[i].coordinateAt(j)
                 l = {}
                 l.latitude = p_i.latitude
                 l.longitude = p_i.longitude
@@ -363,13 +384,13 @@ MapComponentForm {
 
         //Add all the polygonal paths
         for(i = 0; i < poly_list.length; i++){
-            var single_path = {}
+            single_path = {}
             single_path.name = 'PolyPath'
             single_path.offset = poly_list[i].offset
             single_path.angle = poly_list[i].angle
             single_path.values = []
             for(j = 0; j < poly_list[i].pathLength(); j++){
-                var p_i = poly_list[i].coordinateAt(j)
+                p_i = poly_list[i].coordinateAt(j)
                 l = {}
                 l.latitude = p_i.latitude
                 l.longitude = p_i.longitude
@@ -380,11 +401,11 @@ MapComponentForm {
 
         //Add all the point paths
         for(i = 0; i < path_list.length; i++){
-            var single_path = {}
+            single_path = {}
             single_path.name = 'PointPath'
             single_path.values = []
             for(j = 0; j < path_list[i].pathLength(); j++){
-                var p_i = path_list[i].coordinateAt(j)
+                p_i = path_list[i].coordinateAt(j)
                 l = {}
                 l.latitude = p_i.latitude
                 l.longitude = p_i.longitude
@@ -394,11 +415,11 @@ MapComponentForm {
         }
 
         if(polysec_cur){
-            var single_path = {}
+            single_path = {}
             single_path.name = 'SecurityPoly'
             single_path.values = []
             for(j = 0; j < polysec_cur.pathLength(); j++){
-                var p_i = polysec_cur.coordinateAt(j)
+                p_i = polysec_cur.coordinateAt(j)
                 l = {}
                 l.latitude = p_i.latitude
                 l.longitude = p_i.longitude
@@ -409,6 +430,8 @@ MapComponentForm {
         }
 
         console.log(JSON.stringify(all_paths))
+
+        //saveFile(path_file,JSON.stringify(all_paths))
     }
 
     compass.transform: [
@@ -491,7 +514,8 @@ MapComponentForm {
         ulissePath.path = []
         ulissePath.firstRun = true
 
-        savePath()
+        //TODO -> remove
+        //savePath()
         loadPath()
     }
 
