@@ -11,6 +11,7 @@ ColumnLayout {
     property alias b_path: b_path
     property alias b_rect: b_rect
     property alias b_poly: b_poly
+    property alias b_polysec: b_polysec
     property alias offsetField: offsetField
     property alias angleField: angleField
     property alias buttonEdit: buttonEdit
@@ -22,7 +23,8 @@ ColumnLayout {
         0: "empty",
                 1: "path",
                 2: "rect",
-                3: "poly"
+                3: "poly",
+                4: "polysec"
     }[mapView.currentState]
 
     RowLayout {
@@ -35,7 +37,6 @@ ColumnLayout {
             id: b_poly
             text: qsTr("Polygon")
             Layout.fillHeight: false
-            Layout.fillWidth: true
             enabled: false
             highlighted: false
         }
@@ -43,7 +44,6 @@ ColumnLayout {
         Button {
             id: b_rect
             text: qsTr("Rectangle")
-            Layout.fillWidth: true
             enabled: false
             highlighted: false
         }
@@ -51,7 +51,13 @@ ColumnLayout {
         Button {
             id: b_path
             text: qsTr("Path")
-            Layout.fillWidth: true
+            enabled: false
+            highlighted: false
+        }
+
+        Button {
+            id: b_polysec
+            text: qsTr("Security")
             enabled: false
             highlighted: false
         }
@@ -116,6 +122,11 @@ ColumnLayout {
                 target: b_poly
                 enabled: true
             }
+
+            PropertyChanges {
+                target: b_polysec
+                enabled: true
+            }
         },
         State {
             name: "path"
@@ -137,6 +148,14 @@ ColumnLayout {
             name: "poly"
             PropertyChanges {
                 target: b_poly
+                enabled: true
+                highlighted: true
+            }
+        },
+        State {
+            name: "polysec"
+            PropertyChanges {
+                target: b_polysec
                 enabled: true
                 highlighted: true
             }

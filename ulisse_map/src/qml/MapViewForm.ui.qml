@@ -53,6 +53,7 @@ RowLayout {
         property int path: 1
         property int rect: 2
         property int poly: 3
+        property int polysec: 4
     }
 
     QtObject {
