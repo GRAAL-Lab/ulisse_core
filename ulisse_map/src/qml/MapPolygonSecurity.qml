@@ -41,19 +41,30 @@ MapPolyline {
         map.addMapItem(_canvas)
     }
 
-    //TODO
-    function map_check_intersections(pc){
-        var i
-        var last_point = map.fromCoordinate(coordinateAt(pathLength()));
 
-        for (i = 0; i < pathLength() - 2; i ++){
+    function map_check_intersections(){
+        if (pathLength() < 3)
+            return 0
 
-            var pa = map.fromCoordinate(coordinateAt(i))
-            var pb = map.fromCoordinate(coordinateAt(i+1))
+        var pf = map.fromCoordinate(coordinateAt(pathLength()-2))
+        var pf_minus1 = map.fromCoordinate(coordinateAt(pathLength()-3))
+        var mf = (pf_minus1.y - pf.y)/(pf_minus1.x - pf.x)
 
-            //var intersections = Helper.intersections(last_point, )
-           // if()
+        for(var i = 0; i < pathLength()-2; i++){
+            var pi = map.fromCoordinate(coordinateAt(i))
+            var pi_plus1 = map.fromCoordinate(coordinateAt(i+1))
+            var mi = (pi_plus1.y - pi.y)/(pi_plus1.x - pi.x)
+
+            var intersection_point = Helper.intersect_two_lines(pi, mi, pf, mf )
+
+            if(intersection_point !== pf_minus1 && intersection_point[2] !== 0 &&
+               Helper.point_in_box(intersection_point,pf, pf_minus1) && Helper.point_in_box(intersection_point,pi, pi_plus1)){
+
+                toast.show("INTERSECTION at segment"+(i+1))
+                return 1
+            }
         }
+        return 0
     }
 
 
@@ -75,6 +86,8 @@ MapPolyline {
     }
 
     function create_JSON(){
+        var j
+        var l
         var security_poly = {}
         security_poly.name = 'SecurityPoly'
         security_poly.values = []
@@ -101,8 +114,15 @@ MapPolyline {
         var last_idx = pathLength()-1
         var color = "#4ac7c0"
 
-        if(distance(map.fromCoordinate(coordinateAt(0)), p) < 15)
+        //Check if the last point is near to the first one
+        if(distance(map.fromCoordinate(coordinateAt(0)), p) < 15){
+            pf = coordinateAt(0)
             color = "#ffb300"
+        }
+
+        if(map_check_intersections()){
+            removeCoordinate(pathLength()-1)
+        }
 
         line.color = color
         replaceCoordinate(last_idx, pf)
@@ -127,7 +147,7 @@ MapPolyline {
                 var p1 = map.fromCoordinate(coordinateAt(0))
                 var p2 = map.fromCoordinate(coordinateAt(1))
                 var p3 = m
-                poligonal_direction = Helper.three_point_direction(p1,p2,p3)
+                //poligonal_direction = Helper.three_point_direction(p1,p2,p3)
                 polygonal_phase = 2
                 addCoordinate(p)
 
