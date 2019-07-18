@@ -114,7 +114,6 @@ MapPolyline {
         var orig_tilt = map.tilt
         map.tilt = 0
 
-        // transform shape coordinates and work in a virtual euclidean metric system
         var shape_coords = path.slice(0, pathLength()-1)
 
         centroid = Helper.coords_centroid(shape_coords)
@@ -125,20 +124,17 @@ MapPolyline {
         var lam = Helper.lat_to_m_coeff(centroid.latitude)
         var lom = Helper.lon_to_m_coeff(centroid.longitude)
 
+        // transform shape coordinates and work in a virtual euclidean metric system
         var points = Helper.points_map2euclidean(shape_coords, centroid, lam, lom)
         points = Helper.set_points_clockwise(points)
+        var sides = Helper.make_sides(points)
 
-        var r2 = Helper.find_interesting_features(points)
-        var pt = r2.point_top
-        var pl = r2.point_before
-        var upper_side = r2.upper_side
-        var sides = r2.sides
-
-        intersections_cartesian = Helper.find_intersections(angle, pt, pl, upper_side, sides, offset)
+        intersections_cartesian = Helper.convex_polygon_parallel_slices_intersections(angle, offset, sides, lam/lom)
         intersections_cartesian = Helper.rectify_dense_winding(intersections_cartesian, lam/lom)
-        console.log(lam/lom)
+
+
         // transform virtual euclidean reference points in map coordinates
-        intersections_geographic = Helper.point_couples_euclidean2map(intersections_cartesian, centroid, lam, lom)
+        intersections_geographic = Helper.segments_euclidean2map(intersections_cartesian, centroid, lam, lom)
 
         var a = map.toCoordinate(Qt.point(0,0))
         var b = map.toCoordinate(Qt.point(0,1))
@@ -146,31 +142,61 @@ MapPolyline {
         var p2m_h = a.distanceTo(b)
         var p2m_v = a.distanceTo(c)
 
+        offset *= 3
         var o_x = offset/p2m_h
         var o_y = offset/p2m_v
 
         Helper.init_canvas(_canvas, map,
                            dim[0]+2*o_x, dim[1]+2*o_y,
-                           limits.max_lat + 2*offset/lam, limits.min_lon -2*offset/lom,
+                           limits.max_lat + offset/lam, limits.min_lon - offset/lom,
                            Helper.relative_zoom_pixel_ratio(map, map.maximumZoomLevel))
 
+        offset /= 3
+
         // transform map coordinates in canvas pixel indexes
-        intersections_canvas = Helper.point_couples_map2canvas(intersections_geographic, map, _canvas)
+        intersections_canvas = Helper.segments_map2canvas(intersections_geographic, map, _canvas)
         map.tilt = orig_tilt
     }
 
+    function to_debug_canvas(pt, limits, lam, lom, canvas){
+        var scale = 1
+        return Qt.point(canvas.canvasSize.width-(canvas.canvasSize.width/2.0 + pt.x/scale), canvas.canvasSize.height/2.0 + pt.y/scale)
+    }
+
     function draw_path(){
+        var lam = Helper.lat_to_m_coeff(centroid.latitude)
+        var lom = Helper.lon_to_m_coeff(centroid.longitude)
+
         // clear the canvas
         _canvas.canvasCtx.clearRect(0, 0, _canvas.canvasWidth, _canvas.canvasHeight)
 
-        // draw a bounding box around the area
-        //Helper.draw_bounding_rect(map, _canvas, _canvas.canvasWidth, _canvas.canvasHeight)
 
         // draw parallel lines
         Helper.draw_path_lines(_canvas, intersections_canvas)
 
         // draw manouvre curves
-        Helper.draw_path_semicircles(_canvas, intersections_canvas)
+        var a = 0, b = 1
+        for (var i=0; i<intersections_canvas.length-1; i++){
+            a = Helper.flip(a)
+            b = Helper.flip(b)
+            var p0 = intersections_canvas[i][b]
+            var p1 = intersections_canvas[i][a]
+            var p2 = intersections_canvas[i+1][a]
+            var p3 = intersections_canvas[i+1][b]
+            var l1 = Helper.distance(p0, p1)
+            var l2 = Helper.distance(p3, p2)
+            var d = Helper.distance(p1, p2)
+            var c = 0.55191502449 * d/2
+            var pc1a = Helper.interpolate(p0, p1, l1+c, 1)
+            var pc1b = Helper.interpolate(p3, p2, l2+c, 1)
+            var _a = Helper.interpolate(p0, p1, l1+d/2, 1)
+            var _b = Helper.interpolate(p3, p2, l2+d/2, 1)
+            var pc3 = Helper.interpolate(_a, _b, d/2, 1)
+            var pc2a = Helper.interpolate(pc3, _a, c, 1)
+            var pc2b = Helper.interpolate(pc3, _b, c, 1)
+            Helper.draw_cubic_bezier(_canvas.canvasCtx, p1, pc1a, pc2a, pc3)
+            Helper.draw_cubic_bezier(_canvas.canvasCtx, pc3, pc2b, pc1b, p2)
+        }
     }
 
     function generate_nurbs(){
@@ -198,8 +224,7 @@ MapPolyline {
             centroid: [centroid.latitude, centroid.longitude],
             curves: curves
         }
-        console.log(JSON.stringify(result))
+        //console.log(JSON.stringify(result))
         return result
     }
 }
-

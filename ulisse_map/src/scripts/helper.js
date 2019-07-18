@@ -17,6 +17,14 @@ function coords_centroid(coords){
     return QtPositioning.coordinate(lat/coords.length, lon/coords.length)
 }
 
+function point_map2canvas(coord, map, canvas){
+    return point_screen2canvas(map.fromCoordinate(coord, false), map, canvas)
+}
+
+function point_canvas2map(point, map, canvas){
+    return map.toCoordinate(point_canvas2screen(point, map, canvas))
+}
+
 function point_screen2canvas(point, map, canvas){
     var o = map.fromCoordinate(canvas.coordinate, false)
     return rotate(Qt.point((point.x-o.x)*canvas.multiplier, (point.y-o.y)*canvas.multiplier), deg_to_rad(map.bearing))
@@ -50,126 +58,46 @@ function points_euclidean2map(points, centroid, lam, lom){
     return coordinates
 }
 
-function point_couples_euclidean2map(ii, centroid, lam, lom){
+function segments_euclidean2map(ii, centroid, lam, lom){
     var cc = []
     for (var i=0; i<ii.length; i++)
         cc.push(points_euclidean2map(ii[i], centroid, lam ,lom))
     return cc
 }
 
-function point_couples_map2canvas(cc, map, canvas){
+function segments_map2canvas(cc, map, canvas){
     var pp = []
     for (var i=0; i<cc.length; i++){
-        var a = point_screen2canvas(map.fromCoordinate(cc[i][0], false), map, canvas)
-        var b = point_screen2canvas(map.fromCoordinate(cc[i][1], false), map, canvas)
+        var a = point_map2canvas(cc[i][0], map, canvas)
+        var b = point_map2canvas(cc[i][1], map, canvas)
         pp.push([a,b])
     }
     return pp
 }
 
 function relative_zoom_pixel_ratio(map, zoom){
-    //assuming tilt = 0, otherwise nonsense
+    var t = map.tilt
     var z = map.zoomLevel
+    map.tilt = 0
     map.zoomLevel = zoom
     var c0 = map.toCoordinate(Qt.point(1,1), false)
     var c1 = map.toCoordinate(Qt.point(2,1), false)
     map.zoomLevel = z
     var p0 = map.fromCoordinate(c0, false)
     var p1 = map.fromCoordinate(c1, false)
+    map.tilt = t
     return 1.0/(p1.x-p0.x)
 }
 
-function side_angle(side){
-    var a = rad_to_deg(Math.atan(slope(side[0], side[1])))
-    return (a>=0) ? a : a+90
-}
-
-function path_bearing(c0, c1){
-    var y = Math.sin(c1.longitude-c0.longitude) * Math.cos(c1.latitude);
-    var x = Math.cos(c0.latitude)*Math.sin(c1.latitude) -
-            Math.sin(c0.latitude)*Math.cos(c1.latitude)*Math.cos(c1.longitude-c0.longitude);
-    return rad_to_deg(Math.atan2(y, x));
-}
-
-
-function nearest_geo_intersection(cp1, a1, cp2, a2){
-    var f = function (i,r){
-        if (i !== null && !isNaN(i.latitude) && !isNaN(i.longitude))
-            r.push(i)
-    }
-
-    var m = function (r, cpc){
-        if (r.length > 0){
-            var min_d = r[0].distanceTo(cpc)
-            var min_c = r[0]
-            for (var i = 1; i<r.length; i++)
-                if (r[i].distanceTo(cpc) < min_d)
-                    min_c = r[i]
-            return min_c
-        } else return null
-    }
-
-    var r = []
-    f(geo_intersection(cp1, a1, cp2, a2),r)
-    f(geo_intersection(cp1, a1, cp2, a2+180),r)
-    f(geo_intersection(cp1, a1+180, cp2, a2),r)
-    f(geo_intersection(cp1, a1+180, cp2, a2+180),r)
-    return m(r, cp2)
-}
-
-function geo_intersection(p1, brng1, p2, brng2) {
-    // see www.edwilliams.org/avform.htm#Intersection
-
-    var φ1 = deg_to_rad(p1.latitude), λ1 = deg_to_rad(p1.longitude);
-    var φ2 = deg_to_rad(p2.latitude), λ2 = deg_to_rad(p2.longitude);
-    var θ13 = deg_to_rad(brng1), θ23 = deg_to_rad(brng2);
-    var Δφ = φ2 - φ1, Δλ = λ2 - λ1;
-
-    // angular distance p1-p2
-    var δ12 = 2 * Math.asin(Math.sqrt(Math.sin(Δφ/2) * Math.sin(Δφ/2)
-        + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ/2) * Math.sin(Δλ/2)));
-    if (Math.abs(δ12) < Number.EPSILON) return QtPositioning.coordinate(p1.latitude, p1.longitude); // coincident points
-
-    // initial/final bearings between points
-    var cosθa = (Math.sin(φ2) - Math.sin(φ1)*Math.cos(δ12)) / (Math.sin(δ12)*Math.cos(φ1));
-    var cosθb = (Math.sin(φ1) - Math.sin(φ2)*Math.cos(δ12)) / (Math.sin(δ12)*Math.cos(φ2));
-    var θa = Math.acos(Math.min(Math.max(cosθa, -1), 1)); // protect against rounding errors
-    var θb = Math.acos(Math.min(Math.max(cosθb, -1), 1)); // protect against rounding errors
-
-    var θ12 = Math.sin(λ2-λ1)>0 ? θa : 2*Math.PI-θa;
-    var θ21 = Math.sin(λ2-λ1)>0 ? 2*Math.PI-θb : θb;
-
-    var α1 = θ13 - θ12; // angle 2-1-3
-    var α2 = θ21 - θ23; // angle 1-2-3
-
-    if (Math.sin(α1) == 0 && Math.sin(α2) == 0) return null; // infinite intersections
-    if (Math.sin(α1) * Math.sin(α2) < 0) return null;        // ambiguous intersection (antipodal?)
-
-    var cosα3 = -Math.cos(α1)*Math.cos(α2) + Math.sin(α1)*Math.sin(α2)*Math.cos(δ12);
-
-    var δ13 = Math.atan2(Math.sin(δ12)*Math.sin(α1)*Math.sin(α2), Math.cos(α2) + Math.cos(α1)*cosα3);
-
-    var φ3 = Math.asin(Math.sin(φ1)*Math.cos(δ13) + Math.cos(φ1)*Math.sin(δ13)*Math.cos(θ13));
-
-    var Δλ13 = Math.atan2(Math.sin(θ13)*Math.sin(δ13)*Math.cos(φ1), Math.cos(δ13) - Math.sin(φ1)*Math.sin(φ3));
-    var λ3 = λ1 + Δλ13;
-
-    var lat = rad_to_deg(φ3);
-    var lon = rad_to_deg(λ3);
-
-    return QtPositioning.coordinate(lat, lon);
-}
-
-
 function point_in_box(p, p1, p2){
-    var o = 0.1
+    var o = 0.01
     return ( (p1.x-o <= p.x && p.x <= p2.x+o && p1.y-o <= p.y && p.y <= p2.y+o)
           || (p2.x-o <= p.x && p.x <= p1.x+o && p2.y-o <= p.y && p.y <= p1.y+o)
           || (p1.x-o <= p.x && p.x <= p2.x+o && p2.y-o <= p.y && p.y <= p1.y+o)
           || (p2.x-o <= p.x && p.x <= p1.x+o && p1.y-o <= p.y && p.y <= p2.y+o))
 }
 
-function intersections(point, angle, sides){
+function intersections_with_segments(point, angle, sides){
     var l0 = to_homogeneous_line(point, deg_to_rad(angle))
 
     var ii = []
@@ -177,12 +105,9 @@ function intersections(point, angle, sides){
         var s = sides[i]
         var li = to_homogeneous_line(s[0], Math.atan(slope(s[0], s[1])))
 
-        var intersection = l0.crossProduct(li)
-        if (intersection.z !== 0){/*not parallel*/
+        var intersection = cross_product(l0, li)
+        if (intersection[2] !== 0){ //not parallel
             var pi = from_homogeneous_point(intersection)
-            //console.log(JSON.stringify(s[0]))
-            //console.log(JSON.stringify(pi))
-            //console.log(JSON.stringify(s[1]))
             if (point_in_box(pi, s[0], s[1]))
                 ii.push(pi)
         }
@@ -190,92 +115,38 @@ function intersections(point, angle, sides){
     return ii
 }
 
-function find_intersections(angle, points, sides, offset, lam, lom){
-    var step_points = []
-
-    var a_perp = Math.atan(-Math.pow(lam/lom,2)/Math.tan(deg_to_rad(angle)))
-    var p_dir = Qt.point(points[1].x + Math.cos(a_perp)*offset,points[1].y + Math.sin(a_perp)*offset)
-    var p_start = interpolate(points[1], p_dir, -offset/2, 1)
-
+function convex_polygon_parallel_slices_intersections(angle, offset, sides, ratio){
+    var a_perp = Math.atan(-Math.pow(ratio,2)/Math.tan(deg_to_rad(angle)))
+    var p_dir = Qt.point(Math.cos(a_perp)*offset,Math.sin(a_perp)*offset)
 
     var times=0
     var ii1=[]
     while (true){
         ++times
-        var p = interpolate(p_start, p_dir, -offset, times)
-        step_points.push(p)
-        var _i = intersections(p, angle, sides) //NB two intersections always if a convex polygon
+        var p = interpolate(Qt.point(0,0), p_dir, -offset, times)
+        var _i = intersections_with_segments(p, angle, sides) //NB two intersections always if a convex polygon
         if (_i.length < 2) break
         if (_i[0].x < _i[1].x || (_i[0].x === _i[1].x && _i[0].y < _i[1].y))
-            ii1.push([_i[0], _i[1]])
+            ii1.push(_i.slice(0,2))
         else
-            ii1.push([_i[1], _i[0]])
+            ii1.push(_i.slice(0,2).reverse())
     }
 
     times = -1
     var ii2=[]
     while (true){
         ++times
-        var p = interpolate(p_start, p_dir, offset, times)
-        step_points.push(p)
-        var _i = intersections(p, angle, sides) //NB two intersections always if a convex polygon
+        var p = interpolate(Qt.point(0,0), p_dir, offset, times)
+        var _i = intersections_with_segments(p, angle, sides) //NB two intersections always if a convex polygon
         if (_i.length < 2) break
         if (_i[0].x < _i[1].x || (_i[0].x === _i[1].x && _i[0].y < _i[1].y))
-            ii2.push([_i[0], _i[1]])
+            ii2.push(_i.slice(0,2))
         else
-            ii2.push([_i[1], _i[0]])
+            ii2.push(_i.slice(0,2).reverse())
     }
 
-    return {
-        intersections: ii2.reverse().concat(ii1),
-        step_points: step_points
-    }
+    return ii2.reverse().concat(ii1)
 }
-
-
-function set_points_clockwise(points){
-    if (three_point_direction(points[0],points[1],points[2]) === 1)
-        points.reverse()
-    return points
-}
-
-function set_point_from_upper(points){
-    var t = find_top(points)
-    var pti = t[1]
-    return points.slice(pti).concat(points.slice(0,pti))
-}
-
-function make_sides(points){
-    var r = []
-    for (var i=0; i<points.length-1; i++)
-        r.push([points[i], points[i+1]])
-    r.push([points[points.length-1], points[0]])
-    return r
-}
-
-function find_interesting_features(points){
-    var t = find_top(points)
-    var pti = t[1]
-    var pt = t[0]
-    var pli = sub_and_wrap(pti, points.length)
-    var pl = points[pli]
-
-    var sides = []
-    for (var i=0, idx_a=pti-1, idx_b; i<points.length; i++){
-        idx_a = add_and_wrap(idx_a, points.length)
-        idx_b = add_and_wrap(idx_a, points.length)
-        sides.push([points[idx_a], points[idx_b]])
-    }
-    var upper_side = sides[0]
-    return {
-        point_top: pt,
-        point_before: pl,
-        upper_side: upper_side,
-        sides: sides
-    }
-}
-
-
 
 function rectify_parallelogram_side(p0,p1,p2,p3, ratio){
     //p0-p1, p2-p3 must be parallel!
@@ -290,12 +161,7 @@ function rectify_parallelogram_side(p0,p1,p2,p3, ratio){
         p1 = project(p0, m, p2, ratio)
     else
         p2 = project(p3, m, p1, ratio)
-    var result = [p0, p1, p2, p3]
-    console.log(p0.x + "," + p0.y)
-    console.log(p1.x + "," + p1.y)
-    console.log(p2.x + "," + p2.y)
-    console.log(p3.x + "," + p3.y)
-    return result
+    return [p0, p1, p2, p3]
 }
 
 function rectify_dense_winding(ii, ratio){
@@ -310,31 +176,74 @@ function rectify_dense_winding(ii, ratio){
     return ii
 }
 
+/*
+function rectify_wide_winding(ii, jump, ratio){
+    var upper_leap = jump
+    var lower_leap = jump-1
+    for (var i=0, a=0, b=1; i<ii.length-upper_leap; i++){
+        var p0 = ii[i][0]
+        var p1 = ii[i][1]
+        var p2 = ii[i+upper_leap][1]
+        var p3 = ii[i+upper_leap][0]
+        var rr = rectify_parallelogram_side(p0, p1, p2, p3, ratio)
+        ii[i][1] = rr[1]
+        ii[i+upper_leap][1] = rr[2]
+
+        p0 = ii[i+1][1]
+        p1 = ii[i+1][0]
+        p2 = ii[i+1+lower_leap][0]
+        p3 = ii[i+1+lower_leap][1]
+        rr = rectify_parallelogram_side(p0, p1, p2, p3, ratio)
+        ii[i+1][0] = rr[1]
+        ii[i+1+lower_leap][0] = rr[2]
+    }
+    return ii
+}
+*/
+
+/*
+function draw_manouvre_double_winding(canvas, pp, jump){
+    var upper_leap = jump
+    var lower_leap = jump-1
+    for (var i=0, a=0, b=1; i<pp.length-upper_leap; i++){
+        var p0 = pp[i][0]
+        var p1 = pp[i][1]
+        var p2 = pp[i+upper_leap][1]
+        var p3 = pp[i+upper_leap][0]
+        draw_semicircle(canvas.canvasCtx, p0, p1, p2, p3)
+        p0 = pp[i][1]
+        p1 = pp[i][0]
+        p2 = pp[i+lower_leap][0]
+        p3 = pp[i+lower_leap][1]
+        draw_semicircle(canvas.canvasCtx, p0, p1, p2, p3)
+    }
+}
+*/
+
+function set_points_clockwise(points){
+    if (three_point_direction(points[0],points[1],points[2]) === 1)
+        points.reverse()
+    return points
+}
+
+function make_sides(points){
+    var r = []
+    for (var i=0; i<points.length-1; i++)
+        r.push([points[i], points[i+1]])
+    r.push([points[points.length-1], points[0]])
+    return r
+}
+
 function intersect_two_lines(p0,m0,p1,m1){
     var l0 = to_homogeneous_line(p0, Math.atan(m0))
     var l1 = to_homogeneous_line(p1, Math.atan(m1))
 
-    var intersection = l0.crossProduct(l1)
+    var intersection = cross_product(l0, l1)
     return from_homogeneous_point(intersection)
 }
 
-function project(p0,m,p1,ratio){
-    var p2 = Qt.point(0,0);
-    if ( (Math.abs(m) === 16331239353195370) || (Math.abs(m) === Infinity)){
-        p2.x = p0.x
-        p2.y = p1.y
-    } else if (m === 0){
-        p2.x = p1.x
-        p2.y = p0.y
-    } else {
-        var _m = m
-        var _m_perp = -1/m
-        var m = _m*ratio
-        var m_perp = _m_perp*ratio
-        p2.x = (m*p0.x - m_perp*p1.x + p1.y - p0.y)/(m-m_perp)
-        p2.y = m*(p2.x - p0.x) + p0.y
-    }
-    return p2
+function project(p0, m, p1, ratio){
+    return intersect_two_lines(p0,m,p1,-Math.pow(ratio,2)/m)
 }
 
 function distance(p1,p2){
@@ -348,19 +257,24 @@ function interpolate(from, to, offset, times){
     return Qt.point(from.x+ox, from.y+oy)
 }
 
+function cross_product(a, b){
+    return [a[1]*b[2]-a[2]*b[1],
+            a[2]*b[0]-a[0]*b[2],
+            a[0]*b[1]-a[1]*b[0]]
+}
 
 function to_homogeneous_line(point, angle){
     var m = Math.tan(angle)
     if ( (Math.abs(m) === 16331239353195370) || (Math.abs(m) === Infinity))
-        return Qt.vector3d(1, 0, -point.x)
+        return [1, 0, -point.x]
     if (m === 0)
-        return Qt.vector3d(0, 1, -point.y)
+        return [0, 1, -point.y]
     var q = point.y - m * point.x
-    return Qt.vector3d(m, -1, q)
+    return [m, -1, q]
 }
 
 function from_homogeneous_point(p){
-    return Qt.point(p.x/p.z, p.y/p.z)
+    return Qt.point(p[0]/p[2], p[1]/p[2])
 }
 
 function slope(p0, p1){
@@ -372,32 +286,18 @@ function angle_between(/*vector 1*/_a,_b, /*vector 2*/_c,_d){
 }
 
 
-
-function find_top(points){
-    var pt = points[0]
-    var t = pt.y
-    for (var i = 1; i<points.length; i++){
-        if (points[i].y >= t){
-            t = points[i].y;
-            pt = points[i]
-        }
-    }
-    var pti = points.indexOf(pt)
-    if (pti === points.length-1 && pt.y === points[0].y && pt.x < points[0].x)
-        return [points[0], 0]
-    return [pt, pti]
-}
-
 function flip(x){
     return (x===0) ? 1 : 0
 }
 
-function add_and_wrap(x, mod){
-    return (x+1 < mod) ? x+1 : 0
+function add_and_wrap(x, mod, quota){
+    if (quota == null) quota = 1
+    return (x+quota < mod) ? x+quota : quota-1
 }
 
-function sub_and_wrap(x, mod){
-    return (x-1 >= 0) ? x-1 : mod-1
+function sub_and_wrap(x, mod, quota){
+    if (quota == null) quota = 1
+    return (x-quota >= 0) ? x-quota : mod-quota
 }
 
 function rotate(p, a){
@@ -521,7 +421,6 @@ function draw_line(ctx,x1,y1,x2,y2){
     ctx.beginPath()
     ctx.moveTo(x1,y1)
     ctx.lineTo(x2,y2)
-    ctx.closePath()
     ctx.stroke()
 }
 
@@ -532,32 +431,73 @@ function draw_bounding_rect(map, canvas, w, h){
     canvas.requestPaint()
 }
 
-function draw_path_lines(canvas, pp){
-    var ctx = canvas.canvasCtx
+function ctx_draw_path_lines(ctx, pp){
     for (var i = 0; i < pp.length; i++){
         var p0 = pp[i][0]
         var p1 = pp[i][1]
         draw_line(ctx, p0.x, p0.y, p1.x, p1.y)
-        canvas.requestPaint()
     }
 }
 
-function draw_semicircle(ctx, p0, p1, dir){
+function draw_path_lines(canvas, pp){
+    var ctx = canvas.canvasCtx
+    ctx_draw_path_lines(ctx, pp)
+    canvas.requestPaint()
+}
+
+function ctx_draw_manouvre_simple(ctx, pp){
+    for (var i = 0; i < pp.length; i++){
+        var dir = (i+1)%2
+        var p0 = pp[i][dir]
+        var p1 = pp[i+1][dir]
+        draw_line(ctx, p0.x, p0.y, p1.x, p1.y)
+    }
+}
+
+function draw_manouvre_simple(canvas, pp){
+    var ctx = canvas.canvasCtx
+    ctx_draw_manouvre_simple(ctx, pp)
+    canvas.requestPaint()
+}
+
+function draw_manouvre_single_winding(canvas, pp){
+    for (var i=0, a=0, b=1; i<pp.length-1; i++){
+        a = flip(a)
+        b = flip(b)
+        var p0 = pp[i][b]
+        var p1 = pp[i][a]
+        var p2 = pp[i+1][a]
+        var p3 = pp[i+1][b]
+        draw_semicircle(canvas.canvasCtx, p0, p1, p2, p3)
+    }
+}
+
+function draw_semicircle(ctx, p0, p1, p2, p3){
+    var l1 = distance(p0, p1)
+    var l2 = distance(p3, p2)
+    var d = distance(p1, p2)
+    var c = 0.55191502449 * d/2
+    var pc1a = interpolate(p0, p1, l1+c, 1)
+    var pc1b = interpolate(p3, p2, l2+c, 1)
+    var _a = interpolate(p0, p1, l1+d/2, 1)
+    var _b = interpolate(p3, p2, l2+d/2, 1)
+    var pc3 = interpolate(_a, _b, d/2, 1)
+    var pc2a = interpolate(pc3, _a, c, 1)
+    var pc2b = interpolate(pc3, _b, c, 1)
+    draw_cubic_bezier(ctx, p1, pc1a, pc2a, pc3)
+    draw_cubic_bezier(ctx, pc3, pc2b, pc1b, p2)
+}
+
+
+function draw_cubic_bezier(ctx, c0, c1, c2, c3){
     ctx.strokeStyle = "#0000ff"
     ctx.beginPath()
-    ctx.moveTo(p1.x, p1.y)
-    ctx.arc((p0.x+p1.x)/2,
-            (p0.y+p1.y)/2,
-            distance(p0, p1)/2,
-            Math.atan2(p1.y-p0.y, p1.x-p0.x),
-            Math.atan2(p1.y-p0.y, p1.x-p0.x) + Math.PI,
-            dir === 0)
-    ctx.moveTo(p1.x, p1.y)
-    ctx.closePath()
+    ctx.moveTo(c0.x, c0.y)
+    ctx.bezierCurveTo(c1.x, c1.y, c2.x, c2.y, c3.x, c3.y)
     ctx.stroke()
 }
 
-function draw_circle(ctx, p0, r, color){
+function draw_circle(ctx, p0, p1, p2, p3, color){
     ctx.strokeStyle = color
     ctx.beginPath()
     ctx.moveTo(p0.x, p0.y)
@@ -567,21 +507,8 @@ function draw_circle(ctx, p0, r, color){
             0,
             2*Math.PI)
     ctx.moveTo(p0.x, p0.y)
-    ctx.closePath()
     ctx.stroke()
 }
-
-function draw_path_semicircles(canvas, pp){
-    var ctx = canvas.canvasCtx
-    for (var i = 0; i < pp.length-1; i++){
-        var dir = (i+1)%2
-        var p0 = pp[i][dir]
-        var p1 = pp[i+1][dir]
-        draw_semicircle(ctx,p0,p1,dir)
-    }
-    canvas.requestPaint()
-}
-
 
 function roundNumber(number, digits){
     var multiple = Math.pow(10, digits);
@@ -618,4 +545,20 @@ function formatDistance(meters){
         dist = dist + " m"
     }
     return dist
+}
+
+//Taken from https://www.movable-type.co.uk/scripts/latlong.html
+function geo_midpoint(c1, c2){
+    var φ1 = deg_to_rad(c1.latitude)
+    var λ1 = deg_to_rad(c1.longitude)
+    var φ2 = deg_to_rad(c2.latitude)
+    var λ2 = deg_to_rad(c2.longitude)
+
+    var Bx = Math.cos(φ2) * Math.cos(λ2-λ1)
+    var By = Math.cos(φ2) * Math.sin(λ2-λ1)
+    var φ3 = Math.atan2(Math.sin(φ1) + Math.sin(φ2),
+                        Math.sqrt( (Math.cos(φ1)+Bx)*(Math.cos(φ1)+Bx) + By*By ) )
+    var λ3 = λ1 + Math.atan2(By, Math.cos(φ1) + Bx)
+    return QtPositioning.coordinate(rad_to_deg(φ3),
+                                    rad_to_deg((λ3+540)%360-180))
 }

@@ -46,5 +46,7 @@
         <file>qml/MapPath.qml</file>
         <file>qml/MapCanvas.qml</file>
         <file>qml/MapPolygonSecurity.qml</file>
+        <file>qml/MapMarker.qml</file>
+        <file>qml/MapDashedLine.qml</file>
     </qresource>
 </RCC>

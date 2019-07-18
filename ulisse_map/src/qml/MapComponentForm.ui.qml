@@ -21,6 +21,8 @@ Map {
     property alias goalFlag: goalFlag
     property alias ruler: ruler
     property alias greenFlag: greenFlag
+    property alias overlay_canvas: overlay_canvas
+    property alias editCircle: editCircle
 
     ColorOverlay {
         id: marker
@@ -157,6 +159,17 @@ Map {
         z: map.z + 2
     }
 
+    MapCircle {
+        id: editCircle
+        center: goalFlag.coordinate
+        radius: 5
+        color: "#ff0000"
+        border.width: 1
+        border.color: 'gray'
+        opacity: 0
+        z: map.z + 2
+    }
+
     MapPolyline {
         id: ulissePath
         line.width: 1
@@ -171,5 +184,11 @@ Map {
         objectName: "mapMouseArea"
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton | Qt.RightButton
+    }
+
+    Canvas {
+        id: overlay_canvas
+        antialiasing: true
+        anchors.fill: parent
     }
 }
