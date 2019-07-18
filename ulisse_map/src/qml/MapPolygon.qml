@@ -88,7 +88,7 @@ MapPolyline {
             var c = map.fromCoordinate(centroid, false)
             _handle.h_handle = map.toCoordinate(Qt.point(c.x-40, c.y), false)
             disable_handle()
-            _handle.update_canvas(30)
+            _handle.update_canvas(0)
         }
         update_scale()
     }
@@ -292,6 +292,18 @@ MapPolyline {
                 replaceCoordinate(i,cn)
             }
             update_centroid()
+        } else if (rotating){
+            var scale = _handle.h_center.distanceTo(pf)/_handle.h_center.distanceTo(_handle.h_handle)
+            var angle = _handle.h_center.azimuthTo(pf)-_handle.h_center.azimuthTo(_handle.h_handle)
+            for (var i = 0; i<path.length; i++){
+                var c = coordinateAt(i)
+                var d = centroid.distanceTo(c)
+                var a = centroid.azimuthTo(c)
+                var cn = centroid.atDistanceAndAzimuth(d*scale, a+angle)
+                replaceCoordinate(i, cn)
+            }
+            _handle.update_canvas(angle)
+            _handle.h_handle = pf
         }
     }
 
