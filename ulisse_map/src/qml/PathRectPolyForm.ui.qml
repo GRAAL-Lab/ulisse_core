@@ -7,12 +7,18 @@ import QtQuick.Controls.Material 2.1
 import QtGraphicalEffects 1.0
 import QtQuick.Dialogs 1.2
 
-RowLayout {
+ColumnLayout {
     property alias b_path: b_path
     property alias b_rect: b_rect
     property alias b_poly: b_poly
     property alias b_polysec: b_polysec
-    id: rowLayout1
+    property alias offsetField: offsetField
+    property alias angleField: angleField
+    property alias buttonEdit: buttonEdit
+    property alias buttonSave: buttonSave
+    property alias buttonDiscard: buttonDiscard
+    property alias idxField: idxField
+    id: cl1
     state: {
         0: "empty",
                 1: "path",
@@ -21,32 +27,85 @@ RowLayout {
                 4: "polysec"
     }[mapView.currentState]
 
-    Button {
-        id: b_path
-        text: qsTr("Path")
-        enabled: false
-        highlighted: false
+    RowLayout {
+        id: rl1
+        width: 100
+        height: 100
+        Layout.fillWidth: true
+
+        Button {
+            id: b_poly
+            text: qsTr("Polygon")
+            Layout.fillHeight: false
+            enabled: false
+            highlighted: false
+        }
+
+        Button {
+            id: b_rect
+            text: qsTr("Rectangle")
+            enabled: false
+            highlighted: false
+        }
+
+        Button {
+            id: b_path
+            text: qsTr("Path")
+            enabled: false
+            highlighted: false
+        }
+
+        Button {
+            id: b_polysec
+            text: qsTr("Security")
+            enabled: false
+            highlighted: false
+        }
     }
 
-    Button {
-        id: b_rect
-        text: qsTr("Rectangle")
-        enabled: false
-        highlighted: false
+    RowLayout {
+        id: rowLayout
+        width: 100
+        height: 100
+
+        TextField {
+            id: offsetField
+            text: qsTr("30")
+            placeholderText: "Offset"
+        }
+
+        TextField {
+            id: angleField
+            text: qsTr("30")
+            placeholderText: "Angle"
+        }
     }
 
-    Button {
-        id: b_poly
-        text: qsTr("Polygon")
-        enabled: false
-        highlighted: false
-    }
+    RowLayout {
+        id: rowLayout1
+        width: 100
+        height: 100
 
-    Button {
-        id: b_polysec
-        text: qsTr("Security")
-        enabled: false
-        highlighted: false
+        Button {
+            id: buttonEdit
+            text: qsTr("edit")
+        }
+
+        Button {
+            id: buttonSave
+            text: qsTr("save")
+        }
+
+        Button {
+            id: buttonDiscard
+            text: qsTr("abort")
+        }
+
+        TextField {
+            id: idxField
+            text: qsTr("0")
+            placeholderText: "Offset"
+        }
     }
     states: [
         State {
@@ -63,6 +122,7 @@ RowLayout {
                 target: b_poly
                 enabled: true
             }
+
             PropertyChanges {
                 target: b_polysec
                 enabled: true

@@ -24,7 +24,7 @@ MapPolyline {
     property var offset: 10
 
     property var intersections_canvas: []
-    property var centroid_cartesian
+    property var centroid
     property var intersections_cartesian: []
     property var intersections_geographic: []
 
@@ -81,28 +81,27 @@ MapPolyline {
                 var snap_idx = Math.floor((theta + snap_interval/2) / snap_interval)
                 var snap_theta = snap_idx*snap_interval
                 var m = Math.tan(snap_theta)
-                p1 = Helper.project(p0,m,p1)
-
+                var lam = Helper.lat_to_m_coeff(coordinateAt(0).latitude)
+                var lom = Helper.lon_to_m_coeff(coordinateAt(0).longitude)
+                p1 = Helper.project(p0,m,p1, lam/lom)
             }
             replaceCoordinate(1, map.toCoordinate(p1))
         } else if (rect_phase === 2){
             var cp0 = coordinateAt(0);
             var cp1 = coordinateAt(1);
             var cpc = map.toCoordinate(Qt.point(mouse.x, mouse.y), false)
-
-
             var coords = [cp0, cp1, cpc]
             var centroid = Helper.coords_centroid(coords)
             var lam = Helper.lat_to_m_coeff(centroid.latitude)
             var lom = Helper.lon_to_m_coeff(centroid.longitude)
-            var points = Helper.map_to_euclidean(coords, centroid, lam, lom)
+            var points = Helper.points_map2euclidean(coords, centroid, lam, lom)
 
-            var m = Helper.slope(points[1], points[0])
-            var m_perp = -1/m
-            var p2 = Helper.project(points[1], m_perp, points[2])
-            var p3 = Helper.project(points[0], m_perp, points[2])
-            var cp2 = Helper.point_euclidean_to_map(p2.x, p2.y, centroid, lam, lom)
-            var cp3 = Helper.point_euclidean_to_map(p3.x, p3.y, centroid, lam, lom)
+            var m = Helper.slope(points[0], points[1])
+            var m_perp = -Math.pow(lam/lom,2)/m //perpendicularity constraint for aspect ratios different than 1:1
+            var p2 = Helper.intersect_two_lines(points[1], m_perp, points[2], m)
+            var p3 = Helper.intersect_two_lines(points[0], m_perp, points[2], m)
+            var cp2 = Helper.point_euclidean2map(p2.x, p2.y, centroid, lam, lom)
+            var cp3 = Helper.point_euclidean2map(p3.x, p3.y, centroid, lam, lom)
 
             if (cp2 !== null && cp2.isValid && cp3 !== null && cp3.isValid){
                 replaceCoordinate(2, cp2)
@@ -118,7 +117,7 @@ MapPolyline {
         // transform shape coordinates and work in a virtual euclidean metric system
         var shape_coords = path.slice(0, pathLength()-1)
 
-        var centroid = Helper.coords_centroid(shape_coords)
+        centroid = Helper.coords_centroid(shape_coords)
         var limits = Helper.shape_geo_limits(shape_coords)
 
         var dim = Helper.shape_px_dimensions(limits, map)
@@ -126,7 +125,7 @@ MapPolyline {
         var lam = Helper.lat_to_m_coeff(centroid.latitude)
         var lom = Helper.lon_to_m_coeff(centroid.longitude)
 
-        var points = Helper.map_to_euclidean(shape_coords, centroid, lam, lom)
+        var points = Helper.points_map2euclidean(shape_coords, centroid, lam, lom)
         points = Helper.set_points_clockwise(points)
 
         var r2 = Helper.find_interesting_features(points)
@@ -136,10 +135,10 @@ MapPolyline {
         var sides = r2.sides
 
         intersections_cartesian = Helper.find_intersections(angle, pt, pl, upper_side, sides, offset)
-        intersections_cartesian = Helper.rectify_dense_winding(intersections_cartesian)
-
+        intersections_cartesian = Helper.rectify_dense_winding(intersections_cartesian, lam/lom)
+        console.log(lam/lom)
         // transform virtual euclidean reference points in map coordinates
-        intersections_geographic = Helper.euclidean_to_map(intersections_cartesian, centroid, lam, lom)
+        intersections_geographic = Helper.point_couples_euclidean2map(intersections_cartesian, centroid, lam, lom)
 
         var a = map.toCoordinate(Qt.point(0,0))
         var b = map.toCoordinate(Qt.point(0,1))
@@ -152,11 +151,11 @@ MapPolyline {
 
         Helper.init_canvas(_canvas, map,
                            dim[0]+2*o_x, dim[1]+2*o_y,
-                           limits.max_lat + offset/lam, limits.min_lon - offset/lom,
+                           limits.max_lat + 2*offset/lam, limits.min_lon -2*offset/lom,
                            Helper.relative_zoom_pixel_ratio(map, map.maximumZoomLevel))
 
         // transform map coordinates in canvas pixel indexes
-        intersections_canvas = Helper.map_to_canvas(intersections_geographic, map, _canvas)
+        intersections_canvas = Helper.point_couples_map2canvas(intersections_geographic, map, _canvas)
         map.tilt = orig_tilt
     }
 
@@ -190,11 +189,16 @@ MapPolyline {
             nurb_l.push(Helper.generate_nurb_circle(p0, p3, dir))
         }
 
-        var result = [nurb_l[0]]
+        var curves = [nurb_l[0]]
         for (var i=0; i<intersections_cartesian.length-1; i++){
-            result.push(nurb_l[i])
-            result.push(nurb_l[i+1])
+            curves.push(nurb_l[i])
+            curves.push(nurb_l[i+1])
         }
+        var result = {
+            centroid: [centroid.latitude, centroid.longitude],
+            curves: curves
+        }
+        console.log(JSON.stringify(result))
         return result
     }
 }
