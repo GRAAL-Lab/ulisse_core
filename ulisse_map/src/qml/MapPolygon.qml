@@ -98,6 +98,8 @@ MapPolyline {
     }
 
     function disable_handle(){
+        _handle.cumulativeAngle=0
+        _handle.update_canvas(0)
         _handle.opacity = 0
     }
 
@@ -216,8 +218,14 @@ MapPolyline {
     property var marked: -1
     property bool translating: false
     property bool rotating: false
-    onTranslatingChanged: function(){reposition_markers(); return (translating||rotating) ? disable_markers() : enable_markers()}
-    onRotatingChanged: function(){reposition_markers(); return (translating||rotating) ? disable_markers() : enable_markers()}
+    onTranslatingChanged: function(){
+        reposition_markers()
+        return (translating||rotating) ? disable_markers() : enable_markers()
+    }
+    onRotatingChanged: function(){
+        reposition_markers();
+        return (translating||rotating) ? disable_markers() : enable_markers()
+    }
     function pos_changed_mod_handler(mouse){
         var p = Qt.point(mouse.x, mouse.y)
         var pf = map.toCoordinate(p)
@@ -303,6 +311,7 @@ MapPolyline {
                 replaceCoordinate(i, cn)
             }
             _handle.update_canvas(angle)
+            console.log(angle + "|" + Helper.deg_to_rad(angle))
             _handle.h_handle = pf
         }
     }
