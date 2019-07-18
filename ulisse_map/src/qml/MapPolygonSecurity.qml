@@ -82,18 +82,20 @@ MapPolyline {
     function create_JSON(){
         var j
         var l
-        var security_poly = {}
-        security_poly.name = 'SecurityPoly'
-        security_poly.values = []
+
+        var security_path = {}
+        security_path.name = 'SecurityPoly'
+        security_path.values = []
         for(j = 0; j < polysec_cur.pathLength(); j++){
             var p_i = polysec_cur.coordinateAt(j)
-            l = []
-            l.push("latitude:"+p_i.latitude)
-            l.push("longitude:"+p_i.longitude)
-            security_poly.values.push(l)
+            l = {}
+            l.latitude = p_i.latitude
+            l.longitude = p_i.longitude
+            security_path.values.push(l)
 
         }
-        //console.log(JSON.stringify(security_poly));
+
+        console.log(JSON.stringify(security_path))
     }
 
 
