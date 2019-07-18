@@ -25,7 +25,6 @@ MapPolyline {
     property MapCanvas _canvas
     property MapMarker _marker
     property MapHandle _handle
-    property var editCircle
     property var vertex_markers: []
     property var add_markers: []
 
