@@ -305,6 +305,8 @@ Pane {
             id: loadSavePath
             Button {
                 id: savePath
+                width: 255
+                height: 40
                 Layout.fillWidth: true
                 text: "Save Path"
                 enabled: (mapView.pathCurrentState === pathState.empty)

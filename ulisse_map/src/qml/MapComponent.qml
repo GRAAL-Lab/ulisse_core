@@ -190,7 +190,7 @@ MapComponentForm {
         var lon
         var p
 
-        //clearAll()
+        clearAll()
 
 
         for(i = 0; i < data.paths.length; i++){
@@ -198,6 +198,7 @@ MapComponentForm {
             case "RectPath":
 
                 map.removeMapItem(rect_list)
+
 
                 if (currentState === generalState.empty){
                     currentState = generalState.rect
