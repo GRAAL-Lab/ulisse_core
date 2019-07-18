@@ -61,6 +61,29 @@ MapPolyline {
         _handle.add_to_map(map)
     }
 
+    function deregister_map_items(){
+        map.removeMapItem(_canvas)
+        map.removeMapItem(_marker)
+        map.removeMapItem(_dashed_line)
+        map.removeMapItem(_handle)
+        _handle.deregister_map_items(map)
+    }
+
+    function _draw(){
+        generate_path()
+        draw_path()
+        generate_nurbs()
+        generate_markers()
+        disable_markers()
+    }
+
+    function draw_deferred(){
+        if (_canvas.canvasCtx !== null && _canvas.canvasCtx !== undefined)
+            _draw()
+        else
+            _canvas.canvasCtxChanged.connect(_draw)
+    }
+
     function get_path(){
         return path.slice(0,path.length-1)
     }
@@ -367,7 +390,6 @@ MapPolyline {
             var r4 = nearest_than(p, r3.distance, (r3.nearest === -1) ? -1 : r3.nearest, hph, 2*_path.length+1)
             change_marked(r4.nearest)
         } else if (moving_idx>=0 && moving_idx<_path.length){
-            var color
             if (map_polygon_point_mod_admissibility(p, moving_idx)){
                 color = "#81c784"
             } else {
@@ -609,5 +631,31 @@ MapPolyline {
         }
         //console.log(JSON.stringify(result))
         return result
+    }
+
+    function serialize(){
+        var values = []
+        for (j = 0; j < path.length; j++){
+            var p_i = path[j]
+            values.push({
+                latitude: p_i.latitude,
+                longitude: p_i.longitude
+            })
+        }
+        return {
+            name: 'PolyPath',
+            offset: poly_list[i].offset,
+            angle: poly_list[i].angle,
+            values: values
+        }
+
+    }
+
+    function deserialize(values){
+        for(j = 0; j < values.length; j++){
+            lat = values[j].latitude
+            lon = values[j].longitude
+            poly_cur.addCoordinate(QtPositioning.coordinate(lat,lon))
+        }
     }
 }
