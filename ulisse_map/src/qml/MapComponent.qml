@@ -472,6 +472,8 @@ MapComponentForm {
 
     onZoomLevelChanged: {
         ruler.rulerTimer.restart()
+        for (var i = 0; i< poly_list.length; i++)
+            poly_list[i].update_scale()
     }
 
     onWidthChanged: {
