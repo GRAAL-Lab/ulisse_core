@@ -176,50 +176,6 @@ function rectify_dense_winding(ii, ratio){
     return ii
 }
 
-/*
-function rectify_wide_winding(ii, jump, ratio){
-    var upper_leap = jump
-    var lower_leap = jump-1
-    for (var i=0, a=0, b=1; i<ii.length-upper_leap; i++){
-        var p0 = ii[i][0]
-        var p1 = ii[i][1]
-        var p2 = ii[i+upper_leap][1]
-        var p3 = ii[i+upper_leap][0]
-        var rr = rectify_parallelogram_side(p0, p1, p2, p3, ratio)
-        ii[i][1] = rr[1]
-        ii[i+upper_leap][1] = rr[2]
-
-        p0 = ii[i+1][1]
-        p1 = ii[i+1][0]
-        p2 = ii[i+1+lower_leap][0]
-        p3 = ii[i+1+lower_leap][1]
-        rr = rectify_parallelogram_side(p0, p1, p2, p3, ratio)
-        ii[i+1][0] = rr[1]
-        ii[i+1+lower_leap][0] = rr[2]
-    }
-    return ii
-}
-*/
-
-/*
-function draw_manouvre_double_winding(canvas, pp, jump){
-    var upper_leap = jump
-    var lower_leap = jump-1
-    for (var i=0, a=0, b=1; i<pp.length-upper_leap; i++){
-        var p0 = pp[i][0]
-        var p1 = pp[i][1]
-        var p2 = pp[i+upper_leap][1]
-        var p3 = pp[i+upper_leap][0]
-        draw_semicircle(canvas.canvasCtx, p0, p1, p2, p3)
-        p0 = pp[i][1]
-        p1 = pp[i][0]
-        p2 = pp[i+lower_leap][0]
-        p3 = pp[i+lower_leap][1]
-        draw_semicircle(canvas.canvasCtx, p0, p1, p2, p3)
-    }
-}
-*/
-
 function set_points_clockwise(points){
     if (three_point_direction(points[0],points[1],points[2]) === 1)
         points.reverse()

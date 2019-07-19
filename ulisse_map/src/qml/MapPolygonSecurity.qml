@@ -45,7 +45,6 @@ MapPolyline {
         map.addMapItem(_canvas)
     }
 
-
     function clear_path(){
         while(path.length > 0)
             removeCoordinate(0)
