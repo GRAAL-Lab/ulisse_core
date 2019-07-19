@@ -27,8 +27,8 @@ MapPolyline {
     property var vertex_markers: []
     property var add_markers: []
 
-    property real angle: 30
-    property real offset: 10
+    property real _angle: 30
+    property real _offset: 10
     property real jump: 2
     property string method: "single_winding" //"simple"
 
@@ -182,6 +182,7 @@ MapPolyline {
 
     property var moving_idx: -1
     property var marked: -1
+
     function pos_changed_mod_handler(mouse){
         var p = Qt.point(mouse.x, mouse.y)
         var pf = map.toCoordinate(p)
@@ -343,7 +344,7 @@ MapPolyline {
         points = Helper.set_points_clockwise(points)
         var sides = Helper.make_sides(points)
 
-        intersections_cartesian = Helper.convex_polygon_parallel_slices_intersections(angle, offset, sides, lam/lom)
+        intersections_cartesian = Helper.convex_polygon_parallel_slices_intersections(_angle, _offset, sides, lam/lom)
 
         if (method === "simple" || method === "single_winding")
             intersections_cartesian = Helper.rectify_dense_winding(intersections_cartesian, lam/lom)
@@ -357,16 +358,16 @@ MapPolyline {
         var p2m_h = a.distanceTo(b)
         var p2m_v = a.distanceTo(c)
 
-        offset *= 3
-        var o_x = offset/p2m_h
-        var o_y = offset/p2m_v
+        _offset *= 3
+        var o_x = _offset/p2m_h
+        var o_y = _offset/p2m_v
 
         Helper.init_canvas(_canvas, map,
                            dim[0]+2*o_x, dim[1]+2*o_y,
-                           limits.max_lat + offset/lam, limits.min_lon - offset/lom,
+                           limits.max_lat + _offset/lam, limits.min_lon - _offset/lom,
                            Helper.relative_zoom_pixel_ratio(map, map.maximumZoomLevel))
 
-        offset /= 3
+        _offset /= 3
 
         // transform map coordinates in canvas pixel indexes
         intersections_canvas = Helper.segments_map2canvas(intersections_geographic, map, _canvas)
@@ -381,6 +382,7 @@ MapPolyline {
     property var backup_path
     property var backup_vertex_markers
     property var backup_add_markers
+
     function begin_edit(){
         _canvas.canvasCtx.clearRect(0, 0, _canvas.canvasWidth, _canvas.canvasHeight)
         _canvas.requestPaint()
@@ -388,7 +390,6 @@ MapPolyline {
         backup_path=path
         backup_vertex_markers = vertex_markers
         backup_add_markers = add_markers
-
     }
 
     function discard_edit(){
@@ -403,8 +404,8 @@ MapPolyline {
     }
 
     function confirm_edit(angle, offset){
-        angle=angle
-        offset=offset
+        _angle=angle
+        _offset=offset
         disable_markers()
         generate_path()
         draw_path()
@@ -459,4 +460,5 @@ MapPolyline {
         console.log(JSON.stringify(result))
         return result
     }
+
 }

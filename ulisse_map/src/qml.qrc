@@ -16,7 +16,6 @@
         <file>qml/CustomHeader.qml</file>
         <file>images/menu.png</file>
         <file>images/catamaran_icon_64_sat.png</file>
-        <file>qml/CommandPane.qml</file>
         <file>qml/ModalPopup.qml</file>
         <file>images/scale_end.png</file>
         <file>images/scale.png</file>
@@ -48,5 +47,8 @@
         <file>qml/MapPolygonSecurity.qml</file>
         <file>qml/MapMarker.qml</file>
         <file>qml/MapDashedLine.qml</file>
+        <file>qml/ElementTrack.qml</file>
+        <file>qml/ElementTrackForm.ui.qml</file>
+        <file>qml/CommandPane.qml</file>
     </qresource>
 </RCC>

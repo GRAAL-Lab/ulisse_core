@@ -16,27 +16,25 @@ PathRectPolyForm {
     b_rect.onClicked: {
         var offset = parseInt(offsetField.text)
         var angle = parseInt(angleField.text)
-        map.createRect(offset, angle)
+        map.createRect(offset, angle) //, idxField.currentText)
     }
     b_poly.onClicked: {
         var offset = parseInt(offsetField.text)
         var angle = parseInt(angleField.text)
-        map.createPoly(offset, angle)
+        console.log(idxField.currentText)
+        map.createPoly(offset, angle, idxField.currentText)
     }
     b_polysec.onClicked: {
-        var offset = parseInt(offsetField.text)
-        var angle = parseInt(angleField.text)
-        map.createPolySec(offset, angle)
+        map.createPolySec()
     }
 
-    buttonEdit.onClicked: {
-        map.modify(parseInt(idxField.text))
-    }
-    buttonSave.onClicked: {
-        map.save_mod(parseInt(idxField.text))
-    }
-    buttonDiscard.onClicked: {
-        map.abort_mod(parseInt(idxField.text))
-    }
+//    buttonEdit.onClicked: {
+//        map.modify(parseInt(idxField.text))
+//    }
+    idxField.enabled: map.security_defined? true : false
+    rowLayout.enabled: map.security_defined? true : false
+    buttonSave.onClicked:map.save_mod(map.actualtrack, angleField.text, offsetField.text )
+
+    buttonDiscard.onClicked : map.abort_mod(map.actualtrack)
 }
 

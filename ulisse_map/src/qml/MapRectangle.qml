@@ -20,8 +20,8 @@ MapPolyline {
     property Component mapCanvasComponent
     property MapCanvas _canvas
 
-    property var angle: 30
-    property var offset: 10
+    property var _angle: 30
+    property var _offset: 10
 
     property var intersections_canvas: []
     property var centroid
@@ -129,7 +129,7 @@ MapPolyline {
         points = Helper.set_points_clockwise(points)
         var sides = Helper.make_sides(points)
 
-        intersections_cartesian = Helper.convex_polygon_parallel_slices_intersections(angle, offset, sides, lam/lom)
+        intersections_cartesian = Helper.convex_polygon_parallel_slices_intersections(_angle, _offset, sides, lam/lom)
         intersections_cartesian = Helper.rectify_dense_winding(intersections_cartesian, lam/lom)
 
 
@@ -142,16 +142,16 @@ MapPolyline {
         var p2m_h = a.distanceTo(b)
         var p2m_v = a.distanceTo(c)
 
-        offset *= 3
-        var o_x = offset/p2m_h
-        var o_y = offset/p2m_v
+        _offset *= 3
+        var o_x = _offset/p2m_h
+        var o_y = _offset/p2m_v
 
         Helper.init_canvas(_canvas, map,
                            dim[0]+2*o_x, dim[1]+2*o_y,
-                           limits.max_lat + offset/lam, limits.min_lon - offset/lom,
+                           limits.max_lat + _offset/lam, limits.min_lon - _offset/lom,
                            Helper.relative_zoom_pixel_ratio(map, map.maximumZoomLevel))
 
-        offset /= 3
+        _offset /= 3
 
         // transform map coordinates in canvas pixel indexes
         intersections_canvas = Helper.segments_map2canvas(intersections_geographic, map, _canvas)

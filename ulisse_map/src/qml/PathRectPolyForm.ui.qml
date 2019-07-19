@@ -14,7 +14,8 @@ ColumnLayout {
     property alias b_polysec: b_polysec
     property alias offsetField: offsetField
     property alias angleField: angleField
-    property alias buttonEdit: buttonEdit
+    property alias rowLayout: rowLayout
+    //property alias buttonEdit: buttonEdit
     property alias buttonSave: buttonSave
     property alias buttonDiscard: buttonDiscard
     property alias idxField: idxField
@@ -24,7 +25,8 @@ ColumnLayout {
                 1: "path",
                 2: "rect",
                 3: "poly",
-                4: "polysec"
+                4: "polysec",
+                5: "editmode"
     }[mapView.currentState]
 
     RowLayout {
@@ -67,17 +69,20 @@ ColumnLayout {
         id: rowLayout
         width: 100
         height: 100
+        enabled: true
 
         TextField {
             id: offsetField
             text: qsTr("30")
             placeholderText: "Offset"
+            enabled: map.security_defined ? true : false
         }
 
         TextField {
             id: angleField
             text: qsTr("30")
             placeholderText: "Angle"
+            enabled: map.security_defined ? true : false
         }
     }
 
@@ -86,27 +91,30 @@ ColumnLayout {
         width: 100
         height: 100
 
-        Button {
-            id: buttonEdit
-            text: qsTr("edit")
-        }
+        //        Button {
 
+        //            id: buttonEdit
+        //            text: qsTr("edit")
+        //        }
         Button {
             id: buttonSave
+            enabled: false
             text: qsTr("save")
         }
 
         Button {
             id: buttonDiscard
+            enabled: false
             text: qsTr("abort")
         }
-
-        TextField {
+        //da qui puoi scegliere in che modo riempire i poligoni/rettangoli
+        ComboBox {
             id: idxField
-            text: qsTr("0")
-            placeholderText: "Offset"
+            model: ["single_winding", "2curves", "helix"]
+            enabled: false
         }
     }
+
     states: [
         State {
             name: "empty"
@@ -122,7 +130,6 @@ ColumnLayout {
                 target: b_poly
                 enabled: true
             }
-
             PropertyChanges {
                 target: b_polysec
                 enabled: true
@@ -134,6 +141,14 @@ ColumnLayout {
                 target: b_path
                 enabled: true
                 highlighted: true
+            }
+            PropertyChanges {
+                target: rowLayout
+                enabled: false
+            }
+            PropertyChanges {
+                target: idxField
+                enabled: false
             }
         },
         State {
@@ -158,6 +173,28 @@ ColumnLayout {
                 target: b_polysec
                 enabled: true
                 highlighted: true
+            }
+            PropertyChanges {
+                target: rowLayout
+                enabled: false
+            }
+            PropertyChanges {
+                target: idxField
+                enabled: false
+            }        },
+        State {
+            name: "editmode"
+            PropertyChanges {
+                target: buttonSave
+                enabled: true
+            }
+            PropertyChanges {
+                target: buttonDiscard
+                enabled: true
+            }
+            PropertyChanges {
+                target: idxField
+                enabled: true
             }
         }
     ]
