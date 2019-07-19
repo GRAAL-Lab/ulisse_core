@@ -15,6 +15,8 @@ MapComponentForm {
 
     id: map_component
 
+    property var actualtrack
+
     property var click_handler : function(){}
     property var pos_changed_handler : function(){}
 
@@ -51,6 +53,7 @@ MapComponentForm {
         polyComponent = Qt.createComponent("MapPolygon.qml")
         polysecComponent = Qt.createComponent("MapPolygonSecurity.qml")
         pathComponent = Qt.createComponent("MapPath.qml")
+        trackComponent = Qt.createComponent("ElementTrack.qml")
         polysec_cur = polysecComponent.createObject(map_component)
         map.addMapItem(polysec_cur)
         poly_obj = polyComponent.createObject(map_component)

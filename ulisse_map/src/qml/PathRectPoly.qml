@@ -32,8 +32,8 @@ PathRectPolyForm {
 //    buttonEdit.onClicked: {
 //        map.modify(parseInt(idxField.text))
 //    }
-    idxField.enabled: map.security_defined? true : false
-    rowLayout.enabled: map.security_defined? true : false
+    idxField.enabled: map.polysec_cur.closed? true : false
+    rowLayout.enabled: map.polysec_cur.closed? true : false
     buttonSave.onClicked:map.save_mod(map.actualtrack, angleField.text, offsetField.text )
 
     buttonDiscard.onClicked : map.abort_mod(map.actualtrack)

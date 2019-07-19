@@ -550,6 +550,7 @@ MapPolyline {
     property var backup_vertex_markers
     property var backup_add_markers
     property var backup_centroid
+
     function begin_edit(){
         backup_path=path
         moving_idx = -1

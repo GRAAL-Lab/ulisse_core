@@ -75,14 +75,14 @@ ColumnLayout {
             id: offsetField
             text: qsTr("30")
             placeholderText: "Offset"
-            enabled: map.security_defined ? true : false
+            enabled: map.polysec_cur.closed ? true : false
         }
 
         TextField {
             id: angleField
             text: qsTr("30")
             placeholderText: "Angle"
-            enabled: map.security_defined ? true : false
+            enabled: map.polysec_cur.closed ? true : false
         }
     }
 
