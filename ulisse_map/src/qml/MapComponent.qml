@@ -57,10 +57,6 @@ MapComponentForm {
     }
 
     function createRect(offset, angle) {
-        if(!polysec_cur.closed){
-            toast.show("Define Security Area First!")
-            return
-        }
          if (currentState === generalState.empty){
              currentState = generalState.rect
              if (poly_cur)
@@ -111,10 +107,6 @@ MapComponentForm {
     }
 
     function createPoly(offset, angle, method) {
-        if(!polysec_cur.closed){
-            toast.show("Define Security Area First!")
-            return
-        }
         if (currentState === generalState.empty){
             currentState = generalState.poly
             poly_cur = polyComponent.createObject(map_component, {method: method, offset:offset, angle:angle, debug_c: overlay_canvas, editCircle: editCircle})
@@ -140,11 +132,6 @@ MapComponentForm {
     }
 
     function createPath() {
-        if(!polysec_cur.closed){
-            toast.show("Define Security Area First!")
-            return
-        }
-
         if (currentState === generalState.empty){
             currentState = generalState.path
             if (path_cur)
@@ -276,7 +263,6 @@ MapComponentForm {
                 break
 
             case "PointPath":
-
                 map.removeMapItem(path_list)
 
                 if (currentState === generalState.empty){
