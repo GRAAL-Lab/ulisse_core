@@ -320,7 +320,7 @@ SLURM_SRUN_COMMAND:FILEPATH=SLURM_SRUN_COMMAND-NOTFOUND
 SVNCOMMAND:FILEPATH=/usr/bin/svn
 
 //Path to a library.
-_lib:FILEPATH=/opt/ros/crystal/lib/libexample_interfaces__rosidl_typesupport_opensplice_cpp.so
+_lib:FILEPATH=/home/marco/group_project/ros2_ws/install/surface_vehicle_model/lib/libsurface_vehicle_model_lib.a
 
 //The directory containing a CMake configuration file for action_msgs.
 action_msgs_DIR:PATH=/opt/ros/crystal/share/action_msgs/cmake
@@ -470,7 +470,7 @@ ulisse_ctrl_lib_LIB_DEPENDS:STATIC=general;jsoncpp;general;openNURBS;general;/op
 ulisse_driver_DIR:PATH=/home/marco/group_project/ros2_ws/install/ulisse_driver/share/ulisse_driver/cmake
 
 //The directory containing a CMake configuration file for ulisse_msgs.
-ulisse_msgs_DIR:PATH=/home/marco/group_project/ros2_ws/install/ulisse_msgs/share/ulisse_msgs/cmake
+ulisse_msgs_DIR:PATH=ulisse_msgs_DIR-NOTFOUND
 
 //The directory containing a CMake configuration file for unique_identifier_msgs.
 unique_identifier_msgs_DIR:PATH=/opt/ros/crystal/share/unique_identifier_msgs/cmake

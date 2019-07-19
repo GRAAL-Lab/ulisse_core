@@ -49,8 +49,6 @@
 #include <memory.h>
 #include <ulisse_ctrl/tasks/MakeCurve.h>
 
-
-#include "example_interfaces/srv/add_two_ints.hpp"
 #include "ulisse_msgs/srv/set_boundaries.hpp"
 
 namespace ulisse {

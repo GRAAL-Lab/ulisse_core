@@ -24,11 +24,6 @@ find_package(ikcl REQUIRED)
 find_package(example_interfaces REQUIRED)
 find_package(Boost REQUIRED)
 
-#find_package(GLM REQUIRED)
-#include_directories(${GLM_INCLUDE_DIRS})
-#link_directories(${GLM_LIBRARY_DIRS})
-#add_definitions(${GLM_DEFINITIONS})
-
 link_directories(${Boost_LIBRARIES})
 
 find_package(PkgConfig REQUIRED)
@@ -39,7 +34,6 @@ link_libraries(${JSONCPP_LIBRARIES} openNURBS ${OPENNURBS_LINKLIBRARIES})
 file(GLOB_RECURSE SOURCE_FILES
     "msg/*.msg"
     "*.xml"
-#include <ulisse_ctrl/tasks/SafetyBoundaries2.h>
     "launch/*.py"
     "conf/*.yaml"
 )
@@ -90,7 +84,7 @@ set(ulisse_ctrl_lib_sources
 
 ## Libraries
 add_library(ulisse_ctrl_lib ${ulisse_ctrl_lib_sources})
-ament_target_dependencies(ulisse_ctrl_lib rclcpp std_msgs ulisse_msgs surface_vehicle_model example_interfaces "example_interfaces")
+ament_target_dependencies(ulisse_ctrl_lib rclcpp std_msgs ulisse_msgs surface_vehicle_model)
 target_link_libraries(ulisse_ctrl_lib ${surface_vehicle_model_LIBRARIES} ${ulisse_msgs_LIBRARIES} Geographic rml fsm ctrl_toolbox)
 
 ## Executables
@@ -99,7 +93,7 @@ ament_target_dependencies(control_test rclcpp std_msgs ulisse_msgs rml)
 target_link_libraries(control_test rml ulisse_ctrl_lib ${ulisse_driver_LIBRARIES})
 
 add_executable(kinematic_control_node src/kinematic_control_node.cpp)
-ament_target_dependencies(kinematic_control_node rclcpp std_msgs ulisse_msgs rml example_interfaces "example_interfaces")
+ament_target_dependencies(kinematic_control_node rclcpp std_msgs ulisse_msgs rml)
 target_link_libraries(kinematic_control_node rml ulisse_ctrl_lib ${JSONCPP_LIBRARIES})
 
 add_executable(dynamic_control_node src/dynamic_control_node.cpp)

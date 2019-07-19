@@ -6,10 +6,22 @@
 -- Found rmw_implementation_cmake: 0.6.1 (/opt/ros/crystal/share/rmw_implementation_cmake/cmake)
 -- Found std_msgs: 0.6.1 (/opt/ros/crystal/share/std_msgs/cmake)
 -- Found surface_vehicle_model: 0.0.1 (/home/marco/group_project/ros2_ws/install/surface_vehicle_model/share/surface_vehicle_model/cmake)
--- Found ulisse_msgs: 0.0.1 (/home/marco/group_project/ros2_ws/install/ulisse_msgs/share/ulisse_msgs/cmake)
--- Found ulisse_driver: 0.0.1 (/home/marco/group_project/ros2_ws/install/ulisse_driver/share/ulisse_driver/cmake)
--- Found example_interfaces: 0.6.2 (/opt/ros/crystal/share/example_interfaces/cmake)
--- Boost version: 1.65.1
--- Configuring done
--- Generating done
--- Build files have been written to: /home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug
+CMake Error at CMakeLists.txt:17 (find_package):
+  By not providing "Findulisse_msgs.cmake" in CMAKE_MODULE_PATH this project
+  has asked CMake to find a package configuration file provided by
+  "ulisse_msgs", but CMake did not find one.
+
+  Could not find a package configuration file provided by "ulisse_msgs" with
+  any of the following names:
+
+    ulisse_msgsConfig.cmake
+    ulisse_msgs-config.cmake
+
+  Add the installation prefix of "ulisse_msgs" to CMAKE_PREFIX_PATH or set
+  "ulisse_msgs_DIR" to a directory containing one of the above files.  If
+  "ulisse_msgs" provides a separate development package or SDK, be sure it
+  has been installed.
+
+
+-- Configuring incomplete, errors occurred!
+See also "/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles/CMakeOutput.log".

@@ -21,8 +21,6 @@
 #include <ulisse_ctrl/configuration.h>
 #include <ulisse_ctrl/tasks/SafetyBoundaries.h>
 
-
-#include "example_interfaces/srv/add_two_ints.hpp"
 #include "ulisse_msgs/srv/set_boundaries.hpp"
 
 #include <jsoncpp/json/json.h>
