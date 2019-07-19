@@ -32,6 +32,7 @@ MapPolyline {
 
     property var px_multiplier
 
+    property var closed: false
     property var detection_intersect: 0
 
     signal end_security
@@ -43,30 +44,35 @@ MapPolyline {
         map.addMapItem(_canvas)
     }
 
-
+    function clear_path(){
+        while(path.length > 0)
+            removeCoordinate(0)
+        closed = false
+    }
     function map_check_intersections(pf){
         if (pathLength() < 3)
             return 0
 
         var pf_minus1 = map.fromCoordinate(coordinateAt(pathLength()-2))
-        var mf = (pf_minus1.y - pf.y)/(pf_minus1.x - pf.x)
+        var mf = Helper.slope(pf_minus1,pf)
 
         var p_0 = map.fromCoordinate(coordinateAt(0))
-        var m_0_f = (p_0.y - pf.y)/(p_0.x - pf.x)
+        var m_0_f = Helper.slope(p_0,pf)
 
         detection_intersect = 0
 
         for(var i = 0; i < pathLength()-2; i++){
-            var pi = map.fromCoordinate(coordinateAt(i))
-            var pi_plus1 = map.fromCoordinate(coordinateAt(i+1))
-            var mi = (pi_plus1.y - pi.y)/(pi_plus1.x - pi.x)
+            var pi = map.fromCoordinate(path[i])
+            var pi_plus1 = map.fromCoordinate(path[i+1])
+            var mi = Helper.slope(pi_plus1, pi)
 
 
             //Check intersection between last line and the other segments
             var intersection_point = Helper.intersect_two_lines(pi, mi, pf, mf)
-            if(intersection_point !== pf_minus1 && intersection_point[2] !== 0 &&
-               Helper.point_in_box(intersection_point,pf, pf_minus1) && Helper.point_in_box(intersection_point,pi, pi_plus1)){
-
+            if(intersection_point !== pf_minus1 &&
+                intersection_point[2] !== 0 &&
+                Helper.point_in_box(intersection_point,pf, pf_minus1) &&
+                Helper.point_in_box(intersection_point,pi, pi_plus1)){
                 //toast.show("INTERSECTION at segment"+(i+1))
                 detection_intersect = 1
                 return detection_intersect
@@ -80,36 +86,30 @@ MapPolyline {
 
 
     function create_JSON(){
-        var j
-        var l
-        var security_poly = {}
-        security_poly.name = 'SecurityPoly'
-        security_poly.values = []
-        for(j = 0; j < polysec_cur.pathLength(); j++){
+        var security_path = {}
+        security_path.name = 'SecurityPoly'
+        security_path.values = []
+        for(var j = 0; j < polysec_cur.pathLength(); j++){
             var p_i = polysec_cur.coordinateAt(j)
-            l = []
-            l.push("latitude:"+p_i.latitude)
-            l.push("longitude:"+p_i.longitude)
-            security_poly.values.push(l)
-
+            security_path.values.push({
+            latitude: p_i.latitude,
+            longitude: p_i.longitude
+            })
         }
-        //console.log(JSON.stringify(security_poly));
+
+        console.log(JSON.stringify(security_path))
     }
 
-
-    function distance(p1,p2){
-        return Math.sqrt(Math.pow(p1.x-p2.x,2) + Math.pow(p1.y-p2.y,2))
-    }
 
     function pos_changed_handler(mouse){
         if (polygonal_phase === 0) return;
         var p = Qt.point(mouse.x, mouse.y)
-        var pf = map.toCoordinate(Qt.point(mouse.x, mouse.y))
+        var pf = map.toCoordinate(p)
         var last_idx = pathLength()-1
         var color = "#4ac7c0"
 
         //Check if the last point is near to the first one
-        if((distance(map.fromCoordinate(coordinateAt(0)), p) < 15) || map_check_intersections(p)){
+        if((Helper.distance(map.fromCoordinate(coordinateAt(0)), p) < 15) || map_check_intersections(p)){
             pf = coordinateAt(0)
             color = "#ffb300"
         }
@@ -135,13 +135,10 @@ MapPolyline {
                 addCoordinate(p)
             } else if (polygonal_phase === 2){
                 var p1 = map.fromCoordinate(coordinateAt(0))
-                //var p2 = map.fromCoordinate(coordinateAt(1))
-                var p3 = m
-                //poligonal_direction = Helper.three_point_direction(p1,p2,p3)
                 polygonal_phase = 2
                 addCoordinate(p)
 
-                if(distance(p1, p3) < 15 || detection_intersect){
+                if(Helper.distance(p1, m) < 15 || detection_intersect){
                     removeCoordinate(pathLength()-1)
                     line.color = "#161fc4"
                     mapMouseArea.hoverEnabled = false
@@ -160,9 +157,9 @@ MapPolyline {
             mapMouseArea.hoverEnabled = false
             line.color = "#161fc4"
             polygonal_phase = 0
-            end()
-
+            closed = true
             create_JSON()
+            end()
         }
     }
 }
