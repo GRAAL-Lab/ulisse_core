@@ -181,9 +181,7 @@ namespace states {
         start = false;
         oriented = false;
         count = 0;
-        std::cout << "SEI UN COGLIONE" << std::endl;
 
-        /*
         curve = nurbs_[0];
         double point_at[4];
         // Compute the point of the first curve at 0.0.
@@ -207,7 +205,6 @@ namespace states {
         starting_angle = atan2(point_at[1] - starting_point.longitude, point_at[0] - starting_point.latitude);
 
         return fsm::ok;
-         */
     }
 
     fsm::retval StateNavigate::Execute()
