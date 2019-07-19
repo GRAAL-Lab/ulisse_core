@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
 
     std::vector<std::string> curves;
 
-    curves.push_back("{ \"degree\": 1, \"points\": [[44.393, 8.945], [44.3935, 8.9462]], \"weigths\": [1, 1], \"knots\": [0, 1] }");
+    curves.push_back("{ \"degree\": 1, \"points\": [[44.393, 8.945], [44.3935, 8.9462]], \"weigths\": [1, 1], \"knots\": [0, 0, 1, 1], \"reverse\": 0}");
     //curves.push_back("{ \"degree\": 3, \"points\": [[0, 2], [1, 3], [4, 7], [3, 6]], \"weigths\": [1, 1/3.0, 1/3.0, 1], \"knots\": [0, 0, 0, 0, 1, 1, 1, 1] }");
     //curves.push_back("{ \"degree\": 1, \"points\": [[0, 10], [5, 5]], \"weigths\": [1, 1], \"knots\": [0, 0, 1, 1] }");
 
@@ -75,25 +75,8 @@ int main(int argc, char* argv[])
 
     while (rclcpp::ok()) {
 
-        if (command_srv_->service_is_ready())
-            break;
     }
 
-    if (command_srv_->service_is_ready()) {
-        auto result_future = command_srv_->async_send_request(serviceReq);
-        std::cout << "Sent Request to controller" << std::endl;
-        if (rclcpp::spin_until_future_complete(nh, result_future) != rclcpp::executor::FutureReturnCode::SUCCESS) {
-            result_msg = "service call failed :(";
-            RCLCPP_ERROR(nh->get_logger(), result_msg.c_str());
-        } else {
-            auto result = result_future.get();
-            result_msg = "Service returned: " + result->res;
-            RCLCPP_INFO(nh->get_logger(), result_msg.c_str());
-        }
-    } else {
-        result_msg = "No Command Server Available";
-        std::cout << "No Command Server Available" << std::endl;
-    }
     rclcpp::shutdown();
 
     return 0;

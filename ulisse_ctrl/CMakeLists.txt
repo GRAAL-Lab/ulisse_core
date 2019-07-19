@@ -21,14 +21,13 @@ find_package(fsm REQUIRED)
 find_package(ctrl_toolbox REQUIRED)
 find_package(tpik REQUIRED)
 find_package(ikcl REQUIRED)
-find_package(example_interfaces REQUIRED)
 find_package(Boost REQUIRED)
 
 link_directories(${Boost_LIBRARIES})
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(JSONCPP jsoncpp)
-link_libraries(${JSONCPP_LIBRARIES} openNURBS ${OPENNURBS_LINKLIBRARIES})
+link_libraries(${JSONCPP_LIBRARIES} sisl openNURBS ${OPENNURBS_LINKLIBRARIES})
 
 # Add files in the tree of "Projects" view in QtCreator
 file(GLOB_RECURSE SOURCE_FILES
@@ -122,7 +121,7 @@ target_link_libraries(bongio rml ulisse_ctrl_lib ${Boost_LIBRARIES} )
 
 add_executable(nurbs src/nurbs.cpp)
 ament_target_dependencies(nurbs rclcpp std_msgs ulisse_msgs rml)
-target_link_libraries(nurbs rml ulisse_ctrl_lib openNURBS ${OPENNURBS_LINKLIBRARIES})
+target_link_libraries(nurbs rml ulisse_ctrl_lib sisl openNURBS ${OPENNURBS_LINKLIBRARIES})
 #target_link_libraries(nurbs rml ulisse_ctrl_lib)
 
 target_link_libraries(${PROJECT_NAME}_lib ${catkin_LIBRARIES} ${Boost_LIBRARIES} ikcl tpik rml config++)

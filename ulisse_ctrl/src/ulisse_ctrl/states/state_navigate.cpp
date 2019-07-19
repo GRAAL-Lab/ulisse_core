@@ -4,9 +4,13 @@
 
 #include <jsoncpp/json/json.h>
 
-#include <openNURBS/opennurbs.h>
-
 #include <math.h>
+
+#include "sisl.h"
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <stdexcept>
 
 namespace ulisse {
 
@@ -18,10 +22,10 @@ namespace states {
         number_of_curves_ = 0;
         centroid_lat_ = 0.0;
         centroid_long_ = 0.0;
+        max_range_abscissa = 0.5;
 
         //TODO: Aumenta quando passiamo a metri
         delta_ = 0.0001;
-        delta_abscissa = 0.0001;
         isCurveSet = false;
     }
 
@@ -63,6 +67,7 @@ namespace states {
     void StateNavigate::LoadSpur(float latitude, float longitude, int num_curves, std::vector<std::string> curves){
 
         nurbs_.clear();
+        isCurveSet = true;
 
         centroid_lat_ = latitude;
         centroid_long_ = longitude;
@@ -72,17 +77,20 @@ namespace states {
         Json::Value obj;
 
         int dimension = 3;
-        ON_BOOL32 bIsRational = true;
         int degree;
         int cv_count;
-        int knot_count;
+        int knot_count = 0;
 
         double x, y;
-
         int count = 0;
+
+        double *knots;
+        double* control_points;
+        double* weights;
 
         for(std::string c : curves) {
 
+            std::cout << "STARTINGGGGGGGGGGGG" << std::endl;
             reader.parse(c, obj);
 
             degree = obj["degree"].asInt();
@@ -94,21 +102,13 @@ namespace states {
             }
             std::cout << "CV_COUNT: " << cv_count << std::endl;
 
-            knot_count = cv_count + degree - 1;
-            ON_SimpleArray<ON_3dPoint> control_points(cv_count);
-            ON_SimpleArray<double> weights(cv_count);
-            ON_SimpleArray<double> knots(knot_count);
-
-            count = 0;
-            for (Json::ArrayIndex i = 0; i<obj["points"].size(); i++) {
-                x = obj["points"][i][0].asDouble();
-                y = obj["points"][i][1].asDouble();
-
-                control_points[count] = ON_3dPoint(x, y, 0.000);
-                std::cout << "POINT " << count << ": " << control_points[count].x << " , "  << control_points[count].y << std::endl;
-                count++;
+            knot_count = 0;
+            for (Json::ArrayIndex i = 0; i<obj["knots"].size(); i++) {
+                knot_count++;
             }
+            std::cout << "KNOT_COUNT: " << knot_count << std::endl;
 
+            weights = new double[cv_count];
             count = 0;
             for (Json::ArrayIndex i = 0; i<obj["weigths"].size(); i++) {
                 weights[count] = obj["weigths"][i].asDouble();
@@ -116,91 +116,64 @@ namespace states {
                 count++;
             }
 
+            control_points = new double[cv_count * 4];
+            std::cout << "CONTROL POINTS:  " << cv_count * 4 << std::endl;
             count = 0;
+            int weight_index = 0;
+            for (Json::ArrayIndex i = 0; i<obj["points"].size(); i++) {
+                x = obj["points"][i][0].asDouble();
+                y = obj["points"][i][1].asDouble();
+
+                control_points[count] = x * weights[weight_index];
+                control_points[count + 1] = y * weights[weight_index];
+                control_points[count + 2] = 0;
+                control_points[count + 3] = weights[weight_index];
+                std::cout << "POINT " << weight_index << "  : " << control_points[count] << " , "  << control_points[count + 1] << " , " << control_points[count + 2] << " , " << control_points[count + 3] << std::endl;
+                count+=4;
+                weight_index++;
+            }
+            std::cout << "COUNT A FINE:  " << count << std::endl;
+
+            count = 0;
+            knots = new double[knot_count];
             for (Json::ArrayIndex i = 0; i<obj["knots"].size(); i++) {
                 knots[count] = obj["knots"][i].asDouble();
                 std::cout << "KNOT " << count << ": " << knots[count] << std::endl;
                 count++;
             }
 
-            curve.Create(dimension, bIsRational, degree + 1, cv_count);
-            curve.ReserveCVCapacity( cv_count );
-            curve.ReserveKnotCapacity( degree+cv_count-1 );
-            curve.MakeRational();
+            curve = newCurve(           cv_count,                 // number of control points
+                                        degree + 1,               // order of spline curve (degree + 1)
+                                        knots,                    // pointer to knot vector (parametrization)
+                                        control_points,           // pointer to coefficient vector (control points)
+                                        2,                        // kind => 2 : NURBS curve
+                                        dimension,                // dimension
+                                        2);                       // no copying of information, 'borrow' array
 
-
-            for (int ci = 0; ci < curve.CVCount(); ci++)
-            {
-                curve.SetCV(ci, control_points[ci]);
-                curve.SetWeight(ci, weights[ci]);
+            if( obj["reverse"].asInt()){
+                // Turn the direction of a curve by reversing the ordering of the coefficients
+                s1706(curve);
             }
-
-            for (int ki = 0; ki < knot_count; ki++)
-                curve.m_knot[ki] = knots[ki];
-
-            curve.SetDomain(0.0, 1.0);
-
-            if (curve.IsValid()) {
-                curve.SetStartPoint(control_points[0]);
-                nurbs_.push_back(curve);
-                isCurveSet = true;
+            if (!curve) {
+                std::cout << "MA DIO" << std::endl;
             }
             else{
-                std::cout << "ERROR" << std::endl;
+                std::cout << "YEEEEEEEEEE" << std::endl;
             }
-        }
 
-        ON_SimpleArray<ON_3dPoint> control_points(4);
-        ON_SimpleArray<double> weights(4);
-        ON_SimpleArray<double> knots(6);
+            free(knots);
+            free(control_points);
+            free(weights);
 
-        control_points[0] = ON_3dPoint(44.3935, 8.9462, 0.000);
-        control_points[1] = ON_3dPoint(44.3935, 8.9468, 0.000);
-        control_points[2] = ON_3dPoint(44.3930, 8.9468, 0.000);
-        control_points[3] = ON_3dPoint(44.3930, 8.9462, 0.000);
-
-        weights[0] = 1.0;
-        weights[1] = 0.33;
-        weights[2] = 0.33;
-        weights[3] = 1.0;
-
-        knots[0] = 0.000;
-        knots[1] = 0.000;
-        knots[2] = 0.000;
-        knots[3] = 1.000;
-        knots[4] = 1.000;
-        knots[5] = 1.000;
-
-        curve.Create(3, bIsRational, 4, 4);
-        curve.ReserveCVCapacity( 4 );
-        curve.ReserveKnotCapacity( 6 );
-        curve.MakeRational();
-
-        for (int ci = 0; ci < 4; ci++)
-        {
-            curve.SetCV(ci, control_points[ci]);
-            curve.SetWeight(ci, weights[ci]);
-        }
-
-        for (int ki = 0; ki < 6; ki++)
-            curve.m_knot[ki] = knots[ki];
-
-
-        curve.SetDomain(0.0, 1.0);
-
-        if (curve.IsValid()) {
-            curve.SetStartPoint(control_points[0]);
             nurbs_.push_back(curve);
-            isCurveSet = true;
 
-            std::cout << "*************  ("  << nurbs_[1].PointAt(0.0).x << " , " <<  nurbs_[1].PointAt(0.0).y << "  ) " << std::endl;
-            number_of_curves_++;
+            std::cout << "FINITO CURVA " << std::endl;
         }
+        std::cout << "FINITO TUTTO " << std::endl;
 
     }
 
-    fsm::retval StateNavigate::OnEntry()
-    {
+    fsm::retval StateNavigate::OnEntry(){
         actionManager_->SetAction(ulisse::action::navigate, true);
         curvilinear_abscissa = 0.0;
         current_curvilinear_abscissa = 0.0;
@@ -208,21 +181,33 @@ namespace states {
         start = false;
         oriented = false;
         count = 0;
+        std::cout << "SEI UN COGLIONE" << std::endl;
 
-        ON_3dPoint pt = nurbs_[0].PointAt(0.0);
+        /*
+        curve = nurbs_[0];
+        double point_at[4];
+        // Compute the point of the first curve at 0.0.
+        s1227(curve, 0, 0.0, &leftknot, point_at, &stat);
+        std::cout << "STARTING POINT : ( " << point_at[0] << " , " << point_at[1] << " ) " << std::endl;
 
-        starting_point.latitude = pt.x;
-        starting_point.longitude = pt.y;
+        starting_point.latitude = point_at[0];
+        starting_point.longitude = point_at[1];
 
-        pt = nurbs_[number_of_curves_ - 1].PointAt(1.0);
+        curve = nurbs_[number_of_curves_ - 1];
+        // Compute the point of the last curve at 1.0.
+        s1227(curve, 0, 1.0, &leftknot, point_at, &stat);
+        std::cout << "ENDING POINT : ( " << point_at[0] << " , " << point_at[1] << " ) " << std::endl;
 
-        end_point.latitude = pt.x;
-        end_point.longitude = pt.y;
+        end_point.latitude = point_at[0];
+        end_point.longitude = point_at[1];
 
-        pt = nurbs_[0].PointAt(0.01);
-        starting_angle = atan2(pt.y - starting_point.longitude, pt.x - starting_point.latitude);
+        curve = nurbs_[0];
+        // Compute the point of the first curve at 0.1.
+        s1227(curve, 0, 0.1, &leftknot, point_at, &stat);
+        starting_angle = atan2(point_at[1] - starting_point.longitude, point_at[0] - starting_point.latitude);
 
         return fsm::ok;
+         */
     }
 
     fsm::retval StateNavigate::Execute()
@@ -280,15 +265,7 @@ namespace states {
 
                 std::cout << "*** DISTANCE TO GOAL: " << goalCxt_->goalDistance << std::endl;
 
-                next_curvilinear_abscissa = getCurvilinearAbscissa();
-                if( (next_curvilinear_abscissa - curvilinear_abscissa) < delta_abscissa){
-                    curvilinear_abscissa = curvilinear_abscissa + delta_abscissa;
-                }
-                else{
-                    curvilinear_abscissa = next_curvilinear_abscissa;
-                }
-
-                curvilinear_abscissa = next_curvilinear_abscissa + delta_;
+                curvilinear_abscissa = getCurvilinearAbscissa() + delta_;
 
                 if (goalCxt_->goalDistance < 2 || curvilinear_abscissa >= number_of_curves_) {
                     std::cout << "*** MISSION FINISHED! ***" << std::endl;
@@ -297,16 +274,6 @@ namespace states {
                     fsm_->ExecuteCommand(ulisse::commands::ID::hold);
                 }
                 else {
-                    /*
-                    current_curve = floor(curvilinear_abscissa);
-                    curve = nurbs_[current_curve];
-                    current_curvilinear_abscissa = modf(curvilinear_abscissa , NULL);
-
-                    ON_3dPoint pt = curve.PointAt(current_curvilinear_abscissa);
-
-                    ON_3dVector tgt = curve.TangentAt(current_curvilinear_abscissa);
-                    lookAheadPoint = to_lat_long(pt.x + tgt.x * delta_, pt.y + tgt.y * delta_);
-                    */
 
                     current_curve = floor(curvilinear_abscissa);
                     curve = nurbs_[current_curve];
@@ -316,8 +283,10 @@ namespace states {
                         current_curvilinear_abscissa -= current_curve;
                     }
 
-                    ON_3dPoint pt = curve.PointAt(current_curvilinear_abscissa);
-                    lookAheadPoint = to_lat_long(pt.x, pt.y);
+                    double point_at[4];
+                    // Compute the point of the first curve at current_curvilinear_abscissa.
+                    s1227(curve, 0, current_curvilinear_abscissa, &leftknot, point_at, &stat);
+                    lookAheadPoint = to_lat_long(point_at[0], point_at[1]);
 
                     std::cout << "*** POINTING TO LAT: " << lookAheadPoint.latitude << " , LONG: "
                               << lookAheadPoint.longitude << "   ;" << std::endl;
@@ -330,6 +299,10 @@ namespace states {
                     distanceTask_->SetDistance(Eigen::Vector3d(goalCxt_->goalDistance, 0, 0));
                 }
             }
+        }
+        else{
+
+            std::cout << "PERCHE STRACAZZO SEI QUI????" << std::endl;
         }
 
         /*
@@ -357,29 +330,40 @@ namespace states {
     }
 
     double StateNavigate::getCurvilinearAbscissa() {
-        ON_3dPoint pt = ON_3dPoint(statusCxt_->vehiclePos.latitude, statusCxt_->vehiclePos.longitude, 0);
-        double min_abs = curvilinear_abscissa + 0.5/10000;
-        double min_dist = 1000;
+        double min_abscissa = curvilinear_abscissa;
+        double max_abscissa = curvilinear_abscissa + max_range_abscissa;
+        if(max_abscissa > number_of_curves_)
+            max_abscissa = number_of_curves_;
 
-        double cur_abs = curvilinear_abscissa;
-        double index;
-        for (int i = 0; i < 10000; i++){
-            cur_abs += 0.5/10000;
+        curve = nurbs_[current_curve];
 
-            if(cur_abs > number_of_curves_)
-                break;
+        current_point[0] = statusCxt_->vehiclePos.latitude;
+        current_point[1] = statusCxt_->vehiclePos.longitude;
+        current_point[2] = 0;
 
-            index = cur_abs;
-            if(index > 1){
-                index -= floor(cur_abs);
-            }
-            ON_3dPoint cur_pt = nurbs_[floor(cur_abs)].PointAt(index);
-            if(cur_pt.DistanceTo(pt) < min_dist){
-                min_dist = cur_pt.DistanceTo(pt);
-                min_abs = cur_abs;
-            }
+        if(floor(max_abscissa) == floor(min_abscissa))
+        {
+            // To select the window part of curv, from min_abscissa to max_abscissa
+            s1713(curve, frexp(min_abscissa, &n), frexp(max_abscissa, &n), &newcurve, &stat);
+
+            // Find the closest point between a curve and a point
+            s1957(newcurve, current_point, 3, aepsco, aepsge, &gpar, &dist, &stat);
+
         }
-        return min_abs;
+        else{
+            // To select the last part of curv, from min_abscissa to 1.0
+            s1713(curve, frexp(min_abscissa, &n), 1.0, &newcurve, &stat);
+            curve2 = nurbs_[current_curve + 1];
+            // To select the first part of curv2, from 0.0 to max_abscissa
+            s1713(curve2, 0.0, frexp(max_abscissa, &n), &newcurve2, &stat);
+
+            // To join newcurve and newcurve2 into result_curve
+            s1716(newcurve, newcurve2, -1, &result_curve, &stat);
+
+            // Find the closest point between a curve and a point
+            s1957(result_curve, current_point, 3, aepsco, aepsge, &gpar, &dist, &stat);
+        }
+        return gpar;
     }
 
     ctb::LatLong StateNavigate::to_lat_long(double x, double y)  {

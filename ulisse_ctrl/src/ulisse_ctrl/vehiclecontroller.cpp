@@ -33,7 +33,7 @@ namespace ulisse {
 VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double sampleTime)
     : nh_(nh)
     , sampleTime_(sampleTime)
-    , boundaries_set(false) //TODO: cambialo a false
+    , boundaries_set(true) //TODO: cambialo a false
     {
         par_client_ = std::make_shared<rclcpp::SyncParametersClient>(nh_);
         ctrlCxt_ = std::make_shared<ControlContext>();
@@ -492,18 +492,21 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 
                 state_navigate_.LoadSpur(request->nav_cmd.centroid_latitude, request->nav_cmd.centroid_longitude, request->nav_cmd.number_of_curves,
                                            request->nav_cmd.curves);
+                std::cout << "FINISH LOADSPUR" << std::endl;
 
             } else {
                 RCLCPP_INFO(nh_->get_logger(), "Unsupported command: %s", request->command_type.c_str());
                 ret = fsm::retval::fail;
             }
 
+            std::cout << "QUI" << std::endl;
             if (ret != fsm::retval::ok) {
                 response->res = "CommandAnswer::fail";
                 RCLCPP_INFO(nh_->get_logger(), "SendAnswer returned %s", response->res.c_str());
             } else {
                 u_fsm_.ExecuteCommand(request->command_type);
                 response->res = "CommandAnswer::ok";
+                std::cout << "QUI2  :  " << request->command_type << std::endl;
             }
         };
 

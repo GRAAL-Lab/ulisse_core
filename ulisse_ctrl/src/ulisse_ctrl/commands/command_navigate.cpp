@@ -14,7 +14,6 @@ namespace commands {
 
     fsm::retval CommandNavigate::Execute()
     {
-
         return fsm_->SetNextState(ulisse::states::ID::navigate);
     }
 }

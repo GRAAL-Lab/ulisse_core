@@ -5,7 +5,11 @@
 #include "ulisse_ctrl/states/genericstate.hpp"
 #include <memory>
 
-#include <openNURBS/opennurbs.h>
+#include "sisl.h"
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <stdexcept>
 
 namespace ulisse {
 
@@ -29,9 +33,7 @@ namespace states {
         double curvilinear_abscissa;
 
         double current_curvilinear_abscissa;
-        double next_curvilinear_abscissa;
         double delta_;
-        double delta_abscissa;
         int current_curve;
 
         bool isCurveSet;
@@ -44,9 +46,23 @@ namespace states {
         ctb::LatLong end_point;
         double starting_angle;
 
-        std::vector<ON_NurbsCurve> nurbs_;
+        std::vector<SISLCurve*> nurbs_;
 
-        ON_NurbsCurve curve;
+        SISLCurve* curve;
+        int stat;
+        int leftknot;
+        double aepsco = 0.01;
+        double aepsge = 0.01;
+        double gpar = 0;
+        double dist = 0;
+        double current_point[3];
+        int n;
+        double max_range_abscissa;
+        SISLCurve* newcurve;
+        SISLCurve* curve2;
+        SISLCurve* newcurve2;
+        SISLCurve* result_curve;
+
         ctb::LatLong lookAheadPoint;
 
         double getCurvilinearAbscissa();
@@ -55,7 +71,7 @@ namespace states {
     public:
         StateNavigate();
         virtual ~StateNavigate();
-        virtual fsm::retval OnEntry();
+        fsm::retval OnEntry() override;
         virtual fsm::retval Execute();
         virtual fsm::retval OnExit();
 
