@@ -19,9 +19,6 @@ namespace states {
         std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask_;
 
         double surgeRef;
-
-        double desired_jog, desired_speed;
-        double headingRef;
         double headingError;
 
     public:

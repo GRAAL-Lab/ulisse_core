@@ -61,21 +61,17 @@ namespace states {
             fsm_->ExecuteCommand(ulisse::commands::ID::halt);
         }
 
-        headingRef = goalCxt_->goalHeading;
-
         if (conf_->enableSlowDownOnTurns) {
-            headingError = ctb::HeadingErrorRad(statusCxt_->vehicleHeading, headingRef);
+            headingError = ctb::HeadingErrorRad(statusCxt_->vehicleHeading, goalCxt_->goalHeading);
             goalCxt_->goalSurge = SlowDownWhenTurning(headingError, surgeRef, *conf_);
         }
 
-        desired_speed = goalCxt_->goalSurge;   //ctrlCxt_->pidSurge.Compute(, surgeFbk);
-
         angularPositionTask_->SetAngle(Eigen::Vector3d(0, 0, goalCxt_->goalHeading));
-        linearVelocityTask_->SetVelocity(Eigen::Vector3d(desired_speed, 0, 0));
+        linearVelocityTask_->SetVelocity(Eigen::Vector3d(goalCxt_->goalSurge, 0, 0));
 
         std::cout << "STATE SPEED HEADING " << std::endl;
         std::cout << "Goal Heading: " << goalCxt_->goalHeading << std::endl;
-        std::cout << "Goal Surge: " << desired_speed << std::endl;
+        std::cout << "Goal Surge: " << goalCxt_->goalSurge << std::endl;
 
         return fsm::ok;
     }

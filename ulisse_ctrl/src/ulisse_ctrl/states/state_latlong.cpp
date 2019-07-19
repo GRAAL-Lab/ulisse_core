@@ -31,17 +31,8 @@ namespace states {
 
     void StateLatLong::SetPointGoTo(double latitude, double longitude, double accept_radius)
     {
-        goalXYZ_ = Eigen::Vector3d(latitude, longitude, 0);
-
-        goal_lat = latitude;
-        goal_long = longitude;
-        goal_accept_radius = accept_radius;
-
-        counterLoop_ = 0;
-
         std::cout << "ACTION MANAGER" << std::endl;
         actionManager_->SetAction(ulisse::action::goTo, true);
-        toBeoriented_ = true;
     }
 
     fsm::retval StateLatLong::OnEntry()

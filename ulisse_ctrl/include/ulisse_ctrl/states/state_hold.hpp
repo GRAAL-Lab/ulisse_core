@@ -11,19 +11,8 @@ namespace states {
 
     class StateHold : public GenericState {
 
-        bool goalReached_;
-
     protected:
         std::shared_ptr<ikcl::Hold> holdTask_;
-
-        double desired_speed, desired_jog;
-        double surgeRef;
-        double currentDirection;
-        double desiredHeading;
-        double currentNorm;
-        double hrefA;
-        double goalDistance;
-        double headingError;
 
     public:
         StateHold();

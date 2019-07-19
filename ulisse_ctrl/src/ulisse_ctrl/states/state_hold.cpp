@@ -25,9 +25,6 @@ namespace states {
         Eigen::TransfMatrix wTasv = robotModel_->GetTransformation(ulisse::robotModelID::ASV);
         // attitudeTask_->SetwTg(wTauv, rml::FrameID::WorldFrame);
 
-        surgeRef = 0.0;
-        goalReached_ = true;
-
         if(!holdTask_->IsGoalSet()){
             ctb::LatLong target_;
             target_.latitude = statusCxt_->vehiclePos.latitude;
@@ -54,10 +51,7 @@ namespace states {
         CheckRadioController();
 
         std::cout << "STATE HOLD" << std::endl;
-        goalReached_ ? (std::cout << "Holding") : (std::cout << "Returning in Position");
-        std::cout << std::endl;
-        if (!goalReached_)
-            std::cout << "Goal Distance: " << goalCxt_->goalDistance << std::endl;
+        std::cout << "Goal Distance: " << goalCxt_->goalDistance << std::endl;
         std::cout << "Acceptance radius: " << goalCxt_->currentGoal.acceptRadius << std::endl;
         std::cout << "Hysteresis: " << conf_->holdData.hysteresis << std::endl;
 

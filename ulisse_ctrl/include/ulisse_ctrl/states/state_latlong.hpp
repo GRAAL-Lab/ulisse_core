@@ -19,21 +19,6 @@ namespace states {
 
         std::shared_ptr<ulisse::states::StateHold> state_hold_;
 
-        Eigen::VectorXd goalXYZ_;
-
-        double goal_lat;
-        double goal_long;
-        double goal_accept_radius;
-
-        bool toBeoriented_;
-        double directionThreshold_;
-        double linearThreshold_;
-        double xmin_, xmax_;
-        int counterLoop_;
-        int counterThreshold_;
-        Eigen::Vector3d k_worldFrame_;
-        Eigen::Vector3d axisAsvFrame_;
-
         double desired_speed, desired_jog;
         double goalDistance;
         double headingError;
