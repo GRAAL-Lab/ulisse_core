@@ -112,10 +112,6 @@ MapComponentForm {
 
     function createPolySec() {
         //TODO -> use a menu for editing the polygon
-        if(polysec_cur.closed){
-            map.removeMapItem(polysec_cur)
-            polysec_cur.closed = false
-        }
          if (currentState === generalState.empty){
              currentState = generalState.polysec
              polysec_cur.clear_path()

@@ -28,4 +28,8 @@ MapQuickItem{
             }
         ]
     }
+    function clear_canvas(){
+        canvasCtx.clearRect(0, 0, canvasWidth, canvasHeight)
+        _c.requestPaint()
+    }
 }

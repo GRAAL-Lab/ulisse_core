@@ -6,6 +6,7 @@ import "../scripts/helper.js" as Helper
 
 
 MapPolyline {
+    id: root
     line.width: 3
     line.color: "#81c784"
     opacity: 1.0
@@ -551,22 +552,26 @@ MapPolyline {
     property var backup_path
     property var backup_vertex_markers
     property var backup_add_markers
+    property var backup_centroid
     function begin_edit(){
-        _canvas.canvasCtx.clearRect(0, 0, _canvas.canvasWidth, _canvas.canvasHeight)
-        _canvas.requestPaint()
-        enable_markers()
-        enable_handle()
-        backup_path=path
+        moving_idx = -1
+        backup_path = path
+        backup_centroid = centroid
         backup_vertex_markers = vertex_markers
         backup_add_markers = add_markers
-
+        _canvas.clear_canvas()
+        enable_markers()
+        enable_handle()
     }
 
     function discard_edit(){
         moving_idx = -1
+        translating = false
+        rotating = false
         path=backup_path
         vertex_markers = backup_vertex_markers
         add_markers = backup_add_markers
+        centroid = backup_centroid
         disable_markers()
         disable_handle()
         generate_path()
@@ -575,8 +580,9 @@ MapPolyline {
     }
 
     function confirm_edit(angle, offset){
-        angle=angle
-        offset=offset
+        moving_idx = -1
+        root.angle=angle
+        root.offset=offset
         disable_markers()
         disable_handle()
         generate_path()
@@ -585,11 +591,8 @@ MapPolyline {
     }
 
     function draw_path(){
-        var lam = Helper.lat_to_m_coeff(centroid.latitude)
-        var lom = Helper.lon_to_m_coeff(centroid.longitude)
-
         // clear the canvas
-        _canvas.canvasCtx.clearRect(0, 0, _canvas.canvasWidth, _canvas.canvasHeight)
+        _canvas.clear_canvas()
 
         // draw parallel lines
         Helper.draw_path_lines(_canvas, intersections_canvas)
