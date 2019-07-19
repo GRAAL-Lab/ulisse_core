@@ -32,6 +32,8 @@ MapPolyline {
 
     property var px_multiplier
 
+    property var closed: false
+
     property var detection_intersect: 0
 
     signal end_security
@@ -43,6 +45,12 @@ MapPolyline {
         map.addMapItem(_canvas)
     }
 
+
+    function clear_path(){
+        for(var i=0; i<path.length; i++)
+            removeCoordinate(0)
+        closed = false
+    }
 
     function map_check_intersections(pf){
         if (pathLength() < 3)
@@ -163,7 +171,7 @@ MapPolyline {
             line.color = "#161fc4"
             polygonal_phase = 0
             end()
-
+            closed = true
             create_JSON()
         }
     }
