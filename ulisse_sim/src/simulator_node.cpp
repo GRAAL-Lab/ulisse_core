@@ -6,6 +6,7 @@
 #include "ulisse_sim/vehiclesimulator.hpp"
 
 #include <chrono>
+#include <pwd.h>
 #include <cmath>
 #include <ctime> // localtime
 #include <fstream>
@@ -48,7 +49,7 @@ int main(int argc, char* argv[])
     ThrusterMappingParameters myTMP;
     ReadMappingParameters(parameters_client, myTMP);
 
-    int rate = 100;
+    int rate = 10000;
     rclcpp::WallRate loop_rate(rate);
     double dt = 1.0 / rate;
     std::cout << "dt=" << dt << std::endl;
@@ -68,9 +69,49 @@ int main(int argc, char* argv[])
     auto in_time_t = std::chrono::system_clock::to_time_t(now);
     datess << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d_%H.%M.%S");
 
-    std::string logfilename = "/home/graal/logs/sim/sim_log_" + datess.str() + ".txt";
+    // Action Manager initialization
+    std::string homedir;
+    homedir = getenv("HOME");
+
+    std::string logdir = "/group_project/logs/simulator";
+    std::stringstream logfilename_stream;
+    logfilename_stream << homedir << logdir << "/sim_log_" << datess.str() << ".txt";
+
+    std::string logfilename = logfilename_stream.str().c_str();
     std::cout << "* Saving log to: \"" << logfilename << "\" *" << std::endl;
     std::this_thread::sleep_for(std::chrono::seconds(2));
+
+    mode_t mode = 0777;
+    struct stat st;
+    for( std::string::iterator iter = logdir.begin() ; iter != logdir.end(); )
+    {
+         std::string::iterator newIter = std::find( iter, logdir.end(), '/' );
+         std::string newPath = homedir + "/" + std::string( logdir.begin(), newIter);
+
+         if( stat( newPath.c_str(), &st) != 0)
+         {           
+             if( mkdir( newPath.c_str(), mode) != 0 && errno != EEXIST )
+             {
+                std::cout << "cannot create folder [" << newPath << "] : " << strerror(errno) << std::endl;
+                return -1;
+             }
+         }
+         else
+            if( !S_ISDIR(st.st_mode) )
+             {
+                 errno = ENOTDIR;
+                 std:: cout << "path [" << newPath << "] not a dir " << std::endl;
+                 return -1;
+             }
+             else
+                 std::cout << "path [" << newPath << "] already exists " << std::endl;
+
+
+         iter = newIter;
+         if( newIter != logdir.end() )
+             ++ iter;
+    }
+
     logfile.open(logfilename, std::ios_base::app);
     logss << "Lat Long, Yaw, Velocity (world)" << std::endl;
     logfile << logss.str();

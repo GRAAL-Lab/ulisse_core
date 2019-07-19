@@ -19,7 +19,7 @@ Short description of all the packages included in this meta package:
 - **rml**: http://bitbucket.org/isme_robotics/rml
 - **fsm**: http://bitbucket.org/isme_robotics/fsm
 - **ctrl_toolbox**: http://bitbucket.org/isme_robotics/ctrl_toolbox
-- **tpik**: https://bitbucket.org/isme_robotics/tpik
+- **tpiklib**: http://bitbucket.org/isme_robotics/tpiklib
 - **ikcl**: http://bitbucket.org/isme_robotics/ikcl
 - **libgeographic**: `sudo apt install libgeographic-*`
 - **libgps**: `sudo apt install libgps-dev`

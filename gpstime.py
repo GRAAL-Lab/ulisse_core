@@ -6,7 +6,7 @@ from gps import *
 print 'Attempting to access GPS time...'
 
 try:
-	gpsd = gps(mode = WATCH_ENABLE)
+	gpsd = gps(mode=WATCH_ENABLE|WATCH_NEWSTYLE) 
 except:
 	print 'No GPS connection present. TIME NOT SET!'
 	sys.exit()

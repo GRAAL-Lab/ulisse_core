@@ -9,7 +9,9 @@
 
 #include "rclcpp/rclcpp.hpp"
 
+#include "ctrl_toolbox/DigitalSlidingMode.h"
 #include "ulisse_msgs/msg/control_context.hpp"
+#include "ulisse_msgs/msg/control_data.hpp"
 #include "ulisse_msgs/msg/status_context.hpp"
 #include "ulisse_msgs/msg/thrusters_data.hpp"
 #include "ulisse_msgs/terminal_utils.hpp"
@@ -19,6 +21,7 @@
 #include "ulisse_ctrl/fsm_defines.hpp"
 #include "ulisse_ctrl/helper_functions.hpp"
 
+#include <iostream>
 #include "rml/RML.h"
 
 using namespace std::chrono_literals;
@@ -52,6 +55,9 @@ int main(int argc, char* argv[])
     auto thrusterdata_pub = nh->create_publisher<ulisse_msgs::msg::ThrustersData>(
         ulisse_msgs::topicnames::thrusters_data);
 
+    auto control_pub = nh->create_publisher<ulisse_msgs::msg::ControlData>(
+            "ControlData");
+
     rclcpp::SyncParametersClient::SharedPtr par_client;
     par_client = std::make_shared<rclcpp::SyncParametersClient>(nh);
     while (!par_client->wait_for_service(1ms)) {
@@ -67,10 +73,23 @@ int main(int argc, char* argv[])
     auto conf = std::make_shared<LowLevelConfiguration>();
     LoadLowLevelConfiguration(conf, par_client);
 
+    struct SlidingSurface sl;
+    parameter_setting(sl,conf,1,4);
+
+    ctb::DigitalSlidingMode<struct SlidingSurface> slideSurge=
+            ctb::DigitalSlidingMode<struct SlidingSurface>(alpha_beta_u,s1,sl);
+    ctb::DigitalSecOrdSlidingMode<struct SlidingSurface> slideHeading=
+            ctb::DigitalSecOrdSlidingMode<struct SlidingSurface>(alpha_beta_r,s2,sl);
+
     std::cout << tc::grayD << *conf << tc::none << std::endl;
 
-    pidSurge.Initialize(conf->mapping_pidgains_surge, sampleTime, conf->mapping_pidsat_surge);
-    pidSurge.SetSaturation(conf->mapping_pidsat_surge);
+    //pidSurge.Initialize(conf->mapping_pidgains_surge, sampleTime, conf->mapping_pidsat_surge);
+    //pidSurge.SetSaturation(conf->mapping_pidsat_surge);
+
+    slideSurge.Initialize(0.2,sampleTime, 2 , conf->dynamic_pidsat_surge);
+    slideHeading.Initialize(2,sampleTime, 2 , conf->dynamic_pidsat_yawrate);
+
+    ulisse_msgs::msg::ControlData control_msg;
 
     SurfaceVehicleModel ulisseModel;
     ulisseModel.SetMappingParams(conf->thrusterMap);
@@ -78,13 +97,45 @@ int main(int argc, char* argv[])
     ThrusterControlData thrusterData;
     ulisse_msgs::msg::ThrustersData thrust_msg;
 
+    double headingTrackDiff;
+    double surgeFbk;
+
+    double prev_heading = 0;
+    double jogFbk;
+    double desired_surge;
+
+    ulisseModel.set_external_ctrl(true);
     while (rclcpp::ok()) {
 
-        double headingTrackDiff = ctb::HeadingErrorRad(status_cxt.vehicle_heading, status_cxt.vehicle_track);
-        double surgeFbk = status_cxt.vehicle_speed * cos(headingTrackDiff);
+        headingTrackDiff = ctb::HeadingErrorRad(status_cxt.vehicle_heading, status_cxt.vehicle_track);
+        surgeFbk = status_cxt.vehicle_speed * cos(headingTrackDiff);
 
-        thrusterData.desiredSurge = pidSurge.Compute(ctrl_cxt_msg.desired_speed, surgeFbk);
+        jogFbk = (status_cxt.vehicle_heading - prev_heading) / sampleTime;
+        prev_heading = status_cxt.vehicle_heading;
+
+        if (ctrl_cxt_msg.desired_speed > conf->mapping_pidsat_surge)
+            desired_surge=conf->mapping_pidsat_surge;
+        else
+            desired_surge=ctrl_cxt_msg.desired_speed;
+
+        const std::vector<double> state = {surgeFbk,jogFbk};
+
+        slideSurge.setState(state);
+        slideHeading.setState(state);
+
+        ulisseModel.set_tau_x(slideSurge.compute(desired_surge, surgeFbk));
+        ulisseModel.set_tau_n(slideHeading.compute(ctrl_cxt_msg.desired_jog, jogFbk));
+
+        thrusterData.desiredSurge = desired_surge;
         thrusterData.desiredJog = ctrl_cxt_msg.desired_jog;
+
+        control_msg.surge_control = ulisseModel.get_tau_x();
+        control_msg.yawr_control = ulisseModel.get_tau_n();
+
+        control_msg.surge_error = ctrl_cxt_msg.desired_speed - surgeFbk;
+        control_msg.yawr_error = ctrl_cxt_msg.desired_jog - jogFbk;
+
+        control_pub->publish(control_msg);
 
         if (status_cxt.vehicle_state != ulisse::states::ID::halt) {
 

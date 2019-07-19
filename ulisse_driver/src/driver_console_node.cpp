@@ -91,27 +91,20 @@ int main(int argc, char* argv[])
             } while (repeat);
         } break;
         case 2: {
-            // read into local variables as the message contains uint8_t which are treated as chars by cin
-            int numberOfBeeps;
-            int loop;
             llcRequest->command_type = static_cast<uint16_t>(llc::CommandType::beep);
+            //uint8_t numberOfBeeps;
+            //uint8_t loop;
             std::cout << "number of beeps: ";
-            std::cin >> numberOfBeeps;
-            llcRequest->beep_data.numberofbeeps = static_cast<uint8_t>(numberOfBeeps);
+            std::cin >> llcRequest->beep_data.numberofbeeps;
             std::cout << "loop: ";
-            std::cin >> loop;
-            llcRequest->beep_data.loop = static_cast<uint8_t>(loop);
+            std::cin >> llcRequest->beep_data.loop;
             std::cout << "delay: ";
             std::cin >> llcRequest->beep_data.delay;
         } break;
         case 3: {
-            // read into local variables as the message contains uint8_t which are treated as chars by cin
-            int enable;
             llcRequest->command_type = static_cast<uint16_t>(llc::CommandType::enableref);
             std::cout << "enable: ";
-            std::cin >> enable;
-            llcRequest->enable_ref_data.enable = static_cast<uint8_t>(enable);
-           // std::cin >> llcRequest->enable_ref_data.enable;
+            std::cin >> llcRequest->enable_ref_data.enable;
         } break;
         case 4: {
             llcRequest->command_type = static_cast<uint16_t>(llc::CommandType::reloadconfig);

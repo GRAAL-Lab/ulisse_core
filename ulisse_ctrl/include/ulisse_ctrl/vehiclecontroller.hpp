@@ -5,6 +5,7 @@
 
 #include "std_msgs/msg/string.hpp"
 #include "ulisse_msgs/srv/control_command.hpp"
+#include "ulisse_msgs/srv/set_boundaries.hpp"
 
 #include "ulisse_msgs/msg/ambient_sensors.hpp"
 #include "ulisse_msgs/msg/compass.hpp"
@@ -24,19 +25,40 @@
 #include <ulisse_ctrl/commands/command_hold.hpp>
 #include <ulisse_ctrl/commands/command_latlong.hpp>
 #include <ulisse_ctrl/commands/command_speedheading.hpp>
+#include <ulisse_ctrl/commands/command_navigate.hpp>
 
 #include <ulisse_ctrl/states/state_halt.hpp>
 #include <ulisse_ctrl/states/state_hold.hpp>
 #include <ulisse_ctrl/states/state_latlong.hpp>
 #include <ulisse_ctrl/states/state_speedheading.hpp>
+#include <ulisse_ctrl/states/state_navigate.hpp>
 
 #include <ulisse_ctrl/events/event_rc_enabled.hpp>
+
+#include <ulisse_ctrl/tasks/AngularPosition.h>
+#include <ulisse_ctrl/tasks/ControlDistance.h>
+#include <ulisse_ctrl/tasks/SafetyBoundaries.h>
+
+#include <ulisse_ctrl/geometry_defines.h>
+#include <ulisse_ctrl/ulisse_definitions.h>
+// Libraries
+#include <fsm/fsm.h>
+#include <ikcl/ikcl.h>
+#include <rml/RML.h>
+#include <tpik/TPIKlib.h>
+#include <memory.h>
+#include <ulisse_ctrl/tasks/MakeCurve.h>
+
+
+#include "example_interfaces/srv/add_two_ints.hpp"
+#include "ulisse_msgs/srv/set_boundaries.hpp"
 
 namespace ulisse {
 class VehicleController {
     rclcpp::Node::SharedPtr nh_;
     rclcpp::SyncParametersClient::SharedPtr par_client_;
     rclcpp::Service<ulisse_msgs::srv::ControlCommand>::SharedPtr srv_;
+    rclcpp::Service<ulisse_msgs::srv::SetBoundaries>::SharedPtr srv_boundaries;
 
     rclcpp::Subscription<ulisse_msgs::msg::GPSData>::SharedPtr gps_sub_;
     //rclcpp::Subscription<ulisse_msgs::msg::Compass>::SharedPtr compass_sub_;
@@ -48,8 +70,63 @@ class VehicleController {
     rclcpp::Publisher<ulisse_msgs::msg::ControlContext>::SharedPtr ctrlcxt_pub_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr vehiclestate_pub_;
 
+    /// ROBOT MODEL
+    std::shared_ptr<rml::RobotModel> robot_model;
+    std::shared_ptr<Eigen::Vector6d> vehiclePose_;
+
+    /// Action Manager definition
+    std::shared_ptr<tpik::ActionManager> action_manager;
+
+    /// Tasks vector for configuration
+    std::vector<std::shared_ptr<tpik::Task> > task_hierarchy;
+    std::vector<std::shared_ptr<tpik::EqualityTask> > equality_task;
+    std::vector<std::shared_ptr<tpik::InequalityTask> > inequality_task;
+    std::vector<std::shared_ptr<tpik::CartesianTask> > cartesian_task;
+    std::vector<std::shared_ptr<tpik::ActionTask> > action_task;
+    std::unordered_map<std::string, std::shared_ptr<tpik::Task> > taskIDMap;
+
+    std::shared_ptr<tpik::iCAT> i_cat;
+    int dof;
+    std::shared_ptr<tpik::Solver> solver;
+
+    // Solution of TPIK
+    Eigen::VectorXd y_tpik;
+
+    ///TASKS
+    // ASV CONTROL VELOCITY LINEAR
+    std::shared_ptr<ikcl::LinearVelocity> asv_control_velocity_linear;
+
+    // ASV CONTROL VELOCITY ANGULAR
+    std::shared_ptr<ikcl::AngularVelocity> asv_control_velocity_angular;
+
+    // ASV HOLD POSITION
+    std::shared_ptr<ikcl::Hold> asv_hold_position;
+
+    // ASV LINEAR POSITION GO TO
+    std::shared_ptr<ikcl::ControlCartesianDistance> asv_linear_position_go_to;
+
+    // ASV DIRECTION OF ALIGNMENT
+    std::shared_ptr<ikcl::AlignToTarget> asv_direction_alignment;
+
+
+    // ASV ANGULAR POSITION
+    std::shared_ptr<ikcl::AngularPosition> asv_angular_position;
+
+    // ASV MAKE CURVE
+    std::shared_ptr<ikcl::MakeCurve> asv_make_curve;
+
+    // ASV CONTROL DISTANCE
+    std::shared_ptr<ikcl::ControlDistance> asv_control_distance;
+
+    // ASV SAFETY BOUNDARIES
+    std::shared_ptr<ikcl::SafetyBoundaries> asv_safety_boundaries;
+
     double timestamp_;
     double sampleTime_;
+
+    bool boundaries_set;
+
+    std::shared_ptr<Eigen::VectorXd> pose_;
 
     // FSM
     fsm::FSM u_fsm_;
@@ -58,11 +135,13 @@ class VehicleController {
     states::StateHold state_hold_;
     states::StateLatLong state_latlong_;
     states::StateSpeedHeading state_speedheading_;
+    states::StateNavigate state_navigate_;
 
     commands::CommandHalt command_halt_;
     commands::CommandHold command_hold_;
     commands::CommandLatLong command_latlong_;
     commands::CommandSpeedHeading command_speedheading_;
+    commands::CommandNavigate command_navigate_;
 
     events::EventRCEnabled event_rc_enabled_;
 
@@ -78,6 +157,7 @@ class VehicleController {
     void GPSSensorCB(const ulisse_msgs::msg::GPSData::SharedPtr msg);
     void NavFilterCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
     void LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg);
+
 
 public:
     VehicleController(const rclcpp::Node::SharedPtr& nh, double sampleTime);
