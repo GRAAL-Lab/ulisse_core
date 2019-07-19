@@ -32,5 +32,4 @@ MapQuickItem{
         canvasCtx.clearRect(0, 0, canvasWidth, canvasHeight)
         _c.requestPaint()
     }
-
 }

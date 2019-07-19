@@ -92,11 +92,10 @@ MapPolyline {
         for(var j = 0; j < polysec_cur.pathLength(); j++){
             var p_i = polysec_cur.coordinateAt(j)
             security_path.values.push({
-            latitude: p_i.latitude,
-            longitude: p_i.longitude
-            })
+                  latitude: p_i.latitude,
+                  longitude: p_i.longitude
+              })
         }
-
         console.log(JSON.stringify(security_path))
     }
 

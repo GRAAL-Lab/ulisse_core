@@ -25,6 +25,7 @@ PathRectPolyForm {
         map.createPoly(offset, angle, idxField.currentText)
     }
     b_polysec.onClicked: {
+        map.center = fbkUpdater.ulisse_pos
         map.createPolySec()
     }
 

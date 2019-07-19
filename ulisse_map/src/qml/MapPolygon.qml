@@ -581,8 +581,6 @@ MapPolyline {
         _angle=angle
         _offset=offset
         moving_idx = -1
-        root.angle=angle
-        root.offset=offset
         disable_markers()
         disable_handle()
         generate_path()

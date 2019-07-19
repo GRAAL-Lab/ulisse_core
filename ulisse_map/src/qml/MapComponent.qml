@@ -132,17 +132,15 @@ MapComponentForm {
    }
 
     function createPolySec() {
-            //TODO -> use a menu for editing the polygon
-             if (currentState === generalState.empty){
-                 currentState = generalState.polysec
-
-                 polysec_cur.clear_path()
-
-                 click_handler = polysec_cur.click_handler
-                 pos_changed_handler = polysec_cur.pos_changed_handler
-                 polysec_cur.end.connect(endPolySec)
-             }
-        }
+        //TODO -> use a menu for editing the polygon
+         if (currentState === generalState.empty){
+             currentState = generalState.polysec
+             polysec_cur.clear_path()
+             click_handler = polysec_cur.click_handler
+             pos_changed_handler = polysec_cur.pos_changed_handler
+             polysec_cur.end.connect(endPolySec)
+         }
+    }
 
     function createPath() {
         if(!polysec_cur.closed){
