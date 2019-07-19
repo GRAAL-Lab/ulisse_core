@@ -329,9 +329,11 @@ MapComponentForm {
         }
 
         for(i = 0; i < uniquelist.length; i++)
-            all_paths.paths.push(path_list[i].serialize())
+            all_paths.paths.push(uniquelist[i].serialize())
 
         //TODO add security box
+        all_paths.security_box = polysec_cur.create_JSON()
+
         console.log(JSON.stringify(all_paths))
         //TODO save file
     }
@@ -421,7 +423,7 @@ MapComponentForm {
             el_list[i].destroy() //FIXME
             console.log(el_list.length)
         el_list = []
-        loadPath()
+        //loadPath()
     }
 
     function clearAll(){

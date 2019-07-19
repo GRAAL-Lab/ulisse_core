@@ -12,8 +12,8 @@ RowLayout {
     property alias b_rect: b_rect
     property alias b_poly: b_poly
     property alias b_polysec: b_polysec
-    property alias cancelMenuShape: cancelMenuShape
-    property alias cancelMenuOffset: cancelMenuOffset
+    property alias cancel_menuShape: cancel_menuShape
+    property alias cancel_menuOffset: cancel_menuOffset
     property alias offsetField: offsetField
     property alias angleField: angleField
     //property alias buttonEdit: buttonEdit
@@ -72,7 +72,7 @@ RowLayout {
         }
 
         Button {
-            id: cancelMenuShape
+            id: cancel_menuShape
             Layout.preferredWidth: 17
             Layout.preferredHeight: 17
             anchors.right: parent.right
@@ -106,7 +106,7 @@ RowLayout {
         }
 
         Button {
-            id: cancelMenuOffset
+            id: cancel_menuOffset
             Layout.preferredWidth: 17
             Layout.preferredHeight: 17
             anchors.right: parent.right

@@ -713,7 +713,7 @@ MapPolyline {
 
     function serialize(){
         var values = []
-        for (j = 0; j < path.length; j++){
+        for (var j = 0; j < path.length; j++){
             var p_i = path[j]
             values.push({
                 latitude: p_i.latitude,
@@ -722,8 +722,8 @@ MapPolyline {
         }
         return {
             name: 'PolyPath',
-            offset: poly_list[i].offset,
-            angle: poly_list[i].angle,
+            offset: _offset,
+            angle: _angle,
             values: values
         }
 

@@ -97,6 +97,8 @@ MapPolyline {
               })
         }
         console.log(JSON.stringify(security_path))
+
+        return security_path
     }
 
 

@@ -37,14 +37,14 @@ PathRectPolyForm {
         map.createPolySec()
     }
 
-    cancelMenuShape.onClicked:{
+    cancel_menuShape.onClicked:{
         pathRectPoly.rowFigure.visible = false
         pathRectPoly.rowLayout.visible = false
         pathRectPoly.rowEditPlay.visible = false
     }
 
 
-    cancelMenuOffset.onClicked:{
+    cancel_menuOffset.onClicked:{
         pathRectPoly.rowFigure.visible = true
         pathRectPoly.rowLayout.visible = false
         pathRectPoly.rowEditPlay.visible = false
