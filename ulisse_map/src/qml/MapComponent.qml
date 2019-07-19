@@ -207,7 +207,7 @@ MapComponentForm {
         clearAll()
         for(i = 0; i < data.paths.length; i++){
             switch(data.paths[i].name){
-            /*
+/*
             case "RectPath":
                 map.removeMapItem(rect_list)
                 if (currentState === generalState.empty){
@@ -237,7 +237,7 @@ MapComponentForm {
                     endRect()
                 }
                 break;
-                */
+*/
             case "PolyPath":
                 if (currentState === generalState.empty){
                     currentState = generalState.poly
@@ -251,6 +251,7 @@ MapComponentForm {
                     map.addMapItem(poly_cur)
                     poly_cur.deserialize(data.paths[i].values)
                     poly_cur.draw_deferred()
+                    endPoly()
 
                 }
                 break

@@ -656,7 +656,8 @@ MapPolyline {
     }
 
     function deserialize(values){
-        for(j = 0; j < values.length; j++){
+        var lat, lon
+        for(var j = 0; j < values.length; j++){
             lat = values[j].latitude
             lon = values[j].longitude
             poly_cur.addCoordinate(QtPositioning.coordinate(lat,lon))

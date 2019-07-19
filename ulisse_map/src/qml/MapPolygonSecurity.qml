@@ -64,7 +64,7 @@ MapPolyline {
         for(var i = 0; i < pathLength()-2; i++){
             var pi = map.fromCoordinate(path[i])
             var pi_plus1 = map.fromCoordinate(path[i+1])
-            var mi = Helper.slope(pi_plus1, pi
+            var mi = Helper.slope(pi_plus1, pi)
 
 
             //Check intersection between last line and the other segments
