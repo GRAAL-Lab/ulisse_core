@@ -219,7 +219,7 @@ namespace states {
         end_point.latitude = pt.x;
         end_point.longitude = pt.y;
 
-        pt = nurbs_[0].PointAt(0.001);
+        pt = nurbs_[0].PointAt(0.01);
         starting_angle = atan2(pt.y - starting_point.longitude, pt.x - starting_point.latitude);
 
         return fsm::ok;
