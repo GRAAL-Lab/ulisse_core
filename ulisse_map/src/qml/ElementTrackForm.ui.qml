@@ -66,7 +66,7 @@ RowLayout {
             id: textField
             x: 0
             y: 0
-            width: 188
+            width: 1
             height: 40
             color: "#fcaf3e"
             text: qsTr("Text Field")

@@ -12,15 +12,17 @@ import "."
 
 import "../scripts/helper.js" as Helper
 ElementTrackForm{
+
     name.onDoubleClicked: {
 
 }
     menubutton.onClicked: menu.open()
 
     editItem.onTriggered: function()
-                    {   _comp.actualtrack = ntrack
-                        _comp.modify(ntrack)
-                    }
+    {
+        _comp.actualtrack = ntrack
+        _comp.modify(ntrack)
+    }
     deleteItem.onTriggered: _comp.deletenel(ntrack)
 
 }

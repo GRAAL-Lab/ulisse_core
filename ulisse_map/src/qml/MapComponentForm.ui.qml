@@ -45,13 +45,6 @@ Map {
     }
 
 
-    MapSlidersLeft {
-        id: slidersLeft
-        z: map.z + 3
-        mapSource: map
-        edge: Qt.LeftEdge
-    }
-
     Image {
         id: compass
         source: 'qrc:/images/compass_icon.svg'

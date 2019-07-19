@@ -58,15 +58,12 @@ MapComponentForm {
         trackComponent = Qt.createComponent("ElementTrack.qml")
         leftBarComponent = Qt.createComponent("MapSlidersLeft.qml")
         leftBar = leftBarComponent.createObject(map_component)
+
         polysec_cur = polysecComponent.createObject(map_component)
         map.addMapItem(polysec_cur)
         poly_obj = polyComponent.createObject(map_component)
         map.addMapItem(poly_obj)
         map.removeMapItem(poly_obj)
-    }
-
-    function addElementSideBar(id){
-        leftBar.addElement(id)
     }
 
     function createRect(offset, angle) {
@@ -80,7 +77,7 @@ MapComponentForm {
                  rect_cur.end.disconnect(endRect)
              rect_cur = rectComponent.createObject(map_component, {offset:offset, angle:angle, debug_c: overlay_canvas, editCircle: editCircle})
              uniquelist.push(rect_cur)
-             el_track =trackComponent.createObject(map_component, {_comp:map_component, ntrack: uniquelist.length-1, offset:offset, angle:angle})
+             el_track = trackComponent.createObject(map_component, {_comp:map_component, ntrack: uniquelist.length-1, offset:offset, angle:angle})
              el_list.push(el_track)
              map.addMapItem(rect_cur)
              click_handler = rect_cur.click_handler
@@ -145,7 +142,6 @@ MapComponentForm {
         //TODO -> use a menu for editing the polygon
          if (currentState === generalState.empty){
              currentState = generalState.polysec
-             addElementSideBar(1)
              polysec_cur.clear_path()
              click_handler = polysec_cur.click_handler
              pos_changed_handler = polysec_cur.pos_changed_handler

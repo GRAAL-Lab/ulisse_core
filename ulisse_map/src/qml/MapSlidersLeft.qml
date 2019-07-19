@@ -54,33 +54,28 @@ import QtQuick.Controls 2.2
 import QtQuick.Controls.Material 2.1
 
 Row {
-    id: containerRow
+    id: containerRowLeft
 
     property var mapSource
     property real fontSize: 14
     property color labelBackground: "transparent"
-    property int edge: Qt.RightEdge
-    property alias expanded: sliderToggler.checked
+    property int edge: Qt.LeftEdge
+    property alias expanded: sliderTogglerLeft.checked
     property var togglerColor: mainAccentColor
 
     function rightEdge() {
-        return (containerRow.edge === Qt.RightEdge)
+        return (containerRowLeft.edge === Qt.RightEdge)
     }
-
-    function addElement(d){
-        console.log("ADDDDDDDD")
-    }
-
 
     layoutDirection: rightEdge() ? Qt.LeftToRight : Qt.RightToLeft
     anchors.top: parent.top
     anchors.bottom: parent.bottom
     anchors.right: rightEdge() ? parent.right : undefined
     anchors.left: rightEdge() ? undefined : parent.left
-    width: sliderToggler.width + (sliderToggler.checked ? sliderContainer.width : 0)
+    width: sliderTogglerLeft.width + sliderContainerLeft.width
 
     C1.Button {
-        id: sliderToggler
+        id: sliderTogglerLeft
         width: 24
         height: 72
         checkable: true
@@ -88,7 +83,7 @@ Row {
         anchors.verticalCenter: parent.verticalCenter
 
         transform: Scale {
-            origin.x: rightEdge() ? 0 : sliderToggler.width / 2
+            origin.x: rightEdge() ? 0 : sliderTogglerLeft.width / 2
             xScale: rightEdge() ? 1 : -1
         }
 
@@ -103,46 +98,50 @@ Row {
         property real mirror: rightEdge() ? 1.0 : -1.0
 
         Rectangle {
-            width: sliderToggler.width / 2
-            height: sliderToggler.height / 2
+            width: sliderTogglerLeft.width / 2
+            height: sliderTogglerLeft.height / 2
             color: togglerColor
             antialiasing: true
-            opacity: sliderToggler.buttonOpacity
+            opacity: sliderTogglerLeft.buttonOpacity
             anchors.top: parent.top
-            anchors.left: sliderToggler.checked ? parent.left : parent.horizontalCenter
+            anchors.left: sliderTogglerLeft.checked ? parent.left : parent.horizontalCenter
             anchors.leftMargin: -5
 
             transform: Matrix4x4 {
-                property real d: sliderToggler.checked ? 1.0 : -1.0
-                matrix: Qt.matrix4x4(1.0, d * sliderToggler.shear, 0.0,
+                property real d: sliderTogglerLeft.checked ? 1.0 : -1.0
+                matrix: Qt.matrix4x4(1.0, d * sliderTogglerLeft.shear, 0.0,
                                      0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
                                      0.0, 0.0, 0.0, 0.0, 1.0)
             }
         }
 
         Rectangle {
-            width: sliderToggler.width / 2
-            height: sliderToggler.height / 2
+            width: sliderTogglerLeft.width / 2
+            height: sliderTogglerLeft.height / 2
             color: togglerColor
             antialiasing: true
-            opacity: sliderToggler.buttonOpacity
+            opacity: sliderTogglerLeft.buttonOpacity
             anchors.top: parent.verticalCenter
-            anchors.right: sliderToggler.checked ? parent.right : parent.horizontalCenter
+            anchors.right: sliderTogglerLeft.checked ? parent.right : parent.horizontalCenter
             anchors.rightMargin: 5
             transform: Matrix4x4 {
-                property real d: sliderToggler.checked ? -1.0 : 1.0
-                matrix: Qt.matrix4x4(1.0, d * sliderToggler.shear, 0.0,
+                property real d: sliderTogglerLeft.checked ? -1.0 : 1.0
+                matrix: Qt.matrix4x4(1.0, d * sliderTogglerLeft.shear, 0.0,
                                      0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
                                      0.0, 0.0, 0.0, 0.0, 1.0)
             }
         }
     }
 
+    /*
+    sliderTogglerLeft.onCheckedChanged: function(){
+
+    }
+  */
     Rectangle {
-        id: sliderContainer
+        id: sliderContainerLeft
         height: parent.height
-        width: sliderRow.width + 10
-        visible: sliderToggler.checked
+        width: sliderTogglerLeft.checked ? sliderRow.width + 120 : sliderRow.width
         color: Qt.rgba(0, 0, 0,
                        0.05) //Qt.rgba( 0, 191 / 255.0, 255 / 255.0, 0.1)
 
@@ -151,29 +150,37 @@ Row {
                                             Material.Shade600)
 
         property string labelBorderColor: "transparent"
-        property real slidersHeight: sliderContainer.height - columnContainer.spacing * 2
+        property real slidersHeight: sliderContainerLeft.height - columnContainer.spacing * 2
                                      - columnContainer.topPadding - columnContainer.bottomPadding
 
         Column {
             id: columnContainer
+            anchors.fill: parent
             spacing: 10
             topPadding: 16
             bottomPadding: 48
-            anchors.centerIn: parent
 
-            Row {
+            Column {
                 spacing: -10
                 id: sliderRow
-                height: sliderContainer.slidersHeight
+                height: sliderContainerLeft.slidersHeight
                 width: 30
 
-                Button {
-                    id: path
-                    text: qsTr("Path1")
-                    enabled: false
-                    highlighted: false
+                Button{
+                    id:addTracks
+                    text:"+"
+                    width:30
                 }
-
+                Button{
+                    id:saveTracks
+                    text:"s"
+                    width:30
+                }
+                Button{
+                    id:deleteTracks
+                    text:"x"
+                    width:30
+                }
             }
 
         } // Column
@@ -182,18 +189,18 @@ Row {
         State {
             name: "opened"
             PropertyChanges {
-                target: sliderToggler
+                target: sliderTogglerLeft
                 checked: true
             }
         },
         State {
             name: "closed"
             PropertyChanges {
-                target: sliderToggler
+                target: sliderTogglerLeft
                 checked: false
             }
         }
     ]
-    // sliderContainer
-} // containerRow
+    // sliderContainerLeft
+} // containerRowLeft
 
