@@ -45,6 +45,8 @@ MapComponentForm {
     property Component polysecComponent
     property Component pathComponent
     property Component trackComponent
+    property Component leftBarComponent
+    property MapSlidersLeft leftBar
 
     property var path_file: "/home/alessio/Desktop/Prova"
 
@@ -54,12 +56,17 @@ MapComponentForm {
         polysecComponent = Qt.createComponent("MapPolygonSecurity.qml")
         pathComponent = Qt.createComponent("MapPath.qml")
         trackComponent = Qt.createComponent("ElementTrack.qml")
+        leftBarComponent = Qt.createComponent("MapSlidersLeft.qml")
+        leftBar = leftBarComponent.createObject(map_component)
         polysec_cur = polysecComponent.createObject(map_component)
         map.addMapItem(polysec_cur)
         poly_obj = polyComponent.createObject(map_component)
         map.addMapItem(poly_obj)
         map.removeMapItem(poly_obj)
+    }
 
+    function addElementSideBar(id){
+        leftBar.addElement(id)
     }
 
     function createRect(offset, angle) {
@@ -138,6 +145,7 @@ MapComponentForm {
         //TODO -> use a menu for editing the polygon
          if (currentState === generalState.empty){
              currentState = generalState.polysec
+             addElementSideBar(1)
              polysec_cur.clear_path()
              click_handler = polysec_cur.click_handler
              pos_changed_handler = polysec_cur.pos_changed_handler
@@ -229,7 +237,7 @@ MapComponentForm {
         var i,j,lat,lon,p
 
 
-        clearAll()
+        //clearAll()
         for(i = 0; i < data.paths.length; i++){
             switch(data.paths[i].name){
 /*

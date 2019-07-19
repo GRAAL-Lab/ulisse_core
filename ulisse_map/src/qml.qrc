@@ -51,5 +51,6 @@
         <file>qml/ElementTrackForm.ui.qml</file>
         <file>qml/CommandPane.qml</file>
         <file>qml/MapHandle.qml</file>
+        <file>qml/MapSlidersLeft.qml</file>
     </qresource>
 </RCC>
