@@ -37,6 +37,19 @@ PathRectPolyForm {
         map.createPolySec()
     }
 
+    cancelMenuShape.onClicked:{
+        pathRectPoly.rowFigure.visible = false
+        pathRectPoly.rowLayout.visible = false
+        pathRectPoly.rowEditPlay.visible = false
+    }
+
+
+    cancelMenuOffset.onClicked:{
+        pathRectPoly.rowFigure.visible = true
+        pathRectPoly.rowLayout.visible = false
+        pathRectPoly.rowEditPlay.visible = false
+    }
+
 //    buttonEdit.onClicked: {
 //        map.modify(parseInt(idxField.text))
 //    }

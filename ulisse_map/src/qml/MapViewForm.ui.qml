@@ -30,9 +30,6 @@ RowLayout {
     property alias generalState: generalState
     property alias rectState: rectState
 
-    property alias slidersLeft: slidersLeft
-    property alias pathRectPoly: pathRectPoly
-
     spacing: 0
 
     Plugin {
@@ -113,14 +110,12 @@ RowLayout {
             center: marker_coords // Genoa
             zoomLevel: 17.5 //(maximumZoomLevel - minimumZoomLevel)/2
         }
-
         MapSlidersLeft {
             id: slidersLeft
             z: map.z + 3
             mapSource: map
             edge: Qt.LeftEdge
         }
-
         RowLayout{
             width: parent.width
             anchors.bottom: parent.bottom

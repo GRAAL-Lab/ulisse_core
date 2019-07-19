@@ -12,6 +12,8 @@ RowLayout {
     property alias b_rect: b_rect
     property alias b_poly: b_poly
     property alias b_polysec: b_polysec
+    property alias cancelMenuShape: cancelMenuShape
+    property alias cancelMenuOffset: cancelMenuOffset
     property alias offsetField: offsetField
     property alias angleField: angleField
     //property alias buttonEdit: buttonEdit
@@ -68,6 +70,17 @@ RowLayout {
             enabled: false
             highlighted: false
         }
+
+        Button {
+            id: cancelMenuShape
+            Layout.preferredWidth: 17
+            Layout.preferredHeight: 17
+            anchors.right: parent.right
+            anchors.top: parent.top
+            text: qsTr("x")
+            enabled: true
+            highlighted: false
+        }
     }
 
     //Row for Offset
@@ -90,6 +103,17 @@ RowLayout {
             text: qsTr("30")
             placeholderText: "Angle"
             enabled: map.polysec_cur.closed ? true : false
+        }
+
+        Button {
+            id: cancelMenuOffset
+            Layout.preferredWidth: 17
+            Layout.preferredHeight: 17
+            anchors.right: parent.right
+            anchors.top: parent.top
+            text: qsTr("x")
+            enabled: true
+            highlighted: false
         }
     }
 

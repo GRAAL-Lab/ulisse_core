@@ -23,9 +23,6 @@ MapComponentForm {
     mapMouseArea.onClicked: {click_handler(mouse)}
     mapMouseArea.onPositionChanged: {pos_changed_handler(mouse)}
 
-    //property list<MapRectangle> rect_list
-    property MapRectangle rect_cur
-
     //property list<MapPolygon> poly_list
     property MapPolygon poly_cur
     property MapPolygon poly_obj
@@ -40,7 +37,6 @@ MapComponentForm {
 
     property MapPolygonSecurity polysec_cur
 
-    property Component rectComponent
     property Component polyComponent
     property Component polysecComponent
     property Component pathComponent
@@ -48,7 +44,6 @@ MapComponentForm {
     property var path_file: "/home/alessio/Desktop/Prova"
 
     Component.onCompleted: {
-        rectComponent = Qt.createComponent("MapRectangle.qml")
         polyComponent = Qt.createComponent("MapPolygon.qml")
         polysecComponent = Qt.createComponent("MapPolygonSecurity.qml")
         pathComponent = Qt.createComponent("MapPath.qml")
@@ -68,16 +63,16 @@ MapComponentForm {
         }
          if (currentState === generalState.empty){
              currentState = generalState.rect
-             if (rect_cur)
-                 rect_cur.end.disconnect(endRect)
-             rect_cur = rectComponent.createObject(map_component, {offset:offset, angle:angle, debug_c: overlay_canvas, editCircle: editCircle})
-             uniquelist.push(rect_cur)
+             if (poly_cur)
+                 poly_cur.end.disconnect(endRect)
+             poly_cur = polyComponent.createObject(map_component, {offset:offset, angle:angle, debug_c: overlay_canvas, editCircle: editCircle})
+             uniquelist.push(poly_cur)
              el_track = trackComponent.createObject(map_component, {_comp:map_component, ntrack: uniquelist.length-1, offset:offset, angle:angle})
              el_list.push(el_track)
-             map.addMapItem(rect_cur)
-             click_handler = rect_cur.click_handler
-             pos_changed_handler = rect_cur.pos_changed_handler
-             rect_cur.end.connect(endRect)
+             map.addMapItem(poly_cur)
+             click_handler = poly_cur.click_handler_rect
+             pos_changed_handler = poly_cur.pos_changed_handler_rect
+             poly_cur.end.connect(endRect)
          }
 
     }
