@@ -17,6 +17,19 @@ function coords_centroid(coords){
     return QtPositioning.coordinate(lat/coords.length, lon/coords.length)
 }
 
+function coord_inside_polygon(coord, coords){
+    var sum = 0
+    for (var i=0; i<coords.length-1; i++){
+        var a2 = geo_bearing(coord, coords[i+1])
+        var a1 = geo_bearing(coord, coords[i])
+        var d = a2-a1
+        if (d < -180) d+=360
+        else if (d>180) d-=360
+        sum -= d
+    }
+    return sum > 180
+}
+
 function point_map2canvas(coord, map, canvas){
     return point_screen2canvas(map.fromCoordinate(coord, false), map, canvas)
 }
@@ -524,10 +537,11 @@ function geo_bearing(c1, c2){
     var λ1 = deg_to_rad(c1.longitude)
     var φ2 = deg_to_rad(c2.latitude)
     var λ2 = deg_to_rad(c2.longitude)
-    var y = Math.sin(λ2-λ1) * Math.cos(φ2);
+    var y = Math.sin(λ2-λ1) * Math.cos(φ2)
     var x = Math.cos(φ1)*Math.sin(φ2) -
-            Math.sin(φ1)*Math.cos(φ2)*Math.cos(λ2-λ1);
-    return Math.atan2(y, x).toDegrees();
+            Math.sin(φ1)*Math.cos(φ2)*Math.cos(λ2-λ1)
+    var r = rad_to_deg(Math.atan2(y, x))
+    return (r>0) ? r: r+360
 }
 
 function geo_intermediate(c1, c2, fraction){

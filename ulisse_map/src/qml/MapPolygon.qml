@@ -381,6 +381,7 @@ MapPolyline {
     function pos_changed_mod_handler(mouse, box){
         var p = Qt.point(mouse.x, mouse.y)
         var pf = map.toCoordinate(p)
+        console.log(Helper.coord_inside_polygon(pf, box.path))
         var _path = get_path()
         if (moving_idx === -1 && !translating && !rotating){
             var hpc = map.fromCoordinate(_handle.h_center)
