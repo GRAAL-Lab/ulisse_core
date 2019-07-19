@@ -10,15 +10,11 @@ MapQuickItem{
     property var multiplier: 0
     property alias _canvas: _c
     function requestPaint(){_c.requestPaint()}
-    signal ctx_ready
     sourceItem: Canvas {
         id: _c
         antialiasing: true
         property var _ctx
-        onAvailableChanged: {
-            _ctx = _c.getContext("2d")
-            ctx_ready()
-        }
+        onAvailableChanged: {_ctx = _c.getContext("2d")}
         transform: [
             Rotation {
                 origin.x: 0

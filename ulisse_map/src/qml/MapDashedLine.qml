@@ -7,13 +7,4 @@ MapPolyline {
     line.color: "#ff0000"
     opacity: 1
     z: map.z + 2
-    Component.onCompleted: function (){
-        addCoordinate(QtPositioning.coordinate(0,0))
-        addCoordinate(QtPositioning.coordinate(0,0))
-    }
-
-    function reset(){
-        replaceCoordinate(0,QtPositioning.coordinate(0,0))
-        replaceCoordinate(1,QtPositioning.coordinate(0,0))
-    }
 }
