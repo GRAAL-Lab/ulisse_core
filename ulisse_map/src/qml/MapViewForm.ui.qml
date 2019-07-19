@@ -29,6 +29,10 @@ RowLayout {
     property alias pathState: pathState
     property alias generalState: generalState
     property alias rectState: rectState
+
+    property alias slidersLeft: slidersLeft
+    property alias pathRectPoly: pathRectPoly
+
     spacing: 0
 
     Plugin {
@@ -110,6 +114,32 @@ RowLayout {
             zoomLevel: 17.5 //(maximumZoomLevel - minimumZoomLevel)/2
         }
 
+        MapSlidersLeft {
+            id: slidersLeft
+            z: map.z + 3
+            mapSource: map
+            edge: Qt.LeftEdge
+        }
+
+        RowLayout{
+            width: parent.width
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: bottomToolbar.height
+
+            Rectangle{
+                color: "#802244DD"
+                width: parent.width
+                height: parent.height
+            }
+            PathRectPoly {
+                id: pathRectPoly
+                width: parent.width
+                height: parent.height
+                anchors.bottom: parent.bottom
+                anchors.centerIn: parent
+                //anchors.bottomMargin: 2
+            }
+        }
         Rectangle {
             id: bottomToolbar
             width: parent.width
@@ -119,6 +149,7 @@ RowLayout {
 
             RowLayout {
                 width: parent.width
+                height: parent.height - recenterButton.height
 
                 Button {
                     id: recenterButton

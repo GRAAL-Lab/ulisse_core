@@ -45,9 +45,6 @@ MapComponentForm {
     property Component polysecComponent
     property Component pathComponent
     property Component trackComponent
-    property Component leftBarComponent
-    property MapSlidersLeft leftBar
-
     property var path_file: "/home/alessio/Desktop/Prova"
 
     Component.onCompleted: {
@@ -56,8 +53,6 @@ MapComponentForm {
         polysecComponent = Qt.createComponent("MapPolygonSecurity.qml")
         pathComponent = Qt.createComponent("MapPath.qml")
         trackComponent = Qt.createComponent("ElementTrack.qml")
-        leftBarComponent = Qt.createComponent("MapSlidersLeft.qml")
-        leftBar = leftBarComponent.createObject(map_component)
 
         polysec_cur = polysecComponent.createObject(map_component)
         map.addMapItem(polysec_cur)

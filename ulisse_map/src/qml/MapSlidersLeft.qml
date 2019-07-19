@@ -53,6 +53,7 @@ import QtQuick.Controls.Styles 1.4 as C1S
 import QtQuick.Controls 2.2
 import QtQuick.Controls.Material 2.1
 
+
 Row {
     id: containerRowLeft
 
@@ -66,6 +67,7 @@ Row {
     function rightEdge() {
         return (containerRowLeft.edge === Qt.RightEdge)
     }
+
 
     layoutDirection: rightEdge() ? Qt.LeftToRight : Qt.RightToLeft
     anchors.top: parent.top
@@ -170,6 +172,11 @@ Row {
                     id:addTracks
                     text:"+"
                     width:30
+                    onClicked: function(){
+                        pathRectPoly.rowFigure.visible = true
+                        pathRectPoly.rowLayout.visible = false
+                        pathRectPoly.rowEditPlay.visible = false
+                    }
                 }
                 Button{
                     id:saveTracks

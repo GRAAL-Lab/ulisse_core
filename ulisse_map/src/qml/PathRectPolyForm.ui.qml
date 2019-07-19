@@ -7,19 +7,24 @@ import QtQuick.Controls.Material 2.1
 import QtGraphicalEffects 1.0
 import QtQuick.Dialogs 1.2
 
-ColumnLayout {
+RowLayout {
     property alias b_path: b_path
     property alias b_rect: b_rect
     property alias b_poly: b_poly
     property alias b_polysec: b_polysec
     property alias offsetField: offsetField
     property alias angleField: angleField
-    property alias rowLayout: rowLayout
     //property alias buttonEdit: buttonEdit
     property alias buttonSave: buttonSave
     property alias buttonDiscard: buttonDiscard
     property alias idxField: idxField
-    id: cl1
+
+    property alias rowFigure: rowFigure
+    property alias rowLayout: rowLayout
+    property alias rowEditPlay: rowEditPlay
+
+    id: rowChoices
+    anchors.fill: map
     state: {
         0: "empty",
                 1: "path",
@@ -29,11 +34,11 @@ ColumnLayout {
                 5: "editmode"
     }[mapView.currentState]
 
+    //Row for shapes
     RowLayout {
-        id: rl1
-        width: 100
+        id: rowFigure
         height: 100
-        Layout.fillWidth: true
+        visible: false
 
         Button {
             id: b_poly
@@ -65,11 +70,13 @@ ColumnLayout {
         }
     }
 
+    //Row for Offset
     RowLayout {
         id: rowLayout
         width: 100
         height: 100
         enabled: true
+        visible: false
 
         TextField {
             id: offsetField
@@ -86,10 +93,12 @@ ColumnLayout {
         }
     }
 
+    //Row for edit/play
     RowLayout {
-        id: rowLayout1
+        id: rowEditPlay
         width: 100
         height: 100
+        visible: false
 
         //        Button {
 
@@ -181,7 +190,8 @@ ColumnLayout {
             PropertyChanges {
                 target: idxField
                 enabled: false
-            }        },
+            }
+        },
         State {
             name: "editmode"
             PropertyChanges {

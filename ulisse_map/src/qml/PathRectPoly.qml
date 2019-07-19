@@ -17,12 +17,20 @@ PathRectPolyForm {
         var offset = parseInt(offsetField.text)
         var angle = parseInt(angleField.text)
         map.createRect(offset, angle) //, idxField.currentText)
+
+        pathRectPoly.rowFigure.visible = false
+        pathRectPoly.rowLayout.visible = true
+        pathRectPoly.rowEditPlay.visible = false
     }
     b_poly.onClicked: {
         var offset = parseInt(offsetField.text)
         var angle = parseInt(angleField.text)
         console.log(idxField.currentText)
         map.createPoly(offset, angle, idxField.currentText)
+
+        pathRectPoly.rowFigure.visible = false
+        pathRectPoly.rowLayout.visible = true
+        pathRectPoly.rowEditPlay.visible = false
     }
     b_polysec.onClicked: {
         map.center = fbkUpdater.ulisse_pos
