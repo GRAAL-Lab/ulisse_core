@@ -245,7 +245,7 @@ namespace states {
                 if (goalCxt_->goalDistance < 2) {
                     std::cout << "*** START MISSION! ***" << std::endl;
                     count++;
-                    if(count > 20){
+                    if(count > 100){
                         count = 0;
                         start = true;
                     }
@@ -262,7 +262,7 @@ namespace states {
                 if(abs(statusCxt_->vehicleHeading - starting_angle) < 0.05)
                 {
                     count++;
-                    if(count > 20){
+                    if(count > 100){
                         count = 0;
                         oriented = true;
                     }
