@@ -69,6 +69,7 @@ rosidl_generate_interfaces(ulisse_msgs
   "srv/LLCCommand.srv"
   "srv/RosbagCmd.srv"
   "srv/NavFilterCommand.srv" 
+  "srv/SetBoundaries.srv"
 )
 
 ament_export_include_directories(include)

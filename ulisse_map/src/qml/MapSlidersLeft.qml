@@ -187,6 +187,10 @@ Row {
                     id:deleteTracks
                     text:"x"
                     width:30
+                    onClicked: function(){
+                        console.log("Chiamo servizio")
+                        cmdWrapper.sendBoundaries(JSON.stringify(map.polysec_cur.create_JSON()))
+                    }
                 }
             }
 
