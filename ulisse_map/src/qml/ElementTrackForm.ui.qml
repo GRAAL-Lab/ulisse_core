@@ -16,20 +16,19 @@ import "../scripts/helper.js" as Helper
 RowLayout {
     id: tracklistlayout
     //elementi che definiscono l'elemento
-    property int ntrack
+    property int ntrack: -1
     property var _comp
-    property var _sliderL
-    property var  nametrack: qsTr(ntrack)
+    property var nametrack
     //se il nome del track non dipende dalla posizione
-    property alias menu: menu
-    property alias menubutton: menubutton
-    property alias editItem: editItem
-    property alias deleteItem: deleteItem
     property alias name: name
-
-    signal edit(var a)
     property alias tracklistlayout: tracklistlayout
     property alias backbut: backbut
+
+    property bool toggled: false
+    property bool expanded: false
+
+    signal selected (var path)
+    signal edit (var path)
 
     state: {
         0: "empty",
@@ -42,35 +41,23 @@ RowLayout {
     }[mapView.currentState]
 
     // modo per distanziare
-    width: _sliderL.expanded?  _sliderL.sliderW + 120 : _sliderL.sliderW
     height: 30
     scale: 1
     antialiasing: true
 
-    ToolButton {
-        text: qsTr("‹")
-        z: 1
-        highlighted: false
-        Layout.fillHeight: true
-        Layout.fillWidth: true
-    }
     Button {
         id: name
-        text: _sliderL.expanded? ntrack : nametrack
+        text: expanded ? ntrack : nametrack
         anchors.fill: parent
         Layout.fillHeight: true
         antialiasing: false
-        enabled: false
-        //elide: Button.ElideRight
-        //                horizontalAlignment: Qt.AlignBottom
-        //                verticalAlignment: Qt.AlignBottom
-        Layout.fillWidth: false
+        enabled: true
 
         background: Rectangle {
-            visible: false
+            visible: true
             id: backbut
             opacity: 1
-            color: "#0000ff"
+            color: "#ffffff"
             border.width: 1
             radius: 2
         }
@@ -90,32 +77,6 @@ RowLayout {
             smooth: true
             enabled: false
             horizontalAlignment: Text.AlignHCenter
-
-        }
-    }
-    ToolButton {
-        id: menubutton
-        text: qsTr("⋮")
-        Layout.fillHeight: true
-        Layout.fillWidth: true
-        wheelEnabled: false
-    }
-
-    Menu {
-        id: menu
-
-        MenuItem {
-            id: editItem
-            text: qsTr("Edit...")
-            enabled: true
-        }
-        MenuItem {
-            id: deleteItem
-            text: qsTr("Delete")
-        }
-        MenuItem {
-            id: playItem
-            text: qsTr("Play")
         }
     }
     states: [
@@ -124,17 +85,6 @@ RowLayout {
             PropertyChanges {
                 target: deleteItem
                 enabled: false
-            }
-        },
-        State {
-            name: "deletemode"
-            PropertyChanges {
-                target: name
-                enabled: true
-            }
-            PropertyChanges {
-                target: backbut
-                visible: true
             }
         }
     ]

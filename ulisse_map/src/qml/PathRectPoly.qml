@@ -20,71 +20,82 @@ PathRectPolyForm {
 
     /*-------------- POLY CREATION/EDITING ----------------*/
 
-    property var poly_cur
+    property var cur_managed
 
     b_poly.onClicked: function(){start_poly()}
     rowPolyParams.onAccept: function(){confirm_poly()}
     rowPolyParams.onDiscard: function(){discard_poly()}
 
     function start_poly(){
-        poly_cur = map.createPoly()
-        if (poly_cur === null) return
+        cur_managed = map.createPoly()
+        if (cur_managed === null) return
         show_poly_create()
-        poly_cur.end.connect(end_poly)
-        map.click_handler = poly_cur.click_handler
-        map.pos_changed_handler = poly_cur.pos_changed_handler
+        cur_managed.end.connect(end_poly)
+        map.click_handler = cur_managed.click_handler
+        map.pos_changed_handler = cur_managed.pos_changed_handler
     }
 
-    function edit_poly(poly){
-        if (poly_cur === null) return
-        poly_cur = poly
+    function edit_poly(){
+        if (cur_managed === null) return
         show_poly_edit()
-        poly_cur.begin_edit()
-        map.click_handler = poly_cur.click_mod_handler
-        map.pos_changed_handler = poly_cur.pos_changed_mod_handler
+        cur_managed.begin_edit()
+        map.click_handler = cur_managed.click_mod_handler
+        map.pos_changed_handler = cur_managed.pos_changed_mod_handler
     }
 
     property var v
 
     function end_poly(){
-        poly_cur.end.disconnect(end_poly)
+        cur_managed.end.disconnect(end_poly)
         confirm_poly()
         v = trackComponent.createObject(slidersLeft.columnTrack)
-        v._comp = poly_cur
+        v._comp = cur_managed
+        v.ntrack = map.uniquelist.length
         v.edit.connect(edit_poly)
+        v.selected.connect(function (poly){
+            slidersLeft.update_selection(poly)
+            manage(poly)
+        })
+        slidersLeft.update_selection(cur_managed)
+        manage(cur_managed)
     }
 
     function confirm_poly() {
         map.click_handler = function(){}
         map.pos_changed_handler = function(){}
-        poly_cur.confirm_edit(rowPolyParams.angle, rowPolyParams.offset, "simple")
-        poly_cur.check_safe(map.polysec_cur)
-        hide_all()
+        cur_managed.confirm_edit(rowPolyParams.angle, rowPolyParams.offset, "simple")
+        cur_managed.check_safe(map.polysec_cur)
+        show_path_manage()
     }
 
     function discard_poly() {
         map.click_handler = function(){}
         map.pos_changed_handler = function(){}
-        poly_cur.discard_edit()
-        hide_all()
+        cur_managed.discard_edit()
+        show_path_manage()
     }
 
     /*-----------------------------------------------------------*/
 
-    b_polysec.onClicked: {
-        map.center = fbkUpdater.ulisse_pos
-        map.createPolySec()
+
+    /*------------------ PATH MANAGEMENT ------------------------*/
+
+    function manage(path) {
+        cur_managed = path
+        show_path_manage()
     }
 
-    cancel_menuShape.onClicked:{
-        rowFigure.visible = false
-        rowPolyParams.visible = false
-        rowEditPlay.visible = false
+    buttonEdit.onClicked: function(){
+        //if cur_managed is a polygonalpath
+        edit_poly()
     }
 
-    idxField.enabled: map.polysec_cur.closed? true : false
-    buttonSave.onClicked:map.save_mod(map.actualtrack, angleField.text, offsetField.text )
-    buttonDiscard.onClicked : map.abort_mod(map.actualtrack)
+    buttonPlay.onClicked: function(){
+        //TODO
+    }
+
+    /*------------------------------------------------------------*/
+
 
     function show_shape_choice(){
         rowFigure.visible = true
@@ -106,10 +117,29 @@ PathRectPolyForm {
         rowEditPlay.visible = false
     }
 
+    function show_path_manage(){
+        slidersLeft.enableBtns(true)
+        rowFigure.visible = false
+        rowPolyParams.visible = false
+        rowEditPlay.visible = true
+    }
+
     function hide_all(){
         rowFigure.visible = false
         rowPolyParams.visible = false
         rowEditPlay.visible = false
     }
-}
 
+    /*----------------------------------------------------------*/
+
+    b_polysec.onClicked: {
+        map.center = fbkUpdater.ulisse_pos
+        map.createPolySec()
+    }
+
+    cancel_menuShape.onClicked:{
+        rowFigure.visible = false
+        rowPolyParams.visible = false
+        rowEditPlay.visible = false
+    }
+}

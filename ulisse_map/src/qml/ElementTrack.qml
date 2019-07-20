@@ -14,22 +14,23 @@ import "."
 import "../scripts/helper.js" as Helper
 
 ElementTrackForm{
+    name.onClicked: function(){
+        selected(_comp)
+    }
 
-    name.onDoubleClicked: {}
+    function toggle(){
+        toggled = !toggled
+        backbut.color = toggled ? "#abcdef" : "#ffffff"
+    }
 
-    menubutton.onClicked: menu.open()
-
-    deleteItem.onTriggered: _comp.deletenel(ntrack)
+    function highlight(yes){
+        toggled = true
+        backbut.color = yes ? "#abcdef" : "#ffffff"
+    }
 
     tracklistlayout.y: tracklistlayout.height*(ntrack)
 
-    menubutton.onClicked: menu.open()
-
-    editItem.onTriggered: function(){edit(_comp)}
-
-    deleteItem.onTriggered: _comp.deletenel(ntrack)
-
-    name.onClicked: {
-        backbut.color= (backbut.color==="#ff0000")? "#0000ff" : "#ff0000"
-    }
+    expanded: parent.expanded
+    width: parent.width
+    nametrack: qsTr(ntrack.toString())
 }

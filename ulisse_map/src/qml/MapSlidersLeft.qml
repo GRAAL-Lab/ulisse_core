@@ -63,10 +63,9 @@ Row {
     property real fontSize: 14
     property color labelBackground: "transparent"
     property int edge: Qt.LeftEdge
-    property alias expanded: sliderTogglerLeft.checked
     property var togglerColor: mainAccentColor
-    property alias columnTrack: columnTrack
     property alias sliderW: sliderTogglerLeft.width
+    property bool multichoice: false
 
     state: {
         0: "empty",
@@ -164,97 +163,141 @@ Row {
         property string labelBorderColor: "transparent"
 
         Column {
+            spacing: 10
+            id: sliderRow
+            width: 30
 
-                spacing: 10
-                id: sliderRow
-                // height: sliderContainerLeft.slidersHeight
-                width: 30
-                Column{
-                    id:buttons3
-                    Button{
-                        id:addTracks
-                        text:"+"
-                        width: sliderTogglerLeft.checked ? sliderRow.width + 120 : sliderRow.width
-                        onClicked: function(){
-                            pathRectPoly.show_shape_choice()
-                        }
-                        background: Rectangle {
-                            id: addTracksRect
-                            color: "#abcdef"
-                        }
+            Column{
+                id: main_btns
+                width: sliderTogglerLeft.checked ? sliderRow.width + 120 : sliderRow.width
+                Button{
+                    id:addTracks
+                    text:"+"
+                    width: parent.width
+                    onClicked: function(){
+                        pathRectPoly.show_shape_choice()
+                        enableBtns(false)
                     }
-                    Button{
-                        id:saveTracks
-                        onClicked: function() {
-                            if(mapView.currentState === mapView.generalState.deletemode){
-                             mapView.currentState = mapView.generalState.empty
-                            }
-                            return
-                        }
-                        text:"s"
-                        enabled: true
-                        width:sliderTogglerLeft.checked ? sliderRow.width + 120 : sliderRow.width
-                        background: Rectangle {
-                        id: saveTracksRect
+                    background: Rectangle {
+                        id: addTracksRect
                         color: "#abcdef"
-                        }
-                    }
-                    Button{
-                        id:deleteTracks
-                        text:"x"
-                        enabled: true
-                        width:sliderTogglerLeft.checked ? sliderRow.width + 120 : sliderRow.width
-                        onClicked: mapView.currentState = mapView.generalState.deletemode
-                        background: Rectangle {
-                        color: "#abcdef"
-                        }
                     }
                 }
-
-                Column{
-                    id:columnTrack
+                Button{
+                    id:saveTracks
+                    onClicked: function() {
+                        multichoice = true
+                        main_btns.visible = false
+                        confirm_btns.visible = true
+                        confirm.clicked.disconnect(save_items)
+                        confirm.clicked.disconnect(delete_items)
+                        confirm.clicked.connect(save_items)
+                    }
+                    text:"s"
+                    enabled: true
+                    width: parent.width
+                    background: Rectangle {
+                    id: saveTracksRect
+                    color: "#abcdef"
+                    }
+                }
+                Button{
+                    id:deleteTracks
+                    text:"x"
+                    enabled: true
+                    width: parent.width
+                    onClicked: function(){
+                        multichoice = true
+                        main_btns.visible = false
+                        confirm_btns.visible = true
+                        confirm.clicked.disconnect(save_items)
+                        confirm.clicked.disconnect(delete_items)
+                        confirm.clicked.connect(delete_items)
+                    }
+                    background: Rectangle {
+                    color: "#abcdef"
+                    }
                 }
             }
-    }
-    states: [
-        State {
-            name: "opened"
-            PropertyChanges {
-                target: sliderTogglerLeft
-                checked: true
+
+            Column{
+                id: confirm_btns
+                width: sliderTogglerLeft.checked ? sliderRow.width + 120 : sliderRow.width
+                visible: false
+                Button{
+                    id:abort
+                    text:"n"
+                    width: parent.width
+                    onClicked: function(){restoreBtns()}
+                    background: Rectangle {
+                    color: "#ff0000"
+                    }
+                }
+                Button{
+                    id:confirm
+                    text:"y"
+                    enabled: true
+                    width: parent.width
+                    background: Rectangle {
+                    color: "#00ff00"
+                    }
+                }
             }
-        },
-        State {
-            name: "closed"
-            PropertyChanges {
-                target: sliderTogglerLeft
-                checked: false
-            }
-        },
-        State   {
-            name: "deletemode"
-            PropertyChanges {
-                target: deleteTracks
-                text: sliderTogglerLeft.checked ?  "Confirm?" : "?"
-            }
-            PropertyChanges {
-                target: addTracks
-                text: sliderTogglerLeft.checked ? "Yes" :"y"
-            }
-            PropertyChanges {
-                target: addTracksRect
-                color: "#00ff00"
-            }
-            PropertyChanges {
-                target: saveTracks
-                text:sliderTogglerLeft.checked ?  "No" : "n"
-            }
-            PropertyChanges {
-                target: saveTracksRect
-                color: "#ff0000"
+
+            Column {
+                width: sliderTogglerLeft.checked ? sliderRow.width + 120 : sliderRow.width
+                property bool expanded: sliderTogglerLeft.checked
+                y: 96
+                id:columnTrack
             }
         }
+    }
 
-    ]
-    // sliderContainerLeft
-} // containerRowLeft
+    function enableBtns(y){
+        addTracks.enabled = y
+        saveTracks.enabled = y
+        deleteTracks.enabled = y
+    }
+
+    function restoreBtns(){
+        main_btns.visible = true
+        confirm_btns.visible = false
+        sliderRow.enableBtns(true)
+        multichoice = false
+    }
+
+    function deselect_all(){
+        for (var i = 0; i<columnTrack.children.length; i++){
+            var c = columnTrack.children[i]
+            c.highlight(false)
+        }
+    }
+
+    function update_selection(poly){
+        if (!multichoice){
+            for (var i = 0; i<columnTrack.children.length; i++){
+                var c = columnTrack.children[i]
+                c.highlight(poly === c._comp)
+            }
+        } else {
+            for (var i = 0; i<columnTrack.children.length; i++){
+                var c = columnTrack.children[i]
+                if (poly === c._comp) c.toggle()
+            }
+        }
+    }
+
+    function save_items(){
+        //TODO
+        restoreBtns()
+        deselect_all()
+        pathRectPoly.hide_all()
+    }
+
+    function delete_items(){
+        //TODO
+        restoreBtns()
+        deselect_all()
+        pathRectPoly.hide_all()
+    }
+}

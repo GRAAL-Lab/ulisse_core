@@ -35,6 +35,13 @@ RowLayout {
         enabled: true
     }
 
+    ComboBox {
+        id: idxField
+        model: ["single_winding", "2curves", "helix"]
+        enabled: false
+    }
+
+
     Button {
         id: cancelPolyEdit
         Layout.preferredWidth: 17

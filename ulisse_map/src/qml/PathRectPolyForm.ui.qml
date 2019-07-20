@@ -13,10 +13,8 @@ RowLayout {
     property alias b_poly: b_poly
     property alias b_polysec: b_polysec
     property alias cancel_menuShape: cancel_menuShape
-    //property alias buttonEdit: buttonEdit
-    property alias buttonSave: buttonSave
-    property alias buttonDiscard: buttonDiscard
-    property alias idxField: idxField
+    property alias buttonEdit: buttonEdit
+    property alias buttonPlay: buttonPlay
 
     property alias rowFigure: rowFigure
     property alias rowPolyParams: rowPolyParams
@@ -34,7 +32,6 @@ RowLayout {
         Button {
             id: b_poly
             text: qsTr("Polygon")
-            Layout.fillHeight: false
         }
 
         Button {
@@ -72,27 +69,14 @@ RowLayout {
         height: 100
         visible: false
 
-        //        Button {
-
-        //            id: buttonEdit
-        //            text: qsTr("edit")
-        //        }
         Button {
-            id: buttonSave
-            enabled: false
-            text: qsTr("save")
+            id: buttonPlay
+            text: qsTr("play")
         }
 
         Button {
-            id: buttonDiscard
-            enabled: false
-            text: qsTr("abort")
-        }
-        //da qui puoi scegliere in che modo riempire i poligoni/rettangoli
-        ComboBox {
-            id: idxField
-            model: ["single_winding", "2curves", "helix"]
-            enabled: false
+            id: buttonEdit
+            text: qsTr("edit")
         }
     }
 }
