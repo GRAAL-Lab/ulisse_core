@@ -55,6 +55,7 @@ RowLayout {
         property int poly: 3
         property int polysec: 4
         property int editmode: 5
+        property int deletemode: 6
     }
 
     QtObject {

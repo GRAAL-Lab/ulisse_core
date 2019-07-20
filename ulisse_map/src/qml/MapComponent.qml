@@ -2,6 +2,7 @@ import QtQuick 2.6
 import QtQuick.Layouts 1.3
 import QtQuick.Controls 2.1
 import QtLocation 5.7
+import QtQml.Models 2.1
 import QtPositioning 5.6
 import Qt.labs.settings 1.0
 import QtQuick.Controls.Material 2.1
@@ -15,10 +16,9 @@ MapComponentForm {
 
     id: map_component
 
-    property var actualtrack
-
     property var click_handler : function(){}
     property var pos_changed_handler : function(){}
+    property var actualtrack
 
     mapMouseArea.onClicked: {click_handler(mouse)}
     mapMouseArea.onPositionChanged: {pos_changed_handler(mouse)}
@@ -45,8 +45,6 @@ MapComponentForm {
     property Component polysecComponent
     property Component pathComponent
     property Component trackComponent
-    property Component leftBarComponent
-    property MapSlidersLeft leftBar
 
     property var path_file: "/home/alessio/Desktop/Prova"
 
@@ -56,8 +54,6 @@ MapComponentForm {
         polysecComponent = Qt.createComponent("MapPolygonSecurity.qml")
         pathComponent = Qt.createComponent("MapPath.qml")
         trackComponent = Qt.createComponent("ElementTrack.qml")
-        leftBarComponent = Qt.createComponent("MapSlidersLeft.qml")
-        leftBar = leftBarComponent.createObject(map_component)
 
         polysec_cur = polysecComponent.createObject(map_component)
         map.addMapItem(polysec_cur)
@@ -65,6 +61,7 @@ MapComponentForm {
         map.addMapItem(poly_obj)
         map.removeMapItem(poly_obj)
     }
+    //slidersLeft.listtrackers.Ob
 
     function createRect(offset, angle) {
         if(!polysec_cur.closed){
@@ -77,8 +74,10 @@ MapComponentForm {
                  rect_cur.end.disconnect(endRect)
              rect_cur = rectComponent.createObject(map_component, {offset:offset, angle:angle, debug_c: overlay_canvas, editCircle: editCircle})
              uniquelist.push(rect_cur)
-             el_track = trackComponent.createObject(map_component, {_comp:map_component, ntrack: uniquelist.length-1, offset:offset, angle:angle})
+
+             el_track = trackComponent.createObject(slidersLeft.columnTrack, {_sliderL: slidersLeft ,_comp:map_component, ntrack: uniquelist.length-1})
              el_list.push(el_track)
+
              map.addMapItem(rect_cur)
              click_handler = rect_cur.click_handler
              pos_changed_handler = rect_cur.pos_changed_handler
@@ -129,7 +128,7 @@ MapComponentForm {
             currentState = generalState.poly
             poly_cur = polyComponent.createObject(map_component, {method: method, offset:offset, angle:angle, debug_c: overlay_canvas, editCircle: editCircle})
             uniquelist.push(poly_cur)
-            el_track =trackComponent.createObject(map_component, {_comp:map_component, ntrack: uniquelist.length-1, offset:offset, angle:angle})
+            el_track =trackComponent.createObject(slidersLeft.columnTrack, {_sliderL: slidersLeft, _comp:map_component, ntrack: uniquelist.length-1, offset:offset, angle:angle})
             el_list.push(el_track)
             map.addMapItem(poly_cur)
             click_handler = poly_cur.click_handler
@@ -161,7 +160,7 @@ MapComponentForm {
                 path_cur.end.disconnect(endPath)
             path_cur = pathComponent.createObject(map_component)
             uniquelist.push(path_cur)
-            el_track =trackComponent.createObject(map_component, {_comp:map_component, ntrack: uniquelist.length-1})
+            el_track =trackComponent.createObject(slidersLeft.columnTrack, {_sliderL: slidersLeft , _comp:map_component, ntrack: uniquelist.length-1})
             el_list.push(el_track)
             map.addMapItem(path_cur)
             click_handler = path_cur.click_handler

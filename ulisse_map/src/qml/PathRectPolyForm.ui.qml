@@ -26,7 +26,8 @@ ColumnLayout {
                 2: "rect",
                 3: "poly",
                 4: "polysec",
-                5: "editmode"
+                5: "editmode",
+                6: "deletemode"
     }[mapView.currentState]
 
     RowLayout {
