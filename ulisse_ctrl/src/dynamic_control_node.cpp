@@ -17,6 +17,8 @@
 #include "ulisse_msgs/terminal_utils.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 
+#include "ulisse_msgs/msg/nav_filter_data.hpp"
+
 #include "surface_vehicle_model/surfacevehiclemodel.hpp"
 #include "ulisse_ctrl/fsm_defines.hpp"
 #include "ulisse_ctrl/helper_functions.hpp"
@@ -29,7 +31,10 @@ using namespace ulisse;
 
 static ulisse_msgs::msg::ControlContext ctrl_cxt_msg;
 static ulisse_msgs::msg::StatusContext status_cxt;
+static ulisse_msgs::msg::NavFilterData filterData;
 
+
+void FilterDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
 void ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg);
 void StatusContextCB(const ulisse_msgs::msg::StatusContext::SharedPtr msg);
 
@@ -58,6 +63,10 @@ int main(int argc, char* argv[])
     auto control_pub = nh->create_publisher<ulisse_msgs::msg::ControlData>(
             "ControlData");
 
+    auto navfilter_sub = nh->create_subscription<ulisse_msgs::msg::NavFilterData>(
+            ulisse_msgs::topicnames::nav_filter_data, FilterDataCB);
+
+
     rclcpp::SyncParametersClient::SharedPtr par_client;
     par_client = std::make_shared<rclcpp::SyncParametersClient>(nh);
     while (!par_client->wait_for_service(1ms)) {
@@ -74,7 +83,7 @@ int main(int argc, char* argv[])
     LoadLowLevelConfiguration(conf, par_client);
 
     struct SlidingSurface sl;
-    parameter_setting(sl,conf,1,4);
+    parameter_setting(sl,conf,1,10);
 
     ctb::DigitalSlidingMode<struct SlidingSurface> slideSurge=
             ctb::DigitalSlidingMode<struct SlidingSurface>(alpha_beta_u,s1,sl);
@@ -99,6 +108,7 @@ int main(int argc, char* argv[])
 
     double headingTrackDiff;
     double surgeFbk;
+
 
     double prev_heading = 0;
     double jogFbk;
@@ -141,8 +151,8 @@ int main(int argc, char* argv[])
 
             Eigen::Vector6d requestedVel;
             requestedVel.setZero();
-            requestedVel(0) = thrusterData.desiredSurge;
-            requestedVel(5) = thrusterData.desiredJog;
+            requestedVel(0) = surgeFbk;
+            requestedVel(5) = jogFbk;
 
             if (conf->ctrlMode == ControlMode::ThrusterMapping) {
 
@@ -186,4 +196,9 @@ void ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg)
 void StatusContextCB(const ulisse_msgs::msg::StatusContext::SharedPtr msg)
 {
     status_cxt = *msg;
+}
+
+void FilterDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)
+{
+    filterData = *msg;
 }
