@@ -88,6 +88,7 @@ PathRectPolyForm {
     buttonEdit.onClicked: function(){
         //if cur_managed is a polygonalpath
         edit_poly()
+        slidersLeft.enableBtns(false)
     }
 
     buttonPlay.onClicked: function(){
