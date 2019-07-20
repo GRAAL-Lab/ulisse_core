@@ -73,7 +73,7 @@ MapPolyline {
     }
 
     function generate_markers(){
-        var _path = getPath()
+        var _path = get_path()
         while(add_markers.length > 0) map.removeMapItem(add_markers.pop())
         while(vertex_markers.length > 0) map.removeMapItem(vertex_markers.pop())
         add_markers=[]
@@ -312,7 +312,7 @@ MapPolyline {
 
     function update_centroid(){
         var _path = get_path()
-        centroid = Helper.coordconfirm_edits_centroid(_path)
+        centroid = Helper.coords_centroid(_path)
         var c_p = map.fromCoordinate(centroid)
         _handle.h_center = centroid
         _handle.h_handle = map.toCoordinate(Qt.point(c_p.x-40, c_p.y), false)
@@ -361,11 +361,9 @@ MapPolyline {
                     rotating = !rotating
                 }
             } else if (mouse.button & Qt.RightButton){
-                if (nearest >=0 && nearest < _path.length){
-                    if (_path.length > 2){
-                        remove_coordinate(nearest)
-                        enable_add_markers()
-                    }
+                if (nearest >=1 && nearest < _path.length-1){
+                    remove_coordinate(nearest)
+                    enable_add_markers()
                 }
             }
         } else if (moving_idx >= 0){
@@ -451,6 +449,7 @@ MapPolyline {
                     removeCoordinate(pathLength()-1)
                     line.color = "#33cc33"
                     mapMouseArea.hoverEnabled = false
+                    update_centroid()
                     generate_nurbs()
                     end()
                     return
