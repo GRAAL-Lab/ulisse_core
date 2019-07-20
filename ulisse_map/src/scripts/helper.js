@@ -111,7 +111,7 @@ function point_in_box(p, p1, p2){
 }
 
 
-function polygons_disjoint(po1, po2){
+function polylines_disjoint(po1, po2){
     for (var i=0; i<po1.length-1; i++)
         for (var j=0; j<po2.length-1; j++)
             if (segments_interserction_1(po1[i], po1[i+1], po2[j], po2[j+1]) !== null)

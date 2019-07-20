@@ -103,7 +103,7 @@ MapPolyline {
     }
 
     function generate_markers(){
-        var _path = path.slice(0,path.length-1)
+        var _path = get_path()
         while(add_markers.length > 0) map.removeMapItem(add_markers.pop())
         while(vertex_markers.length > 0) map.removeMapItem(vertex_markers.pop())
         add_markers=[]
@@ -205,7 +205,7 @@ MapPolyline {
             bpp.push(map.fromCoordinate(box.path[i],false))
         for(var i=0; i<path.length; i++)
             ppp.push(map.fromCoordinate(path[i],false))
-        safe = Helper.polygons_disjoint(bpp,ppp) && Helper.coord_inside_polygon(path[0], box.path)
+        safe = Helper.polylines_disjoint(bpp,ppp) && Helper.coord_inside_polygon(path[0], box.path)
         return safe
     }
 
@@ -502,7 +502,7 @@ MapPolyline {
     }
 
     function update_centroid(){
-        var _path = path.slice(0,path.length-1)
+        var _path = get_path()
         centroid = Helper.coordconfirm_edits_centroid(_path)
         var c_p = map.fromCoordinate(centroid)
         _handle.h_center = centroid
@@ -642,7 +642,6 @@ MapPolyline {
 
     function begin_edit(){
         mapMouseArea.hoverEnabled = true
-        backup_path=path
         moving_idx = -1
         backup_path = path
         backup_centroid = centroid
