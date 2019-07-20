@@ -72,6 +72,7 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
     }
 
     command_srv_ = np_->create_client<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service);
+    boundary_srv_ = np_->create_client<ulisse_msgs::srv::SetBoundaries>(ulisse_msgs::topicnames::set_boundaries_service);
 
     rmw_qos_profile_t custom_qos_profile = rmw_qos_profile_sensor_data;
 
@@ -96,6 +97,47 @@ void CommandWrapper::ShowToast(const QVariant message, const QVariant duration)
     QMetaObject::invokeMethod(toastMgrObj_, "show", Qt::QueuedConnection,
         Q_ARG(QVariant, message), Q_ARG(QVariant, duration));
 }
+
+
+
+
+bool CommandWrapper::sendBoundaries(const QString boundary)
+{
+    auto serviceReq = std::make_shared<ulisse_msgs::srv::SetBoundaries::Request>();
+    serviceReq->bound_min = 5;
+    serviceReq->bound_max = 3;
+    serviceReq->boundaries_json = ""+boundary.toStdString();
+
+    return SendBoundariesRequest(serviceReq);
+}
+
+
+bool CommandWrapper::SendBoundariesRequest(ulisse_msgs::srv::SetBoundaries::Request::SharedPtr req)
+{
+    static std::string result_msg;
+    bool serviceAvailable;
+
+    if (boundary_srv_->service_is_ready()) {
+        auto result_future = boundary_srv_->async_send_request(req);
+        std::cout << "Send Bounary to KCL" << std::endl;
+        if (rclcpp::spin_until_future_complete(np_, result_future) != rclcpp::executor::FutureReturnCode::SUCCESS) {
+            result_msg = "service call failed :(";
+            RCLCPP_ERROR(np_->get_logger(), result_msg.c_str());
+        } else {
+            auto result = result_future.get();
+            result_msg = "Service returned: " + result->res;
+            RCLCPP_INFO(np_->get_logger(), result_msg.c_str());
+        }
+        serviceAvailable = true;
+    } else {
+        result_msg = "No Command Server Available";
+        serviceAvailable = false;
+    }
+
+    ShowToast(result_msg.c_str(), 2000);
+    return serviceAvailable;
+}
+
 
 bool CommandWrapper::SendCommandRequest(ulisse_msgs::srv::ControlCommand::Request::SharedPtr req)
 {
@@ -260,6 +302,7 @@ bool CommandWrapper::loadPathFromFile(const QString file)
 
         if (infile.is_open()) {
             std::cout << "Loading file: " << filename << std::endl;
+
             std::vector<double> temp_vec;
             int i = 0;
             std::string line;
