@@ -13,13 +13,20 @@ RowLayout {
     height: 100
     z: 100
 
-    property bool edit: false
+    property bool buttons: false
     property var angle: parseInt(angleField.text)
     property var offset: parseInt(offsetField.text)
+    property var method: methodField.currentText
     signal accept
     signal discard
 
-    onVisibleChanged: function(){console.log("V" + visible)}
+    function getParams(){
+        return {
+            angle: angle,
+            offset: offset,
+            method: method
+        }
+    }
 
     TextField {
         id: offsetField
@@ -36,29 +43,22 @@ RowLayout {
     }
 
     ComboBox {
-        id: idxField
-        model: ["single_winding", "2curves", "helix"]
-        enabled: false
+        id: methodField
+        model: ["simple", "single_winding"]
+        enabled: true
     }
-
 
     Button {
         id: cancelPolyEdit
-        Layout.preferredWidth: 17
-        Layout.preferredHeight: 17
-        text: qsTr("x")
-        visible: edit
+        text: qsTr("Cancel")
+        visible: buttons
         onClicked: function(){discard()}
     }
 
     Button {
         id: confirmPolyEdit
-        Layout.preferredWidth: 17
-        Layout.preferredHeight: 17
-        text: qsTr("v")
-        visible: edit
+        text: qsTr("Confirm")
+        visible: buttons
         onClicked: function(){accept()}
     }
-
-
 }

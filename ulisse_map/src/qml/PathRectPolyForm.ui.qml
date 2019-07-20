@@ -12,20 +12,24 @@ RowLayout {
     property alias b_rect: b_rect
     property alias b_poly: b_poly
     property alias b_polysec: b_polysec
-    property alias cancel_menuShape: cancel_menuShape
+
+    property alias cancelPathChoice: cancelPathChoice
+
     property alias buttonEdit: buttonEdit
     property alias buttonPlay: buttonPlay
 
-    property alias rowFigure: rowFigure
-    property alias rowPolyParams: rowPolyParams
-    property alias rowEditPlay: rowEditPlay
+    property alias panelPathChoice: panelPathChoice
+    property alias panelParamsPolygon: panelParamsPolygon
+    property alias panelParamsPolyline: panelParamsPolyline
+    property alias panelManage: panelManage
+    property var panels: [panelPathChoice, panelParamsPolygon, panelParamsPolyline, panelManage]
 
     id: rowChoices
     anchors.fill: map
 
     //Row for shapes
     RowLayout {
-        id: rowFigure
+        id: panelPathChoice
         height: 100
         visible: false
 
@@ -50,21 +54,22 @@ RowLayout {
         }
 
         Button {
-            id: cancel_menuShape
-            Layout.preferredWidth: 17
-            Layout.preferredHeight: 17
-            text: qsTr("X")
+            id: cancelPathChoice
+            text: qsTr("Cancel")
         }
     }
 
-    //Row for Offset
-    BarPolyParams {
-        id: rowPolyParams
+    BarPolygonParams {
+        id: panelParamsPolygon
+    }
+
+    BarPolylineParams {
+        id: panelParamsPolyline
     }
 
     //Row for edit/play
     RowLayout {
-        id: rowEditPlay
+        id: panelManage
         width: 100
         height: 100
         visible: false

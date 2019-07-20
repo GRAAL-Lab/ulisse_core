@@ -11,11 +11,15 @@ MapPolyline {
     opacity: 1.0
     z: map.z + 5
 
+    property string type: "convex_polygon"
+
     signal end
 
     property var polygonal_phase: 0
     property var poligonal_direction: 0 //1: counterclockwise, 2: clockwise
 
+    property var click_handler: click_handler_convex
+    property var pos_changed_handler: pos_changed_handler_convex
 
     property Component mapCanvasComponent
     property Component mapMarkerComponent
@@ -30,8 +34,7 @@ MapPolyline {
 
     property real _angle: 30
     property real _offset: 10
-    property real jump: 2
-    property string method: "single_winding" //"simple"
+    property string _method: "single_winding" //"simple"
 
     property var debug_c: null
 
@@ -306,9 +309,7 @@ MapPolyline {
         }
     }
 
-
-
-    function pos_changed_handler(mouse, box){
+    function pos_changed_handler_convex(mouse, box){
         if (polygonal_phase === 0) return;
         var p = Qt.point(mouse.x, mouse.y)
         var color
@@ -323,7 +324,7 @@ MapPolyline {
         replaceCoordinate(path.length-1, pf)
     }
 
-    function click_handler(mouse){
+    function click_handler_convex(mouse){
         var m = Qt.point(mouse.x, mouse.y)
         var p = map.toCoordinate(m)
         if (mouse.button & Qt.LeftButton){
@@ -502,7 +503,7 @@ MapPolyline {
 
     function update_centroid(){
         var _path = path.slice(0,path.length-1)
-        centroid = Helper.coords_centroid(_path)
+        centroid = Helper.coordconfirm_edits_centroid(_path)
         var c_p = map.fromCoordinate(centroid)
         _handle.h_center = centroid
         _handle.h_handle = map.toCoordinate(Qt.point(c_p.x-40, c_p.y), false)
@@ -579,7 +580,7 @@ MapPolyline {
     }
 
     function generate_path(){
-        if (!(method === "simple" || method === "single_winding")) return
+        if (!(_method === "simple" || _method === "single_winding")) return
 
         var orig_tilt = map.tilt
         map.tilt = 0
@@ -601,7 +602,7 @@ MapPolyline {
 
         intersections_cartesian = Helper.convex_polygon_parallel_slices_intersections(_angle, _offset, sides, lam/lom)
 
-        if (method === "simple" || method === "single_winding")
+        if (_method === "simple" || _method === "single_winding")
             intersections_cartesian = Helper.rectify_dense_winding(intersections_cartesian, lam/lom)
 
         // transform virtual euclidean reference points in map coordinates
@@ -668,10 +669,11 @@ MapPolyline {
         generate_nurbs()
     }
 
-    function confirm_edit(angle, offset, method){
+    function confirm_edit(params){
         mapMouseArea.hoverEnabled = false
-        _angle=angle
-        _offset=offset
+        _angle=params.angle
+        _offset=params.offset
+        _method=params.method
         moving_idx = -1
         _draw()
     }
@@ -684,9 +686,9 @@ MapPolyline {
         Helper.draw_path_lines(_canvas, intersections_canvas)
 
         // draw manouvre curves
-        if (method === "simple")
+        if (_method === "simple")
            Helper.draw_manouvre_simple(_canvas, intersections_canvas)
-        else if (method === "single_winding")
+        else if (_method === "single_winding")
            Helper.draw_manouvre_single_winding(_canvas, intersections_canvas)
     }
 
@@ -703,9 +705,9 @@ MapPolyline {
             var dir = (i+1)%2
             var p0 = intersections_cartesian[i][dir]
             var p3 = intersections_cartesian[i+1][dir]
-            if (method === "simple")
+            if (_method === "simple")
                 nurb_l.push(Helper.generate_nurb_line(p0, p3))
-            else if (method === "single_winding")
+            else if (_method === "single_winding")
                 nurb_l.push(Helper.generate_nurb_circle(p0, p3, dir))
         }
 

@@ -23,12 +23,7 @@ MapComponentForm {
     mapMouseArea.onClicked: {click_handler(mouse)}
     mapMouseArea.onPositionChanged: {pos_changed_handler(mouse)}
 
-    //property list<MapPolygon> poly_list
-    property MapPolygon poly_cur
     property MapPolygon poly_obj
-
-    //property list<MapPath> path_list
-    property MapPath path_cur
 
     property var el_list:[]
     property ElementTrack el_track
@@ -57,115 +52,26 @@ MapComponentForm {
         map.addMapItem(poly_obj)
         map.removeMapItem(poly_obj)
     }
-    //slidersLeft.listtrackers.Ob
-
-
-    function removeLastPath(){
-        var uniquelist_length = uniquelist.length
-        if(uniquelist_length > 0){
-            map.removeMapItem(uniquelist[uniquelist_length-1])
-            uniquelist.pop()
-            el_list[uniquelist_length-1].destroy()
-            polysec_cur.clear_path()
-        }
-    }
-
-    function modify(idx){
-        if(currentState === generalState.empty){
-            currentState = generalState.editmode
-            uniquelist[idx].begin_edit()
-            mapMouseArea.hoverEnabled = true
-            click_handler = uniquelist[idx].click_mod_handler
-            pos_changed_handler = uniquelist[idx].pos_changed_mod_handler
-        }
-    }
-
-    function save_mod(idx, angle, offset, method){
-        //if(currentState === generalState.editmode){
-            mapMouseArea.hoverEnabled = false
-            click_handler = null
-            pos_changed_handler = null
-            uniquelist[idx].confirm_edit(angle, offset, method)
-            uniquelist[idx].check_safe(polysec_cur)
-            currentState = generalState.empty
-        //}
-    }
-
-    function abort_mod(idx){
-        if(currentState === generalState.editmode){
-            currentState = generalState.empty
-            mapMouseArea.hoverEnabled = false
-            click_handler = null
-            pos_changed_handler = null
-            uniquelist[idx].discard_edit()
-        }
-    }
 
     function createPoly() {
-        poly_cur = polyComponent.createObject(map_component)
+        var poly_cur = polyComponent.createObject(map_component)
         uniquelist.push(poly_cur)
         map.addMapItem(poly_cur)
         return poly_cur
     }
 
     function createRect() {
-        createPoly()
-        click_handler = poly_cur.click_handler_rect
-        pos_changed_handler = poly_cur.pos_changed_handler_rect
-    }
-
-
-    function createPolySec() {
-        //TODO -> use a menu for editing the polygon
-         if (currentState === generalState.empty){
-             currentState = generalState.polysec
-             polysec_cur.clear_path()
-             click_handler = polysec_cur.click_handler
-             pos_changed_handler = polysec_cur.pos_changed_handler
-             polysec_cur.end.connect(endPolySec)
-         }
-    }
-
-
-    function hideRowElement(){
-        pathRectPoly.rowFigure.visible = false
-        pathRectPoly.rowPolyParams.visible = false
-        pathRectPoly.rowEditPlay.visible = false
+        var poly_cur = createPoly()
+        poly_cur.click_handler = poly_cur.click_handler_rect
+        poly_cur.pos_changed_handler = poly_cur.pos_changed_handler_rect
+        return poly_cur
     }
 
     function createPath() {
-        if (currentState === generalState.empty){
-            currentState = generalState.path
-            if (path_cur)
-                path_cur.end.disconnect(endPath)
-            path_cur = pathComponent.createObject(map_component)
-            uniquelist.push(path_cur)
-            el_track =trackComponent.createObject(slidersLeft.columnTrack, {_sliderL: slidersLeft , _comp:map_component, ntrack: uniquelist.length-1})
-            el_list.push(el_track)
-            map.addMapItem(path_cur)
-            click_handler = path_cur.click_handler
-            pos_changed_handler = path_cur.pos_changed_handler
-            path_cur.end.connect(endPath)
-            hideRowElement()
-        }
-
-    }
-
-    function endPolySec() {
-         if (currentState === generalState.polysec){
-             click_handler = function(){}
-             pos_changed_handler = function(){}
-             currentState = generalState.empty
-             hideRowElement()
-         }
-    }
-
-    function endPath(){
-        if (currentState === generalState.path){
-            click_handler = function(){}
-            pos_changed_handler = function(){}
-            currentState = generalState.empty
-        }
+        var path_cur = pathComponent.createObject(map_component)
+        uniquelist.push(path_cur)
+        map.addMapItem(path_cur)
+        return path_cur
     }
 
     function openFile(fileName) {
@@ -181,20 +87,16 @@ MapComponentForm {
         if(!done){
             console.log("Error in writing")
         }
-
     }
 
 
     //TODO, acquire from file
     function loadPath(file){
-
         var jsondata = openFile(path_file)
-
         //var jsondata = '{"paths":[{"name":"RectPath","offset":30,"angle":30,"values":[{"latitude":44.40107591944535,"longitude":8.938550991344044},{"latitude":44.40047969448704,"longitude":8.93841443556687},{"latitude":44.40007608275216,"longitude":8.940176670711962},{"latitude":44.400672307710465,"longitude":8.940313226489137},{"latitude":44.40107591944535,"longitude":8.938550991344044}]},{"name":"RectPath","offset":30,"angle":30,"values":[{"latitude":44.40069108402936,"longitude":8.940477945263183},{"latitude":44.4001436377436,"longitude":8.94060691461786},{"latitude":44.400414241381306,"longitude":8.941755566999255},{"latitude":44.40096168766707,"longitude":8.941626597644579},{"latitude":44.40069108402936,"longitude":8.940477945263183}]},{"name":"PolyPath","offset":30,"angle":30,"values":[{"latitude":44.39993766652866,"longitude":8.940000000000026},{"latitude":44.39943899637509,"longitude":8.939529641180883},{"latitude":44.399243863411584,"longitude":8.940075864332641},{"latitude":44.39940105390387,"longitude":8.940652433217394},{"latitude":44.39993766652866,"longitude":8.940000000000026}]},{"name":"PolyPath","offset":30,"angle":30,"values":[{"latitude":44.400197840578414,"longitude":8.938884794386013},{"latitude":44.3998292603344,"longitude":8.938770997897848},{"latitude":44.39974253523594,"longitude":8.93946894971478},{"latitude":44.40004065222675,"longitude":8.939734474846631},{"latitude":44.40018157973325,"longitude":8.939317221049606},{"latitude":44.400197840578414,"longitude":8.938884794386013}]},{"name":"PolyPath","offset":30,"angle":30,"values":[{"latitude":44.40006775369815,"longitude":8.940971063392823},{"latitude":44.39975879620314,"longitude":8.940743470416521},{"latitude":44.39962870834669,"longitude":8.941008995548373},{"latitude":44.39962870834669,"longitude":8.941600737299694},{"latitude":44.40000271014572,"longitude":8.941684188076295},{"latitude":44.40015989859932,"longitude":8.941426249345454},{"latitude":44.40006775369815,"longitude":8.940971063392823}]},{"name":"PointPath","values":[{"latitude":44.39909751327148,"longitude":8.938892380830026},{"latitude":44.398739766929,"longitude":8.939711715557621},{"latitude":44.39864219936646,"longitude":8.940887612637738},{"latitude":44.39894032196373,"longitude":8.941206242813166}]},{"name":"SecurityPoly","values":[{"latitude":44.40123310500795,"longitude":8.938285466212193},{"latitude":44.39862593808893,"longitude":8.938088218947428},{"latitude":44.39847416595517,"longitude":8.941631083032746},{"latitude":44.401292727013285,"longitude":8.941790398120446},{"latitude":44.40123310500795,"longitude":8.938285466212193}]}]}'
         var data = JSON.parse(jsondata)
 
         var i,j,lat,lon,p
-
 
         //clearAll()
         for(i = 0; i < data.paths.length; i++){

@@ -262,7 +262,7 @@ Row {
     function restoreBtns(){
         main_btns.visible = true
         confirm_btns.visible = false
-        sliderRow.enableBtns(true)
+        enableBtns(true)
         multichoice = false
     }
 

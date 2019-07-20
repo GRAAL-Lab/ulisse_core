@@ -17,62 +17,86 @@ PathRectPolyForm {
         trackComponent = Qt.createComponent("ElementTrack.qml")
     }
 
+    cancelPathChoice.onClicked:{
+        slidersLeft.deselect_all()
+        slidersLeft.enableBtns()
+        hide_all()
+    }
 
     /*-------------- POLY CREATION/EDITING ----------------*/
 
     property var cur_managed
+    property var params_panel
 
-    b_poly.onClicked: function(){start_poly()}
-    rowPolyParams.onAccept: function(){confirm_poly()}
-    rowPolyParams.onDiscard: function(){discard_poly()}
-
-    function start_poly(){
+    b_poly.onClicked: function(){
         cur_managed = map.createPoly()
+        params_panel = panelParamsPolygon
+        start()
+    }
+
+    b_rect.onClicked: function(){
+        cur_managed = map.createRect()
+        params_panel = panelParamsPolygon
+        start()
+    }
+
+    b_path.onClicked: function(){
+        cur_managed = map.createPath()
+        params_panel = panelParamsPolyline
+        start()
+    }
+
+    panelParamsPolygon.onAccept: function(){confirm()}
+    panelParamsPolygon.onDiscard: function(){discard()}
+    panelParamsPolyline.onAccept: function(){confirm()}
+    panelParamsPolyline.onDiscard: function(){discard()}
+
+    function start(){
         if (cur_managed === null) return
-        show_poly_create()
-        cur_managed.end.connect(end_poly)
+        show_create()
+        cur_managed.end.connect(end)
         map.click_handler = cur_managed.click_handler
         map.pos_changed_handler = cur_managed.pos_changed_handler
     }
 
-    function edit_poly(){
+    function edit(){
         if (cur_managed === null) return
-        show_poly_edit()
+        slidersLeft.enableBtns(false)
+        show_edit()
         cur_managed.begin_edit()
         map.click_handler = cur_managed.click_mod_handler
         map.pos_changed_handler = cur_managed.pos_changed_mod_handler
     }
 
-    property var v
-
-    function end_poly(){
-        cur_managed.end.disconnect(end_poly)
-        confirm_poly()
-        v = trackComponent.createObject(slidersLeft.columnTrack)
+    function end(){
+        cur_managed.end.disconnect(end)
+        confirm()
+        var v = trackComponent.createObject(slidersLeft.columnTrack)
         v._comp = cur_managed
         v.ntrack = map.uniquelist.length
-        v.edit.connect(edit_poly)
-        v.selected.connect(function (poly){
-            slidersLeft.update_selection(poly)
-            manage(poly)
+        v.edit.connect(edit)
+        v.selected.connect(function (path){
+            slidersLeft.update_selection(path)
+            manage(path)
         })
         slidersLeft.update_selection(cur_managed)
         manage(cur_managed)
     }
 
-    function confirm_poly() {
+    function confirm() {
         map.click_handler = function(){}
         map.pos_changed_handler = function(){}
-        cur_managed.confirm_edit(rowPolyParams.angle, rowPolyParams.offset, "simple")
+        var p = params_panel.getParams()
+        cur_managed.confirm_edit(p)
         cur_managed.check_safe(map.polysec_cur)
-        show_path_manage()
+        show_manage()
     }
 
-    function discard_poly() {
+    function discard() {
         map.click_handler = function(){}
         map.pos_changed_handler = function(){}
         cur_managed.discard_edit()
-        show_path_manage()
+        show_manage()
     }
 
     /*-----------------------------------------------------------*/
@@ -82,52 +106,48 @@ PathRectPolyForm {
 
     function manage(path) {
         cur_managed = path
-        show_path_manage()
+        show_manage()
     }
 
     buttonEdit.onClicked: function(){
-        //if cur_managed is a polygonalpath
-        edit_poly()
+        if (cur_managed === null) return
+        edit()
     }
 
     buttonPlay.onClicked: function(){
-        //TODO
+        if (cur_managed === null) return
+        console.log(JSON.stringify(cur_managed.generate_nurbs))
     }
 
     /*------------------------------------------------------------*/
 
-
     function show_shape_choice(){
-        rowFigure.visible = true
-        rowPolyParams.visible = false
-        rowEditPlay.visible = false
+        show_panel(panelPathChoice)
     }
 
-    function show_poly_create(){
-        rowFigure.visible = false
-        rowPolyParams.visible = true
-        rowPolyParams.edit = false
-        rowEditPlay.visible = false
+    function show_panel(panel){
+        for (var i=0; i<panels.length; i++)
+            panels[i].visible = (panel === panels[i])
     }
 
-    function show_poly_edit(){
-        rowFigure.visible = false
-        rowPolyParams.visible = true
-        rowPolyParams.edit = true
-        rowEditPlay.visible = false
+    function show_create(){
+        show_panel(params_panel)
+        params_panel.buttons = false
     }
 
-    function show_path_manage(){
+    function show_edit(){
+        show_panel(params_panel)
+        params_panel.buttons = true
+    }
+
+    function show_manage(){
+        show_panel(panelManage)
         slidersLeft.enableBtns(true)
-        rowFigure.visible = false
-        rowPolyParams.visible = false
-        rowEditPlay.visible = true
     }
 
     function hide_all(){
-        rowFigure.visible = false
-        rowPolyParams.visible = false
-        rowEditPlay.visible = false
+        for (var i=0; i<panels.length; i++)
+            panels[i].visible = false
     }
 
     /*----------------------------------------------------------*/
@@ -135,11 +155,5 @@ PathRectPolyForm {
     b_polysec.onClicked: {
         map.center = fbkUpdater.ulisse_pos
         map.createPolySec()
-    }
-
-    cancel_menuShape.onClicked:{
-        rowFigure.visible = false
-        rowPolyParams.visible = false
-        rowEditPlay.visible = false
     }
 }

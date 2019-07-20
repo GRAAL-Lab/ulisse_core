@@ -442,7 +442,7 @@ function draw_path_lines(canvas, pp){
 }
 
 function ctx_draw_manouvre_simple(ctx, pp){
-    for (var i = 0; i < pp.length; i++){
+    for (var i = 0; i < pp.length-1; i++){
         var dir = (i+1)%2
         var p0 = pp[i][dir]
         var p1 = pp[i+1][dir]

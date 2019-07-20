@@ -10,11 +10,21 @@ MapPolyline {
     opacity: 1.0
     z: map.z + 5
 
+    property string type: "polyline"
+
     signal end
 
     Component.onCompleted: {
         Helper.init_lib(QtPositioning)
     }
+
+    //TODO
+    function begin_edit(){console.log("TODO")}
+    function click_mod_handler(){console.log("TODO")}
+    function pos_changed_mod_handler(){console.log("TODO")}
+    function confirm_edit(params){console.log("TODO")}
+    function discard_edit(){console.log("TODO")}
+    function check_safe(box){console.log("TODO")}
 
     function click_handler(mouse){
         if (mouse.button & Qt.LeftButton) {
@@ -75,6 +85,7 @@ MapPolyline {
         //console.log(JSON.stringify(result))
         return result
     }
+
     function serialize(){
         var values = []
         for (j = 0; j < path.length; j++){
@@ -90,8 +101,8 @@ MapPolyline {
             angle: poly_list[i].angle,
             values: values
         }
-
     }
+
     function deserialize(values){
         var lat, lon
         for(var j = 0; j < values.length; j++){
@@ -100,5 +111,4 @@ MapPolyline {
             poly_cur.addCoordinate(QtPositioning.coordinate(lat,lon))
         }
     }
-
 }
