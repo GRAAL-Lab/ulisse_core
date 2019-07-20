@@ -5,7 +5,7 @@
 #define GROUP_PROJECT_KALMAN_FILTER_H
 
 #include "ctrl_toolbox/MeasurmentKalmanFilter.h"
-
+#include <cmath>
 
 namespace ulisse {
 
