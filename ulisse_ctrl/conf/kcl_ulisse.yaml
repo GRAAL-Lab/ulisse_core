@@ -5,7 +5,7 @@ controller_node:
         PosAcceptanceRadius: 5.0
 
         SpeedLimiter: 2.5               # m/s [Be careful to make the mapping saturation bigger than this values] (to avoid double saturation)
-        JogLimiter: 0.3                 # rad/s
+        JogLimiter: 2.5                 # rad/s
 
         #DistanceThreshold: 5.0          # m
         #MaximumTargetDistance: 50000.0  # m
@@ -26,9 +26,9 @@ controller_node:
 
         SlowDownOnTurns:
             enable: true
-            HeadingErrorMin: 0.17 # 10.0 degrllc
-            HeadingErrorMax: 0.44 # 25.0 degress
-            AlphaMin: 0.1
+            HeadingErrorMin: 0.05 # 10.0 degrllc
+            HeadingErrorMax: 0.1 # 25.0 degress
+            AlphaMin: 0.01
             AlphaMax: 1.0
 
         AvoidRotationCloseToTarget:

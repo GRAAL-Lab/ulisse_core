@@ -14,14 +14,6 @@ namespace commands {
 
     fsm::retval CommandHold::Execute()
     {
-
-        goalCxt_->currentGoal.pos.latitude = statusCxt_->vehiclePos.latitude;
-        goalCxt_->currentGoal.pos.longitude = statusCxt_->vehiclePos.longitude;
-
-        ctrlCxt_->pidPosition.Reset();
-        ctrlCxt_->pidHeading.Reset();
-        ctrlCxt_->pidSurge.Reset();
-
         return fsm_->SetNextState(ulisse::states::ID::hold);
     }
 

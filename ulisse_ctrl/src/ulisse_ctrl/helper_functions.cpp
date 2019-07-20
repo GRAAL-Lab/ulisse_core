@@ -1,5 +1,5 @@
 #include "ulisse_ctrl/helper_functions.hpp"
-
+#include <iostream>
 namespace ulisse {
 
 double NormalizeHeadingOn2PI(double angle)
@@ -171,4 +171,109 @@ void LoadLowLevelConfiguration(std::shared_ptr<LowLevelConfiguration> conf, rclc
     conf->dynamic_pidgains_yawrate.Tr = par_client->get_parameter("DynamicControl.PIDYawRate.Tr", 0.0);
     conf->dynamic_pidsat_yawrate = par_client->get_parameter("TorqueLimiter", 0.0);
 }
+
+double s1 (const double ref, const double fb, struct SlidingSurface param){return param._k*(ref-fb);}
+
+double s2 (const double ref, const double fb, struct SlidingSurface param){return param._k1*(ref-fb);}
+
+
+void parameter_setting(struct SlidingSurface &param,std::shared_ptr<LowLevelConfiguration> conf, double k, double k1){
+
+        param._inertia.resize(3);
+        param._inertia[0] = conf->thrusterMap.Inertia.diagonal()[0];
+        param._inertia[1] = conf->thrusterMap.Inertia.diagonal()[1];
+        param._inertia[2] = conf->thrusterMap.Inertia.diagonal()[2];
+
+        param._Cx.resize(3);
+        param._Cx[0]= conf->thrusterMap.cX[0];
+        param._Cx[1]= conf->thrusterMap.cX[1];
+        param._Cx[2]= conf->thrusterMap.cX[2];
+
+        param._Cn.resize(3);
+        param._Cn[0] = conf->thrusterMap.cN[0];
+        param._Cn[1] = conf->thrusterMap.cN[1];
+        param._Cn[2] = conf->thrusterMap.cN[2];
+
+        param._k = k;
+        param._k1 = k1;
+
+    }
+
+    std::vector<double> alpha_beta_u (const std::vector<double> state, struct SlidingSurface param)
+    {
+        auto alpha=-param._Cx[0]*std::pow(state[1],2)-param._Cx[1]*state[0]- param._Cx[2]*std::abs(state[0])*state[0];
+        alpha=-1/param._inertia[0]*param._k*alpha;
+        auto beta = -1/param._inertia[0]*param._k;
+        std::vector<double> alphaBeta = {alpha,beta};
+        return alphaBeta;
+    }
+
+    std::vector<double> alpha_beta_r (const std::vector<double> state, struct SlidingSurface param)
+    {
+        auto alpha=param._Cn[0]*state[0]*state[1]-param._Cn[1]*state[1]- param._Cn[2]*std::abs(state[1])*state[1];
+        alpha=-1/param._inertia[2]*param._k1*alpha;
+        auto beta = -1/param._inertia[2]*param._k1;
+        std::vector<double> alphaBeta = {alpha,beta};
+        return alphaBeta;
+
+    }
+
+	double MinimumAngleBetween(double from, double to) {
+		// Use Versor Lemma Reduced to compute angle difference
+		double angle1 = std::fmod( (to - from), 2 * M_PI);
+		double angle2 = std::fmod( (from - to), 2 * M_PI);
+
+		if (angle1 < 0)
+		    angle1 += 2 * M_PI;
+
+		if (angle2 < 0)
+		    angle2 += 2 * M_PI;
+
+		if (angle1 < angle2) {
+		    return angle1;
+		} else {
+		    return -1 * angle2;
+		}
+
+	}
+
+    double DecimalPart(double x) {
+        if(x > floor(x))
+            return x - floor(x);
+        else
+            return x - (floor(x) - 1);
+    }
+
+    double deg_to_rad(double deg){
+        return (M_PI/180.0) * deg;
+    }
+
+    double rad_to_deg(double rad){
+        return (180.0/M_PI) * rad;
+    }
+
+    double lat_to_m_coeff(double lat){
+        lat = deg_to_rad(lat);
+        return 111132.92 - 559.82*cos(2*lat) + 1.175*cos(4*lat) - 0.0023*cos(6*lat);
+    }
+
+    double lon_to_m_coeff(double lon){
+        lon = deg_to_rad(lon);
+        return 111412.84*cos(lon) - 93.5*cos(3*lon) + 0.118*cos(5*lon);
+    }
+
+    double* point_map2euclidean(double latitude, double longitude, ctb::LatLong centroid, double lam, double lom){
+        double* result = new double[3];
+        result[0] = (centroid.longitude - longitude) * lom;
+        result[1] = (centroid.latitude  - latitude)  * lam;
+        result[2] = 0;
+        return result;
+    }
+
+    ctb::LatLong point_euclidean2map(double x, double y, ctb::LatLong centroid, double lam, double lom){
+        ctb::LatLong result;
+        result.latitude = centroid.latitude - y/lam;
+        result.longitude = centroid.longitude - x/lom;
+        return result;
+    }
 }

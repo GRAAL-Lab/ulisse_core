@@ -11,13 +11,17 @@ namespace states {
 
     class StateHold : public GenericState {
 
-        bool goalReached_;
+    protected:
+        std::shared_ptr<ikcl::Hold> holdTask_;
 
     public:
         StateHold();
         virtual ~StateHold();
         virtual fsm::retval OnEntry();
         virtual fsm::retval Execute();
+        virtual fsm::retval OnExit();
+
+        void SetHoldTask(std::shared_ptr<ikcl::Hold> holdTask);
     };
 }
 }

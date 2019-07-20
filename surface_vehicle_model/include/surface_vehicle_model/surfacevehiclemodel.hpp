@@ -76,6 +76,9 @@ class SurfaceVehicleModel {
     //double tauX_, tauN_;
     Eigen::Vector3d tauStar_, nir_;
     ThrusterMappingParameters params_;
+    double tau_x;
+    double tau_n;
+    bool external_ctrl;
 
     double GetTauX();
     double GetTauN();
@@ -87,6 +90,13 @@ class SurfaceVehicleModel {
 
 public:
     SurfaceVehicleModel();
+
+    double get_tau_x () const {return tau_x;};
+    double get_tau_n () const {return tau_n;};
+    void set_tau_x (const double tau) {tau_x=tau;};
+    void set_tau_n (const double tau) {tau_n=tau;};
+    bool get_external_ctrl () const {return external_ctrl;};
+    void set_external_ctrl (const bool flag) {external_ctrl=flag;};
 
     void SetMappingParams(const ThrusterMappingParameters& params);
     void DirectDynamics(double h_p, double h_s, const Eigen::Vector6d& linAngVel_, Eigen::Vector6d& linAngAcc_);

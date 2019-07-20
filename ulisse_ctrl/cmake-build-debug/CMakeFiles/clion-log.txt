@@ -1,0 +1,14 @@
+/home/marco/clion-2019.1.3/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl
+-- Found ament_cmake: 0.6.1 (/opt/ros/crystal/share/ament_cmake/cmake)
+-- Using PYTHON_EXECUTABLE: /usr/bin/python3
+-- Found rclcpp: 0.6.4 (/opt/ros/crystal/share/rclcpp/cmake)
+-- Found rosidl_adapter: 0.6.3 (/opt/ros/crystal/share/rosidl_adapter/cmake)
+-- Found rmw_implementation_cmake: 0.6.1 (/opt/ros/crystal/share/rmw_implementation_cmake/cmake)
+-- Found std_msgs: 0.6.1 (/opt/ros/crystal/share/std_msgs/cmake)
+-- Found surface_vehicle_model: 0.0.1 (/home/marco/group_project/ros2_ws/install/surface_vehicle_model/share/surface_vehicle_model/cmake)
+-- Found ulisse_msgs: 0.0.1 (/home/marco/group_project/ros2_ws/install/ulisse_msgs/share/ulisse_msgs/cmake)
+-- Found ulisse_driver: 0.0.1 (/home/marco/group_project/ros2_ws/install/ulisse_driver/share/ulisse_driver/cmake)
+-- Boost version: 1.65.1
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug

@@ -23,9 +23,6 @@ namespace commands {
         goalCxt_->goalHeading = heading;
         goalCxt_->cmdTimeout = timeout_sec;
 
-        ctrlCxt_->pidPosition.Reset();
-        ctrlCxt_->pidHeading.Reset();
-        ctrlCxt_->pidSurge.Reset();
         goalCxt_->goalDistance = 0.0;
     }
 }

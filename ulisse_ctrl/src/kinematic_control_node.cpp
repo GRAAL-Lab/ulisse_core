@@ -18,9 +18,6 @@ int main(int argc, char* argv[])
     double sampleTime = 1.0 / rate;
     rclcpp::WallRate loop_rate(rate);
 
-    Eigen::TransfMatrix wTv;
-    auto myModel = std::make_shared<rml::RobotModel>(wTv, "myVehicle");
-
     ulisse::VehicleController myVC(node, sampleTime);
 
     ulisse::Spinner spinner(7);

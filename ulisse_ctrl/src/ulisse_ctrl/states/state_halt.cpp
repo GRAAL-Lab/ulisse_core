@@ -12,24 +12,44 @@ namespace states {
     {
     }
 
+    void StateHalt::SetAngularVelocityTask(std::shared_ptr<ikcl::AngularVelocity> angularVelocityTask)
+    {
+        angularVelocityTask_ = angularVelocityTask;
+    }
+
+    void StateHalt::SetLinearVelocityTask(std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask)
+    {
+        linearVelocityTask_ = linearVelocityTask;
+    }
+
     fsm::retval StateHalt::OnEntry()
     {
-        std::cout << "- Switched to state HALT -" << std::endl;
         goalCxt_->currentGoal.pos = statusCxt_->vehiclePos;
         goalCxt_->goalDistance = 0.0;
 
-        ctrlCxt_->pidPosition.Reset();
-        ctrlCxt_->pidSurge.Reset();
-        ctrlCxt_->pidHeading.Reset();
+        linearVelocityTask_->SetVelocity(Eigen::Vector3d(0, 0, 0));
+        angularVelocityTask_->SetVelocity(Eigen::Vector3d(0, 0, 0));
 
-        ctrlCxt_->desiredSurge = 0.0;
-        ctrlCxt_->desiredJog = 0.0;
+        actionManager_->SetAction(ulisse::action::idle, true);
 
         return fsm::ok;
     }
 
     fsm::retval StateHalt::Execute()
     {
+        for (auto& task : unifiedHierarchy_) {
+            try {
+                task->Update();
+            } catch (tpik::ExceptionWithHow& e) {
+                std::cerr << "UPDATE TASK EXCEPTION" << std::endl;
+                std::cerr << "who " << e.what() << " how: " << e.how() << std::endl;
+            }
+        }
+
+        linearVelocityTask_->SetVelocity(Eigen::Vector3d(0, 0, 0));
+        angularVelocityTask_->SetVelocity(Eigen::Vector3d(0, 0, 0));
+
+        std::cout << "STATE HALT" << std::endl;
         return fsm::ok;
     }
 }

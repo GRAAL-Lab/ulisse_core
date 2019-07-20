@@ -67,10 +67,15 @@ double SurfaceVehicleModel::GetThrusterForceFromRPM(double n, double linXVel)
 double SurfaceVehicleModel::GetThrusterForceFromMapping()
 {
     double force;
-    force = 0.5 * (GetTauX() + GetTauN() / params_.d);
+    if (!external_ctrl)
+        force = 0.5 * (GetTauX() + GetTauN() / params_.d);
+    else
+    {
+        force = 0.5 * (tau_x + tau_n/params_.d);
+        tau_n=-tau_n;
+    }
     return force;
 }
-
 double SurfaceVehicleModel::PercentageToRPM(double h)
 {
     double rpm;

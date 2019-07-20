@@ -44,10 +44,12 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/MicroLoopCount.msg"
   "msg/GPSData.msg"
   "msg/GPSStatus.msg"
+  "msg/ControlData.msg" 
   # Commands
   "msg/CommandHold.msg"
   "msg/CommandLatLong.msg"
   "msg/CommandSpeedHeading.msg"
+  "msg/CommandNavigate.msg"
   # LLC
   "msg/LLCAck.msg"
   "msg/LLCBattery.msg"

@@ -36,7 +36,6 @@ namespace topicnames {
     const std::string llc_cmd_service = "/ulisse/service/llc_cmd";
     const std::string control_cmd_service = "/ulisse/service/control_cmd";
     const std::string navfilter_cmd_service = "/ulisse/service/navfilter_cmd";
-
     const std::string set_boundaries_service = "/ulisse/ctrl/set_boundaries";
 }
 }

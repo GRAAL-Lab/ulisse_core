@@ -1,0 +1,1576 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="ulisse_ctrl"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;CMake Files\..\;CMake Files\..\..\;CMake Files\..\..\..\;CMake Files\..\..\..\..\;CMake Files\..\..\..\..\..\;CMake Files\..\..\..\..\..\..\;CMake Files\..\..\..\..\..\..\..\;CMake Files\..\..\..\..\..\..\..\opt\;CMake Files\..\..\..\..\..\..\..\opt\ros\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_libraries\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_libraries\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\core\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\core\templates\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\environment\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\environment_hooks\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\environment_hooks\environment\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\index\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\package_templates\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\uninstall_target\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_definitions\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_definitions\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_dependencies\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_dependencies\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_include_directories\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_include_directories\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_interfaces\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_interfaces\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_libraries\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_libraries\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_link_flags\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_link_flags\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_python\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_python\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_target_dependencies\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_target_dependencies\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_include_directories\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_include_directories\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_test\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_test\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rclcpp\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rclcpp\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcl\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcl\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcl_interfaces\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcl_interfaces\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\builtin_interfaces\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\builtin_interfaces\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_default_runtime\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_default_runtime\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_generator_cpp\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_generator_cpp\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_cmake\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_adapter\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_adapter\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_generator_c\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_generator_c\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_interface\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_interface\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_c\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_c\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_cpp\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_cpp\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_introspection_c\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_introspection_c\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_introspection_cpp\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_introspection_cpp\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rmw_implementation\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rmw_implementation\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rmw_implementation_cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rmw_implementation_cmake\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rmw\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rmw\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcutils\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcutils\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcl_logging_noop\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcl_logging_noop\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosgraph_msgs\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosgraph_msgs\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcl_yaml_param_parser\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcl_yaml_param_parser\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\std_msgs\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\std_msgs\cmake\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\lib\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\lib\python3.6\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\lib\python3.6\site-packages\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\lib\python3.6\site-packages\ament_package\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\lib\python3.6\site-packages\ament_package\template\;CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\lib\python3.6\site-packages\ament_package\template\package_level\;CMake Files\..\..\..\..\..\..\..\usr\;CMake Files\..\..\..\..\..\..\..\usr\local\;CMake Files\..\..\..\..\..\..\..\usr\local\share\;CMake Files\..\..\..\..\..\..\..\usr\local\share\rml\;CMake Files\..\..\..\..\..\..\..\usr\local\share\rml\cmake\;CMake Files\..\..\..\..\..\..\..\usr\local\share\ctrl_toolbox\;CMake Files\..\..\..\..\..\..\..\usr\local\share\ctrl_toolbox\cmake\;CMake Files\..\..\..\..\..\..\..\usr\local\share\tpik\;CMake Files\..\..\..\..\..\..\..\usr\local\share\tpik\cmake\;CMake Files\..\..\..\..\..\..\..\usr\local\share\ikcl\;CMake Files\..\..\..\..\..\..\..\usr\local\share\ikcl\cmake\;CMake Files\..\..\..\install\;CMake Files\..\..\..\install\surface_vehicle_model\;CMake Files\..\..\..\install\surface_vehicle_model\share\;CMake Files\..\..\..\install\surface_vehicle_model\share\surface_vehicle_model\;CMake Files\..\..\..\install\surface_vehicle_model\share\surface_vehicle_model\cmake\;CMake Files\..\..\..\install\ulisse_msgs\;CMake Files\..\..\..\install\ulisse_msgs\share\;CMake Files\..\..\..\install\ulisse_msgs\share\ulisse_msgs\;CMake Files\..\..\..\install\ulisse_msgs\share\ulisse_msgs\cmake\;CMake Files\..\..\..\install\ulisse_driver\;CMake Files\..\..\..\install\ulisse_driver\share\;CMake Files\..\..\..\install\ulisse_driver\share\ulisse_driver\;CMake Files\..\..\..\install\ulisse_driver\share\ulisse_driver\cmake\;CMake Files\..\..\..\install\fsm\;CMake Files\..\..\..\install\fsm\share\;CMake Files\..\..\..\install\fsm\share\fsm\;CMake Files\..\..\..\install\fsm\share\fsm\cmake\;CMake Files\cmake-build-debug\;CMake Files\cmake-build-debug\ament_cmake_package_templates\;CMake Files\cmake-build-debug\ament_cmake_core\;CMake Files\cmake-build-debug\ament_cmake_export_include_directories\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="install/local">
+				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 install/local"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="install">
+				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 install"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="list_install_components">
+				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 list_install_components"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="test">
+				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 test"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="bongio">
+				<Option output="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/bongio" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_driver/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_msgs/include"/>
+					<Add directory="/opt/ros/crystal/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/surface_vehicle_model/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/fsm/include"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 bongio"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="bongio/fast">
+				<Option output="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/bongio" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_driver/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_msgs/include"/>
+					<Add directory="/opt/ros/crystal/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/surface_vehicle_model/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/fsm/include"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 bongio/fast"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="Nightly">
+				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 Nightly"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="nurbs">
+				<Option output="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/nurbs" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_driver/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_msgs/include"/>
+					<Add directory="/opt/ros/crystal/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/surface_vehicle_model/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/fsm/include"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 nurbs"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="nurbs/fast">
+				<Option output="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/nurbs" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_driver/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_msgs/include"/>
+					<Add directory="/opt/ros/crystal/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/surface_vehicle_model/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/fsm/include"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 nurbs/fast"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="install/strip">
+				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 install/strip"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="dynamic_control_node">
+				<Option output="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/dynamic_control_node" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_driver/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_msgs/include"/>
+					<Add directory="/opt/ros/crystal/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/surface_vehicle_model/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/fsm/include"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 dynamic_control_node"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="dynamic_control_node/fast">
+				<Option output="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/dynamic_control_node" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_driver/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_msgs/include"/>
+					<Add directory="/opt/ros/crystal/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/surface_vehicle_model/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/fsm/include"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 dynamic_control_node/fast"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="kinematic_control_node">
+				<Option output="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/kinematic_control_node" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_driver/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_msgs/include"/>
+					<Add directory="/opt/ros/crystal/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/surface_vehicle_model/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/fsm/include"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 kinematic_control_node"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="kinematic_control_node/fast">
+				<Option output="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/kinematic_control_node" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_driver/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_msgs/include"/>
+					<Add directory="/opt/ros/crystal/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/surface_vehicle_model/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/fsm/include"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 kinematic_control_node/fast"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="Experimental">
+				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 Experimental"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="Continuous">
+				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 Continuous"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title=".Files.">
+				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 .Files."/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="control_test">
+				<Option output="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/control_test" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_driver/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_msgs/include"/>
+					<Add directory="/opt/ros/crystal/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/surface_vehicle_model/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/fsm/include"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 control_test"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="control_test/fast">
+				<Option output="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/control_test" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_driver/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_msgs/include"/>
+					<Add directory="/opt/ros/crystal/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/surface_vehicle_model/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/fsm/include"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 control_test/fast"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="uninstall">
+				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 uninstall"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="monitor_node">
+				<Option output="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/monitor_node" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_driver/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_msgs/include"/>
+					<Add directory="/opt/ros/crystal/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/surface_vehicle_model/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/fsm/include"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 monitor_node"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="monitor_node/fast">
+				<Option output="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/monitor_node" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_driver/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_msgs/include"/>
+					<Add directory="/opt/ros/crystal/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/surface_vehicle_model/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/fsm/include"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 monitor_node/fast"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="spline">
+				<Option output="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/spline" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_driver/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_msgs/include"/>
+					<Add directory="/opt/ros/crystal/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/surface_vehicle_model/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/fsm/include"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 spline"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="spline/fast">
+				<Option output="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/spline" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_driver/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_msgs/include"/>
+					<Add directory="/opt/ros/crystal/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/surface_vehicle_model/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/fsm/include"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 spline/fast"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="ulisse_ctrl_lib">
+				<Option output="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/libulisse_ctrl_lib.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_driver/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_msgs/include"/>
+					<Add directory="/opt/ros/crystal/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/surface_vehicle_model/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/fsm/include"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 ulisse_ctrl_lib"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="ulisse_ctrl_lib/fast">
+				<Option output="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/libulisse_ctrl_lib.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_driver/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_msgs/include"/>
+					<Add directory="/opt/ros/crystal/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/surface_vehicle_model/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/fsm/include"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 ulisse_ctrl_lib/fast"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="controller_console_node">
+				<Option output="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/controller_console_node" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_driver/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_msgs/include"/>
+					<Add directory="/opt/ros/crystal/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/surface_vehicle_model/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/fsm/include"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 controller_console_node"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="controller_console_node/fast">
+				<Option output="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/controller_console_node" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_driver/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_msgs/include"/>
+					<Add directory="/opt/ros/crystal/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/surface_vehicle_model/include"/>
+					<Add directory="/home/marco/group_project/ros2_ws/install/fsm/include"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 controller_console_node/fast"/>
+					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/.idea/misc.xml">
+			<Option target=".Files."/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/.idea/modules.xml">
+			<Option target=".Files."/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/.idea/vcs.xml">
+			<Option target=".Files."/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/.idea/workspace.xml">
+			<Option target=".Files."/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/conf/dcl_ulisse.yaml">
+			<Option target=".Files."/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/conf/kcl_ulisse.yaml">
+			<Option target=".Files."/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/conf/navfilter.yaml">
+			<Option target=".Files."/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/launch/launchControl.py">
+			<Option target=".Files."/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/launch/launchControlAndSim.py">
+			<Option target=".Files."/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/package.xml">
+			<Option target=".Files."/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/bongio.cpp">
+			<Option target="bongio"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/controller_console_node.cpp">
+			<Option target="controller_console_node"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/dynamic_control_node.cpp">
+			<Option target="dynamic_control_node"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/kinematic_control_node.cpp">
+			<Option target="kinematic_control_node"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/monitor_node.cpp">
+			<Option target="monitor_node"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/nurbs.cpp">
+			<Option target="nurbs"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/spline.cpp">
+			<Option target="spline"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/ulisse_ctrl/commands/command_halt.cpp">
+			<Option target="ulisse_ctrl_lib"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/ulisse_ctrl/commands/command_hold.cpp">
+			<Option target="ulisse_ctrl_lib"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/ulisse_ctrl/commands/command_latlong.cpp">
+			<Option target="ulisse_ctrl_lib"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/ulisse_ctrl/commands/command_navigate.cpp">
+			<Option target="ulisse_ctrl_lib"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/ulisse_ctrl/commands/command_speedheading.cpp">
+			<Option target="ulisse_ctrl_lib"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/ulisse_ctrl/commands/genericcommand.cpp">
+			<Option target="ulisse_ctrl_lib"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/ulisse_ctrl/configuration.cpp">
+			<Option target="ulisse_ctrl_lib"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/ulisse_ctrl/events/event_rc_enabled.cpp">
+			<Option target="ulisse_ctrl_lib"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/ulisse_ctrl/events/generic_event.cpp">
+			<Option target="ulisse_ctrl_lib"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/ulisse_ctrl/helper_functions.cpp">
+			<Option target="ulisse_ctrl_lib"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/ulisse_ctrl/states/genericstate.cpp">
+			<Option target="ulisse_ctrl_lib"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/ulisse_ctrl/states/state_halt.cpp">
+			<Option target="ulisse_ctrl_lib"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/ulisse_ctrl/states/state_hold.cpp">
+			<Option target="ulisse_ctrl_lib"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/ulisse_ctrl/states/state_latlong.cpp">
+			<Option target="ulisse_ctrl_lib"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/ulisse_ctrl/states/state_navigate.cpp">
+			<Option target="ulisse_ctrl_lib"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/ulisse_ctrl/states/state_speedheading.cpp">
+			<Option target="ulisse_ctrl_lib"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/ulisse_ctrl/tasks/ActionTask.cpp">
+			<Option target="ulisse_ctrl_lib"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/ulisse_ctrl/tasks/AngularPosition.cpp">
+			<Option target="ulisse_ctrl_lib"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/ulisse_ctrl/tasks/ControlDistance.cpp">
+			<Option target="ulisse_ctrl_lib"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/ulisse_ctrl/tasks/Hold.cpp">
+			<Option target="ulisse_ctrl_lib"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/ulisse_ctrl/tasks/MakeCurve.cpp">
+			<Option target="ulisse_ctrl_lib"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/ulisse_ctrl/tasks/SafetyBoundaries.cpp">
+			<Option target="ulisse_ctrl_lib"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/ulisse_ctrl/vehiclecontroller.cpp">
+			<Option target="ulisse_ctrl_lib"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/test/control_test.cpp">
+			<Option target="control_test"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/package.xml">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake/cmake/ament_cmakeConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake/cmake/ament_cmakeConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake/cmake/ament_cmake_export_dependencies-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_libraries/cmake/ament_cmake_libraries-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_libraries\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_libraries/cmake/ament_cmake_librariesConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_libraries\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_libraries/cmake/ament_cmake_librariesConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_libraries\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_libraries/cmake/ament_libraries_deduplicate.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_libraries\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_libraries/cmake/ament_libraries_pack_build_configuration.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_libraries\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_libraries/cmake/ament_libraries_unpack_build_configuration.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_libraries\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/ament_cmake_core-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/ament_cmake_coreConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/ament_cmake_coreConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/ament_cmake_environment-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/ament_cmake_environment_hooks-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/ament_cmake_index-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/ament_cmake_package_templates-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/ament_cmake_symlink_install-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/ament_cmake_uninstall_target-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/core/all.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\core\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/core/ament_execute_extensions.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\core\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/core/ament_package.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\core\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/core/ament_package_xml.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\core\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/core/ament_register_extension.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\core\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/core/assert_file_exists.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\core\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/core/list_append_unique.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\core\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/core/normalize_path.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\core\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/core/package_xml_2_cmake.py">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\core\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/core/python.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\core\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/core/stamp.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\core\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/core/string_ends_with.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\core\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/core/templates/nameConfig-version.cmake.in">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\core\templates\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/core/templates/nameConfig.cmake.in">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\core\templates\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/environment/ament_cmake_environment_package_hook.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\environment\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/environment/ament_generate_environment.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\environment\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/environment_hooks/ament_cmake_environment_hooks_package_hook.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\environment_hooks\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/environment_hooks/ament_environment_hooks.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\environment_hooks\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/environment_hooks/ament_generate_package_environment.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\environment_hooks\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/environment_hooks/environment/ament_prefix_path.sh">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\environment_hooks\environment\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/environment_hooks/environment/path.sh">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\environment_hooks\environment\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/index/ament_cmake_index_package_hook.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\index\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/index/ament_index_get_prefix_path.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\index\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/index/ament_index_get_resource.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\index\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/index/ament_index_get_resources.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\index\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/index/ament_index_has_resource.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\index\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/index/ament_index_register_package.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\index\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/index/ament_index_register_resource.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\index\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/package_templates/templates_2_cmake.py">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\package_templates\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/uninstall_target/ament_cmake_uninstall_target.cmake.in">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\uninstall_target\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_core/cmake/uninstall_target/ament_cmake_uninstall_target_append_uninstall_code.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_core\cmake\uninstall_target\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_export_definitions/cmake/ament_cmake_export_definitions-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_definitions\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_export_definitions/cmake/ament_cmake_export_definitionsConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_definitions\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_export_definitions/cmake/ament_cmake_export_definitionsConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_definitions\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_export_definitions/cmake/ament_export_definitions.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_definitions\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_export_dependencies/cmake/ament_cmake_export_dependencies-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_dependencies\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_export_dependencies/cmake/ament_cmake_export_dependenciesConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_dependencies\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_export_dependencies/cmake/ament_cmake_export_dependenciesConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_dependencies\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_export_dependencies/cmake/ament_export_dependencies.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_dependencies\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_export_include_directories/cmake/ament_cmake_export_include_directories-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_include_directories\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_export_include_directories/cmake/ament_cmake_export_include_directories-extras.cmake.in">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_include_directories\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_export_include_directories/cmake/ament_cmake_export_include_directoriesConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_include_directories\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_export_include_directories/cmake/ament_cmake_export_include_directoriesConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_include_directories\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_export_include_directories/cmake/ament_cmake_export_include_directories_package_hook.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_include_directories\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_export_include_directories/cmake/ament_export_include_directories.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_include_directories\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_export_interfaces/cmake/ament_cmake_export_interfaces-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_interfaces\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_export_interfaces/cmake/ament_cmake_export_interfacesConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_interfaces\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_export_interfaces/cmake/ament_cmake_export_interfacesConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_interfaces\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_export_interfaces/cmake/ament_export_interfaces.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_interfaces\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_export_libraries/cmake/ament_cmake_export_libraries-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_libraries\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_export_libraries/cmake/ament_cmake_export_librariesConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_libraries\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_export_libraries/cmake/ament_cmake_export_librariesConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_libraries\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_export_libraries/cmake/ament_export_libraries.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_libraries\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_export_libraries/cmake/ament_export_library_names.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_libraries\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_export_link_flags/cmake/ament_cmake_export_link_flags-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_link_flags\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_export_link_flags/cmake/ament_cmake_export_link_flagsConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_link_flags\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_export_link_flags/cmake/ament_cmake_export_link_flagsConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_link_flags\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_export_link_flags/cmake/ament_export_link_flags.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_export_link_flags\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_python/cmake/ament_cmake_python-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_python\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_python/cmake/ament_cmake_pythonConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_python\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_python/cmake/ament_cmake_pythonConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_python\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_python/cmake/ament_python_install_module.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_python\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_python/cmake/ament_python_install_package.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_python\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_target_dependencies/cmake/ament_cmake_target_dependencies-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_target_dependencies\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_target_dependencies/cmake/ament_cmake_target_dependenciesConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_target_dependencies\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_target_dependencies/cmake/ament_cmake_target_dependenciesConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_target_dependencies\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_target_dependencies/cmake/ament_target_dependencies.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_target_dependencies\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_include_directories/cmake/ament_cmake_include_directories-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_include_directories\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_include_directories/cmake/ament_cmake_include_directoriesConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_include_directories\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_include_directories/cmake/ament_cmake_include_directoriesConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_include_directories\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_include_directories/cmake/ament_include_directories_order.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_include_directories\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_test/cmake/ament_add_test.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_test\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_test/cmake/ament_cmake_test-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_test\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_test/cmake/ament_cmake_testConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_test\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/ament_cmake_test/cmake/ament_cmake_testConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\ament_cmake_test\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rclcpp/cmake/ament_cmake_export_dependencies-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rclcpp\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rclcpp/cmake/ament_cmake_export_include_directories-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rclcpp\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rclcpp/cmake/ament_cmake_export_libraries-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rclcpp\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rclcpp/cmake/rclcpp-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rclcpp\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rclcpp/cmake/rclcppConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rclcpp\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rclcpp/cmake/rclcppConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rclcpp\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rclcpp/cmake/rclcpp_create_node_main.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rclcpp\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rclcpp/cmake/rclcpp_register_node_plugins.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rclcpp\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rclcpp/cmake/rosidl_cmake-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rclcpp\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rcl/cmake/ament_cmake_export_dependencies-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcl\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rcl/cmake/ament_cmake_export_include_directories-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcl\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rcl/cmake/ament_cmake_export_libraries-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcl\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rcl/cmake/rclConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcl\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rcl/cmake/rclConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcl\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rcl_interfaces/cmake/ament_cmake_export_dependencies-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcl_interfaces\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rcl_interfaces/cmake/ament_cmake_export_include_directories-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcl_interfaces\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rcl_interfaces/cmake/ament_cmake_export_libraries-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcl_interfaces\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rcl_interfaces/cmake/rcl_interfacesConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcl_interfaces\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rcl_interfaces/cmake/rcl_interfacesConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcl_interfaces\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rcl_interfaces/cmake/rosidl_cmake-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcl_interfaces\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rcl_interfaces/cmake/rosidl_cmake_export_typesupport_libraries-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcl_interfaces\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/builtin_interfaces/cmake/ament_cmake_export_dependencies-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\builtin_interfaces\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/builtin_interfaces/cmake/ament_cmake_export_include_directories-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\builtin_interfaces\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/builtin_interfaces/cmake/ament_cmake_export_libraries-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\builtin_interfaces\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/builtin_interfaces/cmake/builtin_interfacesConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\builtin_interfaces\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/builtin_interfaces/cmake/builtin_interfacesConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\builtin_interfaces\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/builtin_interfaces/cmake/rosidl_cmake-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\builtin_interfaces\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/builtin_interfaces/cmake/rosidl_cmake_export_typesupport_libraries-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\builtin_interfaces\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_default_runtime/cmake/rosidl_default_runtime-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_default_runtime\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_default_runtime/cmake/rosidl_default_runtimeConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_default_runtime\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_default_runtime/cmake/rosidl_default_runtimeConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_default_runtime\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_generator_cpp/cmake/ament_cmake_export_dependencies-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_generator_cpp\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_generator_cpp/cmake/ament_cmake_export_include_directories-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_generator_cpp\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_generator_cpp/cmake/register_cpp.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_generator_cpp\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_generator_cpp/cmake/rosidl_cmake-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_generator_cpp\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_generator_cpp/cmake/rosidl_generator_cpp-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_generator_cpp\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_generator_cpp/cmake/rosidl_generator_cppConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_generator_cpp\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_generator_cpp/cmake/rosidl_generator_cppConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_generator_cpp\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_cmake/cmake/rosidl_cmake-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_cmake\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_cmake/cmake/rosidl_cmakeConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_cmake\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_cmake/cmake/rosidl_cmakeConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_cmake\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_cmake/cmake/rosidl_convert_actions_to_msg_and_srv.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_cmake\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_cmake/cmake/rosidl_export_typesupport_libraries.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_cmake\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_cmake/cmake/rosidl_generate_action_interfaces.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_cmake\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_cmake/cmake/rosidl_generate_interfaces.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_cmake\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_cmake/cmake/rosidl_identify_action_idls.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_cmake\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_cmake/cmake/rosidl_target_interfaces.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_cmake\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_cmake/cmake/rosidl_write_generator_arguments.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_cmake\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_cmake/cmake/string_camel_case_to_lower_case_underscore.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_cmake\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_adapter/cmake/rosidl_adapt_interfaces.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_adapter\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_adapter/cmake/rosidl_adapter-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_adapter\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_adapter/cmake/rosidl_adapterConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_adapter\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_adapter/cmake/rosidl_adapterConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_adapter\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_generator_c/cmake/ament_cmake_export_dependencies-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_generator_c\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_generator_c/cmake/ament_cmake_export_include_directories-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_generator_c\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_generator_c/cmake/ament_cmake_export_libraries-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_generator_c\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_generator_c/cmake/register_c.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_generator_c\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_generator_c/cmake/rosidl_cmake-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_generator_c\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_generator_c/cmake/rosidl_generator_c-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_generator_c\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_generator_c/cmake/rosidl_generator_cConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_generator_c\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_generator_c/cmake/rosidl_generator_cConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_generator_c\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_typesupport_interface/cmake/ament_cmake_export_include_directories-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_interface\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_typesupport_interface/cmake/rosidl_typesupport_interfaceConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_interface\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_typesupport_interface/cmake/rosidl_typesupport_interfaceConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_interface\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_typesupport_c/cmake/ament_cmake_export_dependencies-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_c\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_typesupport_c/cmake/ament_cmake_export_include_directories-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_c\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_typesupport_c/cmake/ament_cmake_export_libraries-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_c\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_typesupport_c/cmake/get_used_typesupports.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_c\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_typesupport_c/cmake/rosidl_typesupport_c-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_c\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_typesupport_c/cmake/rosidl_typesupport_cConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_c\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_typesupport_c/cmake/rosidl_typesupport_cConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_c\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_typesupport_cpp/cmake/ament_cmake_export_dependencies-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_cpp\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_typesupport_cpp/cmake/ament_cmake_export_include_directories-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_cpp\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_typesupport_cpp/cmake/ament_cmake_export_libraries-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_cpp\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_typesupport_cpp/cmake/rosidl_typesupport_cpp-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_cpp\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_typesupport_cpp/cmake/rosidl_typesupport_cppConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_cpp\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_typesupport_cpp/cmake/rosidl_typesupport_cppConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_cpp\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_typesupport_introspection_c/cmake/ament_cmake_export_dependencies-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_introspection_c\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_typesupport_introspection_c/cmake/ament_cmake_export_include_directories-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_introspection_c\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_typesupport_introspection_c/cmake/ament_cmake_export_libraries-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_introspection_c\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_typesupport_introspection_c/cmake/rosidl_typesupport_introspection_c-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_introspection_c\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_typesupport_introspection_c/cmake/rosidl_typesupport_introspection_cConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_introspection_c\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_typesupport_introspection_c/cmake/rosidl_typesupport_introspection_cConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_introspection_c\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_typesupport_introspection_cpp/cmake/ament_cmake_export_dependencies-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_introspection_cpp\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_typesupport_introspection_cpp/cmake/ament_cmake_export_include_directories-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_introspection_cpp\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_typesupport_introspection_cpp/cmake/ament_cmake_export_libraries-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_introspection_cpp\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_typesupport_introspection_cpp/cmake/rosidl_typesupport_introspection_cpp-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_introspection_cpp\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_typesupport_introspection_cpp/cmake/rosidl_typesupport_introspection_cppConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_introspection_cpp\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosidl_typesupport_introspection_cpp/cmake/rosidl_typesupport_introspection_cppConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosidl_typesupport_introspection_cpp\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rmw_implementation/cmake/ament_cmake_export_libraries-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rmw_implementation\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rmw_implementation/cmake/rmw_implementation-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rmw_implementation\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rmw_implementation/cmake/rmw_implementationConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rmw_implementation\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rmw_implementation/cmake/rmw_implementationConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rmw_implementation\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rmw_implementation_cmake/cmake/ament_cmake_export_dependencies-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rmw_implementation_cmake\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rmw_implementation_cmake/cmake/call_for_each_rmw_implementation.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rmw_implementation_cmake\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rmw_implementation_cmake/cmake/get_available_rmw_implementations.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rmw_implementation_cmake\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rmw_implementation_cmake/cmake/get_default_rmw_implementation.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rmw_implementation_cmake\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rmw_implementation_cmake/cmake/rmw_implementation_cmake-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rmw_implementation_cmake\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rmw_implementation_cmake/cmake/rmw_implementation_cmakeConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rmw_implementation_cmake\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rmw_implementation_cmake/cmake/rmw_implementation_cmakeConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rmw_implementation_cmake\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rmw/cmake/ament_cmake_export_dependencies-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rmw\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rmw/cmake/ament_cmake_export_include_directories-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rmw\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rmw/cmake/ament_cmake_export_libraries-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rmw\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rmw/cmake/configure_rmw_library.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rmw\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rmw/cmake/get_rmw_typesupport.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rmw\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rmw/cmake/register_rmw_implementation.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rmw\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rmw/cmake/rmw-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rmw\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rmw/cmake/rmwConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rmw\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rmw/cmake/rmwConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rmw\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rcutils/cmake/ament_cmake_export_dependencies-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcutils\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rcutils/cmake/ament_cmake_export_include_directories-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcutils\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rcutils/cmake/ament_cmake_export_libraries-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcutils\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rcutils/cmake/rcutilsConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcutils\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rcutils/cmake/rcutilsConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcutils\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rcl_logging_noop/cmake/ament_cmake_export_dependencies-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcl_logging_noop\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rcl_logging_noop/cmake/ament_cmake_export_libraries-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcl_logging_noop\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rcl_logging_noop/cmake/rcl_logging_noopConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcl_logging_noop\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rcl_logging_noop/cmake/rcl_logging_noopConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcl_logging_noop\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosgraph_msgs/cmake/ament_cmake_export_dependencies-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosgraph_msgs\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosgraph_msgs/cmake/ament_cmake_export_include_directories-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosgraph_msgs\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosgraph_msgs/cmake/ament_cmake_export_libraries-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosgraph_msgs\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosgraph_msgs/cmake/rosgraph_msgsConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosgraph_msgs\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosgraph_msgs/cmake/rosgraph_msgsConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosgraph_msgs\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosgraph_msgs/cmake/rosidl_cmake-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosgraph_msgs\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rosgraph_msgs/cmake/rosidl_cmake_export_typesupport_libraries-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rosgraph_msgs\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rcl_yaml_param_parser/cmake/ament_cmake_export_dependencies-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcl_yaml_param_parser\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rcl_yaml_param_parser/cmake/ament_cmake_export_include_directories-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcl_yaml_param_parser\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rcl_yaml_param_parser/cmake/ament_cmake_export_libraries-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcl_yaml_param_parser\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rcl_yaml_param_parser/cmake/rcl_yaml_param_parserConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcl_yaml_param_parser\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/rcl_yaml_param_parser/cmake/rcl_yaml_param_parserConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\rcl_yaml_param_parser\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/std_msgs/cmake/ament_cmake_export_dependencies-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\std_msgs\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/std_msgs/cmake/ament_cmake_export_include_directories-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\std_msgs\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/std_msgs/cmake/ament_cmake_export_libraries-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\std_msgs\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/std_msgs/cmake/rosidl_cmake-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\std_msgs\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/std_msgs/cmake/rosidl_cmake_export_typesupport_libraries-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\std_msgs\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/std_msgs/cmake/std_msgsConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\std_msgs\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/share/std_msgs/cmake/std_msgsConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\share\std_msgs\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/lib/python3.6/site-packages/ament_package/template/package_level/local_setup.bash.in">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\lib\python3.6\site-packages\ament_package\template\package_level\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/lib/python3.6/site-packages/ament_package/template/package_level/local_setup.sh.in">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\lib\python3.6\site-packages\ament_package\template\package_level\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../opt/ros/crystal/lib/python3.6/site-packages/ament_package/template/package_level/local_setup.zsh.in">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\opt\ros\crystal\lib\python3.6\site-packages\ament_package\template\package_level\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../usr/local/share/rml/cmake/rmlConfig-noconfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\usr\local\share\rml\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../usr/local/share/rml/cmake/rmlConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\usr\local\share\rml\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../usr/local/share/ctrl_toolbox/cmake/ctrl_toolboxConfig-noconfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\usr\local\share\ctrl_toolbox\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../usr/local/share/ctrl_toolbox/cmake/ctrl_toolboxConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\usr\local\share\ctrl_toolbox\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../usr/local/share/tpik/cmake/tpikConfig-noconfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\usr\local\share\tpik\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../usr/local/share/tpik/cmake/tpikConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\usr\local\share\tpik\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../usr/local/share/ikcl/cmake/ikclConfig-noconfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\usr\local\share\ikcl\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../../../../../usr/local/share/ikcl/cmake/ikclConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\usr\local\share\ikcl\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../install/surface_vehicle_model/share/surface_vehicle_model/cmake/ament_cmake_export_include_directories-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\install\surface_vehicle_model\share\surface_vehicle_model\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../install/surface_vehicle_model/share/surface_vehicle_model/cmake/ament_cmake_export_libraries-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\install\surface_vehicle_model\share\surface_vehicle_model\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../install/surface_vehicle_model/share/surface_vehicle_model/cmake/surface_vehicle_modelConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\install\surface_vehicle_model\share\surface_vehicle_model\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../install/surface_vehicle_model/share/surface_vehicle_model/cmake/surface_vehicle_modelConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\install\surface_vehicle_model\share\surface_vehicle_model\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../install/ulisse_msgs/share/ulisse_msgs/cmake/ament_cmake_export_dependencies-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\install\ulisse_msgs\share\ulisse_msgs\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../install/ulisse_msgs/share/ulisse_msgs/cmake/ament_cmake_export_include_directories-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\install\ulisse_msgs\share\ulisse_msgs\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../install/ulisse_msgs/share/ulisse_msgs/cmake/ament_cmake_export_libraries-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\install\ulisse_msgs\share\ulisse_msgs\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../install/ulisse_msgs/share/ulisse_msgs/cmake/rosidl_cmake-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\install\ulisse_msgs\share\ulisse_msgs\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../install/ulisse_msgs/share/ulisse_msgs/cmake/rosidl_cmake_export_typesupport_libraries-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\install\ulisse_msgs\share\ulisse_msgs\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../install/ulisse_msgs/share/ulisse_msgs/cmake/ulisse_msgsConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\install\ulisse_msgs\share\ulisse_msgs\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../install/ulisse_msgs/share/ulisse_msgs/cmake/ulisse_msgsConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\install\ulisse_msgs\share\ulisse_msgs\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../install/ulisse_driver/share/ulisse_driver/cmake/ament_cmake_export_include_directories-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\install\ulisse_driver\share\ulisse_driver\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../install/ulisse_driver/share/ulisse_driver/cmake/ament_cmake_export_libraries-extras.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\install\ulisse_driver\share\ulisse_driver\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../install/ulisse_driver/share/ulisse_driver/cmake/ulisse_driverConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\install\ulisse_driver\share\ulisse_driver\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../install/ulisse_driver/share/ulisse_driver/cmake/ulisse_driverConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\install\ulisse_driver\share\ulisse_driver\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../install/fsm/share/fsm/cmake/fsmConfig-noconfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\install\fsm\share\fsm\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/../../../install/fsm/share/fsm/cmake/fsmConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\install\fsm\share\fsm\cmake\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/ament_cmake_package_templates/templates.cmake">
+			<Option virtualFolder="CMake Files\cmake-build-debug\ament_cmake_package_templates\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/ament_cmake_core/package.cmake">
+			<Option virtualFolder="CMake Files\cmake-build-debug\ament_cmake_core\"/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/ament_cmake_export_include_directories/ament_cmake_export_include_directories-extras.cmake">
+			<Option virtualFolder="CMake Files\cmake-build-debug\ament_cmake_export_include_directories\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>

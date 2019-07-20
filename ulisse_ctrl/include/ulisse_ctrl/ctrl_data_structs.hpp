@@ -88,9 +88,6 @@ struct StatusContext {
 };
 
 struct ControlContext {
-    ctb::DigitalPID pidSurge;
-    ctb::DigitalPID pidPosition;
-    ctb::DigitalPID pidHeading;
     double desiredSurge;
     double desiredJog;
 };
@@ -172,6 +169,7 @@ struct LowLevelConfiguration {
                   << "==============================\n";
     }
 };
+
 }
 
 #endif //  ULISSE_CTRL_DATA_STRUCTS_HPP
