@@ -197,7 +197,7 @@ MapPolyline {
             bpp.push(map.fromCoordinate(box.path[i],false))
         for(var i=0; i<path.length; i++)
             ppp.push(map.fromCoordinate(path[i],false))
-        safe = Helper.polygons_disjoint(bpp,ppp)
+        safe = Helper.polygons_disjoint(bpp,ppp) && Helper.coord_inside_polygon(path[0], box.path)
         return safe
     }
 
