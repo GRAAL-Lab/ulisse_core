@@ -72,7 +72,33 @@ MapPolyline {
             centroid: [centroid.latitude, centroid.longitude],
             curves: [nurb_l]
         }
-        console.log(JSON.stringify(result))
+        //console.log(JSON.stringify(result))
         return result
     }
+    function serialize(){
+        var values = []
+        for (j = 0; j < path.length; j++){
+            var p_i = path[j]
+            values.push({
+                latitude: p_i.latitude,
+                longitude: p_i.longitude
+            })
+        }
+        return {
+            name: 'PointPath',
+            offset: poly_list[i].offset,
+            angle: poly_list[i].angle,
+            values: values
+        }
+
+    }
+    function deserialize(values){
+        var lat, lon
+        for(var j = 0; j < values.length; j++){
+            lat = values[j].latitude
+            lon = values[j].longitude
+            poly_cur.addCoordinate(QtPositioning.coordinate(lat,lon))
+        }
+    }
+
 }

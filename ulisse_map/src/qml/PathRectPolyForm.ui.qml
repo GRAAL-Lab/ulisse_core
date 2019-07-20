@@ -7,31 +7,40 @@ import QtQuick.Controls.Material 2.1
 import QtGraphicalEffects 1.0
 import QtQuick.Dialogs 1.2
 
-ColumnLayout {
+RowLayout {
     property alias b_path: b_path
     property alias b_rect: b_rect
     property alias b_poly: b_poly
     property alias b_polysec: b_polysec
+    property alias cancel_menuShape: cancel_menuShape
+    property alias cancel_menuOffset: cancel_menuOffset
     property alias offsetField: offsetField
     property alias angleField: angleField
-    property alias buttonEdit: buttonEdit
+    //property alias buttonEdit: buttonEdit
     property alias buttonSave: buttonSave
     property alias buttonDiscard: buttonDiscard
     property alias idxField: idxField
-    id: cl1
+
+    property alias rowFigure: rowFigure
+    property alias rowLayout: rowLayout
+    property alias rowEditPlay: rowEditPlay
+
+    id: rowChoices
+    anchors.fill: map
     state: {
         0: "empty",
                 1: "path",
                 2: "rect",
                 3: "poly",
-                4: "polysec"
+                4: "polysec",
+                5: "editmode"
     }[mapView.currentState]
 
+    //Row for shapes
     RowLayout {
-        id: rl1
-        width: 100
+        id: rowFigure
         height: 100
-        Layout.fillWidth: true
+        visible: false
 
         Button {
             id: b_poly
@@ -61,52 +70,84 @@ ColumnLayout {
             enabled: false
             highlighted: false
         }
+
+        Button {
+            id: cancel_menuShape
+            Layout.preferredWidth: 17
+            Layout.preferredHeight: 17
+            anchors.right: parent.right
+            anchors.top: parent.top
+            text: qsTr("x")
+            enabled: true
+            highlighted: false
+        }
     }
 
+    //Row for Offset
     RowLayout {
         id: rowLayout
         width: 100
         height: 100
+        enabled: true
+        visible: false
 
         TextField {
             id: offsetField
             text: qsTr("30")
             placeholderText: "Offset"
+            enabled: map.polysec_cur.closed ? true : false
         }
 
         TextField {
             id: angleField
             text: qsTr("30")
             placeholderText: "Angle"
+            enabled: map.polysec_cur.closed ? true : false
+        }
+
+        Button {
+            id: cancel_menuOffset
+            Layout.preferredWidth: 17
+            Layout.preferredHeight: 17
+            anchors.right: parent.right
+            anchors.top: parent.top
+            text: qsTr("x")
+            enabled: true
+            highlighted: false
         }
     }
 
+    //Row for edit/play
     RowLayout {
-        id: rowLayout1
+        id: rowEditPlay
         width: 100
         height: 100
+        visible: false
 
-        Button {
-            id: buttonEdit
-            text: qsTr("edit")
-        }
+        //        Button {
 
+        //            id: buttonEdit
+        //            text: qsTr("edit")
+        //        }
         Button {
             id: buttonSave
+            enabled: false
             text: qsTr("save")
         }
 
         Button {
             id: buttonDiscard
+            enabled: false
             text: qsTr("abort")
         }
-
-        TextField {
+        //da qui puoi scegliere in che modo riempire i poligoni/rettangoli
+        ComboBox {
             id: idxField
-            text: qsTr("0")
-            placeholderText: "Offset"
+            model: ["single_winding", "2curves", "helix"]
+            enabled: false
         }
     }
+
     states: [
         State {
             name: "empty"
@@ -122,7 +163,6 @@ ColumnLayout {
                 target: b_poly
                 enabled: true
             }
-
             PropertyChanges {
                 target: b_polysec
                 enabled: true
@@ -134,6 +174,14 @@ ColumnLayout {
                 target: b_path
                 enabled: true
                 highlighted: true
+            }
+            PropertyChanges {
+                target: rowLayout
+                enabled: false
+            }
+            PropertyChanges {
+                target: idxField
+                enabled: false
             }
         },
         State {
@@ -158,6 +206,29 @@ ColumnLayout {
                 target: b_polysec
                 enabled: true
                 highlighted: true
+            }
+            PropertyChanges {
+                target: rowLayout
+                enabled: false
+            }
+            PropertyChanges {
+                target: idxField
+                enabled: false
+            }
+        },
+        State {
+            name: "editmode"
+            PropertyChanges {
+                target: buttonSave
+                enabled: true
+            }
+            PropertyChanges {
+                target: buttonDiscard
+                enabled: true
+            }
+            PropertyChanges {
+                target: idxField
+                enabled: true
             }
         }
     ]

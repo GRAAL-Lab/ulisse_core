@@ -15,38 +15,40 @@ MapComponentForm {
 
     id: map_component
 
+    property var actualtrack
+
     property var click_handler : function(){}
     property var pos_changed_handler : function(){}
 
     mapMouseArea.onClicked: {click_handler(mouse)}
     mapMouseArea.onPositionChanged: {pos_changed_handler(mouse)}
 
-    property list<MapRectangle> rect_list
-    property MapRectangle rect_cur
-
-    property list<MapPolygon> poly_list
+    //property list<MapPolygon> poly_list
     property MapPolygon poly_cur
     property MapPolygon poly_obj
 
-    property list<MapPath> path_list
+    //property list<MapPath> path_list
     property MapPath path_cur
+
+    property var el_list:[]
+    property ElementTrack el_track
+
+    property var uniquelist:[]
 
     property MapPolygonSecurity polysec_cur
 
-    property Component rectComponent
     property Component polyComponent
     property Component polysecComponent
     property Component pathComponent
-
-    property var security_defined : 0
-
+    property Component trackComponent
     property var path_file: "/home/alessio/Desktop/Prova"
 
     Component.onCompleted: {
-        rectComponent = Qt.createComponent("MapRectangle.qml")
         polyComponent = Qt.createComponent("MapPolygon.qml")
         polysecComponent = Qt.createComponent("MapPolygonSecurity.qml")
         pathComponent = Qt.createComponent("MapPath.qml")
+        trackComponent = Qt.createComponent("ElementTrack.qml")
+
         polysec_cur = polysecComponent.createObject(map_component)
         map.addMapItem(polysec_cur)
         poly_obj = polyComponent.createObject(map_component)
@@ -55,56 +57,60 @@ MapComponentForm {
     }
 
     function createRect(offset, angle) {
-        if(!polysec_cur.closed){
-            toast.show("Define Security Area First!")
-            return
-        }
          if (currentState === generalState.empty){
              currentState = generalState.rect
-             if (rect_cur)
-                 rect_cur.end.disconnect(endRect)
-             rect_cur = rectComponent.createObject(map_component, {offset:offset, angle:angle, debug_c: overlay_canvas})
-             rect_list.push(rect_cur)
-             map.addMapItem(rect_cur)
-             click_handler = rect_cur.click_handler
-             pos_changed_handler = rect_cur.pos_changed_handler
-             rect_cur.end.connect(endRect)
+             if (poly_cur)
+                 poly_cur.end.disconnect(endRect)
+             poly_cur = polyComponent.createObject(map_component, {offset:offset, angle:angle, debug_c: overlay_canvas, editCircle: editCircle})
+             uniquelist.push(poly_cur)
+             el_track = trackComponent.createObject(map_component, {_comp:map_component, ntrack: uniquelist.length-1, offset:offset, angle:angle})
+             el_list.push(el_track)
+             map.addMapItem(poly_cur)
+             click_handler = poly_cur.click_handler_rect
+             pos_changed_handler = poly_cur.pos_changed_handler_rect
+             poly_cur.end.connect(endRect)
          }
 
     }
 
     function modify(idx){
-        poly_list[idx].begin_edit()
-        mapMouseArea.hoverEnabled = true
-        click_handler = poly_list[idx].click_mod_handler
-        pos_changed_handler = poly_list[idx].pos_changed_mod_handler
+        if(currentState === generalState.empty){
+            currentState = generalState.editmode
+            uniquelist[idx].begin_edit()
+            mapMouseArea.hoverEnabled = true
+            click_handler = uniquelist[idx].click_mod_handler
+            pos_changed_handler = uniquelist[idx].pos_changed_mod_handler
+        }
     }
 
     function save_mod(idx, angle, offset){
-        mapMouseArea.hoverEnabled = false
-        click_handler = null
-        pos_changed_handler = null
-        poly_list[idx].confirm_edit(angle, offset)
-        poly_list[idx].check_safe(polysec_cur)
+        if(currentState === generalState.editmode){
+            mapMouseArea.hoverEnabled = false
+            click_handler = null
+            pos_changed_handler = null
+            uniquelist[idx].confirm_edit(angle, offset)
+            uniquelist[idx].check_safe(polysec_cur)
+            currentState = generalState.empty
+        }
     }
 
     function abort_mod(idx){
-        mapMouseArea.hoverEnabled = false
-        click_handler = null
-        pos_changed_handler = null
-        poly_list[idx].discard_edit()
-        poly_list[idx].check_safe(polysec_cur)
+        if(currentState === generalState.editmode){
+            currentState = generalState.empty
+            mapMouseArea.hoverEnabled = false
+            click_handler = null
+            pos_changed_handler = null
+            uniquelist[idx].discard_edit()
+        }
     }
 
-    function createPoly(offset, angle) {
-        if(!polysec_cur.closed){
-            toast.show("Define Security Area First!")
-            return
-        }
+    function createPoly(offset, angle, method) {
         if (currentState === generalState.empty){
             currentState = generalState.poly
-            poly_cur = polyComponent.createObject(map_component, {offset:offset, angle:angle, debug_c: overlay_canvas, editCircle: editCircle})
-            poly_list.push(poly_cur)
+            poly_cur = polyComponent.createObject(map_component, {method: method, offset:offset, angle:angle, debug_c: overlay_canvas, editCircle: editCircle})
+            uniquelist.push(poly_cur)
+            el_track =trackComponent.createObject(map_component, {_comp:map_component, ntrack: uniquelist.length-1, offset:offset, angle:angle})
+            el_list.push(el_track)
             map.addMapItem(poly_cur)
             click_handler = poly_cur.click_handler
             pos_changed_handler = poly_cur.pos_changed_handler
@@ -124,17 +130,14 @@ MapComponentForm {
     }
 
     function createPath() {
-        if(!polysec_cur.closed){
-            toast.show("Define Security Area First!")
-            return ;
-        }
-
         if (currentState === generalState.empty){
             currentState = generalState.path
             if (path_cur)
                 path_cur.end.disconnect(endPath)
             path_cur = pathComponent.createObject(map_component)
-            path_list.push(path_cur)
+            uniquelist.push(path_cur)
+            el_track =trackComponent.createObject(map_component, {_comp:map_component, ntrack: uniquelist.length-1})
+            el_list.push(el_track)
             map.addMapItem(path_cur)
             click_handler = path_cur.click_handler
             pos_changed_handler = path_cur.pos_changed_handler
@@ -193,26 +196,21 @@ MapComponentForm {
     }
 
 
-    //TODO open a window and select a file
+    //TODO, acquire from file
     function loadPath(file){
 
         var jsondata = openFile(path_file)
 
         //var jsondata = '{"paths":[{"name":"RectPath","offset":30,"angle":30,"values":[{"latitude":44.40107591944535,"longitude":8.938550991344044},{"latitude":44.40047969448704,"longitude":8.93841443556687},{"latitude":44.40007608275216,"longitude":8.940176670711962},{"latitude":44.400672307710465,"longitude":8.940313226489137},{"latitude":44.40107591944535,"longitude":8.938550991344044}]},{"name":"RectPath","offset":30,"angle":30,"values":[{"latitude":44.40069108402936,"longitude":8.940477945263183},{"latitude":44.4001436377436,"longitude":8.94060691461786},{"latitude":44.400414241381306,"longitude":8.941755566999255},{"latitude":44.40096168766707,"longitude":8.941626597644579},{"latitude":44.40069108402936,"longitude":8.940477945263183}]},{"name":"PolyPath","offset":30,"angle":30,"values":[{"latitude":44.39993766652866,"longitude":8.940000000000026},{"latitude":44.39943899637509,"longitude":8.939529641180883},{"latitude":44.399243863411584,"longitude":8.940075864332641},{"latitude":44.39940105390387,"longitude":8.940652433217394},{"latitude":44.39993766652866,"longitude":8.940000000000026}]},{"name":"PolyPath","offset":30,"angle":30,"values":[{"latitude":44.400197840578414,"longitude":8.938884794386013},{"latitude":44.3998292603344,"longitude":8.938770997897848},{"latitude":44.39974253523594,"longitude":8.93946894971478},{"latitude":44.40004065222675,"longitude":8.939734474846631},{"latitude":44.40018157973325,"longitude":8.939317221049606},{"latitude":44.400197840578414,"longitude":8.938884794386013}]},{"name":"PolyPath","offset":30,"angle":30,"values":[{"latitude":44.40006775369815,"longitude":8.940971063392823},{"latitude":44.39975879620314,"longitude":8.940743470416521},{"latitude":44.39962870834669,"longitude":8.941008995548373},{"latitude":44.39962870834669,"longitude":8.941600737299694},{"latitude":44.40000271014572,"longitude":8.941684188076295},{"latitude":44.40015989859932,"longitude":8.941426249345454},{"latitude":44.40006775369815,"longitude":8.940971063392823}]},{"name":"PointPath","values":[{"latitude":44.39909751327148,"longitude":8.938892380830026},{"latitude":44.398739766929,"longitude":8.939711715557621},{"latitude":44.39864219936646,"longitude":8.940887612637738},{"latitude":44.39894032196373,"longitude":8.941206242813166}]},{"name":"SecurityPoly","values":[{"latitude":44.40123310500795,"longitude":8.938285466212193},{"latitude":44.39862593808893,"longitude":8.938088218947428},{"latitude":44.39847416595517,"longitude":8.941631083032746},{"latitude":44.401292727013285,"longitude":8.941790398120446},{"latitude":44.40123310500795,"longitude":8.938285466212193}]}]}'
-        var data
-        data = JSON.parse(jsondata)
+        var data = JSON.parse(jsondata)
 
-        var i
-        var j
-        var lat
-        var lon
-        var p
+        var i,j,lat,lon,p
+
 
         //clearAll()
-
         for(i = 0; i < data.paths.length; i++){
             switch(data.paths[i].name){
-            /*
+/*
             case "RectPath":
                 map.removeMapItem(rect_list)
                 if (currentState === generalState.empty){
@@ -242,21 +240,22 @@ MapComponentForm {
                     endRect()
                 }
                 break;
-                */
+*/
             case "PolyPath":
                 if (currentState === generalState.empty){
                     currentState = generalState.poly
                     poly_cur = polyComponent.createObject(map_component,
-                      {
-                          offset: data.paths[i].offset,
-                          angle:  data.paths[i].angle
-                      })
-
+                        {
+                            offset: data.paths[i].offset,
+                            angle:  data.paths[i].angle
+                        })
 
                     poly_list.push(poly_cur)
                     map.addMapItem(poly_cur)
                     poly_cur.deserialize(data.paths[i].values)
                     poly_cur.draw_deferred()
+                    endPoly()
+
                 }
                 break
 
@@ -309,75 +308,30 @@ MapComponentForm {
                     polysec_cur.closed = true
                 }
                 break
+
             }
         }
 
     }
 
-    //TODO -> save to a file
     function savePath(){
         var i
         var j
 
         var l = []
+
         var all_paths = {
             security_box: null,
             paths: []
         }
 
-        /*
+        for(i = 0; i < uniquelist.length; i++)
+            all_paths.paths.push(uniquelist[i].serialize())
 
-        var p_i
-        var single_path = {};
-        single_path.name = 'paths'
-        single_path.values = []
-        //Add all the rectangular paths
-        for(i = 0; i < rect_list.length; i++){
-            single_path = {}
-            single_path.name = 'RectPath'
-            single_path.offset = rect_list[i].offset
-            single_path.angle = rect_list[i].angle
-            single_path.values = []
-            for(j = 0; j < rect_list[i].pathLength(); j++){
-                p_i = rect_list[i].coordinateAt(j)
-                l = {}
-                l.latitude = p_i.latitude
-                l.longitude = p_i.longitude
-                single_path.values.push(l)
-            }
-            all_paths.paths.push(single_path)
-        }
-        */
-
-        //Add all the polygonal paths
-        for(i = 0; i < poly_list.length; i++){
-            all_paths.paths.push(path_list[i].serialize())
-        }
-
-        /*
-        //Add all the point paths
-        for(i = 0; i < path_list.length; i++)
-            all_paths.paths.push(path_list[i].serialize())
-
-        if(polysec_cur){
-            single_path = {}
-            single_path.name = 'SecurityPoly'
-            single_path.values = []
-            for(j = 0; j < polysec_cur.pathLength(); j++){
-                p_i = polysec_cur.coordinateAt(j)
-                l = {}
-                l.latitude = p_i.latitude
-                l.longitude = p_i.longitude
-                single_path .values.push(l)
-
-            }
-            all_paths.paths.push(single_path)
-        }
-        */
+        all_paths.security_box = polysec_cur.create_JSON()
 
         console.log(JSON.stringify(all_paths))
-
-        //saveFile(path_file,JSON.stringify(all_paths))
+        //TODO save file
     }
 
     compass.transform: [
@@ -418,8 +372,6 @@ MapComponentForm {
 
     onZoomLevelChanged: {
         ruler.rulerTimer.restart()
-        for (var i = 0; i< poly_list.length; i++)
-            poly_list[i].update_scale()
     }
 
     onWidthChanged: {
@@ -462,30 +414,42 @@ MapComponentForm {
         ulissePath.path = []
         ulissePath.firstRun = true
 
-        //TODO -> remove
-        //savePath()
-        loadPath()
+        savePath()
+        for(var i=0; i<el_list.length; i++)
+            el_list[i].destroy() //FIXME
+            console.log(el_list.length)
+        el_list = []
+        //loadPath()
     }
 
-    //TODO -> finish (delete also the lines/circles) and add to a button
     function clearAll(){
         //clearUlisseTrace()
-        var i
-        /*
-        for(i = 0; i < rect_list.length; i++){
-            map.removeMapItem(rect_list[i])
-        }*/
-        for(i = 0; i < poly_list.length; i++){
-            poly_list[i].deregister_map_items()
-            map.removeMapItem(poly_list[i])
-            poly_list = []
+        for(var i = 0; i < uniquelist.length; i++){
+            uniquelist[i].deregister_map_items()
+            map.removeMapItem(uniquelist[i])
+            uniquelist = []
             poly_cur = null
         }
-        /*
-        for(i = 0; i < path_list.length; i++){
-            map.removeMapItem(path_list[i])
-        }*/
+
+        if (el_list.length>0) {
+            for(var i=0; i<el_list.lenght; i++)
+                el_list[i].destroy()
+        }
+        el_list = []
 
         polysec_cur.clear_path()
     }
+
+    function deletenel(idx){
+        map.removeMapItem(uniquelist[idx])
+        uniquelist.splice(idx,1)
+        el_list[idx].destroy()
+        el_list.splice(idx,1)
+        for(var i = idx; i<el_list.length; i++ )
+           {
+            el_list[i].ntrack =el_list[i].ntrack -1
+            console.log(el_list[i].ntrack)
+        }
+    }
+
 }

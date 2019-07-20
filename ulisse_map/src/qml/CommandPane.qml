@@ -242,8 +242,37 @@ Pane {
             border.color: "lightgrey"
         }
 
-        PathRectPoly {
-            id: pathRectPoly
+        RowLayout {
+            id: rectid
+            RowLayout {
+                id: loadSavePath
+                Button {
+                    id: savePath
+                    width: 255
+                    height: 40
+                    Layout.fillWidth: true
+                    text: "Save Path"
+                    rotation: 1
+                    transformOrigin: Item.Left
+                    enabled: (mapView.pathCurrentState === pathState.empty)
+                             | (mapView.pathCurrentState === pathState.creating) ? false : true
+
+                    onClicked: {
+                        savePathDialog.open()
+                    }
+                }
+
+                Button {
+                    id: loadPath
+                    Layout.fillWidth: true
+                    text: "Load Path"
+                    enabled: (mapView.pathCurrentState === pathState.empty) ? true : false
+
+                    onClicked: {
+                        loadPathDialog.open()
+                    }
+                }
+            }
         }
 
         RowLayout {
@@ -297,34 +326,6 @@ Pane {
                     } else {
                         wpCommands.loopPath = false
                     }
-                }
-            }
-        }
-
-        RowLayout {
-            id: loadSavePath
-            Button {
-                id: savePath
-                width: 255
-                height: 40
-                Layout.fillWidth: true
-                text: "Save Path"
-                enabled: (mapView.pathCurrentState === pathState.empty)
-                         | (mapView.pathCurrentState === pathState.creating) ? false : true
-
-                onClicked: {
-                    savePathDialog.open()
-                }
-            }
-
-            Button {
-                id: loadPath
-                Layout.fillWidth: true
-                text: "Load Path"
-                enabled: (mapView.pathCurrentState === pathState.empty) ? true : false
-
-                onClicked: {
-                    loadPathDialog.open()
                 }
             }
         }

@@ -33,7 +33,6 @@ MapPolyline {
     property var px_multiplier
 
     property var closed: false
-
     property var detection_intersect: 0
 
     signal end_security
@@ -50,7 +49,6 @@ MapPolyline {
             removeCoordinate(0)
         closed = false
     }
-
     function map_check_intersections(pf){
         if (pathLength() < 3)
             return 0
@@ -72,10 +70,9 @@ MapPolyline {
             //Check intersection between last line and the other segments
             var intersection_point = Helper.intersect_two_lines(pi, mi, pf, mf)
             if(intersection_point !== pf_minus1 &&
-               intersection_point[2] !== 0 &&
-               Helper.point_in_box(intersection_point,pf, pf_minus1) &&
-               Helper.point_in_box(intersection_point,pi, pi_plus1)){
-
+                intersection_point[2] !== 0 &&
+                Helper.point_in_box(intersection_point,pf, pf_minus1) &&
+                Helper.point_in_box(intersection_point,pi, pi_plus1)){
                 //toast.show("INTERSECTION at segment"+(i+1))
                 detection_intersect = 1
                 return detection_intersect
@@ -100,6 +97,8 @@ MapPolyline {
               })
         }
         console.log(JSON.stringify(security_path))
+
+        return security_path
     }
 
 
