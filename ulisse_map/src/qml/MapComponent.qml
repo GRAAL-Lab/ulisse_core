@@ -141,7 +141,7 @@ MapComponentForm {
                             angle:  data.paths[i].angle
                         })
 
-                    poly_list.push(poly_cur)
+                    uniquelist.push(poly_cur)
                     map.addMapItem(poly_cur)
                     poly_cur.deserialize(data.paths[i].values)
                     poly_cur.draw_deferred()
@@ -151,14 +151,14 @@ MapComponentForm {
                 break
 
             case "PointPath":
-                map.removeMapItem(path_list)
+                map.removeMapItem(uniquelist)
 
                 if (currentState === generalState.empty){
                     currentState = generalState.path
                     if (path_cur)
                         path_cur.end.disconnect(endPath)
                     path_cur = pathComponent.createObject(map_component)
-                    path_list.push(path_cur)
+                    uniquelist.push(path_cur)
                     map.addMapItem(path_cur)
 
                     path_cur.line.color = "#33cc33"
@@ -172,7 +172,7 @@ MapComponentForm {
 
                     path_cur.end.connect(endPath)
                     endPath()
-                    path_list.push(path_cur)
+                    uniquelist.push(path_cur)
                 }
                 break;
             case "SecurityPoly":

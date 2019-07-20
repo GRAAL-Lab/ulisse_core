@@ -341,9 +341,14 @@ Pane {
         id: loadPathDialog
         title: "Please choose a file"
         folder: shortcuts.home
-        nameFilters: ["Path Files (*.path)"]
+        nameFilters: ["Path Files (*.txt)"]
 
         onAccepted: {
+            var path = loadPathDialog.fileUrl.toString()
+            path = path.replace(/^(file:\/{2})/, "")
+            console.log(path)
+            map.loadPath(path)
+            /*
             map.deletePath()
             var path = loadPathDialog.fileUrl.toString()
             // remove prefixed "file://"
@@ -356,7 +361,7 @@ Pane {
                 mapView.pathCurrentState = pathState.empty
                 wpCommands.wpButtonText = "Finalize..."
                 wpCommands.wpButtonHighlighted = true
-            }
+            }*/
         }
     }
 

@@ -18,6 +18,9 @@
 
 #include "fileio.h"
 
+#include "ulisse_msgs/srv/set_boundaries.hpp"
+
+
 int main(int argc, char* argv[])
 {
     QQmlDebuggingEnabler enabler;
@@ -25,7 +28,7 @@ int main(int argc, char* argv[])
     char name[] = { "Ulisse Control GUI" };
 
     rclcpp::init(argc, argv);
-    auto node = rclcpp::Node::make_shared("ulisse_map_node");
+    auto nh = rclcpp::Node::make_shared("ulisse_map_node");
     int rate = 10;
     rclcpp::WallRate loop_rate(rate);
 
@@ -66,8 +69,8 @@ int main(int argc, char* argv[])
      */
     QScopedPointer<FeedbackUpdater> fbkUpdater(new FeedbackUpdater);
     QScopedPointer<CommandWrapper> cmdWrapper(new CommandWrapper);
-    fbkUpdater->SetNodeHandle(node);
-    cmdWrapper->SetNodeHandle(node);
+    fbkUpdater->SetNodeHandle(nh);
+    cmdWrapper->SetNodeHandle(nh);
     appEngine.rootContext()->setContextProperty("fbkUpdater", fbkUpdater.data());
     appEngine.rootContext()->setContextProperty("cmdWrapper", cmdWrapper.data());
     appEngine.rootContext()->setContextProperty("home_dir", QDir::homePath());
