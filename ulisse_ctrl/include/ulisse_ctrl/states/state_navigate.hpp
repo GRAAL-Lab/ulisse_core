@@ -5,7 +5,11 @@
 #include "ulisse_ctrl/states/genericstate.hpp"
 #include <memory>
 
-#include <openNURBS/opennurbs.h>
+#include "sisl.h"
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <stdexcept>
 
 namespace ulisse {
 
@@ -21,17 +25,14 @@ namespace states {
         std::shared_ptr<ikcl::MakeCurve> asvMakeCurveTask_;
         std::shared_ptr<ikcl::ControlDistance> distanceTask_;
 
-        double centroid_lat_;
-        double centroid_long_;
+        ctb::LatLong centroid_;
 
         int number_of_curves_;
 
         double curvilinear_abscissa;
 
         double current_curvilinear_abscissa;
-        double next_curvilinear_abscissa;
         double delta_;
-        double delta_abscissa;
         int current_curve;
 
         bool isCurveSet;
@@ -44,18 +45,35 @@ namespace states {
         ctb::LatLong end_point;
         double starting_angle;
 
-        std::vector<ON_NurbsCurve> nurbs_;
+        std::vector<SISLCurve*> nurbs_;
 
-        ON_NurbsCurve curve;
+        SISLCurve* curve;
+        int stat;
+        int leftknot;
+        double aepsco = 0.01;
+        double aepsge = 0.01;
+        double gpar = 0;
+        double gpar2 = 0;
+        double dist = 0;
+        double dist2 = 0;
+        double* current_point;
+        double max_range_abscissa;
+        double cur_length;
+        SISLCurve* newcurve;
+        SISLCurve* curve2;
+        SISLCurve* newcurve2;
+        SISLCurve* result_curve;
+
         ctb::LatLong lookAheadPoint;
 
         double getCurvilinearAbscissa();
         ctb::LatLong to_lat_long(double x, double y);
+        double* to_meters(double latitude, double longitude);
 
     public:
         StateNavigate();
         virtual ~StateNavigate();
-        virtual fsm::retval OnEntry();
+        fsm::retval OnEntry() override;
         virtual fsm::retval Execute();
         virtual fsm::retval OnExit();
 
@@ -66,7 +84,7 @@ namespace states {
         void SetAngularVelocityTask(std::shared_ptr<ikcl::AngularVelocity> angularVelocityTask);
         void SetDistanceTask(std::shared_ptr<ikcl::ControlDistance> distanceTask);
 
-        void LoadSpur(float latitude, float longitude, int num_curves, std::vector<std::string> curves);
+        bool LoadSpur(std::string json_nurbs);
 
 
     };
