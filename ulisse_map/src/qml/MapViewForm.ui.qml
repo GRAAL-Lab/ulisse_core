@@ -29,6 +29,7 @@ RowLayout {
     property alias pathState: pathState
     property alias generalState: generalState
     property alias rectState: rectState
+
     spacing: 0
 
     Plugin {
@@ -87,9 +88,9 @@ RowLayout {
         id: mapsidebar
         Layout.fillHeight: true
         Layout.minimumHeight: 150
-        Layout.minimumWidth: 400
-        Layout.preferredWidth: 400
-        Layout.maximumWidth: 400
+        Layout.minimumWidth: 300
+        Layout.preferredWidth: 300
+        Layout.maximumWidth: 350
     }
 
     property real my_height: 17
@@ -110,7 +111,26 @@ RowLayout {
             center: marker_coords // Genoa
             zoomLevel: 17.5 //(maximumZoomLevel - minimumZoomLevel)/2
         }
+        MapSlidersLeft {
+            id: slidersLeft
+            z: map.z + 3
+            mapSource: map
+            edge: Qt.LeftEdge
+        }
+        RowLayout{
+            width: parent.width
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: bottomToolbar.height
 
+            PathRectPoly {
+                id: pathRectPoly
+                width: parent.width
+                height: parent.height
+                anchors.bottom: parent.bottom
+                anchors.centerIn: parent
+                Layout.bottomMargin: 10
+            }
+        }
         Rectangle {
             id: bottomToolbar
             width: parent.width
@@ -120,6 +140,7 @@ RowLayout {
 
             RowLayout {
                 width: parent.width
+                height: parent.height - recenterButton.height
 
                 Button {
                     id: recenterButton

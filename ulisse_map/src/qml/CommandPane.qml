@@ -244,10 +244,6 @@ Pane {
 
         RowLayout {
             id: rectid
-            PathRectPoly {
-                id: pathRectPoly
-            }
-
             RowLayout {
                 id: loadSavePath
                 Button {

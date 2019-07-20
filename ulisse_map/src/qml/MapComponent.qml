@@ -23,9 +23,6 @@ MapComponentForm {
     mapMouseArea.onClicked: {click_handler(mouse)}
     mapMouseArea.onPositionChanged: {pos_changed_handler(mouse)}
 
-    //property list<MapRectangle> rect_list
-    property MapRectangle rect_cur
-
     //property list<MapPolygon> poly_list
     property MapPolygon poly_cur
     property MapPolygon poly_obj
@@ -40,16 +37,15 @@ MapComponentForm {
 
     property MapPolygonSecurity polysec_cur
 
-    property Component rectComponent
     property Component polyComponent
     property Component polysecComponent
     property Component pathComponent
     property Component trackComponent
 
+    //TODO -> Make relative
     property var path_file: "/home/alessio/Desktop/Prova"
 
     Component.onCompleted: {
-        rectComponent = Qt.createComponent("MapRectangle.qml")
         polyComponent = Qt.createComponent("MapPolygon.qml")
         polysecComponent = Qt.createComponent("MapPolygonSecurity.qml")
         pathComponent = Qt.createComponent("MapPath.qml")
@@ -63,27 +59,22 @@ MapComponentForm {
     }
     //slidersLeft.listtrackers.Ob
 
-    function createRect(offset, angle) {
-        if(!polysec_cur.closed){
-            toast.show("Define Security Area First!")
-            return
+
+    function removeLastPath(){
+        var uniquelist_length = uniquelist.length
+        if(uniquelist_length > 0){
+            map.removeMapItem(uniquelist[uniquelist_length-1])
+            uniquelist.pop()
+            el_list[uniquelist_length-1].destroy()
+            polysec_cur.clear_path()
         }
-         if (currentState === generalState.empty){
-             currentState = generalState.rect
-             if (rect_cur)
-                 rect_cur.end.disconnect(endRect)
-             rect_cur = rectComponent.createObject(map_component, {offset:offset, angle:angle, debug_c: overlay_canvas, editCircle: editCircle})
-             uniquelist.push(rect_cur)
+    }
 
-             el_track = trackComponent.createObject(slidersLeft.columnTrack, {_sliderL: slidersLeft ,_comp:map_component, ntrack: uniquelist.length-1})
-             el_list.push(el_track)
 
-             map.addMapItem(rect_cur)
-             click_handler = rect_cur.click_handler
-             pos_changed_handler = rect_cur.pos_changed_handler
-             rect_cur.end.connect(endRect)
-         }
-
+    function createRect(offset, angle) {
+        createPoly(offset, angle)
+        click_handler = poly_cur.click_handler_rect
+        pos_changed_handler = poly_cur.pos_changed_handler_rect
     }
 
     function modify(idx){
@@ -120,10 +111,6 @@ MapComponentForm {
     }
 
     function createPoly(offset, angle, method) {
-        if(!polysec_cur.closed){
-            toast.show("Define Security Area First!")
-            return
-        }
         if (currentState === generalState.empty){
             currentState = generalState.poly
             poly_cur = polyComponent.createObject(map_component, {method: method, offset:offset, angle:angle, debug_c: overlay_canvas, editCircle: editCircle})
@@ -148,12 +135,14 @@ MapComponentForm {
          }
     }
 
-    function createPath() {
-        if(!polysec_cur.closed){
-            toast.show("Define Security Area First!")
-            return
-        }
 
+    function hideRowElement(){
+        pathRectPoly.rowFigure.visible = false
+        pathRectPoly.rowLayout.visible = false
+        pathRectPoly.rowEditPlay.visible = false
+    }
+
+    function createPath() {
         if (currentState === generalState.empty){
             currentState = generalState.path
             if (path_cur)
@@ -166,16 +155,8 @@ MapComponentForm {
             click_handler = path_cur.click_handler
             pos_changed_handler = path_cur.pos_changed_handler
             path_cur.end.connect(endPath)
+            hideRowElement()
         }
-
-    }
-
-    function endRect() {
-         if (currentState === generalState.rect){
-             click_handler = function(){}
-             pos_changed_handler = function(){}
-             currentState = generalState.empty
-         }
 
     }
 
@@ -193,6 +174,7 @@ MapComponentForm {
              click_handler = function(){}
              pos_changed_handler = function(){}
              currentState = generalState.empty
+             hideRowElement()
          }
     }
 
@@ -239,9 +221,9 @@ MapComponentForm {
             case "RectPath":
                 map.removeMapItem(rect_list)
                 if (currentState === generalState.empty){
-                    currentState = generalState.rect
+                    currentState = generalState.poly
                     if (rect_cur)
-                        rect_cur.end.disconnect(endRect)
+                        rect_cur.end.disconnect(endPoly)
                     rect_cur = rectComponent.createObject(map_component, {offset:data.paths[i].offset, angle:data.paths[i].angle, debug_c: overlay_canvas, editCircle: editCircle})
                     rect_list.push(rect_cur)
                     map.addMapItem(rect_cur)
@@ -260,9 +242,9 @@ MapComponentForm {
                     //rect_cur.generate_nurbs()
                     rect_cur.end()
 
-                    rect_cur.end.connect(endRect)
+                    rect_cur.end.connect(endPoly)
                     rect_list.push(rect_cur)
-                    endRect()
+                    endPoly()
                 }
                 break;
 */
@@ -285,7 +267,6 @@ MapComponentForm {
                 break
 
             case "PointPath":
-
                 map.removeMapItem(path_list)
 
                 if (currentState === generalState.empty){
@@ -352,9 +333,11 @@ MapComponentForm {
         }
 
         for(i = 0; i < uniquelist.length; i++)
-            all_paths.paths.push(path_list[i].serialize())
+            all_paths.paths.push(uniquelist[i].serialize())
 
         //TODO add security box
+        all_paths.security_box = polysec_cur.create_JSON()
+
         console.log(JSON.stringify(all_paths))
         //TODO save file
     }
@@ -444,7 +427,7 @@ MapComponentForm {
             el_list[i].destroy() //FIXME
             console.log(el_list.length)
         el_list = []
-        loadPath()
+        //loadPath()
     }
 
     function clearAll(){

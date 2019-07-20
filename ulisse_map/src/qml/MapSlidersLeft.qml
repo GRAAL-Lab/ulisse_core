@@ -54,6 +54,7 @@ import QtQuick.Controls 2.2
 import QtQml.Models 2.1
 import QtQuick.Controls.Material 2.1
 
+
 Row {
     id: containerRowLeft
 
@@ -80,6 +81,7 @@ Row {
     function rightEdge() {
         return (containerRowLeft.edge === Qt.RightEdge)
     }
+
 
     layoutDirection: rightEdge() ? Qt.LeftToRight : Qt.RightToLeft
     anchors.top: parent.top

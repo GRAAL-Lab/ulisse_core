@@ -40,7 +40,6 @@
         <file>qml/MapComponentForm.ui.qml</file>
         <file>qml/PathRectPoly.qml</file>
         <file>qml/PathRectPolyForm.ui.qml</file>
-        <file>qml/MapRectangle.qml</file>
         <file>qml/MapPolygon.qml</file>
         <file>qml/MapPath.qml</file>
         <file>qml/MapCanvas.qml</file>

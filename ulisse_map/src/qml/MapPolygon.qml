@@ -214,6 +214,82 @@ MapPolyline {
     }
 
 
+
+
+    function click_handler_rect(mouse){
+        if (mouse.button & Qt.LeftButton){
+            if (polygonal_phase === 0){
+                var p = Qt.point(mouse.x, mouse.y)
+                var wp = map.toCoordinate(p)
+                addCoordinate(wp)
+                addCoordinate(wp)
+                mapMouseArea.hoverEnabled = true
+                polygonal_phase = 1
+            } else if (polygonal_phase === 1){
+                var p = Qt.point(mouse.x, mouse.y)
+                var wp = map.toCoordinate(p)
+                var wp0 = coordinateAt(0)
+                addCoordinate(wp)
+                addCoordinate(wp0)
+                addCoordinate(wp0)
+                polygonal_phase = 2
+                line.color = "#ffb300"
+            } else if (polygonal_phase === 2){
+                var p0 = map.fromCoordinate(coordinateAt(0))
+                var p2 = map.fromCoordinate(coordinateAt(2))
+                polygonal_phase = 0
+                mapMouseArea.hoverEnabled = false
+                line.color = "#33cc33"
+                generate_path()
+                draw_path()
+                generate_nurbs()
+                end()
+            }
+        }
+    }
+
+    function pos_changed_handler_rect(mouse){
+        if (polygonal_phase === 1){
+            var p0 = map.fromCoordinate(coordinateAt(0));
+            var p1 = Qt.point(mouse.x, mouse.y)
+            if (mouse.modifiers & Qt.ShiftModifier){
+                var n_intervals = 16
+                var snap_interval = 2*Math.PI/n_intervals
+                var theta = Math.atan2(p1.y-p0.y, p1.x-p0.x)
+                var snap_idx = Math.floor((theta + snap_interval/2) / snap_interval)
+                var snap_theta = snap_idx*snap_interval
+                var m = Math.tan(snap_theta)
+                var lam = Helper.lat_to_m_coeff(coordinateAt(0).latitude)
+                var lom = Helper.lon_to_m_coeff(coordinateAt(0).longitude)
+                p1 = Helper.project(p0,m,p1, lam/lom)
+            }
+            replaceCoordinate(1, map.toCoordinate(p1))
+        } else if (polygonal_phase === 2){
+            var cp0 = coordinateAt(0);
+            var cp1 = coordinateAt(1);
+            var cpc = map.toCoordinate(Qt.point(mouse.x, mouse.y), false)
+            var coords = [cp0, cp1, cpc]
+            var centroid = Helper.coords_centroid(coords)
+            var lam = Helper.lat_to_m_coeff(centroid.latitude)
+            var lom = Helper.lon_to_m_coeff(centroid.longitude)
+            var points = Helper.points_map2euclidean(coords, centroid, lam, lom)
+
+            var m = Helper.slope(points[0], points[1])
+            var m_perp = -Math.pow(lam/lom,2)/m //perpendicularity constraint for aspect ratios different than 1:1
+            var p2 = Helper.intersect_two_lines(points[1], m_perp, points[2], m)
+            var p3 = Helper.intersect_two_lines(points[0], m_perp, points[2], m)
+            var cp2 = Helper.point_euclidean2map(p2.x, p2.y, centroid, lam, lom)
+            var cp3 = Helper.point_euclidean2map(p3.x, p3.y, centroid, lam, lom)
+
+            if (cp2 !== null && cp2.isValid && cp3 !== null && cp3.isValid){
+                replaceCoordinate(2, cp2)
+                replaceCoordinate(3, cp3)
+            }
+        }
+    }
+
+
+
     function pos_changed_handler(mouse, box){
         if (polygonal_phase === 0) return;
         var p = Qt.point(mouse.x, mouse.y)
@@ -637,7 +713,7 @@ MapPolyline {
 
     function serialize(){
         var values = []
-        for (j = 0; j < path.length; j++){
+        for (var j = 0; j < path.length; j++){
             var p_i = path[j]
             values.push({
                 latitude: p_i.latitude,
@@ -646,8 +722,8 @@ MapPolyline {
         }
         return {
             name: 'PolyPath',
-            offset: poly_list[i].offset,
-            angle: poly_list[i].angle,
+            offset: _offset,
+            angle: _angle,
             values: values
         }
 
