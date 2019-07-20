@@ -27,7 +27,7 @@ link_directories(${Boost_LIBRARIES})
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(JSONCPP jsoncpp)
-link_libraries(${JSONCPP_LIBRARIES} sisl openNURBS ${OPENNURBS_LINKLIBRARIES})
+link_libraries(${JSONCPP_LIBRARIES} sisl)
 
 # Add files in the tree of "Projects" view in QtCreator
 file(GLOB_RECURSE SOURCE_FILES

@@ -490,23 +490,21 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
             }  else if (request->command_type == ulisse::commands::ID::navigate) {
                 std::cout << "Received Command Navigate" << std::endl;
 
-                state_navigate_.LoadSpur(request->nav_cmd.centroid_latitude, request->nav_cmd.centroid_longitude, request->nav_cmd.number_of_curves,
-                                           request->nav_cmd.curves);
-                std::cout << "FINISH LOADSPUR" << std::endl;
+                if (! state_navigate_.LoadSpur(request->nav_cmd.nurbs_json) )
+                {
+                    ret = fsm::retval::fail;
+                }
 
             } else {
                 RCLCPP_INFO(nh_->get_logger(), "Unsupported command: %s", request->command_type.c_str());
                 ret = fsm::retval::fail;
             }
-
-            std::cout << "QUI" << std::endl;
             if (ret != fsm::retval::ok) {
                 response->res = "CommandAnswer::fail";
                 RCLCPP_INFO(nh_->get_logger(), "SendAnswer returned %s", response->res.c_str());
             } else {
                 u_fsm_.ExecuteCommand(request->command_type);
                 response->res = "CommandAnswer::ok";
-                std::cout << "QUI2  :  " << request->command_type << std::endl;
             }
         };
 

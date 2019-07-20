@@ -237,4 +237,43 @@ void parameter_setting(struct SlidingSurface &param,std::shared_ptr<LowLevelConf
 
 	}
 
+    double DecimalPart(double x) {
+        if(x > floor(x))
+            return x - floor(x);
+        else
+            return x - (floor(x) - 1);
+    }
+
+    double deg_to_rad(double deg){
+        return (M_PI/180.0) * deg;
+    }
+
+    double rad_to_deg(double rad){
+        return (180.0/M_PI) * rad;
+    }
+
+    double lat_to_m_coeff(double lat){
+        lat = deg_to_rad(lat);
+        return 111132.92 - 559.82*cos(2*lat) + 1.175*cos(4*lat) - 0.0023*cos(6*lat);
+    }
+
+    double lon_to_m_coeff(double lon){
+        lon = deg_to_rad(lon);
+        return 111412.84*cos(lon) - 93.5*cos(3*lon) + 0.118*cos(5*lon);
+    }
+
+    double* point_map2euclidean(double latitude, double longitude, ctb::LatLong centroid, double lam, double lom){
+        double* result = new double[3];
+        result[0] = (centroid.longitude - longitude) * lom;
+        result[1] = (centroid.latitude  - latitude)  * lam;
+        result[2] = 0;
+        return result;
+    }
+
+    ctb::LatLong point_euclidean2map(double x, double y, ctb::LatLong centroid, double lam, double lom){
+        ctb::LatLong result;
+        result.latitude = centroid.latitude - y/lam;
+        result.longitude = centroid.longitude - x/lom;
+        return result;
+    }
 }
