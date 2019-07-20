@@ -2,6 +2,7 @@ import QtQuick 2.6
 import QtQuick.Layouts 1.3
 import QtQuick.Controls 2.1
 import QtLocation 5.7
+import QtQml.Models 2.1
 import QtPositioning 5.6
 import Qt.labs.settings 1.0
 import QtQuick.Controls.Material 2.1
@@ -15,10 +16,9 @@ MapComponentForm {
 
     id: map_component
 
-    property var actualtrack
-
     property var click_handler : function(){}
     property var pos_changed_handler : function(){}
+    property var actualtrack
 
     mapMouseArea.onClicked: {click_handler(mouse)}
     mapMouseArea.onPositionChanged: {pos_changed_handler(mouse)}
@@ -57,6 +57,7 @@ MapComponentForm {
         map.addMapItem(poly_obj)
         map.removeMapItem(poly_obj)
     }
+    //slidersLeft.listtrackers.Ob
 
 
     function removeLastPath(){
@@ -100,18 +101,19 @@ MapComponentForm {
         }
     }
 
-function createPoly() {
-    poly_cur = polyComponent.createObject(map_component)
-    uniquelist.push(poly_cur)
-    map.addMapItem(poly_cur)
-    return poly_cur
-}
+    function createPoly() {
+        poly_cur = polyComponent.createObject(map_component)
+        uniquelist.push(poly_cur)
+        map.addMapItem(poly_cur)
+        return poly_cur
+    }
 
     function createRect() {
         createPoly()
         click_handler = poly_cur.click_handler_rect
         pos_changed_handler = poly_cur.pos_changed_handler_rect
     }
+
 
     function createPolySec() {
         //TODO -> use a menu for editing the polygon
@@ -138,7 +140,7 @@ function createPoly() {
                 path_cur.end.disconnect(endPath)
             path_cur = pathComponent.createObject(map_component)
             uniquelist.push(path_cur)
-            el_track =trackComponent.createObject(map_component, {_comp:map_component, ntrack: uniquelist.length-1})
+            el_track =trackComponent.createObject(slidersLeft.columnTrack, {_sliderL: slidersLeft , _comp:map_component, ntrack: uniquelist.length-1})
             el_list.push(el_track)
             map.addMapItem(path_cur)
             click_handler = path_cur.click_handler

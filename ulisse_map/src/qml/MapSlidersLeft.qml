@@ -51,6 +51,7 @@ import QtQuick 2.6
 import QtQuick.Controls 1.4 as C1
 import QtQuick.Controls.Styles 1.4 as C1S
 import QtQuick.Controls 2.2
+import QtQml.Models 2.1
 import QtQuick.Controls.Material 2.1
 
 
@@ -64,6 +65,19 @@ Row {
     property int edge: Qt.LeftEdge
     property alias expanded: sliderTogglerLeft.checked
     property var togglerColor: mainAccentColor
+    property alias columnTrack: columnTrack
+    property alias sliderW: sliderTogglerLeft.width
+
+    state: {
+        0: "empty",
+                1: "path",
+                2: "rect",
+                3: "poly",
+                4: "polysec",
+                5: "editmode",
+                6: "deletemode"
+    }[mapView.currentState]
+
 
     function rightEdge() {
         return (containerRowLeft.edge === Qt.RightEdge)
@@ -136,11 +150,6 @@ Row {
         }
     }
 
-    /*
-    sliderTogglerLeft.onCheckedChanged: function(){
-
-    }
-  */
     Rectangle {
         id: sliderContainerLeft
         height: parent.height
@@ -153,51 +162,59 @@ Row {
                                             Material.Shade600)
 
         property string labelBorderColor: "transparent"
-        property real slidersHeight: sliderContainerLeft.height - columnContainer.spacing * 2
-                                     - columnContainer.topPadding - columnContainer.bottomPadding
 
         Column {
-            id: columnContainer
-            anchors.fill: parent
-            spacing: 10
-            topPadding: 16
-            bottomPadding: 48
 
-            Column {
-                spacing: -10
+                spacing: 10
                 id: sliderRow
-                height: sliderContainerLeft.slidersHeight
+                // height: sliderContainerLeft.slidersHeight
                 width: 30
-
-                Button{
-                    id:addTracks
-                    text:"+"
-                    width:30
-                    onClicked: function(){
-                        pathRectPoly.show_shape_choice()
+                Column{
+                    id:buttons3
+                    Button{
+                        id:addTracks
+                        text:"+"
+                        width: sliderTogglerLeft.checked ? sliderRow.width + 120 : sliderRow.width
+                        onClicked: function(){
+                            pathRectPoly.show_shape_choice()
+                        }
+                        background: Rectangle {
+                            id: addTracksRect
+                            color: "#abcdef"
+                        }
+                    }
+                    Button{
+                        id:saveTracks
+                        onClicked: function() {
+                            if(mapView.currentState === mapView.generalState.deletemode){
+                             mapView.currentState = mapView.generalState.empty
+                            }
+                            return
+                        }
+                        text:"s"
+                        enabled: true
+                        width:sliderTogglerLeft.checked ? sliderRow.width + 120 : sliderRow.width
+                        background: Rectangle {
+                        id: saveTracksRect
+                        color: "#abcdef"
+                        }
+                    }
+                    Button{
+                        id:deleteTracks
+                        text:"x"
+                        enabled: true
+                        width:sliderTogglerLeft.checked ? sliderRow.width + 120 : sliderRow.width
+                        onClicked: mapView.currentState = mapView.generalState.deletemode
+                        background: Rectangle {
+                        color: "#abcdef"
+                        }
                     }
                 }
-                Button{
-                    id:saveTracks
-                    text:"s"
-                    width:30
-                }
-                Button{
-                    id:deleteTracks
-                    text:"x"
-                    width:30
-                }
-                Button{
-                    id:modifyTrack
-                    text:"M"
-                    width:30
-                }
-            }
-            Column{
-                id:columnTrack
-            }
 
-        } // Column
+                Column{
+                    id:columnTrack
+                }
+            }
     }
     states: [
         State {
@@ -213,8 +230,31 @@ Row {
                 target: sliderTogglerLeft
                 checked: false
             }
+        },
+        State   {
+            name: "deletemode"
+            PropertyChanges {
+                target: deleteTracks
+                text: sliderTogglerLeft.checked ?  "Confirm?" : "?"
+            }
+            PropertyChanges {
+                target: addTracks
+                text: sliderTogglerLeft.checked ? "Yes" :"y"
+            }
+            PropertyChanges {
+                target: addTracksRect
+                color: "#00ff00"
+            }
+            PropertyChanges {
+                target: saveTracks
+                text:sliderTogglerLeft.checked ?  "No" : "n"
+            }
+            PropertyChanges {
+                target: saveTracksRect
+                color: "#ff0000"
+            }
         }
+
     ]
     // sliderContainerLeft
 } // containerRowLeft
-

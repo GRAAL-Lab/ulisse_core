@@ -24,7 +24,6 @@ RowLayout {
 
     id: rowChoices
     anchors.fill: map
-    state: "empty"
 
     //Row for shapes
     RowLayout {

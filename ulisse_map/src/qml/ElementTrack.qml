@@ -1,5 +1,6 @@
 import QtQuick 2.6
 import QtQuick.Layouts 1.3
+import QtQml.Models 2.1
 import QtQuick.Controls 2.1
 import QtLocation 5.7
 import QtPositioning 5.6
@@ -14,12 +15,21 @@ import "../scripts/helper.js" as Helper
 
 ElementTrackForm{
 
-    name.onDoubleClicked: {
-    }
+    name.onDoubleClicked: {}
+
+    menubutton.onClicked: menu.open()
+
+    deleteItem.onTriggered: _comp.deletenel(ntrack)
+
+    tracklistlayout.y: tracklistlayout.height*(ntrack)
+
     menubutton.onClicked: menu.open()
 
     editItem.onTriggered: function(){edit(_comp)}
 
     deleteItem.onTriggered: _comp.deletenel(ntrack)
 
+    name.onClicked: {
+        backbut.color= (backbut.color==="#ff0000")? "#0000ff" : "#ff0000"
+    }
 }
