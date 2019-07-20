@@ -59,7 +59,6 @@ class VehicleController {
     rclcpp::Service<ulisse_msgs::srv::SetBoundaries>::SharedPtr srv_boundaries;
 
     rclcpp::Subscription<ulisse_msgs::msg::GPSData>::SharedPtr gps_sub_;
-    //rclcpp::Subscription<ulisse_msgs::msg::Compass>::SharedPtr compass_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::LLCStatus>::SharedPtr llc_status_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr nav_filter_sub_;
 

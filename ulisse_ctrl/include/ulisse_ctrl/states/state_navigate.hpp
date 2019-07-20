@@ -25,8 +25,7 @@ namespace states {
         std::shared_ptr<ikcl::MakeCurve> asvMakeCurveTask_;
         std::shared_ptr<ikcl::ControlDistance> distanceTask_;
 
-        double centroid_lat_;
-        double centroid_long_;
+        ctb::LatLong centroid_;
 
         int number_of_curves_;
 
@@ -85,7 +84,7 @@ namespace states {
         void SetAngularVelocityTask(std::shared_ptr<ikcl::AngularVelocity> angularVelocityTask);
         void SetDistanceTask(std::shared_ptr<ikcl::ControlDistance> distanceTask);
 
-        bool LoadSpur(float latitude, float longitude, int num_curves, std::vector<std::string> curves);
+        bool LoadSpur(std::string json_nurbs);
 
 
     };

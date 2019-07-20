@@ -34,28 +34,11 @@ int main(int argc, char* argv[])
 
     auto serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
     serviceReq->command_type = ulisse::commands::ID::navigate;
-    serviceReq->nav_cmd.centroid_latitude = 44.3931;
-    serviceReq->nav_cmd.centroid_longitude = 8.94382;
-
-    /*
-    serviceReq->nav_cmd.number_of_curves = 3;
-
-    std::vector<std::string> curves;
-
-    curves.push_back("{ \"degree\": 1, \"points\": [[44.393, 8.945], [44.3935, 8.9462]], \"weigths\": [1, 1], \"knots\": [0, 0, 1, 1], \"reverse\": 0}");
-    curves.push_back("{ \"degree\": 3, \"points\": [[44.3935, 8.9462], [44.3935, 8.9482], [44.3920, 8.9482], [44.3920, 8.9462]], \"weigths\": [1, 1/3.0, 1/3.0, 1], \"knots\": [0, 0, 0, 0, 1, 1, 1, 1] , \"reverse\": 0}");
-    curves.push_back("{ \"degree\": 1, \"points\": [[44.3920, 8.9462], [44.3910, 8.9452], \"weigths\": [1, 1], \"knots\": [0, 0, 1, 1] }");
-
-    */
-
-    serviceReq->nav_cmd.number_of_curves = 2;
-
-    std::vector<std::string> curves;
-
-    curves.push_back("{ \"degree\": 1, \"points\": [[44.393, 8.945], [44.3935, 8.9462]], \"weigths\": [1, 1], \"knots\": [0, 0, 1, 1], \"reverse\": 0}");
-    curves.push_back("{ \"degree\": 1, \"points\": [[44.3935, 8.9462], [44.393, 8.9472]], \"weigths\": [1, 1], \"knots\": [0, 0, 1, 1], \"reverse\": 0} }");
-
-    serviceReq->nav_cmd.curves = curves;
+    serviceReq->nav_cmd.nurbs_json = "{\"centroid\":[44.39202059265811,8.9439365547717],\"curves\":["
+                                     "{\"degree\":1,\"knots\":[0,0,1,1],\"points\":[[18.78383769505253,-12.24823752552843],[27.451122566636002,-7.244178271776541]],\"weigths\":[1,1]},"
+                                     "{\"degree\":1,\"knots\":[0,0,1,1],\"points\":[[-8.672366134091167,-16.553538559619152],[22.528601390628666,1.460348439754616]],\"weigths\":[1,1]},"
+                                     "{\"degree\":1,\"knots\":[0,0,1,1],\"points\":[[-13.594887310098501,-7.849011848087996],[20.585018549962264,11.884766001094151]],\"weigths\":[1,1]},"
+                                     "{\"degree\":1,\"knots\":[0,0,1,1],\"points\":[[-18.88993247421921,0.64043803862631],[15.662497373954928,20.58929271262531]],\"weigths\":[1,1]}]}";
 
     std::string result_msg;
 

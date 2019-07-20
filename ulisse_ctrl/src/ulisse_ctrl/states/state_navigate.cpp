@@ -20,9 +20,7 @@ namespace states {
     {
         curvilinear_abscissa = 0;
         number_of_curves_ = 0;
-        centroid_lat_ = 0.0;
-        centroid_long_ = 0.0;
-        max_range_abscissa = 0.5;
+        max_range_abscissa = 0.3;
 
         //TODO: Aumenta quando passiamo a metri
         delta_ = 0.001;
@@ -64,15 +62,17 @@ namespace states {
         asvMakeCurveTask_ = asvMakeCurveTask;
     }
 
-    bool StateNavigate::LoadSpur(float latitude, float longitude, int num_curves, std::vector<std::string> curves){
+    bool StateNavigate::LoadSpur(std::string json_nurbs){
         nurbs_.clear();
 
-        centroid_lat_ = latitude;
-        centroid_long_ = longitude;
-        number_of_curves_ = num_curves;
-
         Json::Reader reader;
-        Json::Value obj;
+        Json::Value obj, obj_master;
+
+        reader.parse(json_nurbs, obj_master);
+        centroid_.latitude = obj_master["centroid"][0].asDouble();
+        centroid_.longitude = obj_master["centroid"][1].asDouble();
+
+        number_of_curves_ = 0;
 
         int dimension = 3;
         int degree = 0;
@@ -86,8 +86,9 @@ namespace states {
         double* control_points;
         double* weights;
 
-        for(std::string c : curves) {
-            reader.parse(c, obj);
+        for(Json::Value c : obj_master["curves"]){
+
+            reader.parse(c.toStyledString(), obj);
 
             degree = obj["degree"].asInt();
 
@@ -140,10 +141,13 @@ namespace states {
                                         dimension,                // dimension
                                         1);                       // no copying of information, 'borrow' array
 
+            /*
             if( obj["reverse"].asInt()){
                 // Turn the direction of a curve by reversing the ordering of the coefficients
                 s1706(insert_curve);
             }
+            */
+
             if (!insert_curve) {
                 std::cout << "SOMETHING GOES WRONG" << std::endl;
                 return false;
@@ -154,9 +158,10 @@ namespace states {
             delete(knots);
             delete(control_points);
             delete(weights);
+
+            number_of_curves_++;
         }
 
-        std::cout << "SOMETHING GOES RIGHT" << std::endl;
         isCurveSet = true;
         return true;
     }
@@ -186,7 +191,11 @@ namespace states {
         curve = nurbs_[0];
         // Compute the point of the first curve at 0.1.
         s1227(curve, 0, 0.1, &leftknot, point_at, &stat);
-        starting_angle = atan2(point_at[1] - starting_point.longitude, point_at[0] - starting_point.latitude);
+
+        ctb::LatLong next_point = to_lat_long(point_at[0], point_at[1]);
+
+        double dist;
+        ctb::DistanceAndAzimuthRad(starting_point, next_point, dist, starting_angle);
 
         return fsm::ok;
     }
@@ -260,7 +269,6 @@ namespace states {
                     /*
                     s1240(curve, aepsge, &cur_length, &stat);
                     delta_ = 1.0 / cur_length;
-
                      */
 
                     current_curvilinear_abscissa = curvilinear_abscissa;
@@ -283,13 +291,15 @@ namespace states {
                     angularPositionTask_->SetAngle(Eigen::Vector3d(0, 0, goalCxt_->goalHeading));
                     distanceTask_->SetDistance(Eigen::Vector3d(goalCxt_->goalDistance, 0, 0));
 
-                    if(goalCxt_->goalDistance < 0.5){
+                    /*
+                    if(goalCxt_->goalDistance < 1.0){
                         delta_ *= 2;
                     }
 
                     if(goalCxt_->goalDistance > 1.5){
                         delta_ /= 2;
                     }
+                     */
                 }
             }
         }
@@ -321,22 +331,18 @@ namespace states {
     double StateNavigate::getCurvilinearAbscissa() {
         double min_abscissa = curvilinear_abscissa;
         double max_abscissa = curvilinear_abscissa + max_range_abscissa;
-        if(max_abscissa > number_of_curves_)
+        if(max_abscissa > number_of_curves_) {
             max_abscissa = number_of_curves_;
+        }
 
-        std::cout << "RANGE : " << min_abscissa << " - " << max_abscissa << std::endl;
         current_curve = floor(curvilinear_abscissa);
 
-        std::cout << "CUR CURVE: " << current_curve << std::endl;
         curve = nurbs_[current_curve];
 
         current_point = to_meters(statusCxt_->vehiclePos.latitude, statusCxt_->vehiclePos.longitude);
 
         if ( (floor(max_abscissa) == floor(min_abscissa)) || ((max_abscissa - floor(max_abscissa)) == 0) )
         {
-
-            std::cout << "RANGE DI CURVA : " << DecimalPart(min_abscissa) << " - " << DecimalPart(max_abscissa) << std::endl;
-
             // To select the window part of curv, from min_abscissa to max_abscissa
             s1713(curve, DecimalPart(min_abscissa), DecimalPart(max_abscissa), &newcurve, &stat);
 
@@ -347,7 +353,6 @@ namespace states {
 
         }
         else{
-            std::cout << "SU DUE CURVE" << std::endl;
             // To select the last part of first curve, from min_abscissa to 1.0
             s1713(curve, DecimalPart(min_abscissa), 1.0, &newcurve, &stat);
 
@@ -373,19 +378,20 @@ namespace states {
     }
 
     ctb::LatLong StateNavigate::to_lat_long(double x, double y)  {
-        ctb::LatLong latLong;
-        latLong.latitude = x;
-        latLong.longitude = y;
+        double lam = lat_to_m_coeff(centroid_.latitude);
+        double lom = lon_to_m_coeff(centroid_.longitude);
+        ctb::LatLong p = point_euclidean2map(x, y, centroid_, lam, lom);
 
-        return latLong;
+        return p;
     }
 
 
     double* StateNavigate::to_meters(double latitude, double longitude) {
-        double *result = new double[3];
-        result[0] = latitude;
-        result[1] = longitude;
-        result[2] = 0;
+        double lam = lat_to_m_coeff(centroid_.latitude);
+        double lom = lon_to_m_coeff(centroid_.longitude);
+        double* p = point_map2euclidean(latitude, longitude, centroid_, lam, lom);
+
+        return p;
     }
 
     fsm::retval StateNavigate::OnExit()

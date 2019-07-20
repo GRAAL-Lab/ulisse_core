@@ -45,6 +45,18 @@ double s2 (const double ref, const double fb, struct SlidingSurface param);
 double MinimumAngleBetween(double from, double to);
 
 double DecimalPart(double x);
+
+double deg_to_rad(double deg);
+
+double rad_to_deg(double rad);
+
+double lat_to_m_coeff(double lat);
+
+double lon_to_m_coeff(double lon);
+
+double* point_map2euclidean(double latitude, double longitude, ctb::LatLong centroid, double lam, double lom);
+
+ctb::LatLong point_euclidean2map(double x, double y, ctb::LatLong centroid, double lam, double lom);
 }
 
 #endif // HELPERFUNCTIONS_HPP
