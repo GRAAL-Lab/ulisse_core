@@ -8,7 +8,6 @@ import "../scripts/helper.js" as Helper
 MapPolyline {
     id: root
     line.width: 3
-    line.color: "#81c784"
     opacity: 1.0
     z: map.z + 5
 
@@ -192,6 +191,22 @@ MapPolyline {
             removeCoordinate(0)
     }
 
+    function check_safe(box){
+        var bpp = [], ppp = []
+        for(var i=0; i<box.path.length; i++)
+            bpp.push(map.fromCoordinate(box.path[i],false))
+        for(var i=0; i<path.length; i++)
+            ppp.push(map.fromCoordinate(path[i],false))
+        safe = Helper.polygons_disjoint(bpp,ppp)
+        return safe
+    }
+
+    line.color: "#81c784"
+    property var safe: null
+    onSafeChanged: function(){
+        line.color = (safe ? "#00ff00" : "#ff0000")
+    }
+
     //FIXME: check it in the euclidean plane
     function map_polygon_point_admissibility(pc){
         var pa = map.fromCoordinate(path[pathLength()-3])
@@ -209,30 +224,33 @@ MapPolyline {
         var pb = map.fromCoordinate(get_next_in_path(idx,1))
         var pd = map.fromCoordinate(get_prev_in_path(idx,1))
         var pe = map.fromCoordinate(get_prev_in_path(idx,2))
-        return ((Helper.three_point_direction(pa,pb,pc) === Helper.three_point_direction(pb,pc,pd)) &&
-                Helper.three_point_direction(pb,pc,pd) === Helper.three_point_direction(pc,pd,pe))
+        var r1 = Helper.three_point_direction(pa,pb,pc)
+        var r2 = Helper.three_point_direction(pb,pc,pd)
+        if (r1 !== r2) return false
+        var r3 = Helper.three_point_direction(pc,pd,pe)
+        if (r2 !== r3) return false
+        return true
     }
 
-
-    function pos_changed_handler(mouse, box){
+    function pos_changed_handler(mouse){
         if (polygonal_phase === 0) return;
         var p = Qt.point(mouse.x, mouse.y)
-        var pf, color
+        var color
+        var pf = map.toCoordinate(p)
         if (polygonal_phase === 3 && !map_polygon_point_admissibility(p)){
             pf = path[0]
             color = "#ffb300"
         } else {
-            pf = map.toCoordinate(Qt.point(mouse.x, mouse.y))
             color = "#81c784"
         }
         line.color = color
         replaceCoordinate(path.length-1, pf)
     }
 
-    function click_handler(mouse, box){
+    function click_handler(mouse){
+        var m = Qt.point(mouse.x, mouse.y)
+        var p = map.toCoordinate(m)
         if (mouse.button & Qt.LeftButton){
-            var m = Qt.point(mouse.x, mouse.y)
-            var p = map.toCoordinate(m)
             if (polygonal_phase === 0){
                 clear_path()
                 addCoordinate(p)
@@ -378,10 +396,9 @@ MapPolyline {
         _handle.update_canvas(angle)
     }
 
-    function pos_changed_mod_handler(mouse, box){
+    function pos_changed_mod_handler(mouse){
         var p = Qt.point(mouse.x, mouse.y)
         var pf = map.toCoordinate(p)
-        console.log(Helper.coord_inside_polygon(pf, box.path))
         var _path = get_path()
         if (moving_idx === -1 && !translating && !rotating){
             var hpc = map.fromCoordinate(_handle.h_center)
@@ -430,7 +447,7 @@ MapPolyline {
         _handle.h_radius = r
     }
 
-    function click_mod_handler(mouse, box){
+    function click_mod_handler(mouse){
         mapMouseArea.hoverEnabled = false
         _dashed_line.reset()
         var p = Qt.point(mouse.x, mouse.y)

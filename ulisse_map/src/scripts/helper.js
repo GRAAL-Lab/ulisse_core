@@ -110,6 +110,33 @@ function point_in_box(p, p1, p2){
           || (p2.x-o <= p.x && p.x <= p1.x+o && p1.y-o <= p.y && p.y <= p2.y+o))
 }
 
+
+function polygons_disjoint(po1, po2){
+    for (var i=0; i<po1.length-1; i++)
+        for (var j=0; j<po2.length-1; j++)
+            if (segments_interserction_1(po1[i], po1[i+1], po2[j], po2[j+1]) !== null)
+                return false
+        return true
+}
+
+function segments_interserction(s1,s2){
+    return segments_interserction_1(s1[0], s1[1], s2[0], s2[1])
+}
+
+function segments_interserction_1(s10, s11, s20, s21){
+    var angle_0 = Math.atan(slope(s10, s11))
+    var l0 = to_homogeneous_line(s10, angle_0)
+    var angle_i = Math.atan(slope(s20, s21))
+    var li = to_homogeneous_line(s20, angle_i)
+    var intersection = cross_product(l0, li)
+    if (intersection[2] !== 0){ //not parallel
+        var pi = from_homogeneous_point(intersection)
+        if (point_in_box(pi, s10, s11) && point_in_box(pi, s20, s21))
+            return pi
+    }
+    return null
+}
+
 function intersections_with_segments(point, angle, sides){
     var l0 = to_homogeneous_line(point, deg_to_rad(angle))
 

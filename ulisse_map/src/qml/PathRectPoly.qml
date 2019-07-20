@@ -25,16 +25,14 @@ PathRectPolyForm {
     }
     b_polysec.onClicked: {
         map.center = fbkUpdater.ulisse_pos
-        var offset = parseInt(offsetField.text)
-        var angle = parseInt(angleField.text)
-        map.createPolySec(offset, angle)
+        map.createPolySec()
     }
 
     buttonEdit.onClicked: {
         map.modify(parseInt(idxField.text))
     }
     buttonSave.onClicked: {
-        map.save_mod(parseInt(idxField.text))
+        map.save_mod(parseInt(idxField.text), parseInt(angleField.text), parseInt(offsetField.text))
     }
     buttonDiscard.onClicked: {
         map.abort_mod(parseInt(idxField.text))

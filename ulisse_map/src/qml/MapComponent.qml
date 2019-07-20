@@ -18,8 +18,8 @@ MapComponentForm {
     property var click_handler : function(){}
     property var pos_changed_handler : function(){}
 
-    mapMouseArea.onClicked: {click_handler(mouse,polysec_cur)}
-    mapMouseArea.onPositionChanged: {pos_changed_handler(mouse,polysec_cur)}
+    mapMouseArea.onClicked: {click_handler(mouse)}
+    mapMouseArea.onPositionChanged: {pos_changed_handler(mouse)}
 
     property list<MapRectangle> rect_list
     property MapRectangle rect_cur
@@ -85,6 +85,7 @@ MapComponentForm {
         click_handler = null
         pos_changed_handler = null
         poly_list[idx].confirm_edit(angle, offset)
+        poly_list[idx].check_safe(polysec_cur)
     }
 
     function abort_mod(idx){
@@ -92,6 +93,7 @@ MapComponentForm {
         click_handler = null
         pos_changed_handler = null
         poly_list[idx].discard_edit()
+        poly_list[idx].check_safe(polysec_cur)
     }
 
     function createPoly(offset, angle) {
@@ -151,13 +153,12 @@ MapComponentForm {
     }
 
     function endPoly() {
-         if (currentState === generalState.poly){
-             click_handler = function(){}
-             pos_changed_handler = function(){}
-             currentState = generalState.empty
-             poly_cur.end.disconnect(endPoly)
-         }
-    }
+         poly_cur.end.disconnect(endPoly)
+         click_handler = null
+         pos_changed_handler = null
+         currentState = generalState.empty
+         poly_cur.check_safe(polysec_cur)
+     }
 
     function endPolySec() {
          if (currentState === generalState.polysec){
@@ -367,7 +368,7 @@ MapComponentForm {
                 l = {}
                 l.latitude = p_i.latitude
                 l.longitude = p_i.longitude
-                single_path.values.push(l)
+                single_path .values.push(l)
 
             }
             all_paths.paths.push(single_path)
