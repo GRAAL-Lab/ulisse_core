@@ -14,6 +14,7 @@ RowLayout {
     property alias b_polysec: b_polysec
     property alias cancel_menuShape: cancel_menuShape
     property alias cancel_menuOffset: cancel_menuOffset
+    property alias confermPolygonOffset: confermPolygonOffset
     property alias offsetField: offsetField
     property alias angleField: angleField
     //property alias buttonEdit: buttonEdit
@@ -30,10 +31,9 @@ RowLayout {
     state: {
         0: "empty",
                 1: "path",
-                2: "rect",
-                3: "poly",
-                4: "polysec",
-                5: "editmode"
+                2: "poly",
+                3: "polysec",
+                4: "editmode"
     }[mapView.currentState]
 
     //Row for shapes
@@ -88,21 +88,22 @@ RowLayout {
         id: rowLayout
         width: 100
         height: 100
-        enabled: true
         visible: false
 
         TextField {
             id: offsetField
             text: qsTr("30")
             placeholderText: "Offset"
-            enabled: map.polysec_cur.closed ? true : false
+            enabled: true
+            //enabled: map.polysec_cur.closed ? true : false
         }
 
         TextField {
             id: angleField
             text: qsTr("30")
             placeholderText: "Angle"
-            enabled: map.polysec_cur.closed ? true : false
+            enabled: true
+            //enabled: map.polysec_cur.closed ? true : false
         }
 
         Button {
@@ -112,6 +113,17 @@ RowLayout {
             anchors.right: parent.right
             anchors.top: parent.top
             text: qsTr("x")
+            enabled: true
+            highlighted: false
+        }
+
+        Button {
+            id: confermPolygonOffset
+            Layout.preferredWidth: 17
+            Layout.preferredHeight: 17
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            text: qsTr("v")
             enabled: true
             highlighted: false
         }
@@ -176,20 +188,8 @@ RowLayout {
                 highlighted: true
             }
             PropertyChanges {
-                target: rowLayout
-                enabled: false
-            }
-            PropertyChanges {
                 target: idxField
                 enabled: false
-            }
-        },
-        State {
-            name: "rect"
-            PropertyChanges {
-                target: b_rect
-                enabled: true
-                highlighted: true
             }
         },
         State {
@@ -199,17 +199,25 @@ RowLayout {
                 enabled: true
                 highlighted: true
             }
+            PropertyChanges {
+                target: rowLayout
+                enabled: true
+            }
         },
         State {
             name: "polysec"
             PropertyChanges {
+                target: rowLayout
+                visible: false
+            }
+            PropertyChanges {
+                target: idxField
+                enabled: false
+            }
+            PropertyChanges {
                 target: b_polysec
                 enabled: true
                 highlighted: true
-            }
-            PropertyChanges {
-                target: rowLayout
-                enabled: false
             }
             PropertyChanges {
                 target: idxField

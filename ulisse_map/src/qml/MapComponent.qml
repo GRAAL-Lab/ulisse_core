@@ -41,6 +41,8 @@ MapComponentForm {
     property Component polysecComponent
     property Component pathComponent
     property Component trackComponent
+
+    //TODO -> Make relative
     property var path_file: "/home/alessio/Desktop/Prova"
 
     Component.onCompleted: {
@@ -56,11 +58,23 @@ MapComponentForm {
         map.removeMapItem(poly_obj)
     }
 
+
+    function removeLastPath(){
+        var uniquelist_length = uniquelist.length
+        if(uniquelist_length > 0){
+            map.removeMapItem(uniquelist[uniquelist_length-1])
+            uniquelist.pop()
+            el_list[uniquelist_length-1].destroy()
+            polysec_cur.clear_path()
+        }
+    }
+
+
     function createRect(offset, angle) {
          if (currentState === generalState.empty){
-             currentState = generalState.rect
+             currentState = generalState.poly
              if (poly_cur)
-                 poly_cur.end.disconnect(endRect)
+                 poly_cur.end.disconnect(endPoly)
              poly_cur = polyComponent.createObject(map_component, {offset:offset, angle:angle, debug_c: overlay_canvas, editCircle: editCircle})
              uniquelist.push(poly_cur)
              el_track = trackComponent.createObject(map_component, {_comp:map_component, ntrack: uniquelist.length-1, offset:offset, angle:angle})
@@ -68,7 +82,7 @@ MapComponentForm {
              map.addMapItem(poly_cur)
              click_handler = poly_cur.click_handler_rect
              pos_changed_handler = poly_cur.pos_changed_handler_rect
-             poly_cur.end.connect(endRect)
+             poly_cur.end.connect(endPoly)
          }
 
     }
@@ -131,6 +145,13 @@ MapComponentForm {
          }
     }
 
+
+    function hideRowElement(){
+        pathRectPoly.rowFigure.visible = false
+        pathRectPoly.rowLayout.visible = false
+        pathRectPoly.rowEditPlay.visible = false
+    }
+
     function createPath() {
         if (currentState === generalState.empty){
             currentState = generalState.path
@@ -144,16 +165,8 @@ MapComponentForm {
             click_handler = path_cur.click_handler
             pos_changed_handler = path_cur.pos_changed_handler
             path_cur.end.connect(endPath)
+            hideRowElement()
         }
-
-    }
-
-    function endRect() {
-         if (currentState === generalState.rect){
-             click_handler = function(){}
-             pos_changed_handler = function(){}
-             currentState = generalState.empty
-         }
 
     }
 
@@ -171,6 +184,7 @@ MapComponentForm {
              click_handler = function(){}
              pos_changed_handler = function(){}
              currentState = generalState.empty
+             hideRowElement()
          }
     }
 
@@ -217,9 +231,9 @@ MapComponentForm {
             case "RectPath":
                 map.removeMapItem(rect_list)
                 if (currentState === generalState.empty){
-                    currentState = generalState.rect
+                    currentState = generalState.poly
                     if (rect_cur)
-                        rect_cur.end.disconnect(endRect)
+                        rect_cur.end.disconnect(endPoly)
                     rect_cur = rectComponent.createObject(map_component, {offset:data.paths[i].offset, angle:data.paths[i].angle, debug_c: overlay_canvas, editCircle: editCircle})
                     rect_list.push(rect_cur)
                     map.addMapItem(rect_cur)
@@ -238,9 +252,9 @@ MapComponentForm {
                     //rect_cur.generate_nurbs()
                     rect_cur.end()
 
-                    rect_cur.end.connect(endRect)
+                    rect_cur.end.connect(endPoly)
                     rect_list.push(rect_cur)
-                    endRect()
+                    endPoly()
                 }
                 break;
 */

@@ -14,28 +14,31 @@ PathRectPolyForm {
         map.createPath()
     }
     b_rect.onClicked: {
+        pathRectPoly.rowFigure.visible = false
+        pathRectPoly.rowLayout.visible = true
+        pathRectPoly.rowEditPlay.visible = false
         var offset = parseInt(offsetField.text)
         var angle = parseInt(angleField.text)
         map.createRect(offset, angle) //, idxField.currentText)
-
-        pathRectPoly.rowFigure.visible = false
-        pathRectPoly.rowLayout.visible = true
-        pathRectPoly.rowEditPlay.visible = false
     }
     b_poly.onClicked: {
-        var offset = parseInt(offsetField.text)
-        var angle = parseInt(angleField.text)
-        console.log(idxField.currentText)
-        map.createPoly(offset, angle, idxField.currentText)
-
         pathRectPoly.rowFigure.visible = false
         pathRectPoly.rowLayout.visible = true
         pathRectPoly.rowEditPlay.visible = false
+        var offset = parseInt(offsetField.text)
+        var angle = parseInt(angleField.text)
+        //console.log(idxField.currentText)
+        map.createPoly(offset, angle)//, idxField.currentText)
     }
     b_polysec.onClicked: {
         map.center = fbkUpdater.ulisse_pos
         map.createPolySec()
     }
+
+    rowLayout.onVisibleChanged: function(){
+        console.log(pathRectPoly.rowLayout.visible)
+    }
+
 
     cancel_menuShape.onClicked:{
         pathRectPoly.rowFigure.visible = false
@@ -43,9 +46,16 @@ PathRectPolyForm {
         pathRectPoly.rowEditPlay.visible = false
     }
 
-
     cancel_menuOffset.onClicked:{
         pathRectPoly.rowFigure.visible = true
+        pathRectPoly.rowLayout.visible = false
+        pathRectPoly.rowEditPlay.visible = false
+
+        map.removeLastPath()
+    }
+
+    confermPolygonOffset.onClicked:{
+        pathRectPoly.rowFigure.visible = false
         pathRectPoly.rowLayout.visible = false
         pathRectPoly.rowEditPlay.visible = false
     }
@@ -53,10 +63,9 @@ PathRectPolyForm {
 //    buttonEdit.onClicked: {
 //        map.modify(parseInt(idxField.text))
 //    }
-    idxField.enabled: map.polysec_cur.closed? true : false
-    rowLayout.enabled: map.polysec_cur.closed? true : false
-    buttonSave.onClicked:map.save_mod(map.actualtrack, angleField.text, offsetField.text )
 
+    idxField.enabled: map.polysec_cur.closed? true : false
+    buttonSave.onClicked:map.save_mod(map.actualtrack, angleField.text, offsetField.text )
     buttonDiscard.onClicked : map.abort_mod(map.actualtrack)
 }
 
