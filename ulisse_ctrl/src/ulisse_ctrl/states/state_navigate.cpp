@@ -68,10 +68,15 @@ namespace states {
         Json::Reader reader;
         Json::Value obj, obj_master;
 
+        bool reverse = false;
+
         reader.parse(json_nurbs, obj_master);
         centroid_.latitude = obj_master["centroid"][0].asDouble();
         centroid_.longitude = obj_master["centroid"][1].asDouble();
 
+        if( obj["reverse"].asInt()){
+            reverse = true;
+        }
         number_of_curves_ = 0;
 
         int dimension = 3;
@@ -141,16 +146,15 @@ namespace states {
                                         dimension,                // dimension
                                         1);                       // no copying of information, 'borrow' array
 
-            /*
-            if( obj["reverse"].asInt()){
-                // Turn the direction of a curve by reversing the ordering of the coefficients
-                s1706(insert_curve);
-            }
-            */
 
             if (!insert_curve) {
                 std::cout << "SOMETHING GOES WRONG" << std::endl;
                 return false;
+            }
+
+            if(reverse) {
+                // Turn the direction of a curve by reversing the ordering of the coefficients
+                s1706(insert_curve);
             }
 
             nurbs_.push_back(insert_curve);
@@ -160,6 +164,10 @@ namespace states {
             delete(weights);
 
             number_of_curves_++;
+        }
+
+        if(reverse){
+            // Revert the nurbs_ curve
         }
 
         isCurveSet = true;

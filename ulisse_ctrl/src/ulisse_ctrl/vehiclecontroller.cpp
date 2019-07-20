@@ -33,7 +33,7 @@ namespace ulisse {
 VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double sampleTime)
     : nh_(nh)
     , sampleTime_(sampleTime)
-    , boundaries_set(true) //TODO: cambialo a false
+    , boundaries_set(false) //TODO: cambialo a false
     {
         par_client_ = std::make_shared<rclcpp::SyncParametersClient>(nh_);
         ctrlCxt_ = std::make_shared<ControlContext>();
@@ -224,6 +224,10 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
             (void)request_header;
             RCLCPP_INFO(nh_->get_logger(), "Incoming request for set boundaries");
 
+
+            std::cout << "QUIIIIIIIIIIIIII" << std::endl;
+            std::cout << "RECEIVED : " << request->boundaries_json << std::endl;
+
             Json::Reader reader;
             Json::Value obj, obj2;
 
@@ -242,6 +246,8 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
                 } else{
                     polygon_ = polygon_ + ", ";
                 }
+
+                std::cout << " QUI " << c.toStyledString() << std::endl;
                 reader.parse(c.toStyledString(), obj2);
                 polygon_ = polygon_ + obj2["latitude"].asString() + " " + obj2["longitude"].asString();
             }

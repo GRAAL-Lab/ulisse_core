@@ -105,7 +105,6 @@ class VehicleController {
     // ASV DIRECTION OF ALIGNMENT
     std::shared_ptr<ikcl::AlignToTarget> asv_direction_alignment;
 
-
     // ASV ANGULAR POSITION
     std::shared_ptr<ikcl::AngularPosition> asv_angular_position;
 
