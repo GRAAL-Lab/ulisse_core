@@ -54,10 +54,12 @@ namespace states {
         double aepsco = 0.01;
         double aepsge = 0.01;
         double gpar = 0;
+        double gpar2 = 0;
         double dist = 0;
-        double current_point[3];
-        int n;
+        double dist2 = 0;
+        double* current_point;
         double max_range_abscissa;
+        double cur_length;
         SISLCurve* newcurve;
         SISLCurve* curve2;
         SISLCurve* newcurve2;
@@ -67,6 +69,7 @@ namespace states {
 
         double getCurvilinearAbscissa();
         ctb::LatLong to_lat_long(double x, double y);
+        double* to_meters(double latitude, double longitude);
 
     public:
         StateNavigate();
@@ -82,7 +85,7 @@ namespace states {
         void SetAngularVelocityTask(std::shared_ptr<ikcl::AngularVelocity> angularVelocityTask);
         void SetDistanceTask(std::shared_ptr<ikcl::ControlDistance> distanceTask);
 
-        void LoadSpur(float latitude, float longitude, int num_curves, std::vector<std::string> curves);
+        bool LoadSpur(float latitude, float longitude, int num_curves, std::vector<std::string> curves);
 
 
     };

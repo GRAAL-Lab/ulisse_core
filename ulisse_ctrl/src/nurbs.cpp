@@ -89,6 +89,9 @@ int main(int argc, char* argv[])
         // pointer is returned.
         s1716(newcurve, newcurve2, -1, &result_curve, &stat);
 
+        s1221(result_curve, 0, 0.0, &leftknot, derive, &stat);
+        std::cout << "RESULT CURVE => POINT AT 0.0 : ( " << derive[0] << " , " << derive[1] << " ) " << std::endl;
+
         // Turn the direction of a curve by reversing the ordering of the
         // coefficients. The start parameter value of the new curve is the
         // same as the start parameter value of the old curve. This routine

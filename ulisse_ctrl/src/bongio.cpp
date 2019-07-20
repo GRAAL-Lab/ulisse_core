@@ -37,13 +37,23 @@ int main(int argc, char* argv[])
     serviceReq->nav_cmd.centroid_latitude = 44.3931;
     serviceReq->nav_cmd.centroid_longitude = 8.94382;
 
-    serviceReq->nav_cmd.number_of_curves = 1;
+    /*
+    serviceReq->nav_cmd.number_of_curves = 3;
 
     std::vector<std::string> curves;
 
     curves.push_back("{ \"degree\": 1, \"points\": [[44.393, 8.945], [44.3935, 8.9462]], \"weigths\": [1, 1], \"knots\": [0, 0, 1, 1], \"reverse\": 0}");
-    //curves.push_back("{ \"degree\": 3, \"points\": [[0, 2], [1, 3], [4, 7], [3, 6]], \"weigths\": [1, 1/3.0, 1/3.0, 1], \"knots\": [0, 0, 0, 0, 1, 1, 1, 1] }");
-    //curves.push_back("{ \"degree\": 1, \"points\": [[0, 10], [5, 5]], \"weigths\": [1, 1], \"knots\": [0, 0, 1, 1] }");
+    curves.push_back("{ \"degree\": 3, \"points\": [[44.3935, 8.9462], [44.3935, 8.9482], [44.3920, 8.9482], [44.3920, 8.9462]], \"weigths\": [1, 1/3.0, 1/3.0, 1], \"knots\": [0, 0, 0, 0, 1, 1, 1, 1] , \"reverse\": 0}");
+    curves.push_back("{ \"degree\": 1, \"points\": [[44.3920, 8.9462], [44.3910, 8.9452], \"weigths\": [1, 1], \"knots\": [0, 0, 1, 1] }");
+
+    */
+
+    serviceReq->nav_cmd.number_of_curves = 2;
+
+    std::vector<std::string> curves;
+
+    curves.push_back("{ \"degree\": 1, \"points\": [[44.393, 8.945], [44.3935, 8.9462]], \"weigths\": [1, 1], \"knots\": [0, 0, 1, 1], \"reverse\": 0}");
+    curves.push_back("{ \"degree\": 1, \"points\": [[44.3935, 8.9462], [44.393, 8.9472]], \"weigths\": [1, 1], \"knots\": [0, 0, 1, 1], \"reverse\": 0} }");
 
     serviceReq->nav_cmd.curves = curves;
 

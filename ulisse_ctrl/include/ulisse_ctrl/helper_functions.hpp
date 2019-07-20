@@ -43,6 +43,8 @@ double s1 (const double ref, const double fb, struct SlidingSurface param);
 double s2 (const double ref, const double fb, struct SlidingSurface param);
 
 double MinimumAngleBetween(double from, double to);
+
+double DecimalPart(double x);
 }
 
 #endif // HELPERFUNCTIONS_HPP

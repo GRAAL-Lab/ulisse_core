@@ -237,4 +237,10 @@ void parameter_setting(struct SlidingSurface &param,std::shared_ptr<LowLevelConf
 
 	}
 
+    double DecimalPart(double x) {
+        if(x > floor(x))
+            return x - floor(x);
+        else
+            return x - (floor(x) - 1);
+    }
 }
