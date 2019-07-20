@@ -75,6 +75,7 @@ MapPolyline {
         generate_nurbs()
         generate_markers()
         disable_markers()
+        disable_handle()
     }
 
     function draw_deferred(){
@@ -100,6 +101,10 @@ MapPolyline {
 
     function generate_markers(){
         var _path = path.slice(0,path.length-1)
+        while(add_markers.length > 0) map.removeMapItem(add_markers.pop())
+        while(vertex_markers.length > 0) map.removeMapItem(vertex_markers.pop())
+        add_markers=[]
+        vertex_markers=[]
         for (var i = 0; i< _path.length; i++){
             var marker1 = mapMarkerComponent.createObject(map)
             var marker2 = mapMarkerComponent.createObject(map)
@@ -256,9 +261,6 @@ MapPolyline {
                 polygonal_phase = 0
                 mapMouseArea.hoverEnabled = false
                 line.color = "#33cc33"
-                generate_path()
-                draw_path()
-                generate_nurbs()
                 end()
             }
         }
@@ -572,12 +574,6 @@ MapPolyline {
             mapMouseArea.hoverEnabled = false
             line.color = "#33cc33"
             polygonal_phase = 0
-            generate_path()
-            draw_path()
-            generate_nurbs()
-            generate_markers()
-            disable_markers()
-            disable_handle()
             end()
         }
     }
@@ -644,6 +640,7 @@ MapPolyline {
     property var backup_centroid
 
     function begin_edit(){
+        mapMouseArea.hoverEnabled = true
         backup_path=path
         moving_idx = -1
         backup_path = path
@@ -656,6 +653,7 @@ MapPolyline {
     }
 
     function discard_edit(){
+        mapMouseArea.hoverEnabled = false
         moving_idx = -1
         translating = false
         rotating = false
@@ -670,15 +668,12 @@ MapPolyline {
         generate_nurbs()
     }
 
-    function confirm_edit(angle, offset){
+    function confirm_edit(angle, offset, method){
+        mapMouseArea.hoverEnabled = false
         _angle=angle
         _offset=offset
         moving_idx = -1
-        disable_markers()
-        disable_handle()
-        generate_path()
-        draw_path()
-        generate_nurbs()
+        _draw()
     }
 
     function draw_path(){

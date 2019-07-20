@@ -14,17 +14,19 @@ import "../scripts/helper.js" as Helper
 
 RowLayout {
     id: tracklistlayout
-    property int ntrack: null
+    property int ntrack: 0
     property var namen
     //se il nome del track non dipende dalla posizione
     property var angle
     property var offset
-    property var _comp: null
+    property var _comp
     property alias menu: menu
     property alias menubutton: menubutton
     property alias editItem: editItem
     property alias deleteItem: deleteItem
-    property alias name : name
+    property alias name: name
+
+    signal edit(var a)
 
     state: {
         0: "empty",

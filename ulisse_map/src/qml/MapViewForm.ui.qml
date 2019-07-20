@@ -110,13 +110,15 @@ RowLayout {
             center: marker_coords // Genoa
             zoomLevel: 17.5 //(maximumZoomLevel - minimumZoomLevel)/2
         }
+
         MapSlidersLeft {
             id: slidersLeft
             z: map.z + 3
             mapSource: map
             edge: Qt.LeftEdge
         }
-        RowLayout{
+
+        RowLayout {
             width: parent.width
             anchors.bottom: parent.bottom
             anchors.bottomMargin: bottomToolbar.height
@@ -125,11 +127,11 @@ RowLayout {
                 id: pathRectPoly
                 width: parent.width
                 height: parent.height
-                anchors.bottom: parent.bottom
-                anchors.centerIn: parent
+                Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom
                 Layout.bottomMargin: 10
             }
         }
+
         Rectangle {
             id: bottomToolbar
             width: parent.width

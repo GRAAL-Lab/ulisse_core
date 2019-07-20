@@ -69,24 +69,6 @@ MapComponentForm {
         }
     }
 
-
-    function createRect(offset, angle) {
-         if (currentState === generalState.empty){
-             currentState = generalState.poly
-             if (poly_cur)
-                 poly_cur.end.disconnect(endPoly)
-             poly_cur = polyComponent.createObject(map_component, {offset:offset, angle:angle, debug_c: overlay_canvas, editCircle: editCircle})
-             uniquelist.push(poly_cur)
-             el_track = trackComponent.createObject(map_component, {_comp:map_component, ntrack: uniquelist.length-1, offset:offset, angle:angle})
-             el_list.push(el_track)
-             map.addMapItem(poly_cur)
-             click_handler = poly_cur.click_handler_rect
-             pos_changed_handler = poly_cur.pos_changed_handler_rect
-             poly_cur.end.connect(endPoly)
-         }
-
-    }
-
     function modify(idx){
         if(currentState === generalState.empty){
             currentState = generalState.editmode
@@ -97,15 +79,15 @@ MapComponentForm {
         }
     }
 
-    function save_mod(idx, angle, offset){
-        if(currentState === generalState.editmode){
+    function save_mod(idx, angle, offset, method){
+        //if(currentState === generalState.editmode){
             mapMouseArea.hoverEnabled = false
             click_handler = null
             pos_changed_handler = null
-            uniquelist[idx].confirm_edit(angle, offset)
+            uniquelist[idx].confirm_edit(angle, offset, method)
             uniquelist[idx].check_safe(polysec_cur)
             currentState = generalState.empty
-        }
+        //}
     }
 
     function abort_mod(idx){
@@ -118,19 +100,18 @@ MapComponentForm {
         }
     }
 
-    function createPoly(offset, angle, method) {
-        if (currentState === generalState.empty){
-            currentState = generalState.poly
-            poly_cur = polyComponent.createObject(map_component, {method: method, offset:offset, angle:angle, debug_c: overlay_canvas, editCircle: editCircle})
-            uniquelist.push(poly_cur)
-            el_track =trackComponent.createObject(map_component, {_comp:map_component, ntrack: uniquelist.length-1, offset:offset, angle:angle})
-            el_list.push(el_track)
-            map.addMapItem(poly_cur)
-            click_handler = poly_cur.click_handler
-            pos_changed_handler = poly_cur.pos_changed_handler
-            poly_cur.end.connect(endPoly)
-        }
-   }
+function createPoly() {
+    poly_cur = polyComponent.createObject(map_component)
+    uniquelist.push(poly_cur)
+    map.addMapItem(poly_cur)
+    return poly_cur
+}
+
+    function createRect() {
+        createPoly()
+        click_handler = poly_cur.click_handler_rect
+        pos_changed_handler = poly_cur.pos_changed_handler_rect
+    }
 
     function createPolySec() {
         //TODO -> use a menu for editing the polygon
@@ -146,7 +127,7 @@ MapComponentForm {
 
     function hideRowElement(){
         pathRectPoly.rowFigure.visible = false
-        pathRectPoly.rowLayout.visible = false
+        pathRectPoly.rowPolyParams.visible = false
         pathRectPoly.rowEditPlay.visible = false
     }
 
@@ -167,14 +148,6 @@ MapComponentForm {
         }
 
     }
-
-    function endPoly() {
-         poly_cur.end.disconnect(endPoly)
-         click_handler = null
-         pos_changed_handler = null
-         currentState = generalState.empty
-         poly_cur.check_safe(polysec_cur)
-     }
 
     function endPolySec() {
          if (currentState === generalState.polysec){

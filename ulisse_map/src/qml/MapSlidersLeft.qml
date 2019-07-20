@@ -58,6 +58,7 @@ Row {
     id: containerRowLeft
 
     property var mapSource
+    property alias columnTrack: columnTrack
     property real fontSize: 14
     property color labelBackground: "transparent"
     property int edge: Qt.LeftEdge
@@ -173,9 +174,7 @@ Row {
                     text:"+"
                     width:30
                     onClicked: function(){
-                        pathRectPoly.rowFigure.visible = true
-                        pathRectPoly.rowLayout.visible = false
-                        pathRectPoly.rowEditPlay.visible = false
+                        pathRectPoly.show_shape_choice()
                     }
                 }
                 Button{
@@ -188,6 +187,14 @@ Row {
                     text:"x"
                     width:30
                 }
+                Button{
+                    id:modifyTrack
+                    text:"M"
+                    width:30
+                }
+            }
+            Column{
+                id:columnTrack
             }
 
         } // Column
