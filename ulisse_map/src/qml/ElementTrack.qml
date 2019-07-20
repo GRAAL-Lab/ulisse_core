@@ -20,12 +20,12 @@ ElementTrackForm{
 
     function toggle(){
         toggled = !toggled
-        backbut.color = toggled ? "#abcdef" : "#ffffff"
+        backbut.color = toggled ? "#ffffff" : "#abcdef"
     }
 
     function highlight(yes){
-        toggled = true
-        backbut.color = yes ? "#abcdef" : "#ffffff"
+        toggled = yes
+        backbut.color = yes ? "#ffffff" : "#abcdef"
     }
 
     tracklistlayout.y: tracklistlayout.height*(ntrack)

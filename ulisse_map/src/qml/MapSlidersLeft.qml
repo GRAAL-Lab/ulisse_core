@@ -204,7 +204,7 @@ Row {
                 Button{
                     id:deleteTracks
                     text:"x"
-                    enabled: true
+                    enabled: columnTrack.children.length? true : false
                     width: parent.width
                     onClicked: function(){
                         multichoice = true
@@ -228,7 +228,11 @@ Row {
                     id:abort
                     text:"n"
                     width: parent.width
-                    onClicked: function(){restoreBtns()}
+                    onClicked: function(){
+                        restoreBtns()
+                        deselect_all()
+                        pathRectPoly.hide_all()
+                    }
                     background: Rectangle {
                     color: "#ff0000"
                     }
@@ -262,7 +266,7 @@ Row {
     function restoreBtns(){
         main_btns.visible = true
         confirm_btns.visible = false
-        sliderRow.enableBtns(true)
+        enableBtns(true)
         multichoice = false
     }
 
@@ -280,8 +284,8 @@ Row {
                 c.highlight(poly === c._comp)
             }
         } else {
-            for (var i = 0; i<columnTrack.children.length; i++){
-                var c = columnTrack.children[i]
+            for (i = 0; i<columnTrack.children.length; i++){
+                c = columnTrack.children[i]
                 if (poly === c._comp) c.toggle()
             }
         }

@@ -57,7 +57,7 @@ RowLayout {
             visible: true
             id: backbut
             opacity: 1
-            color: "#ffffff"
+            color: "#abcdef"
             border.width: 1
             radius: 2
         }
