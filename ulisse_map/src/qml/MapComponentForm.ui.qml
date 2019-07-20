@@ -44,7 +44,6 @@ Map {
         edge: Qt.RightEdge
     }
 
-
     Image {
         id: compass
         source: 'qrc:/images/compass_icon.svg'

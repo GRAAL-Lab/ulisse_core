@@ -1,4 +1,5 @@
 import QtQuick 2.6
+import QtQml.Models 2.1
 import QtQuick.Layouts 1.3
 import QtQuick.Controls 2.1
 import QtLocation 5.7
@@ -14,94 +15,68 @@ import "../scripts/helper.js" as Helper
 
 RowLayout {
     id: tracklistlayout
-    property int ntrack: null
-    property var namen
+    //elementi che definiscono l'elemento
+    property int ntrack: -1
+    property var _comp
+    property var nametrack
     //se il nome del track non dipende dalla posizione
-    property var angle
-    property var offset
-    property var _comp: null
-    property alias menu: menu
-    property alias menubutton: menubutton
-    property alias editItem: editItem
-    property alias deleteItem: deleteItem
-    property alias name : name
+    property alias name: name
+    property alias tracklistlayout: tracklistlayout
+    property alias backbut: backbut
+
+    property bool toggled: false
+    property bool expanded: false
+
+    signal selected (var path)
+    signal edit (var path)
 
     state: {
         0: "empty",
-                1: "path",
-                2: "rect",
-                3: "poly",
-                4: "polysec",
-                5: "editmode"
+        1: "path",
+        2: "rect",
+        3: "poly",
+        4: "polysec",
+        5: "editmode",
+        6: "deletemode"
     }[mapView.currentState]
 
-    anchors.bottom: parent.Bottom
-
     // modo per distanziare
-    x: (ntrack) * tracklistlayout.width
-    width: 200
     height: 30
     scale: 1
     antialiasing: true
 
-    ToolButton {
-        text: qsTr("‹")
-        z: 1
-        highlighted: false
-        Layout.fillHeight: true
-        Layout.fillWidth: true
-    }
     Button {
         id: name
-        text: ntrack
+        text: expanded ? ntrack : nametrack
         anchors.fill: parent
         Layout.fillHeight: true
         antialiasing: false
-        //elide: Button.ElideRight
-        //                horizontalAlignment: Qt.AlignBottom
-        //                verticalAlignment: Qt.AlignBottom
-        Layout.fillWidth: false
+        enabled: true
 
-        TextField {
+        background: Rectangle {
+            visible: true
+            id: backbut
+            opacity: 1
+            color: "#ffffff"
+            border.width: 1
+            radius: 2
+        }
+
+        TextInput {
             id: textField
             x: 0
             y: 0
             width: 1
             height: 40
             color: "#fcaf3e"
-            text: qsTr("Text Field")
-            placeholderText: qsTr("")
+            text: nametrack
+            maximumLength: 16
             anchors.horizontalCenter: parent.horizontalCenter
             clip: false
             visible: false
             smooth: true
             enabled: false
             horizontalAlignment: Text.AlignHCenter
-        }
-    }
-    ToolButton {
-        id: menubutton
-        text: qsTr("⋮")
-        Layout.fillHeight: true
-        Layout.fillWidth: true
-        wheelEnabled: false
-    }
-
-    Menu {
-        id: menu
-
-        MenuItem {
-            id: editItem
-            text: qsTr("Edit...")
-            enabled: true
-        }
-        MenuItem {
-            id: deleteItem
-            text: qsTr("Delete")
-        }
-        MenuItem {
-            id: playItem
-            text: qsTr("Play")
         }
     }
     states: [

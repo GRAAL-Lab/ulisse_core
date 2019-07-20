@@ -60,7 +60,6 @@ Row {
     property real fontSize: 14
     property color labelBackground: "transparent"
     property int edge: Qt.RightEdge
-    property alias expanded: sliderToggler.checked
     property var togglerColor: mainAccentColor
 
     function rightEdge() {

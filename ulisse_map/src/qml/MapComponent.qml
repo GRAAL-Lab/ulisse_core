@@ -2,6 +2,7 @@ import QtQuick 2.6
 import QtQuick.Layouts 1.3
 import QtQuick.Controls 2.1
 import QtLocation 5.7
+import QtQml.Models 2.1
 import QtPositioning 5.6
 import Qt.labs.settings 1.0
 import QtQuick.Controls.Material 2.1
@@ -15,10 +16,9 @@ MapComponentForm {
 
     id: map_component
 
-    property var actualtrack
-
     property var click_handler : function(){}
     property var pos_changed_handler : function(){}
+    property var actualtrack
 
     mapMouseArea.onClicked: {click_handler(mouse)}
     mapMouseArea.onPositionChanged: {pos_changed_handler(mouse)}
@@ -57,6 +57,7 @@ MapComponentForm {
         map.addMapItem(poly_obj)
         map.removeMapItem(poly_obj)
     }
+    //slidersLeft.listtrackers.Ob
 
 
     function removeLastPath(){
@@ -69,49 +70,29 @@ MapComponentForm {
         }
     }
 
-
-    function createRect(offset, angle) {
-         if (currentState === generalState.empty){
-             currentState = generalState.poly
-             if (poly_cur)
-                 poly_cur.end.disconnect(endPoly)
-             poly_cur = polyComponent.createObject(map_component, {offset:offset, angle:angle, debug_c: overlay_canvas, editCircle: editCircle})
-             uniquelist.push(poly_cur)
-             el_track = trackComponent.createObject(map_component, {_comp:map_component, ntrack: uniquelist.length-1, offset:offset, angle:angle})
-             el_list.push(el_track)
-             map.addMapItem(poly_cur)
-             click_handler = poly_cur.click_handler_rect
-             pos_changed_handler = poly_cur.pos_changed_handler_rect
-             poly_cur.end.connect(endPoly)
-         }
-
-    }
-
     function modify(idx){
-            if(currentState === generalState.empty)
-            {
-                currentState = generalState.editmode
-                uniquelist[idx].begin_edit()
-                mapMouseArea.hoverEnabled = true
-                click_handler = uniquelist[idx].click_mod_handler
-                pos_changed_handler = uniquelist[idx].pos_changed_mod_handler
-            }
-    }
-
-    function save_mod(idx, angle, offset){
-        if(currentState === generalState.editmode)
-        {
-            mapMouseArea.hoverEnabled = false
-            click_handler = null
-            pos_changed_handler = null
-            uniquelist[idx].confirm_edit(angle, offset)
-            currentState = generalState.empty
+        if(currentState === generalState.empty){
+            currentState = generalState.editmode
+            uniquelist[idx].begin_edit()
+            mapMouseArea.hoverEnabled = true
+            click_handler = uniquelist[idx].click_mod_handler
+            pos_changed_handler = uniquelist[idx].pos_changed_mod_handler
         }
     }
 
+    function save_mod(idx, angle, offset, method){
+        //if(currentState === generalState.editmode){
+            mapMouseArea.hoverEnabled = false
+            click_handler = null
+            pos_changed_handler = null
+            uniquelist[idx].confirm_edit(angle, offset, method)
+            uniquelist[idx].check_safe(polysec_cur)
+            currentState = generalState.empty
+        //}
+    }
+
     function abort_mod(idx){
-        if(currentState === generalState.editmode)
-        {
+        if(currentState === generalState.editmode){
             currentState = generalState.empty
             mapMouseArea.hoverEnabled = false
             click_handler = null
@@ -120,19 +101,19 @@ MapComponentForm {
         }
     }
 
-    function createPoly(offset, angle, method) {
-        if (currentState === generalState.empty){
-            currentState = generalState.poly
-            poly_cur = polyComponent.createObject(map_component, {method: method, offset:offset, angle:angle, debug_c: overlay_canvas, editCircle: editCircle})
-            uniquelist.push(poly_cur)
-            el_track =trackComponent.createObject(map_component, {_comp:map_component, ntrack: uniquelist.length-1, offset:offset, angle:angle})
-            el_list.push(el_track)
-            map.addMapItem(poly_cur)
-            click_handler = poly_cur.click_handler
-            pos_changed_handler = poly_cur.pos_changed_handler
-            poly_cur.end.connect(endPoly)
-        }
-   }
+    function createPoly() {
+        poly_cur = polyComponent.createObject(map_component)
+        uniquelist.push(poly_cur)
+        map.addMapItem(poly_cur)
+        return poly_cur
+    }
+
+    function createRect() {
+        createPoly()
+        click_handler = poly_cur.click_handler_rect
+        pos_changed_handler = poly_cur.pos_changed_handler_rect
+    }
+
 
     function createPolySec() {
         //TODO -> use a menu for editing the polygon
@@ -148,7 +129,7 @@ MapComponentForm {
 
     function hideRowElement(){
         pathRectPoly.rowFigure.visible = false
-        pathRectPoly.rowLayout.visible = false
+        pathRectPoly.rowPolyParams.visible = false
         pathRectPoly.rowEditPlay.visible = false
     }
 
@@ -159,7 +140,7 @@ MapComponentForm {
                 path_cur.end.disconnect(endPath)
             path_cur = pathComponent.createObject(map_component)
             uniquelist.push(path_cur)
-            el_track =trackComponent.createObject(map_component, {_comp:map_component, ntrack: uniquelist.length-1})
+            el_track =trackComponent.createObject(slidersLeft.columnTrack, {_sliderL: slidersLeft , _comp:map_component, ntrack: uniquelist.length-1})
             el_list.push(el_track)
             map.addMapItem(path_cur)
             click_handler = path_cur.click_handler
@@ -168,15 +149,6 @@ MapComponentForm {
             hideRowElement()
         }
 
-    }
-
-    function endPoly() {
-         if (currentState === generalState.poly){
-             click_handler = function(){}
-             pos_changed_handler = function(){}
-             currentState = generalState.empty
-             poly_cur.end.disconnect(endPoly)
-         }
     }
 
     function endPolySec() {
@@ -344,7 +316,6 @@ MapComponentForm {
         for(i = 0; i < uniquelist.length; i++)
             all_paths.paths.push(uniquelist[i].serialize())
 
-        //TODO add security box
         all_paths.security_box = polysec_cur.create_JSON()
 
         console.log(JSON.stringify(all_paths))

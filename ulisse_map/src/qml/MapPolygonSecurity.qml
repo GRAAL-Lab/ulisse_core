@@ -120,9 +120,9 @@ MapPolyline {
     }
 
     function click_handler(mouse){
+        var m = Qt.point(mouse.x, mouse.y)
+        var p = map.toCoordinate(m)
         if (mouse.button & Qt.LeftButton){
-            var m = Qt.point(mouse.x, mouse.y)
-            var p = map.toCoordinate(m)
             if (polygonal_phase === 0){
                 var l = pathLength()
                 for(var i=0; i<l; i++)
@@ -148,7 +148,15 @@ MapPolyline {
 
             }
         } else if (mouse.button & Qt.RightButton){
-            close_polygon()
+            if (path.length >= 2){
+                var pp = path
+                pp.push(p)
+                pp.push(pp[0])
+                if (Helper.coord_inside_polygon(fbkUpdater.ulisse_pos, pp)){
+                    addCoordinate(p)
+                    close_polygon()
+                }
+            }
         }
     }
 

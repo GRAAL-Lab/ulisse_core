@@ -14,12 +14,10 @@ import "./qml"
 
 ApplicationWindow {
     id: window
-    width: 1024
-    height: 768
+    minimumWidth: 1024
+    minimumHeight: 768
     visible: true
 
-    minimumHeight: 500
-    minimumWidth: 705
 
     property int mainColor: (settings.theme == "Light" ? Material.Cyan : Material.Red)
     property color mainAccentColor: Material.color(Material.Amber,

@@ -51,6 +51,7 @@ import QtQuick 2.6
 import QtQuick.Controls 1.4 as C1
 import QtQuick.Controls.Styles 1.4 as C1S
 import QtQuick.Controls 2.2
+import QtQml.Models 2.1
 import QtQuick.Controls.Material 2.1
 
 
@@ -58,11 +59,24 @@ Row {
     id: containerRowLeft
 
     property var mapSource
+    property alias columnTrack: columnTrack
     property real fontSize: 14
     property color labelBackground: "transparent"
     property int edge: Qt.LeftEdge
-    property alias expanded: sliderTogglerLeft.checked
     property var togglerColor: mainAccentColor
+    property alias sliderW: sliderTogglerLeft.width
+    property bool multichoice: false
+
+    state: {
+        0: "empty",
+                1: "path",
+                2: "rect",
+                3: "poly",
+                4: "polysec",
+                5: "editmode",
+                6: "deletemode"
+    }[mapView.currentState]
+
 
     function rightEdge() {
         return (containerRowLeft.edge === Qt.RightEdge)
@@ -135,11 +149,6 @@ Row {
         }
     }
 
-    /*
-    sliderTogglerLeft.onCheckedChanged: function(){
-
-    }
-  */
     Rectangle {
         id: sliderContainerLeft
         height: parent.height
@@ -152,66 +161,143 @@ Row {
                                             Material.Shade600)
 
         property string labelBorderColor: "transparent"
-        property real slidersHeight: sliderContainerLeft.height - columnContainer.spacing * 2
-                                     - columnContainer.topPadding - columnContainer.bottomPadding
 
         Column {
-            id: columnContainer
-            anchors.fill: parent
             spacing: 10
-            topPadding: 16
-            bottomPadding: 48
+            id: sliderRow
+            width: 30
 
-            Column {
-                spacing: -10
-                id: sliderRow
-                height: sliderContainerLeft.slidersHeight
-                width: 30
-
+            Column{
+                id: main_btns
+                width: sliderTogglerLeft.checked ? sliderRow.width + 120 : sliderRow.width
                 Button{
                     id:addTracks
                     text:"+"
-                    width:30
+                    width: parent.width
                     onClicked: function(){
-                        pathRectPoly.rowFigure.visible = true
-                        pathRectPoly.rowLayout.visible = false
-                        pathRectPoly.rowEditPlay.visible = false
+                        pathRectPoly.show_shape_choice()
+                        enableBtns(false)
+                    }
+                    background: Rectangle {
+                        id: addTracksRect
+                        color: "#abcdef"
                     }
                 }
                 Button{
                     id:saveTracks
+                    onClicked: function() {
+                        multichoice = true
+                        main_btns.visible = false
+                        confirm_btns.visible = true
+                        confirm.clicked.disconnect(save_items)
+                        confirm.clicked.disconnect(delete_items)
+                        confirm.clicked.connect(save_items)
+                    }
                     text:"s"
-                    width:30
+                    enabled: true
+                    width: parent.width
+                    background: Rectangle {
+                    id: saveTracksRect
+                    color: "#abcdef"
+                    }
                 }
                 Button{
                     id:deleteTracks
                     text:"x"
-                    width:30
+                    enabled: true
+                    width: parent.width
                     onClicked: function(){
-                        console.log("Chiamo servizio")
-                        cmdWrapper.sendBoundaries(JSON.stringify(map.polysec_cur.create_JSON()))
+                        multichoice = true
+                        main_btns.visible = false
+                        confirm_btns.visible = true
+                        confirm.clicked.disconnect(save_items)
+                        confirm.clicked.disconnect(delete_items)
+                        confirm.clicked.connect(delete_items)
+                    }
+                    background: Rectangle {
+                    color: "#abcdef"
                     }
                 }
             }
 
-        } // Column
-    }
-    states: [
-        State {
-            name: "opened"
-            PropertyChanges {
-                target: sliderTogglerLeft
-                checked: true
+            Column{
+                id: confirm_btns
+                width: sliderTogglerLeft.checked ? sliderRow.width + 120 : sliderRow.width
+                visible: false
+                Button{
+                    id:abort
+                    text:"n"
+                    width: parent.width
+                    onClicked: function(){restoreBtns()}
+                    background: Rectangle {
+                    color: "#ff0000"
+                    }
+                }
+                Button{
+                    id:confirm
+                    text:"y"
+                    enabled: true
+                    width: parent.width
+                    background: Rectangle {
+                    color: "#00ff00"
+                    }
+                }
             }
-        },
-        State {
-            name: "closed"
-            PropertyChanges {
-                target: sliderTogglerLeft
-                checked: false
+
+            Column {
+                width: sliderTogglerLeft.checked ? sliderRow.width + 120 : sliderRow.width
+                property bool expanded: sliderTogglerLeft.checked
+                y: 96
+                id:columnTrack
             }
         }
-    ]
-    // sliderContainerLeft
-} // containerRowLeft
+    }
 
+    function enableBtns(y){
+        addTracks.enabled = y
+        saveTracks.enabled = y
+        deleteTracks.enabled = y
+    }
+
+    function restoreBtns(){
+        main_btns.visible = true
+        confirm_btns.visible = false
+        sliderRow.enableBtns(true)
+        multichoice = false
+    }
+
+    function deselect_all(){
+        for (var i = 0; i<columnTrack.children.length; i++){
+            var c = columnTrack.children[i]
+            c.highlight(false)
+        }
+    }
+
+    function update_selection(poly){
+        if (!multichoice){
+            for (var i = 0; i<columnTrack.children.length; i++){
+                var c = columnTrack.children[i]
+                c.highlight(poly === c._comp)
+            }
+        } else {
+            for (var i = 0; i<columnTrack.children.length; i++){
+                var c = columnTrack.children[i]
+                if (poly === c._comp) c.toggle()
+            }
+        }
+    }
+
+    function save_items(){
+        //TODO
+        restoreBtns()
+        deselect_all()
+        pathRectPoly.hide_all()
+    }
+
+    function delete_items(){
+        //TODO
+        restoreBtns()
+        deselect_all()
+        pathRectPoly.hide_all()
+    }
+}
