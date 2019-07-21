@@ -72,6 +72,8 @@ public:
 
     void SetPose(std::shared_ptr<Eigen::Vector6d> pose);
 
+    void SetConf(const std::shared_ptr<ulisse::ControllerConfiguration>& conf);
+
     void SetTolleranceBellShape(double tollerance);
     /**
 	 * @brief Method updating the task Jacobian, reference, internal activation function.
@@ -132,8 +134,6 @@ protected:
     Eigen::VectorXd pose_;
     double tollerance_;
 
-    int number_of_corners;
-
     std::list <segment_type> segments;
 
     polygon_type poly;
@@ -141,6 +141,7 @@ protected:
     double coord_max, coord_min;
     double min_d;
 
+    ctb::LatLong centroid;
     desired_target target;
     ctb::LatLong current_pose;
     ctb::LatLong desired_pose;
@@ -149,6 +150,8 @@ protected:
     Eigen::Vector6d desiredVelocity_;
 
     double MAX_THRESHOLD, MIN_THRESHOLD;
+
+    std::shared_ptr<ulisse::ControllerConfiguration> conf_;
 };
 }
 #endif

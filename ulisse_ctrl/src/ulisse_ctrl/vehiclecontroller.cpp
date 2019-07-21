@@ -129,28 +129,6 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         task_hierarchy.push_back(asv_hold_position);
         taskIDMap.insert(std::make_pair(ulisse::task::asv_hold_position, asv_hold_position));
 
-        // ASV LINEAR POSITION GO TO
-        asv_linear_position_go_to = std::make_shared<ikcl::ControlCartesianDistance>(
-                ikcl::ControlCartesianDistance(ulisse::task::asv_linear_position_go_to, robot_model, ulisse::robotModelID::ASV,
-                                               false, tpik::CartesianTaskType::Equality));
-        asv_linear_position_go_to->SetwTg(
-                robot_model->GetTransformation(ulisse::robotModelID::ASV), rml::FrameID::WorldFrame);
-        cartesian_task.push_back(asv_linear_position_go_to);
-        task_hierarchy.push_back(asv_linear_position_go_to);
-        taskIDMap.insert(std::make_pair(ulisse::task::asv_linear_position_go_to, asv_linear_position_go_to));
-
-        // ASV DIRECTION OF ALIGNMENT
-        asv_direction_alignment = std::make_shared<ikcl::AlignToTarget>(ikcl::AlignToTarget(ulisse::task::asv_direction_alignment, robot_model,
-                                                                            ulisse::robotModelID::ASV, tpik::CartesianTaskType::Equality));
-        Eigen::Vector3d alignment_axis_direction_alignment(1, 0, 0);
-        Eigen::Vector3d normal_to_horizontal_plane(0, 0, 1);
-        asv_direction_alignment->SetAlignmentAxis(alignment_axis_direction_alignment);
-        asv_direction_alignment->SetDistanceToTarget(alignment_axis_direction_alignment);
-        asv_direction_alignment->SetOnPlane(normal_to_horizontal_plane, rml::FrameID::WorldFrame);
-        cartesian_task.push_back(asv_direction_alignment);
-        task_hierarchy.push_back(asv_direction_alignment);
-        taskIDMap.insert(std::make_pair(ulisse::task::asv_direction_alignment, asv_direction_alignment));
-
         // ASV MAKE CURVE
         asv_make_curve = std::make_shared<ikcl::MakeCurve>(
                 ikcl::MakeCurve(ulisse::task::asv_make_curve, robot_model, ulisse::robotModelID::ASV));
@@ -166,10 +144,9 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         // ASV SAFETY BOUNDARIES (INEQUALITY TASK)
         asv_safety_boundaries = std::make_shared<ikcl::SafetyBoundaries>(
                 ikcl::SafetyBoundaries(ulisse::task::asv_safety_boundaries, robot_model, ulisse::robotModelID::ASV));
-
         asv_safety_boundaries->SetPose(vehiclePose_);
         asv_safety_boundaries->SetBoundaries(5.0, 3.0);
-
+        asv_safety_boundaries->SetConf(conf_);
         inequality_task.push_back(asv_safety_boundaries);
         task_hierarchy.push_back(asv_safety_boundaries);
         taskIDMap.insert(std::make_pair(ulisse::task::asv_safety_boundaries, asv_safety_boundaries));
@@ -214,7 +191,6 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         // Command Server Setup
         SetupCommandServer();
 
-
         // Create a callback function for when service requests are received.
         auto handle_set_boundaries = [this](
                 const std::shared_ptr<rmw_request_id_t> request_header,
@@ -222,10 +198,6 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
                 std::shared_ptr<ulisse_msgs::srv::SetBoundaries::Response> response) -> void {
             (void)request_header;
             RCLCPP_INFO(nh_->get_logger(), "Incoming request for set boundaries");
-
-
-            std::cout << "QUIIIIIIIIIIIIII" << std::endl;
-            std::cout << "RECEIVED : " << request->boundaries_json << std::endl;
 
             Json::Reader reader;
             Json::Value obj, obj2;
@@ -245,14 +217,20 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
                 } else{
                     polygon_ = polygon_ + ", ";
                 }
-
-                std::cout << " QUI " << c.toStyledString() << std::endl;
                 reader.parse(c.toStyledString(), obj2);
-                polygon_ = polygon_ + obj2["latitude"].asString() + " " + obj2["longitude"].asString();
+
+                double latitude = obj2["latitude"].asDouble();
+                double longitude = obj2["longitude"].asDouble();
+
+                double lam = lat_to_m_coeff(statusCxt_->vehiclePos.latitude);
+                double lom = lon_to_m_coeff(statusCxt_->vehiclePos.longitude);
+                double* p = point_map2euclidean(latitude, longitude, statusCxt_->vehiclePos, lam, lom);
+
+                polygon_ = polygon_ + boost::lexical_cast<std::string>(p[0]) + " " + boost::lexical_cast<std::string>(p[1]);
             }
 
             polygon_ = polygon_ + "))";
-            std::cout << "***** PRODOTTO *****: " << polygon_ << std::endl;
+            std::cout << "Safety Polygon: " << polygon_ << std::endl;
 
             if (asv_safety_boundaries->InitializePoly(statusCxt_->vehiclePos, polygon_))
             {

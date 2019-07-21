@@ -276,4 +276,15 @@ void parameter_setting(struct SlidingSurface &param,std::shared_ptr<LowLevelConf
         result.longitude = centroid.longitude - x/lom;
         return result;
     }
+
+    double measure(double lat1, double lon1, double lat2, double lon2){  // generally used geo measurement function
+        double dLat = lat2 * M_PI / 180 - lat1 * M_PI / 180;
+        double dLon = lon2 * M_PI / 180 - lon1 * M_PI / 180;
+        double a = sin(dLat/2) * sin(dLat/2) +
+                cos(lat1 * M_PI / 180) * cos(lat2 * M_PI / 180) *
+                sin(dLon/2) * sin(dLon/2);
+        double c = 2 * atan2(sqrt(a), sqrt(1-a));
+        double d = R_EARTH * c;
+        return d * 1000; // meters
+    }
 }

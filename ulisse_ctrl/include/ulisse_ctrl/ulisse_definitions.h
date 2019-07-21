@@ -9,8 +9,6 @@
 namespace ulisse {
     namespace task {
         const std::string task = "task";
-        const std::string asv_linear_position_go_to = "ASV_linear_position_go_to";
-        const std::string asv_direction_alignment = "ASV_direction_alignment";
         const std::string asv_control_velocity_linear = "ASV_control_velocity_linear";
         const std::string asv_control_velocity_angular = "ASV_control_velocity_angular";
         const std::string asv_hold_position = "ASV_hold_position";
