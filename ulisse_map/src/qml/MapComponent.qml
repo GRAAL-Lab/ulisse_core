@@ -102,10 +102,13 @@ MapComponentForm {
     }
 
     function createPoly(o, a) {
-        if (o !== undefined && a !== undefined)
+        //FIXME -> non funziona e non volevo duplicare il codice
+        if (o !== undefined && a !== undefined){
             poly_cur = polyComponent.createObject(map_component)
-        else
+        }
+        else{
             poly_cur = polyComponent.createObject(map_component, o, a)
+        }
 
         uniquelist.push(poly_cur)
         map.addMapItem(poly_cur)
@@ -278,7 +281,7 @@ MapComponentForm {
         for(i = 0; i < uniquelist.length; i++)
             all_paths.paths.push(uniquelist[i].serialize())
 
-        all_paths.security_box = polysec_cur.create_JSON()
+        all_paths.paths.push(polysec_cur.create_JSON())
 
         console.log("JSON to save "+JSON.stringify(all_paths))
 
