@@ -19,7 +19,7 @@ PathRectPolyForm {
 
     cancelPathChoice.onClicked:{
         slidersLeft.deselect_all()
-        slidersLeft.enableBtns()
+        slidersLeft.enableBtns(true)
         hide_all()
     }
 
@@ -150,10 +150,4 @@ PathRectPolyForm {
             panels[i].visible = false
     }
 
-    /*----------------------------------------------------------*/
-
-    b_polysec.onClicked: {
-        map.center = fbkUpdater.ulisse_pos
-        map.createPolySec()
-    }
 }

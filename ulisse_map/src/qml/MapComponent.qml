@@ -30,7 +30,7 @@ MapComponentForm {
 
     property var uniquelist:[]
 
-    property MapPolygonSecurity polysec_cur
+    property MapPolygon polysec_cur
 
     property Component polyComponent
     property Component polysecComponent
@@ -40,13 +40,17 @@ MapComponentForm {
     //TODO -> Make relative
     property var path_file: "/home/alessio/Desktop/Prova"
 
+
+
     Component.onCompleted: {
         polyComponent = Qt.createComponent("MapPolygon.qml")
-        polysecComponent = Qt.createComponent("MapPolygonSecurity.qml")
         pathComponent = Qt.createComponent("MapPath.qml")
         trackComponent = Qt.createComponent("ElementTrack.qml")
 
-        polysec_cur = polysecComponent.createObject(map_component)
+        polysec_cur = polyComponent.createObject(map_component)
+        polysec_cur.click_handler = polysec_cur.click_handler_simple
+        polysec_cur.pos_changed_handler = polysec_cur.pos_changed_handler_simple
+        polysec_cur._method = null
         map.addMapItem(polysec_cur)
         poly_obj = polyComponent.createObject(map_component)
         map.addMapItem(poly_obj)

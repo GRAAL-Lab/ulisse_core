@@ -61,6 +61,7 @@ Row {
     property color labelBackground: "transparent"
     property int edge: Qt.RightEdge
     property var togglerColor: mainAccentColor
+    property var commandRect: commandRect
 
     function rightEdge() {
         return (containerRow.edge === Qt.RightEdge)

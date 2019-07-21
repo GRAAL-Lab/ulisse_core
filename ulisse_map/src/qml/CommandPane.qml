@@ -9,6 +9,8 @@ import QtQuick.Dialogs 1.2
 
 Pane {
 
+    property var buttonSafety: buttonSafety
+
     ColumnLayout {
         id: buttonsColumn
         anchors.verticalCenter: parent.verticalCenter
@@ -244,97 +246,31 @@ Pane {
 
         RowLayout {
             id: rectid
-            RowLayout {
-                id: loadSavePath
-                Button {
-                    id: savePath
-                    width: 255
-                    height: 40
-                    Layout.fillWidth: true
-                    text: "Save Path"
-                    rotation: 1
-                    transformOrigin: Item.Left
-                    enabled: (mapView.pathCurrentState === pathState.empty)
-                             | (mapView.pathCurrentState === pathState.creating) ? false : true
 
-                    onClicked: {
-                        savePathDialog.open()
-                    }
+            Button {
+                id: buttonSafety
+                text: qsTr("Define safety area")
+                Layout.fillWidth: true
+
+                function end(){
+                    enabled = true
+                    map.polysec_cur.end.disconnect(end)
+                    map.click_handler = function(){}
+                    map.pos_changed_handler = function(){}
+                    text = "Redefine safety area"
                 }
 
-                Button {
-                    id: loadPath
-                    Layout.fillWidth: true
-                    text: "Load Path"
-                    enabled: (mapView.pathCurrentState === pathState.empty) ? true : false
 
-                    onClicked: {
-                        loadPathDialog.open()
-                    }
+                onClicked: function(){
+                    map.polysec_cur.clear_path()
+                    map.center = fbkUpdater.ulisse_pos
+                    map.click_handler = map.polysec_cur.click_handler
+                    map.pos_changed_handler = map.polysec_cur.pos_changed_handler
+                    enabled = false
+                    map.polysec_cur.end.connect(end)
                 }
             }
         }
-
-        RowLayout {
-            id: additionalWpControls
-
-            Button {
-                id: goToPreviousWp
-                text: "<"
-                font.weight: Font.Bold
-                font.pointSize: 16
-                Layout.preferredWidth: 40
-                enabled: mapView.pathCurrentState === pathState.active ? true : false
-
-                ToolTip.text: qsTr("Go To Previous Waypoint")
-                ToolTip.delay: 500
-                ToolTip.timeout: 5000
-                ToolTip.visible: hovered
-
-                onClicked: {
-                    cmdWrapper.goToPreviousWaypoint()
-                }
-            }
-
-            Button {
-                id: goToNextWp
-                text: ">"
-                font.weight: Font.Bold
-                font.pointSize: 16
-                Layout.preferredWidth: 40
-                enabled: mapView.pathCurrentState === pathState.active ? true : false
-
-                ToolTip.text: qsTr("Go To Next Waypoint")
-                ToolTip.delay: 500
-                ToolTip.timeout: 5000
-                ToolTip.visible: hovered
-
-                onClicked: {
-                    cmdWrapper.goToNextWaypoint()
-                }
-            }
-
-            CheckBox {
-                objectName: "loopPath"
-                id: loopPathCB
-                text: "Loop over path"
-                checked: false
-
-                onCheckStateChanged: {
-                    if (checked === true) {
-                        wpCommands.loopPath = true
-                    } else {
-                        wpCommands.loopPath = false
-                    }
-                }
-            }
-        }
-
-
-
-
-
-
     }
 
     FileDialog {

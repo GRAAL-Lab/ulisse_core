@@ -21,6 +21,7 @@ MapPolyline {
     property var click_handler: click_handler_convex
     property var pos_changed_handler: pos_changed_handler_convex
 
+
     property Component mapCanvasComponent
     property Component mapMarkerComponent
     property Component mapDashedLineComponent
@@ -73,9 +74,11 @@ MapPolyline {
     }
 
     function _draw(){
-        generate_path()
-        draw_path()
-        generate_nurbs()
+        if (_method != null || _method !== undefined){
+            generate_path()
+            draw_path()
+            generate_nurbs()
+        }
         generate_markers()
         disable_markers()
         disable_handle()
@@ -195,8 +198,8 @@ MapPolyline {
     }
 
     function clear_path(){
-        for(var i=0; i<path.length; i++)
-            removeCoordinate(0)
+        while(path.length > 0) removeCoordinate(0)
+        detection_intersect = 0
     }
 
     function check_safe(box){
@@ -238,6 +241,64 @@ MapPolyline {
         var r3 = Helper.three_point_direction(pc,pd,pe)
         if (r2 !== r3) return false
         return true
+    }
+
+    property var detection_intersect: 0
+
+    function pos_changed_handler_simple(mouse){
+        var p = Qt.point(mouse.x, mouse.y)
+        var pf = map.toCoordinate(p)
+        var last_idx = pathLength()-1
+        var color = "#4ac7c0"
+
+        var ppp=[]
+        detection_intersect = false
+        for(var i=0; i<path.length-1; i++)
+            ppp.push(map.fromCoordinate(path[i],false))
+        if (path.length > 3 && (!Helper.polylines_disjoint([p, ppp[ppp.length-1]], ppp))){
+            color = "#ff0000"
+            pf = coordinateAt(path.length-1)
+            detection_intersect = true
+        } else if(path.length > 3 && Helper.distance(map.fromCoordinate(coordinateAt(0)), p) < 15){
+            var pp = path
+            pp.push(p)
+            pp.push(pp[0])
+            if(Helper.coord_inside_polygon(fbkUpdater.ulisse_pos, pp)){
+                pf = coordinateAt(0)
+                color = "#ffb300"
+            }
+        }
+
+        line.color = color
+        replaceCoordinate(last_idx, pf)
+    }
+
+    function click_handler_simple(mouse){
+        var m = Qt.point(mouse.x, mouse.y)
+        var p = map.toCoordinate(m)
+        if (mouse.button & Qt.LeftButton){
+            if (path.length === 0){
+                mapMouseArea.hoverEnabled = true
+                addCoordinate(p)
+            }
+            if (!detection_intersect)
+                addCoordinate(p)
+        }
+        if (mouse.button & Qt.RightButton && !detection_intersect){
+            if (path.length >= 3){
+                var ppp=[]
+                for(var i=0; i<path.length-1; i++)
+                    ppp.push(map.fromCoordinate(path[i],false))
+                if (!Helper.polylines_disjoint([ppp[0], ppp[ppp.length-1]], ppp)) return
+                var p1 = map.fromCoordinate(coordinateAt(0))
+                var pp = path
+                pp.push(pp[0])
+                if(!Helper.coord_inside_polygon(fbkUpdater.ulisse_pos, pp)) return
+                close_polygon()
+                update_centroid()
+                generate_markers()
+            }
+        }
     }
 
     function click_handler_rect(mouse){
@@ -470,7 +531,7 @@ MapPolyline {
         _handle.update_canvas(angle)
     }
 
-    function pos_changed_mod_handler(mouse){
+    function pos_changed_mod_handler_convex(mouse){
         var p = Qt.point(mouse.x, mouse.y)
         var pf = map.toCoordinate(p)
         var _path = get_path()
@@ -503,7 +564,7 @@ MapPolyline {
 
     function update_centroid(){
         var _path = get_path()
-        centroid = Helper.coordconfirm_edits_centroid(_path)
+        centroid = Helper.coords_centroid(_path)
         var c_p = map.fromCoordinate(centroid)
         _handle.h_center = centroid
         _handle.h_handle = map.toCoordinate(Qt.point(c_p.x-40, c_p.y), false)
@@ -521,62 +582,15 @@ MapPolyline {
         _handle.h_radius = r
     }
 
-    function click_mod_handler(mouse){
-        mapMouseArea.hoverEnabled = false
-        _dashed_line.reset()
-        var p = Qt.point(mouse.x, mouse.y)
-        var pf = map.toCoordinate(p)
-        var _path = get_path()
-        if (moving_idx === -1){
-            var hpc = map.fromCoordinate(_handle.h_center)
-            var hph = map.fromCoordinate(_handle.h_handle)
-            var r1 = nearest_marker(p, add_markers, -1, 7)
-            var r2 = nearest_marker(p, vertex_markers, (r1.nearest === -1) ? -1 : r1.nearest + _path.length, r1.distance)
-            var r3 = nearest_than(p, r2.distance, (r2.nearest === -1) ? -1 : r2.nearest, hpc, 2*_path.length)
-            var r4 = nearest_than(p, r3.distance, (r3.nearest === -1) ? -1 : r3.nearest, hph, 2*_path.length+1)
-            var nearest = r4.nearest
-            if (mouse.button & Qt.LeftButton){
-                if(nearest >=0 && nearest < _path.length){
-                    disable_add_markers()
-                    disable_handle()
-                    moving_idx = nearest
-                } else if (nearest >= _path.length && nearest < 2*_path.length){
-                    add_mid_coordinate(nearest-_path.length)
-                    enable_markers()
-                    disable_add_markers()
-                    disable_handle()
-                    moving_idx = nearest-_path.length + 1
-                } else if (nearest === 2*_path.length){
-                    translating = !translating
-                } else if (nearest === 2*_path.length+1){
-                    rotating = !rotating
-                }
-            } else if (mouse.button & Qt.RightButton){
-                if (nearest >=0 && nearest < _path.length){
-                    if (_path.length > 3){
-                        remove_coordinate(nearest)
-                        enable_add_markers()
-                    }
-                }
-            }
-        } else if (moving_idx >= 0){
-            moving_idx = -1
-            reposition_add_markers()
-            enable_add_markers()
-            enable_handle()
-        }
-        mapMouseArea.hoverEnabled = true
-    }
+
 
 
     function close_polygon(){
-        if (polygonal_phase === 3){
-            replaceCoordinate(pathLength()-1, path[0])
-            mapMouseArea.hoverEnabled = false
-            line.color = "#33cc33"
-            polygonal_phase = 0
-            end()
-        }
+        replaceCoordinate(pathLength()-1, path[0])
+        mapMouseArea.hoverEnabled = false
+        line.color = "#33cc33"
+        polygonal_phase = 0
+        end()
     }
 
     function generate_path(){
@@ -663,16 +677,20 @@ MapPolyline {
         centroid = backup_centroid
         disable_markers()
         disable_handle()
-        generate_path()
-        draw_path()
-        generate_nurbs()
+        if (_method !== null || _method !== undefined){
+            generate_path()
+            draw_path()
+            generate_nurbs()
+        }
     }
 
     function confirm_edit(params){
         mapMouseArea.hoverEnabled = false
-        _angle=params.angle
-        _offset=params.offset
-        _method=params.method
+        if (params !== null || params !== undefined){
+            _angle=params.angle
+            _offset=params.offset
+            _method=params.method
+        }
         moving_idx = -1
         _draw()
     }

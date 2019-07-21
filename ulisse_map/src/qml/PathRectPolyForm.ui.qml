@@ -11,7 +11,6 @@ RowLayout {
     property alias b_path: b_path
     property alias b_rect: b_rect
     property alias b_poly: b_poly
-    property alias b_polysec: b_polysec
 
     property alias cancelPathChoice: cancelPathChoice
 
@@ -46,11 +45,6 @@ RowLayout {
         Button {
             id: b_path
             text: qsTr("Path")
-        }
-
-        Button {
-            id: b_polysec
-            text: qsTr("Security")
         }
 
         Button {
