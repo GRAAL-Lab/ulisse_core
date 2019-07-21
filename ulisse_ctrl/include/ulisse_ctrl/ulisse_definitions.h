@@ -19,7 +19,8 @@ namespace ulisse {
         const std::string asv_make_curve = "ASV_make_curve";
         const std::string asv_safety_boundaries = "ASV_safety_boundaries";
 
-        const std::vector<std::string> unified_hierarchy = { asv_hold_position, asv_make_curve, asv_angular_position, asv_control_velocity_angular,
+        const std::vector<std::string> unified_hierarchy = { asv_safety_boundaries, asv_hold_position, asv_make_curve,
+                                                             asv_angular_position, asv_control_velocity_angular,
                                                              asv_control_distance, asv_control_velocity_linear
         };
     }
@@ -39,16 +40,14 @@ namespace ulisse {
     }
 
     namespace priorityLevelID {
-        const std::string asv_linear_position_go_to = "ASV_linear_position_go_to_PL";
-
-        const std::string asv_direction_alignment = "ASV_direction_alignment_PL";
+        const std::string asv_safety_boundaries = "ASV_safety_boundaries_PL";
         const std::string asv_make_curve = "ASV_make_curve_PL";
         const std::string asv_control_velocity_linear = "ASV_control_velocity_linear_PL";
         const std::string asv_control_velocity_angular = "ASV_control_velocity_angular_PL";
         const std::string asv_control_position_angular = "ASV_control_position_angular_PL";
         const std::string asv_control_distance = "ASV_control_distance_PL";
         const std::string asv_hold_position = "ASV_hold_position_PL";
-        const std::vector<std::string> unified_hierarchy = { asv_hold_position, asv_make_curve,
+        const std::vector<std::string> unified_hierarchy = { asv_safety_boundaries, asv_hold_position, asv_make_curve,
                                                              asv_control_position_angular, asv_control_velocity_angular,
                                                              asv_control_distance, asv_control_velocity_linear
         }; //auv descendent movement lowest priority
@@ -73,7 +72,8 @@ namespace ulisse {
     namespace action {
 
         const std::string goTo = "goTo";
-        const std::vector<std::string> goToPriorityLevels = { priorityLevelID::asv_control_position_angular, priorityLevelID::asv_control_velocity_angular ,
+        const std::vector<std::string> goToPriorityLevels = { priorityLevelID::asv_safety_boundaries, priorityLevelID::asv_control_position_angular,
+                                                              priorityLevelID::asv_control_velocity_angular ,
                                                               priorityLevelID::asv_control_distance ,
                                                               priorityLevelID::asv_control_velocity_linear };
 
@@ -81,19 +81,23 @@ namespace ulisse {
         const std::vector<std::string> orientPriorityLevels = {};
 
         const std::string idle = "idle";
-        const std::vector<std::string> idlePriorityLevels = { priorityLevelID::asv_control_velocity_angular, priorityLevelID::asv_control_velocity_linear };
+        const std::vector<std::string> idlePriorityLevels = { priorityLevelID::asv_safety_boundaries,
+                                                              priorityLevelID::asv_control_velocity_angular, priorityLevelID::asv_control_velocity_linear };
 
         const std::string hold = "hold";
-        const std::vector<std::string> holdPriorityLevels = { priorityLevelID::asv_hold_position, priorityLevelID::asv_control_position_angular,
+        const std::vector<std::string> holdPriorityLevels = { priorityLevelID::asv_safety_boundaries,
+                                                              priorityLevelID::asv_hold_position, priorityLevelID::asv_control_position_angular,
                                                               priorityLevelID::asv_control_velocity_angular,
                                                               priorityLevelID::asv_control_distance , priorityLevelID::asv_control_velocity_linear  };
 
         const std::string speed_heading = "speed_heading";
-        const std::vector<std::string> speed_headingPriorityLevels = {priorityLevelID::asv_control_position_angular, priorityLevelID::asv_control_velocity_angular,
-                                                                      priorityLevelID::asv_control_velocity_linear };
+        const std::vector<std::string> speed_headingPriorityLevels = { priorityLevelID::asv_safety_boundaries,
+                                                                       priorityLevelID::asv_control_position_angular, priorityLevelID::asv_control_velocity_angular,
+                                                                       priorityLevelID::asv_control_velocity_linear };
 
         const std::string navigate = "navigate";
-        const std::vector<std::string> navigatePriorityLevels = { priorityLevelID::asv_make_curve,
+        const std::vector<std::string> navigatePriorityLevels = { priorityLevelID::asv_safety_boundaries,
+                                                                  priorityLevelID::asv_make_curve,
                                                                   priorityLevelID::asv_control_position_angular,
                                                                   priorityLevelID::asv_control_velocity_angular,
                                                                   priorityLevelID::asv_control_distance , priorityLevelID::asv_control_velocity_linear

@@ -34,11 +34,19 @@ int main(int argc, char* argv[])
     auto serviceReq = std::make_shared<ulisse_msgs::srv::SetBoundaries::Request>();
     serviceReq->bound_min = 5;
     serviceReq->bound_max = 3;
+
+    /*
     serviceReq->boundaries_json = "{\"name\":\"SecurityPoly\",\"values\":[{\"latitude\":44.393416932512764,\"longitude\":8.94322709917634},{\"latitude\":44.393156728311524,"
                                   "\"longitude\":8.948750022202859},{\"latitude\":44.38738857152622,\"longitude\":8.95281635015084},{\"latitude\":44.37780263284662,\"longitude\":8.955911614706025},"
                                   "{\"latitude\":44.3777158750978,\"longitude\":8.945411991804804},{\"latitude\":44.389210156133196,\"longitude\":8.946565129574338},{\"latitude\":44.38669461961795,"
                                   "\"longitude\":8.934244762819674},{\"latitude\":44.391248528844066,\"longitude\":8.935094443280292},{\"latitude\":44.39116179102005,\"longitude\":8.941224280924615},"
                                   "{\"latitude\":44.393416932512764,\"longitude\":8.94322709917634}]}";
+*/
+
+    serviceReq->boundaries_json = "{\"name\":\"SecurityPoly\",\"values\":[{\"latitude\":44.3925,\"longitude\":8.94374},{\"latitude\":44.3926,\"longitude\":8.94698}"
+                                   ",{\"latitude\":44.3945,\"longitude\":8.94506},{\"latitude\":44.3925,\"longitude\":8.94374}]}";
+
+
 
     std::string result_msg;
 

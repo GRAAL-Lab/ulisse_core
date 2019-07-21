@@ -52,6 +52,10 @@ namespace ikcl {
 
         target = distance_check(point_type((*pose_shared)(0), (*pose_shared)(1)));
 
+        std::cout << " TARGET GAIN : " << target.gain << std::endl;
+        std::cout << " TARGET X : " << target.x << std::endl;
+        std::cout << " TARGET Y : " << target.y << std::endl;
+
         if(target.gain > 0) {
             current_pose.latitude = (*pose_shared)(0);
             current_pose.longitude = (*pose_shared)(1);
