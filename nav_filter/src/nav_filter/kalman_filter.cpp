@@ -132,25 +132,23 @@ namespace nav {
         return M;
     }
 
-    MeasureUlisse::measure_ulisse():MeasurmentKalmanFilter(true){
+    MeasureUlisse::MeasureUlisse():MeasurmentKalmanFilter(true){
 
-        G_resize(4,8);
+        G_.resize(3,8);
 
         G_.row(1) << 1,0,0,0,0,0,0,0;
         G_.row(2) << 0,1,0,0,0,0,0,0;
-        G_.row(3) << 0,0,1,0,0,0,0,0;
-        G_.row(4) << 0,0,0,0,0,1,0,0;
+        G_.row(3) << 0,0,0,0,0,1,0,0;
 
     }
 
     Eigen::VectorXd MeasureUlisse::GetPredictedMeasure(const Eigen::VectorXd state){
 
-        Eigen::VectorXd G_predict(4,8);
+        Eigen::VectorXd G_predict(3);
 
         G_predict(1) = state[0];
         G_predict(2) = state[1];
-        G_predict(3) = state[2];
-        G_predict(4) = state[5];
+        G_predict(3) = state[5];
 
         return G_predict;
     }

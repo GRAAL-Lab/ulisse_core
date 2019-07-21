@@ -51,6 +51,7 @@ set(nav_filter_lib_sources
     # Helpers
     src/${PROJECT_NAME}/nav_data_structs.cpp
     src/${PROJECT_NAME}/kalman_filter.cpp
+    src/${PROJECT_NAME}/angle_filter.cpp
 )
 
 ## Libraries
