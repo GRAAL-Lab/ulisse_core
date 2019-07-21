@@ -4,10 +4,13 @@
 #ifndef GROUP_PROJECT_KALMAN_FILTER_H
 #define GROUP_PROJECT_KALMAN_FILTER_H
 
+#include "ctrl_toolbox/ModelKalmanFilter.h"
 #include "ctrl_toolbox/MeasurmentKalmanFilter.h"
-#include <cmath>
 
-namespace ulisse {
+#include <cmath>
+#include <vector>
+
+namespace nav {
 
     struct ModelParameter {
 
@@ -16,16 +19,28 @@ namespace ulisse {
         std::vector<double> _inertia;
     };
 
-    class kalman_filter : public ctb::MeasurmentKalmanFilter {
+    class UlisseKalmanFilter : public ctb::ModelKalmanFilter {
     public:
-        kalman_filter(){};
-        ~kalman_filter():~MeasurmentKalmanFilter(){};
+        UlisseKalmanFilter():ModelKalmanFilter(){};
+        ~UlisseKalmanFilter(){};
         Eigen::VectorXd ComputeState(const Eigen::VectorXd state, const Eigen::VectorXd input);
         Eigen::MatrixXd ComputeF(const Eigen::VectorXd state, const Eigen::VectorXd input);
 
     private:
-        struct ModelPararameter param;
+        struct ModelParameter param;
+        double sample_time_;
 
+    };
+
+    class MeasureUlisse : public ctb::MeasurmentKalmanFilter {
+    public:
+        MeasureUlisse();
+        ~MeasureUlisse(){};
+        Eigen::VectorXd GetPredictedMeasure(const Eigen::VectorXd state);
+        Eigen::MatrixXd ComputeG(const Eigen::VectorXd state, const Eigen::VectorXd input);
+
+    private:
+        Eigen::MatrixXd G_;
     };
 
 }

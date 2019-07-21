@@ -19,6 +19,7 @@
 
 #include "nav_filter/nav_data_structs.hpp"
 #include "nav_filter/pos_vel_observer.hpp"
+#include "nav_filter/kalman_filter.h"
 
 using namespace ulisse::nav;
 using namespace std::chrono_literals;

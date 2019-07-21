@@ -21,6 +21,7 @@ find_package(fsm REQUIRED)
 find_package(ctrl_toolbox REQUIRED)
 find_package(tpik REQUIRED)
 find_package(ikcl REQUIRED)
+find_package(ctrl_toolbox REQUIRED)
 
 
 
@@ -49,7 +50,7 @@ set(nav_filter_lib_sources
     src/${PROJECT_NAME}/pos_vel_observer.cpp
     # Helpers
     src/${PROJECT_NAME}/nav_data_structs.cpp
-
+    src/${PROJECT_NAME}/kalman_filter.cpp
 )
 
 ## Libraries
@@ -59,8 +60,8 @@ target_link_libraries(nav_filter_lib ${surface_vehicle_model_LIBRARIES} Geograph
 
 ## Executables
 add_executable(navigation_filter_node src/navigation_filter_node.cpp)
-ament_target_dependencies(navigation_filter_node rclcpp std_msgs ulisse_msgs rml)
-target_link_libraries(navigation_filter_node rml nav_filter_lib)
+ament_target_dependencies(navigation_filter_node rclcpp std_msgs ulisse_msgs rml ctrl_toolbox)
+target_link_libraries(navigation_filter_node rml nav_filter_lib ctrl_toolbox)
 
 ament_export_include_directories(include)
 
