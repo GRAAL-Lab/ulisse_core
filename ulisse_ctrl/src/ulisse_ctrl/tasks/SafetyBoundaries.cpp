@@ -87,6 +87,13 @@ namespace ikcl {
             UpdateReference();
             SaturateReference();;
             SaturateReferenceComponentWise();
+
+
+            std::cout << "Desired Surge: " << desired_speed << std::endl;
+            std::cout << "Desired Jog: " << desired_jog << std::endl;
+            std::cout << "Jacobian: " << std::endl <<  J_ << std::endl;
+            std::cout << "Activation F: " << std::endl << Ai_ << std::endl;
+
         }
         else{
             target.gain = 0;
@@ -109,9 +116,7 @@ namespace ikcl {
 
     void SafetyBoundaries::UpdateReference()
     {
-        for (int i = 0; i < 6; i++) {
-            x_dot_(i) = taskParameter_.gain * target.gain * desiredVelocity_(i);
-        }
+        x_dot_ = taskParameter_.gain * target.gain * (desiredVelocity_);
     }
 
 
@@ -157,7 +162,8 @@ namespace ikcl {
 
             make_segments(p, next);
         }
-        segments.pop_back();
+
+        // segments.pop_back();
 
         coord_max = coord_max + abs(coord_min);
         isBoundariesInitialized = true;
@@ -244,7 +250,12 @@ namespace ikcl {
                     nearest_p.set<1>(boost::geometry::get<1>(output.front()));
                 }
 
-                d < MAX_THRESHOLD ? target_value.gain = 1.0 : target_value.gain = (d - MAX_THRESHOLD)/(MIN_THRESHOLD - MAX_THRESHOLD);
+                if(d < MAX_THRESHOLD) {
+                    target_value.gain = 1.0;
+                }
+                else {
+                    target_value.gain = (d - MAX_THRESHOLD)/(MIN_THRESHOLD - MAX_THRESHOLD);
+                }
             }
 
         }
@@ -252,17 +263,15 @@ namespace ikcl {
         // return these values: target(x,y) and "gain"
         theta = atan2(boost::geometry::get<1>(p) - boost::geometry::get<1>(nearest_p), boost::geometry::get<0>(p) - boost::geometry::get<0>(nearest_p));
         //if (theta < 0) theta = theta + M_2_PI;
+        //TODO: Non so se è giusto
+        theta = theta + M_PI;
 
-        target_value.x = boost::geometry::get<0>(p) - 100*(MIN_THRESHOLD - min_d)*cos(theta);
-        target_value.y = boost::geometry::get<1>(p) - 100*(MIN_THRESHOLD - min_d)*sin(theta);
+        target_value.x = boost::geometry::get<0>(p) + min_d*cos(theta);
+        target_value.y = boost::geometry::get<1>(p) + min_d*sin(theta);
 
 
         std::cout << "Closest Point : (" << boost::geometry::get<0>(nearest_p) << "," << boost::geometry::get<1>(nearest_p) << ") \t"
                   << "At a distance: " << min_d << std::endl;
-
-        std::cout << "Point target: (" << target_value.x << "," << target_value.y << ")" <<
-                  " with a value for the activation function: " << target_value.gain << std::endl;
-
 
         return target_value;
     }
