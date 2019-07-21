@@ -254,8 +254,7 @@ Pane {
                     text: "Save Path"
                     rotation: 1
                     transformOrigin: Item.Left
-                    enabled: (mapView.pathCurrentState === pathState.empty)
-                             | (mapView.pathCurrentState === pathState.creating) ? false : true
+                    enabled: true
 
                     onClicked: {
                         savePathDialog.open()
@@ -341,7 +340,7 @@ Pane {
         id: loadPathDialog
         title: "Please choose a file"
         folder: shortcuts.home
-        nameFilters: ["Path Files (*.txt)"]
+        nameFilters: ["Path Files (*.ulisse)"]
 
         onAccepted: {
             var path = loadPathDialog.fileUrl.toString()
@@ -377,8 +376,7 @@ Pane {
             path = path.replace(/^(file:\/{2})/, "")
             // unescape html codes like '%23' for '#'
             var cleanPath = decodeURIComponent(path)
-
-            cmdWrapper.savePathToFile(cleanPath)
+            map.savePath(cleanPath)
         }
     }
 }

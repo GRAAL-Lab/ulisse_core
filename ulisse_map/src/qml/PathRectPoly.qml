@@ -27,7 +27,7 @@ PathRectPolyForm {
     rowPolyParams.onDiscard: function(){discard_poly()}
 
     function start_poly(){
-        cur_managed = map.createPoly()
+        cur_managed = map.createPoly(30,30)
         if (cur_managed === null) return
         show_poly_create()
         cur_managed.end.connect(end_poly)
@@ -74,6 +74,29 @@ PathRectPolyForm {
         cur_managed.discard_edit()
         show_path_manage()
     }
+
+    function load_poly(data){
+        cur_managed = map.createPoly(data.offset, data.angle)
+        if (cur_managed === null) return
+        show_poly_create()
+
+        cur_managed.deserialize(data.values)
+        cur_managed.draw_deferred()
+
+        cur_managed.end.disconnect(end_poly)
+        v = trackComponent.createObject(slidersLeft.columnTrack)
+        v._comp = cur_managed
+        v.ntrack = map.uniquelist.length
+        v.edit.connect(edit_poly)
+        v.selected.connect(function (poly){
+            slidersLeft.update_selection(poly)
+            manage(poly)
+        })
+        slidersLeft.update_selection(cur_managed)
+        manage(cur_managed)
+
+    }
+
 
     /*-----------------------------------------------------------*/
 

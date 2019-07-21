@@ -718,8 +718,8 @@ MapPolyline {
             centroid: [centroid.latitude, centroid.longitude],
             curves: curves
         }
-        console.log(JSON.stringify(result))
-        return result
+        //console.log(JSON.stringify(result))
+        return JSON.stringify(result)
     }
 
     function serialize(){
