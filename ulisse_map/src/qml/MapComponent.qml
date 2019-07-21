@@ -59,7 +59,6 @@ MapComponentForm {
     }
     //slidersLeft.listtrackers.Ob
 
-
     function removeLastPath(){
         var uniquelist_length = uniquelist.length
         if(uniquelist_length > 0){

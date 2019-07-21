@@ -28,9 +28,9 @@ ElementTrackForm{
         backbut.color = yes ? "#ffffff" : "#abcdef"
     }
 
-    tracklistlayout.y: tracklistlayout.height*(ntrack)
+    //tracklistlayout.y: tracklistlayout.height*(tracklistlayout.ntrack)
 
     expanded: parent.expanded
     width: parent.width
-    nametrack: qsTr(ntrack.toString())
+    //nametrack: qsTr(ntrack.toString())
 }

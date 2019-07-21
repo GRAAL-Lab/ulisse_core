@@ -47,7 +47,7 @@ RowLayout {
 
     Button {
         id: name
-        text: expanded ? ntrack : nametrack
+        text: ntrack // expanded ? ntrack : nametrack
         anchors.fill: parent
         Layout.fillHeight: true
         antialiasing: false
@@ -69,7 +69,7 @@ RowLayout {
             width: 1
             height: 40
             color: "#fcaf3e"
-            text: nametrack
+            text: ntrack
             maximumLength: 16
             anchors.horizontalCenter: parent.horizontalCenter
             clip: false

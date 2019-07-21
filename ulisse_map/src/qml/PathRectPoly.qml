@@ -44,6 +44,7 @@ PathRectPolyForm {
     }
 
     property var v
+    property int n : 0
 
     function end_poly(){
         cur_managed.end.disconnect(end_poly)
@@ -51,6 +52,7 @@ PathRectPolyForm {
         v = trackComponent.createObject(slidersLeft.columnTrack)
         v._comp = cur_managed
         v.ntrack = map.uniquelist.length
+        n++
         v.edit.connect(edit_poly)
         v.selected.connect(function (poly){
             slidersLeft.update_selection(poly)
@@ -129,6 +131,11 @@ PathRectPolyForm {
         rowFigure.visible = false
         rowPolyParams.visible = false
         rowEditPlay.visible = false
+    }
+
+    function enableBtns(y){
+        buttonEdit.visible = y
+        buttonPlay.visible = y
     }
 
     /*----------------------------------------------------------*/
