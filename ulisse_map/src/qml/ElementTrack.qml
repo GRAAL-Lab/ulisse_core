@@ -26,6 +26,7 @@ ElementTrackForm{
     function highlight(yes){
         toggled = yes
         backbut.color = yes ? "#ffffff" : "#abcdef"
+        _comp.highlighted(yes)
     }
 
     //tracklistlayout.y: tracklistlayout.height*(tracklistlayout.ntrack)

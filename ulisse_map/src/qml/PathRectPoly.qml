@@ -54,6 +54,8 @@ PathRectPolyForm {
     function start(){
         if (cur_managed === null) return
         show_create()
+        var cur_val=cur_managed.get_params()
+        params_panel.fill_cur_values(cur_val)
         cur_managed.end.connect(end)
         map.click_handler = cur_managed.click_handler
         map.pos_changed_handler = cur_managed.pos_changed_handler
