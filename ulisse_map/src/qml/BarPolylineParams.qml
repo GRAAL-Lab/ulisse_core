@@ -15,6 +15,7 @@ RowLayout {
 
     property bool buttons: false
     property var  nameTrack: textnametrack.text
+    property var nameTrack_
     signal accept
     signal discard
 
@@ -22,8 +23,15 @@ RowLayout {
         return {}
     }
 
+    function fill_cur_values(values){
+            nameTrack_=values.name
+    }
+
+
+
     TextField {
         id: textnametrack
+        text: nameTrack_
         placeholderText:  qsTr("insert name")
         enabled: true
     }
@@ -32,13 +40,17 @@ RowLayout {
         id: cancelPolyEdit
         text: qsTr("Cancel")
         visible: buttons
-        onClicked: function(){discard()}
+        onClicked: function(){
+            discard()
+        }
     }
 
     Button {
         id: confirmPolyEdit
         text: qsTr("Confirm")
         visible: buttons
-        onClicked: function(){accept()}
+        onClicked: function(){
+            accept()
+        }
     }
 }

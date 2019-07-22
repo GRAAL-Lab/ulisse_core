@@ -235,8 +235,8 @@ Row {
     }
 
     function enableBtns(y){
-        addTracks.enabled = y
-        deleteTracks.enabled = y
+        addTracks.visible = y
+        deleteTracks.visible = y
     }
 
     function restoreBtns(){

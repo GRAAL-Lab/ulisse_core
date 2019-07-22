@@ -46,8 +46,8 @@ MapPolyline {
     }
 
     property string _pathName: "Path"
-    property real _angle
-    property real _offset
+    property real _angle :30
+    property real _offset :30
     property string _method: "single_winding" //"simple"
 
     property var debug_c: null
@@ -793,11 +793,11 @@ MapPolyline {
 
     function get_params(){
         return {
-           type: _method,
            name: _pathName,
            params:{
                 angle:  _angle,
-                offset: _offset
+                offset: _offset,
+                method: _method
             }
         }
     }
@@ -882,5 +882,10 @@ MapPolyline {
         _angle = data.params.angle
         _offset =  data.params.offset
         _method =  data.params.method
+    }
+//la linea selezionata si colora
+    function highlighted(yes)
+    {
+        line.color = yes? "#ffff00" : "#ff0000"
     }
 }

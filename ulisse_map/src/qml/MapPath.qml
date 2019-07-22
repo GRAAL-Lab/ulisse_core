@@ -569,4 +569,17 @@ MapPolyline {
             addCoordinate(QtPositioning.coordinate(lat,lon))
         }
     }
+
+    function get_params(){
+        return {
+           name: _pathName,
+           params:{
+            }
+        }
+    }
+
+    function highlighted(yes)
+    {
+        line.color = yes? "#ffff00" : "#ff0000"
+    }
 }
