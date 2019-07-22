@@ -48,8 +48,8 @@ RowLayout {
     Button {
         id: name
         text: expanded ? _comp._pathName : ntrack
-        anchors.fill: parent
         Layout.fillHeight: true
+        Layout.fillWidth: true
         antialiasing: false
         enabled: true
 

@@ -375,6 +375,10 @@ Pane {
                 var v = trackComponent.createObject(slidersLeft.columnTrack)
                 v._comp = cur_managed
                 v.ntrack = slidersLeft.columnTrack.children.length
+                v.selected.connect(function (path){
+                    slidersLeft.update_selection(path)
+                    pathRectPoly.manage(path)
+                })
 
                 cur_managed.draw_deferred()
                 break
@@ -386,6 +390,10 @@ Pane {
                 var v = trackComponent.createObject(slidersLeft.columnTrack)
                 v._comp = cur_managed
                 v.ntrack = slidersLeft.columnTrack.children.length
+                v.selected.connect(function (path){
+                    slidersLeft.update_selection(path)
+                    pathRectPoly.manage(path)
+                })
 
                 cur_managed.draw_deferred()
                 break

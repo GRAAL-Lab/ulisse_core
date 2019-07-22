@@ -75,7 +75,6 @@ PathRectPolyForm {
         var v = trackComponent.createObject(slidersLeft.columnTrack)
         v._comp = cur_managed
         v.ntrack = ++n
-        v.edit.connect(edit)
         v.selected.connect(function (path){
             slidersLeft.update_selection(path)
             manage(path)

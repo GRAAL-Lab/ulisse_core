@@ -102,6 +102,7 @@ MapPolyline {
         reposition_markers()
         disable_markers()
         disable_handle()
+        enable_ab_markers()
     }
 
     function draw_deferred(){

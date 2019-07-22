@@ -140,46 +140,46 @@ RowLayout {
             color: Material.background
             anchors.bottom: parent.bottom
 
-                RowLayout {
-                    anchors.fill: parent
-                    width: parent.width
-                    height: parent.height - recenterButton.height
+            RowLayout {
+                anchors.fill: parent
+                width: parent.width
+                height: parent.height - recenterButton.height
 
-                    Button {
-                        id: recenterButton
-                        text: "Recenter"
-                        highlighted: true
-                        Material.accent: mainColor
-                        Layout.leftMargin: 5
-                    }
+                Button {
+                    id: recenterButton
+                    text: "Recenter"
+                    highlighted: true
+                    Material.accent: mainColor
+                    Layout.leftMargin: 5
+                }
 
-                    CheckBox {
-                        id: followMeCheckbox
-                        text: "Follow vehicle"
-                        Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                        Material.accent: mainColor
-                        checked: false
-                    }
+                CheckBox {
+                    id: followMeCheckbox
+                    text: "Follow vehicle"
+                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                    Material.accent: mainColor
+                    checked: false
+                }
 
-                    CheckBox {
-                        id: overlayStatusCbox
-                        text: "Show Overlay"
-                        Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                        Material.accent: mainColor
-                        checked: false
-                    }
+                CheckBox {
+                    id: overlayStatusCbox
+                    text: "Show Overlay"
+                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                    Material.accent: mainColor
+                    checked: false
+                }
 
-                    Button {
-                        id: clearPathButton
-                        anchors.rightMargin: parent.anchors.rightMargin
-                        //Layout.rightMargin: 5
-                        text: "Clear trace"
-                        highlighted: true
-                        Material.accent: mainAccentColor
-                        Layout.alignment: Qt.AlignRight
-                        Layout.rightMargin: 5
-                    }
+                Button {
+                    id: clearPathButton
+                    anchors.rightMargin: parent.anchors.rightMargin
+                    //Layout.rightMargin: 5
+                    text: "Clear trace"
+                    highlighted: true
+                    Material.accent: mainAccentColor
+                    Layout.alignment: Qt.AlignRight
+                    Layout.rightMargin: 5
                 }
             }
+        }
     }
 }
