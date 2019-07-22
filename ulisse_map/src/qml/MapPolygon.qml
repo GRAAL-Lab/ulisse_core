@@ -32,6 +32,9 @@ MapPolyline {
     property MapHandle _handle
     property var vertex_markers: []
     property var add_markers: []
+    property var a_marker
+    property var b_marker
+
     property string _pathName: "Path"
     property real _angle: 30
     property real _offset: 10
@@ -57,16 +60,32 @@ MapPolyline {
         _marker = mapMarkerComponent.createObject(map)
         _dashed_line = mapDashedLineComponent.createObject(map)
         _handle = mapHandleComponent.createObject(map)
+        a_marker = mapMarkerComponent.createObject(map)
+        b_marker = mapMarkerComponent.createObject(map)
+        a_marker.opacity = 0
+        b_marker.opacity = 0
+        a_marker.z = z+10
+        b_marker.z = z+10
+        a_marker.color = "#ffffff"
+        b_marker.color = "#000000"
 
         map.addMapItem(_canvas)
         map.addMapItem(_marker)
         map.addMapItem(_dashed_line)
         map.addMapItem(_handle)
+        map.addMapItem(a_marker)
+        map.addMapItem(b_marker)
         _handle.add_to_map(map)
     }
 
     function deregister_map_items(){
         map.removeMapItem(_canvas)
+        map.removeMapItem(a_marker)
+        map.removeMapItem(b_marker)
+        for (var i = 0; i<vertex_markers.length-1; i++)
+            map.removeMapItem(vertex_markers[i])
+        for (var i = 0; i<add_markers.length-1; i++)
+            map.removeMapItem(add_markers[i])
         map.removeMapItem(_marker)
         map.removeMapItem(_dashed_line)
         map.removeMapItem(_handle)
@@ -80,6 +99,7 @@ MapPolyline {
             generate_nurbs()
         }
         generate_markers()
+        reposition_markers()
         disable_markers()
         disable_handle()
     }
@@ -152,6 +172,10 @@ MapPolyline {
     function reposition_markers(){
         reposition_add_markers()
         reposition_vertex_markers()
+        a_marker.center = intersections_geographic[0][0]
+        b_marker.center = intersections_geographic[
+                    intersections_geographic.length-1][
+                    (intersections_geographic.length%2 ===0) ? 0 : 1]
     }
 
     function enable_handle(){
@@ -168,6 +192,17 @@ MapPolyline {
         enable_vertex_markers()
         enable_add_markers()
     }
+
+    function disable_ab_markers(){
+        a_marker.opacity = 0
+        b_marker.opacity = 0
+    }
+
+    function enable_ab_markers(){
+        a_marker.opacity = 1
+        b_marker.opacity = 1
+    }
+
 
     function enable_vertex_markers(){
         for (var i = 0; i< vertex_markers.length; i++)
@@ -707,11 +742,11 @@ MapPolyline {
         backup_vertex_markers = vertex_markers
         backup_add_markers = add_markers
         _canvas.clear_canvas()
-        reposition_vertex_markers()
-        reposition_add_markers()
+        reposition_markers()
         reposition_handle()
         enable_markers()
         enable_handle()
+        disable_ab_markers()
     }
 
     function discard_edit(){
@@ -723,6 +758,7 @@ MapPolyline {
         vertex_markers = backup_vertex_markers
         add_markers = backup_add_markers
         centroid = backup_centroid
+        reposition_markers()
         disable_markers()
         disable_handle()
         if (_method !== null || _method !== undefined){
@@ -730,6 +766,7 @@ MapPolyline {
             draw_path()
             generate_nurbs()
         }
+        enable_ab_markers()
     }
 
     function confirm_edit(name, params){
@@ -742,6 +779,7 @@ MapPolyline {
         }
         moving_idx = -1
         _draw()
+        enable_ab_markers()
     }
 
     function draw_path(){
