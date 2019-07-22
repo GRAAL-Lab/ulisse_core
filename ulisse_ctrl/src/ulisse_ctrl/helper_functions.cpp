@@ -210,7 +210,7 @@ void parameter_setting(struct SlidingSurface &param,std::shared_ptr<LowLevelConf
 
     std::vector<double> alpha_beta_r (const std::vector<double> state, struct SlidingSurface param)
     {
-        auto alpha=state[1]/0.1 + param._Cn[0]*state[0]*state[1]-param._Cn[1]*state[1]- param._Cn[2]*std::abs(state[1])*state[1];
+        auto alpha=state[1]/0.1+param._Cn[0]*state[0]*state[1]-param._Cn[1]*state[1]- param._Cn[2]*std::abs(state[1])*state[1];
         alpha=-1/param._inertia[2]*param._k1*alpha;
         auto beta = -1/param._inertia[2]*param._k1;
         std::vector<double> alphaBeta = {alpha,beta};

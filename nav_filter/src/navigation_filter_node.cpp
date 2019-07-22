@@ -20,6 +20,10 @@
 #include "nav_filter/nav_data_structs.hpp"
 #include "nav_filter/pos_vel_observer.hpp"
 #include "nav_filter/kalman_filter.h"
+#include "nav_filter/angle_filter.h"
+#include <ctrl_toolbox/ExtendedKalmanFilter.h>
+#include "ulisse_msgs/msg/control_data.hpp"
+
 
 using namespace ulisse::nav;
 using namespace std::chrono_literals;
@@ -31,7 +35,9 @@ static ulisse_msgs::msg::Compass compass;
 static ulisse_msgs::msg::GPSData gpsData;
 static ulisse_msgs::msg::IMUData imuData;
 static ulisse_msgs::msg::ControlContext controlCxt;
+static ulisse_msgs::msg::ControlData controlData;
 static int rate = 10;
+
 
 void ReloadConfig();
 
@@ -43,10 +49,12 @@ void controlcontext_cb(const ulisse_msgs::msg::ControlContext::SharedPtr msg);
 void compass_cb(const ulisse_msgs::msg::Compass::SharedPtr msg);
 void gpsdata_cb(const ulisse_msgs::msg::GPSData::SharedPtr msg);
 void imu_cb(const ulisse_msgs::msg::IMUData::SharedPtr msg);
+void parameter_setting(struct ModelParameter &param);
+void InputDataCB (const ulisse_msgs::msg::ControlData::SharedPtr msg);
+
 
 int main(int argc, char* argv[])
 {
-
     rclcpp::init(argc, argv);
     auto node = rclcpp::Node::make_shared("navigation_filter_node");
 
@@ -54,6 +62,9 @@ int main(int argc, char* argv[])
 
     auto srv_ = node->create_service<ulisse_msgs::srv::NavFilterCommand>(
         ulisse_msgs::topicnames::navfilter_cmd_service, handle_navfilter_commands);
+
+    auto navfilter_sub = node->create_subscription<ulisse_msgs::msg::ControlData>(
+            "ulisse/ControlData", InputDataCB);
 
     par_client = std::make_shared<rclcpp::SyncParametersClient>(node);
     while (!par_client->wait_for_service(1ms)) {
@@ -65,6 +76,40 @@ int main(int argc, char* argv[])
     }
 
     ReloadConfig();
+
+    struct ModelParameter ulisse_parameter;
+    parameter_setting(ulisse_parameter);
+
+
+    std::shared_ptr<MeasureAngle> measure_angle = std::make_shared<MeasureAngle> (MeasureAngle());
+    std::shared_ptr<MeasureUlisse> measure_ulisse =  std::make_shared<MeasureUlisse> (MeasureUlisse());
+
+    std::shared_ptr<AngleKalmanFilter> angle_filter = std::make_shared<AngleKalmanFilter> (AngleKalmanFilter());
+    std::shared_ptr<UlisseKalmanFilter> ulisse_kalman_filter =  std::make_shared<UlisseKalmanFilter> (UlisseKalmanFilter());
+
+    ulisse_kalman_filter->set_param(ulisse_parameter);
+
+    std::vector<int> angle_ulisse = {2};
+    std::vector<int> angle_af = {0,1,2};
+
+    ctb::ExtendedKalmanFilter ulisse_EKF(8, angle_ulisse, ulisse_kalman_filter);
+    ctb::ExtendedKalmanFilter ulisse_angle_EKF(3, angle_af, angle_filter);
+
+    //TODO set covariance for the model filter and measure
+    /* loop
+    measure_ulisse.SetMeasure(const Eigen::VectorXd measure);
+    measure_angle.SetMeasure(const Eigen::VectorXd measure);
+
+    ulisse_EKF.AddMeasurment(measure_ulisse);
+    ulisse_angle_EKF.AddMeasurment(measure_ulisse);
+
+    ulisse_EKF.Predict(Eigen::VectorXd u);
+    ulisse_angle_EKF.Predict(Eigen::VectorXd u)
+
+    ulisse_angle_EKF.ApplyMeasurements();
+    ulisse_EKF.ApplyMeasurements();
+    end loop
+     */
 
     auto navfilter_pub = node->create_publisher<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data);
 
@@ -80,10 +125,19 @@ int main(int argc, char* argv[])
 
     bool filterEnable(true);
 
+    Eigen::VectorXd input(2);
+    Eigen::VectorXd input1(3);
+
+    Eigen::VectorXd angleMeasure(3);
+    Eigen::VectorXd measure(4);
+
     while (rclcpp::ok()) {
 
+        //input << (double)controlData.surge_control , (double)controlData.yawr_control; //TODO controllare cast double
+        //input1 << imuData.gyro[0],imuData.gyro[1],imuData.gyro[2];
+
         if (gpsData.time > lastValidGPSTime) {
-            if (gpsData.gpsfixmode >= (int)ulisse::gpsd::GpsFixMode::mode_2d) {
+            if (gpsData.gpsfixmode >= (int) ulisse::gpsd::GpsFixMode::mode_2d) {
 
                 float64_t speedRef;
 
@@ -101,17 +155,32 @@ int main(int argc, char* argv[])
                     double x_ned = y_utm;
                     double y_ned = x_utm;
 
+                    //angleMeasure << compass.orientation.roll,compass.orientation.pitch,compass.orientation.yaw;
+                    //measure << x_ned, y_ned, (ulisse_angle_EKF.GetState())[2], imuData.gyro[2];
+
+                    //measure_ulisse->SetMeasure(measure);
+                    //measure_angle->SetMeasure(angleMeasure);
+
                     if (filterEnable) {
                         obs.Update(speedRef, compass.orientation.yaw, x_ned, y_ned);
                         obs.GetCurrent(filterData.current[0], filterData.current[1]);
                         obs.GetSpeed(filterData.speed[0], filterData.speed[1]);
                         obs.GetPosition(x_ned, y_ned);
 
+                        //ulisse_EKF.AddMeasurment(measure_ulisse);
+                        //ulisse_angle_EKF.AddMeasurment(measure_ulisse);
+
+                        //ulisse_EKF.Predict(input);
+                        //ulisse_angle_EKF.Predict(input1);
+
+                        //ulisse_angle_EKF.ApplyMeasurements();
+                        //ulisse_EKF.ApplyMeasurements();
+
                         x_utm = y_ned;
                         y_utm = x_ned;
 
                         GeographicLib::UTMUPS::Reverse(zone, northp, x_utm, y_utm, filterData.latitude,
-                            filterData.longitude);
+                                                       filterData.longitude);
                     } else {
                         filterData.latitude = gpsData.latitude;
                         filterData.longitude = gpsData.longitude;
@@ -127,10 +196,16 @@ int main(int argc, char* argv[])
 
                     navfilter_pub->publish(filterData);
 
-                } catch (const GeographicLib::GeographicErr& e) {
+                } catch (const GeographicLib::GeographicErr &e) {
                     RCLCPP_ERROR(node->get_logger(), "GeographicLib exception: what = %s", e.what());
                     obs.Reset();
                 }
+
+                //ulisse_EKF.Predict(input);
+                //ulisse_angle_EKF.Predict(input1);
+
+                //ulisse_angle_EKF.ApplyMeasurements();
+                //ulisse_EKF.ApplyMeasurements();
 
                 lastValidGPSTime = gpsData.time;
             }
@@ -146,7 +221,7 @@ int main(int argc, char* argv[])
 void ReloadConfig()
 {
     static NavFilterConfigData navFilterConfig;
-    //useThrusterMap = par_client->get_parameter("UseThrusterMapping", false);
+
     std::vector<double> gains = par_client->get_parameter("Gains", std::vector<double>(4, 0.0));
     rate = par_client->get_parameter("Rate", 10);
 
@@ -155,6 +230,23 @@ void ReloadConfig()
     }
 
     obs.SetConfig(navFilterConfig);
+}
+
+void parameter_setting(struct ModelParameter &param){
+
+    param._inertia.resize(3);
+    param._inertia = par_client->get_parameter("ThrusterMapping.Inertia", std::vector<double>(3, 0.0));
+
+    param._Cx.resize(3);
+    param._Cx = par_client->get_parameter("ThrusterMapping.cX", std::vector<double>(3, 0.0));
+
+    param._Cn.resize(3);
+    param._Cn = par_client->get_parameter("ThrusterMapping.cN", std::vector<double>(3, 0.0));
+}
+
+void InputDataCB (const ulisse_msgs::msg::ControlData::SharedPtr msg)
+{
+    controlData = *msg;
 }
 
 void handle_navfilter_commands(const std::shared_ptr<rmw_request_id_t> request_header,

@@ -10,39 +10,50 @@
 #include <cmath>
 #include <vector>
 
-namespace nav {
+namespace ulisse {
 
-    struct ModelParameter {
+    namespace nav {
 
-        std::vector<double> _Cx;
-        std::vector<double> _Cn;
-        std::vector<double> _inertia;
-    };
+        struct ModelParameter {
 
-    class UlisseKalmanFilter : public ctb::ModelKalmanFilter {
-    public:
-        UlisseKalmanFilter():ModelKalmanFilter(){};
-        ~UlisseKalmanFilter(){};
-        Eigen::VectorXd ComputeState(const Eigen::VectorXd state, const Eigen::VectorXd input);
-        Eigen::MatrixXd ComputeF(const Eigen::VectorXd state, const Eigen::VectorXd input);
+            std::vector<double> _Cx;
+            std::vector<double> _Cn;
+            std::vector<double> _inertia;
+        };
 
-    private:
-        struct ModelParameter param;
-        double sample_time_;
+        class UlisseKalmanFilter : public ctb::ModelKalmanFilter {
+        public:
+            UlisseKalmanFilter() : ModelKalmanFilter() {};
 
-    };
+            ~UlisseKalmanFilter() {};
 
-    class MeasureUlisse : public ctb::MeasurmentKalmanFilter {
-    public:
-        MeasureUlisse();
-        ~MeasureUlisse(){};
-        Eigen::VectorXd GetPredictedMeasure(const Eigen::VectorXd state);
-        Eigen::MatrixXd ComputeG(const Eigen::VectorXd state, const Eigen::VectorXd input);
+            Eigen::VectorXd ComputeState(const Eigen::VectorXd state, const Eigen::VectorXd input);
 
-    private:
-        Eigen::MatrixXd G_;
-    };
+            Eigen::MatrixXd ComputeF(const Eigen::VectorXd state, const Eigen::VectorXd input);
 
+            void set_param(struct ModelParameter param_){ param=param_;};
+
+        private:
+            struct ModelParameter param;
+            double sample_time_;
+
+        };
+
+        class MeasureUlisse : public ctb::MeasurmentKalmanFilter {
+        public:
+            MeasureUlisse();
+
+            ~MeasureUlisse() {};
+
+            Eigen::VectorXd GetPredictedMeasure(const Eigen::VectorXd state);
+
+            Eigen::MatrixXd ComputeG(const Eigen::VectorXd state, const Eigen::VectorXd input);
+
+        private:
+            Eigen::MatrixXd G_;
+        };
+
+    }
 }
 
 /*

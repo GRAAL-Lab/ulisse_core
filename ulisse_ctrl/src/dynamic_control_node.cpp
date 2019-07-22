@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
         ulisse_msgs::topicnames::thrusters_data);
 
     auto control_pub = nh->create_publisher<ulisse_msgs::msg::ControlData>(
-            "ControlData");
+            "ulisse/ControlData");
 
     auto navfilter_sub = nh->create_subscription<ulisse_msgs::msg::NavFilterData>(
             ulisse_msgs::topicnames::nav_filter_data, FilterDataCB);
@@ -83,7 +83,7 @@ int main(int argc, char* argv[])
     LoadLowLevelConfiguration(conf, par_client);
 
     struct SlidingSurface sl;
-    parameter_setting(sl,conf,1,10);
+    parameter_setting(sl,conf,0.4,0.4);
 
     ctb::DigitalSlidingMode<struct SlidingSurface> slideSurge=
             ctb::DigitalSlidingMode<struct SlidingSurface>(alpha_beta_u,s1,sl);
@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
     //pidSurge.SetSaturation(conf->mapping_pidsat_surge);
 
     slideSurge.Initialize(0.2,sampleTime, 2 , conf->dynamic_pidsat_surge);
-    slideHeading.Initialize(2,sampleTime, 2 , conf->dynamic_pidsat_yawrate);
+    slideHeading.Initialize(7.5,sampleTime, 2 , conf->dynamic_pidsat_yawrate);
 
     ulisse_msgs::msg::ControlData control_msg;
 

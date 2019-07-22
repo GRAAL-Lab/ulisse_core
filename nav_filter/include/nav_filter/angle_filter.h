@@ -11,31 +11,39 @@
 #include <cmath>
 #include <vector>
 
-namespace nav {
+namespace ulisse {
+    namespace nav {
 
-    class AngleKalmanFilter : public ctb::ModelKalmanFilter {
-    public:
-        AngleKalmanFilter():ModelKalmanFilter(){};
-        ~AngleKalmanFilter(){};
-        Eigen::VectorXd ComputeState(const Eigen::VectorXd state, const Eigen::VectorXd input);
-        Eigen::MatrixXd ComputeF(const Eigen::VectorXd state, const Eigen::VectorXd input);
+        class AngleKalmanFilter : public ctb::ModelKalmanFilter {
+        public:
+            AngleKalmanFilter() : ModelKalmanFilter() {};
 
-    private:
-        double sample_time_;
+            ~AngleKalmanFilter() {};
 
-    };
+            Eigen::VectorXd ComputeState(const Eigen::VectorXd state, const Eigen::VectorXd input);
 
-    class MeasureAngle : public ctb::MeasurmentKalmanFilter {
-    public:
-        MeasureAngle();
-        ~MeasureAngle(){};
-        Eigen::VectorXd GetPredictedMeasure(const Eigen::VectorXd state);
-        Eigen::MatrixXd ComputeG(const Eigen::VectorXd state, const Eigen::VectorXd input);
+            Eigen::MatrixXd ComputeF(const Eigen::VectorXd state, const Eigen::VectorXd input);
 
-    private:
-        Eigen::MatrixXd G_;
-    };
+        private:
+            double sample_time_;
 
+        };
+
+        class MeasureAngle : public ctb::MeasurmentKalmanFilter {
+        public:
+            MeasureAngle();
+
+            ~MeasureAngle() {};
+
+            Eigen::VectorXd GetPredictedMeasure(const Eigen::VectorXd state);
+
+            Eigen::MatrixXd ComputeG(const Eigen::VectorXd state, const Eigen::VectorXd input);
+
+        private:
+            Eigen::MatrixXd G_;
+        };
+
+    }
 }
 
 #endif //GROUP_PROJECT_ANGLE_FILTER_H

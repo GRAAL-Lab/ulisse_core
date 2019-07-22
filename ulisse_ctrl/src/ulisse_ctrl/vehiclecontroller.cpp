@@ -33,7 +33,7 @@ namespace ulisse {
 VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double sampleTime)
     : nh_(nh)
     , sampleTime_(sampleTime)
-    , boundaries_set(false) //TODO: cambialo a false
+    , boundaries_set(true) //TODO: cambialo a false
     {
         par_client_ = std::make_shared<rclcpp::SyncParametersClient>(nh_);
         ctrlCxt_ = std::make_shared<ControlContext>();
