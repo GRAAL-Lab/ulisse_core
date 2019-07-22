@@ -122,8 +122,10 @@ PathRectPolyForm {
     buttonPlay.onClicked: function(){
         if (cur_managed === null) return
         if (!cur_managed.safe) toast.show("Unsafe path due to operational space limits.", 2000)
-        else
+        else{
             console.log(JSON.stringify(cur_managed.generate_nurbs()))
+            cmdWrapper.sendPath(JSON.stringify(cur_managed.generate_nurbs()))
+        }
     }
 
     /*------------------------------------------------------------*/

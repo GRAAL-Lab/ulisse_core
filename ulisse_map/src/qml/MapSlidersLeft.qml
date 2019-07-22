@@ -172,8 +172,13 @@ Row {
                 width: sliderTogglerLeft.checked ? sliderRow.width + 120 : sliderRow.width
                 Button{
                     id:addTracks
-                    text:"+"
                     width: parent.width
+                    text: (sliderTogglerLeft.checked)? qsTr("Add Path") : qsTr("+")
+
+                    onHoveredChanged: function(){
+                        addTracksRect.color= (addTracksRect.color == "#abcdef")? "#66cccc" : "#abcdef"
+                    }
+
                     onClicked: function(){
                         pathRectPoly.show_shape_choice()
                         enableBtns(false)
@@ -186,10 +191,15 @@ Row {
 
                 Button{
                     id:deleteTracks
-                    text:"x"
+                    text: (sliderTogglerLeft.checked)? qsTr("Delete") : qsTr("X")
                     visible: (pathRectPoly.n>0)? true : false
                     enabled: true
                     width: parent.width
+
+                    onHoveredChanged: function(){
+                        trackBG.color= (trackBG.color == "#abcdef")? "#66cccc" : "#abcdef"
+                    }
+
                     onClicked: function(){
                         multichoice = true
                         main_btns.visible = false
@@ -200,7 +210,8 @@ Row {
                         confirm.clicked.connect(delete_items)
                     }
                     background: Rectangle {
-                    color: "#abcdef"
+                        id: trackBG
+                        color: "#abcdef"
                     }
                 }
             }

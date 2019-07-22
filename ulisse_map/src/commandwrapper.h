@@ -40,6 +40,7 @@ class CommandWrapper : public QObject {
     void GoalContextCB(const ulisse_msgs::msg::GoalContext::SharedPtr msg);
     void ShowToast(const QVariant message, const QVariant duration);
     bool SendBoundariesRequest(ulisse_msgs::srv::SetBoundaries::Request::SharedPtr req);
+    bool SendPathRequest(ulisse_msgs::srv::ControlCommand::Request::SharedPtr req);
     bool SendCommandRequest(ulisse_msgs::srv::ControlCommand::Request::SharedPtr req);
     //void SetupCommandClient();
 
@@ -51,6 +52,7 @@ public:
     void SetNodeHandle(const rclcpp::Node::SharedPtr& np);
 
     Q_INVOKABLE bool sendBoundaries(const QString boundary);
+    Q_INVOKABLE bool sendPath(const QString path);
     Q_INVOKABLE bool sendHaltCommand();
     Q_INVOKABLE bool sendHoldCommand(double radius);
     Q_INVOKABLE bool sendLatLongCommand(const QGeoCoordinate& goal, double radius);
