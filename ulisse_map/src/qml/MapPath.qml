@@ -23,6 +23,8 @@ MapPolyline {
     property var vertex_markers: []
     property var add_markers: []
 
+    property string _pathName: "Path"
+
     Component.onCompleted: {
         Helper.init_lib(QtPositioning)
 
@@ -425,7 +427,8 @@ MapPolyline {
         generate_nurbs()
     }
 
-    function confirm_edit(params){
+    function confirm_edit(name, params){
+        _pathName = name
         mapMouseArea.hoverEnabled = false
         moving_idx = -1
         _draw()

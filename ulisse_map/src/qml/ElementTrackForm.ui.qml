@@ -27,17 +27,17 @@ RowLayout {
     property bool toggled: false
     property bool expanded: false
 
-    signal selected (var path)
-    signal edit (var path)
+    signal selected(var path)
+    signal edit(var path)
 
     state: {
         0: "empty",
-        1: "path",
-        2: "rect",
-        3: "poly",
-        4: "polysec",
-        5: "editmode",
-        6: "deletemode"
+                1: "path",
+                2: "rect",
+                3: "poly",
+                4: "polysec",
+                5: "editmode",
+                6: "deletemode"
     }[mapView.currentState]
 
     // modo per distanziare
@@ -47,7 +47,7 @@ RowLayout {
 
     Button {
         id: name
-        text: expanded ? ntrack : nametrack
+        text: expanded ? _comp._pathName : ntrack
         anchors.fill: parent
         Layout.fillHeight: true
         antialiasing: false
@@ -60,23 +60,6 @@ RowLayout {
             color: "#abcdef"
             border.width: 1
             radius: 2
-        }
-
-        TextInput {
-            id: textField
-            x: 0
-            y: 0
-            width: 1
-            height: 40
-            color: "#fcaf3e"
-            text: nametrack
-            maximumLength: 16
-            anchors.horizontalCenter: parent.horizontalCenter
-            clip: false
-            visible: false
-            smooth: true
-            enabled: false
-            horizontalAlignment: Text.AlignHCenter
         }
     }
     states: [

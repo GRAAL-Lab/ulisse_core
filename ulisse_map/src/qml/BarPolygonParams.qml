@@ -17,6 +17,7 @@ RowLayout {
     property var angle: parseInt(angleField.text)
     property var offset: parseInt(offsetField.text)
     property var method: methodField.currentText
+    property var  nameTrack: textnametrack.text
     signal accept
     signal discard
 
@@ -26,6 +27,12 @@ RowLayout {
             offset: offset,
             method: method
         }
+    }
+
+    TextField {
+        id: textnametrack
+        placeholderText:  qsTr("insert name")
+        enabled: true
     }
 
     TextField {

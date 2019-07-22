@@ -204,12 +204,14 @@ Row {
                 Button{
                     id:deleteTracks
                     text:"x"
-                    enabled: columnTrack.children.length? true : false
+                    visible: (pathRectPoly.n>0)? true : false
+                    enabled: true
                     width: parent.width
                     onClicked: function(){
                         multichoice = true
                         main_btns.visible = false
                         confirm_btns.visible = true
+                        pathRectPoly.enableBtns(false)
                         confirm.clicked.disconnect(save_items)
                         confirm.clicked.disconnect(delete_items)
                         confirm.clicked.connect(delete_items)
@@ -231,7 +233,9 @@ Row {
                     onClicked: function(){
                         restoreBtns()
                         deselect_all()
+                        enableBtns(y)
                         pathRectPoly.hide_all()
+                        pathRectPoly.enableBtns(true)
                     }
                     background: Rectangle {
                     color: "#ff0000"
@@ -242,6 +246,9 @@ Row {
                     text:"y"
                     enabled: true
                     width: parent.width
+                    onClicked: function(){
+                        pathRectPoly.enableBtns(true)
+                        enableBtns(y)}
                     background: Rectangle {
                     color: "#00ff00"
                     }
@@ -276,7 +283,6 @@ Row {
             c.highlight(false)
         }
     }
-
     function update_selection(poly){
         if (!multichoice){
             for (var i = 0; i<columnTrack.children.length; i++){
@@ -299,9 +305,18 @@ Row {
     }
 
     function delete_items(){
-        //TODO
+        pathRectPoly.hide_all()
+        for (var i = columnTrack.children.length-1; i>=0; i--){
+            var c = columnTrack.children[i]
+            if (c.toggled){
+                c._comp.deregister_map_items()
+                map.removeMapItem(c._comp)
+                c.destroy()
+                pathRectPoly.n--
+                console.log(pathRectPoly.n)
+            }
+        }
         restoreBtns()
         deselect_all()
-        pathRectPoly.hide_all()
     }
 }

@@ -32,7 +32,7 @@ MapPolyline {
     property MapHandle _handle
     property var vertex_markers: []
     property var add_markers: []
-
+    property string _pathName: "Path"
     property real _angle: 30
     property real _offset: 10
     property string _method: "single_winding" //"simple"
@@ -684,8 +684,9 @@ MapPolyline {
         }
     }
 
-    function confirm_edit(params){
+    function confirm_edit(name, params){
         mapMouseArea.hoverEnabled = false
+        _pathName=name
         if (params !== null || params !== undefined){
             _angle=params.angle
             _offset=params.offset
@@ -754,6 +755,7 @@ MapPolyline {
             name: 'PolyPath',
             offset: _offset,
             angle: _angle,
+            pathName: _pathName,
             values: values
         }
 

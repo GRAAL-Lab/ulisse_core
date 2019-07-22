@@ -14,11 +14,18 @@ RowLayout {
     z: 100
 
     property bool buttons: false
+    property var  nameTrack: textnametrack.text
     signal accept
     signal discard
 
     function getParams(){
         return {}
+    }
+
+    TextField {
+        id: textnametrack
+        placeholderText:  qsTr("insert name")
+        enabled: true
     }
 
     Button {

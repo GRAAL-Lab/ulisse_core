@@ -68,12 +68,13 @@ PathRectPolyForm {
         map.pos_changed_handler = cur_managed.pos_changed_mod_handler
     }
 
+    property int n : 0
     function end(){
         cur_managed.end.disconnect(end)
         confirm()
         var v = trackComponent.createObject(slidersLeft.columnTrack)
         v._comp = cur_managed
-        v.ntrack = map.uniquelist.length
+        v.ntrack = ++n
         v.edit.connect(edit)
         v.selected.connect(function (path){
             slidersLeft.update_selection(path)
@@ -87,7 +88,7 @@ PathRectPolyForm {
         map.click_handler = function(){}
         map.pos_changed_handler = function(){}
         var p = params_panel.getParams()
-        cur_managed.confirm_edit(p)
+        cur_managed.confirm_edit(params_panel.nameTrack, p)
         cur_managed.check_safe(map.polysec_cur)
         show_manage()
     }
@@ -112,6 +113,7 @@ PathRectPolyForm {
     buttonEdit.onClicked: function(){
         if (cur_managed === null) return
         edit()
+        slidersLeft.enableBtns(false)
     }
 
     buttonPlay.onClicked: function(){
@@ -150,4 +152,8 @@ PathRectPolyForm {
             panels[i].visible = false
     }
 
+    function enableBtns(y){
+        buttonEdit.visible = y
+        buttonPlay.visible = y
+    }
 }
