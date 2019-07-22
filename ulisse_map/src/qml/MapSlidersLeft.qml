@@ -135,16 +135,23 @@ Row {
                         enableBtns(false)
                     }
                     background: Rectangle {
-                        id: addTracksRect
-                        color: "#abcdef"
-                    }
+                            id: addTracksRect
+                            Image {
+                                id:addimg
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                visible: sliderTogglerLeft.checked ? false : true
+                                source: 'qrc:/images/plus.png'
+                            }
+                            color: "#abcdef"
+                            anchors.fill: parent
+                            }
                 }
 
                 Button{
                     id:deleteTracks
-                    text: (sliderTogglerLeft.checked)? qsTr("Delete") : qsTr("X")
                     visible: slidersLeft.children.length>0
                     enabled: true
+                    text: sliderTogglerLeft.checked ? "Delete Paths" :""
                     width: parent.width
 
                     onHoveredChanged: function(){
@@ -161,7 +168,14 @@ Row {
                     }
                     background: Rectangle {
                         id: trackBG
+                        Image {
+                            id:trashimg
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            visible: sliderTogglerLeft.checked ? false : true
+                            source: 'qrc:/images/trash-can-outline.svg'
+                        }
                         color: "#abcdef"
+                        anchors.fill: parent
                     }
                 }
             }
@@ -172,7 +186,7 @@ Row {
                 visible: false
                 Button{
                     id:abort
-                    text:"n"
+                    text:sliderTogglerLeft.checked ? "No" :""
                     width: parent.width
                     onClicked: function(){
                         restoreBtns()
@@ -182,18 +196,30 @@ Row {
                         pathRectPoly.enableBtns(true)
                     }
                     background: Rectangle {
-                    color: "#ff0000"
+                        Image {
+                            id:closeimg
+                            visible: sliderTogglerLeft.checked ? false : true
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            source: 'qrc:/images/close.svg'
+                        }
+                        color: "#ff0000"
                     }
                 }
                 Button{
                     id:confirm
-                    text:"y"
+                    text: sliderTogglerLeft.checked ? "Yes" :""
                     enabled: true
                     width: parent.width
                     onClicked: function(){
                         pathRectPoly.enableBtns(true)
                         enableBtns(y)}
                     background: Rectangle {
+                        Image {
+                            id:checkimg
+                            visible: sliderTogglerLeft.checked ? false : true
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            source: 'qrc:/images/check.svg'
+                        }
                     color: "#00ff00"
                     }
                 }
@@ -257,6 +283,7 @@ Row {
             console.log(pathRectPoly.n)
         }
     }
+function save_items(){}
 
     function delete_items(){
         pathRectPoly.hide_all()

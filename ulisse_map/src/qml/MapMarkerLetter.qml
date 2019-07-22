@@ -1,7 +1,6 @@
 import QtQuick 2.0
 import QtLocation 5.6
 import QtPositioning 5.6
-import Qt.labs.location 1.0
 
 MapQuickItem{
 

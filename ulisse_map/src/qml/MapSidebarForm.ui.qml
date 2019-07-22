@@ -10,6 +10,8 @@ Rectangle {
     property color labelColor1: "#000000"
     property color labelColor2: "#000000"
     color: Material.background
+    visible: true
+    opacity: 1
 
     ColumnLayout {
         id: leftbarlayout

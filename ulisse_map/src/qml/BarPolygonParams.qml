@@ -18,6 +18,11 @@ RowLayout {
     property var offset: parseInt(offsetField.text)
     property var method: methodField.currentText
     property var  nameTrack: textnametrack.text
+    property var nameTrack_
+    property var offset_
+    property var angle_
+    property var method_
+    property bool editmode : false
     signal accept
     signal discard
 
@@ -29,22 +34,31 @@ RowLayout {
         }
     }
 
+    function fill_cur_values(values){
+            editmode = true
+            angle_= values.params.angle
+            offset_= values.params.offset
+            method_=values.type
+            nameTrack_=values.name
+    }
+
     TextField {
         id: textnametrack
+        text: editmode? nameTrack_ : "Path"
         placeholderText:  qsTr("insert name")
         enabled: true
     }
 
     TextField {
         id: offsetField
-        text: qsTr("30")
+        text:editmode? offset_: qsTr("30")
         placeholderText: "Offset"
         enabled: true
     }
 
     TextField {
         id: angleField
-        text: qsTr("30")
+        text: editmode? angle_: qsTr("30")
         placeholderText: "Angle"
         enabled: true
     }
@@ -59,13 +73,19 @@ RowLayout {
         id: cancelPolyEdit
         text: qsTr("Cancel")
         visible: buttons
-        onClicked: function(){discard()}
+        onClicked: function(){
+            discard()
+            editmode = false
+        }
     }
 
     Button {
         id: confirmPolyEdit
         text: qsTr("Confirm")
         visible: buttons
-        onClicked: function(){accept()}
+        onClicked: function(){
+            accept()
+            editmode = false
+        }
     }
 }

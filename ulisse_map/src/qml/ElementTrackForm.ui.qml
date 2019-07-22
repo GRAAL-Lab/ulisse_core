@@ -18,8 +18,6 @@ RowLayout {
     //elementi che definiscono l'elemento
     property int ntrack: -1
     property var _comp
-    property var nametrack
-    //se il nome del track non dipende dalla posizione
     property alias name: name
     property alias tracklistlayout: tracklistlayout
     property alias backbut: backbut
