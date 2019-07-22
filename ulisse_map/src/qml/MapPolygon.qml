@@ -528,7 +528,55 @@ MapPolyline {
         _handle.update_canvas(angle)
     }
 
-    function pos_changed_mod_handler_convex(mouse){
+    function click_mod_handler(mouse){
+        mapMouseArea.hoverEnabled = false
+        _dashed_line.reset()
+        var p = Qt.point(mouse.x, mouse.y)
+        var pf = map.toCoordinate(p)
+        var _path = get_path()
+        if (moving_idx === -1){
+            var hpc = map.fromCoordinate(_handle.h_center)
+            var hph = map.fromCoordinate(_handle.h_handle)
+            var r1 = nearest_marker(p, add_markers, -1, 7)
+            var r2 = nearest_marker(p, vertex_markers, (r1.nearest === -1) ? -1 : r1.nearest + _path.length, r1.distance)
+            var r3 = nearest_than(p, r2.distance, (r2.nearest === -1) ? -1 : r2.nearest, hpc, 2*_path.length)
+            var r4 = nearest_than(p, r3.distance, (r3.nearest === -1) ? -1 : r3.nearest, hph, 2*_path.length+1)
+            var nearest = r4.nearest
+            if (mouse.button & Qt.LeftButton){
+                if(nearest >=0 && nearest < _path.length){
+                    disable_add_markers()
+                    disable_handle()
+                    moving_idx = nearest
+                } else if (nearest >= _path.length && nearest < 2*_path.length){
+                    add_mid_coordinate(nearest-_path.length)
+                    enable_markers()
+                    disable_add_markers()
+                    disable_handle()
+                    moving_idx = nearest-_path.length + 1
+                } else if (nearest === 2*_path.length){
+                    translating = !translating
+                } else if (nearest === 2*_path.length+1){
+                    rotating = !rotating
+                }
+            } else if (mouse.button & Qt.RightButton){
+                if (nearest >=0 && nearest < _path.length){
+                    if (_path.length > 3){
+                        remove_coordinate(nearest)
+                        enable_add_markers()
+                    }
+                }
+            }
+        } else if (moving_idx >= 0){
+            moving_idx = -1
+            reposition_add_markers()
+            enable_add_markers()
+            enable_handle()
+        }
+        mapMouseArea.hoverEnabled = true
+    }
+
+
+    function pos_changed_mod_handler(mouse){
         var p = Qt.point(mouse.x, mouse.y)
         var pf = map.toCoordinate(p)
         var _path = get_path()
@@ -724,14 +772,14 @@ MapPolyline {
             var p0 = intersections_cartesian[i][dir]
             var p3 = intersections_cartesian[i+1][dir]
             if (_method === "simple")
-                nurb_l.push(Helper.generate_nurb_line(p0, p3))
+                nurb_c.push(Helper.generate_nurb_line(p0, p3))
             else if (_method === "single_winding")
-                nurb_l.push(Helper.generate_nurb_circle(p0, p3, dir))
+                nurb_c.push(Helper.generate_nurb_circle(p0, p3, dir))
         }
 
         var curves = [nurb_l[0]]
         for (var i=0; i<intersections_cartesian.length-1; i++){
-            curves.push(nurb_l[i])
+            curves.push(nurb_c[i])
             curves.push(nurb_l[i+1])
         }
         var result = {
