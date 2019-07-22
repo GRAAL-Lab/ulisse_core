@@ -65,7 +65,6 @@ PathRectPolyForm {
         var cur_val=cur_managed.get_params()
         params_panel.fill_cur_values(cur_val)
         show_edit()
-        console.log(JSON.stringify(cur_managed.generate_nurbs()))
         cur_managed.begin_edit()
         map.click_handler = cur_managed.click_mod_handler
         map.pos_changed_handler = cur_managed.pos_changed_mod_handler
@@ -78,11 +77,11 @@ PathRectPolyForm {
         var v = trackComponent.createObject(slidersLeft.columnTrack)
         v._comp = cur_managed
         v.ntrack = ++n
-        v.edit.connect(edit)
         v.selected.connect(function (path){
             slidersLeft.update_selection(path)
             manage(path)
         })
+        cur_managed.check_safe(map.polysec_cur)
         slidersLeft.update_selection(cur_managed)
         manage(cur_managed)
     }
@@ -99,6 +98,7 @@ PathRectPolyForm {
     function discard() {
         map.click_handler = function(){}
         map.pos_changed_handler = function(){}
+        cur_managed.check_safe(map.polysec_cur)
         cur_managed.discard_edit()
         show_manage()
     }
@@ -111,6 +111,9 @@ PathRectPolyForm {
 
     function manage(path) {
         cur_managed = path
+        for (var i = 0; i<slidersLeft.columnTrack.children.length; i++)
+            slidersLeft.columnTrack.children[i]._comp.disable_ab_markers()
+        cur_managed.enable_ab_markers()
         show_manage()
     }
 
@@ -122,7 +125,11 @@ PathRectPolyForm {
 
     buttonPlay.onClicked: function(){
         if (cur_managed === null) return
-        console.log(JSON.stringify(cur_managed.generate_nurbs))
+        if (!cur_managed.safe) toast.show("Unsafe path due to operational space limits.", 2000)
+        else{
+            console.log(JSON.stringify(cur_managed.generate_nurbs()))
+            cmdWrapper.sendPath(JSON.stringify(cur_managed.generate_nurbs()))
+        }
     }
 
     /*------------------------------------------------------------*/
@@ -152,6 +159,8 @@ PathRectPolyForm {
     }
 
     function hide_all(){
+        for (var i = 0; i<slidersLeft.columnTrack.children.length; i++)
+            slidersLeft.columnTrack.children[i]._comp.disable_ab_markers()
         for (var i=0; i<panels.length; i++)
             panels[i].visible = false
     }

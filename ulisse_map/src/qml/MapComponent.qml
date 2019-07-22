@@ -50,6 +50,7 @@ MapComponentForm {
         poly_obj = polyComponent.createObject(map_component)
         map.addMapItem(poly_obj)
         map.removeMapItem(poly_obj)
+        map.center = fbkUpdater.ulisse_pos
     }
 
 
@@ -152,12 +153,10 @@ MapComponentForm {
         ulissePath.path = []
         ulissePath.firstRun = true
 
-        savePath()
         for(var i=0; i<el_list.length; i++)
             el_list[i].destroy() //FIXME
             console.log(el_list.length)
         el_list = []
-        //loadPath()
     }
 
     function clearAll(){

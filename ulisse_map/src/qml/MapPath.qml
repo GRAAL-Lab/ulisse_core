@@ -15,6 +15,7 @@ MapPolyline {
     signal end
 
     property Component mapMarkerComponent
+    property Component mapMarkerLetterComponent
     property Component mapDashedLineComponent
     property Component mapHandleComponent
     property MapDashedLine _dashed_line
@@ -22,6 +23,8 @@ MapPolyline {
     property MapHandle _handle
     property var vertex_markers: []
     property var add_markers: []
+    property var a_marker
+    property var b_marker
 
     property string _pathName: "Path"
 
@@ -29,16 +32,28 @@ MapPolyline {
         Helper.init_lib(QtPositioning)
 
         mapMarkerComponent = Qt.createComponent("MapMarker.qml");
+        mapMarkerLetterComponent = Qt.createComponent("MapMarkerLetter.qml");
         mapDashedLineComponent = Qt.createComponent("MapDashedLine.qml");
         mapHandleComponent = Qt.createComponent("MapHandle.qml");
 
         _marker = mapMarkerComponent.createObject(map)
         _dashed_line = mapDashedLineComponent.createObject(map)
         _handle = mapHandleComponent.createObject(map)
+        a_marker = mapMarkerLetterComponent.createObject(map)
+        b_marker = mapMarkerLetterComponent.createObject(map)
+        a_marker.opacity = 0
+        b_marker.opacity = 0
+        a_marker.source = "/images/a.png"
+        b_marker.source = "/images/b.png"
+        a_marker.z = z+10
+        b_marker.z = z+10
+
 
         map.addMapItem(_marker)
         map.addMapItem(_dashed_line)
         map.addMapItem(_handle)
+        map.addMapItem(a_marker)
+        map.addMapItem(b_marker)
         _handle.add_to_map(map)
     }
 
@@ -46,12 +61,20 @@ MapPolyline {
         map.removeMapItem(_marker)
         map.removeMapItem(_dashed_line)
         map.removeMapItem(_handle)
+        map.removeMapItem(a_marker)
+        map.removeMapItem(b_marker)
+        for (var i = 0; i<vertex_markers.length-1; i++)
+            map.removeMapItem(vertex_markers[i])
+        for (var i = 0; i<add_markers.length-1; i++)
+            map.removeMapItem(add_markers[i])
+
         _handle.deregister_map_items(map)
     }
 
     function _draw(){
         generate_nurbs()
         generate_markers()
+        reposition_markers()
         disable_markers()
         disable_handle()
     }
@@ -123,6 +146,8 @@ MapPolyline {
     function reposition_markers(){
         reposition_add_markers()
         reposition_vertex_markers()
+        a_marker.coordinate = path[0]
+        b_marker.coordinate = path[path.length-1]
     }
 
     function enable_handle(){
@@ -138,6 +163,16 @@ MapPolyline {
     function enable_markers(){
         enable_vertex_markers()
         enable_add_markers()
+    }
+
+    function disable_ab_markers(){
+        a_marker.opacity = 0
+        b_marker.opacity = 0
+    }
+
+    function enable_ab_markers(){
+        a_marker.opacity = 1
+        b_marker.opacity = 1
     }
 
     function enable_vertex_markers(){
@@ -406,11 +441,11 @@ MapPolyline {
         backup_centroid = centroid
         backup_vertex_markers = vertex_markers
         backup_add_markers = add_markers
-        reposition_vertex_markers()
-        reposition_add_markers()
+        reposition_markers()
         reposition_handle()
         enable_markers()
         enable_handle()
+        disable_ab_markers()
     }
 
     function discard_edit(){
@@ -422,9 +457,11 @@ MapPolyline {
         vertex_markers = backup_vertex_markers
         add_markers = backup_add_markers
         centroid = backup_centroid
+        reposition_markers()
         disable_markers()
         disable_handle()
         generate_nurbs()
+        enable_ab_markers()
     }
 
     function confirm_edit(name, params){
@@ -432,6 +469,7 @@ MapPolyline {
         mapMouseArea.hoverEnabled = false
         moving_idx = -1
         _draw()
+        enable_ab_markers()
     }
 
     function click_handler(mouse){

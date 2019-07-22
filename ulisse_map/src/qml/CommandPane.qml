@@ -295,6 +295,8 @@ Pane {
                     map.click_handler = function(){}
                     map.pos_changed_handler = function(){}
                     text = "Redefine safety area"
+                    slidersLeft.check_safety_all()
+                    cmdWrapper.sendBoundaries(map.polysec_cur.serialize())
                 }
 
 
@@ -321,20 +323,6 @@ Pane {
             path = path.replace(/^(file:\/{2})/, "")
             console.log(path)
             loadPaths(path)
-            /*
-            map.deletePath()
-            var path = loadPathDialog.fileUrl.toString()
-            // remove prefixed "file://"
-            path = path.replace(/^(file:\/{2})/, "")
-            // unescape html codes like '%23' for '#'
-            var cleanPath = decodeURIComponent(path)
-
-            // console.log("Loaded file path: %1".arg(cleanPath))
-            if (cmdWrapper.loadPathFromFile(cleanPath)) {
-                mapView.pathCurrentState = pathState.empty
-                wpCommands.wpButtonText = "Finalize..."
-                wpCommands.wpButtonHighlighted = true
-            }*/
         }
     }
 
@@ -387,6 +375,10 @@ Pane {
                 var v = trackComponent.createObject(slidersLeft.columnTrack)
                 v._comp = cur_managed
                 v.ntrack = slidersLeft.columnTrack.children.length
+                v.selected.connect(function (path){
+                    slidersLeft.update_selection(path)
+                    pathRectPoly.manage(path)
+                })
 
                 cur_managed.draw_deferred()
                 break
@@ -398,6 +390,10 @@ Pane {
                 var v = trackComponent.createObject(slidersLeft.columnTrack)
                 v._comp = cur_managed
                 v.ntrack = slidersLeft.columnTrack.children.length
+                v.selected.connect(function (path){
+                    slidersLeft.update_selection(path)
+                    pathRectPoly.manage(path)
+                })
 
                 cur_managed.draw_deferred()
                 break

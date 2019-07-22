@@ -57,5 +57,8 @@
         <file>images/close.svg</file>
         <file>images/add-path.svg</file>
         <file>images/plus.png</file>
+        <file>qml/MapMarkerLetter.qml</file>
+        <file>images/a.png</file>
+        <file>images/b.png</file>
     </qresource>
 </RCC>
