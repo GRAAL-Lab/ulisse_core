@@ -16,6 +16,7 @@ ApplicationWindow {
     minimumWidth: 1300
     minimumHeight: 700
     visible: true
+    visibility: "Maximized"
 
 
     property int mainColor: (settings.theme == "Light" ? Material.Cyan : Material.Red)

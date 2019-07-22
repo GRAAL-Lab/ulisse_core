@@ -17,18 +17,6 @@ MapViewForm {
         console.log(("Current cache for ESRI Map plugin: %1").arg(mapCache.value))
     }
 
-    recenterButton.onClicked: {
-        map.center = fbkUpdater.ulisse_pos
-    }
-
-    followMeCheckbox.onCheckStateChanged: {
-        if (checked === true) {
-            followMeTimer.start()
-        } else {
-            followMeTimer.stop()
-        }
-    }
-
     Timer {
         id: followMeTimer
         interval: 250
@@ -40,18 +28,6 @@ MapViewForm {
                         fbkUpdater.ulisse_pos.latitude,
                         fbkUpdater.ulisse_pos.longitude)
         }
-    }
-
-    overlayStatusCbox.onCheckStateChanged: {
-        if (checked === true) {
-            map.overlayTextOpacity = 1.0
-        } else {
-            map.overlayTextOpacity = 0.0
-        }
-    }
-
-    clearPathButton.onClicked: {
-        map.clearUlisseTrace()
     }
 
     Component {
@@ -70,4 +46,19 @@ MapViewForm {
             z: map.z + 1
         }
     }
+
+    recenterButton.onClicked: {
+        map.center = fbkUpdater.ulisse_pos
+    }
+    overlayStatusCbox.onCheckStateChanged: {
+            if (checked === true) {
+                followMeTimer.start()
+            } else {
+                followMeTimer.stop()
+            }
+        }
+
+    clearPathButton.onClicked: {
+            map.clearUlisseTrace()
+        }
 }
