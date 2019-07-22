@@ -15,6 +15,7 @@ MapPolyline {
     signal end
 
     property Component mapMarkerComponent
+    property Component mapMarkerLetterComponent
     property Component mapDashedLineComponent
     property Component mapHandleComponent
     property MapDashedLine _dashed_line
@@ -31,20 +32,22 @@ MapPolyline {
         Helper.init_lib(QtPositioning)
 
         mapMarkerComponent = Qt.createComponent("MapMarker.qml");
+        mapMarkerLetterComponent = Qt.createComponent("MapMarkerLetter.qml");
         mapDashedLineComponent = Qt.createComponent("MapDashedLine.qml");
         mapHandleComponent = Qt.createComponent("MapHandle.qml");
 
         _marker = mapMarkerComponent.createObject(map)
         _dashed_line = mapDashedLineComponent.createObject(map)
         _handle = mapHandleComponent.createObject(map)
-        a_marker = mapMarkerComponent.createObject(map)
-        b_marker = mapMarkerComponent.createObject(map)
+        a_marker = mapMarkerLetterComponent.createObject(map)
+        b_marker = mapMarkerLetterComponent.createObject(map)
         a_marker.opacity = 0
         b_marker.opacity = 0
+        a_marker.source = "/images/a.png"
+        b_marker.source = "/images/b.png"
         a_marker.z = z+10
         b_marker.z = z+10
-        a_marker.color = "#ffffff"
-        b_marker.color = "#000000"
+
 
         map.addMapItem(_marker)
         map.addMapItem(_dashed_line)
@@ -74,7 +77,6 @@ MapPolyline {
         reposition_markers()
         disable_markers()
         disable_handle()
-        enable_ab_markers()
     }
 
     function draw_deferred(){
@@ -144,8 +146,8 @@ MapPolyline {
     function reposition_markers(){
         reposition_add_markers()
         reposition_vertex_markers()
-        a_marker.center = path[0]
-        b_marker.center = path[path.length-1]
+        a_marker.coordinate = path[0]
+        b_marker.coordinate = path[path.length-1]
     }
 
     function enable_handle(){

@@ -55,10 +55,12 @@ RowLayout {
 
     BarPolygonParams {
         id: panelParamsPolygon
+        visible: false
     }
 
     BarPolylineParams {
         id: panelParamsPolyline
+        visible: false
     }
 
     //Row for edit/play

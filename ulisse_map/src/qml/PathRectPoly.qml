@@ -109,6 +109,9 @@ PathRectPolyForm {
 
     function manage(path) {
         cur_managed = path
+        for (var i = 0; i<slidersLeft.columnTrack.children.length; i++)
+            slidersLeft.columnTrack.children[i]._comp.disable_ab_markers()
+        cur_managed.enable_ab_markers()
         show_manage()
     }
 
@@ -154,6 +157,8 @@ PathRectPolyForm {
     }
 
     function hide_all(){
+        for (var i = 0; i<slidersLeft.columnTrack.children.length; i++)
+            slidersLeft.columnTrack.children[i]._comp.disable_ab_markers()
         for (var i=0; i<panels.length; i++)
             panels[i].visible = false
     }
