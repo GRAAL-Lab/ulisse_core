@@ -172,23 +172,29 @@ Row {
                 width: sliderTogglerLeft.checked ? sliderRow.width + 120 : sliderRow.width
                 Button{
                     id:addTracks
-                    text:"+"
+                    text:sliderTogglerLeft.checked ? "Add Paths" :""
                     width: parent.width
                     onClicked: function(){
                         pathRectPoly.show_shape_choice()
                         enableBtns(false)
                     }
                     background: Rectangle {
-                        id: addTracksRect
-                        color: "#abcdef"
-                    }
+                            Image {
+                                id:addimg
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                visible: sliderTogglerLeft.checked ? false : true
+                                source: 'qrc:/images/plus.png'
+                            }
+                            color: "#abcdef"
+                            anchors.fill: parent
+                            }
                 }
 
                 Button{
                     id:deleteTracks
-                    text:"x"
                     visible: (pathRectPoly.n>0)? true : false
                     enabled: true
+                    text: sliderTogglerLeft.checked ? "Delete Paths" :""
                     width: parent.width
                     onClicked: function(){
                         multichoice = true
@@ -200,7 +206,14 @@ Row {
                         confirm.clicked.connect(delete_items)
                     }
                     background: Rectangle {
-                    color: "#abcdef"
+                        Image {
+                            id:trashimg
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            visible: sliderTogglerLeft.checked ? false : true
+                            source: 'qrc:/images/trash-can-outline.svg'
+                        }
+                        color: "#abcdef"
+                        anchors.fill: parent
                     }
                 }
             }
@@ -211,7 +224,7 @@ Row {
                 visible: false
                 Button{
                     id:abort
-                    text:"n"
+                    text:sliderTogglerLeft.checked ? "No" :""
                     width: parent.width
                     onClicked: function(){
                         restoreBtns()
@@ -221,18 +234,30 @@ Row {
                         pathRectPoly.enableBtns(true)
                     }
                     background: Rectangle {
-                    color: "#ff0000"
+                        Image {
+                            id:closeimg
+                            visible: sliderTogglerLeft.checked ? false : true
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            source: 'qrc:/images/close.svg'
+                        }
+                        color: "#ff0000"
                     }
                 }
                 Button{
                     id:confirm
-                    text:"y"
+                    text: sliderTogglerLeft.checked ? "Yes" :""
                     enabled: true
                     width: parent.width
                     onClicked: function(){
                         pathRectPoly.enableBtns(true)
                         enableBtns(y)}
                     background: Rectangle {
+                        Image {
+                            id:checkimg
+                            visible: sliderTogglerLeft.checked ? false : true
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            source: 'qrc:/images/check.svg'
+                        }
                     color: "#00ff00"
                     }
                 }
@@ -290,6 +315,7 @@ Row {
             console.log(pathRectPoly.n)
         }
     }
+function save_items(){}
 
     function delete_items(){
         pathRectPoly.hide_all()

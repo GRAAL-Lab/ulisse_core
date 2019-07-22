@@ -33,8 +33,8 @@ MapPolyline {
     property var vertex_markers: []
     property var add_markers: []
     property string _pathName: "Path"
-    property real _angle: 30
-    property real _offset: 10
+    property real _angle
+    property real _offset
     property string _method: "single_winding" //"simple"
 
     property var debug_c: null
@@ -742,6 +742,17 @@ MapPolyline {
         }
         moving_idx = -1
         _draw()
+    }
+
+    function get_params(){
+        return {
+           type: _method,
+           name: _pathName,
+           params:{
+                angle:  _angle,
+                offset: _offset
+            }
+        }
     }
 
     function draw_path(){

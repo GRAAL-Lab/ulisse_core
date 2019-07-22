@@ -62,6 +62,8 @@ PathRectPolyForm {
     function edit(){
         if (cur_managed === null) return
         slidersLeft.enableBtns(false)
+        var cur_val=cur_managed.get_params()
+        params_panel.fill_cur_values(cur_val)
         show_edit()
         console.log(JSON.stringify(cur_managed.generate_nurbs()))
         cur_managed.begin_edit()
