@@ -88,6 +88,7 @@ MapQuickItem{
     function update_canvas(degrees){
         cumulativeAngle+=degrees
         var ctx = _canvas._ctx
+        if (ctx === null || ctx === undefined) return
         ctx.clearRect(0, 0, 80, 80)
         ctx.strokeStyle = "#000000"
         ctx.lineWidth = 1

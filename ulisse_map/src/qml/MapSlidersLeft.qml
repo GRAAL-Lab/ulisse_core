@@ -183,24 +183,7 @@ Row {
                         color: "#abcdef"
                     }
                 }
-                Button{
-                    id:saveTracks
-                    onClicked: function() {
-                        multichoice = true
-                        main_btns.visible = false
-                        confirm_btns.visible = true
-                        confirm.clicked.disconnect(save_items)
-                        confirm.clicked.disconnect(delete_items)
-                        confirm.clicked.connect(save_items)
-                    }
-                    text:"s"
-                    enabled: true
-                    width: parent.width
-                    background: Rectangle {
-                    id: saveTracksRect
-                    color: "#abcdef"
-                    }
-                }
+
                 Button{
                     id:deleteTracks
                     text:"x"
@@ -266,7 +249,6 @@ Row {
 
     function enableBtns(y){
         addTracks.enabled = y
-        saveTracks.enabled = y
         deleteTracks.enabled = y
     }
 
@@ -297,11 +279,16 @@ Row {
         }
     }
 
-    function save_items(){
-        //TODO
-        restoreBtns()
-        deselect_all()
-        pathRectPoly.hide_all()
+
+    function delete_all(){
+        for (var i = columnTrack.children.length-1; i>=0; i--){
+            var c = columnTrack.children[i]
+            c._comp.deregister_map_items()
+            map.removeMapItem(c._comp)
+            c.destroy()
+            pathRectPoly.n--
+            console.log(pathRectPoly.n)
+        }
     }
 
     function delete_items(){

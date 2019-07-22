@@ -119,9 +119,6 @@ MapPolyline {
             vertex_markers.push(marker1)
             add_markers.push(marker2)
         }
-        reposition_vertex_markers()
-        reposition_add_markers()
-        reposition_handle()
         disable_handle()
         update_scale()
     }
@@ -662,6 +659,9 @@ MapPolyline {
         backup_vertex_markers = vertex_markers
         backup_add_markers = add_markers
         _canvas.clear_canvas()
+        reposition_vertex_markers()
+        reposition_add_markers()
+        reposition_handle()
         enable_markers()
         enable_handle()
     }
@@ -738,7 +738,7 @@ MapPolyline {
             centroid: [centroid.latitude, centroid.longitude],
             curves: curves
         }
-        console.log(JSON.stringify(result))
+        //console.log(JSON.stringify(result))
         return result
     }
 
@@ -752,21 +752,28 @@ MapPolyline {
             })
         }
         return {
-            name: 'PolyPath',
-            offset: _offset,
-            angle: _angle,
-            pathName: _pathName,
+            type: 'PolyPath',
+            name: _pathName,
+            params:{
+                offset: _offset,
+                angle: _angle,
+                method: _method
+            },
             values: values
         }
-
     }
 
-    function deserialize(values){
+    function deserialize(data){
+
         var lat, lon
-        for(var j = 0; j < values.length; j++){
-            lat = values[j].latitude
-            lon = values[j].longitude
-            poly_cur.addCoordinate(QtPositioning.coordinate(lat,lon))
+        for(var j = 0; j < data.values.length; j++){
+            lat = data.values[j].latitude
+            lon = data.values[j].longitude
+            addCoordinate(QtPositioning.coordinate(lat,lon))
         }
+        _pathName = data.name
+        _angle = data.params.angle
+        _offset =  data.params.offset
+        _method =  data.params.method
     }
 }

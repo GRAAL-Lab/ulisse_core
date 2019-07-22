@@ -248,11 +248,12 @@ void CommandWrapper::resumePath()
     // FIXME: what if resuming a loop path, and we were at the last waypoint?
 }
 
-void CommandWrapper::savePathToFile(const QString file)
+void CommandWrapper::savePathToFile(const QString fileName, const QString& data)
 {
-    // Here we check whether the file has already an extension ".path"
+    // Here we check whether the file has already an extension ".ulisse"
     // and in case it doesn't we add it
-    std::string filename = file.toStdString();
+    // and in case it doesn't we add it
+    std::string filename = fileName.toStdString();
     std::string::size_type extensionDotPos = filename.find_last_of(".");
     std::string filePrevExtension;
 
@@ -260,78 +261,47 @@ void CommandWrapper::savePathToFile(const QString file)
         filePrevExtension = filename.substr(extensionDotPos, filename.size());
     }
 
-    if ((extensionDotPos == std::string::npos) | (filePrevExtension != ".path")) {
-        filename = filename + ".path";
+    if ((extensionDotPos == std::string::npos) | (filePrevExtension != ".ulisse")) {
+        filename = filename + ".ulisse";
     }
 
-    std::ofstream out(filename);
-
-    if (out.is_open()) {
-        for (int i = 0; i < waypoint_path_.size(); i++) {
-            auto coordinate = qvariant_cast<QGeoCoordinate>(waypoint_path_.at(i));
-            out << coordinate.latitude() << " " << coordinate.longitude() << "\n";
-        }
-
-        std::cout << "Saved to file: " << filename << std::endl;
-        ShowToast(std::string("Saved to file: " + filename).c_str(), 3000);
-        out.close();
-    } else {
-        ShowToast("Unable to save file!", 3000);
-        std::cout << "Unable to save file!" << std::endl;
+    QFile file(fileName);
+    if (!file.open(QFile::WriteOnly | QFile::Truncate)){
+        std::cout << "Cannot save the file" << std::endl;
+        ShowToast(std::string("Cannot save the file").c_str(), 3000);
+        return ;
     }
+
+    QTextStream out(&file);
+    out << data;
+
+    std::cout << "Saved to file: " << filename << std::endl;
+    ShowToast(std::string("Saved to file: " + filename).c_str(), 3000);
+
+    file.close();
+
 }
 
-bool CommandWrapper::loadPathFromFile(const QString file)
+QString CommandWrapper::loadPathFromFile(const QString fileName)
 {
-    std::string filename = file.toStdString();
+    //std::string filename = file.toStdString();
 
-    // Here we check wether the loaded file has the .path extension
-    std::string::size_type extensionDotPos = filename.find_last_of(".");
-    std::string fileExtension;
-    if (extensionDotPos != std::string::npos) {
-        fileExtension = filename.substr(extensionDotPos, filename.size());
-    }
-    if ((extensionDotPos == std::string::npos) | (fileExtension != ".path")) {
-        std::cout << "Invalid file!" << std::endl;
-        ShowToast("Invalid file!", 3000);
-        return false;
+    QFile file(fileName);
+    QString fileContent;
+    if ( file.open(QIODevice::ReadOnly) ) {
+        QString line;
+        QTextStream t( &file );
+        do {
+            line = t.readLine();
+            fileContent += line;
+         } while (!line.isNull());
+
+        file.close();
     } else {
-        // If the path extensione is found we proceed loading the file
-        std::ifstream infile;
-        infile.open(filename.c_str());
-
-        if (infile.is_open()) {
-            std::cout << "Loading file: " << filename << std::endl;
-
-            std::vector<double> temp_vec;
-            int i = 0;
-            std::string line;
-
-            while (getline(infile, line)) {
-                if (not line.empty()) {
-                    std::istringstream is(line);
-                    temp_vec = std::vector<double>(std::istream_iterator<double>(is), std::istream_iterator<double>());
-                    QGeoCoordinate wp;
-                    wp.setLatitude(temp_vec.at(0));
-                    wp.setLongitude(temp_vec.at(1));
-                    std::cout << i << ": "
-                              << "LAT " << wp.latitude()
-                              << ", LONG " << wp.longitude() << std::endl;
-                    i++;
-                    QVariant wpvar = QVariant::fromValue<QGeoCoordinate>(wp);
-                    QMetaObject::invokeMethod(mapMouseAreaObj_, "addWaypoint", Qt::QueuedConnection,
-                        Q_ARG(QVariant, wpvar));
-                }
-            }
-            wpRadius_ = (waypointRadiusObj_->property("text")).toDouble();
-            waypoint_path_ = (waypointPathObj_->property("path")).value<QVariantList>();
-            infile.close();
-            return true;
-        } else {
-            std::cout << "Error Loading file!! (" << filename << ")" << std::endl;
-            return false;
-        }
+        std::cout <<"Error: Unable to open the file" << std::endl;
+        return QString();
     }
+    return fileContent;
 }
 
 void CommandWrapper::check_error_slot()

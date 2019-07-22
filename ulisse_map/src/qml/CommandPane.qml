@@ -11,6 +11,12 @@ Pane {
 
     property var buttonSafety: buttonSafety
 
+    property var trackComponent
+
+    Component.onCompleted: {
+        trackComponent = Qt.createComponent("ElementTrack.qml")
+    }
+
     ColumnLayout {
         id: buttonsColumn
         anchors.verticalCenter: parent.verticalCenter
@@ -246,6 +252,37 @@ Pane {
 
         RowLayout {
             id: rectid
+            RowLayout {
+                id: loadSavePath
+                Button {
+                    id: savePath
+                    width: 255
+                    height: 40
+                    Layout.fillWidth: true
+                    text: "Save Path"
+                    transformOrigin: Item.Left
+                    enabled: true
+
+                    onClicked: {
+                        savePathDialog.open()
+                    }
+                }
+
+                Button {
+                    id: loadPath
+                    Layout.fillWidth: true
+                    text: "Load Path"
+                    enabled: (mapView.pathCurrentState === pathState.empty) ? true : false
+
+                    onClicked: {
+                        loadPathDialog.open()
+                    }
+                }
+            }
+        }
+
+        RowLayout {
+            id: additionalWpControls
 
             Button {
                 id: buttonSafety
@@ -277,13 +314,13 @@ Pane {
         id: loadPathDialog
         title: "Please choose a file"
         folder: shortcuts.home
-        nameFilters: ["Path Files (*.txt)"]
+        nameFilters: ["Path Files (*.ulisse)"]
 
         onAccepted: {
             var path = loadPathDialog.fileUrl.toString()
             path = path.replace(/^(file:\/{2})/, "")
             console.log(path)
-            map.loadPath(path)
+            loadPaths(path)
             /*
             map.deletePath()
             var path = loadPathDialog.fileUrl.toString()
@@ -306,15 +343,71 @@ Pane {
         title: "Saving path..."
         folder: shortcuts.home
         selectExisting: false
+        nameFilters: ["Path Files (*.ulisse)"]
 
         onAccepted: {
             var path = savePathDialog.fileUrl.toString()
-            // remove prefixed "file://"
-            path = path.replace(/^(file:\/{2})/, "")
-            // unescape html codes like '%23' for '#'
-            var cleanPath = decodeURIComponent(path)
+            path = path.replace(/^(file:\/{2})/, "") // remove prefixed "file://"
+            path = decodeURIComponent(path) // unescape html codes like '%23' for '#'
+            savePaths(path)
+        }
+    }
 
-            cmdWrapper.savePathToFile(cleanPath)
+    function savePaths(filePath){
+        var all_paths = {
+            security_box: null, //TODO security box
+            paths: []
+        }
+
+        for (var i=0; i<slidersLeft.columnTrack.children.length; i++){
+            all_paths.paths.push(slidersLeft.columnTrack.children[i]._comp.serialize())
+        }
+
+        console.log("JSON to save "+JSON.stringify(all_paths))
+        console.log("PATH to save "+filePath)
+
+        cmdWrapper.savePathToFile(filePath, JSON.stringify(all_paths))
+        //TODO show a toast
+    }
+
+    function loadPaths(filePath){
+        var jsondata = cmdWrapper.loadPathFromFile(filePath)
+        var data = JSON.parse(jsondata)
+
+        var i,j,lat,lon,p
+
+        slidersLeft.delete_all()
+
+        for(i = 0; i < data.paths.length; i++){
+            switch(data.paths[i].type){
+            case "PolyPath":
+                var cur_managed = map.createPoly()
+                cur_managed.deserialize(data.paths[i])
+
+                var v = trackComponent.createObject(slidersLeft.columnTrack)
+                v._comp = cur_managed
+                v.ntrack = slidersLeft.columnTrack.children.length
+
+                cur_managed.draw_deferred()
+                break
+
+            case "PointPath":
+                var cur_managed = map.createPath()
+                cur_managed.deserialize(data.paths[i])
+
+                var v = trackComponent.createObject(slidersLeft.columnTrack)
+                v._comp = cur_managed
+                v.ntrack = slidersLeft.columnTrack.children.length
+
+                cur_managed.draw_deferred()
+                break
+
+            case "SecurityPoly":
+                map.polysec_cur.clear_path()
+                polysec_cur.deserialize(data.paths[i])
+                polysec_cur.draw_deferred()
+                break
+            }
         }
     }
 }

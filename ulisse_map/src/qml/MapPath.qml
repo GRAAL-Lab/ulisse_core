@@ -90,9 +90,6 @@ MapPolyline {
             map.addMapItem(marker2)
             add_markers.push(marker2)
         }
-        reposition_vertex_markers()
-        reposition_add_markers()
-        reposition_handle()
         disable_handle()
         update_scale()
     }
@@ -409,6 +406,9 @@ MapPolyline {
         backup_centroid = centroid
         backup_vertex_markers = vertex_markers
         backup_add_markers = add_markers
+        reposition_vertex_markers()
+        reposition_add_markers()
+        reposition_handle()
         enable_markers()
         enable_handle()
     }
@@ -497,7 +497,7 @@ MapPolyline {
 
     function serialize(){
         var values = []
-        for (j = 0; j < path.length; j++){
+        for (var j = 0; j < path.length; j++){
             var p_i = path[j]
             values.push({
                 latitude: p_i.latitude,
@@ -505,19 +505,20 @@ MapPolyline {
             })
         }
         return {
-            name: 'PointPath',
-            offset: poly_list[i].offset,
-            angle: poly_list[i].angle,
+            type: 'PointPath',
+            name: _pathName,
+            params:{},
             values: values
         }
     }
 
-    function deserialize(values){
+    function deserialize(data){
         var lat, lon
-        for(var j = 0; j < values.length; j++){
-            lat = values[j].latitude
-            lon = values[j].longitude
-            poly_cur.addCoordinate(QtPositioning.coordinate(lat,lon))
+        _pathName = data.name
+        for(var j = 0; j < data.values.length; j++){
+            lat = data.values[j].latitude
+            lon = data.values[j].longitude
+            addCoordinate(QtPositioning.coordinate(lat,lon))
         }
     }
 }
