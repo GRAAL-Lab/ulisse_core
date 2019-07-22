@@ -147,6 +147,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         asv_safety_boundaries->SetPose(vehiclePose_);
         asv_safety_boundaries->SetBoundaries(5.0, 3.0);
         asv_safety_boundaries->SetConf(conf_);
+        asv_safety_boundaries->SetControlContext(ctrlCxt_);
         inequality_task.push_back(asv_safety_boundaries);
         task_hierarchy.push_back(asv_safety_boundaries);
         taskIDMap.insert(std::make_pair(ulisse::task::asv_safety_boundaries, asv_safety_boundaries));

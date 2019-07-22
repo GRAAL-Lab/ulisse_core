@@ -72,8 +72,6 @@ public:
 
     void SetPose(std::shared_ptr<Eigen::Vector6d> pose);
 
-    void SetConf(const std::shared_ptr<ulisse::ControllerConfiguration>& conf);
-
     void SetTolleranceBellShape(double tollerance);
     /**
 	 * @brief Method updating the task Jacobian, reference, internal activation function.
@@ -85,6 +83,10 @@ public:
     bool InitializePoly(ctb::LatLong current_position, std::string polygon_to_string);
 
     void SetBoundaries(double bound_min, double bound_max);
+
+    void SetControlContext(const std::shared_ptr<ulisse::ControlContext>& ctrlCxt);
+
+    void SetConf(const std::shared_ptr<ulisse::ControllerConfiguration>& conf);
     /**
 	 * @brief Overloading of the cout operator
 	 */
@@ -149,10 +151,12 @@ protected:
     double desired_speed, desired_jog;
     Eigen::Vector6d desiredVelocity_;
     double lam, lom;
+    bool first;
 
     double MAX_THRESHOLD, MIN_THRESHOLD;
 
     std::shared_ptr<ulisse::ControllerConfiguration> conf_;
+    std::shared_ptr<ulisse::ControlContext> ctrlCxt_;
 };
 }
 #endif

@@ -43,6 +43,10 @@ namespace ikcl {
         conf_ = conf;
     }
 
+    void SafetyBoundaries::SetControlContext(const std::shared_ptr<ulisse::ControlContext>& ctrlCxt){
+        ctrlCxt_ = ctrlCxt;
+    }
+
     void SafetyBoundaries::Update() throw(tpik::ExceptionWithHow)
     {
         CheckInitialization();
@@ -73,9 +77,7 @@ namespace ikcl {
 
             ctb::DistanceAndAzimuthRad(current_pose, desired_pose, goalDistance, goalHeading);
 
-            double headingError = ctb::HeadingErrorRad(goalHeading, (*pose_shared)(5));
-
-            goalDistance = SlowDownWhenTurning(headingError, goalDistance, *conf_);
+            goalDistance = SlowDownWhenTurning(ctrlCxt_->desiredJog, 2.5, *conf_);
             desired_speed = goalDistance;
             desired_jog = ulisse::MinimumAngleBetween( (*pose_shared)(5), goalHeading);
 
@@ -182,7 +184,13 @@ namespace ikcl {
 
         std::cout << "P is at coordinates " << boost::geometry::get<0>(p) << " , " << boost::geometry::get<1>(p) << std::endl;
 
+        nearest_p.set<0>(0.0);
+        nearest_p.set<1>(0.0);
+
         min_d = INFINITY;
+        first = true;
+
+        double count = 0.0;
 
         for (auto i : segments)
         {
@@ -193,30 +201,29 @@ namespace ikcl {
 
             d = boost::geometry::distance(p, i);
 
-            std::cout << "CHECK: D= " << d << " - MIN D = " << min_d << " " << std::endl;
+            std::cout << "CHECK: D = " << d << " - MIN D = " << min_d << " " << std::endl;
             // Detect dangerous situation , remember to give back anyn time the nearest.
-            if ( d < MIN_THRESHOLD && d < min_d)
+            if ( d < MIN_THRESHOLD)
             {
+                std::cout << "SONO ENTRATO " << std::endl;
+
                 point_type p1{boost::geometry::get<0, 0>(i), boost::geometry::get<0, 1>(i)};
                 point_type p2{boost::geometry::get<1, 0>(i), boost::geometry::get<1, 1>(i)};
 
                 d_p1 = boost::geometry::distance(p, p1);
                 d_p2 = boost::geometry::distance(p, p2);
 
-                // d_p1 = ulisse::from_lat_long_to_measure(boost::geometry::get<0>(p), boost::geometry::get<1>(p), boost::geometry::get<0>(p1), boost::geometry::get<1>(p1));
-                // d_p2 = ulisse::from_lat_long_to_measure(boost::geometry::get<0>(p), boost::geometry::get<1>(p), boost::geometry::get<0>(p2), boost::geometry::get<1>(p2));
-
                 if (d_p1 <= d_p2)
                 {
                     nearest_p.set<0>(boost::geometry::get<0, 0>(i));
                     nearest_p.set<1>(boost::geometry::get<0, 1>(i));
-                    min_d = d_p1;
+                    d = d_p1;
                 }
                 else
                 {
                     nearest_p.set<0>(boost::geometry::get<1, 0>(i));
                     nearest_p.set<1>(boost::geometry::get<1, 1>(i));
-                    min_d = d_p2;
+                    d = d_p2;
                 }
 
                 x_min = boost::geometry::get<0>(p1) < boost::geometry::get<0>(p2) ? boost::geometry::get<0>(p1) : boost::geometry::get<0>(p2);
@@ -227,7 +234,7 @@ namespace ikcl {
                 if ( boost::geometry::get<0>(p) < x_max && boost::geometry::get<0>(p) > x_min ||
                      boost::geometry::get<0>(p) < y_max && boost::geometry::get<0>(p) > y_min )
                 {
-                    min_d = boost::geometry::distance(p, i, boost::geometry::strategy::distance::projected_point<>{});
+                    d = boost::geometry::distance(p, i, boost::geometry::strategy::distance::projected_point<>{});
 
                     m = (boost::geometry::get<1>(p2) - boost::geometry::get<1>(p1)) / (boost::geometry::get<0>(p2) - boost::geometry::get<0>(p1));
                     m = -1/(m);
@@ -246,22 +253,43 @@ namespace ikcl {
 
                     boost::geometry::intersection(l1, l2, output);
 
-                    nearest_p.set<0>(boost::geometry::get<0>(output.front()));
-                    nearest_p.set<1>(boost::geometry::get<1>(output.front()));
+                    if(first){
+                        first = false;
+                        double gain = (d < MAX_THRESHOLD ? 1.0 : (MIN_THRESHOLD - d) / (MIN_THRESHOLD - MAX_THRESHOLD));
+                        nearest_p.set<0>((gain * boost::geometry::get<0>(output.front())));
+                        nearest_p.set<1>((gain * boost::geometry::get<1>(output.front())));
+                        count += gain;
+
+                    }
+                    else {
+                        double gain = (d < MAX_THRESHOLD ? 1.0 : (MIN_THRESHOLD - d) / (MIN_THRESHOLD - MAX_THRESHOLD));
+                        nearest_p.set<0>(boost::geometry::get<0>(nearest_p) +
+                                         (gain *
+                                          boost::geometry::get<0>(output.front())));
+                        nearest_p.set<1>(boost::geometry::get<1>(nearest_p) +
+                                         (gain *
+                                          boost::geometry::get<1>(output.front())));
+                        count += gain;
+                    }
+
                 }
 
-                d < MAX_THRESHOLD ? target_value.gain = 1.0 : target_value.gain = (MIN_THRESHOLD - d)/(MIN_THRESHOLD - MAX_THRESHOLD);
+                if(d < min_d) {
+                    min_d = d;
+                    d < MAX_THRESHOLD ? target_value.gain = 1.0 : target_value.gain = (MIN_THRESHOLD - d) / (MIN_THRESHOLD - MAX_THRESHOLD);
+                }
 
             }
 
         }
 
-        // return these values: target(x,y) and "gain"
-        theta = atan2(boost::geometry::get<1>(p) - boost::geometry::get<1>(nearest_p), boost::geometry::get<0>(p) - boost::geometry::get<0>(nearest_p));
-        //if (theta < 0) theta = theta + M_2_PI;
 
-        target_value.x = boost::geometry::get<0>(p) + (100 + min_d)*cos(theta);
-        target_value.y = boost::geometry::get<1>(p) + (100 + min_d)*sin(theta);
+
+        // return these values: target(x,y) and "gain"
+        theta = atan2(boost::geometry::get<1>(p) - (boost::geometry::get<1>(nearest_p) / count), boost::geometry::get<0>(p) - (boost::geometry::get<0>(nearest_p) / count));
+
+        target_value.x = boost::geometry::get<0>(p) + min_d*cos(theta);
+        target_value.y = boost::geometry::get<1>(p) + min_d*sin(theta);
 
 
         std::cout << "Closest Point : (" << boost::geometry::get<0>(nearest_p) << "," << boost::geometry::get<1>(nearest_p) << ") \t"

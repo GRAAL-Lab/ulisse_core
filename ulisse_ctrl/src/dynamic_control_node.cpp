@@ -85,7 +85,6 @@ int main(int argc, char* argv[])
     struct SlidingSurface sl;
     parameter_setting(sl,conf,0.4,0.001);
 
-
     ctb::DigitalSlidingMode<struct SlidingSurface> slideSurge=
             ctb::DigitalSlidingMode<struct SlidingSurface>(alpha_beta_u,s1,sl);
     ctb::DigitalSecOrdSlidingMode<struct SlidingSurface> slideHeading=
