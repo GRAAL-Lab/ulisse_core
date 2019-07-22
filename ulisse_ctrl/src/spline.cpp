@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
     rclcpp::WallRate loop_rate(rate);
 
     auto serviceReq = std::make_shared<ulisse_msgs::srv::SetBoundaries::Request>();
-    serviceReq->bound_min = 30;
+    serviceReq->bound_min = 20;
     serviceReq->bound_max = 10;
 
     /*

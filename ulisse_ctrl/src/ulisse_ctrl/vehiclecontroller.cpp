@@ -449,6 +449,11 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 
             fsm::retval ret = fsm::ok;
 
+            if(!boundaries_set){
+                response->res = "CommandAnswer::NoBoundSet";
+                return;
+            }
+
             if (request->command_type == ulisse::commands::ID::halt) {
                 std::cout << "Received Command Halt" << std::endl;
             } else if (request->command_type == ulisse::commands::ID::hold) {

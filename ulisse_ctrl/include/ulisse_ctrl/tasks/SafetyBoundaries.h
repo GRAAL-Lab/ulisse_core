@@ -148,6 +148,7 @@ protected:
     double goalDistance, goalHeading;
     double desired_speed, desired_jog;
     Eigen::Vector6d desiredVelocity_;
+    double lam, lom;
 
     double MAX_THRESHOLD, MIN_THRESHOLD;
 
