@@ -301,7 +301,6 @@ namespace states {
                     angularPositionTask_->SetAngle(Eigen::Vector3d(0, 0, goalCxt_->goalHeading));
                     distanceTask_->SetDistance(Eigen::Vector3d(goalCxt_->goalDistance, 0, 0));
 
-                    /*
                     if(goalCxt_->goalDistance < 1.0){
                         delta_ *= 2;
                     }
@@ -309,7 +308,6 @@ namespace states {
                     if(goalCxt_->goalDistance > 1.5){
                         delta_ /= 2;
                     }
-                     */
                 }
             }
         }

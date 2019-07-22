@@ -43,8 +43,8 @@ int main(int argc, char* argv[])
                                   "{\"latitude\":44.393416932512764,\"longitude\":8.94322709917634}]}";
     */
 
-    serviceReq->boundaries_json = "{\"name\":\"SecurityPoly\",\"values\":[{\"latitude\":44.3926,\"longitude\":8.94218},{\"latitude\":44.3938,\"longitude\":8.94497}"
-                                   ",{\"latitude\":44.3924,\"longitude\":8.94806},{\"latitude\":44.3926,\"longitude\":8.94218}]}";
+    serviceReq->boundaries_json = "{\"name\":\"SecurityPoly\",\"values\":[{\"latitude\":44.3925,\"longitude\":8.94373},{\"latitude\":44.3926,\"longitude\":8.94629}"
+                                   ",{\"latitude\":44.3942,\"longitude\":8.94508},{\"latitude\":44.3925,\"longitude\":8.94373}]}";
 
 
 
