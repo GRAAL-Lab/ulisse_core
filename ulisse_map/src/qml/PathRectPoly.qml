@@ -12,15 +12,20 @@ PathRectPolyForm {
 
     property var trackComponent
 
-    Component.onCompleted: {
+    Component.onCompleted: function(){
         hide_all()
         trackComponent = Qt.createComponent("ElementTrack.qml")
     }
 
-    cancelPathChoice.onClicked:{
+    cancelPathChoice.onClicked: function(){
         slidersLeft.deselect_all()
         slidersLeft.enableBtns(true)
         hide_all()
+    }
+
+    buttonToggle.onClicked: function(){
+        if (cur_managed === null) return
+        cur_managed.toggle_dir()
     }
 
     /*-------------- POLY CREATION/EDITING ----------------*/
@@ -128,10 +133,8 @@ PathRectPolyForm {
     buttonPlay.onClicked: function(){
         if (cur_managed === null) return
         if (!cur_managed.safe) toast.show("Unsafe path due to operational space limits.", 2000)
-        else{
-            console.log(JSON.stringify(cur_managed.generate_nurbs()))
+        else
             cmdWrapper.sendPath(JSON.stringify(cur_managed.generate_nurbs()))
-        }
     }
 
     /*------------------------------------------------------------*/

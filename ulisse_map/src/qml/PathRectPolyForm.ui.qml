@@ -16,6 +16,7 @@ RowLayout {
 
     property alias buttonEdit: buttonEdit
     property alias buttonPlay: buttonPlay
+    property alias buttonToggle: buttonToggle
 
     property alias panelPathChoice: panelPathChoice
     property alias panelParamsPolygon: panelParamsPolygon
@@ -71,13 +72,18 @@ RowLayout {
         visible: false
 
         Button {
+            id: buttonToggle
+            text: qsTr("Toggle A/B")
+        }
+
+        Button {
             id: buttonPlay
-            text: qsTr("play")
+            text: qsTr("Play")
         }
 
         Button {
             id: buttonEdit
-            text: qsTr("edit")
+            text: qsTr("Edit")
         }
     }
 }

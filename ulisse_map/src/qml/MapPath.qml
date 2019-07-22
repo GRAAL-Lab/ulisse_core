@@ -26,6 +26,15 @@ MapPolyline {
     property var a_marker
     property var b_marker
 
+    property var dir: 0
+
+    function toggle_dir(){
+        dir = (++dir)%2
+        var t = QtPositioning.coordinate(b_marker.coordinate.latitude, b_marker.coordinate.longitude)
+        b_marker.coordinate = QtPositioning.coordinate(a_marker.coordinate.latitude, a_marker.coordinate.longitude)
+        a_marker.coordinate = t
+    }
+
     property string _pathName: "Path"
 
     Component.onCompleted: {
@@ -527,7 +536,8 @@ MapPolyline {
         var nurb_l = Helper.generate_nurb_broken_line(points)
         var result = {
             centroid: [centroid.latitude, centroid.longitude],
-            curves: [nurb_l]
+            curves: [nurb_l],
+            direction: dir
         }
         //console.log(JSON.stringify(result))
         return result

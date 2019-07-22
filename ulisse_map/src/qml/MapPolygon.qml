@@ -36,6 +36,15 @@ MapPolyline {
     property var a_marker
     property var b_marker
 
+    property var dir: 0
+
+    function toggle_dir(){
+        dir = (++dir)%2
+        var t = QtPositioning.coordinate(b_marker.coordinate.latitude, b_marker.coordinate.longitude)
+        b_marker.coordinate = QtPositioning.coordinate(a_marker.coordinate.latitude, a_marker.coordinate.longitude)
+        a_marker.coordinate = t
+    }
+
     property string _pathName: "Path"
     property real _angle
     property real _offset
@@ -833,7 +842,8 @@ MapPolyline {
         }
         var result = {
             centroid: [centroid.latitude, centroid.longitude],
-            curves: curves
+            curves: curves,
+            direction: dir
         }
         //console.log(JSON.stringify(result))
         return result
