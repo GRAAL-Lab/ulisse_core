@@ -88,6 +88,7 @@ PathRectPolyForm {
         map.click_handler = function(){}
         map.pos_changed_handler = function(){}
         var p = params_panel.getParams()
+        cur_managed.enable_ab_markers()
         cur_managed.confirm_edit(params_panel.nameTrack, p)
         cur_managed.check_safe(map.polysec_cur)
         show_manage()
@@ -96,6 +97,7 @@ PathRectPolyForm {
     function discard() {
         map.click_handler = function(){}
         map.pos_changed_handler = function(){}
+        cur_managed.enable_ab_markers()
         cur_managed.check_safe(map.polysec_cur)
         cur_managed.discard_edit()
         show_manage()
