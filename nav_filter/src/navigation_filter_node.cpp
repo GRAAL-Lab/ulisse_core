@@ -25,6 +25,7 @@
 #include "ulisse_msgs/msg/control_data.hpp"
 
 
+
 using namespace ulisse::nav;
 using namespace std::chrono_literals;
 
@@ -51,7 +52,8 @@ void gpsdata_cb(const ulisse_msgs::msg::GPSData::SharedPtr msg);
 void imu_cb(const ulisse_msgs::msg::IMUData::SharedPtr msg);
 void parameter_setting(struct ModelParameter &param);
 void InputDataCB (const ulisse_msgs::msg::ControlData::SharedPtr msg);
-
+void covariance_setting( Eigen::MatrixXd &cov_model, Eigen::MatrixXd &cov_model_angle,
+        Eigen::MatrixXd &cov_measure_angle, Eigen::MatrixXd &cov_measure );
 
 int main(int argc, char* argv[])
 {
@@ -80,7 +82,6 @@ int main(int argc, char* argv[])
     struct ModelParameter ulisse_parameter;
     parameter_setting(ulisse_parameter);
 
-
     std::shared_ptr<MeasureAngle> measure_angle = std::make_shared<MeasureAngle> (MeasureAngle());
     std::shared_ptr<MeasureUlisse> measure_ulisse =  std::make_shared<MeasureUlisse> (MeasureUlisse());
 
@@ -92,24 +93,25 @@ int main(int argc, char* argv[])
     std::vector<int> angle_ulisse = {2};
     std::vector<int> angle_af = {0,1,2};
 
+    //TODO set covariance for the model filter and measure
+
+
+    Eigen::MatrixXd cov_model(8,8);
+    Eigen::MatrixXd cov_model_angle(3,3);
+    Eigen::MatrixXd cov_measure_angle(3,3);
+    Eigen::MatrixXd cov_measure(4,4);
+
+    covariance_setting( cov_model, cov_model_angle,
+            cov_measure_angle, cov_measure);
+
+    ulisse_kalman_filter->SetCovariance(cov_model);
+    angle_filter->SetCovariance(cov_model_angle);
+
+    measure_angle->SetCovariance(cov_measure_angle);
+    measure_ulisse->SetCovariance(cov_measure);
+
     ctb::ExtendedKalmanFilter ulisse_EKF(8, angle_ulisse, ulisse_kalman_filter);
     ctb::ExtendedKalmanFilter ulisse_angle_EKF(3, angle_af, angle_filter);
-
-    //TODO set covariance for the model filter and measure
-    /* loop
-    measure_ulisse.SetMeasure(const Eigen::VectorXd measure);
-    measure_angle.SetMeasure(const Eigen::VectorXd measure);
-
-    ulisse_EKF.AddMeasurment(measure_ulisse);
-    ulisse_angle_EKF.AddMeasurment(measure_ulisse);
-
-    ulisse_EKF.Predict(Eigen::VectorXd u);
-    ulisse_angle_EKF.Predict(Eigen::VectorXd u)
-
-    ulisse_angle_EKF.ApplyMeasurements();
-    ulisse_EKF.ApplyMeasurements();
-    end loop
-     */
 
     auto navfilter_pub = node->create_publisher<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data);
 
@@ -133,8 +135,8 @@ int main(int argc, char* argv[])
 
     while (rclcpp::ok()) {
 
-        //input << (double)controlData.surge_control , (double)controlData.yawr_control; //TODO controllare cast double
-        //input1 << imuData.gyro[0],imuData.gyro[1],imuData.gyro[2];
+        input << (double)controlData.surge_control , (double)controlData.yawr_control; //TODO controllare cast double
+        input1 << imuData.gyro[0],imuData.gyro[1],imuData.gyro[2];
 
         if (gpsData.time > lastValidGPSTime) {
             if (gpsData.gpsfixmode >= (int) ulisse::gpsd::GpsFixMode::mode_2d) {
@@ -155,11 +157,11 @@ int main(int argc, char* argv[])
                     double x_ned = y_utm;
                     double y_ned = x_utm;
 
-                    //angleMeasure << compass.orientation.roll,compass.orientation.pitch,compass.orientation.yaw;
-                    //measure << x_ned, y_ned, (ulisse_angle_EKF.GetState())[2], imuData.gyro[2];
+                    angleMeasure << compass.orientation.roll,compass.orientation.pitch,compass.orientation.yaw;
+                    measure << x_ned, y_ned, (ulisse_angle_EKF.GetState())[2], imuData.gyro[2];
 
-                    //measure_ulisse->SetMeasure(measure);
-                    //measure_angle->SetMeasure(angleMeasure);
+                    measure_ulisse->SetMeasure(measure);
+                    measure_angle->SetMeasure(angleMeasure);
 
                     if (filterEnable) {
                         obs.Update(speedRef, compass.orientation.yaw, x_ned, y_ned);
@@ -167,14 +169,14 @@ int main(int argc, char* argv[])
                         obs.GetSpeed(filterData.speed[0], filterData.speed[1]);
                         obs.GetPosition(x_ned, y_ned);
 
-                        //ulisse_EKF.AddMeasurment(measure_ulisse);
-                        //ulisse_angle_EKF.AddMeasurment(measure_ulisse);
+                        ulisse_EKF.AddMeasurment(measure_ulisse);
+                        ulisse_angle_EKF.AddMeasurment(measure_angle);
 
-                        //ulisse_EKF.Predict(input);
-                        //ulisse_angle_EKF.Predict(input1);
+                        ulisse_EKF.Predict(input);
+                        ulisse_angle_EKF.Predict(input1);
 
-                        //ulisse_angle_EKF.ApplyMeasurements();
-                        //ulisse_EKF.ApplyMeasurements();
+                        ulisse_angle_EKF.ApplyMeasurements();
+                        ulisse_EKF.ApplyMeasurements();
 
                         x_utm = y_ned;
                         y_utm = x_ned;
@@ -201,11 +203,11 @@ int main(int argc, char* argv[])
                     obs.Reset();
                 }
 
-                //ulisse_EKF.Predict(input);
-                //ulisse_angle_EKF.Predict(input1);
+                ulisse_EKF.Predict(input);
+                ulisse_angle_EKF.Predict(input1);
 
-                //ulisse_angle_EKF.ApplyMeasurements();
-                //ulisse_EKF.ApplyMeasurements();
+                ulisse_angle_EKF.ApplyMeasurements();
+                ulisse_EKF.ApplyMeasurements();
 
                 lastValidGPSTime = gpsData.time;
             }
@@ -243,6 +245,29 @@ void parameter_setting(struct ModelParameter &param){
     param._Cn.resize(3);
     param._Cn = par_client->get_parameter("ThrusterMapping.cN", std::vector<double>(3, 0.0));
 }
+
+void covariance_setting(
+        Eigen::MatrixXd &cov_model,
+        Eigen::MatrixXd &cov_model_angle,
+        Eigen::MatrixXd &cov_measure_angle,
+        Eigen::MatrixXd &cov_measure
+   )
+   {
+
+    cov_model.diagonal() =
+            Eigen::Map<Eigen::VectorXd>(par_client->get_parameter("CovarianceModel.diagonal", std::vector<double>(8, 0.0)).data(), 8);
+
+    cov_model_angle.diagonal() =
+            Eigen::Map<Eigen::VectorXd>(par_client->get_parameter("CovarianceAngle.diagonal", std::vector<double>(3, 0.0)).data(), 3);
+
+       cov_measure_angle.diagonal() =
+            Eigen::Map<Eigen::VectorXd>(par_client->get_parameter("CovarianceMeasureAngle.diagonal", std::vector<double>(3, 0.0)).data(), 3);
+
+    cov_measure.diagonal() =
+            Eigen::Map<Eigen::VectorXd>(par_client->get_parameter("CovarianceMeasure.diagonal", std::vector<double>(4, 0.0)).data(),4);
+
+   }
+
 
 void InputDataCB (const ulisse_msgs::msg::ControlData::SharedPtr msg)
 {
