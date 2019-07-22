@@ -101,6 +101,16 @@ void CommandWrapper::ShowToast(const QVariant message, const QVariant duration)
 
 
 
+bool CommandWrapper::sendPath(const QString path)
+{
+    auto serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
+    serviceReq->command_type = ulisse::commands::ID::navigate;
+    serviceReq->nav_cmd.nurbs_json = path.toStdString();
+
+    return SendCommandRequest(serviceReq);
+}
+
+
 bool CommandWrapper::sendBoundaries(const QString boundary)
 {
     auto serviceReq = std::make_shared<ulisse_msgs::srv::SetBoundaries::Request>();
