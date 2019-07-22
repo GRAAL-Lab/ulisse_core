@@ -63,7 +63,6 @@ PathRectPolyForm {
         if (cur_managed === null) return
         slidersLeft.enableBtns(false)
         show_edit()
-        console.log(JSON.stringify(cur_managed.generate_nurbs()))
         cur_managed.begin_edit()
         map.click_handler = cur_managed.click_mod_handler
         map.pos_changed_handler = cur_managed.pos_changed_mod_handler
@@ -81,6 +80,7 @@ PathRectPolyForm {
             slidersLeft.update_selection(path)
             manage(path)
         })
+        cur_managed.check_safe(map.polysec_cur)
         slidersLeft.update_selection(cur_managed)
         manage(cur_managed)
     }
@@ -97,6 +97,7 @@ PathRectPolyForm {
     function discard() {
         map.click_handler = function(){}
         map.pos_changed_handler = function(){}
+        cur_managed.check_safe(map.polysec_cur)
         cur_managed.discard_edit()
         show_manage()
     }
@@ -120,7 +121,9 @@ PathRectPolyForm {
 
     buttonPlay.onClicked: function(){
         if (cur_managed === null) return
-        console.log(JSON.stringify(cur_managed.generate_nurbs))
+        if (!cur_managed.safe) toast.show("Unsafe path due to operational space limits.", 2000)
+        else
+            console.log(JSON.stringify(cur_managed.generate_nurbs()))
     }
 
     /*------------------------------------------------------------*/

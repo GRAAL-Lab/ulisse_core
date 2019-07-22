@@ -50,6 +50,7 @@ MapComponentForm {
         poly_obj = polyComponent.createObject(map_component)
         map.addMapItem(poly_obj)
         map.removeMapItem(poly_obj)
+        map.center = fbkUpdater.ulisse_pos
     }
 
 

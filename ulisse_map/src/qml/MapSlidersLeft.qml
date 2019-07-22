@@ -259,6 +259,12 @@ Row {
         multichoice = false
     }
 
+    function check_safety_all(){
+        for (var i = 0; i<columnTrack.children.length; i++){
+            columnTrack.children[i]._comp.check_safe(map.polysec_cur)
+        }
+    }
+
     function deselect_all(){
         for (var i = 0; i<columnTrack.children.length; i++){
             var c = columnTrack.children[i]

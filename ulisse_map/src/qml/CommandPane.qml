@@ -295,6 +295,7 @@ Pane {
                     map.click_handler = function(){}
                     map.pos_changed_handler = function(){}
                     text = "Redefine safety area"
+                    slidersLeft.check_safety_all()
                 }
 
 
@@ -321,20 +322,6 @@ Pane {
             path = path.replace(/^(file:\/{2})/, "")
             console.log(path)
             loadPaths(path)
-            /*
-            map.deletePath()
-            var path = loadPathDialog.fileUrl.toString()
-            // remove prefixed "file://"
-            path = path.replace(/^(file:\/{2})/, "")
-            // unescape html codes like '%23' for '#'
-            var cleanPath = decodeURIComponent(path)
-
-            // console.log("Loaded file path: %1".arg(cleanPath))
-            if (cmdWrapper.loadPathFromFile(cleanPath)) {
-                mapView.pathCurrentState = pathState.empty
-                wpCommands.wpButtonText = "Finalize..."
-                wpCommands.wpButtonHighlighted = true
-            }*/
         }
     }
 
