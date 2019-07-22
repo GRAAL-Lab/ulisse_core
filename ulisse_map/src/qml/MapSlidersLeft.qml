@@ -235,6 +235,7 @@ Row {
                         deselect_all()
                         enableBtns(y)
                         pathRectPoly.hide_all()
+                        pathRectPoly.enableBtns(true)
                     }
                     background: Rectangle {
                     color: "#ff0000"
@@ -246,6 +247,7 @@ Row {
                     enabled: true
                     width: parent.width
                     onClicked: function(){
+                        pathRectPoly.enableBtns(true)
                         enableBtns(y)}
                     background: Rectangle {
                     color: "#00ff00"
