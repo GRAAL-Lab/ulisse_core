@@ -27,7 +27,7 @@ MapPolyline {
     property MapHandle _handle
     property var vertex_markers: []
     property var add_markers: []
-
+    property string _pathName: "Path"
     property real _angle: 30
     property real _offset: 10
     property real jump: 2
@@ -668,10 +668,11 @@ MapPolyline {
         generate_nurbs()
     }
 
-    function confirm_edit(angle, offset, method){
+    function confirm_edit(name, angle, offset, method){
         mapMouseArea.hoverEnabled = false
         _angle=angle
         _offset=offset
+        _pathName=name
         moving_idx = -1
         _draw()
     }
@@ -735,6 +736,7 @@ MapPolyline {
             name: 'PolyPath',
             offset: _offset,
             angle: _angle,
+            pathName: _pathName,
             values: values
         }
 

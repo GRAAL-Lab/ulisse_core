@@ -79,12 +79,12 @@ MapComponentForm {
         }
     }
 
-    function save_mod(idx, angle, offset, method){
+    function save_mod(idx, name, angle, offset, method){
         //if(currentState === generalState.editmode){
             mapMouseArea.hoverEnabled = false
             click_handler = null
             pos_changed_handler = null
-            uniquelist[idx].confirm_edit(angle, offset, method)
+            uniquelist[idx].confirm_edit(name, angle, offset, method)
             uniquelist[idx].check_safe(polysec_cur)
             currentState = generalState.empty
         //}

@@ -65,7 +65,7 @@ PathRectPolyForm {
     function confirm_poly() {
         map.click_handler = function(){}
         map.pos_changed_handler = function(){}
-        cur_managed.confirm_edit(rowPolyParams.angle, rowPolyParams.offset, "simple")
+        cur_managed.confirm_edit(rowPolyParams.nameTrack, rowPolyParams.angle, rowPolyParams.offset, "simple")
         cur_managed.check_safe(map.polysec_cur)
         show_path_manage()
     }

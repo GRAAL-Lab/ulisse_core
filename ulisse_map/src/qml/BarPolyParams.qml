@@ -16,10 +16,17 @@ RowLayout {
     property bool edit: false
     property var angle: parseInt(angleField.text)
     property var offset: parseInt(offsetField.text)
+    property var  nameTrack: textnametrack.text
     signal accept
     signal discard
 
     onVisibleChanged: function(){console.log("V" + visible)}
+
+    TextField {
+        id: textnametrack
+        placeholderText:  qsTr("insert name")
+        enabled: true
+    }
 
     TextField {
         id: offsetField
