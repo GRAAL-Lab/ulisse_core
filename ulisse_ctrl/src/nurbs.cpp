@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
                                     3,              // dimension
                                     2);             // no copying of information, 'borrow' arrays
         if (!curve) {
-            std::cout << "MA DIO" << std::endl;
+            std::cout << "ERRORE" << std::endl;
         }
         else{
             std::cout << "YEEEEEEEEEE" << std::endl;

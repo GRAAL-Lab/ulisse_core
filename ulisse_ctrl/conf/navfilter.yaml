@@ -1,5 +1,0 @@
-navigation_filter_node:
-    ros__parameters:
-        Rate: 10
-        Gains: [1.0, 1.0, 0.2, 0.2]
-

@@ -8,6 +8,9 @@
 #include <vector>
 #include <math.h>
 
+
+#define R_EARTH 6378.137 // Radius of earth in KM
+
 namespace ulisse {
 
 struct SlidingSurface {
@@ -57,6 +60,8 @@ double lon_to_m_coeff(double lon);
 double* point_map2euclidean(double latitude, double longitude, ctb::LatLong centroid, double lam, double lom);
 
 ctb::LatLong point_euclidean2map(double x, double y, ctb::LatLong centroid, double lam, double lom);
+
+double from_lat_long_to_measure(double lat1, double lon1, double lat2, double lon2);
 }
 
 #endif // HELPERFUNCTIONS_HPP

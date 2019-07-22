@@ -39,6 +39,10 @@ namespace ikcl {
         MIN_THRESHOLD = bound_min;
     }
 
+    void SafetyBoundaries::SetConf(const std::shared_ptr<ulisse::ControllerConfiguration>& conf){
+        conf_ = conf;
+    }
+
     void SafetyBoundaries::Update() throw(tpik::ExceptionWithHow)
     {
         CheckInitialization();
@@ -50,29 +54,48 @@ namespace ikcl {
             throw(jointsLimitException);
         }
 
-        target = distance_check(point_type((*pose_shared)(0), (*pose_shared)(1)));
+        double lam = ulisse::lat_to_m_coeff(centroid.latitude);
+        double lom = ulisse::lon_to_m_coeff(centroid.longitude);
+        double* p = ulisse::point_map2euclidean((*pose_shared)(0), (*pose_shared)(1), centroid, lam, lom);
+        target = distance_check(point_type(p[0], p[1]));
+
+        std::cout << " TARGET GAIN : " << target.gain << std::endl;
 
         if(target.gain > 0) {
             current_pose.latitude = (*pose_shared)(0);
             current_pose.longitude = (*pose_shared)(1);
 
-            desired_pose.latitude = target.x;
-            desired_pose.longitude = target.y;
+            desired_pose = ulisse::point_euclidean2map(target.x, target.y, centroid, lam, lom);
+
+            std::cout.precision(10);
+            std::cout << " TARGET LAT : " << std::fixed << desired_pose.latitude << std::endl;
+            std::cout << " TARGET LONG : " << std::fixed << desired_pose.longitude << std::endl;
 
             ctb::DistanceAndAzimuthRad(current_pose, desired_pose, goalDistance, goalHeading);
 
+            double headingError = ctb::HeadingErrorRad(goalHeading, (*pose_shared)(5));
+
+            goalDistance = SlowDownWhenTurning(headingError, goalDistance, *conf_);
             desired_speed = goalDistance;
             desired_jog = ulisse::MinimumAngleBetween( (*pose_shared)(5), goalHeading);
 
             desiredVelocity_(2) = desired_jog;
             desiredVelocity_(3) = desired_speed;
 
-            UpdateInternalActivationFunction();
-            UpdateJacobian();
-            UpdateReference();
-            SaturateReference();;
-            SaturateReferenceComponentWise();
+            std::cout << "Desired Surge: " << desired_speed << std::endl;
+            std::cout << "Desired Jog: " << desired_jog << std::endl;
+            std::cout << "Activation F: " << std::endl << Ai_ << std::endl;
+
         }
+        else{
+            target.gain = 0;
+        }
+
+        UpdateInternalActivationFunction();
+        UpdateJacobian();
+        UpdateReference();
+        SaturateReference();;
+        SaturateReferenceComponentWise();
     }
 
     void SafetyBoundaries::UpdateInternalActivationFunction()
@@ -90,9 +113,7 @@ namespace ikcl {
 
     void SafetyBoundaries::UpdateReference()
     {
-        for (int i = 0; i < 6; i++) {
-            x_dot_(i) = taskParameter_.gain * target.gain * desiredVelocity_(i);
-        }
+        x_dot_ = taskParameter_.gain * target.gain * (desiredVelocity_);
     }
 
 
@@ -111,7 +132,12 @@ namespace ikcl {
 
     bool SafetyBoundaries::InitializePoly(ctb::LatLong current_position, std::string polygon_to_string)
     {
-        point_type p(current_position.latitude, current_position.longitude);
+        centroid = current_position;
+
+        lam = ulisse::lat_to_m_coeff(centroid.latitude);
+        lom = ulisse::lon_to_m_coeff(centroid.longitude);
+
+        point_type p(0.0, 0.0);
 
         boost::geometry::read_wkt(polygon_to_string, poly);
         if (!boost::geometry::covered_by(p, poly))
@@ -136,7 +162,6 @@ namespace ikcl {
 
             make_segments(p, next);
         }
-        segments.pop_back();
 
         coord_max = coord_max + abs(coord_min);
         isBoundariesInitialized = true;
@@ -153,6 +178,12 @@ namespace ikcl {
         std::deque<point_type> output;
         linestring_type l1, l2;
 
+        double x_max, x_min, y_max, y_min;
+
+        std::cout << "P is at coordinates " << boost::geometry::get<0>(p) << " , " << boost::geometry::get<1>(p) << std::endl;
+
+        min_d = INFINITY;
+
         for (auto i : segments)
         {
             std::cout << "Points coordinates: ("
@@ -161,16 +192,20 @@ namespace ikcl {
             std::cout << "Point-Segments: " << boost::geometry::distance(p, i) << std::endl;
 
             d = boost::geometry::distance(p, i);
-            //TODO: convert latlong to meters
 
+            std::cout << "CHECK: D= " << d << " - MIN D = " << min_d << " " << std::endl;
             // Detect dangerous situation , remember to give back anyn time the nearest.
-            if ( d < MIN_THRESHOLD )
+            if ( d < MIN_THRESHOLD && d < min_d)
             {
                 point_type p1{boost::geometry::get<0, 0>(i), boost::geometry::get<0, 1>(i)};
                 point_type p2{boost::geometry::get<1, 0>(i), boost::geometry::get<1, 1>(i)};
 
                 d_p1 = boost::geometry::distance(p, p1);
                 d_p2 = boost::geometry::distance(p, p2);
+
+                // d_p1 = ulisse::from_lat_long_to_measure(boost::geometry::get<0>(p), boost::geometry::get<1>(p), boost::geometry::get<0>(p1), boost::geometry::get<1>(p1));
+                // d_p2 = ulisse::from_lat_long_to_measure(boost::geometry::get<0>(p), boost::geometry::get<1>(p), boost::geometry::get<0>(p2), boost::geometry::get<1>(p2));
+
                 if (d_p1 <= d_p2)
                 {
                     nearest_p.set<0>(boost::geometry::get<0, 0>(i));
@@ -184,11 +219,10 @@ namespace ikcl {
                     min_d = d_p2;
                 }
 
-
-                double x_min = boost::geometry::get<0>(p1) < boost::geometry::get<0>(p2) ? boost::geometry::get<0>(p1) : boost::geometry::get<0>(p2);
-                double x_max = boost::geometry::get<0>(p1) > boost::geometry::get<0>(p2) ? boost::geometry::get<0>(p1) : boost::geometry::get<0>(p2);
-                double y_min = boost::geometry::get<1>(p1) < boost::geometry::get<1>(p2) ? boost::geometry::get<1>(p1) : boost::geometry::get<1>(p2);
-                double y_max = boost::geometry::get<1>(p1) > boost::geometry::get<1>(p2) ? boost::geometry::get<1>(p1) : boost::geometry::get<1>(p2);
+                x_min = boost::geometry::get<0>(p1) < boost::geometry::get<0>(p2) ? boost::geometry::get<0>(p1) : boost::geometry::get<0>(p2);
+                x_max = boost::geometry::get<0>(p1) > boost::geometry::get<0>(p2) ? boost::geometry::get<0>(p1) : boost::geometry::get<0>(p2);
+                y_min = boost::geometry::get<1>(p1) < boost::geometry::get<1>(p2) ? boost::geometry::get<1>(p1) : boost::geometry::get<1>(p2);
+                y_max = boost::geometry::get<1>(p1) > boost::geometry::get<1>(p2) ? boost::geometry::get<1>(p1) : boost::geometry::get<1>(p2);
 
                 if ( boost::geometry::get<0>(p) < x_max && boost::geometry::get<0>(p) > x_min ||
                      boost::geometry::get<0>(p) < y_max && boost::geometry::get<0>(p) > y_min )
@@ -216,7 +250,8 @@ namespace ikcl {
                     nearest_p.set<1>(boost::geometry::get<1>(output.front()));
                 }
 
-                d < MAX_THRESHOLD ? target_value.gain = 1.0 : target_value.gain = (d - MAX_THRESHOLD)/(MIN_THRESHOLD - MAX_THRESHOLD);
+                d < MAX_THRESHOLD ? target_value.gain = 1.0 : target_value.gain = (MIN_THRESHOLD - d)/(MIN_THRESHOLD - MAX_THRESHOLD);
+
             }
 
         }
@@ -225,16 +260,12 @@ namespace ikcl {
         theta = atan2(boost::geometry::get<1>(p) - boost::geometry::get<1>(nearest_p), boost::geometry::get<0>(p) - boost::geometry::get<0>(nearest_p));
         //if (theta < 0) theta = theta + M_2_PI;
 
-        target_value.x = boost::geometry::get<0>(p) + min_d*cos(theta);
-        target_value.y = boost::geometry::get<1>(p) + min_d*sin(theta);
+        target_value.x = boost::geometry::get<0>(p) + (100 + min_d)*cos(theta);
+        target_value.y = boost::geometry::get<1>(p) + (100 + min_d)*sin(theta);
 
 
         std::cout << "Closest Point : (" << boost::geometry::get<0>(nearest_p) << "," << boost::geometry::get<1>(nearest_p) << ") \t"
                   << "At a distance: " << min_d << std::endl;
-
-        std::cout << "Point target: (" << target_value.x << "," << target_value.y << ")" <<
-                  " with a value for the activation function: " << target_value.gain << std::endl;
-
 
         return target_value;
     }

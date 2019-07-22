@@ -77,6 +77,7 @@ namespace states {
         if( obj["reverse"].asInt()){
             reverse = true;
         }
+
         number_of_curves_ = 0;
 
         int dimension = 3;
@@ -167,6 +168,7 @@ namespace states {
         }
 
         if(reverse){
+            std::reverse(nurbs_.begin(), nurbs_.end());
             // Revert the nurbs_ curve
         }
 

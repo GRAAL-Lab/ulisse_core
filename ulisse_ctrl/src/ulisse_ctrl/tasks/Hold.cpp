@@ -114,6 +114,7 @@ void Hold::Update() throw(tpik::ExceptionWithHow)
 
             }
         }
+        std::cout << "Jacobian: " << std::endl <<  J_ << std::endl;
 
     }
     desiredVelocity_(2) = desired_jog;
