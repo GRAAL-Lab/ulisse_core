@@ -14,8 +14,8 @@ import "./qml"
 
 ApplicationWindow {
     id: window
-    minimumWidth: 1024
-    minimumHeight: 768
+    minimumWidth: 1300
+    minimumHeight: 700
     visible: true
 
 
