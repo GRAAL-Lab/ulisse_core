@@ -28,6 +28,7 @@ PathRectPolyForm {
         cur_managed.toggle_dir()
     }
 
+
     /*-------------- POLY CREATION/EDITING ----------------*/
 
     property var cur_managed
@@ -94,7 +95,7 @@ PathRectPolyForm {
     }
 
     function confirm() {
-        map.click_handler = function(){}
+        map.click_handler = map.click_goto_handler
         map.pos_changed_handler = function(){}
         var p = params_panel.getParams()
         cur_managed.enable_ab_markers()
@@ -104,7 +105,7 @@ PathRectPolyForm {
     }
 
     function discard() {
-        map.click_handler = function(){}
+        map.click_handler = map.click_goto_handler
         map.pos_changed_handler = function(){}
         cur_managed.enable_ab_markers()
         cur_managed.check_safe(map.polysec_cur)

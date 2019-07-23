@@ -1,4 +1,4 @@
-import QtQuick 2.6
+import QtQuick 2.9
 import QtQuick.Layouts 1.3
 import QtQuick.Controls 2.2
 import QtLocation 5.6
@@ -34,10 +34,10 @@ RowLayout {
     }
 
     function fill_cur_values(values){
-            angle_= values.params.angle
-            offset_= values.params.offset
-            method_=values.params.method
-            nameTrack_=values.name
+            angle_= (values.params.angle !== undefined)? values.params.angle : 30
+            offset_= (values.params.offset !== undefined)? values.params.offset : 30
+            method_= (values.params.method !== undefined)? values.params.method : "simple"
+            nameTrack_= (values.name!== undefined)? values.name : "Path"
     }
 
     Label {
@@ -47,7 +47,7 @@ RowLayout {
 
     TextField {
         id: textnametrack
-        text:  nameTrack_
+        text:  (nameTrack_ !== undefined)? nameTrack : ""
         placeholderText:  qsTr("insert name")
         horizontalAlignment: TextInput.AlignHCenter
     }
@@ -59,7 +59,7 @@ RowLayout {
 
     TextField {
         id: offsetField
-        text:offset_
+        text: (offset_ !== undefined)? offset_ : ""
         placeholderText: "Offset"
         horizontalAlignment: TextInput.AlignHCenter
     }
@@ -71,7 +71,7 @@ RowLayout {
 
     TextField {
         id: angleField
-        text: angle_
+        text: (angle_ !== undefined)? angle_ : ""
         placeholderText: "Angle"
         horizontalAlignment: TextInput.AlignHCenter
     }

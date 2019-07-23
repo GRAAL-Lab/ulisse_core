@@ -11,7 +11,6 @@ import QtQuick.Dialogs 1.2
 import "."
 
 RowLayout {
-    property var marker_coords
     property bool ulisse_state_changed: false
     property real myElevation: 6
     property real panesMargin: 14
@@ -29,6 +28,7 @@ RowLayout {
     property alias pathState: pathState
     property alias generalState: generalState
     property alias rectState: rectState
+    property alias slidersLeft: slidersLeft
 
     spacing: 0
     width: window.width
@@ -144,6 +144,7 @@ RowLayout {
             height: clearPathButton.height
             color: Material.background
             anchors.bottom: parent.bottom
+            z: map.z + 2
 
             RowLayout {
                 anchors.fill: parent

@@ -42,7 +42,6 @@ Pane {
             Layout.fillHeight: true
             font.capitalization: Font.AllUppercase
             onClicked: {
-                map.interruptPathIfActive()
                 cmdWrapper.sendHaltCommand()
             }
         }
@@ -292,11 +291,11 @@ Pane {
                 function end(){
                     enabled = true
                     map.polysec_cur.end.disconnect(end)
-                    map.click_handler = function(){}
+                    map.click_handler = map.click_goto_handler
                     map.pos_changed_handler = function(){}
                     text = "Redefine safety area"
                     slidersLeft.check_safety_all()
-                    cmdWrapper.sendBoundaries(map.polysec_cur.serialize())
+                    cmdWrapper.sendBoundaries(JSON.stringify(map.polysec_cur.serialize()))
                 }
 
 
@@ -310,13 +309,6 @@ Pane {
                 }
             }
         }
-
-
-
-
-
-
-
 
     }
 
@@ -350,6 +342,12 @@ Pane {
     }
 
     function savePaths(filePath){
+        if(slidersLeft.columnTrack.children.length === 0)
+        {
+            toast.show("There is nothing to save!")
+            return
+        }
+
         var all_paths = {
             security_box: null, //TODO security box
             paths: []
@@ -372,7 +370,6 @@ Pane {
 
         var i,j,lat,lon,p
 
-        slidersLeft.delete_all()
 
         for(i = 0; i < data.paths.length; i++){
             switch(data.paths[i].type){
