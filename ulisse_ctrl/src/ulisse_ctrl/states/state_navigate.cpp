@@ -74,7 +74,7 @@ namespace states {
         centroid_.latitude = obj_master["centroid"][0].asDouble();
         centroid_.longitude = obj_master["centroid"][1].asDouble();
 
-        if( obj["reverse"].asInt()){
+        if( obj["direction"].asInt()){
             reverse = true;
         }
 
@@ -92,84 +92,93 @@ namespace states {
         double* control_points;
         double* weights;
 
-        for(Json::Value c : obj_master["curves"]){
+        try {
+            for (Json::Value c : obj_master["curves"]) {
 
-            reader.parse(c.toStyledString(), obj);
+                reader.parse(c.toStyledString(), obj);
 
-            degree = obj["degree"].asInt();
+                degree = obj["degree"].asInt();
 
-            cv_count = 0;
-            for (Json::ArrayIndex i = 0; i<obj["points"].size(); i++) {
-                cv_count++;
+                cv_count = 0;
+                for (Json::ArrayIndex i = 0; i < obj["points"].size(); i++) {
+                    cv_count++;
+                }
+
+                knot_count = 0;
+                for (Json::ArrayIndex i = 0; i < obj["knots"].size(); i++) {
+                    knot_count++;
+                }
+
+                weights = new double[cv_count];
+                count = 0;
+                for (Json::ArrayIndex i = 0; i < obj["weigths"].size(); i++) {
+                    weights[count] = obj["weigths"][i].asDouble();
+                    count++;
+                }
+
+                control_points = new double[cv_count * 4];
+                count = 0;
+                int weight_index = 0;
+                for (Json::ArrayIndex i = 0; i < obj["points"].size(); i++) {
+                    x = obj["points"][i][0].asDouble();
+                    y = obj["points"][i][1].asDouble();
+
+                    control_points[count] = x * weights[weight_index];
+                    control_points[count + 1] = y * weights[weight_index];
+                    control_points[count + 2] = 0;
+                    control_points[count + 3] = weights[weight_index];
+
+                    count += 4;
+                    weight_index++;
+                }
+
+                count = 0;
+                knots = new double[knot_count];
+                for (Json::ArrayIndex i = 0; i < obj["knots"].size(); i++) {
+                    knots[count] = obj["knots"][i].asDouble();
+                    count++;
+                }
+
+                SISLCurve *insert_curve = newCurve(
+                        cv_count,                 // number of control points
+                        degree + 1,               // order of spline curve (degree + 1)
+                        knots,                    // pointer to knot vector (parametrization)
+                        control_points,           // pointer to coefficient vector (control points)
+                        2,                        // kind => 2 : NURBS curve
+                        dimension,                // dimension
+                        1);                       // no copying of information, 'borrow' array
+
+
+                if (!insert_curve) {
+                    std::cout << "SOMETHING GOES WRONG" << std::endl;
+                    return false;
+                }
+
+                if (reverse) {
+                    // Turn the direction of a curve by reversing the ordering of the coefficients
+                    s1706(insert_curve);
+                }
+
+                nurbs_.push_back(insert_curve);
+
+                delete (knots);
+                delete (control_points);
+                delete (weights);
+
+                number_of_curves_++;
             }
-
-            knot_count = 0;
-            for (Json::ArrayIndex i = 0; i<obj["knots"].size(); i++) {
-                knot_count++;
-            }
-
-            weights = new double[cv_count];
-            count = 0;
-            for (Json::ArrayIndex i = 0; i<obj["weigths"].size(); i++) {
-                weights[count] = obj["weigths"][i].asDouble();
-                count++;
-            }
-
-            control_points = new double[cv_count * 4];
-            count = 0;
-            int weight_index = 0;
-            for (Json::ArrayIndex i = 0; i<obj["points"].size(); i++) {
-                x = obj["points"][i][0].asDouble();
-                y = obj["points"][i][1].asDouble();
-
-                control_points[count] = x * weights[weight_index];
-                control_points[count + 1] = y * weights[weight_index];
-                control_points[count + 2] = 0;
-                control_points[count + 3] = weights[weight_index];
-
-                count+=4;
-                weight_index++;
-            }
-
-            count = 0;
-            knots = new double[knot_count];
-            for (Json::ArrayIndex i = 0; i<obj["knots"].size(); i++) {
-                knots[count] = obj["knots"][i].asDouble();
-                count++;
-            }
-
-            SISLCurve* insert_curve = newCurve(
-                                        cv_count,                 // number of control points
-                                        degree + 1,               // order of spline curve (degree + 1)
-                                        knots,                    // pointer to knot vector (parametrization)
-                                        control_points,           // pointer to coefficient vector (control points)
-                                        2,                        // kind => 2 : NURBS curve
-                                        dimension,                // dimension
-                                        1);                       // no copying of information, 'borrow' array
-
-
-            if (!insert_curve) {
-                std::cout << "SOMETHING GOES WRONG" << std::endl;
-                return false;
-            }
-
-            if(reverse) {
-                // Turn the direction of a curve by reversing the ordering of the coefficients
-                s1706(insert_curve);
-            }
-
-            nurbs_.push_back(insert_curve);
-
-            delete(knots);
-            delete(control_points);
-            delete(weights);
-
-            number_of_curves_++;
+        }
+        catch (Json::Exception& e)
+        {
+            // output exception information
+            isCurveSet = false;
+            return false;
+            std::cout << "NURBS Descriptor Error";
         }
 
         if(reverse){
-            std::reverse(nurbs_.begin(), nurbs_.end());
             // Revert the nurbs_ curve
+            std::reverse(nurbs_.begin(), nurbs_.end());
         }
 
         isCurveSet = true;

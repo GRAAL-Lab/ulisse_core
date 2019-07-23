@@ -33,7 +33,7 @@ namespace ulisse {
 VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double sampleTime)
     : nh_(nh)
     , sampleTime_(sampleTime)
-    , boundaries_set(true) //TODO: cambialo a false
+    , boundaries_set(false) //TODO: cambialo a false
     {
         par_client_ = std::make_shared<rclcpp::SyncParametersClient>(nh_);
         ctrlCxt_ = std::make_shared<ControlContext>();
@@ -211,27 +211,35 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 
             std::string polygon_ = "polygon((";
 
-            bool first = true;
-            for(Json::Value c : obj["values"]){
-                if(first){
-                    first = false;
-                } else{
-                    polygon_ = polygon_ + ", ";
+            try {
+                bool first = true;
+                for (Json::Value c : obj["values"]) {
+                    if (first) {
+                        first = false;
+                    } else {
+                        polygon_ = polygon_ + ", ";
+                    }
+                    reader.parse(c.toStyledString(), obj2);
+
+                    double latitude = obj2["latitude"].asDouble();
+                    double longitude = obj2["longitude"].asDouble();
+
+                    double lam = lat_to_m_coeff(statusCxt_->vehiclePos.latitude);
+                    double lom = lon_to_m_coeff(statusCxt_->vehiclePos.longitude);
+                    double *p = point_map2euclidean(latitude, longitude, statusCxt_->vehiclePos, lam, lom);
+
+                    polygon_ = polygon_ + boost::lexical_cast<std::string>(p[0]) + " " +
+                               boost::lexical_cast<std::string>(p[1]);
                 }
-                reader.parse(c.toStyledString(), obj2);
-
-                double latitude = obj2["latitude"].asDouble();
-                double longitude = obj2["longitude"].asDouble();
-
-                double lam = lat_to_m_coeff(statusCxt_->vehiclePos.latitude);
-                double lom = lon_to_m_coeff(statusCxt_->vehiclePos.longitude);
-                double* p = point_map2euclidean(latitude, longitude, statusCxt_->vehiclePos, lam, lom);
-
-                polygon_ = polygon_ + boost::lexical_cast<std::string>(p[0]) + " " + boost::lexical_cast<std::string>(p[1]);
+            }catch (Json::Exception& e)
+            {
+                // output exception information
+                boundaries_set = false;
+                response->res = "SetBound::error";
+                std::cout << "Set Bound Error";
             }
 
             polygon_ = polygon_ + "))";
-            std::cout << "Safety Polygon: " << polygon_ << std::endl;
 
             if (asv_safety_boundaries->InitializePoly(statusCxt_->vehiclePos, polygon_))
             {
@@ -242,7 +250,6 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
                 boundaries_set = false;
                 response->res = "SetBound::error";
             }
-
         };
 
         srv_boundaries = nh_->create_service<ulisse_msgs::srv::SetBoundaries>(
