@@ -38,11 +38,6 @@ void FilterDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
 void ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg);
 void StatusContextCB(const ulisse_msgs::msg::StatusContext::SharedPtr msg);
 
-struct DynamicControlData{
-    ctb::DigitalPID pidSurge;
-    ctb::DigitalPID pidYawRate;
-};
-
 int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
@@ -77,7 +72,6 @@ int main(int argc, char* argv[])
         RCLCPP_INFO(nh->get_logger(), "service not available, waiting again...");
     }
 
-    ctb::DigitalPID pidSurge;
 
     auto conf = std::make_shared<LowLevelConfiguration>();
     LoadLowLevelConfiguration(conf, par_client);
@@ -91,9 +85,6 @@ int main(int argc, char* argv[])
             ctb::DigitalSecOrdSlidingMode<struct SlidingSurface>(alpha_beta_r,s2,sl);
 
     std::cout << tc::grayD << *conf << tc::none << std::endl;
-
-    //pidSurge.Initialize(conf->mapping_pidgains_surge, sampleTime, conf->mapping_pidsat_surge);
-    //pidSurge.SetSaturation(conf->mapping_pidsat_surge);
 
     slideSurge.Initialize(0.2,sampleTime, 2 , conf->dynamic_pidsat_surge);
     slideHeading.Initialize(7.5,sampleTime, 2 , conf->dynamic_pidsat_yawrate);
@@ -139,14 +130,6 @@ int main(int argc, char* argv[])
         thrusterData.desiredSurge = desired_surge;
         thrusterData.desiredJog = ctrl_cxt_msg.desired_jog;
 
-        control_msg.surge_control = ulisseModel.get_tau_x();
-        control_msg.yawr_control = ulisseModel.get_tau_n();
-
-        control_msg.surge_error = ctrl_cxt_msg.desired_speed - surgeFbk;
-        control_msg.yawr_error = ctrl_cxt_msg.desired_jog - jogFbk;
-
-        control_pub->publish(control_msg);
-
         if (status_cxt.vehicle_state != ulisse::states::ID::halt) {
 
             Eigen::Vector6d requestedVel;
@@ -178,6 +161,14 @@ int main(int argc, char* argv[])
             thrust_msg.motor_ctrlref.left = 0.0;
             thrust_msg.motor_ctrlref.right = 0.0;
         }
+
+        control_msg.surge_control = ulisseModel.get_tau_x();
+        control_msg.yawr_control = ulisseModel.get_tau_n();
+
+        control_msg.surge_error = ctrl_cxt_msg.desired_speed - surgeFbk;
+        control_msg.yawr_error = ctrl_cxt_msg.desired_jog - jogFbk;
+
+        control_pub->publish(control_msg);
 
         rclcpp::spin_some(nh);
         loop_rate.sleep();
