@@ -24,22 +24,56 @@ RowLayout {
     }
 
     function fill_cur_values(values){
-            nameTrack_=values.name
+        nameTrack_=values.name
     }
 
 
 
-    TextField {
-        id: textnametrack
-        text: nameTrack_
-        placeholderText:  qsTr("insert name")
-        enabled: true
+    GroupBox {
+        id: groupBox
+        y: -10
+        width: 200
+        height: textnametrack.height+40
+        clip: true
+        title: qsTr("Name")
+
+        label: Label {
+                x: groupBox.leftPadding
+                y: 20
+                width: groupBox.availableWidth
+                text: groupBox.title
+                elide: Text.ElideRight
+                background: Rectangle {
+                    y: 0
+                    width: 0
+                    height: 0
+                    color: "transparent"
+                    border.color: "#ffffff"
+                }
+            }
+
+        background: Rectangle {
+                y: 0
+                width: 0
+                height: 0
+                color: "transparent"
+                border.color: "#ffffff"
+            }
+
+        TextField {
+            id: textnametrack
+            text: nameTrack_
+
+            placeholderText: qsTr("insert name")
+            enabled: true
+        }
     }
 
     Button {
         id: cancelPolyEdit
         text: qsTr("Cancel")
         visible: buttons
+        Layout.fillWidth: false
         onClicked: function(){
             discard()
         }
@@ -53,4 +87,8 @@ RowLayout {
             accept()
         }
     }
+
+
+
+
 }
