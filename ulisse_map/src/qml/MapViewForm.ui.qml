@@ -119,17 +119,23 @@ RowLayout {
             edge: Qt.LeftEdge
         }
 
-        RowLayout {
+        Rectangle {
+            id: manageToolbar
             width: parent.width
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: bottomToolbar.height
+            height: pathRectPoly.height
+            color: Material.background
+            anchors.bottom: bottomToolbar.top
 
-            PathRectPoly {
-                id: pathRectPoly
-                width: parent.width
-                height: parent.height
-                Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom
-                Layout.bottomMargin: 10
+            RowLayout {
+                anchors.fill: parent
+
+                PathRectPoly {
+                    id: pathRectPoly
+                    width: parent.width
+                    height: parent.height
+                    Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom
+                    Layout.bottomMargin: 10
+                }
             }
         }
 

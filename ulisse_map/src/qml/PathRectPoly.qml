@@ -146,6 +146,7 @@ PathRectPolyForm {
     }
 
     function show_panel(panel){
+        manageToolbar.visible = true
         for (var i=0; i<panels.length; i++)
             panels[i].visible = (panel === panels[i])
     }
@@ -170,6 +171,7 @@ PathRectPolyForm {
             slidersLeft.columnTrack.children[i]._comp.disable_ab_markers()
         for (var i=0; i<panels.length; i++)
             panels[i].visible = false
+        manageToolbar.visible = false
     }
 
     function enableBtns(y){
