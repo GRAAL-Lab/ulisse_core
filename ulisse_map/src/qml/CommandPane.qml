@@ -189,9 +189,8 @@ Pane {
                 onClicked: {
                     if (moveToRadius.text !== '') {
                         if (cmdWrapper.sendLatLongCommand(
-                                    marker_coords,
+                                    map.marker_coords,
                                     parseFloat(moveToRadius.text))) {
-                            markerIcon.opacity = 0.2
                         }
                     } else {
                         acceptRadDialog.open()
@@ -288,7 +287,7 @@ Pane {
                 function end(){
                     enabled = true
                     map.polysec_cur.end.disconnect(end)
-                    map.click_handler = function(){}
+                    map.click_handler = map.click_goto_handler
                     map.pos_changed_handler = function(){}
                     text = "Redefine safety area"
                     slidersLeft.check_safety_all()

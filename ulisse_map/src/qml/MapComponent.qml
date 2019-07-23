@@ -16,9 +16,16 @@ MapComponentForm {
 
     id: map_component
 
-    property var click_handler : function(){}
+    property var marker_coords: markerIcon.coordinate
+
+    function click_goto_handler(mouse){
+        markerIcon.coordinate = toCoordinate(Qt.point(mouse.x, mouse.y))
+        markerIcon.opacity = 1
+    }
+
+    property var click_handler : click_goto_handler
     property var pos_changed_handler : function(){}
-    property var actualtrack
+
 
     mapMouseArea.onClicked: {click_handler(mouse)}
     mapMouseArea.onPositionChanged: {pos_changed_handler(mouse)}

@@ -11,7 +11,6 @@ import QtQuick.Dialogs 1.2
 import "."
 
 RowLayout {
-    property var marker_coords
     property bool ulisse_state_changed: false
     property real myElevation: 6
     property real panesMargin: 14
