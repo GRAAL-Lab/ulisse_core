@@ -4,13 +4,13 @@
 
 #include "ulisse_msgs/msg/control_context.hpp"
 #include "ulisse_msgs/msg/goal_context.hpp"
-#include "ulisse_msgs/msg/status_context.hpp"
-#include "ulisse_msgs/msg/llc_battery.hpp"
 #include "ulisse_msgs/msg/gps_data.hpp"
+#include "ulisse_msgs/msg/llc_battery.hpp"
+#include "ulisse_msgs/msg/status_context.hpp"
 #include "ulisse_msgs/msg/thrusters_data.hpp"
 
-#include "ulisse_msgs/srv/control_command.hpp"
 #include "ulisse_msgs/srv/control_command.h"
+#include "ulisse_msgs/srv/control_command.hpp"
 
 #include "ulisse_msgs/terminal_utils.hpp"
 #include "ulisse_msgs/topicnames.hpp"
@@ -30,7 +30,6 @@ int main(int argc, char* argv[])
 
     int rate = 10;
     rclcpp::WallRate loop_rate(rate);
-
 
     auto serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
     serviceReq->command_type = ulisse::commands::ID::navigate;
@@ -70,11 +69,9 @@ int main(int argc, char* argv[])
     }
 
     while (rclcpp::ok()) {
-
     }
 
     rclcpp::shutdown();
 
     return 0;
 }
-

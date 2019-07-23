@@ -1,14 +1,13 @@
+#include <ctime>
+#include <eigen3/Eigen/Dense>
+#include <fstream>
+#include <libconfig.h++>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <ulisse_ctrl/configuration.h>
 #include <ulisse_ctrl/geometry_defines.h>
 #include <ulisse_ctrl/ulisse_definitions.h>
-#include <ctime>
-#include <fstream>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <vector>
-#include <eigen3/Eigen/Dense>
-#include <libconfig.h++>
-
 
 bool FindVectorConfFile(std::string property, Eigen::VectorXd& vector, const std::string confPath)
 
@@ -42,7 +41,7 @@ bool FindVectorConfFile(std::string property, Eigen::VectorXd& vector, const std
 }
 
 bool InitializeUnifiedHierarchyAndActions(std::shared_ptr<tpik::ActionManager> actionManager,
-                                          std::unordered_map<std::string, std::shared_ptr<tpik::Task> > taskIDMap, std::string confPath)
+    std::unordered_map<std::string, std::shared_ptr<tpik::Task>> taskIDMap, std::string confPath)
 {
     for (int i = 0; i < ulisse::priorityLevelID::unified_hierarchy.size(); i++) {
         rml::RegularizationData regularization_data;
@@ -73,9 +72,9 @@ bool InitializeUnifiedHierarchyAndActions(std::shared_ptr<tpik::ActionManager> a
 }
 
 bool GetPriorityLevelRegularizationDataFromFile //KCL
-        (
-                const std::string ID, const std::string confPath,
-                rml::RegularizationData* regularizationData, const std::string propertyID)
+    (
+        const std::string ID, const std::string confPath,
+        rml::RegularizationData* regularizationData, const std::string propertyID)
 {
     libconfig::Config confObj;
     try {
@@ -106,7 +105,7 @@ bool GetPriorityLevelRegularizationDataFromFile //KCL
     return true;
 }
 
-void ConfigureEqualityTaskFromFile(std::vector<std::shared_ptr<tpik::EqualityTask> > taskVector, const std::string confPath)
+void ConfigureEqualityTaskFromFile(std::vector<std::shared_ptr<tpik::EqualityTask>> taskVector, const std::string confPath)
 {
     for (auto& task : taskVector) {
         libconfig::Config confObj;
@@ -140,8 +139,8 @@ void ConfigureEqualityTaskFromFile(std::vector<std::shared_ptr<tpik::EqualityTas
     }
 }
 
-void ConfigureInequalityTaskFromFile(std::vector<std::shared_ptr<tpik::InequalityTask> > taskVector,
-                                     const std::string confPath)
+void ConfigureInequalityTaskFromFile(std::vector<std::shared_ptr<tpik::InequalityTask>> taskVector,
+    const std::string confPath)
 {
     for (auto& task : taskVector) {
         libconfig::Config confObj;
@@ -165,9 +164,9 @@ void ConfigureInequalityTaskFromFile(std::vector<std::shared_ptr<tpik::Inequalit
             if (task->GetBellShapeIncreasingUsed()) {
                 tpik::BellShapedParameter bellShapeIncreasing;
                 std::string lookUpBellShapeIncreasingMin = taskID + "." + ulisse::bellShapeParameter::increasingBellShape
-                                                           + "." + ulisse::bellShapeParameter::xmin;
+                    + "." + ulisse::bellShapeParameter::xmin;
                 std::string lookUpBellShapeIncreasingMax = taskID + "." + ulisse::bellShapeParameter::increasingBellShape
-                                                           + "." + ulisse::bellShapeParameter::xmax;
+                    + "." + ulisse::bellShapeParameter::xmax;
                 Eigen::VectorXd xminEigen;
                 Eigen::VectorXd xmaxEigen;
                 if (FindVectorConfFile(lookUpBellShapeIncreasingMin, xminEigen, confPath)
@@ -184,9 +183,9 @@ void ConfigureInequalityTaskFromFile(std::vector<std::shared_ptr<tpik::Inequalit
             if (task->GetBellShapeDecreasingUsed()) {
                 tpik::BellShapedParameter bellShapeDecreasing;
                 std::string lookUpBellShapeDecreasingMin = taskID + "." + ulisse::bellShapeParameter::decreasingBellShape
-                                                           + "." + ulisse::bellShapeParameter::xmin;
+                    + "." + ulisse::bellShapeParameter::xmin;
                 std::string lookUpBellShapeDecreasingMax = taskID + "." + ulisse::bellShapeParameter::decreasingBellShape
-                                                           + "." + ulisse::bellShapeParameter::xmax;
+                    + "." + ulisse::bellShapeParameter::xmax;
                 Eigen::VectorXd xminEigen;
                 Eigen::VectorXd xmaxEigen;
                 if (FindVectorConfFile(lookUpBellShapeDecreasingMin, xminEigen, confPath)
@@ -209,8 +208,8 @@ void ConfigureInequalityTaskFromFile(std::vector<std::shared_ptr<tpik::Inequalit
     }
 }
 
-void ConfigureCartesianTaskFromFile(std::vector<std::shared_ptr<tpik::CartesianTask> > taskVector,
-                                    const std::string confPath)
+void ConfigureCartesianTaskFromFile(std::vector<std::shared_ptr<tpik::CartesianTask>> taskVector,
+    const std::string confPath)
 {
     for (auto& task : taskVector) {
         libconfig::Config confObj;
@@ -226,7 +225,6 @@ void ConfigureCartesianTaskFromFile(std::vector<std::shared_ptr<tpik::CartesianT
         std::string lookUpGain = taskID + "." + ulisse::taskParameter::gain;
         std::string lookUpSaturation = taskID + "." + ulisse::taskParameter::saturation;
         std::string lookUpTaskEnable = taskID + "." + ulisse::taskParameter::taskEnable;
-
 
         try {
             taskParameter.gain = confObj.lookup(lookUpGain.c_str());
@@ -245,9 +243,9 @@ void ConfigureCartesianTaskFromFile(std::vector<std::shared_ptr<tpik::CartesianT
             } else if (task->GetType() == tpik::CartesianTaskType::InequalityIncreasing) {
                 tpik::BellShapedParameter bellShapeIncreasing;
                 std::string lookUpBellShapeIncreasingMin = taskID + "." + ulisse::bellShapeParameter::increasingBellShape
-                                                           + "." + ulisse::bellShapeParameter::xmin;
+                    + "." + ulisse::bellShapeParameter::xmin;
                 std::string lookUpBellShapeIncreasingMax = taskID + "." + ulisse::bellShapeParameter::increasingBellShape
-                                                           + "." + ulisse::bellShapeParameter::xmax;
+                    + "." + ulisse::bellShapeParameter::xmax;
                 Eigen::VectorXd xminEigen;
                 Eigen::VectorXd xmaxEigen;
                 if (FindVectorConfFile(lookUpBellShapeIncreasingMin, xminEigen, confPath)
@@ -264,9 +262,9 @@ void ConfigureCartesianTaskFromFile(std::vector<std::shared_ptr<tpik::CartesianT
             else if (task->GetType() == tpik::CartesianTaskType::InequalityDecreasing) {
                 tpik::BellShapedParameter bellShapeDecreasing;
                 std::string lookUpBellShapeDecreasingMin = taskID + "." + ulisse::bellShapeParameter::decreasingBellShape
-                                                           + "." + ulisse::bellShapeParameter::xmin;
+                    + "." + ulisse::bellShapeParameter::xmin;
                 std::string lookUpBellShapeDecreasingMax = taskID + "." + ulisse::bellShapeParameter::decreasingBellShape
-                                                           + "." + ulisse::bellShapeParameter::xmax;
+                    + "." + ulisse::bellShapeParameter::xmax;
                 Eigen::VectorXd xminEigen;
                 Eigen::VectorXd xmaxEigen;
                 if (FindVectorConfFile(lookUpBellShapeDecreasingMin, xminEigen, confPath)
@@ -280,16 +278,16 @@ void ConfigureCartesianTaskFromFile(std::vector<std::shared_ptr<tpik::CartesianT
             } else if (task->GetType() == tpik::CartesianTaskType::InequalityInBetween) {
                 tpik::BellShapedParameter bellShapeDecreasing;
                 std::string lookUpBellShapeDecreasingMin = taskID + "." + ulisse::bellShapeParameter::decreasingBellShape
-                                                           + "." + ulisse::bellShapeParameter::xmin;
+                    + "." + ulisse::bellShapeParameter::xmin;
                 std::string lookUpBellShapeDecreasingMax = taskID + "." + ulisse::bellShapeParameter::decreasingBellShape
-                                                           + "." + ulisse::bellShapeParameter::xmax;
+                    + "." + ulisse::bellShapeParameter::xmax;
                 Eigen::VectorXd xminEigenDecreasing;
                 Eigen::VectorXd xmaxEigenDecreasing;
                 tpik::BellShapedParameter bellShapeIncreasing;
                 std::string lookUpBellShapeIncreasingMin = taskID + "." + ulisse::bellShapeParameter::increasingBellShape
-                                                           + "." + ulisse::bellShapeParameter::xmin;
+                    + "." + ulisse::bellShapeParameter::xmin;
                 std::string lookUpBellShapeIncreasingMax = taskID + "." + ulisse::bellShapeParameter::increasingBellShape
-                                                           + "." + ulisse::bellShapeParameter::xmax;
+                    + "." + ulisse::bellShapeParameter::xmax;
                 Eigen::VectorXd xminEigenIncreasing;
                 Eigen::VectorXd xmaxEigenIncreasing;
                 if (FindVectorConfFile(lookUpBellShapeDecreasingMin, xminEigenDecreasing, confPath)
@@ -317,7 +315,7 @@ void ConfigureCartesianTaskFromFile(std::vector<std::shared_ptr<tpik::CartesianT
     }
 }
 
-void ConfigureActionTaskFromFile(std::vector<std::shared_ptr<tpik::ActionTask> > taskVector, const std::string confPath)
+void ConfigureActionTaskFromFile(std::vector<std::shared_ptr<tpik::ActionTask>> taskVector, const std::string confPath)
 {
     for (auto& task : taskVector) {
         libconfig::Config confObj;
@@ -348,7 +346,7 @@ void ConfigureActionTaskFromFile(std::vector<std::shared_ptr<tpik::ActionTask> >
 }
 
 bool GetVectorEigen(const std::string confPath, const std::string property,
-                    Eigen::VectorXd& out)
+    Eigen::VectorXd& out)
 {
     libconfig::Config confObj;
     try {

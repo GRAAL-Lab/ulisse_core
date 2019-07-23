@@ -660,6 +660,12 @@
 				</MakeCommands>
 			</Target>
 		</Build>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/.idea/codeStyles/Project.xml">
+			<Option target=".Files."/>
+		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/.idea/codeStyles/codeStyleConfig.xml">
+			<Option target=".Files."/>
+		</Unit>
 		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/.idea/misc.xml">
 			<Option target=".Files."/>
 		</Unit>

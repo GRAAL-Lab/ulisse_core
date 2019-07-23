@@ -1,45 +1,43 @@
 #ifndef __CONTROLSAFETYBOUNDARIES_H__
 #define __CONTROLSAFETYBOUNDARIES_H__
 
-#include <iostream>
-#include <list>
-#include <eigen3/Eigen/Dense>
-#include <rml/RML.h>
-#include <tpik/TPIKlib.h>
 #include "ctrl_toolbox/DataStructs.h"
 #include "ctrl_toolbox/DigitalPID.h"
+#include <eigen3/Eigen/Dense>
+#include <iostream>
+#include <list>
+#include <rml/RML.h>
+#include <tpik/TPIKlib.h>
 
+#include "ctrl_toolbox/DataStructs.h"
 #include <ikcl/ikcl.h>
 #include <rml/RML.h>
 #include <tpik/TPIKlib.h>
-#include "ctrl_toolbox/DataStructs.h"
 
-#include "ulisse_ctrl/helper_functions.hpp"
 #include "ulisse_ctrl/ctrl_data_structs.hpp"
+#include "ulisse_ctrl/helper_functions.hpp"
 #include "ulisse_ctrl/tasks/ActionTask.h"
 
-
 #include <boost/geometry.hpp>
-#include <boost/geometry/geometries/segment.hpp>
-#include <boost/geometry/geometries/point_xy.hpp>
-#include <boost/geometry/geometries/linestring.hpp>
-#include <boost/geometry/geometries/polygon.hpp>
 #include <boost/geometry/geometries/adapted/boost_tuple.hpp>
+#include <boost/geometry/geometries/linestring.hpp>
+#include <boost/geometry/geometries/point_xy.hpp>
+#include <boost/geometry/geometries/polygon.hpp>
+#include <boost/geometry/geometries/segment.hpp>
 #include <boost/geometry/strategies/cartesian/distance_projected_point.hpp>
 #include <math.h>
 
-#include <boost/numeric/conversion/bounds.hpp>
 #include <boost/foreach.hpp>
+#include <boost/numeric/conversion/bounds.hpp>
 
 using namespace ctb;
 
 namespace ikcl {
 
-
 typedef boost::geometry::model::d2::point_xy<double> point_type;
 typedef boost::geometry::model::polygon<point_type> polygon_type;
 typedef boost::geometry::model::segment<point_type> segment_type;
-typedef boost::geometry::model::linestring<point_type>  linestring_type;
+typedef boost::geometry::model::linestring<point_type> linestring_type;
 
 typedef struct desired_target {
     double x;
@@ -93,15 +91,15 @@ public:
     friend std::ostream& operator<<(std::ostream& os, SafetyBoundaries const& safetyBoundaries)
     {
         os << "\033[1;37m"
-           << "SAFETY BOUNDARIES " << (tpik::InequalityTask&)safetyBoundaries << std::setprecision(4) ;
+           << "SAFETY BOUNDARIES " << (tpik::InequalityTask&)safetyBoundaries << std::setprecision(4);
         os << "\033[1;37m"
            << "\033[1;37m"
            << "frameID \n"
            << "\033[0m" << safetyBoundaries.frameID_ << "\n";
         return os;
     }
-protected:
 
+protected:
     /**
 	 * @brief Method updating the internal activation function.
      * Implementation of the pure virtual method of the base class tpik::InequalityTask.
@@ -136,7 +134,7 @@ protected:
     Eigen::VectorXd pose_;
     double tollerance_;
 
-    std::list <segment_type> segments;
+    std::list<segment_type> segments;
 
     polygon_type poly;
     point_type nearest_p;

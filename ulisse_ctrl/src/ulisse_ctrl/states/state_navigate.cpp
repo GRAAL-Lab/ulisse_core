@@ -7,10 +7,10 @@
 #include <math.h>
 
 #include "sisl.h"
-#include <iostream>
 #include <fstream>
-#include <string>
+#include <iostream>
 #include <stdexcept>
+#include <string>
 
 namespace ulisse {
 
@@ -22,32 +22,33 @@ namespace states {
         number_of_curves_ = 0;
         max_range_abscissa = 0.3;
 
-        //TODO: Aumenta quando passiamo a metri
+        // TODO: Aumenta quando passiamo a metri
         delta_ = 0.001;
         isCurveSet = false;
     }
 
-    StateNavigate::~StateNavigate()
-    {
-}
+    StateNavigate::~StateNavigate() {}
 
-    void StateNavigate::SetAngularVelocityTask(std::shared_ptr<ikcl::AngularVelocity> angularVelocityTask)
+    void StateNavigate::SetAngularVelocityTask(
+        std::shared_ptr<ikcl::AngularVelocity> angularVelocityTask)
     {
         angularVelocityTask_ = angularVelocityTask;
     }
 
-    void StateNavigate::SetAngularPositionTask(std::shared_ptr<ikcl::AngularPosition> angularPositionTask)
+    void StateNavigate::SetAngularPositionTask(
+        std::shared_ptr<ikcl::AngularPosition> angularPositionTask)
     {
         angularPositionTask_ = angularPositionTask;
     }
 
-    void StateNavigate::SetLinearVelocityTask(std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask)
+    void StateNavigate::SetLinearVelocityTask(
+        std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask)
     {
         linearVelocityTask_ = linearVelocityTask;
     }
 
-
-    void StateNavigate::SetDistanceTask(std::shared_ptr<ikcl::ControlDistance> distanceTask)
+    void StateNavigate::SetDistanceTask(
+        std::shared_ptr<ikcl::ControlDistance> distanceTask)
     {
         distanceTask_ = distanceTask;
     }
@@ -57,12 +58,14 @@ namespace states {
         asvHoldTask_ = asvHoldTask;
     }
 
-    void StateNavigate::SetASVMakeCurveTask(std::shared_ptr<ikcl::MakeCurve> asvMakeCurveTask)
+    void StateNavigate::SetASVMakeCurveTask(
+        std::shared_ptr<ikcl::MakeCurve> asvMakeCurveTask)
     {
         asvMakeCurveTask_ = asvMakeCurveTask;
     }
 
-    bool StateNavigate::LoadSpur(std::string json_nurbs){
+    bool StateNavigate::LoadSpur(std::string json_nurbs)
+    {
         nurbs_.clear();
 
         Json::Reader reader;
@@ -74,11 +77,10 @@ namespace states {
         centroid_.latitude = obj_master["centroid"][0].asDouble();
         centroid_.longitude = obj_master["centroid"][1].asDouble();
 
-        if( obj["direction"].asInt()){
+        if (obj["direction"].asInt()) {
             std::cout << "DIRECTION TRUE" << std::endl;
             reverse = true;
-        }
-        else{
+        } else {
             std::cout << "DIRECTION FALSE" << std::endl;
             reverse = false;
         }
@@ -93,7 +95,7 @@ namespace states {
         double x, y;
         int count = 0;
 
-        double *knots;
+        double* knots;
         double* control_points;
         double* weights;
 
@@ -144,15 +146,14 @@ namespace states {
                     count++;
                 }
 
-                SISLCurve *insert_curve = newCurve(
-                        cv_count,                 // number of control points
-                        degree + 1,               // order of spline curve (degree + 1)
-                        knots,                    // pointer to knot vector (parametrization)
-                        control_points,           // pointer to coefficient vector (control points)
-                        2,                        // kind => 2 : NURBS curve
-                        dimension,                // dimension
-                        1);                       // no copying of information, 'borrow' array
-
+                SISLCurve* insert_curve = newCurve(
+                    cv_count, // number of control points
+                    degree + 1, // order of spline curve (degree + 1)
+                    knots, // pointer to knot vector (parametrization)
+                    control_points, // pointer to coefficient vector (control points)
+                    2, // kind => 2 : NURBS curve
+                    dimension, // dimension
+                    1); // no copying of information, 'borrow' array
 
                 if (!insert_curve) {
                     std::cout << "SOMETHING GOES WRONG" << std::endl;
@@ -160,7 +161,8 @@ namespace states {
                 }
 
                 if (reverse) {
-                    // Turn the direction of a curve by reversing the ordering of the coefficients
+                    // Turn the direction of a curve by reversing the ordering of the
+                    // coefficients
                     s1706(insert_curve);
                 }
 
@@ -172,16 +174,14 @@ namespace states {
 
                 number_of_curves_++;
             }
-        }
-        catch (Json::Exception& e)
-        {
+        } catch (Json::Exception& e) {
             // output exception information
             isCurveSet = false;
             return false;
             std::cout << "NURBS Descriptor Error";
         }
 
-        if(reverse){
+        if (reverse) {
             // Revert the nurbs_ curve
             std::reverse(nurbs_.begin(), nurbs_.end());
         }
@@ -190,7 +190,8 @@ namespace states {
         return true;
     }
 
-    fsm::retval StateNavigate::OnEntry(){
+    fsm::retval StateNavigate::OnEntry()
+    {
         actionManager_->SetAction(ulisse::action::navigate, true);
         curvilinear_abscissa = 0.0;
         current_curvilinear_abscissa = 0.0;
@@ -236,29 +237,31 @@ namespace states {
         }
 
         if (isCurveSet) {
-            if(!start){
+            if (!start) {
                 std::cout << "*** GOING TO INITIAL POINT! ***" << std::endl;
-                std::cout << "*** INIT LAT: " << starting_point.latitude << " LONG: " << starting_point.longitude << std::endl;
-                ctb::DistanceAndAzimuthRad(statusCxt_->vehiclePos, starting_point, goalCxt_->goalDistance, goalCxt_->goalHeading);
+                std::cout << "*** INIT LAT: " << starting_point.latitude
+                          << " LONG: " << starting_point.longitude << std::endl;
+                ctb::DistanceAndAzimuthRad(statusCxt_->vehiclePos, starting_point,
+                    goalCxt_->goalDistance, goalCxt_->goalHeading);
 
                 if (goalCxt_->goalDistance < 2) {
                     count++;
-                    if(count > 50){
+                    if (count > 50) {
                         count = 0;
                         start = true;
                         std::cout << "*** START MISSION! ***" << std::endl;
                     }
                 }
-                angularPositionTask_->SetAngle(Eigen::Vector3d(0, 0, goalCxt_->goalHeading));
+                angularPositionTask_->SetAngle(
+                    Eigen::Vector3d(0, 0, goalCxt_->goalHeading));
                 distanceTask_->SetDistance(Eigen::Vector3d(goalCxt_->goalDistance, 0, 0));
             }
             if (start && !oriented) {
                 std::cout << "*** ORIENTING! ***" << std::endl;
                 std::cout << "START ANGLE: " << starting_angle << std::endl;
-                if(abs(statusCxt_->vehicleHeading - starting_angle) < 0.05)
-                {
+                if (abs(statusCxt_->vehicleHeading - starting_angle) < 0.05) {
                     count++;
-                    if(count > 50){
+                    if (count > 50) {
                         count = 0;
                         oriented = true;
                         std::cout << "*** ORIENTED! ***" << std::endl;
@@ -268,14 +271,17 @@ namespace states {
                 angularPositionTask_->SetAngle(Eigen::Vector3d(0, 0, starting_angle));
             }
 
-            else if (start && oriented){
-                std::cout << "*** PLAYING MISSION! with curv abs: " << curvilinear_abscissa << std::endl;
-                std::cout << "*** END:: LAT: " << end_point.latitude << " LONG: " << end_point.longitude << std::endl;
+            else if (start && oriented) {
+                std::cout << "*** PLAYING MISSION! with curv abs: "
+                          << curvilinear_abscissa << std::endl;
+                std::cout << "*** END:: LAT: " << end_point.latitude
+                          << " LONG: " << end_point.longitude << std::endl;
 
-                ctb::DistanceAndAzimuthRad(statusCxt_->vehiclePos, end_point, goalCxt_->goalDistance,
-                                           goalCxt_->goalHeading);
+                ctb::DistanceAndAzimuthRad(statusCxt_->vehiclePos, end_point,
+                    goalCxt_->goalDistance, goalCxt_->goalHeading);
 
-                std::cout << "*** DISTANCE TO GOAL: " << goalCxt_->goalDistance << std::endl;
+                std::cout << "*** DISTANCE TO GOAL: " << goalCxt_->goalDistance
+                          << std::endl;
 
                 curvilinear_abscissa = getCurvilinearAbscissa() + delta_;
 
@@ -284,85 +290,91 @@ namespace states {
                     isCurveSet = false;
                     asvHoldTask_->SetGoalHold(end_point);
                     fsm_->ExecuteCommand(ulisse::commands::ID::hold);
-                }
-                else {
+                } else {
 
                     current_curve = floor(curvilinear_abscissa);
                     curve = nurbs_[current_curve];
 
                     /*
-                    s1240(curve, aepsge, &cur_length, &stat);
-                    delta_ = 1.0 / cur_length;
-                     */
+        s1240(curve, aepsge, &cur_length, &stat);
+        delta_ = 1.0 / cur_length;
+         */
 
                     current_curvilinear_abscissa = curvilinear_abscissa;
-                    if(current_curvilinear_abscissa > 1){
+                    if (current_curvilinear_abscissa > 1) {
                         current_curvilinear_abscissa -= current_curve;
                     }
 
                     double point_at[4];
                     // Compute the point of the first curve at current_curvilinear_abscissa.
-                    s1227(curve, 0, current_curvilinear_abscissa, &leftknot, point_at, &stat);
+                    s1227(curve, 0, current_curvilinear_abscissa, &leftknot, point_at,
+                        &stat);
                     lookAheadPoint = to_lat_long(point_at[0], point_at[1]);
 
-                    std::cout << "*** POINTING TO LAT: " << lookAheadPoint.latitude << " , LONG: "
-                              << lookAheadPoint.longitude << "   ;" << std::endl;
+                    std::cout << "*** POINTING TO LAT: " << lookAheadPoint.latitude
+                              << " , LONG: " << lookAheadPoint.longitude << "   ;"
+                              << std::endl;
 
-                    std::cout << "CURVILINEAR ABSCISSA: " << current_curvilinear_abscissa << std::endl;
-                    ctb::DistanceAndAzimuthRad(statusCxt_->vehiclePos, lookAheadPoint, goalCxt_->goalDistance,
-                                               goalCxt_->goalHeading);
-
+                    std::cout << "CURVILINEAR ABSCISSA: " << current_curvilinear_abscissa
+                              << std::endl;
+                    ctb::DistanceAndAzimuthRad(statusCxt_->vehiclePos, lookAheadPoint,
+                        goalCxt_->goalDistance,
+                        goalCxt_->goalHeading);
 
                     /*
-                    if(goalCxt_->goalDistance < 0.5){
-                        std::cout << "RADDOPPIA DELTA" << std::endl;
-                        delta_ *= 2;
-                    }
+        if(goalCxt_->goalDistance < 0.5){
+            std::cout << "RADDOPPIA DELTA" << std::endl;
+            delta_ *= 2;
+        }
 
-                    if(goalCxt_->goalDistance > 2.0){
-                        std::cout << "DIMEZZA DELTA" << std::endl;
-                        delta_ /= 2;
-                    }
-                     */
+        if(goalCxt_->goalDistance > 2.0){
+            std::cout << "DIMEZZA DELTA" << std::endl;
+            delta_ /= 2;
+        }
+         */
 
-                    angularPositionTask_->SetAngle(Eigen::Vector3d(0, 0, goalCxt_->goalHeading));
-                    distanceTask_->SetDistance(Eigen::Vector3d(goalCxt_->goalDistance, 0, 0));
+                    angularPositionTask_->SetAngle(
+                        Eigen::Vector3d(0, 0, goalCxt_->goalHeading));
+                    distanceTask_->SetDistance(
+                        Eigen::Vector3d(goalCxt_->goalDistance, 0, 0));
 
-                    std::cout << std::endl << "************* DISTA: " << goalCxt_->goalDistance << std::endl;
-                    std::cout << "************* DELTA: " << delta_<< std::endl;
-
+                    std::cout << std::endl
+                              << "************* DISTA: " << goalCxt_->goalDistance
+                              << std::endl;
+                    std::cout << "************* DELTA: " << delta_ << std::endl;
                 }
             }
         }
 
         /*
-         * calculate radius and clock/counterclock #@ ascissa curvilinea x
-         * asvMakeCurveTask_->SetCurve(radius, ulisse::curves::circle_arc, clockwise);
-         * "wait for raggiungere ascissa x
-         * calcola prossima
-         *
-         * parte intera di x = nurbs corrente
-         * parte decimale = avanzamento sulla nurb
-         */
+   * calculate radius and clock/counterclock #@ ascissa curvilinea x
+   * asvMakeCurveTask_->SetCurve(radius, ulisse::curves::circle_arc, clockwise);
+   * "wait for raggiungere ascissa x
+   * calcola prossima
+   *
+   * parte intera di x = nurbs corrente
+   * parte decimale = avanzamento sulla nurb
+   */
         /*
-        std::cout << "STATE NAVIGATE " << std::endl;
+  std::cout << "STATE NAVIGATE " << std::endl;
 
-        std::cout << "SPLINES: " << std::endl;
+  std::cout << "SPLINES: " << std::endl;
 
-        std::cout << splines_[0].knots[0] << std::endl;
+  std::cout << splines_[0].knots[0] << std::endl;
 
-        std::cout << splines_[0].weights[1] << std::endl;
+  std::cout << splines_[0].weights[1] << std::endl;
 
-        std::cout << splines_[0].points[1] << std::endl;
-         */
+  std::cout << splines_[0].points[1] << std::endl;
+   */
 
         return fsm::ok;
     }
 
-    double StateNavigate::getCurvilinearAbscissa() {
+    double StateNavigate::getCurvilinearAbscissa()
+    {
         double min_abscissa = curvilinear_abscissa;
         double max_abscissa = curvilinear_abscissa + max_range_abscissa;
-        if(max_abscissa > number_of_curves_) {
+        if (max_abscissa > number_of_curves_) {
             max_abscissa = number_of_curves_;
         }
 
@@ -370,20 +382,20 @@ namespace states {
 
         curve = nurbs_[current_curve];
 
-        current_point = to_meters(statusCxt_->vehiclePos.latitude, statusCxt_->vehiclePos.longitude);
+        current_point = to_meters(statusCxt_->vehiclePos.latitude,
+            statusCxt_->vehiclePos.longitude);
 
-        if ( (floor(max_abscissa) == floor(min_abscissa)) || ((max_abscissa - floor(max_abscissa)) == 0) )
-        {
+        if ((floor(max_abscissa) == floor(min_abscissa)) || ((max_abscissa - floor(max_abscissa)) == 0)) {
             // To select the window part of curv, from min_abscissa to max_abscissa
-            s1713(curve, DecimalPart(min_abscissa), DecimalPart(max_abscissa), &newcurve, &stat);
+            s1713(curve, DecimalPart(min_abscissa), DecimalPart(max_abscissa),
+                &newcurve, &stat);
 
             // Find the closest point between a curve and a point
             s1957(newcurve, current_point, 3, aepsco, aepsge, &gpar, &dist, &stat);
 
             gpar = gpar + floor(min_abscissa);
 
-        }
-        else{
+        } else {
             // To select the last part of first curve, from min_abscissa to 1.0
             s1713(curve, DecimalPart(min_abscissa), 1.0, &newcurve, &stat);
 
@@ -398,17 +410,17 @@ namespace states {
             // Find the closest point between the second curve and the point
             s1957(curve2, current_point, 3, aepsco, aepsge, &gpar2, &dist2, &stat);
 
-            if (dist < dist2){
+            if (dist < dist2) {
                 gpar = gpar + floor(min_abscissa);
-            }
-            else{
+            } else {
                 gpar = gpar2 + floor(max_abscissa);
             }
         }
         return gpar;
     }
 
-    ctb::LatLong StateNavigate::to_lat_long(double x, double y)  {
+    ctb::LatLong StateNavigate::to_lat_long(double x, double y)
+    {
         double lam = lat_to_m_coeff(centroid_.latitude);
         double lom = lon_to_m_coeff(centroid_.longitude);
         ctb::LatLong p = point_euclidean2map(x, y, centroid_, lam, lom);
@@ -416,8 +428,8 @@ namespace states {
         return p;
     }
 
-
-    double* StateNavigate::to_meters(double latitude, double longitude) {
+    double* StateNavigate::to_meters(double latitude, double longitude)
+    {
         double lam = lat_to_m_coeff(centroid_.latitude);
         double lom = lon_to_m_coeff(centroid_.longitude);
         double* p = point_map2euclidean(latitude, longitude, centroid_, lam, lom);
@@ -435,5 +447,5 @@ namespace states {
         return fsm::ok;
     }
 
-}
-}
+} // namespace states
+} // namespace ulisse
