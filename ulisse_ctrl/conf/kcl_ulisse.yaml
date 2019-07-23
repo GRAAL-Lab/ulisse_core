@@ -28,7 +28,7 @@ controller_node:
             enable: true
             HeadingErrorMin: 0.0 # 10.0 degrllc
             HeadingErrorMax: 0.1 # 25.0 degress
-            AlphaMin: 0.01
+            AlphaMin: 0.002
             AlphaMax: 1.0
 
         AvoidRotationCloseToTarget:

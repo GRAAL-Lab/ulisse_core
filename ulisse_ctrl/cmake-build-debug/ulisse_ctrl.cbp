@@ -678,9 +678,6 @@
 		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/conf/kcl_ulisse.yaml">
 			<Option target=".Files."/>
 		</Unit>
-		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/conf/navfilter.yaml">
-			<Option target=".Files."/>
-		</Unit>
 		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/launch/launchControl.py">
 			<Option target=".Files."/>
 		</Unit>

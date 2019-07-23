@@ -23,7 +23,7 @@ namespace states {
         max_range_abscissa = 0.3;
 
         //TODO: Aumenta quando passiamo a metri
-        delta_ = 0.01;
+        delta_ = 0.001;
         isCurveSet = false;
     }
 
@@ -298,20 +298,25 @@ namespace states {
                     ctb::DistanceAndAzimuthRad(statusCxt_->vehiclePos, lookAheadPoint, goalCxt_->goalDistance,
                                                goalCxt_->goalHeading);
 
-                    angularPositionTask_->SetAngle(Eigen::Vector3d(0, 0, goalCxt_->goalHeading));
-                    distanceTask_->SetDistance(Eigen::Vector3d(goalCxt_->goalDistance, 0, 0));
 
                     /*
-                    if(goalCxt_->goalDistance < 1.0){
+                    if(goalCxt_->goalDistance < 0.5){
                         std::cout << "RADDOPPIA DELTA" << std::endl;
                         delta_ *= 2;
                     }
 
-                    if(goalCxt_->goalDistance > 1.5){
+                    if(goalCxt_->goalDistance > 2.0){
                         std::cout << "DIMEZZA DELTA" << std::endl;
                         delta_ /= 2;
                     }
                      */
+
+                    angularPositionTask_->SetAngle(Eigen::Vector3d(0, 0, goalCxt_->goalHeading));
+                    distanceTask_->SetDistance(Eigen::Vector3d(goalCxt_->goalDistance, 0, 0));
+
+                    std::cout << std::endl << "************* DISTA: " << goalCxt_->goalDistance << std::endl;
+                    std::cout << "************* DELTA: " << delta_<< std::endl;
+
                 }
             }
         }
