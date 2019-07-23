@@ -36,7 +36,7 @@ Map {
         id: ruler
         anchors.right:compass.left
         anchors.top: parent.top
-        anchors.topMargin: 15
+        anchors.topMargin: 10
     }
 
     MapSliders {

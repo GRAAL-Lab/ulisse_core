@@ -155,7 +155,7 @@ RowLayout {
                     id: recenterButton
                     text: "Recenter"
                     highlighted: true
-                    Material.accent: mainColor
+                    Material.background:  Material.color(Material.Blue, Material.Shade700)
                     Layout.leftMargin: 5
                 }
 

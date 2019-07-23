@@ -9,7 +9,9 @@ Rectangle {
     property alias markerTextColor: markerTextLabel.textColor
     property color labelColor1: "#000000"
     property color labelColor2: "#000000"
+    property color labelColor3: "#000000"
     property alias commandRect: commandRect
+    border.width: 1
     visible: true
 
     ColumnLayout {
@@ -17,6 +19,7 @@ Rectangle {
         anchors.fill: parent
         Layout.leftMargin: 15
         width: parent.width
+        spacing: 0
 
         Pane {
             id: statusdatarect
@@ -26,12 +29,9 @@ Rectangle {
             Layout.minimumHeight: mycol.height
             Layout.alignment: Qt.AlignLeft
 
-            Material.elevation: myElevation
-
             ColumnLayout {
                 id: mycol
                 width: statusdatarect.width - 30
-                spacing: 2
                 Layout.alignment: Qt.AlignLeft
 
                 ColumnLayout {
@@ -51,7 +51,7 @@ Rectangle {
                         Layout.alignment: Qt.AlignHCenter
                         font.pointSize: 12
                         font.weight: Font.DemiBold
-                        color: 'gray'
+                        color: labelColor3
                         text: "Status"
                     }
 
@@ -137,7 +137,6 @@ Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.bottomMargin: 2
-            Material.elevation: myElevation
             //Material.background: Material.color(Material.BlueGrey, Material.Shade50)
         }
     }

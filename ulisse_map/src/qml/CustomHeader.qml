@@ -13,8 +13,8 @@ ToolBar {
     width: parent.width
     Material.elevation: 4
 
-    Material.foreground: Material.color(Material.Grey, Material.Shade300)
-    Material.background: (settings.theme == "Light" ? Material.Cyan : Material.color(
+    Material.foreground: Material.color(Material.Grey, Material.Shade100)
+    Material.background: (settings.theme == "Light" ? Material.color(Material.Blue, Material.Shade700) : Material.color(
                                                           Material.Red,
                                                           Material.Shade600))
     Material.accent: "white"

@@ -40,6 +40,10 @@ Pane {
             antialiasing: false
             Layout.fillWidth: true
             Layout.fillHeight: true
+
+            highlighted: true
+            Material.background: pressed? mainAccentColor : Material.color(Material.Blue, Material.Shade700)
+
             font.capitalization: Font.AllUppercase
             onClicked: {
                 cmdWrapper.sendHaltCommand()
@@ -113,6 +117,9 @@ Pane {
             Layout.fillHeight: true
             font.capitalization: Font.AllUppercase
 
+            highlighted: true
+            Material.background: pressed? mainAccentColor : Material.color(Material.Blue, Material.Shade700)
+
             onClicked: {
                 if (speedText.text !== '' && headingText.text !== '') {
                     map.interruptPathIfActive()
@@ -166,6 +173,9 @@ Pane {
             padding: 5
             antialiasing: false
 
+            highlighted: true
+            Material.background: pressed? mainAccentColor : Material.color(Material.Blue, Material.Shade700)
+
             onClicked: {
                 if (holdRadius.text !== '') {
                     map.interruptPathIfActive()
@@ -218,6 +228,9 @@ Pane {
             enabled: true
             antialiasing: false
 
+            highlighted: true
+            Material.background: pressed? mainAccentColor : Material.color(Material.Blue, Material.Shade700)
+
             onClicked: {
                 if (moveToRadius.text !== '') {
                     map.interruptPathIfActive()
@@ -248,6 +261,10 @@ Pane {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     text: "Save Path"
+
+                    highlighted: true
+                    Material.background: pressed? mainAccentColor : Material.color(Material.Blue, Material.Shade700)
+
                     antialiasing: false
                     transformOrigin: Item.Left
                     enabled: true
@@ -262,6 +279,10 @@ Pane {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     text: "Load Path"
+
+                    highlighted: true
+                    Material.background: pressed? mainAccentColor : Material.color(Material.Blue, Material.Shade700)
+
                     focusPolicy: Qt.WheelFocus
                     transformOrigin: Item.Right
                     antialiasing: false
@@ -283,10 +304,14 @@ Pane {
             Button {
                 id: buttonSafety
                 text: qsTr("Define safety area")
+
                 padding: 5
                 antialiasing: false
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+
+                highlighted: true
+                Material.background:  Material.color(Material.Green, Material.Shade700)
 
                 function end(){
                     enabled = true
@@ -297,8 +322,6 @@ Pane {
                     slidersLeft.check_safety_all()
                     cmdWrapper.sendBoundaries(JSON.stringify(map.polysec_cur.serialize()))
                 }
-
-
                 onClicked: function(){
                     map.polysec_cur.clear_path()
                     map.center = fbkUpdater.ulisse_pos

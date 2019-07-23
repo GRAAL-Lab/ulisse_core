@@ -7,7 +7,7 @@ import QtQuick.Controls.Material 2.1
 import "."
 
 Rectangle {
-    property real myElevation: 6
+
     property real panesMargin: 14
     property real panesWidth: 252
     property bool responsive: false
@@ -23,7 +23,7 @@ Rectangle {
 
         Pane {
             id: statusPane
-            Material.elevation: myElevation
+
             Layout.rowSpan: 1
             Layout.columnSpan: 1
             Layout.fillWidth: true
@@ -87,7 +87,7 @@ Rectangle {
 
         Pane {
             id: goalPane
-            Material.elevation: myElevation
+
             Layout.rowSpan: 1
             Layout.columnSpan: 1
             Layout.fillWidth: true
@@ -133,7 +133,7 @@ Rectangle {
 
         Pane {
             id: ctrlPane
-            Material.elevation: myElevation
+
             Layout.rowSpan: 1
             Layout.columnSpan: 1
             Layout.fillWidth: true
@@ -179,7 +179,7 @@ Rectangle {
 
         Pane {
             id: lowLevelPane
-            Material.elevation: myElevation
+
             Layout.rowSpan: 1
             Layout.columnSpan: 1
             Layout.fillWidth: true

@@ -31,7 +31,7 @@ ColumnLayout {
         leftPadding: 5.0
         font.pointSize: 10.5
 
-        MouseArea{
+        MouseArea {
             id: labelMouseArea
             anchors.fill: parent
         }

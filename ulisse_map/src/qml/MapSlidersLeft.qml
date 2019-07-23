@@ -17,6 +17,12 @@ Row {
     property var togglerColor: mainAccentColor
     property alias sliderW: sliderTogglerLeft.width
     property bool multichoice: false
+    property color blue: Material.color(Material.Blue, Material.Shade700)
+    property color greyblue: Material.color(Material.GreyBlue, Material.Shade700)
+    property color red: Material.color(Material.Red, Material.Shade700)
+    property color lightred: Material.color(Material.Red, Material.Shade900)
+    property color green: Material.color(Material.Green, Material.Shade700)
+    property color lightgreen: Material.color(Material.Green, Material.Shade900)
 
     state: {
         0: "empty",
@@ -40,6 +46,7 @@ Row {
     anchors.right: rightEdge() ? parent.right : undefined
     anchors.left: rightEdge() ? undefined : parent.left
     width: sliderTogglerLeft.width + sliderContainerLeft.width
+    opacity: 1
 
     C1.Button {
         id: sliderTogglerLeft
@@ -104,12 +111,11 @@ Row {
         id: sliderContainerLeft
         height: parent.height
         width: sliderTogglerLeft.checked ? sliderRow.width + 120 : sliderRow.width
-        color: Qt.rgba(0.95, 0.95, 0.95,
-                       0.95) //Qt.rgba( 0, 191 / 255.0, 255 / 255.0, 0.1)
-
+        color: Material.background
+        //opacity: 0.7
+        //Material.elevation: 10
         Material.accent: mainAccentColor
-        Material.foreground: Material.color(Material.BlueGrey,
-                                            Material.Shade600)
+        //Material.foreground: Material.color(Material.Grey, Material.Shade100)
 
         property string labelBorderColor: "transparent"
 
@@ -125,9 +131,10 @@ Row {
                     id:addTracks
                     width: parent.width
                     text: (sliderTogglerLeft.checked)? qsTr("Add Path") : qsTr("")
+                    highlighted: true
 
                     onHoveredChanged: function(){
-                        addTracksRect.color= (addTracksRect.color == "#abcdef")? "#66cccc" : "#abcdef"
+                        addTracksRect.color= (addTracksRect.color === blue)? greyblue: blue
                     }
 
                     onClicked: function(){
@@ -143,7 +150,7 @@ Row {
                                 visible: sliderTogglerLeft.checked ? false : true
                                 source: 'qrc:/images/plus.png'
                             }
-                            color: "#abcdef"
+                            color: blue
                             anchors.fill: parent
                             }
                 }
@@ -154,9 +161,10 @@ Row {
                     enabled: true
                     text: sliderTogglerLeft.checked ? "Delete Paths" :""
                     width: parent.width
+                    highlighted: true
 
                     onHoveredChanged: function(){
-                        trackBG.color= (trackBG.color == "#abcdef")? "#66cccc" : "#abcdef"
+                        trackBG.color= (trackBG.color === blue)? greyblue: blue
                     }
 
                     onClicked: function(){
@@ -174,9 +182,9 @@ Row {
                             anchors.horizontalCenter: parent.horizontalCenter
                             anchors.verticalCenter: parent.verticalCenter
                             visible: sliderTogglerLeft.checked ? false : true
-                            source: 'qrc:/images/trash-can-outline.svg'
+                            source: 'qrc:/images/trash.png'
                         }
-                        color: "#abcdef"
+                        color: blue
                         anchors.fill: parent
                     }
                 }
@@ -190,12 +198,17 @@ Row {
                     id:abort
                     text:sliderTogglerLeft.checked ? "No" :""
                     width: parent.width
+                    highlighted: true
                     onClicked: function(){
                         restoreBtns()
                         deselect_all()
                         enableBtns(y)
                         pathRectPoly.hide_all()
                         pathRectPoly.enableBtns(true)
+                    }
+
+                    onHoveredChanged: function(){
+                        closeimg.color= (closeimg.color === red)? lightred: red
                     }
                     background: Rectangle {
                         Image {
@@ -205,7 +218,7 @@ Row {
                             anchors.verticalCenter:  parent.verticalCenter
                             source: 'qrc:/images/close.svg'
                         }
-                        color: "#ff0000"
+                        color: red
                     }
                 }
                 Button{
@@ -216,6 +229,10 @@ Row {
                     onClicked: function(){
                         pathRectPoly.enableBtns(true)
                         enableBtns(y)}
+
+                    onHoveredChanged: function(){
+                        closeimg.color= (closeimg.color === green)? lightgreen: green
+                    }
                     background: Rectangle {
                         Image {
                             id:checkimg
@@ -224,7 +241,7 @@ Row {
                             anchors.verticalCenter : parent.verticalCenter
                             source: 'qrc:/images/check.svg'
                         }
-                    color: "#00ff00"
+                    color: green
                     }
                 }
             }
