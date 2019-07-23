@@ -7,13 +7,15 @@ import QtQuick.Controls.Material 2.1
 import QtGraphicalEffects 1.0
 import QtQuick.Dialogs 1.2
 
+import "../scripts/helper.js" as Helper
+
+
 Pane {
 
     property var buttonSafety: buttonSafety
 
     property var trackComponent
 
-    font.pointSize: 8
     Layout.fillWidth: true
     Layout.fillHeight: true
     Component.onCompleted: {
@@ -39,227 +41,322 @@ Pane {
             text: "Halt"
             antialiasing: false
             Layout.fillWidth: true
-            Layout.fillHeight: true
 
             highlighted: true
             Material.background: pressed? mainAccentColor : Material.color(Material.Blue, Material.Shade700)
 
             font.capitalization: Font.AllUppercase
+
+            Layout.fillHeight: false
+
             onClicked: {
                 cmdWrapper.sendHaltCommand()
             }
         }
 
-        Rectangle {
-            id: rectangle3
-            height: 5
-            color: "#cdcdcd"
-            Layout.fillWidth: true
-        }
-
-        RowLayout {
-            id: speedHeadingRow
-            antialiasing: true
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-
-            TextField {
-                id: speedText
-                antialiasing: true
-                Layout.fillHeight: true
-                Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                Layout.fillWidth: true
-                placeholderText: "S"
-                selectByMouse: true
-                horizontalAlignment: TextInput.AlignHCenter
-
-                ToolTip.text: qsTr("Speed (m/s)")
-                ToolTip.delay: 500
-                ToolTip.timeout: 5000
-                ToolTip.visible: hovered
-
-                validator: DoubleValidator {
-                    bottom: -5.0
-                    top: +5.0
-                    decimals: 1
-                    notation: DoubleValidator.StandardNotation
-                }
-            }
-
-            TextField {
-                id: headingText
-                antialiasing: true
-                Layout.fillHeight: true
-                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                Layout.fillWidth: true
-
-                placeholderText: "H°"
-                selectByMouse: true
-                horizontalAlignment: TextInput.AlignHCenter
-
-                ToolTip.text: qsTr("Heading (rad/s)")
-                ToolTip.delay: 500
-                ToolTip.timeout: 5000
-                ToolTip.visible: hovered
-
-                validator: IntValidator {
-                    bottom: 0
-                    top: 360
-                }
-            }
-        }
-
-        Button {
-            id: speedHeadButton
-            text: "Speed-Heading"
-            antialiasing: false
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            font.capitalization: Font.AllUppercase
-
-            highlighted: true
-            Material.background: pressed? mainAccentColor : Material.color(Material.Blue, Material.Shade700)
-
-            onClicked: {
-                if (speedText.text !== '' && headingText.text !== '') {
-                    map.interruptPathIfActive()
-                    cmdWrapper.sendSpeedHeadingCommand(speedText.text,
-                                                       headingText.text)
-                } else {
-                    speedHeadingDialog.open()
-                }
-            }
-        }
 
         Rectangle {
-            id: rectangle1
-            height: 5
-            color: "#cdcdcd"
-            Layout.fillWidth: true
-        }
-
-        TextField {
-            id: holdRadius
-            objectName: "holdRadiusText"
-            Layout.fillWidth: true
-            Layout.fillHeight: false
-
-            placeholderText: "Radius"
-            selectByMouse: true
-            text: "5.0"
-            antialiasing: true
-            Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-            horizontalAlignment: TextInput.AlignHCenter
-
-            ToolTip.text: qsTr("Acceptance Radius (meters)")
-            ToolTip.delay: 500
-            ToolTip.timeout: 5000
-            ToolTip.visible: hovered
-
-            validator: DoubleValidator {
-                bottom: 0.0
-                top: 101.0
-                decimals: 3
-                notation: DoubleValidator.StandardNotation
-            }
-        }
-
-        Button {
-            id: holdButton
-            text: "Hold Position"
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            font.capitalization: Font.AllUppercase
-            padding: 5
-            antialiasing: false
-
-            highlighted: true
-            Material.background: pressed? mainAccentColor : Material.color(Material.Blue, Material.Shade700)
-
-            onClicked: {
-                if (holdRadius.text !== '') {
-                    map.interruptPathIfActive()
-                    cmdWrapper.sendHoldCommand(parseFloat(holdRadius.text))
-                } else {
-                    acceptRadDialog.open()
-                }
-            }
-        }
-
-        Rectangle {
-            id: rectangle
-            height: 5
-            color: "#cdcdcd"
+            clip:true
+            id: rectangle0
+            width: 200
+            height:90
+            color: "#ffffff"
             Layout.fillHeight: false
             Layout.fillWidth: true
-        }
 
-        TextField {
-                id: moveToRadius
-                objectName: "moveToRadiusText"
+            RowLayout {
+                id: speedHeadingRow
+                anchors.top: parent.top
+                anchors.right: parent.right
+                anchors.rightMargin: 0
+                anchors.left: parent.left
+                anchors.leftMargin: 0
+                anchors.topMargin: -28
+                antialiasing: true
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                    GroupBox {
+                        id: groupBox01
+                        height: holdRadius.height+40
+                        Layout.fillWidth: true
+
+                        clip: false
+                        title: qsTr("Speed (m/s)")
+
+                        label: Label {
+                                x: groupBox01.leftPadding
+                                y: 25
+                                width: groupBox01.availableWidth
+                                text: groupBox01.title
+                                elide: Text.ElideRight
+                                background: Rectangle {
+                                    y: 0
+                                    width: 0
+                                    height: 0
+                                    color: "transparent"
+                                    border.color: "#ffffff"
+                                }
+                            }
+
+                        background: Rectangle {
+                                y: 0
+                                width: 0
+                                height: 0
+                                color: "transparent"
+                                border.color: "#ffffff"
+                            }
+
+                        TextField {
+                            id: speedText
+                            objectName: "moveToRadiusText"
+                            placeholderText: qsTr("Insert speed")
+                            enabled: true
+                        }
+                    }
+
+                    GroupBox {
+                    id: groupBox02
+                    height: holdRadius.height+40
+                    Layout.fillWidth: true
+
+                    clip: false
+                    title: qsTr("Heading (deg)")
+
+                    label: Label {
+                            x: groupBox02.leftPadding
+                            y: 25
+                            width: groupBox02.availableWidth
+                            text: groupBox02.title
+                            elide: Text.ElideRight
+                            background: Rectangle {
+                                y: 0
+                                width: 0
+                                height: 0
+                                color: "transparent"
+                                border.color: "#ffffff"
+                            }
+                        }
+
+                    background: Rectangle {
+                            y: 0
+                            width: 0
+                            height: 0
+                            color: "transparent"
+                            border.color: "#ffffff"
+                        }
+
+                    TextField {
+                        id: headingText
+                        objectName: "moveToRadiusText"
+                        placeholderText: qsTr("Insert speed")
+                        enabled: true
+                    }
+                }
+            }
+
+            Button {
+                id: speedHeadButton
+                y: 42
+                text: "Speed-Heading"
+                anchors.right: parent.right
+                anchors.rightMargin: 0
+                anchors.left: parent.left
+                anchors.leftMargin: 0
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 0
+                antialiasing: false
                 Layout.fillWidth: true
                 Layout.fillHeight: false
-                placeholderText: "Radius"
-                selectByMouse: true
-                text: "5.0"
-                padding: 0
-                antialiasing: true
-                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                horizontalAlignment: TextInput.AlignHCenter
 
-                ToolTip.text: qsTr("Acceptance Radius (meters)")
-                ToolTip.delay: 500
-                ToolTip.timeout: 5000
-                ToolTip.visible: hovered
-
-                validator: DoubleValidator {
-                    bottom: 0.0
-                    top: 101.0
-                    decimals: 3
-                    notation: DoubleValidator.StandardNotation
-                }
-            }
-
-        Button {
-            id: moveToButton
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            text: "Move To Marker"
-            enabled: true
-            antialiasing: false
 
             highlighted: true
             Material.background: pressed? mainAccentColor : Material.color(Material.Blue, Material.Shade700)
 
             onClicked: {
-                if (moveToRadius.text !== '') {
-                    map.interruptPathIfActive()
-                    if (cmdWrapper.sendLatLongCommand(
-                                marker_coords,
-                                parseFloat(moveToRadius.text))) {
-                        markerIcon.opacity = 0.2
+                    if (speedText.text !== '' && headingText.text !== '') {
+                        cmdWrapper.sendSpeedHeadingCommand(speedText.text,
+                                                           headingText.text)
+                    } else {
+                        speedHeadingDialog.open()
                     }
-                } else {
-                    acceptRadDialog.open()
                 }
             }
         }
 
         Rectangle {
-            id: rectangle2
-            height: 5
-            color: "#cdcdcd"
+            clip:true
+            id: rectangle1
+            width: 200
+            height:90
+            color: "#ffffff"
+            Layout.fillHeight: false
             Layout.fillWidth: true
+
+            GroupBox {
+                id: groupBox1
+                height: holdRadius.height+40
+                anchors.right: parent.right
+                anchors.rightMargin: 0
+                anchors.left: parent.left
+                anchors.leftMargin: 0
+                anchors.top: parent.top
+                anchors.topMargin: -28
+                clip: true
+                title: qsTr("Acceptance radius")
+
+                label: Label {
+                        x: groupBox1.leftPadding
+                        y: 25
+                        width: groupBox1.availableWidth
+                        text: "Acceptance radius (m)"
+                        elide: Text.ElideRight
+                        background: Rectangle {
+                            y: 0
+                            width: 0
+                            height: 0
+                            color: "transparent"
+                            border.color: "#ffffff"
+                        }
+                    }
+
+                background: Rectangle {
+                        y: 0
+                        width: 0
+                        height: 0
+                        color: "transparent"
+                        border.color: "#ffffff"
+                    }
+
+                TextField {
+                    id: holdRadius
+                    objectName: "holdRadiusText"
+                    anchors.right: parent.right
+                    anchors.rightMargin: 0
+                    anchors.left: parent.left
+                    anchors.leftMargin: 0
+                    placeholderText: qsTr("Insert acceptance radius")
+                    enabled: true
+                }
+            }
+            Button {
+                id: holdButton
+                y: 32
+                text: "Hold Position"
+                anchors.bottomMargin: 0
+                anchors.right: parent.right
+                anchors.rightMargin: 0
+                anchors.left: parent.left
+                anchors.leftMargin: 0
+                anchors.bottom: parent.bottom
+                antialiasing: false
+
+            highlighted: true
+            Material.background: pressed? mainAccentColor : Material.color(Material.Blue, Material.Shade700)
+
+                onClicked: {
+                    if (holdRadius.text !== '') {
+                        cmdWrapper.sendHoldCommand(parseFloat(holdRadius.text))
+                    } else {
+                        acceptRadDialog.open()
+                    }
+                }
+            }
+        }
+
+
+        Rectangle {
+            clip:true
+            id: rectangle2
+            width: 200
+            height:90
+            color: "#ffffff"
+            Layout.fillHeight: false
+            Layout.fillWidth: true
+
+            GroupBox {
+                id: groupBox2
+                height: holdRadius.height+40
+                anchors.right: parent.right
+                anchors.rightMargin: 0
+                anchors.left: parent.left
+                anchors.leftMargin: 0
+                anchors.top: parent.top
+                anchors.topMargin: -28
+                clip: true
+                title: qsTr("Acceptance radius")
+
+                label: Label {
+                        x: groupBox2.leftPadding
+                        y: 25
+                        width: groupBox2.availableWidth
+                        text: "Acceptance radius (m)"
+                        elide: Text.ElideRight
+                        background: Rectangle {
+                            y: 0
+                            width: 0
+                            height: 0
+                            color: "transparent"
+                            border.color: "#ffffff"
+                        }
+                    }
+
+                background: Rectangle {
+                        y: 0
+                        width: 0
+                        height: 0
+                        color: "transparent"
+                        border.color: "#ffffff"
+                    }
+
+                TextField {
+                    id: moveToRadius
+                    objectName: "moveToRadiusText"
+                    anchors.right: parent.right
+                    anchors.rightMargin: 0
+                    anchors.left: parent.left
+                    anchors.leftMargin: 0
+                    placeholderText: qsTr("Insert acceptance radius")
+                    enabled: true
+                }
+            }
+            Button {
+                id: moveToButton
+                y: 32
+                text: "Move to marker"
+                anchors.bottomMargin: 0
+                anchors.right: parent.right
+                anchors.rightMargin: 0
+                anchors.left: parent.left
+                anchors.leftMargin: 0
+                anchors.bottom: parent.bottom
+                antialiasing: false
+                Material.background: pressed? mainAccentColor : Material.color(Material.Blue, Material.Shade700)
+                enabled: Helper.coord_inside_polygon(map.marker_coords, map.polysec_cur.path) && (map.markerIcon.opacity > 0)
+                highlighted: true
+
+                onClicked: {
+                    if (moveToRadius.text !== '') {
+                        if (cmdWrapper.sendLatLongCommand(
+                                    map.marker_coords,
+                                    parseFloat(moveToRadius.text))) {
+                        }
+                    } else {
+                        acceptRadDialog.open()
+                    }
+                }
+            }
         }
 
         RowLayout {
             id: rectid
             RowLayout {
                 id: loadSavePath
+                Layout.fillWidth: true
                 Button {
                     id: savePath
                     Layout.fillWidth: true
-                    Layout.fillHeight: true
+                    Layout.fillHeight: false
                     text: "Save Path"
 
                     highlighted: true
@@ -277,7 +374,7 @@ Pane {
                 Button {
                     id: loadPath
                     Layout.fillWidth: true
-                    Layout.fillHeight: true
+                    Layout.fillHeight: false
                     text: "Load Path"
 
                     highlighted: true
@@ -308,7 +405,7 @@ Pane {
                 padding: 5
                 antialiasing: false
                 Layout.fillWidth: true
-                Layout.fillHeight: true
+                Layout.fillHeight: false
 
                 highlighted: true
                 Material.background:  Material.color(Material.Green, Material.Shade700)
@@ -332,6 +429,7 @@ Pane {
                 }
             }
         }
+
 
     }
 
