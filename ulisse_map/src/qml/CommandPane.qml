@@ -40,7 +40,6 @@ Pane {
             Layout.maximumWidth: 150
             Layout.preferredWidth: 150
             onClicked: {
-                map.interruptPathIfActive()
                 cmdWrapper.sendHaltCommand()
             }
         }
@@ -58,7 +57,6 @@ Pane {
 
                 onClicked: {
                     if (speedText.text !== '' && headingText.text !== '') {
-                        map.interruptPathIfActive()
                         cmdWrapper.sendSpeedHeadingCommand(speedText.text,
                                                            headingText.text)
                     } else {
@@ -135,7 +133,6 @@ Pane {
 
                 onClicked: {
                     if (holdRadius.text !== '') {
-                        map.interruptPathIfActive()
                         cmdWrapper.sendHoldCommand(parseFloat(holdRadius.text))
                     } else {
                         acceptRadDialog.open()
@@ -191,7 +188,6 @@ Pane {
 
                 onClicked: {
                     if (moveToRadius.text !== '') {
-                        map.interruptPathIfActive()
                         if (cmdWrapper.sendLatLongCommand(
                                     marker_coords,
                                     parseFloat(moveToRadius.text))) {
