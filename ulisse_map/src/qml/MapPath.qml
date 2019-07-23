@@ -371,6 +371,9 @@ MapPolyline {
         for (var i = 0; i< add_markers.length; i++)
             add_markers[i].radius = r
         _handle.h_radius = r
+
+        a_marker.zoomLevel = map.zoomLevel/2 + 9
+        b_marker.zoomLevel = map.zoomLevel/2 + 9
     }
 
     function click_mod_handler(mouse){

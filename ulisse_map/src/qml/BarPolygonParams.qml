@@ -42,19 +42,19 @@ RowLayout {
 
     TextField {
         id: textnametrack
-        text:  nameTrack_
+        text:  (nameTrack_ !== undefined)? nameTrack : ""
         placeholderText:  qsTr("insert name")
     }
 
     TextField {
         id: offsetField
-        text:offset_
+        text: (offset_ !== undefined)? offset_ : ""
         placeholderText: "Offset"
     }
 
     TextField {
         id: angleField
-        text: angle_
+        text: (angle_ !== undefined)? angle_ : ""
         placeholderText: "Angle"
     }
 

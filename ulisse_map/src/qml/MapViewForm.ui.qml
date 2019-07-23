@@ -28,6 +28,7 @@ RowLayout {
     property alias pathState: pathState
     property alias generalState: generalState
     property alias rectState: rectState
+    property alias slidersLeft: slidersLeft
 
     spacing: 0
     width: window.width

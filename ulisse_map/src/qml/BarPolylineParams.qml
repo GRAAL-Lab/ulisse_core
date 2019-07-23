@@ -62,7 +62,7 @@ RowLayout {
 
         TextField {
             id: textnametrack
-            text: nameTrack_
+            text: (nameTrack_ !== undefined)? nameTrack_ : "Path"
 
             placeholderText: qsTr("insert name")
             enabled: true

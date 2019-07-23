@@ -159,9 +159,6 @@ MapComponentForm {
     function clearUlisseTrace() {
         ulissePath.path = []
         ulissePath.firstRun = true
-
-        slidersLeft.delete_all()
-
     }
 
     function clearAll(){
