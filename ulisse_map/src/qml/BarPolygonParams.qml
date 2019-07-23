@@ -11,7 +11,6 @@ RowLayout {
     id: root
     Layout.fillWidth: true
     Layout.fillHeight: true
-    z: 100
 
     property bool buttons: false
     property var angle: parseInt(angleField.text)
