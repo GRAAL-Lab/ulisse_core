@@ -46,24 +46,14 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
         qDebug("No 'speedHeadingTimeout' found!");
     }
 
-    waypointRadiusObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("waypointRadius");
+    waypointRadiusObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("moveToRadiusText");
     if (!waypointRadiusObj_) {
-        qDebug("No 'waypointRadius' found!");
-    }
-
-    waypointPathObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("waypointPath");
-    if (!waypointPathObj_) {
-        qDebug("No 'waypointPath' found!");
+        qDebug("No 'moveToRadiusText' found!");
     }
 
     mapMouseAreaObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("mapMouseArea");
     if (!mapMouseAreaObj_) {
         qDebug("No 'mapMouseArea' found!");
-    }
-
-    loopPathObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("loopPath");
-    if (!loopPathObj_) {
-        qDebug("No 'loopPath' found!");
     }
 
     goalDistanceObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("goalDistance");

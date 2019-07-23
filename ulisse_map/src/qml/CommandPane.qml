@@ -40,7 +40,6 @@ Pane {
             Layout.maximumWidth: 150
             Layout.preferredWidth: 150
             onClicked: {
-                map.interruptPathIfActive()
                 cmdWrapper.sendHaltCommand()
             }
         }
@@ -58,7 +57,6 @@ Pane {
 
                 onClicked: {
                     if (speedText.text !== '' && headingText.text !== '') {
-                        map.interruptPathIfActive()
                         cmdWrapper.sendSpeedHeadingCommand(speedText.text,
                                                            headingText.text)
                     } else {
@@ -135,7 +133,6 @@ Pane {
 
                 onClicked: {
                     if (holdRadius.text !== '') {
-                        map.interruptPathIfActive()
                         cmdWrapper.sendHoldCommand(parseFloat(holdRadius.text))
                     } else {
                         acceptRadDialog.open()
@@ -191,11 +188,9 @@ Pane {
 
                 onClicked: {
                     if (moveToRadius.text !== '') {
-                        map.interruptPathIfActive()
                         if (cmdWrapper.sendLatLongCommand(
-                                    marker_coords,
+                                    map.marker_coords,
                                     parseFloat(moveToRadius.text))) {
-                            markerIcon.opacity = 0.2
                         }
                     } else {
                         acceptRadDialog.open()
@@ -292,11 +287,11 @@ Pane {
                 function end(){
                     enabled = true
                     map.polysec_cur.end.disconnect(end)
-                    map.click_handler = function(){}
+                    map.click_handler = map.click_goto_handler
                     map.pos_changed_handler = function(){}
                     text = "Redefine safety area"
                     slidersLeft.check_safety_all()
-                    cmdWrapper.sendBoundaries(map.polysec_cur.serialize())
+                    cmdWrapper.sendBoundaries(JSON.stringify(map.polysec_cur.serialize()))
                 }
 
 

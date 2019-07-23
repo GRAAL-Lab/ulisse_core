@@ -11,7 +11,6 @@ import QtQuick.Dialogs 1.2
 import "."
 
 RowLayout {
-    property var marker_coords
     property bool ulisse_state_changed: false
     property real myElevation: 6
     property real panesMargin: 14
@@ -119,18 +118,23 @@ RowLayout {
             edge: Qt.LeftEdge
         }
 
-        RowLayout {
+        Rectangle {
+            id: manageToolbar
             width: parent.width
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: bottomToolbar.height
+            height: pathRectPoly.height
+            color: Material.background
+            anchors.bottom: bottomToolbar.top
 
-            z: map.z + 2
-            PathRectPoly {
-                id: pathRectPoly
-                width: parent.width
-                height: parent.height
-                Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom
-                Layout.bottomMargin: 10
+            RowLayout {
+                anchors.fill: parent
+
+                PathRectPoly {
+                    id: pathRectPoly
+                    width: parent.width
+                    height: parent.height
+                    Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom
+                    Layout.bottomMargin: 10
+                }
             }
         }
 

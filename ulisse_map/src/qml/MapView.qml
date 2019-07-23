@@ -11,7 +11,6 @@ import QtQuick.Dialogs 1.2
 import "."
 
 MapViewForm {
-    marker_coords: QtPositioning.coordinate(44.4, 8.94)
 
     Component.onCompleted: {
         console.log(("Current cache for ESRI Map plugin: %1").arg(mapCache.value))

@@ -48,7 +48,7 @@ MapPolyline {
     property string _pathName: "Path"
     property real _angle :30
     property real _offset :30
-    property string _method: "single_winding" //"simple"
+    property var _method: "single_winding" //"simple"
 
     property var debug_c: null
 

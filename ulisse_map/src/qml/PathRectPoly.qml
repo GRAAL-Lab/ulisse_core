@@ -95,7 +95,7 @@ PathRectPolyForm {
     }
 
     function confirm() {
-        map.click_handler = function(){}
+        map.click_handler = map.click_goto_handler
         map.pos_changed_handler = function(){}
         var p = params_panel.getParams()
         cur_managed.enable_ab_markers()
@@ -105,7 +105,7 @@ PathRectPolyForm {
     }
 
     function discard() {
-        map.click_handler = function(){}
+        map.click_handler = map.click_goto_handler
         map.pos_changed_handler = function(){}
         cur_managed.enable_ab_markers()
         cur_managed.check_safe(map.polysec_cur)
@@ -147,6 +147,7 @@ PathRectPolyForm {
     }
 
     function show_panel(panel){
+        manageToolbar.visible = true
         for (var i=0; i<panels.length; i++)
             panels[i].visible = (panel === panels[i])
     }
@@ -171,6 +172,7 @@ PathRectPolyForm {
             slidersLeft.columnTrack.children[i]._comp.disable_ab_markers()
         for (var i=0; i<panels.length; i++)
             panels[i].visible = false
+        manageToolbar.visible = false
     }
 
     function enableBtns(y){
