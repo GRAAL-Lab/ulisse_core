@@ -116,7 +116,7 @@ Row {
         Column {
             spacing: 10
             id: sliderRow
-            width: 41
+            width: addTracks.height
 
             Column{
                 id: main_btns

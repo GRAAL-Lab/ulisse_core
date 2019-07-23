@@ -11,7 +11,6 @@ RowLayout {
     id: root
     width: 100
     height: 100
-    z: 100
 
     property bool buttons: false
     property var  nameTrack: textnametrack.text

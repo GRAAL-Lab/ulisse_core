@@ -34,7 +34,9 @@ Map {
 
     MapRuler {
         id: ruler
-        anchors.fill: parent
+        anchors.right:compass.left
+        anchors.top: parent.top
+        anchors.topMargin: 15
     }
 
     MapSliders {
@@ -52,7 +54,7 @@ Map {
         mipmap: true
         z: map.z + 2
 
-        anchors.right: parent.right
+        anchors.right: sliders.left
         anchors.top: parent.top
         anchors.rightMargin: 15
         anchors.topMargin: 20
