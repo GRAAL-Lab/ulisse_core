@@ -27,7 +27,6 @@ RowLayout {
     id: rowChoices
     anchors.fill: map
 
-    //Row for shapes
     RowLayout {
         id: panelPathChoice
         height: 100

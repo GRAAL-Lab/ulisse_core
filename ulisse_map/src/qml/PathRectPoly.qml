@@ -28,6 +28,7 @@ PathRectPolyForm {
         cur_managed.toggle_dir()
     }
 
+
     /*-------------- POLY CREATION/EDITING ----------------*/
 
     property var cur_managed

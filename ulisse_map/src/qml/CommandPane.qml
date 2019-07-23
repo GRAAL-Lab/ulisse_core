@@ -360,8 +360,6 @@ Pane {
 
         var i,j,lat,lon,p
 
-        slidersLeft.delete_all()
-
         for(i = 0; i < data.paths.length; i++){
             switch(data.paths[i].type){
             case "PolyPath":

@@ -113,7 +113,7 @@ RowLayout {
 
         MapSlidersLeft {
             id: slidersLeft
-            z: map.z + 3
+            z: map.z + 1
             mapSource: map
             edge: Qt.LeftEdge
         }
@@ -144,6 +144,7 @@ RowLayout {
             height: clearPathButton.height
             color: Material.background
             anchors.bottom: parent.bottom
+            z: map.z + 2
 
             RowLayout {
                 anchors.fill: parent

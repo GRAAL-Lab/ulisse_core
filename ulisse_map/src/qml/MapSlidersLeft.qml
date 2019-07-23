@@ -104,8 +104,8 @@ Row {
         id: sliderContainerLeft
         height: parent.height
         width: sliderTogglerLeft.checked ? sliderRow.width + 120 : sliderRow.width
-        color: Qt.rgba(0, 0, 0,
-                       0.05) //Qt.rgba( 0, 191 / 255.0, 255 / 255.0, 0.1)
+        color: Qt.rgba(0.95, 0.95, 0.95,
+                       0.95) //Qt.rgba( 0, 191 / 255.0, 255 / 255.0, 0.1)
 
         Material.accent: mainAccentColor
         Material.foreground: Material.color(Material.BlueGrey,
@@ -124,7 +124,7 @@ Row {
                 Button{
                     id:addTracks
                     width: parent.width
-                    text: (sliderTogglerLeft.checked)? qsTr("Add Path") : qsTr("+")
+                    text: (sliderTogglerLeft.checked)? qsTr("Add Path") : qsTr("")
 
                     onHoveredChanged: function(){
                         addTracksRect.color= (addTracksRect.color == "#abcdef")? "#66cccc" : "#abcdef"
