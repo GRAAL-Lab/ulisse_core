@@ -17,7 +17,7 @@ low_level_control_node:
 
         ThrusterMapping:
             # input saturation limits
-            SurgeMin: 0.0  
+            SurgeMin: 0.0
             SurgeMax: 5.0    # Be careful to make the PID Surge saturation smaller than this values !
             YawrateMin: -0.5
             YawRateMax: 0.5  # Be careful to make the PID Heading saturation smaller than this values !

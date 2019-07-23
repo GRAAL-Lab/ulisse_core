@@ -28,7 +28,7 @@ def chatter_callback(msg):
     e['yawr_error'].append(msg.yawr_error)
     e['surge_control'].append(msg.surge_control)
     e['yawr_control'].append(msg.yawr_control)
-    if ((t1-t0) >= 100) :
+    if ((t1-t0) >= 120) :
     	timer_reached = False
 
 def main(args=None):
@@ -37,7 +37,7 @@ def main(args=None):
 
     g_node = rclpy.create_node('minimal_subscriber')
 
-    subscription = g_node.create_subscription(ControlData, 'ControlData', chatter_callback)
+    subscription = g_node.create_subscription(ControlData, 'ulisse/ControlData', chatter_callback)
     subscription  # prevent unused variable warning
 
     t0 = time.time()
@@ -50,15 +50,19 @@ def main(args=None):
     export_csv = df.to_csv (r'export_dataframe.csv', index = None, header=True)
     plt.figure()
     plt.subplot(221)
+    plt.title("Surge Error")
     plt.plot(e['time'], e['surge_error'], 'r-')
     plt.grid(True)
     plt.subplot(222)
+    plt.title("YawRate Error")
     plt.plot(e['time'], e['yawr_error'], 'b-')
     plt.grid(True)
     plt.subplot(223)
+    plt.title("Torque Surge")
     plt.plot(e['time'], e['surge_control'], 'k-')
     plt.grid(True)
     plt.subplot(224)
+    plt.title("Torque YawRate")
     plt.plot(e['time'], e['yawr_control'], 'g-')
     plt.grid(True)
     plt.show()
