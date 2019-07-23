@@ -176,7 +176,6 @@ PathRectPolyForm {
     }
 
     function enableBtns(y){
-        buttonEdit.visible = y
-        buttonPlay.visible = y
+        panelManage.visible=y
     }
 }

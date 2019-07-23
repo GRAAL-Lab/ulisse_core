@@ -38,53 +38,6 @@ RowLayout {
             method_= (values.params.method !== undefined)? values.params.method : "simple"
             nameTrack_= (values.name!== undefined)? values.name : "Path"
     }
-
-    Label {
-        id:nameTrackLabel
-        text: "INSERT PATH NAME:"
-    }
-
-    TextField {
-        id: textnametrack
-        text:  (nameTrack_ !== undefined)? nameTrack : ""
-        placeholderText:  qsTr("insert name")
-        horizontalAlignment: TextInput.AlignHCenter
-    }
-
-    Label {
-        id:offsettLabel
-        text: "INSERT OFFSET:"
-    }
-
-    TextField {
-        id: offsetField
-        text: (offset_ !== undefined)? offset_ : ""
-        placeholderText: "Offset"
-        horizontalAlignment: TextInput.AlignHCenter
-    }
-
-    Label {
-        id:angleLabel
-        text: "INSERT ANGLE:"
-    }
-
-    TextField {
-        id: angleField
-        text: (angle_ !== undefined)? angle_ : ""
-        placeholderText: "Angle"
-        horizontalAlignment: TextInput.AlignHCenter
-    }
-
-    Label {
-        id:methodLabel
-        text: "CHOOSE  NURBS:"
-    }
-    ComboBox {
-        id: methodField
-        Layout.fillWidth: true
-        model: ["simple", "single_winding"]
-    }
-
     Button {
         id: cancelPolyEdit
         text: qsTr("Cancel")
@@ -102,4 +55,160 @@ RowLayout {
             accept()
         }
     }
+
+    GroupBox {
+        id: groupBoxname
+        y: -10
+        width: 200
+        height: textnametrack.height+40
+        font.capitalization: Font.AllUppercase
+        clip: true
+        title: qsTr("Name")
+
+        label: Label {
+                x: groupBoxname.leftPadding
+                y: 20
+                width: groupBoxname.availableWidth
+                text: groupBoxname.title
+                horizontalAlignment: Text.AlignHCenter
+                elide: Text.ElideRight
+                background: Rectangle {
+                    y: 0
+                    width: 0
+                    height: 0
+                    color: "transparent"
+                    border.color: "#00000000"
+                }
+            }
+        background: Rectangle {
+                y: 0
+                width: 0
+                height: 0
+                color: "transparent"
+                border.color: "#ffffff"
+            }
+        TextField {
+            id: textnametrack
+            text:  (nameTrack_ !== undefined)? nameTrack : ""
+            font.capitalization: Font.AllUppercase
+            placeholderText:  qsTr("insert name")
+            horizontalAlignment: Text.AlignHCenter
+        }
+    }
+    GroupBox {
+        id: groupBoxoffset
+        y: -10
+        width: 200
+        height: textnametrack.height+40
+        font.capitalization: Font.AllUppercase
+        clip: true
+        title: qsTr("Path Name")
+
+        label: Label {
+                x: groupBoxoffset.leftPadding
+                y: 20
+                width: groupBoxoffset.availableWidth
+                text: groupBoxoffset.title
+                horizontalAlignment: Text.AlignHCenter
+                elide: Text.ElideRight
+                background: Rectangle {
+                    y: 0
+                    width: 0
+                    height: 0
+                    color: "transparent"
+                    border.color: "#00000000"
+                }
+            }
+        background: Rectangle {
+                y: 0
+                width: 0
+                height: 0
+                color: "transparent"
+                border.color: "#ffffff"
+            }
+        TextField {
+            id: offsetField
+            text: (offset_ !== undefined)? offset_ : ""
+            placeholderText: "Offset"
+            horizontalAlignment: Text.AlignHCenter
+        }
+    }
+
+    GroupBox {
+        id: groupBoxangle
+        y: -10
+        width: 200
+        height: textnametrack.height+40
+        font.capitalization: Font.AllUppercase
+        clip: true
+        title: qsTr("Angle")
+
+        label: Label {
+                x: groupBoxangle.leftPadding
+                y: 20
+                width: groupBoxangle.availableWidth
+                text: groupBoxangle.title
+                horizontalAlignment: Text.AlignHCenter
+                elide: Text.ElideRight
+                background: Rectangle {
+                    y: 0
+                    width: 0
+                    height: 0
+                    color: "transparent"
+                    border.color: "#00000000"
+                }
+        }
+        background: Rectangle {
+                y: 0
+                width: 0
+                height: 0
+                color: "transparent"
+                border.color: "#ffffff"
+            }
+       TextField {
+            id: angleField
+            text: (angle_ !== undefined)? angle_ : ""
+            placeholderText: "Angle"
+            horizontalAlignment: TextInput.AlignHCenter
+        }
+    }
+    GroupBox {
+        id: groupBoxnurbs
+        y: -10
+        width: 200
+        height: textnametrack.height+40
+        font.capitalization: Font.AllUppercase
+        clip: true
+        title: qsTr("Path Type")
+
+        label: Label {
+                x: groupBoxnurbs.leftPadding
+                y: 20
+                width: groupBoxnurbs.availableWidth
+                text: groupBoxnurbs.title
+                horizontalAlignment: Text.AlignHCenter
+                elide: Text.ElideRight
+                background: Rectangle {
+                    y: 0
+                    width: 0
+                    height: 0
+                    color: "transparent"
+                    border.color: "#00000000"
+                }
+            }
+        background: Rectangle {
+                y: 0
+                width: 0
+                height: 0
+                color: "transparent"
+                border.color: "#ffffff"
+            }
+        ComboBox {
+            id: methodField
+            hoverEnabled: true
+            Layout.fillWidth: true
+            model: ["simple", "single_winding"]
+        }
+    }
+
 }

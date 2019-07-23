@@ -1,10 +1,10 @@
 import QtQuick 2.0
 import QtLocation 5.6
 import QtPositioning 5.6
-
+import QtQuick.Controls.Material 2.1
 MapPolyline {
     id: root
-    line.color: "#ff0000"
+    line.color: Material.color(Material.Red, Material.Shade800)
     opacity: 1
     z: map.z + 2
     Component.onCompleted: function (){

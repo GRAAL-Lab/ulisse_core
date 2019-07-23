@@ -60,7 +60,7 @@ Pane {
             id: rectangle0
             width: 200
             height:90
-            color: "#ffffff"
+            color: "#00000000"
             Layout.fillHeight: false
             Layout.fillWidth: true
 
@@ -79,6 +79,7 @@ Pane {
                     GroupBox {
                         id: groupBox01
                         height: holdRadius.height+40
+                        visible: true
                         Layout.fillWidth: true
 
                         clip: false
@@ -109,6 +110,8 @@ Pane {
 
                         TextField {
                             id: speedText
+                            opacity: 1
+                            clip: false
                             objectName: "moveToRadiusText"
                             placeholderText: qsTr("Insert speed")
                             enabled: true
@@ -189,7 +192,7 @@ Pane {
             id: rectangle1
             width: 200
             height:90
-            color: "#ffffff"
+            color: "#00000000"
             Layout.fillHeight: false
             Layout.fillWidth: true
 
@@ -270,7 +273,7 @@ Pane {
             id: rectangle2
             width: 200
             height:90
-            color: "#ffffff"
+            color: "#00000000"
             Layout.fillHeight: false
             Layout.fillWidth: true
 

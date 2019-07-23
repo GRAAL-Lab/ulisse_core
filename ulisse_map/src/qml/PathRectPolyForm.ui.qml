@@ -18,6 +18,7 @@ RowLayout {
     property alias buttonPlay: buttonPlay
     property alias buttonToggle: buttonToggle
 
+    property alias rowChoices: rowChoices
     property alias panelPathChoice: panelPathChoice
     property alias panelParamsPolygon: panelParamsPolygon
     property alias panelParamsPolyline: panelParamsPolyline

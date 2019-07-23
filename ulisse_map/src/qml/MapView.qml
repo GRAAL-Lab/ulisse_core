@@ -62,9 +62,6 @@ MapViewForm {
     }
 
     map.onZoomLevelChanged:{
-
-        console.log(slidersLeft.columnTrack.children.length)
-        console.log(map.zoomLevel)
         for(var i = 0; i < slidersLeft.columnTrack.children.length; i++){
             slidersLeft.columnTrack.children[i]._comp.a_marker.zoomLevel = map.zoomLevel/2 + 9
             slidersLeft.columnTrack.children[i]._comp.b_marker.zoomLevel = map.zoomLevel/2 + 9

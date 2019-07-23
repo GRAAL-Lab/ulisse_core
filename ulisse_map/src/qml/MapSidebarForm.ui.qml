@@ -120,6 +120,7 @@ Rectangle {
                     }
                     Text {
                         id: markerText
+                        Layout.alignment: Qt.AlignHCenter
                         width: markerlayout.width
                         font.pointSize: 8
                         color: 'gray'

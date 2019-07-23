@@ -1,12 +1,13 @@
 import QtQuick 2.0
 import QtLocation 5.6
 import QtPositioning 5.6
+import QtQuick.Controls.Material 2.1
 
 import "../scripts/helper.js" as Helper
 
 MapPolyline {
     line.width: 3
-    line.color: "#81c784"
+    line.color: Material.color(Material.Green, Material.Shade800)
     opacity: 1.0
     z: map.z + 5
 
@@ -226,7 +227,7 @@ MapPolyline {
 
     property var safe: null
     onSafeChanged: function(){
-        line.color = (safe ? "#00ff00" : "#ff0000")
+        line.color = (safe ? Material.color(Material.Green, Material.Shade800) : Material.color(Material.Red, Material.Shade800))
     }
 
 
@@ -283,13 +284,13 @@ MapPolyline {
         }
         marked = nearest
         if (marked>=0 && marked < _path.length){
-            vertex_markers[marked].color = "#ff0000"
+            vertex_markers[marked].color = Material.color(Material.Red, Material.Shade800)
             if (marked > 1 && marked < _path.length-1){
                 _dashed_line.replaceCoordinate(0, get_next_in_path(marked,1))
                 _dashed_line.replaceCoordinate(1, get_prev_in_path(marked,1))
             }
         } else if(marked >= _path.length && marked < 2*_path.length-1){
-            add_markers[marked-_path.length].color = "#ff0000"
+            add_markers[marked-_path.length].color = Material.color(Material.Red, Material.Shade800)
         }
         _handle.center_select(marked === 2*_path.length)
         _handle.handle_select(marked === 2*_path.length+1)
@@ -492,7 +493,7 @@ MapPolyline {
                 mapMouseArea.hoverEnabled = true
                 addCoordinate(wp)
                 addCoordinate(wp)
-                line.color = "#ffb300"
+                line.color = Material.color(Material.Amber, Material.Shade600)
                 return
             }
             else if (pathLength() > 1){
@@ -500,7 +501,7 @@ MapPolyline {
                 var lastp = map.fromCoordinate(lastwp)
                 if(Helper.distance(p, lastp) < 8){
                     removeCoordinate(pathLength()-1)
-                    line.color = "#33cc33"
+                    line.color = Material.color(Material.Green, Material.Shade800)
                     mapMouseArea.hoverEnabled = false
                     update_centroid()
                     generate_nurbs()
@@ -508,7 +509,7 @@ MapPolyline {
                     return
                 }
             }
-            line.color = "#ffb300"
+            line.color = Material.color(Material.Amber, Material.Shade600)
             addCoordinate(wp)
         }
     }
@@ -521,12 +522,12 @@ MapPolyline {
             var lastwp = coordinateAt(pathLength()-2)
             var lastp = map.fromCoordinate(lastwp)
             if(Helper.distance(p, lastp) < 8){
-                line.color = "#ffb300"
+                line.color = Material.color(Material.Amber, Material.Shade600)
             } else {
-                line.color = "#81c784"
+                line.color = Material.color(Material.Green, Material.Shade800)
             }
         } else {
-            line.color = "#81c784"
+            line.color = Material.color(Material.Green, Material.Shade800)
         }
     }
 
@@ -583,6 +584,6 @@ MapPolyline {
 
     function highlighted(yes)
     {
-        line.color = yes? "#ffff00" : "#ff0000"
+        line.color = yes? Material.color(Material.Amber, Material.Shade600) :  Material.color(Material.Green, Material.Shade600)
     }
 }

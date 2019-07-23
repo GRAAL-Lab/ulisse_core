@@ -7,7 +7,8 @@ import QtQuick.Controls.Material 2.1
 import "."
 
 Rectangle {
-
+    property var _tsize : 17
+    property var _lsize: 15
     property real panesMargin: 14
     property real panesWidth: 252
     property bool responsive: false
@@ -15,7 +16,8 @@ Rectangle {
 
     GridLayout {
         id: gridView
-        width: parent.width
+
+        anchors.fill:parent
         columnSpacing: 0
         rowSpacing: 1
         rows:2
@@ -35,52 +37,70 @@ Rectangle {
 
                 Label {
                     Layout.alignment: Qt.AlignHCenter
-                    font.pointSize: 12
+                    font.pointSize: 18
                     font.weight: Font.DemiBold
-                    color: 'gray'
+                    color: 'dodgerblue'
                     text: "Status"
                 }
 
                 LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
                     labelColor: 'dodgerblue'
-                    label: "Vehicle State"
                     textColor: 'gray'
                     text: fbkUpdater.vehicle_state
+                    label: qsTr("Vehicle State")
+                    lsize: _lsize
+                    tsize: _tsize
                 }
 
                 LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
                     labelColor: 'dodgerblue'
                     label: "GPS time"
                     textColor: 'gray'
                     text: fbkUpdater.gps_time
+                    lsize: _lsize
+                    tsize: _tsize
                 }
 
                 LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
                     labelColor: 'dodgerblue'
                     label: "GPS Pos"
                     textColor: 'gray'
                     text: "%1, %2".arg(fbkUpdater.gps_pos.latitude).arg(fbkUpdater.gps_pos.longitude)
+                    lsize: _lsize
+                    tsize: _tsize
                 }
 
                 LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
                     labelColor: 'dodgerblue'
                     label: "Filtered Pos"
                     textColor: 'gray'
                     text: "%1, %2".arg(fbkUpdater.ulisse_pos.latitude).arg(fbkUpdater.ulisse_pos.longitude)
+                    lsize: _lsize
+                    tsize: _tsize
                 }
 
                 LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
                     labelColor: 'dodgerblue'
                     label: "Surge"
                     textColor: 'gray'
                     text: "%1 m/s".arg(fbkUpdater.ulisse_surge)
+                    lsize: _lsize
+                    tsize: _tsize
                 }
 
                 LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
                     labelColor: 'dodgerblue'
                     label: "Heading"
                     textColor: 'gray'
                     text: "%1°".arg(fbkUpdater.ulisse_yaw_deg)
+                    lsize: _lsize
+                    tsize: _tsize
                 }
             }
         }
@@ -99,34 +119,43 @@ Rectangle {
 
                 Label {
                     Layout.alignment: Qt.AlignHCenter
-                    font.pointSize: 12
+                    font.pointSize: 18
                     font.weight: Font.DemiBold
-                    color: 'gray'
+                    color: 'seagreen'
                     text: "Goal"
                 }
 
                 LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
                     //id: batteryPercLeft
                     labelColor: 'seagreen'
                     label: "Goal Position"
                     textColor: 'gray'
                     text: "%1, %2".arg(fbkUpdater.goal_pos.latitude).arg(fbkUpdater.goal_pos.longitude)
+                    lsize: _lsize
+                    tsize: _tsize
                 }
 
                 LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
                     //id: batteryPercRight
                     labelColor: 'seagreen'
                     label: "Goal Heading"
                     textColor: 'gray'
                     text: "%1°".arg(fbkUpdater.goal_heading)
+                    lsize: _lsize
+                    tsize: _tsize
                 }
 
                 LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
                     //id: batteryPercRight
                     labelColor: 'seagreen'
                     label: "Distance to Goal"
                     textColor: 'gray'
                     text: "%1 (m)".arg(fbkUpdater.goal_distance)
+                    lsize: _lsize
+                    tsize: _tsize
                 }
             }
         }
@@ -138,41 +167,50 @@ Rectangle {
             Layout.columnSpan: 1
             Layout.fillWidth: true
             Layout.preferredWidth: gridView.width/2
-
+            Layout.alignment: Qt.AlignHCenter
             ColumnLayout {
                 id: ctrlData
                 width: parent.width
 
                 Label {
                     Layout.alignment: Qt.AlignHCenter
-                    font.pointSize: 12
+                    font.pointSize: 18
                     font.weight: Font.DemiBold
-                    color: 'gray'
+                    color: 'orange'
                     text: "Control"
                 }
 
                 LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
                     //id: batteryPercLeft
                     labelColor: 'orange'
                     label: "Desired Surge"
                     textColor: 'gray'
                     text: "%1 m/s".arg(fbkUpdater.desired_surge)
+                    lsize: _lsize
+                    tsize: _tsize
                 }
 
                 LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
                     //id: batteryPercRight
                     labelColor: 'orange'
                     label: "Desired Jog"
                     textColor: 'gray'
                     text:  "%1 rad/s".arg(fbkUpdater.desired_jog)
+                    lsize: _lsize
+                    tsize: _tsize
                 }
 
                 LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
                     //id: batteryPercRight
                     labelColor: 'orange'
                     label: "Motor Control Ref"
                     textColor: 'gray'
                     text: "L: %1 \%\nR: %2 \%".arg(fbkUpdater.thrust_ref_left).arg(fbkUpdater.thrust_ref_right)
+                    lsize: _lsize
+                    tsize: _tsize
                 }
             }
         }
@@ -188,29 +226,35 @@ Rectangle {
             ColumnLayout {
                 id: lowLevelData
                 width: parent.width
-
+                Layout.alignment: Qt.AlignHCenter
                 Label {
                     Layout.alignment: Qt.AlignHCenter
-                    font.pointSize: 12
+                    font.pointSize: 18
                     font.weight: Font.DemiBold
-                    color: 'gray'
+                    color: 'tomato'
                     text: "Low Level"
                 }
 
                 LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
                     id: batteryPercLeft
                     labelColor: 'tomato'
                     label: "Battery"
                     textColor: 'gray'
                     text: "L: %1 \%\nR: %2 \%".arg(fbkUpdater.battery_perc_L).arg(fbkUpdater.battery_perc_R)
+                    lsize: _lsize
+                    tsize: _tsize
                 }
 
                 LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
                     id: sw485status
                     labelColor: 'tomato'
                     label: "SW 485 Status"
                     textColor: 'gray'
                     text: "right_satellite_received: %1".arg(fbkUpdater.right_satellite_received485);
+                    lsize: _lsize
+                    tsize: _tsize
 /* "missed_deadlines: %1
 left_motor_received: %2
 left_motor_sent: %3

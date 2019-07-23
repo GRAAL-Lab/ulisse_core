@@ -26,8 +26,6 @@ RowLayout {
         nameTrack_=values.name
     }
 
-
-
     GroupBox {
         id: groupBox
         y: -10

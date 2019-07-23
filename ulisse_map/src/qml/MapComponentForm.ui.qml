@@ -175,7 +175,7 @@ Map {
     MapPolyline {
         id: ulissePath
         line.width: 1
-        line.color: "#ffb300" //Material.color(Material.Amber, Material.Shade600)
+        line.color: Material.color(Material.Amber, Material.Shade600)
         property bool firstRun: true
         property real traceSize: 1000
         z: map.z + 2

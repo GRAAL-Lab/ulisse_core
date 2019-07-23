@@ -60,5 +60,7 @@
         <file>images/close.png</file>
         <file>images/add-path.png</file>
         <file>images/trash.png</file>
+        <file>images/beta.svg</file>
+        <file>images/alpha.svg</file>
     </qresource>
 </RCC>

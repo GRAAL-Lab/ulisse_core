@@ -1,6 +1,7 @@
 import QtQuick 2.0
 import QtLocation 5.9
 import QtPositioning 5.9
+import QtQuick.Controls.Material 2.1
 
 import "../scripts/helper.js" as Helper
 
@@ -167,7 +168,7 @@ MapPolyline {
         for (var i = 0; i< vertex_markers.length; i++){
             vertex_markers[i].center = _path[i]
             vertex_markers[i].opacity = 0
-            vertex_markers[i].color = "#00ff00"
+            vertex_markers[i].color = Material.color(Material.Green, Material.Shade800)
         }
     }
 
@@ -255,10 +256,10 @@ MapPolyline {
         return safe
     }
 
-    line.color: "#81c784"
+    line.color: Material.color(Material.Green, Material.Shade800)
     property var safe: null
     onSafeChanged: function(){
-        line.color = (safe ? "#00ff00" : "#ff0000")
+        line.color = (safe ? Material.color(Material.Green, Material.Shade800) : Material.color(Material.Red, Material.Shade800))
     }
 
     //FIXME: check it in the euclidean plane
@@ -308,7 +309,7 @@ MapPolyline {
             pp.push(pp[0])
             if(Helper.coord_inside_polygon(fbkUpdater.ulisse_pos, pp)){
                 pf = coordinateAt(0)
-                color = "#ffb300"
+                color = Material.color(Material.Amber, Material.Shade600)
             }
         }
 
@@ -361,13 +362,13 @@ MapPolyline {
                 addCoordinate(wp0)
                 addCoordinate(wp0)
                 polygonal_phase = 2
-                line.color = "#ffb300"
+                line.color = Material.color(Material.Amber, Material.Shade600)
             } else if (polygonal_phase === 2){
                 var p0 = map.fromCoordinate(coordinateAt(0))
                 var p2 = map.fromCoordinate(coordinateAt(2))
                 polygonal_phase = 0
                 mapMouseArea.hoverEnabled = false
-                line.color = "#33cc33"
+                line.color = Material.color(Material.Green, Material.Shade800)
                 end()
             }
         }
@@ -420,9 +421,9 @@ MapPolyline {
         var pf = map.toCoordinate(p)
         if (polygonal_phase === 3 && !map_polygon_point_admissibility(p)){
             pf = path[0]
-            color = "#ffb300"
+            color = Material.color(Material.Amber, Material.Shade600)
         } else {
-            color = "#81c784"
+            color = Material.color(Material.Green, Material.Shade800)
         }
         line.color = color
         replaceCoordinate(path.length-1, pf)
@@ -494,7 +495,7 @@ MapPolyline {
     function change_marked(nearest){
         var _path = get_path()
         if (marked>=0 && marked < _path.length){
-            vertex_markers[marked].color = "#00ff00"
+            vertex_markers[marked].color = Material.color(Material.Green, Material.Shade800)
             _dashed_line.reset()
         }
         else if(marked >= _path.length && marked < 2*_path.length){
@@ -543,7 +544,7 @@ MapPolyline {
         map.addMapItem(marker1)
         marker1.center = c
         marker1.opacity = 1
-        marker1.color = "#00ff00"
+        marker1.color = Material.color(Material.Green, Material.Shade800)
         vertex_markers.splice(idx,0,marker1)
         var marker2 = mapMarkerComponent.createObject(map)
         map.addMapItem(marker2)
@@ -636,9 +637,9 @@ MapPolyline {
             change_marked(r4.nearest)
         } else if (moving_idx>=0 && moving_idx<_path.length){
             if (map_polygon_point_mod_admissibility(p, moving_idx)){
-                color = "#81c784"
+                color = Material.color(Material.Green, Material.Shade800)
             } else {
-                color = "#ffb300"
+                color = Material.color(Material.Amber, Material.Shade600)
                 pf = path[moving_idx]
             }
             line.color = color
@@ -679,7 +680,7 @@ MapPolyline {
     function close_polygon(){
         replaceCoordinate(pathLength()-1, path[0])
         mapMouseArea.hoverEnabled = false
-        line.color = "#33cc33"
+        line.color = Material.color(Material.Green, Material.Shade800)
         polygonal_phase = 0
         end()
     }
@@ -883,9 +884,9 @@ MapPolyline {
         _offset =  data.params.offset
         _method =  data.params.method
     }
-//la linea selezionata si colora
+
     function highlighted(yes)
     {
-        line.color = yes? "#ffff00" : "#ff0000"
+        line.color = yes? Material.color(Material.Amber, Material.Shade600) :  Material.color(Material.Green, Material.Shade600)
     }
 }

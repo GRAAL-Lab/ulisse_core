@@ -60,7 +60,7 @@ Row {
     property real fontSize: 14
     property color labelBackground: "transparent"
     property int edge: Qt.RightEdge
-    property var togglerColor: mainAccentColor
+    property color togglerColor: mainAccentColor
 
     function rightEdge() {
         return (containerRow.edge === Qt.RightEdge)

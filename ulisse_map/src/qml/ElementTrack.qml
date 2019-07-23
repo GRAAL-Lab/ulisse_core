@@ -14,20 +14,25 @@ import "."
 import "../scripts/helper.js" as Helper
 
 ElementTrackForm{
+    property color green:  Material.color(Material.Green, Material.Shade700)
+    property color orange: Material.color(Material.Amber, Material.Shade600)
+
     name.onClicked: function(){
         selected(_comp)
     }
 
     function toggle(){
         toggled = !toggled
-        backbut.color = toggled ? "#ffffff" : "#abcdef"
+         name.Material.background = toggled ? orange : green
+        _comp.highlighted(toggled)
     }
 
     function highlight(yes){
         toggled = yes
-        backbut.color = yes ? "#ffffff" : "#abcdef"
+         name.Material.background = yes ? orange : green
         _comp.highlighted(yes)
     }
+    Material.background: green
 
     //tracklistlayout.y: tracklistlayout.height*(tracklistlayout.ntrack)
 

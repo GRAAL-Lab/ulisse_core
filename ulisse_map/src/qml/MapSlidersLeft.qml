@@ -18,7 +18,7 @@ Row {
     property alias sliderW: sliderTogglerLeft.width
     property bool multichoice: false
     property color blue: Material.color(Material.Blue, Material.Shade700)
-    property color greyblue: Material.color(Material.GreyBlue, Material.Shade700)
+    property color greyblue: Material.color(Material.Amber, Material.Shade700)
     property color red: Material.color(Material.Red, Material.Shade700)
     property color lightred: Material.color(Material.Red, Material.Shade900)
     property color green: Material.color(Material.Green, Material.Shade700)
@@ -68,7 +68,6 @@ Row {
         }
 
         property real shear: 0.333
-        property real buttonOpacity: 0.66
         property real mirror: rightEdge() ? 1.0 : -1.0
 
         Rectangle {
@@ -76,7 +75,6 @@ Row {
             height: sliderTogglerLeft.height / 2
             color: togglerColor
             antialiasing: true
-            opacity: sliderTogglerLeft.buttonOpacity
             anchors.top: parent.top
             anchors.left: sliderTogglerLeft.checked ? parent.left : parent.horizontalCenter
             anchors.leftMargin: -5
@@ -94,7 +92,6 @@ Row {
             height: sliderTogglerLeft.height / 2
             color: togglerColor
             antialiasing: true
-            opacity: sliderTogglerLeft.buttonOpacity
             anchors.top: parent.verticalCenter
             anchors.right: sliderTogglerLeft.checked ? parent.right : parent.horizontalCenter
             anchors.rightMargin: 5
@@ -211,8 +208,8 @@ Row {
                         closeimg.color= (closeimg.color === red)? lightred: red
                     }
                     background: Rectangle {
+                        id:closeimg
                         Image {
-                            id:closeimg
                             visible: sliderTogglerLeft.checked ? false : true
                             anchors.horizontalCenter: parent.horizontalCenter
                             anchors.verticalCenter:  parent.verticalCenter
@@ -232,11 +229,11 @@ Row {
                         enableBtns(y)}
 
                     onHoveredChanged: function(){
-                        closeimg.color= (closeimg.color === green)? lightgreen: green
+                        checkimg.color= (checkimg.color === green)? lightgreen: green
                     }
                     background: Rectangle {
-                        Image {
-                            id:checkimg
+                        id:checkimg
+                        Image {                            
                             visible: sliderTogglerLeft.checked ? false : true
                             anchors.horizontalCenter: parent.horizontalCenter
                             anchors.verticalCenter : parent.verticalCenter
@@ -259,6 +256,7 @@ Row {
     function enableBtns(y){
         addTracks.enabled = y
         deleteTracks.enabled = y
+
     }
 
     function restoreBtns(){
@@ -302,7 +300,6 @@ Row {
             map.removeMapItem(c._comp)
             c.destroy()
             pathRectPoly.n--
-            console.log(pathRectPoly.n)
         }
     }
 function save_items(){}
@@ -316,7 +313,6 @@ function save_items(){}
                 map.removeMapItem(c._comp)
                 c.destroy()
                 pathRectPoly.n--
-                console.log(pathRectPoly.n)
             }
         }
         restoreBtns()

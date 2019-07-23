@@ -20,8 +20,6 @@ RowLayout {
     property var _comp
     property alias name: name
     property alias tracklistlayout: tracklistlayout
-    property alias backbut: backbut
-
     property bool toggled: false
     property bool expanded: false
 
@@ -39,26 +37,19 @@ RowLayout {
     }[mapView.currentState]
 
     // modo per distanziare
-    height: 30
     scale: 1
     antialiasing: true
 
     Button {
         id: name
         text: expanded ? _comp._pathName : ntrack
+        font.weight: Font.ExtraBold
+        highlighted: true
+        font.pointSize: 11
         Layout.fillHeight: true
         Layout.fillWidth: true
         antialiasing: false
         enabled: true
-
-        background: Rectangle {
-            visible: true
-            id: backbut
-            opacity: 1
-            color: "#abcdef"
-            border.width: 1
-            radius: 2
-        }
     }
     states: [
         State {
@@ -66,6 +57,10 @@ RowLayout {
             PropertyChanges {
                 target: deleteItem
                 enabled: false
+            }
+
+            PropertyChanges {
+                target: name
             }
         }
     ]
