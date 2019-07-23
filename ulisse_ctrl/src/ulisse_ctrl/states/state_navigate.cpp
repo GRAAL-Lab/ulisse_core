@@ -69,13 +69,19 @@ namespace states {
         Json::Value obj, obj_master;
 
         bool reverse = false;
+        std::cout << "ARRIVED :" << json_nurbs << std::endl;
 
         reader.parse(json_nurbs, obj_master);
         centroid_.latitude = obj_master["centroid"][0].asDouble();
         centroid_.longitude = obj_master["centroid"][1].asDouble();
 
         if( obj["direction"].asInt()){
+            std::cout << "DIRECTION TRUE" << std::endl;
             reverse = true;
+        }
+        else{
+            std::cout << "DIRECTION FALSE" << std::endl;
+            reverse = false;
         }
 
         number_of_curves_ = 0;
