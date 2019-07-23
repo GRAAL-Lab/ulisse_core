@@ -13,16 +13,17 @@ import "./qml"
 
 ApplicationWindow {
     id: window
-    width: 940
-    height: 720
+    minimumWidth: 1300
+    minimumHeight: 700
     visible: true
+    visibility: "Maximized"
 
-    minimumHeight: 500
-    minimumWidth: 705
 
-    property var mainColor: (settings.theme == "Light" ? Material.Cyan : Material.Red)
-    property var mainAccentColor: Material.color(Material.Amber, Material.Shade700)
-    property var secondaryAccentColor: Material.color(Material.Green, Material.Shade600)
+    property int mainColor: (settings.theme == "Light" ? Material.Cyan : Material.Red)
+    property color mainAccentColor: Material.color(Material.Amber,
+                                                 Material.Shade700)
+    property color secondaryAccentColor: Material.color(Material.Green,
+                                                      Material.Shade600)
     property string futureMapPlugin: ""
 
     Material.theme: settings.theme
@@ -32,9 +33,8 @@ ApplicationWindow {
         // This onClosing function is needed since the map
         // plugin cannot be changed 'live', so we will register
         // the new setting only when closing the app
-        settings.mapPluginType = futureMapPlugin;
+        settings.mapPluginType = futureMapPlugin
     }
-
 
     Shortcut {
         // Halting catamaran when space is pressed
@@ -49,59 +49,12 @@ ApplicationWindow {
         id: settings
         property int shTimeout: 120
         property string mapPluginType: "esri"
-        property string esriMapCacheDir: "/home/graal/Documents/map_offline_tiles/esri/"
+        property string esriMapCacheDir: home_dir + "/.map_offline_tiles/esri/"
         property string theme: "Light"
 
         Component.onCompleted: {
             futureMapPlugin = mapPluginType
             mapViewLoader.active = true
-        }
-    }
-
-    header: CustomHeader {
-        id: headerBar
-    }
-
-    Item{
-        // This Item is needed to add margins to the StackLayout and make it correctly resize
-        id: stackViewContainer
-        anchors.fill: parent
-        anchors.horizontalCenter: parent.horizontalCenter;
-        height: window.height - headerBar.height
-        width: window.width
-
-        StackLayout {
-            id: mainStackView
-            height: parent.height
-            anchors.fill: parent
-            currentIndex: headerBar.tabBarIndex
-            Layout.alignment: Qt.AlignHCenter
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-
-            Loader {
-                // This loader is need to dynamically load the map plugin
-                // only once the settings are loaded (so to be able to
-                // correctly read 'mapPluginType' and 'esriMapCacheDir').
-                id: mapViewLoader
-                sourceComponent: mapViewComponent
-                active: false
-                anchors.fill: parent
-            }
-
-            DataView {
-                id: dataView
-                anchors.fill: parent
-                anchors.margins: 10
-            }
-        }
-    }
-
-    Component {
-        id: mapViewComponent
-        MapView {
-            id: mapView
-            anchors.fill: parent
         }
     }
 
@@ -124,7 +77,6 @@ ApplicationWindow {
         y: Math.round((window.height - height) / 2) - headerBar.height
         width: Math.round(window.width * 0.8)
         height: Math.round(window.height * 0.7)
-
     }
 
     FileDialog {
@@ -134,16 +86,14 @@ ApplicationWindow {
         selectFolder: true
 
         onAccepted: {
-            var path = browseCacheDirDialog.fileUrl.toString();
+            var path = browseCacheDirDialog.fileUrl.toString()
             // remove prefixed "file://"
-            path = path.replace(/^(file:\/{2})/,"");
+            path = path.replace(/^(file:\/{2})/, "")
             // unescape html codes like '%23' for '#'
-            var cleanPath = decodeURIComponent(path);
+            var cleanPath = decodeURIComponent(path)
             settingsDialog.mapCacheDirText = cleanPath
         }
     }
-
-
 
     /*Text {
         id: loadingText
@@ -156,4 +106,53 @@ ApplicationWindow {
         font.family: "Ubuntu Mono"
     }*/
 
+    //// UI part ////
+    header: CustomHeader {
+        id: headerBar
+    }
+
+    Item {
+        // This Item is needed to add margins to the StackLayout and make it correctly resize
+        id: stackViewContainer
+        anchors.fill: parent
+        anchors.horizontalCenter: parent.horizontalCenter
+        height: window.height - headerBar.height
+        width: window.width
+
+        Component {
+            id: mapViewComponent
+            MapView {
+                id: mapView
+                anchors.fill: parent
+            }
+        }
+
+        StackLayout {
+            id: mainStackView
+            height: parent.height
+            anchors.fill: parent
+            currentIndex: headerBar.tabBarIndex
+            Layout.alignment: Qt.AlignHCenter
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+
+            Loader {
+                // This loader is need to dynamically load the map plugin
+                // only once the settings are loaded (so to be able to
+                // correctly read 'mapPluginType' and 'esriMapCacheDir').
+                id: mapViewLoader
+                sourceComponent: mapViewComponent
+                active: false
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+            }
+
+            DataView {
+                id: dataView
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+                Layout.margins: 10
+            }
+        }
+    }
 }

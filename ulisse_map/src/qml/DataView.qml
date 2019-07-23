@@ -13,21 +13,21 @@ Rectangle {
     property bool responsive: false
     color: Material.background
 
-    function getPaneWidth(parentID){
-        var itemsPerRow = 2
-        var paneWidth = responsive ? panesWidth : parentID.width / itemsPerRow - panesMargin / 2
-        return paneWidth;
-    }
-
-    Flow {
-        id: flowView
+    GridLayout {
+        id: gridView
         width: parent.width
-        spacing: 10
+        columnSpacing: 0
+        rowSpacing: 1
+        rows:2
+        columns:2
 
         Pane {
             id: statusPane
-            width: getPaneWidth(parent)
             Material.elevation: myElevation
+            Layout.rowSpan: 1
+            Layout.columnSpan: 1
+            Layout.fillWidth: true
+            Layout.preferredWidth: gridView.width/2
 
             ColumnLayout {
                 id: statusata
@@ -87,8 +87,11 @@ Rectangle {
 
         Pane {
             id: goalPane
-            width: getPaneWidth(parent)
             Material.elevation: myElevation
+            Layout.rowSpan: 1
+            Layout.columnSpan: 1
+            Layout.fillWidth: true
+            Layout.preferredWidth: gridView.width/2
 
             ColumnLayout {
                 id: goalData
@@ -130,8 +133,11 @@ Rectangle {
 
         Pane {
             id: ctrlPane
-            width: getPaneWidth(parent)
             Material.elevation: myElevation
+            Layout.rowSpan: 1
+            Layout.columnSpan: 1
+            Layout.fillWidth: true
+            Layout.preferredWidth: gridView.width/2
 
             ColumnLayout {
                 id: ctrlData
@@ -173,8 +179,11 @@ Rectangle {
 
         Pane {
             id: lowLevelPane
-            width: getPaneWidth(parent)
             Material.elevation: myElevation
+            Layout.rowSpan: 1
+            Layout.columnSpan: 1
+            Layout.fillWidth: true
+            Layout.preferredWidth: gridView.width/2
 
             ColumnLayout {
                 id: lowLevelData

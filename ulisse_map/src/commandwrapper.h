@@ -13,6 +13,7 @@
 #include "ulisse_msgs/msg/goal_context.hpp"
 #include "ulisse_msgs/msg/status_context.hpp"
 #include "ulisse_msgs/srv/control_command.hpp"
+#include "ulisse_msgs/srv/set_boundaries.hpp"
 
 #include "ulisse_msgs/topicnames.hpp"
 
@@ -25,6 +26,7 @@ class CommandWrapper : public QObject {
 
     rclcpp::Node::SharedPtr np_;
     rclcpp::Client<ulisse_msgs::srv::ControlCommand>::SharedPtr command_srv_;
+    rclcpp::Client<ulisse_msgs::srv::SetBoundaries>::SharedPtr boundary_srv_;
     rclcpp::Subscription<ulisse_msgs::msg::GoalContext>::SharedPtr goal_cxt_sub_;
 
     ulisse_msgs::msg::GoalContext goal_cxt_msg_;
@@ -37,16 +39,20 @@ class CommandWrapper : public QObject {
 
     void GoalContextCB(const ulisse_msgs::msg::GoalContext::SharedPtr msg);
     void ShowToast(const QVariant message, const QVariant duration);
+    bool SendBoundariesRequest(ulisse_msgs::srv::SetBoundaries::Request::SharedPtr req);
+    bool SendPathRequest(ulisse_msgs::srv::ControlCommand::Request::SharedPtr req);
     bool SendCommandRequest(ulisse_msgs::srv::ControlCommand::Request::SharedPtr req);
     //void SetupCommandClient();
 
 public:
-    explicit CommandWrapper(QObject* parent = 0);
-    explicit CommandWrapper(QQmlApplicationEngine* engine, QObject* parent = 0);
+    explicit CommandWrapper(QObject* parent = nullptr);
+    explicit CommandWrapper(QQmlApplicationEngine* engine, QObject* parent = nullptr);
     virtual ~CommandWrapper();
     void Init(QQmlApplicationEngine* engine);
     void SetNodeHandle(const rclcpp::Node::SharedPtr& np);
 
+    Q_INVOKABLE bool sendBoundaries(const QString boundary);
+    Q_INVOKABLE bool sendPath(const QString path);
     Q_INVOKABLE bool sendHaltCommand();
     Q_INVOKABLE bool sendHoldCommand(double radius);
     Q_INVOKABLE bool sendLatLongCommand(const QGeoCoordinate& goal, double radius);
@@ -55,8 +61,8 @@ public:
     Q_INVOKABLE void stopPath();
     Q_INVOKABLE void cancelPath();
     Q_INVOKABLE void resumePath();
-    Q_INVOKABLE void savePathToFile(const QString file);
-    Q_INVOKABLE bool loadPathFromFile(const QString file);
+    Q_INVOKABLE void savePathToFile(const QString fileName, const QString& data);
+    Q_INVOKABLE QString loadPathFromFile(const QString file);
     Q_INVOKABLE bool goToNextWaypoint();
     Q_INVOKABLE bool goToPreviousWaypoint();
 

@@ -4,13 +4,13 @@ import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
 import QtGraphicalEffects 1.0
 
+//TODO: complete the page
 Dialog {
     id: dialog
     property alias dialog: dialog
 
     modal: true
     focus: true
-    //title: "Help"
 
     standardButtons: Dialog.Ok
     onAccepted: {
@@ -31,22 +31,15 @@ Dialog {
             font.bold: true
             verticalAlignment: Text.AlignBottom
             horizontalAlignment: Label.AlignHCenter
-            //verticalAlignment: Label.AlignVCenter
             Layout.fillWidth: true
-            //Layout.fillHeight: true
-            //Layout.bottomMargin: - helpColumn.spacing
         }
 
         Text {
-            //width: parent.width - 20
             font.pointSize: 11
-            //readOnly: true
             text: "<b>Spacebar</b>: Send a Halt Command"
             color: Material.foreground
             wrapMode: Text.Wrap
-            anchors.top: shortcutsTitle.bottom
-            anchors.topMargin: 5
-
+            Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
         }
 
         Label {
@@ -56,10 +49,7 @@ Dialog {
             font.pointSize: 12
             font.bold: true
             horizontalAlignment: Label.AlignHCenter
-            //verticalAlignment: Label.AlignVCenter
             Layout.fillWidth: true
-            //Layout.fillHeight: true
-            //Layout.bottomMargin: - helpColumn.spacing
         }
 
         TextArea {
@@ -69,51 +59,25 @@ Dialog {
             readOnly: true
             text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin viverra in nibh ac auctor. Vestibulum id fermentum elit, sed mollis libero. Mauris sed vehicula tortor, et tempor erat. Maecenas orci est, dignissim non mattis sit amet, tincidunt at risus."
             wrapMode: Text.WordWrap
-            anchors.top: aboutTitle.bottom
-            anchors.topMargin: 5
+            Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
 
         }
 
         Label {
             text: "Developed by GRAAL Lab (2019)"
+            horizontalAlignment: Text.AlignHCenter
             color: "gray"
-            horizontalAlignment: Label.AlignHCenter
-            //verticalAlignment: Label.AlignVCenter
+            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
             Layout.fillWidth: true
-            //Layout.fillHeight: true
-            anchors.bottom: graalLogo.top
-            anchors.bottomMargin: 10
         }
 
         Image {
             id: graalLogo
-            height: 20
+            Layout.minimumHeight: 20
             fillMode: Image.PreserveAspectFit
             source: 'qrc:/images/graal_logo.png'
             Layout.fillWidth: true
-            MouseArea {
-                anchors.fill: parent
-
-                onClicked:  {
-                    eastereggDialog.open();
-                }
-            }
-        }
-
-        ModalPopup {
-            id: eastereggDialog
-            title: "Interfaccia bella assai"
-            contentItem: Text {
-                id: theText
-                width: parent.width
-                color: "#ff7644"
-                text: "by <b>wanderfra</b>"
-                font.bold: true
-                verticalAlignment: Text.AlignVCenter
-                horizontalAlignment: Text.AlignHCenter
-                styleColor: "#ffead1"
-                style: Text.Outline
-            }
+            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
         }
     }
 }

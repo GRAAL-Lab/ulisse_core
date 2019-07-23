@@ -38,6 +38,7 @@ FeedbackUpdater::~FeedbackUpdater()
 void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
 {
 
+    //FIXME: what if no np_ defined?
     appEngine_ = engine;
 
     myTimer_ = new QTimer(this);
@@ -112,6 +113,7 @@ void FeedbackUpdater::SetNodeHandle(const rclcpp::Node::SharedPtr& np)
 
 void FeedbackUpdater::GPSDataCB(const ulisse_msgs::msg::GPSData::SharedPtr msg)
 {
+    //FIXME: it is really necessary to copy the message if we extract the data?
     gps_data_msg_ = *msg;
 
     long now_secs = static_cast<long>(gps_data_msg_.time);
@@ -143,13 +145,14 @@ void FeedbackUpdater::LLCSw485StatusCB(const ulisse_msgs::msg::LLCSw485Status::S
 {
     //sw485_status_msg_ = *msg;
     missed_deadlines_ = msg->missed_deadlines;
-    right_satellite_received_ = msg->right_satellite.received;
+    right_satellite_received_ = int(msg->right_satellite.received);
 
     //std::cout << "right motor received: " << right_motor_received_ << std::endl;
 }
 
 void FeedbackUpdater::GoalContextCB(const ulisse_msgs::msg::GoalContext::SharedPtr msg)
 {
+    //FIXME: it is really necessary to copy the message if we extract the data?
     goal_cxt_msg_ = *msg;
 
     q_goal_pos_.setLatitude(goal_cxt_msg_.current_goal.latitude);
@@ -161,13 +164,16 @@ void FeedbackUpdater::GoalContextCB(const ulisse_msgs::msg::GoalContext::SharedP
 
 void FeedbackUpdater::ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg)
 {
+    //FIXME: it is really necessary to copy the message if we extract the data?
+    //TODO: define a macro for rounding?
     control_cxt_msg_ = *msg;
-    q_desired_surge_ = (int)(control_cxt_msg_.desired_speed * 1E3) / 1E3;
-    q_desired_jog_ = (int)(control_cxt_msg_.desired_jog * 1E3) / 1E3;
+    q_desired_surge_ = int(control_cxt_msg_.desired_speed * 1E3) / 1E3;
+    q_desired_jog_ = int(control_cxt_msg_.desired_jog * 1E3) / 1E3;
 }
 
 void FeedbackUpdater::StatusContextCB(const ulisse_msgs::msg::StatusContext::SharedPtr msg)
 {
+    //FIXME: it is really necessary to copy the message if we extract the data?
     status_cxt_msg_ = *msg;
 
     q_vehicle_state_ = status_cxt_msg_.vehicle_state.c_str();
@@ -179,15 +185,15 @@ void FeedbackUpdater::StatusContextCB(const ulisse_msgs::msg::StatusContext::Sha
     //qDebug() << "State: " << q_vehicle_state_ << ", " << status_cxt_msg_.vehicle_state.c_str();
 
     if (q_vehicle_state_.toStdString() == ulisse::states::ID::latlong
-        || q_vehicle_state_.toStdString() == ulisse::states::ID::hold) {
+    or  q_vehicle_state_.toStdString() == ulisse::states::ID::hold) {
         goalFlagObj_->setProperty("opacity", 1.0);
     } else {
         goalFlagObj_->setProperty("opacity", 0.3);
     }
 
     // Rounding surge and heading to 2 decimal places
-    q_ulisse_yaw_deg_ = (int)(q_ulisse_yaw_deg_ * 1E2) / 1E2;
-    q_ulisse_surge_ = (int)(q_ulisse_surge_ * 1E2) / 1E2;
+    q_ulisse_yaw_deg_ = int(q_ulisse_yaw_deg_ * 1E2) / 1E2;
+    q_ulisse_surge_ = int(q_ulisse_surge_ * 1E2) / 1E2;
 }
 
 void FeedbackUpdater::copyToClipboard(QString newText)

@@ -62,6 +62,7 @@ target_link_libraries(${PROJECT_NAME}_node
     Qt5::Positioning
     Qt5::QuickControls2
 	ulissemap_lib
+	${ulisse_msgs_LIBRARIES}
 	)
 
 

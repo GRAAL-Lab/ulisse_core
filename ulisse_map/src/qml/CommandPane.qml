@@ -8,14 +8,21 @@ import QtGraphicalEffects 1.0
 import QtQuick.Dialogs 1.2
 
 Pane {
-    property alias wpRad: wpCommands.wpRadius
+
+    property var buttonSafety: buttonSafety
+
+    property var trackComponent
+
+    Component.onCompleted: {
+        trackComponent = Qt.createComponent("ElementTrack.qml")
+    }
 
     ColumnLayout {
         id: buttonsColumn
         anchors.verticalCenter: parent.verticalCenter
         anchors.horizontalCenter: parent.horizontalCenter
         width: parent.width
-        spacing: 0
+        spacing: 2
 
         Label {
             Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
@@ -26,15 +33,17 @@ Pane {
             text: "Commands"
         }
 
-
         Button {
+
             text: "Halt"
+            Layout.minimumWidth: 150
+            Layout.maximumWidth: 150
+            Layout.preferredWidth: 150
             onClicked: {
-                map.interruptPathIfActive();
+                map.interruptPathIfActive()
                 cmdWrapper.sendHaltCommand()
             }
         }
-
 
         RowLayout {
             id: speedHeadingRow
@@ -42,32 +51,37 @@ Pane {
 
             Button {
                 id: speedHeadButton
+                Layout.minimumWidth: 150
+                Layout.maximumWidth: 150
+                Layout.preferredWidth: 150
                 text: "Speed-Heading"
 
                 onClicked: {
-                    if(speedText.text !== '' && headingText.text !== ''){
-                        map.interruptPathIfActive();
-                        cmdWrapper.sendSpeedHeadingCommand(speedText.text, headingText.text)
+                    if (speedText.text !== '' && headingText.text !== '') {
+                        map.interruptPathIfActive()
+                        cmdWrapper.sendSpeedHeadingCommand(speedText.text,
+                                                           headingText.text)
                     } else {
-                        speedHeadingDialog.open();
+                        speedHeadingDialog.open()
                     }
                 }
             }
 
             Rectangle {
                 id: speedHeadSpacer
-                width: buttonsColumn.width - speedHeadButton.width - speedText.width - headingText.width
                 height: parent.height
-                anchors.left: speedHeadButton.right
                 color: 'transparent'
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
             }
-
 
             TextField {
                 id: speedText
-                Layout.maximumWidth: 40
-                Layout.fillWidth: true
-                anchors.left: speedHeadSpacer.right
+                Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                Layout.minimumWidth: 45
+                Layout.maximumWidth: 45
+                Layout.preferredWidth: 45
+
                 font.pointSize: 10
                 placeholderText: "S"
                 selectByMouse: true
@@ -77,20 +91,21 @@ Pane {
                 ToolTip.timeout: 5000
                 ToolTip.visible: hovered
 
-
                 validator: DoubleValidator {
-                    bottom: -5.0;
-                    top: +5.0;
-                    decimals: 1;
+                    bottom: -5.0
+                    top: +5.0
+                    decimals: 1
                     notation: DoubleValidator.StandardNotation
                 }
             }
 
             TextField {
                 id: headingText
-                Layout.maximumWidth: 40
-                Layout.fillWidth: true
-                anchors.left: speedText.right
+                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                Layout.minimumWidth: 45
+                Layout.maximumWidth: 45
+                Layout.preferredWidth: 45
+
                 font.pointSize: 10
                 placeholderText: "H°"
                 selectByMouse: true
@@ -101,9 +116,8 @@ Pane {
                 ToolTip.visible: hovered
 
                 validator: IntValidator {
-                    bottom: 0;
-                    top: 360;
-
+                    bottom: 0
+                    top: 360
                 }
             }
         }
@@ -114,26 +128,28 @@ Pane {
 
             Button {
                 id: holdButton
+                Layout.minimumWidth: 150
+                Layout.maximumWidth: 150
+                Layout.preferredWidth: 150
                 text: "Hold Position"
 
                 onClicked: {
-                    if(holdRadius.text !== ''){
+                    if (holdRadius.text !== '') {
                         map.interruptPathIfActive()
-                        cmdWrapper.sendHoldCommand(parseFloat(holdRadius.text));
+                        cmdWrapper.sendHoldCommand(parseFloat(holdRadius.text))
                     } else {
-                        acceptRadDialog.open();
+                        acceptRadDialog.open()
                     }
                 }
             }
 
             Rectangle {
                 id: holdSpacer
-                width: buttonsColumn.width - holdButton.width - holdRadius.width
                 height: parent.height
-                anchors.left: holdButton.right
                 color: 'transparent'
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
             }
-
 
             TextField {
                 id: holdRadius
@@ -144,8 +160,8 @@ Pane {
                 font.pointSize: 10
                 placeholderText: "Radius"
                 selectByMouse: true
-                anchors.left: holdSpacer.right
                 text: "5.0"
+                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
 
                 ToolTip.text: qsTr("Acceptance Radius (meters)")
                 ToolTip.delay: 500
@@ -153,9 +169,9 @@ Pane {
                 ToolTip.visible: hovered
 
                 validator: DoubleValidator {
-                    bottom: 0.0;
-                    top: 101.0;
-                    decimals: 3;
+                    bottom: 0.0
+                    top: 101.0
+                    decimals: 3
                     notation: DoubleValidator.StandardNotation
                 }
             }
@@ -167,29 +183,33 @@ Pane {
 
             Button {
                 id: moveToButton
+                Layout.minimumWidth: 150
+                Layout.maximumWidth: 150
+                Layout.preferredWidth: 150
                 text: "Move To Marker"
                 enabled: map.markerIconOpacity > 0 ? true : false
 
                 onClicked: {
-                    if(moveToRadius.text !== ''){
+                    if (moveToRadius.text !== '') {
                         map.interruptPathIfActive()
-                        if(cmdWrapper.sendLatLongCommand(marker_coords, parseFloat(moveToRadius.text))){
+                        if (cmdWrapper.sendLatLongCommand(
+                                    marker_coords,
+                                    parseFloat(moveToRadius.text))) {
                             markerIcon.opacity = 0.2
                         }
                     } else {
-                        acceptRadDialog.open();
+                        acceptRadDialog.open()
                     }
                 }
             }
 
             Rectangle {
                 id: moveToSpacer
-                width: buttonsColumn.width - moveToButton.width - moveToRadius.width
                 height: parent.height
-                anchors.left: moveToButton.right
                 color: 'transparent'
+                Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                Layout.fillWidth: true
             }
-
 
             TextField {
                 id: moveToRadius
@@ -201,18 +221,17 @@ Pane {
                 placeholderText: "Radius"
                 selectByMouse: true
                 text: "5.0"
+                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
 
                 ToolTip.text: qsTr("Acceptance Radius (meters)")
                 ToolTip.delay: 500
                 ToolTip.timeout: 5000
                 ToolTip.visible: hovered
 
-
-                anchors.left: moveToSpacer.right
                 validator: DoubleValidator {
-                    bottom: 0.0;
-                    top: 101.0;
-                    decimals: 3;
+                    bottom: 0.0
+                    top: 101.0
+                    decimals: 3
                     notation: DoubleValidator.StandardNotation
                 }
             }
@@ -223,7 +242,7 @@ Pane {
             property real margin: 8
 
             Layout.preferredHeight: 2
-            Layout.preferredWidth: parent.width - margin*2
+            Layout.preferredWidth: parent.width - margin * 2
             Layout.leftMargin: margin
             Layout.rightMargin: margin
             Layout.topMargin: margin
@@ -231,89 +250,65 @@ Pane {
             border.color: "lightgrey"
         }
 
-        WaypointControls {
-            id: wpCommands
-            Layout.fillWidth: true
-        }
-
-
         RowLayout {
-            id: additionalWpControls
+            id: rectid
+            RowLayout {
+                id: loadSavePath
+                Button {
+                    id: savePath
+                    width: 255
+                    height: 40
+                    Layout.fillWidth: true
+                    text: "Save Path"
+                    transformOrigin: Item.Left
+                    enabled: true
 
-            Button {
-                id: goToPreviousWp
-                text: "<"
-                font.weight: Font.Bold
-                font.pointSize: 16
-                Layout.preferredWidth: 40
-                enabled: mapView.pathCurrentState === pathState.active ? true : false
-
-                ToolTip.text: qsTr("Go To Previous Waypoint")
-                ToolTip.delay: 500
-                ToolTip.timeout: 5000
-                ToolTip.visible: hovered
-
-                onClicked: {
-                    cmdWrapper.goToPreviousWaypoint()
+                    onClicked: {
+                        savePathDialog.open()
+                    }
                 }
-            }
 
-            Button {
-                id: goToNextWp
-                text: ">"
-                font.weight: Font.Bold
-                font.pointSize: 16
-                Layout.preferredWidth: 40
-                enabled: mapView.pathCurrentState === pathState.active ? true : false
+                Button {
+                    id: loadPath
+                    Layout.fillWidth: true
+                    text: "Load Path"
+                    enabled: (mapView.pathCurrentState === pathState.empty) ? true : false
 
-                ToolTip.text: qsTr("Go To Next Waypoint")
-                ToolTip.delay: 500
-                ToolTip.timeout: 5000
-                ToolTip.visible: hovered
-
-                onClicked: {
-                    cmdWrapper.goToNextWaypoint()
-                }
-            }
-
-            CheckBox {
-                objectName: "loopPath"
-                id: loopPathCB
-                text: "Loop over path"
-                checked: false
-
-                onCheckStateChanged: {
-                    if (checked === true){
-                        wpCommands.loopPath = true;
-                    } else {
-                        wpCommands.loopPath = false;
+                    onClicked: {
+                        loadPathDialog.open()
                     }
                 }
             }
         }
 
         RowLayout {
-            id: loadSavePath
-            Button {
-                id: savePath
-                text: "Save Path"
-                enabled: (mapView.pathCurrentState === pathState.empty) |  (mapView.pathCurrentState === pathState.creating) ? false : true
-
-                onClicked: {
-                    savePathDialog.open()
-                }
-            }
+            id: additionalWpControls
 
             Button {
-                id: loadPath
-                text: "Load Path"
-                enabled: (mapView.pathCurrentState === pathState.empty) ? true : false
+                id: buttonSafety
+                text: qsTr("Define safety area")
+                Layout.fillWidth: true
 
-                onClicked: {
-                    loadPathDialog.open()
+                function end(){
+                    enabled = true
+                    map.polysec_cur.end.disconnect(end)
+                    map.click_handler = function(){}
+                    map.pos_changed_handler = function(){}
+                    text = "Redefine safety area"
+                    slidersLeft.check_safety_all()
+                    cmdWrapper.sendBoundaries(map.polysec_cur.serialize())
+                }
+
+
+                onClicked: function(){
+                    map.polysec_cur.clear_path()
+                    map.center = fbkUpdater.ulisse_pos
+                    map.click_handler = map.polysec_cur.click_handler
+                    map.pos_changed_handler = map.polysec_cur.pos_changed_handler
+                    enabled = false
+                    map.polysec_cur.end.connect(end)
                 }
             }
-
         }
     }
 
@@ -321,22 +316,13 @@ Pane {
         id: loadPathDialog
         title: "Please choose a file"
         folder: shortcuts.home
-        nameFilters: ["Path Files (*.path)"]
+        nameFilters: ["Path Files (*.ulisse)"]
 
         onAccepted: {
-            map.deletePath();
-            var path = loadPathDialog.fileUrl.toString();
-            // remove prefixed "file://"
-            path = path.replace(/^(file:\/{2})/,"");
-            // unescape html codes like '%23' for '#'
-            var cleanPath = decodeURIComponent(path);
-            // console.log("Loaded file path: %1".arg(cleanPath))
-
-            if(cmdWrapper.loadPathFromFile(cleanPath)){
-                mapView.pathCurrentState = pathState.empty;
-                wpCommands.wpButtonText = "Finalize..."
-                wpCommands.wpButtonHighlighted = true;
-            }
+            var path = loadPathDialog.fileUrl.toString()
+            path = path.replace(/^(file:\/{2})/, "")
+            console.log(path)
+            loadPaths(path)
         }
     }
 
@@ -345,15 +331,79 @@ Pane {
         title: "Saving path..."
         folder: shortcuts.home
         selectExisting: false
+        nameFilters: ["Path Files (*.ulisse)"]
 
         onAccepted: {
-            var path = savePathDialog.fileUrl.toString();
-            // remove prefixed "file://"
-            path = path.replace(/^(file:\/{2})/,"");
-            // unescape html codes like '%23' for '#'
-            var cleanPath = decodeURIComponent(path);
+            var path = savePathDialog.fileUrl.toString()
+            path = path.replace(/^(file:\/{2})/, "") // remove prefixed "file://"
+            path = decodeURIComponent(path) // unescape html codes like '%23' for '#'
+            savePaths(path)
+        }
+    }
 
-            cmdWrapper.savePathToFile(cleanPath);
+    function savePaths(filePath){
+        var all_paths = {
+            security_box: null, //TODO security box
+            paths: []
+        }
+
+        for (var i=0; i<slidersLeft.columnTrack.children.length; i++){
+            all_paths.paths.push(slidersLeft.columnTrack.children[i]._comp.serialize())
+        }
+
+        console.log("JSON to save "+JSON.stringify(all_paths))
+        console.log("PATH to save "+filePath)
+
+        cmdWrapper.savePathToFile(filePath, JSON.stringify(all_paths))
+        //TODO show a toast
+    }
+
+    function loadPaths(filePath){
+        var jsondata = cmdWrapper.loadPathFromFile(filePath)
+        var data = JSON.parse(jsondata)
+
+        var i,j,lat,lon,p
+
+        slidersLeft.delete_all()
+
+        for(i = 0; i < data.paths.length; i++){
+            switch(data.paths[i].type){
+            case "PolyPath":
+                var cur_managed = map.createPoly()
+                cur_managed.deserialize(data.paths[i])
+
+                var v = trackComponent.createObject(slidersLeft.columnTrack)
+                v._comp = cur_managed
+                v.ntrack = slidersLeft.columnTrack.children.length
+                v.selected.connect(function (path){
+                    slidersLeft.update_selection(path)
+                    pathRectPoly.manage(path)
+                })
+
+                cur_managed.draw_deferred()
+                break
+
+            case "PointPath":
+                var cur_managed = map.createPath()
+                cur_managed.deserialize(data.paths[i])
+
+                var v = trackComponent.createObject(slidersLeft.columnTrack)
+                v._comp = cur_managed
+                v.ntrack = slidersLeft.columnTrack.children.length
+                v.selected.connect(function (path){
+                    slidersLeft.update_selection(path)
+                    pathRectPoly.manage(path)
+                })
+
+                cur_managed.draw_deferred()
+                break
+
+            case "SecurityPoly":
+                map.polysec_cur.clear_path()
+                polysec_cur.deserialize(data.paths[i])
+                polysec_cur.draw_deferred()
+                break
+            }
         }
     }
 }
