@@ -38,6 +38,7 @@ Map {
         anchors.right: compass.left
         anchors.top: parent.top
         anchors.topMargin: 10
+        anchors.rightMargin: 20
     }
 
     MapSliders {
