@@ -69,7 +69,6 @@ namespace states {
         Json::Value obj, obj_master;
 
         bool reverse = false;
-        std::cout << "ARRIVED :" << json_nurbs << std::endl;
 
         reader.parse(json_nurbs, obj_master);
         centroid_.latitude = obj_master["centroid"][0].asDouble();
