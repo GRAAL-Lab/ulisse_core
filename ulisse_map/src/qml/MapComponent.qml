@@ -160,10 +160,8 @@ MapComponentForm {
         ulissePath.path = []
         ulissePath.firstRun = true
 
-        for(var i=0; i<el_list.length; i++)
-            el_list[i].destroy() //FIXME
-            console.log(el_list.length)
-        el_list = []
+        slidersLeft.delete_all()
+
     }
 
     function clearAll(){
