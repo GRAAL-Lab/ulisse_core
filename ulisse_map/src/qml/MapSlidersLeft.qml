@@ -148,7 +148,7 @@ Row {
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 anchors.verticalCenter: parent.verticalCenter
                                 visible: sliderTogglerLeft.checked ? false : true
-                                source: 'qrc:/images/plus.png'
+                                source: 'qrc:/images/add-path.png'
                             }
                             color: blue
                             anchors.fill: parent
@@ -216,7 +216,7 @@ Row {
                             visible: sliderTogglerLeft.checked ? false : true
                             anchors.horizontalCenter: parent.horizontalCenter
                             anchors.verticalCenter:  parent.verticalCenter
-                            source: 'qrc:/images/close.svg'
+                            source: 'qrc:/images/close.png'
                         }
                         color: red
                     }
@@ -225,6 +225,7 @@ Row {
                     id:confirm
                     text: sliderTogglerLeft.checked ? "Yes" :""
                     enabled: true
+                    highlighted: true
                     width: parent.width
                     onClicked: function(){
                         pathRectPoly.enableBtns(true)
@@ -239,7 +240,7 @@ Row {
                             visible: sliderTogglerLeft.checked ? false : true
                             anchors.horizontalCenter: parent.horizontalCenter
                             anchors.verticalCenter : parent.verticalCenter
-                            source: 'qrc:/images/check.svg'
+                            source: 'qrc:/images/check.png'
                         }
                     color: green
                     }
