@@ -292,7 +292,7 @@ Pane {
                     map.pos_changed_handler = function(){}
                     text = "Redefine safety area"
                     slidersLeft.check_safety_all()
-                    cmdWrapper.sendBoundaries(map.polysec_cur.serialize())
+                    cmdWrapper.sendBoundaries(JSON.stringify(map.polysec_cur.serialize()))
                 }
 
 
