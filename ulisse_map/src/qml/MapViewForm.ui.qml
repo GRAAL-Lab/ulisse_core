@@ -114,7 +114,6 @@ RowLayout {
 
         MapSlidersLeft {
             id: slidersLeft
-            z: map.z + 3
             mapSource: map
             edge: Qt.LeftEdge
         }

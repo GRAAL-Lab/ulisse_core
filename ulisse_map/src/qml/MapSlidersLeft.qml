@@ -116,7 +116,7 @@ Row {
         Column {
             spacing: 10
             id: sliderRow
-            width: 30
+            width: 41
 
             Column{
                 id: main_btns
@@ -124,7 +124,7 @@ Row {
                 Button{
                     id:addTracks
                     width: parent.width
-                    text: (sliderTogglerLeft.checked)? qsTr("Add Path") : qsTr("+")
+                    text: (sliderTogglerLeft.checked)? qsTr("Add Path") : ""
 
                     onHoveredChanged: function(){
                         addTracksRect.color= (addTracksRect.color == "#abcdef")? "#66cccc" : "#abcdef"
@@ -139,6 +139,7 @@ Row {
                             Image {
                                 id:addimg
                                 anchors.horizontalCenter: parent.horizontalCenter
+                                anchors.verticalCenter: parent.verticalCenter
                                 visible: sliderTogglerLeft.checked ? false : true
                                 source: 'qrc:/images/plus.png'
                             }
@@ -149,7 +150,7 @@ Row {
 
                 Button{
                     id:deleteTracks
-                    visible: slidersLeft.children.length>0
+                    visible: columnTrack.children.length>0
                     enabled: true
                     text: sliderTogglerLeft.checked ? "Delete Paths" :""
                     width: parent.width
@@ -171,6 +172,7 @@ Row {
                         Image {
                             id:trashimg
                             anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.verticalCenter: parent.verticalCenter
                             visible: sliderTogglerLeft.checked ? false : true
                             source: 'qrc:/images/trash-can-outline.svg'
                         }
@@ -200,6 +202,7 @@ Row {
                             id:closeimg
                             visible: sliderTogglerLeft.checked ? false : true
                             anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.verticalCenter:  parent.verticalCenter
                             source: 'qrc:/images/close.svg'
                         }
                         color: "#ff0000"
@@ -218,6 +221,7 @@ Row {
                             id:checkimg
                             visible: sliderTogglerLeft.checked ? false : true
                             anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.verticalCenter : parent.verticalCenter
                             source: 'qrc:/images/check.svg'
                         }
                     color: "#00ff00"

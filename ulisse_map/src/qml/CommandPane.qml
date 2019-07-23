@@ -13,78 +13,62 @@ Pane {
 
     property var trackComponent
 
+    font.pointSize: 8
+    Layout.fillWidth: true
+    Layout.fillHeight: true
     Component.onCompleted: {
         trackComponent = Qt.createComponent("ElementTrack.qml")
     }
 
     ColumnLayout {
         id: buttonsColumn
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.horizontalCenter: parent.horizontalCenter
-        width: parent.width
-        spacing: 2
+        anchors.fill: parent
+        spacing: 0
 
         Label {
             Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
             font.pointSize: 12
             font.weight: Font.DemiBold
-            bottomPadding: 10
             color: Material.color(Material.Green, Material.Shade700)
             text: "Commands"
+            antialiasing: false
         }
 
         Button {
-
+            width: parent.width
             text: "Halt"
-            Layout.minimumWidth: 150
-            Layout.maximumWidth: 150
-            Layout.preferredWidth: 150
+            antialiasing: false
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            font.capitalization: Font.AllUppercase
             onClicked: {
                 map.interruptPathIfActive()
                 cmdWrapper.sendHaltCommand()
             }
         }
 
+        Rectangle {
+            id: rectangle3
+            height: 5
+            color: "#cdcdcd"
+            Layout.fillWidth: true
+        }
+
         RowLayout {
             id: speedHeadingRow
+            antialiasing: true
             Layout.fillWidth: true
-
-            Button {
-                id: speedHeadButton
-                Layout.minimumWidth: 150
-                Layout.maximumWidth: 150
-                Layout.preferredWidth: 150
-                text: "Speed-Heading"
-
-                onClicked: {
-                    if (speedText.text !== '' && headingText.text !== '') {
-                        map.interruptPathIfActive()
-                        cmdWrapper.sendSpeedHeadingCommand(speedText.text,
-                                                           headingText.text)
-                    } else {
-                        speedHeadingDialog.open()
-                    }
-                }
-            }
-
-            Rectangle {
-                id: speedHeadSpacer
-                height: parent.height
-                color: 'transparent'
-                Layout.fillWidth: true
-                Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-            }
+            Layout.fillHeight: true
 
             TextField {
                 id: speedText
+                antialiasing: true
+                Layout.fillHeight: true
                 Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                Layout.minimumWidth: 45
-                Layout.maximumWidth: 45
-                Layout.preferredWidth: 45
-
-                font.pointSize: 10
+                Layout.fillWidth: true
                 placeholderText: "S"
                 selectByMouse: true
+                horizontalAlignment: TextInput.AlignHCenter
 
                 ToolTip.text: qsTr("Speed (m/s)")
                 ToolTip.delay: 500
@@ -101,14 +85,14 @@ Pane {
 
             TextField {
                 id: headingText
+                antialiasing: true
+                Layout.fillHeight: true
                 Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                Layout.minimumWidth: 45
-                Layout.maximumWidth: 45
-                Layout.preferredWidth: 45
+                Layout.fillWidth: true
 
-                font.pointSize: 10
                 placeholderText: "H°"
                 selectByMouse: true
+                horizontalAlignment: TextInput.AlignHCenter
 
                 ToolTip.text: qsTr("Heading (rad/s)")
                 ToolTip.delay: 500
@@ -122,132 +106,138 @@ Pane {
             }
         }
 
-        RowLayout {
-            id: holdRow
+        Button {
+            id: speedHeadButton
+            text: "Speed-Heading"
+            antialiasing: false
             Layout.fillWidth: true
+            Layout.fillHeight: true
+            font.capitalization: Font.AllUppercase
 
-            Button {
-                id: holdButton
-                Layout.minimumWidth: 150
-                Layout.maximumWidth: 150
-                Layout.preferredWidth: 150
-                text: "Hold Position"
-
-                onClicked: {
-                    if (holdRadius.text !== '') {
-                        map.interruptPathIfActive()
-                        cmdWrapper.sendHoldCommand(parseFloat(holdRadius.text))
-                    } else {
-                        acceptRadDialog.open()
-                    }
-                }
-            }
-
-            Rectangle {
-                id: holdSpacer
-                height: parent.height
-                color: 'transparent'
-                Layout.fillWidth: true
-                Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-            }
-
-            TextField {
-                id: holdRadius
-                objectName: "holdRadiusText"
-                Layout.preferredWidth: 45
-                Layout.minimumWidth: 45
-                Layout.maximumWidth: 45
-                font.pointSize: 10
-                placeholderText: "Radius"
-                selectByMouse: true
-                text: "5.0"
-                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-
-                ToolTip.text: qsTr("Acceptance Radius (meters)")
-                ToolTip.delay: 500
-                ToolTip.timeout: 5000
-                ToolTip.visible: hovered
-
-                validator: DoubleValidator {
-                    bottom: 0.0
-                    top: 101.0
-                    decimals: 3
-                    notation: DoubleValidator.StandardNotation
-                }
-            }
-        }
-
-        RowLayout {
-            id: moveToRow
-            Layout.fillWidth: true
-
-            Button {
-                id: moveToButton
-                Layout.minimumWidth: 150
-                Layout.maximumWidth: 150
-                Layout.preferredWidth: 150
-                text: "Move To Marker"
-                enabled: map.markerIconOpacity > 0 ? true : false
-
-                onClicked: {
-                    if (moveToRadius.text !== '') {
-                        map.interruptPathIfActive()
-                        if (cmdWrapper.sendLatLongCommand(
-                                    marker_coords,
-                                    parseFloat(moveToRadius.text))) {
-                            markerIcon.opacity = 0.2
-                        }
-                    } else {
-                        acceptRadDialog.open()
-                    }
-                }
-            }
-
-            Rectangle {
-                id: moveToSpacer
-                height: parent.height
-                color: 'transparent'
-                Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                Layout.fillWidth: true
-            }
-
-            TextField {
-                id: moveToRadius
-                objectName: "moveToRadiusText"
-                Layout.preferredWidth: 45
-                Layout.minimumWidth: 45
-                Layout.maximumWidth: 45
-                font.pointSize: 10
-                placeholderText: "Radius"
-                selectByMouse: true
-                text: "5.0"
-                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-
-                ToolTip.text: qsTr("Acceptance Radius (meters)")
-                ToolTip.delay: 500
-                ToolTip.timeout: 5000
-                ToolTip.visible: hovered
-
-                validator: DoubleValidator {
-                    bottom: 0.0
-                    top: 101.0
-                    decimals: 3
-                    notation: DoubleValidator.StandardNotation
+            onClicked: {
+                if (speedText.text !== '' && headingText.text !== '') {
+                    map.interruptPathIfActive()
+                    cmdWrapper.sendSpeedHeadingCommand(speedText.text,
+                                                       headingText.text)
+                } else {
+                    speedHeadingDialog.open()
                 }
             }
         }
 
         Rectangle {
-            id: divider
-            property real margin: 8
+            id: rectangle1
+            height: 5
+            color: "#cdcdcd"
+            Layout.fillWidth: true
+        }
 
-            Layout.preferredHeight: 2
-            Layout.preferredWidth: parent.width - margin * 2
-            Layout.leftMargin: margin
-            Layout.rightMargin: margin
-            Layout.topMargin: margin
-            Layout.bottomMargin: margin
-            border.color: "lightgrey"
+        TextField {
+            id: holdRadius
+            objectName: "holdRadiusText"
+            Layout.fillWidth: true
+            Layout.fillHeight: false
+
+            placeholderText: "Radius"
+            selectByMouse: true
+            text: "5.0"
+            antialiasing: true
+            Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+            horizontalAlignment: TextInput.AlignHCenter
+
+            ToolTip.text: qsTr("Acceptance Radius (meters)")
+            ToolTip.delay: 500
+            ToolTip.timeout: 5000
+            ToolTip.visible: hovered
+
+            validator: DoubleValidator {
+                bottom: 0.0
+                top: 101.0
+                decimals: 3
+                notation: DoubleValidator.StandardNotation
+            }
+        }
+
+        Button {
+            id: holdButton
+            text: "Hold Position"
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            font.capitalization: Font.AllUppercase
+            padding: 5
+            antialiasing: false
+
+            onClicked: {
+                if (holdRadius.text !== '') {
+                    map.interruptPathIfActive()
+                    cmdWrapper.sendHoldCommand(parseFloat(holdRadius.text))
+                } else {
+                    acceptRadDialog.open()
+                }
+            }
+        }
+
+        Rectangle {
+            id: rectangle
+            height: 5
+            color: "#cdcdcd"
+            Layout.fillHeight: false
+            Layout.fillWidth: true
+        }
+
+        TextField {
+                id: moveToRadius
+                objectName: "moveToRadiusText"
+                Layout.fillWidth: true
+                Layout.fillHeight: false
+                placeholderText: "Radius"
+                selectByMouse: true
+                text: "5.0"
+                padding: 0
+                antialiasing: true
+                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                horizontalAlignment: TextInput.AlignHCenter
+
+                ToolTip.text: qsTr("Acceptance Radius (meters)")
+                ToolTip.delay: 500
+                ToolTip.timeout: 5000
+                ToolTip.visible: hovered
+
+                validator: DoubleValidator {
+                    bottom: 0.0
+                    top: 101.0
+                    decimals: 3
+                    notation: DoubleValidator.StandardNotation
+                }
+            }
+
+        Button {
+            id: moveToButton
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            text: "Move To Marker"
+            enabled: true
+            antialiasing: false
+
+            onClicked: {
+                if (moveToRadius.text !== '') {
+                    map.interruptPathIfActive()
+                    if (cmdWrapper.sendLatLongCommand(
+                                marker_coords,
+                                parseFloat(moveToRadius.text))) {
+                        markerIcon.opacity = 0.2
+                    }
+                } else {
+                    acceptRadDialog.open()
+                }
+            }
+        }
+
+        Rectangle {
+            id: rectangle2
+            height: 5
+            color: "#cdcdcd"
+            Layout.fillWidth: true
         }
 
         RowLayout {
@@ -256,10 +246,10 @@ Pane {
                 id: loadSavePath
                 Button {
                     id: savePath
-                    width: 255
-                    height: 40
                     Layout.fillWidth: true
+                    Layout.fillHeight: true
                     text: "Save Path"
+                    antialiasing: false
                     transformOrigin: Item.Left
                     enabled: true
 
@@ -271,7 +261,11 @@ Pane {
                 Button {
                     id: loadPath
                     Layout.fillWidth: true
+                    Layout.fillHeight: true
                     text: "Load Path"
+                    focusPolicy: Qt.WheelFocus
+                    transformOrigin: Item.Right
+                    antialiasing: false
                     enabled: (mapView.pathCurrentState === pathState.empty) ? true : false
 
                     onClicked: {
@@ -283,11 +277,17 @@ Pane {
 
         RowLayout {
             id: additionalWpControls
+            spacing: 0
+            Layout.fillHeight: true
+            Layout.fillWidth: true
 
             Button {
                 id: buttonSafety
                 text: qsTr("Define safety area")
+                padding: 5
+                antialiasing: false
                 Layout.fillWidth: true
+                Layout.fillHeight: true
 
                 function end(){
                     enabled = true
@@ -310,6 +310,14 @@ Pane {
                 }
             }
         }
+
+
+
+
+
+
+
+
     }
 
     FileDialog {

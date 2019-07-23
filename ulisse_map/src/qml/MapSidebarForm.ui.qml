@@ -9,30 +9,29 @@ Rectangle {
     property alias markerTextColor: markerTextLabel.textColor
     property color labelColor1: "#000000"
     property color labelColor2: "#000000"
-    color: Material.background
+    property alias commandRect: commandRect
     visible: true
-    opacity: 1
 
     ColumnLayout {
         id: leftbarlayout
         anchors.fill: parent
-        spacing: 6
         Layout.leftMargin: 15
         width: parent.width
 
         Pane {
             id: statusdatarect
+            Layout.fillHeight: true
             Layout.minimumWidth: leftbarlayout.width
             Layout.preferredWidth: parent.width
             Layout.minimumHeight: mycol.height
             Layout.alignment: Qt.AlignLeft
-            Layout.bottomMargin: 20
+
             Material.elevation: myElevation
 
             ColumnLayout {
                 id: mycol
                 width: statusdatarect.width - 30
-                spacing: 10
+                spacing: 2
                 Layout.alignment: Qt.AlignLeft
 
                 ColumnLayout {
@@ -41,8 +40,11 @@ Rectangle {
                     Layout.minimumWidth: width
                     Layout.fillWidth: true
                     Layout.alignment: Qt.AlignLeft
-                    Layout.bottomMargin: 20
+                    Layout.bottomMargin: 5
                     height: my_label.Top - goalDistLabel.Bottom
+                    Layout.fillHeight: false
+                    clip: false
+                    visible: true
 
                     Label {
                         id: my_label
@@ -130,10 +132,11 @@ Rectangle {
 
         CommandPane {
             id: commandRect
-            Layout.alignment: Qt.AlignLeft
-            Layout.minimumWidth: leftbarlayout.width
-            Layout.preferredWidth: parent.width
-            Layout.bottomMargin: 10
+            antialiasing: true
+            Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.bottomMargin: 2
             Material.elevation: myElevation
             //Material.background: Material.color(Material.BlueGrey, Material.Shade50)
         }

@@ -9,8 +9,8 @@ import QtQuick.Dialogs 1.2
 
 RowLayout {
     id: root
-    width: 100
-    height: 100
+    Layout.fillWidth: true
+    Layout.fillHeight: true
     z: 100
 
     property bool buttons: false
@@ -40,26 +40,49 @@ RowLayout {
             nameTrack_=values.name
     }
 
+    Label {
+        id:nameTrackLabel
+        text: "INSERT PATH NAME:"
+    }
+
     TextField {
         id: textnametrack
         text:  nameTrack_
         placeholderText:  qsTr("insert name")
+        horizontalAlignment: TextInput.AlignHCenter
+    }
+
+    Label {
+        id:offsettLabel
+        text: "INSERT OFFSET:"
     }
 
     TextField {
         id: offsetField
         text:offset_
         placeholderText: "Offset"
+        horizontalAlignment: TextInput.AlignHCenter
+    }
+
+    Label {
+        id:angleLabel
+        text: "INSERT ANGLE:"
     }
 
     TextField {
         id: angleField
         text: angle_
         placeholderText: "Angle"
+        horizontalAlignment: TextInput.AlignHCenter
     }
 
+    Label {
+        id:methodLabel
+        text: "CHOOSE  NURBS:"
+    }
     ComboBox {
         id: methodField
+        Layout.fillWidth: true
         model: ["simple", "single_winding"]
     }
 
