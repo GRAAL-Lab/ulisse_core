@@ -16,6 +16,7 @@ RowLayout {
     property alias wpButtonText: waypointsButton.text
     property alias wpButtonHighlighted: waypointsButton.highlighted
     property bool loopPath: false
+
     state: {
         0: "empty",
                 1: "creating",
@@ -29,13 +30,13 @@ RowLayout {
         Layout.alignment: Qt.AlignLeft
         Layout.fillWidth: true
         highlighted: true
-        Material.accent: secondaryAccentColor
+        Material.accent: lightgreen
         enabled: true
     }
 
     Button {
         id: wpRestartButton
-        Material.accent: secondaryAccentColor
+        Material.accent: lightgreen
         Layout.preferredWidth: 30
         Layout.minimumWidth: 30
         Layout.maximumWidth: 30
@@ -61,7 +62,7 @@ RowLayout {
 
     Button {
         id: wpDeleteButton
-        Material.accent: Material.Red
+        Material.accent: red
         highlighted: true
         Layout.preferredWidth: 30
         Layout.minimumWidth: 30
@@ -134,7 +135,7 @@ RowLayout {
             name: "active"
             PropertyChanges {
                 target: waypointsButton
-                Material.accent: mainAccentColor
+                Material.accent: orange
                 text: "Pause path"
             }
             PropertyChanges {
@@ -146,7 +147,7 @@ RowLayout {
             name: "stopped"
             PropertyChanges {
                 target: waypointsButton
-                Material.accent: mainAccentColor
+                Material.accent: orange
                 text: "Resume path"
             }
         },

@@ -11,7 +11,6 @@ import QtQuick.Dialogs 1.2
 import "."
 
 MapViewForm {
-
     Component.onCompleted: {
         console.log(("Current cache for ESRI Map plugin: %1").arg(mapCache.value))
     }
@@ -37,11 +36,7 @@ MapViewForm {
             border.width: 2
             border.color: (pathCurrentState === pathState.creating)
                           | (pathCurrentState
-                             === pathState.empty) ? Material.color(
-                                                        Material.DeepOrange,
-                                                        Material.Shade600) : Material.color(
-                                                        Material.Green,
-                                                        Material.Shade500)
+                             === pathState.empty) ? orange :lightgreen
             z: map.z + 1
         }
     }

@@ -52,6 +52,7 @@ import QtQuick.Controls 1.4 as C1
 import QtQuick.Controls.Styles 1.4 as C1S
 import QtQuick.Controls 2.2
 import QtQuick.Controls.Material 2.1
+import "."
 
 Row {
     id: containerRow
@@ -60,7 +61,8 @@ Row {
     property real fontSize: 14
     property color labelBackground: "transparent"
     property int edge: Qt.RightEdge
-    property color togglerColor: mainAccentColor
+    property color togglerColor: orange
+
 
     function rightEdge() {
         return (containerRow.edge === Qt.RightEdge)
@@ -140,9 +142,8 @@ Row {
         color: Qt.rgba(0, 0, 0,
                        0.05) //Qt.rgba( 0, 191 / 255.0, 255 / 255.0, 0.1)
 
-        Material.accent: mainAccentColor
-        Material.foreground: Material.color(Material.BlueGrey,
-                                            Material.Shade600)
+        Material.accent: orange
+        Material.foreground: orange //Material.color(Material.BlueGrey, Material.Shade600)
 
         property string labelBorderColor: "transparent"
         property real slidersHeight: sliderContainer.height - rowSliderValues.height

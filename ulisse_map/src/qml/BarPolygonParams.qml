@@ -6,7 +6,7 @@ import QtPositioning 5.6
 import QtQuick.Controls.Material 2.1
 import QtGraphicalEffects 1.0
 import QtQuick.Dialogs 1.2
-
+import "."
 RowLayout {
     id: root
     Layout.fillWidth: true
@@ -38,23 +38,6 @@ RowLayout {
             method_= (values.params.method !== undefined)? values.params.method : "simple"
             nameTrack_= (values.name!== undefined)? values.name : "Path"
     }
-    Button {
-        id: cancelPolyEdit
-        text: qsTr("Cancel")
-        visible: buttons
-        onClicked: function(){
-            discard()
-        }
-    }
-
-    Button {
-        id: confirmPolyEdit
-        text: qsTr("Confirm")
-        visible: buttons
-        onClicked: function(){
-            accept()
-        }
-    }
 
     GroupBox {
         id: groupBoxname
@@ -77,7 +60,7 @@ RowLayout {
                     width: 0
                     height: 0
                     color: "transparent"
-                    border.color: "#00000000"
+                    border.color: "transparent"
                 }
             }
         background: Rectangle {
@@ -85,16 +68,17 @@ RowLayout {
                 width: 0
                 height: 0
                 color: "transparent"
-                border.color: "#ffffff"
+                border.color: "transparent"
             }
         TextField {
             id: textnametrack
-            text:  (nameTrack_ !== undefined)? nameTrack : ""
+            text:  (nameTrack_ !== undefined)? nameTrack_ : ""
             font.capitalization: Font.AllUppercase
             placeholderText:  qsTr("insert name")
             horizontalAlignment: Text.AlignHCenter
         }
     }
+
     GroupBox {
         id: groupBoxoffset
         y: -10
@@ -116,7 +100,7 @@ RowLayout {
                     width: 0
                     height: 0
                     color: "transparent"
-                    border.color: "#00000000"
+                    border.color: "transparent"
                 }
             }
         background: Rectangle {
@@ -124,7 +108,7 @@ RowLayout {
                 width: 0
                 height: 0
                 color: "transparent"
-                border.color: "#ffffff"
+                border.color: "transparent"
             }
         TextField {
             id: offsetField
@@ -155,7 +139,7 @@ RowLayout {
                     width: 0
                     height: 0
                     color: "transparent"
-                    border.color: "#00000000"
+                    border.color: "transparent"
                 }
         }
         background: Rectangle {
@@ -163,7 +147,7 @@ RowLayout {
                 width: 0
                 height: 0
                 color: "transparent"
-                border.color: "#ffffff"
+                border.color: "transparent"
             }
        TextField {
             id: angleField
@@ -172,6 +156,7 @@ RowLayout {
             horizontalAlignment: TextInput.AlignHCenter
         }
     }
+
     GroupBox {
         id: groupBoxnurbs
         y: -10
@@ -193,7 +178,7 @@ RowLayout {
                     width: 0
                     height: 0
                     color: "transparent"
-                    border.color: "#00000000"
+                    border.color: "transparent"
                 }
             }
         background: Rectangle {
@@ -201,7 +186,7 @@ RowLayout {
                 width: 0
                 height: 0
                 color: "transparent"
-                border.color: "#ffffff"
+                border.color: "transparent"
             }
         ComboBox {
             id: methodField
@@ -211,4 +196,21 @@ RowLayout {
         }
     }
 
+    Button {
+        id: cancelPolyEdit
+        text: qsTr("Cancel")
+        visible: buttons
+        onClicked: function(){
+            discard()
+        }
+    }
+
+    Button {
+        id: confirmPolyEdit
+        text: qsTr("Confirm")
+        visible: buttons
+        onClicked: function(){
+            accept()
+        }
+    }
 }

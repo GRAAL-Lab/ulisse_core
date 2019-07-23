@@ -11,7 +11,6 @@ RowLayout {
     id: root
     width: 100
     height: 100
-
     property bool buttons: false
     property var  nameTrack: textnametrack.text
     property var nameTrack_
@@ -54,7 +53,7 @@ RowLayout {
                 width: 0
                 height: 0
                 color: "transparent"
-                border.color: "#ffffff"
+                border.color: "transparent"
             }
 
         TextField {

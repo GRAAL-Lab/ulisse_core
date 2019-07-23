@@ -6,18 +6,18 @@ import QtPositioning 5.6
 import QtQuick.Controls.Material 2.1
 import QtGraphicalEffects 1.0
 import QtQuick.Dialogs 1.2
-
+import "."
 import "../scripts/helper.js" as Helper
 
 
 Pane {
 
     property var buttonSafety: buttonSafety
-
     property var trackComponent
 
     Layout.fillWidth: true
     Layout.fillHeight: true
+
     Component.onCompleted: {
         trackComponent = Qt.createComponent("ElementTrack.qml")
     }
@@ -31,7 +31,7 @@ Pane {
             Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
             font.pointSize: 12
             font.weight: Font.DemiBold
-            color: Material.color(Material.Green, Material.Shade700)
+            color: green
             text: "Commands"
             antialiasing: false
         }
@@ -43,7 +43,7 @@ Pane {
             Layout.fillWidth: true
 
             highlighted: true
-            Material.background: pressed? mainAccentColor : Material.color(Material.Blue, Material.Shade700)
+            Material.background: pressed? orange : blue
 
             font.capitalization: Font.AllUppercase
 
@@ -60,7 +60,7 @@ Pane {
             id: rectangle0
             width: 200
             height:90
-            color: "#00000000"
+            color: "transparent"
             Layout.fillHeight: false
             Layout.fillWidth: true
 
@@ -174,7 +174,7 @@ Pane {
 
 
             highlighted: true
-            Material.background: pressed? mainAccentColor : Material.color(Material.Blue, Material.Shade700)
+            Material.background: pressed? orange : blue
 
             onClicked: {
                     if (speedText.text !== '' && headingText.text !== '') {
@@ -192,7 +192,7 @@ Pane {
             id: rectangle1
             width: 200
             height:90
-            color: "#00000000"
+            color: "transparent"
             Layout.fillHeight: false
             Layout.fillWidth: true
 
@@ -255,7 +255,7 @@ Pane {
                 antialiasing: false
 
             highlighted: true
-            Material.background: pressed? mainAccentColor : Material.color(Material.Blue, Material.Shade700)
+            Material.background: pressed? orange : blue
 
                 onClicked: {
                     if (holdRadius.text !== '') {
@@ -273,7 +273,7 @@ Pane {
             id: rectangle2
             width: 200
             height:90
-            color: "#00000000"
+            color: "transparent"
             Layout.fillHeight: false
             Layout.fillWidth: true
 
@@ -334,7 +334,7 @@ Pane {
                 anchors.leftMargin: 0
                 anchors.bottom: parent.bottom
                 antialiasing: false
-                Material.background: pressed? mainAccentColor : Material.color(Material.Blue, Material.Shade700)
+                Material.background: pressed? orange : blue
                 enabled: Helper.coord_inside_polygon(map.marker_coords, map.polysec_cur.path) && (map.markerIcon.opacity > 0)
                 highlighted: true
 
@@ -363,7 +363,7 @@ Pane {
                     text: "Save Path"
 
                     highlighted: true
-                    Material.background: pressed? mainAccentColor : Material.color(Material.Blue, Material.Shade700)
+                    Material.background: pressed? orange : blue
 
                     antialiasing: false
                     transformOrigin: Item.Left
@@ -381,7 +381,7 @@ Pane {
                     text: "Load Path"
 
                     highlighted: true
-                    Material.background: pressed? mainAccentColor : Material.color(Material.Blue, Material.Shade700)
+                    Material.background: pressed? orange : blue
 
                     focusPolicy: Qt.WheelFocus
                     transformOrigin: Item.Right
@@ -411,7 +411,7 @@ Pane {
                 Layout.fillHeight: false
 
                 highlighted: true
-                Material.background:  Material.color(Material.Green, Material.Shade700)
+                Material.background:  green
 
                 function end(){
                     enabled = true

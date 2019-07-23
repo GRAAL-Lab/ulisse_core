@@ -6,17 +6,19 @@ import QtQuick.Controls.Universal 2.1
 import Qt.labs.settings 1.0
 import QtQuick.Layouts 1.3
 import QtGraphicalEffects 1.0
+import "."
 
 ToolBar {
     property alias tabBarIndex: headerLayout.tabBarIndex
     id: toolBar
     width: parent.width
+
+    property bool multichoice: false
+
     Material.elevation: 4
 
-    Material.foreground: Material.color(Material.Grey, Material.Shade100)
-    Material.background: (settings.theme == "Light" ? Material.color(Material.Blue, Material.Shade700) : Material.color(
-                                                          Material.Red,
-                                                          Material.Shade600))
+    Material.foreground: grey
+    Material.background: (settings.theme == "Light" ? blue : lightred)
     Material.accent: "white"
 
     Layout.alignment: Qt.AlignLeft
@@ -49,7 +51,7 @@ ToolBar {
         text: qsTr("⋮")
         font.pointSize: 16
         font.weight: Font.Bold
-        Material.background: Material.color(Material.Cyan, Material.Shade500)
+        Material.background: grey
 
         onClicked: optionsMenu.open()
         Menu {

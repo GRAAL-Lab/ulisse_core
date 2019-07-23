@@ -10,7 +10,6 @@ import QtQuick.Controls.Universal 2.1
 import QtGraphicalEffects 1.0
 import QtQuick.Dialogs 1.2
 import "."
-
 import "../scripts/helper.js" as Helper
 
 RowLayout {

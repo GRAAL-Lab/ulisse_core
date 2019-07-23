@@ -39,10 +39,10 @@ Rectangle {
                     width: mycol.width
                     Layout.minimumWidth: width
                     Layout.fillWidth: true
+                    Layout.fillHeight: true
                     Layout.alignment: Qt.AlignLeft
                     Layout.bottomMargin: 5
                     height: my_label.Top - goalDistLabel.Bottom
-                    Layout.fillHeight: false
                     clip: false
                     visible: true
 
@@ -93,7 +93,7 @@ Rectangle {
                         Layout.alignment: Qt.AlignHCenter
                         font.pointSize: 11
                         font.weight: Font.DemiBold
-                        color: 'gray'
+                        color: 'grey'
                         text: "Goal"
                     }
 
@@ -123,7 +123,7 @@ Rectangle {
                         Layout.alignment: Qt.AlignHCenter
                         width: markerlayout.width
                         font.pointSize: 8
-                        color: 'gray'
+                        color: 'grey'
                         text: "(Left click to set marker)"
                         horizontalAlignment: Text.AlignHCenter
                     }
