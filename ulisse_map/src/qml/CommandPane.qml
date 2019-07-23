@@ -6,6 +6,7 @@ import QtPositioning 5.6
 import QtQuick.Controls.Material 2.1
 import QtGraphicalEffects 1.0
 import QtQuick.Dialogs 1.2
+import "../scripts/helper.js" as Helper
 
 Pane {
 
@@ -184,7 +185,7 @@ Pane {
                 Layout.maximumWidth: 150
                 Layout.preferredWidth: 150
                 text: "Move To Marker"
-                enabled: map.markerIconOpacity > 0 ? true : false
+                enabled: Helper.coord_inside_polygon(map.marker_coords, map.polysec_cur.path) && (map.markerIcon.opacity > 0)
 
                 onClicked: {
                     if (moveToRadius.text !== '') {
