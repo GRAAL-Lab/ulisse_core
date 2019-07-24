@@ -338,12 +338,10 @@ set(CMAKE_MAKEFILE_PRODUCTS
 
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
-  "CMakeFiles/bongio.dir/DependInfo.cmake"
   "CMakeFiles/ExperimentalStart.dir/DependInfo.cmake"
   "CMakeFiles/Nightly.dir/DependInfo.cmake"
   "CMakeFiles/ContinuousStart.dir/DependInfo.cmake"
   "CMakeFiles/ExperimentalCoverage.dir/DependInfo.cmake"
-  "CMakeFiles/nurbs.dir/DependInfo.cmake"
   "CMakeFiles/NightlyConfigure.dir/DependInfo.cmake"
   "CMakeFiles/NightlyCoverage.dir/DependInfo.cmake"
   "CMakeFiles/NightlyUpdate.dir/DependInfo.cmake"
@@ -371,7 +369,6 @@ set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/ContinuousConfigure.dir/DependInfo.cmake"
   "CMakeFiles/monitor_node.dir/DependInfo.cmake"
   "CMakeFiles/ContinuousMemCheck.dir/DependInfo.cmake"
-  "CMakeFiles/spline.dir/DependInfo.cmake"
   "CMakeFiles/ExperimentalConfigure.dir/DependInfo.cmake"
   "CMakeFiles/ContinuousSubmit.dir/DependInfo.cmake"
   "CMakeFiles/ulisse_ctrl_lib.dir/DependInfo.cmake"

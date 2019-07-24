@@ -217,7 +217,7 @@ namespace states {
 
         curve = nurbs_[0];
         // Compute the point of the first curve at 0.1.
-        s1227(curve, 0, 0.1, &leftknot, point_at, &stat);
+        s1227(curve, 0, 0.2, &leftknot, point_at, &stat);
 
         ctb::LatLong next_point = to_lat_long(point_at[0], point_at[1]);
 
@@ -310,7 +310,7 @@ namespace states {
 
                 s1240(curve, aepsge, &cur_length, &stat);
                 std::cout << "Current Curve Length : " << cur_length << std::endl;
-                delta_ = 0.25 / cur_length;
+                delta_ = 1.0 / cur_length;
 
                 curvilinear_abscissa = getCurvilinearAbscissa() + delta_;
 

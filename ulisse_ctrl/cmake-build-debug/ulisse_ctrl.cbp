@@ -67,127 +67,11 @@
 					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
-			<Target title="bongio">
-				<Option output="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/bongio" prefix_auto="0" extension_auto="0"/>
-				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
-				<Option object_output="./"/>
-				<Option type="1"/>
-				<Option compiler="gcc"/>
-				<Compiler>
-					<Add directory="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/include"/>
-					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_driver/include"/>
-					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_msgs/include"/>
-					<Add directory="/opt/ros/crystal/include"/>
-					<Add directory="/home/marco/group_project/ros2_ws/install/surface_vehicle_model/include"/>
-					<Add directory="/home/marco/group_project/ros2_ws/install/fsm/include"/>
-					<Add directory="/usr/include/c++/7"/>
-					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
-					<Add directory="/usr/include/c++/7/backward"/>
-					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
-					<Add directory="/usr/local/include"/>
-					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
-					<Add directory="/usr/include/x86_64-linux-gnu"/>
-					<Add directory="/usr/include"/>
-				</Compiler>
-				<MakeCommands>
-					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 bongio"/>
-					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-				</MakeCommands>
-			</Target>
-			<Target title="bongio/fast">
-				<Option output="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/bongio" prefix_auto="0" extension_auto="0"/>
-				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
-				<Option object_output="./"/>
-				<Option type="1"/>
-				<Option compiler="gcc"/>
-				<Compiler>
-					<Add directory="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/include"/>
-					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_driver/include"/>
-					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_msgs/include"/>
-					<Add directory="/opt/ros/crystal/include"/>
-					<Add directory="/home/marco/group_project/ros2_ws/install/surface_vehicle_model/include"/>
-					<Add directory="/home/marco/group_project/ros2_ws/install/fsm/include"/>
-					<Add directory="/usr/include/c++/7"/>
-					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
-					<Add directory="/usr/include/c++/7/backward"/>
-					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
-					<Add directory="/usr/local/include"/>
-					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
-					<Add directory="/usr/include/x86_64-linux-gnu"/>
-					<Add directory="/usr/include"/>
-				</Compiler>
-				<MakeCommands>
-					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 bongio/fast"/>
-					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-				</MakeCommands>
-			</Target>
 			<Target title="Nightly">
 				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
 				<Option type="4"/>
 				<MakeCommands>
 					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 Nightly"/>
-					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-				</MakeCommands>
-			</Target>
-			<Target title="nurbs">
-				<Option output="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/nurbs" prefix_auto="0" extension_auto="0"/>
-				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
-				<Option object_output="./"/>
-				<Option type="1"/>
-				<Option compiler="gcc"/>
-				<Compiler>
-					<Add directory="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/include"/>
-					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_driver/include"/>
-					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_msgs/include"/>
-					<Add directory="/opt/ros/crystal/include"/>
-					<Add directory="/home/marco/group_project/ros2_ws/install/surface_vehicle_model/include"/>
-					<Add directory="/home/marco/group_project/ros2_ws/install/fsm/include"/>
-					<Add directory="/usr/include/c++/7"/>
-					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
-					<Add directory="/usr/include/c++/7/backward"/>
-					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
-					<Add directory="/usr/local/include"/>
-					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
-					<Add directory="/usr/include/x86_64-linux-gnu"/>
-					<Add directory="/usr/include"/>
-				</Compiler>
-				<MakeCommands>
-					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 nurbs"/>
-					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-				</MakeCommands>
-			</Target>
-			<Target title="nurbs/fast">
-				<Option output="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/nurbs" prefix_auto="0" extension_auto="0"/>
-				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
-				<Option object_output="./"/>
-				<Option type="1"/>
-				<Option compiler="gcc"/>
-				<Compiler>
-					<Add directory="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/include"/>
-					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_driver/include"/>
-					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_msgs/include"/>
-					<Add directory="/opt/ros/crystal/include"/>
-					<Add directory="/home/marco/group_project/ros2_ws/install/surface_vehicle_model/include"/>
-					<Add directory="/home/marco/group_project/ros2_ws/install/fsm/include"/>
-					<Add directory="/usr/include/c++/7"/>
-					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
-					<Add directory="/usr/include/c++/7/backward"/>
-					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
-					<Add directory="/usr/local/include"/>
-					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
-					<Add directory="/usr/include/x86_64-linux-gnu"/>
-					<Add directory="/usr/include"/>
-				</Compiler>
-				<MakeCommands>
-					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 nurbs/fast"/>
 					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
 					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
@@ -485,64 +369,6 @@
 					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
-			<Target title="spline">
-				<Option output="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/spline" prefix_auto="0" extension_auto="0"/>
-				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
-				<Option object_output="./"/>
-				<Option type="1"/>
-				<Option compiler="gcc"/>
-				<Compiler>
-					<Add directory="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/include"/>
-					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_driver/include"/>
-					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_msgs/include"/>
-					<Add directory="/opt/ros/crystal/include"/>
-					<Add directory="/home/marco/group_project/ros2_ws/install/surface_vehicle_model/include"/>
-					<Add directory="/home/marco/group_project/ros2_ws/install/fsm/include"/>
-					<Add directory="/usr/include/c++/7"/>
-					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
-					<Add directory="/usr/include/c++/7/backward"/>
-					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
-					<Add directory="/usr/local/include"/>
-					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
-					<Add directory="/usr/include/x86_64-linux-gnu"/>
-					<Add directory="/usr/include"/>
-				</Compiler>
-				<MakeCommands>
-					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 spline"/>
-					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-				</MakeCommands>
-			</Target>
-			<Target title="spline/fast">
-				<Option output="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/spline" prefix_auto="0" extension_auto="0"/>
-				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
-				<Option object_output="./"/>
-				<Option type="1"/>
-				<Option compiler="gcc"/>
-				<Compiler>
-					<Add directory="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/include"/>
-					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_driver/include"/>
-					<Add directory="/home/marco/group_project/ros2_ws/install/ulisse_msgs/include"/>
-					<Add directory="/opt/ros/crystal/include"/>
-					<Add directory="/home/marco/group_project/ros2_ws/install/surface_vehicle_model/include"/>
-					<Add directory="/home/marco/group_project/ros2_ws/install/fsm/include"/>
-					<Add directory="/usr/include/c++/7"/>
-					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
-					<Add directory="/usr/include/c++/7/backward"/>
-					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
-					<Add directory="/usr/local/include"/>
-					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
-					<Add directory="/usr/include/x86_64-linux-gnu"/>
-					<Add directory="/usr/include"/>
-				</Compiler>
-				<MakeCommands>
-					<Build command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 spline/fast"/>
-					<CompileFile command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
-					<Clean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-					<DistClean command="/usr/bin/make -j12 -f &quot;/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
-				</MakeCommands>
-			</Target>
 			<Target title="ulisse_ctrl_lib">
 				<Option output="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/libulisse_ctrl_lib.a" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug"/>
@@ -666,6 +492,9 @@
 		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/.idea/codeStyles/codeStyleConfig.xml">
 			<Option target=".Files."/>
 		</Unit>
+		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/.idea/jsonSchemas.xml">
+			<Option target=".Files."/>
+		</Unit>
 		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/.idea/misc.xml">
 			<Option target=".Files."/>
 		</Unit>
@@ -693,9 +522,6 @@
 		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/package.xml">
 			<Option target=".Files."/>
 		</Unit>
-		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/bongio.cpp">
-			<Option target="bongio"/>
-		</Unit>
 		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/controller_console_node.cpp">
 			<Option target="controller_console_node"/>
 		</Unit>
@@ -707,12 +533,6 @@
 		</Unit>
 		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/monitor_node.cpp">
 			<Option target="monitor_node"/>
-		</Unit>
-		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/nurbs.cpp">
-			<Option target="nurbs"/>
-		</Unit>
-		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/spline.cpp">
-			<Option target="spline"/>
 		</Unit>
 		<Unit filename="/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/src/ulisse_ctrl/commands/command_halt.cpp">
 			<Option target="ulisse_ctrl_lib"/>
