@@ -140,8 +140,6 @@ namespace ulisse {
             G_.row(0) << 1, 0, 0, 0, 0, 0, 0, 0;
             G_.row(1) << 0, 1, 0, 0, 0, 0, 0, 0;
             G_.row(2) << 0, 0, 1, 0, 0, 0, 0, 0;
-            G_.row(3) << 0, 0, 0, 0, 0, 1, 0, 0;
-
         }
 
         Eigen::VectorXd MeasureUlisse::GetPredictedMeasure(const Eigen::VectorXd state) {
@@ -151,7 +149,6 @@ namespace ulisse {
             G_predict(0) = state[0];
             G_predict(1) = state[1];
             G_predict(2) = state[2];
-            G_predict(3) = state[5];
 
 
             return G_predict;
