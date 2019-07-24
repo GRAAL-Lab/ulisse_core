@@ -822,8 +822,8 @@ MapPolyline {
         var nurb_l = []
         var nurb_c = []
         for (var i=0; i<intersections_cartesian.length; i++){
-            var p0 = intersections_cartesian[i][0]
-            var p1 = intersections_cartesian[i][1]
+            var p0 = intersections_cartesian[i][i%2]
+            var p1 = intersections_cartesian[i][(i%2) + 1]
             nurb_l.push(Helper.generate_nurb_line(p0, p1))
         } //FIXME reverse each even (or odd?) line
 
