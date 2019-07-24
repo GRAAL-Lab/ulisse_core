@@ -192,7 +192,6 @@ namespace states {
 
     fsm::retval StateNavigate::OnEntry()
     {
-        actionManager_->SetAction(ulisse::action::navigate, true);
         curvilinear_abscissa = 0.0;
         current_curvilinear_abscissa = 0.0;
         current_curve = 0;
@@ -246,6 +245,7 @@ namespace states {
                       << " LONG: " << PPP2.longitude << std::endl;
         }
 
+        actionManager_->SetAction(ulisse::action::navigate, true);
         return fsm::ok;
     }
 
@@ -321,21 +321,6 @@ namespace states {
                     current_curve = floor(curvilinear_abscissa);
                     curve = nurbs_[current_curve];
 
-                    double ppp[4];
-                    // Compute the point of the first curve at 0.0.
-                    s1227(curve, 0, 0.0, &leftknot, ppp, &stat);
-
-                    ctb::LatLong PPP = to_lat_long(ppp[0], ppp[1]);
-                    std::cout << "*** START OF CURVE " << current_curve << ":: LAT: " << PPP.latitude
-                              << " LONG: " << PPP.longitude << std::endl;
-
-                    // Compute the point of the first curve at 0.0.
-                    s1227(curve, 0, 1.0, &leftknot, ppp, &stat);
-
-                    PPP = to_lat_long(ppp[0], ppp[1]);
-                    std::cout << "*** END OF CURVE " << current_curve << ":: LAT: " << PPP.latitude
-                              << " LONG: " << PPP.longitude << std::endl;
-
                     current_curvilinear_abscissa = curvilinear_abscissa;
                     if (current_curvilinear_abscissa > 1) {
                         current_curvilinear_abscissa -= current_curve;
@@ -361,11 +346,6 @@ namespace states {
                         Eigen::Vector3d(0, 0, goalCxt_->goalHeading));
                     distanceTask_->SetDistance(
                         Eigen::Vector3d(1.0, 0, 0));
-
-                    std::cout << std::endl
-                              << "************* DISTA: " << goalCxt_->goalDistance
-                              << std::endl;
-                    std::cout << "************* DELTA: " << delta_ << std::endl;
                 }
             }
         }
