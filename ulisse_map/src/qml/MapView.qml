@@ -12,7 +12,8 @@ import "."
 
 MapViewForm {
     Component.onCompleted: {
-        console.log(("Current cache for ESRI Map plugin: %1").arg(mapCache.value))
+        console.log(("Current cache for ESRI Map plugin: %1").arg(
+                        mapCache.value))
     }
 
     Timer {
@@ -35,8 +36,7 @@ MapViewForm {
             color: 'transparent'
             border.width: 2
             border.color: (pathCurrentState === pathState.creating)
-                          | (pathCurrentState
-                             === pathState.empty) ? orange :lightgreen
+                          | (pathCurrentState === pathState.empty) ? orange : lightgreen
             z: map.z + 1
         }
     }
@@ -45,22 +45,21 @@ MapViewForm {
         map.center = fbkUpdater.ulisse_pos
     }
     overlayStatusCbox.onCheckStateChanged: {
-            if (checked === true) {
-                followMeTimer.start()
-            } else {
-                followMeTimer.stop()
-            }
+        if (checked === true) {
+            followMeTimer.start()
+        } else {
+            followMeTimer.stop()
         }
-
-    clearPathButton.onClicked: {
-            map.clearUlisseTrace()
     }
 
-    map.onZoomLevelChanged:{
-        for(var i = 0; i < slidersLeft.columnTrack.children.length; i++){
-            slidersLeft.columnTrack.children[i]._comp.a_marker.zoomLevel = map.zoomLevel/2 + 9
-            slidersLeft.columnTrack.children[i]._comp.b_marker.zoomLevel = map.zoomLevel/2 + 9
-        }
+    clearPathButton.onClicked: {
+        map.clearUlisseTrace()
+    }
 
+    map.onZoomLevelChanged: {
+        for (var i = 0; i < slidersLeft.columnTrack.children.length; i++) {
+            slidersLeft.columnTrack.children[i]._comp.a_marker.zoomLevel = map.zoomLevel / 2 + 9
+            slidersLeft.columnTrack.children[i]._comp.b_marker.zoomLevel = map.zoomLevel / 2 + 9
+        }
     }
 }

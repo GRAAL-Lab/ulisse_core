@@ -27,7 +27,7 @@ Rectangle {
             Layout.fillHeight: true
             Layout.minimumWidth: leftbarlayout.width
             Layout.preferredWidth: parent.width
-            Layout.preferredHeight: parent.height/6
+            Layout.preferredHeight: parent.height / 6
             Layout.alignment: Qt.AlignLeft
 
             ColumnLayout {

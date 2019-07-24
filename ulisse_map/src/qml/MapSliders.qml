@@ -63,7 +63,6 @@ Row {
     property int edge: Qt.RightEdge
     property color togglerColor: orange
 
-
     function rightEdge() {
         return (containerRow.edge === Qt.RightEdge)
     }

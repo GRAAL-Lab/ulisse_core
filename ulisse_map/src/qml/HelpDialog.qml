@@ -5,6 +5,7 @@ import QtQuick.Controls.Material 2.1
 import QtGraphicalEffects 1.0
 import "."
 
+
 //TODO: complete the page
 Dialog {
     id: dialog
@@ -61,7 +62,6 @@ Dialog {
             text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin viverra in nibh ac auctor. Vestibulum id fermentum elit, sed mollis libero. Mauris sed vehicula tortor, et tempor erat. Maecenas orci est, dignissim non mattis sit amet, tincidunt at risus."
             wrapMode: Text.WordWrap
             Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-
         }
 
         Label {

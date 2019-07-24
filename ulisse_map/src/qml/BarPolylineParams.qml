@@ -11,53 +11,55 @@ RowLayout {
     id: root
 
     property bool buttons: false
-    property var  nameTrack: textnametrack.text
+    property var nameTrack: textnametrack.text
     property var nameTrack_
     signal accept
     signal discard
 
-    function getParams(){
-        return {}
+    function getParams() {
+        return {
+
+        }
     }
 
-    function fill_cur_values(values){
-        nameTrack_=values.name
+    function fill_cur_values(values) {
+        nameTrack_ = values.name
     }
 
     GroupBox {
         id: groupBox
         y: -10
         width: 200
-        height: textnametrack.height+40
+        height: textnametrack.height + 40
         clip: true
         title: qsTr("Name")
 
         label: Label {
-                x: groupBox.leftPadding
-                y: 20
-                width: groupBox.availableWidth
-                text: groupBox.title
-                elide: Text.ElideRight
-                background: Rectangle {
-                    y: 0
-                    width: 0
-                    height: 0
-                    color: "transparent"
-                    border.color: "#ffffff"
-                }
-            }
-
-        background: Rectangle {
+            x: groupBox.leftPadding
+            y: 20
+            width: groupBox.availableWidth
+            text: groupBox.title
+            elide: Text.ElideRight
+            background: Rectangle {
                 y: 0
                 width: 0
                 height: 0
                 color: "transparent"
-                border.color: "transparent"
+                border.color: "#ffffff"
             }
+        }
+
+        background: Rectangle {
+            y: 0
+            width: 0
+            height: 0
+            color: "transparent"
+            border.color: "transparent"
+        }
 
         TextField {
             id: textnametrack
-            text: (nameTrack_ !== undefined)? nameTrack_ : "Path"
+            text: (nameTrack_ !== undefined) ? nameTrack_ : "Path"
 
             placeholderText: qsTr("insert name")
             enabled: true
@@ -69,7 +71,7 @@ RowLayout {
         text: qsTr("Cancel")
         visible: buttons
         Layout.fillWidth: false
-        onClicked: function(){
+        onClicked: function () {
             discard()
         }
     }
@@ -78,12 +80,8 @@ RowLayout {
         id: confirmPolyEdit
         text: qsTr("Confirm")
         visible: buttons
-        onClicked: function(){
+        onClicked: function () {
             accept()
         }
     }
-
-
-
-
 }

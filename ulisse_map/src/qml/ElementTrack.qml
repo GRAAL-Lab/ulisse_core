@@ -12,29 +12,28 @@ import QtQuick.Dialogs 1.2
 import "."
 import "../scripts/helper.js" as Helper
 
-ElementTrackForm{
+ElementTrackForm {
 
     property bool multichoice: false
 
-    name.onClicked: function(){
+    name.onClicked: function () {
         selected(_comp)
     }
 
-    function toggle(){
+    function toggle() {
         toggled = !toggled
-         name.Material.background = toggled ? orange : green
+        name.Material.background = toggled ? orange : green
         _comp.highlighted(toggled)
     }
 
-    function highlight(yes){
+    function highlight(yes) {
         toggled = yes
-         name.Material.background = yes ? orange : green
+        name.Material.background = yes ? orange : green
         _comp.highlighted(yes)
     }
     Material.background: green
 
     //tracklistlayout.y: tracklistlayout.height*(tracklistlayout.ntrack)
-
     expanded: parent.expanded
     width: parent.width
     //nametrack: qsTr(ntrack.toString())

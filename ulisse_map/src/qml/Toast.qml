@@ -1,9 +1,10 @@
 import QtQuick 2.0
 
+
 /**
 * @brief An Android-like timed message text in a box that selfdestroys when finished if desired
 */
-Rectangle{
+Rectangle {
 
     /**
     * Public
@@ -15,17 +16,16 @@ Rectangle{
     * @param {string} text Text to show
     * @param {real} duration Duration to show in milliseconds, defaults to 3000
     */
-    function show(text, duration){
-        theText.text = text;
-        if(typeof duration !== "undefined"){
-            if(duration >= 2*fadeTime)
-                time = duration;
+    function show(text, duration) {
+        theText.text = text
+        if (typeof duration !== "undefined") {
+            if (duration >= 2 * fadeTime)
+                time = duration
             else
-                time = 2*fadeTime;
-            }
-        else
-            time = defaultTime;
-        anim.start();
+                time = 2 * fadeTime
+        } else
+            time = defaultTime
+        anim.start()
     }
 
     property bool selfDestroying: false ///< Whether this Toast will selfdestroy when it is finished
@@ -33,7 +33,6 @@ Rectangle{
     /**
     * Private
     */
-
     id: root
 
     property real time: defaultTime
@@ -42,16 +41,16 @@ Rectangle{
 
     property real margin: 10
 
-    width: childrenRect.width + 2*margin
-    height: childrenRect.height + 2*margin
-    radius: Math.floor(margin*0.7)
+    width: childrenRect.width + 2 * margin
+    height: childrenRect.height + 2 * margin
+    radius: Math.floor(margin * 0.7)
 
     anchors.horizontalCenter: parent.horizontalCenter
 
     opacity: 0
     color: "#333333"
 
-    Text{
+    Text {
         id: theText
         text: "Toast"
         style: Text.Raised
@@ -63,27 +62,26 @@ Rectangle{
         y: margin
     }
 
-    SequentialAnimation on opacity{
+    SequentialAnimation on opacity {
         id: anim
 
         running: false
 
-        NumberAnimation{
+        NumberAnimation {
             to: 0.9
             duration: fadeTime
         }
-        PauseAnimation{
-            duration: time - 2*fadeTime
+        PauseAnimation {
+            duration: time - 2 * fadeTime
         }
-        NumberAnimation{
+        NumberAnimation {
             to: 0
             duration: fadeTime
         }
 
-        onRunningChanged:{
-            if(!running && selfDestroying)
-                root.destroy();
+        onRunningChanged: {
+            if (!running && selfDestroying)
+                root.destroy()
         }
     }
 }
-
