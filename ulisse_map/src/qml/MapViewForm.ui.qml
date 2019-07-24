@@ -120,11 +120,13 @@ RowLayout {
 
         Rectangle {
             id: manageToolbar
-            width: parent.width
             height: pathRectPoly.height
             color: Material.background
             anchors.bottom: bottomToolbar.top
-
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.leftMargin: 165
+            anchors.rightMargin: 175
             RowLayout {
                 anchors.fill: parent
 

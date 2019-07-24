@@ -26,7 +26,6 @@ RowLayout {
     property var panels: [panelPathChoice, panelParamsPolygon, panelParamsPolyline, panelManage]
 
     id: rowChoices
-    anchors.fill: map
 
     RowLayout {
         id: panelPathChoice

@@ -9,9 +9,6 @@ import QtQuick.Dialogs 1.2
 import "."
 RowLayout {
     id: root
-    Layout.fillWidth: true
-    Layout.fillHeight: true
-
     property bool buttons: false
     property var angle: parseInt(angleField.text)
     property var offset: parseInt(offsetField.text)
@@ -43,7 +40,7 @@ RowLayout {
         id: groupBoxname
         y: -10
         width: 200
-        height: textnametrack.height+40
+        height: textnametrack.height
         font.capitalization: Font.AllUppercase
         clip: true
         title: qsTr("Name")
@@ -53,6 +50,7 @@ RowLayout {
                 y: 20
                 width: groupBoxname.availableWidth
                 text: groupBoxname.title
+                scale: 0.01
                 horizontalAlignment: Text.AlignHCenter
                 elide: Text.ElideRight
                 background: Rectangle {
@@ -83,7 +81,7 @@ RowLayout {
         id: groupBoxoffset
         y: -10
         width: 200
-        height: textnametrack.height+40
+        height: offsetField.height+40
         font.capitalization: Font.AllUppercase
         clip: true
         title: qsTr("Path Name")
@@ -122,7 +120,7 @@ RowLayout {
         id: groupBoxangle
         y: -10
         width: 200
-        height: textnametrack.height+40
+        height: angleField.height
         font.capitalization: Font.AllUppercase
         clip: true
         title: qsTr("Angle")
@@ -161,7 +159,7 @@ RowLayout {
         id: groupBoxnurbs
         y: -10
         width: 200
-        height: textnametrack.height+40
+        height: methodField.height+40
         font.capitalization: Font.AllUppercase
         clip: true
         title: qsTr("Path Type")

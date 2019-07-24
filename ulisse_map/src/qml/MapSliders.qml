@@ -81,7 +81,7 @@ Row {
         height: 72
         checkable: true
         checked: false
-        anchors.verticalCenter: parent.verticalCenter
+        y: parent.y + 350
 
         transform: Scale {
             origin.x: rightEdge() ? 0 : sliderToggler.width / 2
@@ -141,11 +141,9 @@ Row {
         visible: sliderToggler.checked
         color: Qt.rgba(0, 0, 0,
                        0.05) //Qt.rgba( 0, 191 / 255.0, 255 / 255.0, 0.1)
-
         Material.accent: orange
-        Material.foreground: orange //Material.color(Material.BlueGrey, Material.Shade600)
+        Material.foreground: grey
 
-        property string labelBorderColor: "transparent"
         property real slidersHeight: sliderContainer.height - rowSliderValues.height
                                      - rowSliderLabels.height - sliderColumn.spacing * 2
                                      - sliderColumn.topPadding - sliderColumn.bottomPadding
@@ -169,7 +167,7 @@ Row {
                     color: labelBackground
                     height: parent.height
                     width: parent.entryWidth
-                    border.color: sliderContainer.labelBorderColor
+                    border.color: labelBackground
                     Label {
                         id: labelZoomValue
                         text: zoomSlider.value.toFixed(3)
@@ -182,7 +180,7 @@ Row {
                     color: labelBackground
                     height: parent.height
                     width: parent.entryWidth
-                    border.color: sliderContainer.labelBorderColor
+                    border.color: labelBackground
                     Label {
                         id: labelBearingValue
                         text: bearingSlider.value.toFixed(2)
@@ -195,7 +193,7 @@ Row {
                     color: labelBackground
                     height: parent.height
                     width: parent.entryWidth
-                    border.color: sliderContainer.labelBorderColor
+                    border.color: labelBackground
                     Label {
                         id: labelTiltValue
                         text: tiltSlider.value.toFixed(2)
@@ -208,7 +206,7 @@ Row {
                     color: labelBackground
                     height: parent.height
                     width: parent.entryWidth
-                    border.color: sliderContainer.labelBorderColor
+                    border.color: labelBackground
                     Label {
                         id: labelFovValue
                         text: fovSlider.value.toFixed(2)
@@ -283,7 +281,7 @@ Row {
                     color: labelBackground
                     height: parent.entryHeight
                     width: parent.entryWidth
-                    border.color: sliderContainer.labelBorderColor
+                    border.color: labelBackground
                     Label {
                         id: labelZoom
                         text: "Zoom"
@@ -297,7 +295,7 @@ Row {
                     color: labelBackground
                     height: parent.entryHeight
                     width: parent.entryWidth
-                    border.color: sliderContainer.labelBorderColor
+                    border.color: labelBackground
                     Label {
                         id: labelBearing
                         text: "Bearing"
@@ -310,7 +308,7 @@ Row {
                     color: labelBackground
                     height: parent.entryHeight
                     width: parent.entryWidth
-                    border.color: sliderContainer.labelBorderColor
+                    border.color: labelBackground
                     Label {
                         id: labelTilt
                         text: "Tilt"
@@ -323,7 +321,7 @@ Row {
                     color: labelBackground
                     height: parent.entryHeight
                     width: parent.entryWidth
-                    border.color: sliderContainer.labelBorderColor
+                    border.color: labelBackground
                     Label {
                         id: labelFov
                         text: "FoV"

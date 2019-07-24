@@ -25,8 +25,8 @@ ApplicationWindow {
     property color green: Material.color(Material.Green, Material.Shade700)
     property color lightgreen: Material.color(Material.Green, Material.Shade500)
     property color cyan: Material.color(Material.Cyan, Material.Shade700)
-    property color grey: Material.color(Material.Grey, Material.Shad700)
-    property color lightgrey: Material.color(Material.Grey, Material.Shade500)
+    property color grey: Material.color(Material.Grey, Material.Shade700)
+    property color lightgrey: Material.color(Material.Grey, Material.Shade100)
 
     property int mainColor: (settings.theme == "Light" ? Material.Cyan : Material.Red)
 

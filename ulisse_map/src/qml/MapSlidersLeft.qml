@@ -50,7 +50,7 @@ Row {
         height: 72
         checkable: true
         checked: false
-        anchors.verticalCenter: parent.verticalCenter
+        y: parent.y + 350
 
         transform: Scale {
             origin.x: rightEdge() ? 0 : sliderTogglerLeft.width / 2
@@ -104,11 +104,10 @@ Row {
         id: sliderContainerLeft
         height: parent.height
         width: sliderTogglerLeft.checked ? defheigth + 120 : defheigth
-        color: Material.background
-        //opacity: 0.7
-        //Material.elevation: 10
-        Material.accent: orange
-        //Material.foreground: Material.color(Material.Grey, Material.Shade100)
+        color: blue
+        Material.elevation: 20
+        Material.accent: blue
+        Material.foreground: orange
 
         property string labelBorderColor: "transparent"
 

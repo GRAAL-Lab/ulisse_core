@@ -9,8 +9,7 @@ import QtQuick.Dialogs 1.2
 
 RowLayout {
     id: root
-    width: 100
-    height: 100
+
     property bool buttons: false
     property var  nameTrack: textnametrack.text
     property var nameTrack_
