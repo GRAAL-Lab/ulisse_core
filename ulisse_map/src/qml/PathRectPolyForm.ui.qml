@@ -6,7 +6,7 @@ import QtPositioning 5.6
 import QtQuick.Controls.Material 2.1
 import QtGraphicalEffects 1.0
 import QtQuick.Dialogs 1.2
-
+import  "."
 RowLayout {
     property alias b_path: b_path
     property alias b_rect: b_rect
@@ -26,7 +26,6 @@ RowLayout {
     property var panels: [panelPathChoice, panelParamsPolygon, panelParamsPolyline, panelManage]
 
     id: rowChoices
-    anchors.fill: map
 
     RowLayout {
         id: panelPathChoice

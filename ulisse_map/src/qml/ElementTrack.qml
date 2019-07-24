@@ -10,12 +10,11 @@ import QtQuick.Controls.Universal 2.1
 import QtGraphicalEffects 1.0
 import QtQuick.Dialogs 1.2
 import "."
-
 import "../scripts/helper.js" as Helper
 
 ElementTrackForm{
-    property color green:  Material.color(Material.Green, Material.Shade700)
-    property color orange: Material.color(Material.Amber, Material.Shade600)
+
+    property bool multichoice: false
 
     name.onClicked: function(){
         selected(_comp)

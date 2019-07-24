@@ -7,11 +7,12 @@ import QtQuick.Controls.Material 2.1
 import "."
 
 Rectangle {
-    property var _tsize : 17
-    property var _lsize: 15
+    property var _tsize : 15
+    property var _lsize: 13
     property real panesMargin: 14
     property real panesWidth: 252
     property bool responsive: false
+
     color: Material.background
 
     GridLayout {
@@ -34,8 +35,9 @@ Rectangle {
             ColumnLayout {
                 id: statusata
                 width: parent.width
-
+                Layout.fillHeight: true
                 Label {
+                    Layout.fillHeight: true
                     Layout.alignment: Qt.AlignHCenter
                     font.pointSize: 18
                     font.weight: Font.DemiBold
@@ -44,9 +46,10 @@ Rectangle {
                 }
 
                 LabelledText {
+                    Layout.fillHeight: true
                     Layout.alignment: Qt.AlignHCenter
                     labelColor: 'dodgerblue'
-                    textColor: 'gray'
+                    textColor: 'grey'
                     text: fbkUpdater.vehicle_state
                     label: qsTr("Vehicle State")
                     lsize: _lsize
@@ -57,7 +60,7 @@ Rectangle {
                     Layout.alignment: Qt.AlignHCenter
                     labelColor: 'dodgerblue'
                     label: "GPS time"
-                    textColor: 'gray'
+                    textColor: 'grey'
                     text: fbkUpdater.gps_time
                     lsize: _lsize
                     tsize: _tsize
@@ -67,7 +70,7 @@ Rectangle {
                     Layout.alignment: Qt.AlignHCenter
                     labelColor: 'dodgerblue'
                     label: "GPS Pos"
-                    textColor: 'gray'
+                    textColor: 'grey'
                     text: "%1, %2".arg(fbkUpdater.gps_pos.latitude).arg(fbkUpdater.gps_pos.longitude)
                     lsize: _lsize
                     tsize: _tsize
@@ -77,7 +80,7 @@ Rectangle {
                     Layout.alignment: Qt.AlignHCenter
                     labelColor: 'dodgerblue'
                     label: "Filtered Pos"
-                    textColor: 'gray'
+                    textColor: 'grey'
                     text: "%1, %2".arg(fbkUpdater.ulisse_pos.latitude).arg(fbkUpdater.ulisse_pos.longitude)
                     lsize: _lsize
                     tsize: _tsize
@@ -87,7 +90,7 @@ Rectangle {
                     Layout.alignment: Qt.AlignHCenter
                     labelColor: 'dodgerblue'
                     label: "Surge"
-                    textColor: 'gray'
+                    textColor: 'grey'
                     text: "%1 m/s".arg(fbkUpdater.ulisse_surge)
                     lsize: _lsize
                     tsize: _tsize
@@ -97,7 +100,7 @@ Rectangle {
                     Layout.alignment: Qt.AlignHCenter
                     labelColor: 'dodgerblue'
                     label: "Heading"
-                    textColor: 'gray'
+                    textColor: 'grey'
                     text: "%1°".arg(fbkUpdater.ulisse_yaw_deg)
                     lsize: _lsize
                     tsize: _tsize
@@ -130,7 +133,7 @@ Rectangle {
                     //id: batteryPercLeft
                     labelColor: 'seagreen'
                     label: "Goal Position"
-                    textColor: 'gray'
+                    textColor: 'grey'
                     text: "%1, %2".arg(fbkUpdater.goal_pos.latitude).arg(fbkUpdater.goal_pos.longitude)
                     lsize: _lsize
                     tsize: _tsize
@@ -141,7 +144,7 @@ Rectangle {
                     //id: batteryPercRight
                     labelColor: 'seagreen'
                     label: "Goal Heading"
-                    textColor: 'gray'
+                    textColor: 'grey'
                     text: "%1°".arg(fbkUpdater.goal_heading)
                     lsize: _lsize
                     tsize: _tsize
@@ -152,7 +155,7 @@ Rectangle {
                     //id: batteryPercRight
                     labelColor: 'seagreen'
                     label: "Distance to Goal"
-                    textColor: 'gray'
+                    textColor: 'grey'
                     text: "%1 (m)".arg(fbkUpdater.goal_distance)
                     lsize: _lsize
                     tsize: _tsize
@@ -185,7 +188,7 @@ Rectangle {
                     //id: batteryPercLeft
                     labelColor: 'orange'
                     label: "Desired Surge"
-                    textColor: 'gray'
+                    textColor: 'grey'
                     text: "%1 m/s".arg(fbkUpdater.desired_surge)
                     lsize: _lsize
                     tsize: _tsize
@@ -196,7 +199,7 @@ Rectangle {
                     //id: batteryPercRight
                     labelColor: 'orange'
                     label: "Desired Jog"
-                    textColor: 'gray'
+                    textColor: 'grey'
                     text:  "%1 rad/s".arg(fbkUpdater.desired_jog)
                     lsize: _lsize
                     tsize: _tsize
@@ -207,7 +210,7 @@ Rectangle {
                     //id: batteryPercRight
                     labelColor: 'orange'
                     label: "Motor Control Ref"
-                    textColor: 'gray'
+                    textColor: 'grey'
                     text: "L: %1 \%\nR: %2 \%".arg(fbkUpdater.thrust_ref_left).arg(fbkUpdater.thrust_ref_right)
                     lsize: _lsize
                     tsize: _tsize
@@ -240,7 +243,7 @@ Rectangle {
                     id: batteryPercLeft
                     labelColor: 'tomato'
                     label: "Battery"
-                    textColor: 'gray'
+                    textColor: 'grey'
                     text: "L: %1 \%\nR: %2 \%".arg(fbkUpdater.battery_perc_L).arg(fbkUpdater.battery_perc_R)
                     lsize: _lsize
                     tsize: _tsize
@@ -251,7 +254,7 @@ Rectangle {
                     id: sw485status
                     labelColor: 'tomato'
                     label: "SW 485 Status"
-                    textColor: 'gray'
+                    textColor: 'grey'
                     text: "right_satellite_received: %1".arg(fbkUpdater.right_satellite_received485);
                     lsize: _lsize
                     tsize: _tsize

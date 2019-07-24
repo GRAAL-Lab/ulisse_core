@@ -4,7 +4,7 @@ import QtQuick.Controls.Styles 1.4 as C1S
 import QtQuick.Controls 2.2
 import QtQml.Models 2.1
 import QtQuick.Controls.Material 2.1
-
+import "."
 
 Row {
     id: containerRowLeft
@@ -12,17 +12,13 @@ Row {
     property var mapSource
     property alias columnTrack: columnTrack
     property real fontSize: 14
+    property var defheigth: 41
     property color labelBackground: "transparent"
     property int edge: Qt.LeftEdge
-    property var togglerColor: mainAccentColor
+    property var togglerColor: orange
     property alias sliderW: sliderTogglerLeft.width
     property bool multichoice: false
-    property color blue: Material.color(Material.Blue, Material.Shade700)
-    property color greyblue: Material.color(Material.Amber, Material.Shade700)
-    property color red: Material.color(Material.Red, Material.Shade700)
-    property color lightred: Material.color(Material.Red, Material.Shade900)
-    property color green: Material.color(Material.Green, Material.Shade700)
-    property color lightgreen: Material.color(Material.Green, Material.Shade900)
+
 
     state: {
         0: "empty",
@@ -54,7 +50,7 @@ Row {
         height: 72
         checkable: true
         checked: false
-        anchors.verticalCenter: parent.verticalCenter
+        y: parent.y + 350
 
         transform: Scale {
             origin.x: rightEdge() ? 0 : sliderTogglerLeft.width / 2
@@ -107,49 +103,51 @@ Row {
     Rectangle {
         id: sliderContainerLeft
         height: parent.height
-        width: sliderTogglerLeft.checked ? sliderRow.width + 120 : sliderRow.width
-        color: Material.background
-        //opacity: 0.7
-        //Material.elevation: 10
-        Material.accent: mainAccentColor
-        //Material.foreground: Material.color(Material.Grey, Material.Shade100)
+        width: sliderTogglerLeft.checked ? defheigth + 120 : defheigth
+        color: blue
+        Material.elevation: 20
+        Material.accent: blue
+        Material.foreground: orange
 
         property string labelBorderColor: "transparent"
 
         Column {
             spacing: 10
             id: sliderRow
-            width: addTracks.height
+            width: defheigth
 
             Column{
                 id: main_btns
-                width: sliderTogglerLeft.checked ? sliderRow.width + 120 : sliderRow.width
+                width: sliderTogglerLeft.checked ? defheigth + 120 : defheigth
+
                 Button{
                     id:addTracks
-                    width: parent.width
-                    text: (sliderTogglerLeft.checked)? qsTr("Add Path") : qsTr("")
                     highlighted: true
+                    width: parent.width
+
+                    text: (sliderTogglerLeft.checked)? qsTr("Add Path") : qsTr("")
 
                     onHoveredChanged: function(){
-                        addTracksRect.color= (addTracksRect.color === blue)? greyblue: blue
+                        addTracksRect.color = (addTracksRect.color === blue)? orange: blue
                     }
 
                     onClicked: function(){
                         pathRectPoly.show_shape_choice()
                         enableBtns(false)
                     }
+
                     background: Rectangle {
-                            id: addTracksRect
-                            Image {
-                                id:addimg
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                anchors.verticalCenter: parent.verticalCenter
-                                visible: sliderTogglerLeft.checked ? false : true
-                                source: 'qrc:/images/add-path.png'
-                            }
-                            color: blue
-                            anchors.fill: parent
-                            }
+                        id: addTracksRect
+                        color: blue
+                        anchors.fill: parent
+                        Image {
+                            id:addimg
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.verticalCenter: parent.verticalCenter
+                            visible: sliderTogglerLeft.checked ? false : true
+                            source: 'qrc:/images/add-path.png'
+                        }
+                        }
                 }
 
                 Button{
@@ -161,7 +159,7 @@ Row {
                     highlighted: true
 
                     onHoveredChanged: function(){
-                        trackBG.color= (trackBG.color === blue)? greyblue: blue
+                        trackBG.color= (trackBG.color === blue)? orange: blue
                     }
 
                     onClicked: function(){
@@ -172,7 +170,10 @@ Row {
                         confirm.clicked.disconnect(delete_items)
                         confirm.clicked.connect(delete_items)
                     }
+
                     background: Rectangle {
+                        color: blue
+                        anchors.fill: parent
                         id: trackBG
                         Image {
                             id:trashimg
@@ -181,21 +182,20 @@ Row {
                             visible: sliderTogglerLeft.checked ? false : true
                             source: 'qrc:/images/trash.png'
                         }
-                        color: blue
-                        anchors.fill: parent
                     }
                 }
             }
 
             Column{
                 id: confirm_btns
-                width: sliderTogglerLeft.checked ? sliderRow.width + 120 : sliderRow.width
+                width: sliderTogglerLeft.checked ? defheigth + 120 : defheigth
                 visible: false
                 Button{
                     id:abort
                     text:sliderTogglerLeft.checked ? "No" :""
                     width: parent.width
                     highlighted: true
+
                     onClicked: function(){
                         restoreBtns()
                         deselect_all()
@@ -207,6 +207,7 @@ Row {
                     onHoveredChanged: function(){
                         closeimg.color= (closeimg.color === red)? lightred: red
                     }
+
                     background: Rectangle {
                         id:closeimg
                         Image {
@@ -224,6 +225,7 @@ Row {
                     enabled: true
                     highlighted: true
                     width: parent.width
+
                     onClicked: function(){
                         pathRectPoly.enableBtns(true)
                         enableBtns(y)}
@@ -231,7 +233,9 @@ Row {
                     onHoveredChanged: function(){
                         checkimg.color= (checkimg.color === green)? lightgreen: green
                     }
+
                     background: Rectangle {
+                        color: green
                         id:checkimg
                         Image {                            
                             visible: sliderTogglerLeft.checked ? false : true
@@ -239,16 +243,15 @@ Row {
                             anchors.verticalCenter : parent.verticalCenter
                             source: 'qrc:/images/check.png'
                         }
-                    color: green
                     }
                 }
             }
 
             Column {
-                width: sliderTogglerLeft.checked ? sliderRow.width + 120 : sliderRow.width
-                property bool expanded: sliderTogglerLeft.checked
-                y: 96
                 id:columnTrack
+                width: sliderTogglerLeft.checked ? defheigth + 120 : defheigth
+                y: 96
+                property bool expanded: sliderTogglerLeft.checked
             }
         }
     }
@@ -302,7 +305,8 @@ Row {
             pathRectPoly.n--
         }
     }
-function save_items(){}
+
+    function save_items(){}
 
     function delete_items(){
         pathRectPoly.hide_all()

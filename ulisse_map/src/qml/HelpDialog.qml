@@ -3,6 +3,7 @@ import QtQuick.Layouts 1.3
 import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
 import QtGraphicalEffects 1.0
+import "."
 
 //TODO: complete the page
 Dialog {
@@ -66,7 +67,7 @@ Dialog {
         Label {
             text: "Developed by GRAAL Lab (2019)"
             horizontalAlignment: Text.AlignHCenter
-            color: "gray"
+            color: "grey"
             Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
             Layout.fillWidth: true
         }

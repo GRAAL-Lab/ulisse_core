@@ -2,7 +2,7 @@ import QtQuick 2.0
 import QtLocation 5.9
 import QtPositioning 5.9
 import QtQuick.Controls.Material 2.1
-
+import "."
 import "../scripts/helper.js" as Helper
 
 
@@ -21,7 +21,6 @@ MapPolyline {
 
     property var click_handler: click_handler_convex
     property var pos_changed_handler: pos_changed_handler_convex
-
 
     property Component mapCanvasComponent
     property Component mapMarkerComponent
@@ -49,8 +48,8 @@ MapPolyline {
     }
 
     property string _pathName: "Path"
-    property real _angle :30
-    property real _offset :30
+    property real _angle: 30
+    property real _offset: 30
     property var _method: "single_winding" //"simple"
 
     property var debug_c: null
@@ -170,7 +169,7 @@ MapPolyline {
         for (var i = 0; i< vertex_markers.length; i++){
             vertex_markers[i].center = _path[i]
             vertex_markers[i].opacity = 0
-            vertex_markers[i].color = Material.color(Material.Green, Material.Shade800)
+            vertex_markers[i].color = green
         }
     }
 
@@ -179,7 +178,7 @@ MapPolyline {
         for (var i = 0; i< add_markers.length; i++){
             add_markers[i].center = Helper.geo_midpoint(_path[i], get_next_in_path(i,1))
             add_markers[i].opacity = 0
-            add_markers[i].color = "#bbbb00"
+            add_markers[i].color = orange
         }
     }
 
@@ -258,10 +257,10 @@ MapPolyline {
         return safe
     }
 
-    line.color: Material.color(Material.Green, Material.Shade800)
+    line.color: green
     property var safe: null
     onSafeChanged: function(){
-        line.color = (safe ? Material.color(Material.Green, Material.Shade800) : Material.color(Material.Red, Material.Shade800))
+        line.color = (safe ? green : red)
     }
 
     //FIXME: check it in the euclidean plane
@@ -295,14 +294,14 @@ MapPolyline {
         var p = Qt.point(mouse.x, mouse.y)
         var pf = map.toCoordinate(p)
         var last_idx = pathLength()-1
-        var color = "#4ac7c0"
+        var color = cyan
 
         var ppp=[]
         detection_intersect = false
         for(var i=0; i<path.length-1; i++)
             ppp.push(map.fromCoordinate(path[i],false))
         if (path.length > 3 && (!Helper.polylines_disjoint([p, ppp[ppp.length-1]], ppp))){
-            color = "#ff0000"
+            color = red
             pf = coordinateAt(path.length-1)
             detection_intersect = true
         } else if(path.length > 3 && Helper.distance(map.fromCoordinate(coordinateAt(0)), p) < 15){
@@ -311,7 +310,7 @@ MapPolyline {
             pp.push(pp[0])
             if(Helper.coord_inside_polygon(fbkUpdater.ulisse_pos, pp)){
                 pf = coordinateAt(0)
-                color = Material.color(Material.Amber, Material.Shade600)
+                color = orange
             }
         }
 
@@ -364,13 +363,13 @@ MapPolyline {
                 addCoordinate(wp0)
                 addCoordinate(wp0)
                 polygonal_phase = 2
-                line.color = Material.color(Material.Amber, Material.Shade600)
+                line.color = orange
             } else if (polygonal_phase === 2){
                 var p0 = map.fromCoordinate(coordinateAt(0))
                 var p2 = map.fromCoordinate(coordinateAt(2))
                 polygonal_phase = 0
                 mapMouseArea.hoverEnabled = false
-                line.color = Material.color(Material.Green, Material.Shade800)
+                line.color = green
                 end()
             }
         }
@@ -423,9 +422,9 @@ MapPolyline {
         var pf = map.toCoordinate(p)
         if (polygonal_phase === 3 && !map_polygon_point_admissibility(p)){
             pf = path[0]
-            color = Material.color(Material.Amber, Material.Shade600)
+            color = orange
         } else {
-            color = Material.color(Material.Green, Material.Shade800)
+            color = green
         }
         line.color = color
         replaceCoordinate(path.length-1, pf)
@@ -497,21 +496,21 @@ MapPolyline {
     function change_marked(nearest){
         var _path = get_path()
         if (marked>=0 && marked < _path.length){
-            vertex_markers[marked].color = Material.color(Material.Green, Material.Shade800)
+            vertex_markers[marked].color = green
             _dashed_line.reset()
         }
         else if(marked >= _path.length && marked < 2*_path.length){
-            add_markers[marked-_path.length].color = "#bbbb00"
+            add_markers[marked-_path.length].color = orange
         }
         marked = nearest
         if (marked>=0 && marked < _path.length){
-            vertex_markers[marked].color = "#ff0000"
+            vertex_markers[marked].color = red
             if (_path.length > 3){
                 _dashed_line.replaceCoordinate(0, get_next_in_path(marked,1))
                 _dashed_line.replaceCoordinate(1, get_prev_in_path(marked,1))
             }
         } else if(marked >= _path.length && marked < 2*_path.length){
-            add_markers[marked-_path.length].color = "#ff0000"
+            add_markers[marked-_path.length].color = red
         }
         _handle.center_select(marked === 2*_path.length)
         _handle.handle_select(marked === 2*_path.length+1)
@@ -539,20 +538,20 @@ MapPolyline {
 
     function add_mid_coordinate(_idx){
         var idx = _idx+1
-        add_markers[_idx].color = "#bbbb00"
+        add_markers[_idx].color = orange
         var c = add_markers[_idx].center
         insertCoordinate(idx, c)
         var marker1 = mapMarkerComponent.createObject(map)
         map.addMapItem(marker1)
         marker1.center = c
         marker1.opacity = 1
-        marker1.color = Material.color(Material.Green, Material.Shade800)
+        marker1.color = green
         vertex_markers.splice(idx,0,marker1)
         var marker2 = mapMarkerComponent.createObject(map)
         map.addMapItem(marker2)
         marker2.center = c
         marker2.opacity = 0
-        marker2.color = "#bbbb00"
+        marker2.color = orange
         add_markers.splice(idx,0,marker2)
     }
 
@@ -639,9 +638,9 @@ MapPolyline {
             change_marked(r4.nearest)
         } else if (moving_idx>=0 && moving_idx<_path.length){
             if (map_polygon_point_mod_admissibility(p, moving_idx)){
-                color = Material.color(Material.Green, Material.Shade800)
+                color = green
             } else {
-                color = Material.color(Material.Amber, Material.Shade600)
+                color = orange
                 pf = path[moving_idx]
             }
             line.color = color
@@ -682,7 +681,7 @@ MapPolyline {
     function close_polygon(){
         replaceCoordinate(pathLength()-1, path[0])
         mapMouseArea.hoverEnabled = false
-        line.color = Material.color(Material.Green, Material.Shade800)
+        line.color = green
         polygonal_phase = 0
         end()
     }
@@ -889,6 +888,6 @@ MapPolyline {
 
     function highlighted(yes)
     {
-        line.color = yes? Material.color(Material.Amber, Material.Shade600) :  Material.color(Material.Green, Material.Shade600)
+        line.color = yes? orange :  lightgreen
     }
 }

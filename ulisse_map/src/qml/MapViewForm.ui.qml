@@ -120,11 +120,13 @@ RowLayout {
 
         Rectangle {
             id: manageToolbar
-            width: parent.width
             height: pathRectPoly.height
             color: Material.background
             anchors.bottom: bottomToolbar.top
-
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.leftMargin: 165
+            anchors.rightMargin: 175
             RowLayout {
                 anchors.fill: parent
 
@@ -155,7 +157,7 @@ RowLayout {
                     id: recenterButton
                     text: "Recenter"
                     highlighted: true
-                    Material.background:  Material.color(Material.Blue, Material.Shade700)
+                    Material.background:  blue
                     Layout.leftMargin: 5
                 }
 
@@ -171,7 +173,7 @@ RowLayout {
                     id: overlayStatusCbox
                     text: "Show Overlay"
                     Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                    Material.accent: mainColor
+                    Material.accent: orange
                     checked: false
                 }
 
@@ -181,7 +183,7 @@ RowLayout {
                     //Layout.rightMargin: 5
                     text: "Clear trace"
                     highlighted: true
-                    Material.accent: mainAccentColor
+                    Material.accent: orange
                     Layout.alignment: Qt.AlignRight
                     Layout.rightMargin: 5
                 }

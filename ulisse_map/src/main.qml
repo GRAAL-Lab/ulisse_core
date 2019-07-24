@@ -18,12 +18,18 @@ ApplicationWindow {
     visible: true
     visibility: "Maximized"
 
+    property color blue: Material.color(Material.Blue, Material.Shade700)
+    property color orange: Material.color(Material.Amber, Material.Shade700)
+    property color red: Material.color(Material.Red, Material.Shade700)
+    property color lightred: Material.color(Material.Red, Material.Shade500)
+    property color green: Material.color(Material.Green, Material.Shade700)
+    property color lightgreen: Material.color(Material.Green, Material.Shade500)
+    property color cyan: Material.color(Material.Cyan, Material.Shade700)
+    property color grey: Material.color(Material.Grey, Material.Shade700)
+    property color lightgrey: Material.color(Material.Grey, Material.Shade100)
 
     property int mainColor: (settings.theme == "Light" ? Material.Cyan : Material.Red)
-    property color mainAccentColor: Material.color(Material.Amber,
-                                                 Material.Shade700)
-    property color secondaryAccentColor: Material.color(Material.Green,
-                                                      Material.Shade600)
+
     property string futureMapPlugin: ""
 
     Material.theme: settings.theme
