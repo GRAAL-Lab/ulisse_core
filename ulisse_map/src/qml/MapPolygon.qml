@@ -36,13 +36,15 @@ MapPolyline {
     property var a_marker
     property var b_marker
 
-    property var dir: 0
+    property var direction: 0
 
     function toggle_dir(){
-        dir = (++dir)%2
+        direction = (direction+1)%2
         var t = QtPositioning.coordinate(b_marker.coordinate.latitude, b_marker.coordinate.longitude)
         b_marker.coordinate = QtPositioning.coordinate(a_marker.coordinate.latitude, a_marker.coordinate.longitude)
         a_marker.coordinate = t
+        console.log(direction)
+        generate_nurbs()
     }
 
     property string _pathName: "Path"
@@ -823,7 +825,7 @@ MapPolyline {
             var p0 = intersections_cartesian[i][0]
             var p1 = intersections_cartesian[i][1]
             nurb_l.push(Helper.generate_nurb_line(p0, p1))
-        }
+        } //FIXME reverse each even (or odd?) line
 
         for (var i=0; i<intersections_cartesian.length-1; i++){
             var dir = (i+1)%2
@@ -843,9 +845,9 @@ MapPolyline {
         var result = {
             centroid: [centroid.latitude, centroid.longitude],
             curves: curves,
-            direction: dir
+            direction: direction
         }
-        //console.log(JSON.stringify(result))
+        console.log(JSON.stringify(result))
         return result
     }
 
