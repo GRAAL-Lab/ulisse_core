@@ -91,6 +91,8 @@ RowLayout {
         Layout.minimumWidth: 300
         Layout.preferredWidth: 300
         Layout.maximumWidth: 350
+        Material.elevation: myElevation
+        Material.accent: grey
     }
 
     property real my_height: 17
@@ -125,8 +127,6 @@ RowLayout {
             anchors.bottom: bottomToolbar.top
             anchors.left: parent.left
             anchors.right: parent.right
-            anchors.leftMargin: 165
-            anchors.rightMargin: 175
             RowLayout {
                 anchors.fill: parent
 
@@ -146,7 +146,6 @@ RowLayout {
             height: clearPathButton.height
             color: Material.background
             anchors.bottom: parent.bottom
-            z: map.z + 2
 
             RowLayout {
                 anchors.fill: parent

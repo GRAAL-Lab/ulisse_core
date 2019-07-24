@@ -84,7 +84,7 @@ RowLayout {
         height: offsetField.height+40
         font.capitalization: Font.AllUppercase
         clip: true
-        title: qsTr("Path Name")
+        title: qsTr("Offset")
 
         label: Label {
                 x: groupBoxoffset.leftPadding

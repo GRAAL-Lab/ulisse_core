@@ -17,7 +17,7 @@ ToolBar {
 
     Material.elevation: 4
 
-    Material.foreground: grey
+    Material.foreground: lightgrey
     Material.background: (settings.theme == "Light" ? blue : lightred)
     Material.accent: "white"
 
