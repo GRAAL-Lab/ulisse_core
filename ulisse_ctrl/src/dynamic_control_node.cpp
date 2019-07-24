@@ -81,8 +81,8 @@ int main(int argc, char* argv[])
 
     ctb::DigitalSlidingMode<struct SlidingSurface> slideSurge=
             ctb::DigitalSlidingMode<struct SlidingSurface>(alpha_beta_u,s1,sl);
-    ctb::DigitalSecOrdSlidingMode<struct SlidingSurface> slideHeading=
-            ctb::DigitalSecOrdSlidingMode<struct SlidingSurface>(alpha_beta_r,s2,sl);
+    ctb::DigitalSlidingMode<struct SlidingSurface> slideHeading=
+            ctb::DigitalSlidingMode<struct SlidingSurface>(alpha_beta_r,s2,sl);
 
     std::cout << tc::grayD << *conf << tc::none << std::endl;
 

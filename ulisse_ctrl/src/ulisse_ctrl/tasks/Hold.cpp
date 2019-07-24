@@ -101,20 +101,13 @@ void Hold::Update() throw(tpik::ExceptionWithHow)
                 desired_jog = 0;
 
             } else {
-                if (conf_->enableSlowDownOnTurns) {
-                    headingError = ctb::HeadingErrorRad(goalCxt_->goalHeading, statusCxt_->vehicleHeading);
-                    goalDistance = SlowDownWhenTurning(headingError, goalCxt_->goalDistance, *conf_);
-                } else {
-                    goalDistance = goalCxt_->goalDistance;
-                }
-
+                goalDistance = goalCxt_->goalDistance;
 
                 desired_speed = goalDistance;
                 desired_jog = ulisse::MinimumAngleBetween( statusCxt_->vehicleHeading, goalCxt_->goalHeading);
 
             }
         }
-        std::cout << "Jacobian: " << std::endl <<  J_ << std::endl;
 
     }
     desiredVelocity_(2) = desired_jog;

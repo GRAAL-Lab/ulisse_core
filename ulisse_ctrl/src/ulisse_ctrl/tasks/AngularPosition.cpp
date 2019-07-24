@@ -48,7 +48,6 @@ void AngularPosition::Update() throw(tpik::ExceptionWithHow)
         angleBodyFrame_ = P_ * angleBodyFrame_;
 
         SetControlVariable(angleBodyFrame_);
-
     }
 
     UpdateJacobian();
@@ -60,6 +59,6 @@ void AngularPosition::Update() throw(tpik::ExceptionWithHow)
 
 void AngularPosition::UpdateJacobian()
 {
-    J_ = -P_ * robotModel_->GetCartesianJacobian(frameID_).block(0, 0, 3, DoF_);
+    J_ = - P_ * robotModel_->GetCartesianJacobian(frameID_).block(0, 0, 3, DoF_);
 }
 }

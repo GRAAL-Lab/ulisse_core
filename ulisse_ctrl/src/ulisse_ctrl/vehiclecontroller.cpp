@@ -202,8 +202,8 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         Json::Reader reader;
         Json::Value obj, obj2;
 
-        double bound_min = 6;
-        double bound_max = 2;
+        double bound_min = 25;
+        double bound_max = 10;
 
         asv_safety_boundaries->SetBoundaries(bound_min, bound_max);
         reader.parse(request->boundaries_json, obj);
@@ -550,7 +550,13 @@ void VehicleController::Run()
         }
     }
 
-    ctrlCxt_->desiredSurge = y_tpik[3];
+    double headingError;
+    if (conf_->enableSlowDownOnTurns) {
+        headingError = ctb::HeadingErrorRad(goalCxt_->goalHeading, statusCxt_->vehicleHeading);
+        ctrlCxt_->desiredSurge = SlowDownWhenTurning(headingError, y_tpik[3], *conf_);
+    } else {
+        ctrlCxt_->desiredSurge = y_tpik[3];
+    }
     ctrlCxt_->desiredJog = y_tpik[2];
 
     // Update references for the tasks => x, y, angle on theta

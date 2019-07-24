@@ -82,7 +82,7 @@ void SafetyBoundaries::Update() throw(tpik::ExceptionWithHow)
         ctb::DistanceAndAzimuthRad(current_pose, desired_pose, goalDistance, goalHeading);
 
         double alph = conf_->slowOnTurns.alphaMin;
-        conf_->slowOnTurns.alphaMin = 0.01;
+        conf_->slowOnTurns.alphaMin = 0.5;
         goalDistance = SlowDownWhenTurning(ctrlCxt_->desiredJog, 2.5, *conf_);
         conf_->slowOnTurns.alphaMin = alph;
         desired_speed = goalDistance;

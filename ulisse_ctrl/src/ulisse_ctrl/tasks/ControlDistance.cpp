@@ -49,12 +49,7 @@ void ControlDistance::Update() throw(tpik::ExceptionWithHow)
 
         P_ = (Eigen::Matrix3d::Identity() - normalOnBodyFrame * normalOnBodyFrame.transpose());
 
-        if (conf_->enableSlowDownOnTurns) {
-            headingError = ctb::HeadingErrorRad(goalCxt_->goalHeading, statusCxt_->vehicleHeading);
-            goalDistance = SlowDownWhenTurning(headingError, distance_(0), *conf_);
-        } else {
-            goalDistance = distance_(0);
-        }
+        goalDistance = distance_(0);
 
         desired_speed = goalDistance;
 
@@ -62,7 +57,6 @@ void ControlDistance::Update() throw(tpik::ExceptionWithHow)
         distanceBodyFrame_ = P_ * distanceBodyFrame_;
 
         SetControlVariable(distanceBodyFrame_);
-
     }
 
     UpdateJacobian();
