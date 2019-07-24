@@ -77,7 +77,10 @@ namespace states {
         centroid_.latitude = obj_master["centroid"][0].asDouble();
         centroid_.longitude = obj_master["centroid"][1].asDouble();
 
-        if (obj["direction"].asInt()) {
+        std::cout << "ARRIVATO : " << json_nurbs << std::endl;
+
+        std::cout << "DIR : " << obj_master["direction"] << std::endl;
+        if (obj_master["direction"].asInt()) {
             std::cout << "DIRECTION TRUE" << std::endl;
             reverse = true;
         } else {
@@ -308,7 +311,7 @@ namespace states {
 
                 s1240(curve, aepsge, &cur_length, &stat);
                 std::cout << "Current Curve Length : " << cur_length << std::endl;
-                delta_ = 0.5 / cur_length;
+                delta_ = 0.25 / cur_length;
 
                 curvilinear_abscissa = getCurvilinearAbscissa() + delta_;
 
