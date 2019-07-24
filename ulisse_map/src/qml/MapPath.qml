@@ -1,14 +1,17 @@
 import QtQuick 2.0
 import QtLocation 5.6
 import QtPositioning 5.6
-
+import QtQuick.Controls 2.1
+import "."
 import "../scripts/helper.js" as Helper
 
 MapPolyline {
     line.width: 3
-    line.color: "#81c784"
+    line.color: lightgreen
     opacity: 1.0
     z: map.z + 5
+
+    property bool multichoice: false
 
     property string type: "polyline"
 
@@ -139,7 +142,7 @@ MapPolyline {
         for (var i = 0; i< vertex_markers.length; i++){
             vertex_markers[i].center = _path[i]
             vertex_markers[i].opacity = 0
-            vertex_markers[i].color = "#00ff00"
+            vertex_markers[i].color = green
         }
     }
 
@@ -148,7 +151,7 @@ MapPolyline {
         for (var i = 0; i< add_markers.length; i++){
             add_markers[i].center = Helper.geo_midpoint(_path[i], get_next_in_path(i,1))
             add_markers[i].opacity = 0
-            add_markers[i].color = "#bbbb00"
+            add_markers[i].color = orange
         }
     }
 
@@ -226,7 +229,7 @@ MapPolyline {
 
     property var safe: null
     onSafeChanged: function(){
-        line.color = (safe ? "#00ff00" : "#ff0000")
+        line.color = (safe ? lightgreen : red)
     }
 
 
@@ -275,21 +278,21 @@ MapPolyline {
     function change_marked(nearest){
         var _path = get_path()
         if (marked>=0 && marked < _path.length){
-            vertex_markers[marked].color = "#00ff00"
+            vertex_markers[marked].color = green
             _dashed_line.reset()
         }
         else if(marked >= _path.length && marked < 2*_path.length-1){
-            add_markers[marked-_path.length].color = "#bbbb00"
+            add_markers[marked-_path.length].color = orange
         }
         marked = nearest
         if (marked>=0 && marked < _path.length){
-            vertex_markers[marked].color = "#ff0000"
+            vertex_markers[marked].color = red
             if (marked > 1 && marked < _path.length-1){
                 _dashed_line.replaceCoordinate(0, get_next_in_path(marked,1))
                 _dashed_line.replaceCoordinate(1, get_prev_in_path(marked,1))
             }
         } else if(marked >= _path.length && marked < 2*_path.length-1){
-            add_markers[marked-_path.length].color = "#ff0000"
+            add_markers[marked-_path.length].color = red
         }
         _handle.center_select(marked === 2*_path.length)
         _handle.handle_select(marked === 2*_path.length+1)
@@ -315,20 +318,20 @@ MapPolyline {
 
     function add_mid_coordinate(_idx){
         var idx = _idx+1
-        add_markers[_idx].color = "#bbbb00"
+        add_markers[_idx].color = orange
         var c = add_markers[_idx].center
         insertCoordinate(idx, c)
         var marker1 = mapMarkerComponent.createObject(map)
         map.addMapItem(marker1)
         marker1.center = c
         marker1.opacity = 1
-        marker1.color = "#00ff00"
+        marker1.color = green
         vertex_markers.splice(idx,0,marker1)
         var marker2 = mapMarkerComponent.createObject(map)
         map.addMapItem(marker2)
         marker2.center = c
         marker2.opacity = 0
-        marker2.color = "#bbbb00"
+        marker2.color = orange
         add_markers.splice(idx,0,marker2)
     }
 
@@ -371,6 +374,9 @@ MapPolyline {
         for (var i = 0; i< add_markers.length; i++)
             add_markers[i].radius = r
         _handle.h_radius = r
+
+        a_marker.zoomLevel = map.zoomLevel/2 + 9
+        b_marker.zoomLevel = map.zoomLevel/2 + 9
     }
 
     function click_mod_handler(mouse){
@@ -489,7 +495,7 @@ MapPolyline {
                 mapMouseArea.hoverEnabled = true
                 addCoordinate(wp)
                 addCoordinate(wp)
-                line.color = "#ffb300"
+                line.color = orang
                 return
             }
             else if (pathLength() > 1){
@@ -497,7 +503,7 @@ MapPolyline {
                 var lastp = map.fromCoordinate(lastwp)
                 if(Helper.distance(p, lastp) < 8){
                     removeCoordinate(pathLength()-1)
-                    line.color = "#33cc33"
+                    line.color = lightgreen
                     mapMouseArea.hoverEnabled = false
                     update_centroid()
                     generate_nurbs()
@@ -505,7 +511,7 @@ MapPolyline {
                     return
                 }
             }
-            line.color = "#ffb300"
+            line.color = orange
             addCoordinate(wp)
         }
     }
@@ -518,12 +524,12 @@ MapPolyline {
             var lastwp = coordinateAt(pathLength()-2)
             var lastp = map.fromCoordinate(lastwp)
             if(Helper.distance(p, lastp) < 8){
-                line.color = "#ffb300"
+                line.color = orange
             } else {
-                line.color = "#81c784"
+                line.color = lightgreen
             }
         } else {
-            line.color = "#81c784"
+            line.color = lightgreen
         }
     }
 
@@ -580,6 +586,6 @@ MapPolyline {
 
     function highlighted(yes)
     {
-        line.color = yes? "#ffff00" : "#ff0000"
+        line.color = yes? orange :  green
     }
 }

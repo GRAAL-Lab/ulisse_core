@@ -10,24 +10,28 @@ import QtQuick.Controls.Universal 2.1
 import QtGraphicalEffects 1.0
 import QtQuick.Dialogs 1.2
 import "."
-
 import "../scripts/helper.js" as Helper
 
 ElementTrackForm{
+
+    property bool multichoice: false
+
     name.onClicked: function(){
         selected(_comp)
     }
 
     function toggle(){
         toggled = !toggled
-        backbut.color = toggled ? "#ffffff" : "#abcdef"
+         name.Material.background = toggled ? orange : green
+        _comp.highlighted(toggled)
     }
 
     function highlight(yes){
         toggled = yes
-        backbut.color = yes ? "#ffffff" : "#abcdef"
+         name.Material.background = yes ? orange : green
         _comp.highlighted(yes)
     }
+    Material.background: green
 
     //tracklistlayout.y: tracklistlayout.height*(tracklistlayout.ntrack)
 

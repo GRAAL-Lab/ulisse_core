@@ -9,30 +9,29 @@ Rectangle {
     property alias markerTextColor: markerTextLabel.textColor
     property color labelColor1: "#000000"
     property color labelColor2: "#000000"
-    color: Material.background
+    property color labelColor3: "#000000"
+    property alias commandRect: commandRect
+    border.width: 1
     visible: true
-    opacity: 1
 
     ColumnLayout {
         id: leftbarlayout
         anchors.fill: parent
-        spacing: 6
         Layout.leftMargin: 15
         width: parent.width
+        spacing: 0
 
         Pane {
             id: statusdatarect
+            Layout.fillHeight: true
             Layout.minimumWidth: leftbarlayout.width
             Layout.preferredWidth: parent.width
             Layout.minimumHeight: mycol.height
             Layout.alignment: Qt.AlignLeft
-            Layout.bottomMargin: 20
-            Material.elevation: myElevation
 
             ColumnLayout {
                 id: mycol
                 width: statusdatarect.width - 30
-                spacing: 10
                 Layout.alignment: Qt.AlignLeft
 
                 ColumnLayout {
@@ -40,16 +39,19 @@ Rectangle {
                     width: mycol.width
                     Layout.minimumWidth: width
                     Layout.fillWidth: true
+                    Layout.fillHeight: true
                     Layout.alignment: Qt.AlignLeft
-                    Layout.bottomMargin: 20
+                    Layout.bottomMargin: 5
                     height: my_label.Top - goalDistLabel.Bottom
+                    clip: false
+                    visible: true
 
                     Label {
                         id: my_label
                         Layout.alignment: Qt.AlignHCenter
                         font.pointSize: 12
                         font.weight: Font.DemiBold
-                        color: 'gray'
+                        color: labelColor3
                         text: "Status"
                     }
 
@@ -91,7 +93,7 @@ Rectangle {
                         Layout.alignment: Qt.AlignHCenter
                         font.pointSize: 11
                         font.weight: Font.DemiBold
-                        color: 'gray'
+                        color: 'grey'
                         text: "Goal"
                     }
 
@@ -118,9 +120,10 @@ Rectangle {
                     }
                     Text {
                         id: markerText
+                        Layout.alignment: Qt.AlignHCenter
                         width: markerlayout.width
                         font.pointSize: 8
-                        color: 'gray'
+                        color: 'grey'
                         text: "(Left click to set marker)"
                         horizontalAlignment: Text.AlignHCenter
                     }
@@ -130,11 +133,11 @@ Rectangle {
 
         CommandPane {
             id: commandRect
-            Layout.alignment: Qt.AlignLeft
-            Layout.minimumWidth: leftbarlayout.width
-            Layout.preferredWidth: parent.width
-            Layout.bottomMargin: 10
-            Material.elevation: myElevation
+            antialiasing: true
+            Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.bottomMargin: 2
             //Material.background: Material.color(Material.BlueGrey, Material.Shade50)
         }
     }

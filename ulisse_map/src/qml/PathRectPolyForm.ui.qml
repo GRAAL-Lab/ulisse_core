@@ -6,7 +6,7 @@ import QtPositioning 5.6
 import QtQuick.Controls.Material 2.1
 import QtGraphicalEffects 1.0
 import QtQuick.Dialogs 1.2
-
+import  "."
 RowLayout {
     property alias b_path: b_path
     property alias b_rect: b_rect
@@ -18,6 +18,7 @@ RowLayout {
     property alias buttonPlay: buttonPlay
     property alias buttonToggle: buttonToggle
 
+    property alias rowChoices: rowChoices
     property alias panelPathChoice: panelPathChoice
     property alias panelParamsPolygon: panelParamsPolygon
     property alias panelParamsPolyline: panelParamsPolyline
@@ -25,9 +26,7 @@ RowLayout {
     property var panels: [panelPathChoice, panelParamsPolygon, panelParamsPolyline, panelManage]
 
     id: rowChoices
-    anchors.fill: map
 
-    //Row for shapes
     RowLayout {
         id: panelPathChoice
         height: 100

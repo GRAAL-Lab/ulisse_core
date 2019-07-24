@@ -1,7 +1,7 @@
 import QtQuick 2.0
 import QtLocation 5.6
 import QtPositioning 5.6
-
+import "."
 import "../scripts/helper.js" as Helper
 
 MapQuickItem{
@@ -9,12 +9,13 @@ MapQuickItem{
     property var h_center: QtPositioning.coordinate(0,0)
     property var h_handle: QtPositioning.coordinate(0,0)
     property var h_radius: 6
+
     function handle_select(yes){
-        _handle.color = yes ? "#00ffff" : "#00ff00"
+        _handle.color = yes ? orange : green
     }
 
     function center_select(yes){
-        _center.color = yes ? "#00ffff" : "#0000ff"
+        _center.color = yes ? orange : blue
     }
 
     function add_to_map(map){
@@ -40,7 +41,7 @@ MapQuickItem{
             radius: h_radius
             color: "#00ff00"
             border.width: 1
-            border.color: 'gray'
+            border.color: grey
             opacity: root.opacity
         }
 
@@ -55,7 +56,7 @@ MapQuickItem{
             radius: h_radius
             color: "#0000ff"
             border.width: 1
-            border.color: 'gray'
+            border.color: grey
             opacity: root.opacity
         }
 
@@ -90,7 +91,7 @@ MapQuickItem{
         var ctx = _canvas._ctx
         if (ctx === null || ctx === undefined) return
         ctx.clearRect(0, 0, 80, 80)
-        ctx.strokeStyle = "#000000"
+        ctx.strokeStyle = "#transparent"
         ctx.lineWidth = 1
         ctx.lineJoin = "bevel"
         ctx.beginPath()

@@ -2,6 +2,7 @@ import QtLocation 5.6
 import QtPositioning 5.6
 import QtQuick 2.6
 import QtQuick.Controls 2.1
+import "."
 import "../scripts/helper.js" as Helper
 
 Item {
@@ -11,6 +12,8 @@ Item {
     property alias scaleText: scaleText
     property alias scaleImageLeft: scaleImageLeft
     property var scaleLengths: [5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000, 1000000, 2000000]
+    width: 50
+    height: 50
 
     PositionSource {
         id: positionSource
@@ -19,10 +22,8 @@ Item {
 
     Item {
         id: my_scale
-        z: map.z + 3
+        z: map.z + 10
         visible: scaleText.text != "0 m"
-        anchors.bottom: parent.bottom
-        anchors.right: parent.right
         anchors.margins: 15
         height: scaleText.height * 3
         width: scaleImage.width

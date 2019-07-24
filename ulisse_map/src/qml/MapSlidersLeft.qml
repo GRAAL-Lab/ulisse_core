@@ -4,7 +4,7 @@ import QtQuick.Controls.Styles 1.4 as C1S
 import QtQuick.Controls 2.2
 import QtQml.Models 2.1
 import QtQuick.Controls.Material 2.1
-
+import "."
 
 Row {
     id: containerRowLeft
@@ -12,11 +12,13 @@ Row {
     property var mapSource
     property alias columnTrack: columnTrack
     property real fontSize: 14
+    property var defheigth: 41
     property color labelBackground: "transparent"
     property int edge: Qt.LeftEdge
-    property var togglerColor: mainAccentColor
+    property var togglerColor: orange
     property alias sliderW: sliderTogglerLeft.width
     property bool multichoice: false
+
 
     state: {
         0: "empty",
@@ -40,6 +42,7 @@ Row {
     anchors.right: rightEdge() ? parent.right : undefined
     anchors.left: rightEdge() ? undefined : parent.left
     width: sliderTogglerLeft.width + sliderContainerLeft.width
+    opacity: 1
 
     C1.Button {
         id: sliderTogglerLeft
@@ -47,7 +50,7 @@ Row {
         height: 72
         checkable: true
         checked: false
-        anchors.verticalCenter: parent.verticalCenter
+        y: parent.y + 350
 
         transform: Scale {
             origin.x: rightEdge() ? 0 : sliderTogglerLeft.width / 2
@@ -61,7 +64,6 @@ Row {
         }
 
         property real shear: 0.333
-        property real buttonOpacity: 0.66
         property real mirror: rightEdge() ? 1.0 : -1.0
 
         Rectangle {
@@ -69,7 +71,6 @@ Row {
             height: sliderTogglerLeft.height / 2
             color: togglerColor
             antialiasing: true
-            opacity: sliderTogglerLeft.buttonOpacity
             anchors.top: parent.top
             anchors.left: sliderTogglerLeft.checked ? parent.left : parent.horizontalCenter
             anchors.leftMargin: -5
@@ -87,7 +88,6 @@ Row {
             height: sliderTogglerLeft.height / 2
             color: togglerColor
             antialiasing: true
-            opacity: sliderTogglerLeft.buttonOpacity
             anchors.top: parent.verticalCenter
             anchors.right: sliderTogglerLeft.checked ? parent.right : parent.horizontalCenter
             anchors.rightMargin: 5
@@ -103,59 +103,63 @@ Row {
     Rectangle {
         id: sliderContainerLeft
         height: parent.height
-        width: sliderTogglerLeft.checked ? sliderRow.width + 120 : sliderRow.width
-        color: Qt.rgba(0, 0, 0,
-                       0.05) //Qt.rgba( 0, 191 / 255.0, 255 / 255.0, 0.1)
-
-        Material.accent: mainAccentColor
-        Material.foreground: Material.color(Material.BlueGrey,
-                                            Material.Shade600)
+        width: sliderTogglerLeft.checked ? defheigth + 120 : defheigth
+        color: blue
+        Material.elevation: 20
+        Material.accent: blue
+        Material.foreground: orange
 
         property string labelBorderColor: "transparent"
 
         Column {
             spacing: 10
             id: sliderRow
-            width: 30
+            width: defheigth
 
             Column{
                 id: main_btns
-                width: sliderTogglerLeft.checked ? sliderRow.width + 120 : sliderRow.width
+                width: sliderTogglerLeft.checked ? defheigth + 120 : defheigth
+
                 Button{
                     id:addTracks
+                    highlighted: true
                     width: parent.width
-                    text: (sliderTogglerLeft.checked)? qsTr("Add Path") : qsTr("+")
+
+                    text: (sliderTogglerLeft.checked)? qsTr("Add Path") : qsTr("")
 
                     onHoveredChanged: function(){
-                        addTracksRect.color= (addTracksRect.color == "#abcdef")? "#66cccc" : "#abcdef"
+                        addTracksRect.color = (addTracksRect.color === blue)? orange: blue
                     }
 
                     onClicked: function(){
                         pathRectPoly.show_shape_choice()
                         enableBtns(false)
                     }
+
                     background: Rectangle {
-                            id: addTracksRect
-                            Image {
-                                id:addimg
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                visible: sliderTogglerLeft.checked ? false : true
-                                source: 'qrc:/images/plus.png'
-                            }
-                            color: "#abcdef"
-                            anchors.fill: parent
-                            }
+                        id: addTracksRect
+                        color: blue
+                        anchors.fill: parent
+                        Image {
+                            id:addimg
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.verticalCenter: parent.verticalCenter
+                            visible: sliderTogglerLeft.checked ? false : true
+                            source: 'qrc:/images/add-path.png'
+                        }
+                        }
                 }
 
                 Button{
                     id:deleteTracks
-                    visible: slidersLeft.children.length>0
+                    visible: columnTrack.children.length>0
                     enabled: true
                     text: sliderTogglerLeft.checked ? "Delete Paths" :""
                     width: parent.width
+                    highlighted: true
 
                     onHoveredChanged: function(){
-                        trackBG.color= (trackBG.color == "#abcdef")? "#66cccc" : "#abcdef"
+                        trackBG.color= (trackBG.color === blue)? orange: blue
                     }
 
                     onClicked: function(){
@@ -166,28 +170,32 @@ Row {
                         confirm.clicked.disconnect(delete_items)
                         confirm.clicked.connect(delete_items)
                     }
+
                     background: Rectangle {
+                        color: blue
+                        anchors.fill: parent
                         id: trackBG
                         Image {
                             id:trashimg
                             anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.verticalCenter: parent.verticalCenter
                             visible: sliderTogglerLeft.checked ? false : true
-                            source: 'qrc:/images/trash-can-outline.svg'
+                            source: 'qrc:/images/trash.png'
                         }
-                        color: "#abcdef"
-                        anchors.fill: parent
                     }
                 }
             }
 
             Column{
                 id: confirm_btns
-                width: sliderTogglerLeft.checked ? sliderRow.width + 120 : sliderRow.width
+                width: sliderTogglerLeft.checked ? defheigth + 120 : defheigth
                 visible: false
                 Button{
                     id:abort
                     text:sliderTogglerLeft.checked ? "No" :""
                     width: parent.width
+                    highlighted: true
+
                     onClicked: function(){
                         restoreBtns()
                         deselect_all()
@@ -195,41 +203,55 @@ Row {
                         pathRectPoly.hide_all()
                         pathRectPoly.enableBtns(true)
                     }
+
+                    onHoveredChanged: function(){
+                        closeimg.color= (closeimg.color === red)? lightred: red
+                    }
+
                     background: Rectangle {
+                        id:closeimg
                         Image {
-                            id:closeimg
                             visible: sliderTogglerLeft.checked ? false : true
                             anchors.horizontalCenter: parent.horizontalCenter
-                            source: 'qrc:/images/close.svg'
+                            anchors.verticalCenter:  parent.verticalCenter
+                            source: 'qrc:/images/close.png'
                         }
-                        color: "#ff0000"
+                        color: red
                     }
                 }
                 Button{
                     id:confirm
                     text: sliderTogglerLeft.checked ? "Yes" :""
                     enabled: true
+                    highlighted: true
                     width: parent.width
+
                     onClicked: function(){
                         pathRectPoly.enableBtns(true)
                         enableBtns(y)}
+
+                    onHoveredChanged: function(){
+                        checkimg.color= (checkimg.color === green)? lightgreen: green
+                    }
+
                     background: Rectangle {
-                        Image {
-                            id:checkimg
+                        color: green
+                        id:checkimg
+                        Image {                            
                             visible: sliderTogglerLeft.checked ? false : true
                             anchors.horizontalCenter: parent.horizontalCenter
-                            source: 'qrc:/images/check.svg'
+                            anchors.verticalCenter : parent.verticalCenter
+                            source: 'qrc:/images/check.png'
                         }
-                    color: "#00ff00"
                     }
                 }
             }
 
             Column {
-                width: sliderTogglerLeft.checked ? sliderRow.width + 120 : sliderRow.width
-                property bool expanded: sliderTogglerLeft.checked
-                y: 96
                 id:columnTrack
+                width: sliderTogglerLeft.checked ? defheigth + 120 : defheigth
+                y: 96
+                property bool expanded: sliderTogglerLeft.checked
             }
         }
     }
@@ -237,6 +259,7 @@ Row {
     function enableBtns(y){
         addTracks.enabled = y
         deleteTracks.enabled = y
+
     }
 
     function restoreBtns(){
@@ -280,10 +303,10 @@ Row {
             map.removeMapItem(c._comp)
             c.destroy()
             pathRectPoly.n--
-            console.log(pathRectPoly.n)
         }
     }
-function save_items(){}
+
+    function save_items(){}
 
     function delete_items(){
         pathRectPoly.hide_all()
@@ -294,7 +317,6 @@ function save_items(){}
                 map.removeMapItem(c._comp)
                 c.destroy()
                 pathRectPoly.n--
-                console.log(pathRectPoly.n)
             }
         }
         restoreBtns()

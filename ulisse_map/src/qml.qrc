@@ -52,13 +52,15 @@
         <file>qml/MapSlidersLeft.qml</file>
         <file>qml/BarPolygonParams.qml</file>
         <file>qml/BarPolylineParams.qml</file>
-        <file>images/trash-can-outline.svg</file>
-        <file>images/check.svg</file>
-        <file>images/close.svg</file>
-        <file>images/add-path.svg</file>
         <file>images/plus.png</file>
         <file>qml/MapMarkerLetter.qml</file>
         <file>images/a.png</file>
         <file>images/b.png</file>
+        <file>images/check.png</file>
+        <file>images/close.png</file>
+        <file>images/add-path.png</file>
+        <file>images/trash.png</file>
+        <file>images/beta.svg</file>
+        <file>images/alpha.svg</file>
     </qresource>
 </RCC>

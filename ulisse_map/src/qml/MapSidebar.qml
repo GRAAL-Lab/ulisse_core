@@ -5,6 +5,7 @@ import QtQuick.Controls.Material 2.1
 import "."
 
 MapSidebarForm {
-    labelColor1: Material.color(mainColor, Material.Shade700)
-    labelColor2: Material.color(Material.Red, Material.Shade800)
+    labelColor1: blue
+    labelColor2: red
+    labelColor3:  green
 }

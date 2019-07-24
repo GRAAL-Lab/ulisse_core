@@ -11,8 +11,6 @@ import QtQuick.Dialogs 1.2
 import "."
 
 MapViewForm {
-    marker_coords: QtPositioning.coordinate(44.4, 8.94)
-
     Component.onCompleted: {
         console.log(("Current cache for ESRI Map plugin: %1").arg(mapCache.value))
     }
@@ -38,11 +36,7 @@ MapViewForm {
             border.width: 2
             border.color: (pathCurrentState === pathState.creating)
                           | (pathCurrentState
-                             === pathState.empty) ? Material.color(
-                                                        Material.DeepOrange,
-                                                        Material.Shade600) : Material.color(
-                                                        Material.Green,
-                                                        Material.Shade500)
+                             === pathState.empty) ? orange :lightgreen
             z: map.z + 1
         }
     }
@@ -60,5 +54,13 @@ MapViewForm {
 
     clearPathButton.onClicked: {
             map.clearUlisseTrace()
+    }
+
+    map.onZoomLevelChanged:{
+        for(var i = 0; i < slidersLeft.columnTrack.children.length; i++){
+            slidersLeft.columnTrack.children[i]._comp.a_marker.zoomLevel = map.zoomLevel/2 + 9
+            slidersLeft.columnTrack.children[i]._comp.b_marker.zoomLevel = map.zoomLevel/2 + 9
         }
+
+    }
 }

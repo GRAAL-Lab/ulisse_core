@@ -7,15 +7,18 @@ import QtQuick.Controls.Material 2.1
 import "."
 
 Rectangle {
-    property real myElevation: 6
+    property var _tsize : 15
+    property var _lsize: 13
     property real panesMargin: 14
     property real panesWidth: 252
     property bool responsive: false
+
     color: Material.background
 
     GridLayout {
         id: gridView
-        width: parent.width
+
+        anchors.fill:parent
         columnSpacing: 0
         rowSpacing: 1
         rows:2
@@ -23,7 +26,7 @@ Rectangle {
 
         Pane {
             id: statusPane
-            Material.elevation: myElevation
+
             Layout.rowSpan: 1
             Layout.columnSpan: 1
             Layout.fillWidth: true
@@ -32,62 +35,82 @@ Rectangle {
             ColumnLayout {
                 id: statusata
                 width: parent.width
-
+                Layout.fillHeight: true
                 Label {
+                    Layout.fillHeight: true
                     Layout.alignment: Qt.AlignHCenter
-                    font.pointSize: 12
+                    font.pointSize: 18
                     font.weight: Font.DemiBold
-                    color: 'gray'
+                    color: 'dodgerblue'
                     text: "Status"
                 }
 
                 LabelledText {
+                    Layout.fillHeight: true
+                    Layout.alignment: Qt.AlignHCenter
                     labelColor: 'dodgerblue'
-                    label: "Vehicle State"
-                    textColor: 'gray'
+                    textColor: 'grey'
                     text: fbkUpdater.vehicle_state
+                    label: qsTr("Vehicle State")
+                    lsize: _lsize
+                    tsize: _tsize
                 }
 
                 LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
                     labelColor: 'dodgerblue'
                     label: "GPS time"
-                    textColor: 'gray'
+                    textColor: 'grey'
                     text: fbkUpdater.gps_time
+                    lsize: _lsize
+                    tsize: _tsize
                 }
 
                 LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
                     labelColor: 'dodgerblue'
                     label: "GPS Pos"
-                    textColor: 'gray'
+                    textColor: 'grey'
                     text: "%1, %2".arg(fbkUpdater.gps_pos.latitude).arg(fbkUpdater.gps_pos.longitude)
+                    lsize: _lsize
+                    tsize: _tsize
                 }
 
                 LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
                     labelColor: 'dodgerblue'
                     label: "Filtered Pos"
-                    textColor: 'gray'
+                    textColor: 'grey'
                     text: "%1, %2".arg(fbkUpdater.ulisse_pos.latitude).arg(fbkUpdater.ulisse_pos.longitude)
+                    lsize: _lsize
+                    tsize: _tsize
                 }
 
                 LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
                     labelColor: 'dodgerblue'
                     label: "Surge"
-                    textColor: 'gray'
+                    textColor: 'grey'
                     text: "%1 m/s".arg(fbkUpdater.ulisse_surge)
+                    lsize: _lsize
+                    tsize: _tsize
                 }
 
                 LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
                     labelColor: 'dodgerblue'
                     label: "Heading"
-                    textColor: 'gray'
+                    textColor: 'grey'
                     text: "%1°".arg(fbkUpdater.ulisse_yaw_deg)
+                    lsize: _lsize
+                    tsize: _tsize
                 }
             }
         }
 
         Pane {
             id: goalPane
-            Material.elevation: myElevation
+
             Layout.rowSpan: 1
             Layout.columnSpan: 1
             Layout.fillWidth: true
@@ -99,87 +122,105 @@ Rectangle {
 
                 Label {
                     Layout.alignment: Qt.AlignHCenter
-                    font.pointSize: 12
+                    font.pointSize: 18
                     font.weight: Font.DemiBold
-                    color: 'gray'
+                    color: 'seagreen'
                     text: "Goal"
                 }
 
                 LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
                     //id: batteryPercLeft
                     labelColor: 'seagreen'
                     label: "Goal Position"
-                    textColor: 'gray'
+                    textColor: 'grey'
                     text: "%1, %2".arg(fbkUpdater.goal_pos.latitude).arg(fbkUpdater.goal_pos.longitude)
+                    lsize: _lsize
+                    tsize: _tsize
                 }
 
                 LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
                     //id: batteryPercRight
                     labelColor: 'seagreen'
                     label: "Goal Heading"
-                    textColor: 'gray'
+                    textColor: 'grey'
                     text: "%1°".arg(fbkUpdater.goal_heading)
+                    lsize: _lsize
+                    tsize: _tsize
                 }
 
                 LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
                     //id: batteryPercRight
                     labelColor: 'seagreen'
                     label: "Distance to Goal"
-                    textColor: 'gray'
+                    textColor: 'grey'
                     text: "%1 (m)".arg(fbkUpdater.goal_distance)
+                    lsize: _lsize
+                    tsize: _tsize
                 }
             }
         }
 
         Pane {
             id: ctrlPane
-            Material.elevation: myElevation
+
             Layout.rowSpan: 1
             Layout.columnSpan: 1
             Layout.fillWidth: true
             Layout.preferredWidth: gridView.width/2
-
+            Layout.alignment: Qt.AlignHCenter
             ColumnLayout {
                 id: ctrlData
                 width: parent.width
 
                 Label {
                     Layout.alignment: Qt.AlignHCenter
-                    font.pointSize: 12
+                    font.pointSize: 18
                     font.weight: Font.DemiBold
-                    color: 'gray'
+                    color: 'orange'
                     text: "Control"
                 }
 
                 LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
                     //id: batteryPercLeft
                     labelColor: 'orange'
                     label: "Desired Surge"
-                    textColor: 'gray'
+                    textColor: 'grey'
                     text: "%1 m/s".arg(fbkUpdater.desired_surge)
+                    lsize: _lsize
+                    tsize: _tsize
                 }
 
                 LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
                     //id: batteryPercRight
                     labelColor: 'orange'
                     label: "Desired Jog"
-                    textColor: 'gray'
+                    textColor: 'grey'
                     text:  "%1 rad/s".arg(fbkUpdater.desired_jog)
+                    lsize: _lsize
+                    tsize: _tsize
                 }
 
                 LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
                     //id: batteryPercRight
                     labelColor: 'orange'
                     label: "Motor Control Ref"
-                    textColor: 'gray'
+                    textColor: 'grey'
                     text: "L: %1 \%\nR: %2 \%".arg(fbkUpdater.thrust_ref_left).arg(fbkUpdater.thrust_ref_right)
+                    lsize: _lsize
+                    tsize: _tsize
                 }
             }
         }
 
         Pane {
             id: lowLevelPane
-            Material.elevation: myElevation
+
             Layout.rowSpan: 1
             Layout.columnSpan: 1
             Layout.fillWidth: true
@@ -188,29 +229,35 @@ Rectangle {
             ColumnLayout {
                 id: lowLevelData
                 width: parent.width
-
+                Layout.alignment: Qt.AlignHCenter
                 Label {
                     Layout.alignment: Qt.AlignHCenter
-                    font.pointSize: 12
+                    font.pointSize: 18
                     font.weight: Font.DemiBold
-                    color: 'gray'
+                    color: 'tomato'
                     text: "Low Level"
                 }
 
                 LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
                     id: batteryPercLeft
                     labelColor: 'tomato'
                     label: "Battery"
-                    textColor: 'gray'
+                    textColor: 'grey'
                     text: "L: %1 \%\nR: %2 \%".arg(fbkUpdater.battery_perc_L).arg(fbkUpdater.battery_perc_R)
+                    lsize: _lsize
+                    tsize: _tsize
                 }
 
                 LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
                     id: sw485status
                     labelColor: 'tomato'
                     label: "SW 485 Status"
-                    textColor: 'gray'
+                    textColor: 'grey'
                     text: "right_satellite_received: %1".arg(fbkUpdater.right_satellite_received485);
+                    lsize: _lsize
+                    tsize: _tsize
 /* "missed_deadlines: %1
 left_motor_received: %2
 left_motor_sent: %3

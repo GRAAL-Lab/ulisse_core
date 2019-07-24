@@ -7,6 +7,7 @@ import Qt.labs.settings 1.0
 import QtQuick.Controls.Material 2.1
 import QtGraphicalEffects 1.0
 import QtQuick.Dialogs 1.2
+import "."
 
 Map {
     id: map_component
@@ -29,12 +30,15 @@ Map {
         anchors.fill: map
         source: map
         //Qt.rgba(1.0, 0.2, 0, 0.1)
-        color: (settings.theme === "Light") ? "transparent" : "#FF33001A"
+        color: (settings.theme === "Light") ? "transparent" : cyan
     }
 
     MapRuler {
         id: ruler
-        anchors.fill: parent
+        anchors.right: compass.left
+        anchors.top: parent.top
+        anchors.topMargin: 10
+        anchors.rightMargin: 20
     }
 
     MapSliders {
@@ -52,7 +56,7 @@ Map {
         mipmap: true
         z: map.z + 2
 
-        anchors.right: parent.right
+        anchors.right: sliders.left
         anchors.top: parent.top
         anchors.rightMargin: 15
         anchors.topMargin: 20
@@ -137,7 +141,7 @@ Map {
     MapQuickItem {
         id: overlayText
         sourceItem: Text {
-            color: 'darkslategray'
+            color: 'darkslategrey'
             text: "Surge: " + fbkUpdater.ulisse_surge + " m/s\nHeading: "
                   + fbkUpdater.ulisse_yaw_deg + "°"
         }
@@ -154,7 +158,7 @@ Map {
         radius: fbkUpdater.accept_radius
         color: 'transparent'
         border.width: 1
-        border.color: 'gray'
+        border.color: grey
         opacity: goalFlag.opacity == 1.0 ? goalFlag.opacity : 0.0
         z: map.z + 2
     }
@@ -163,9 +167,9 @@ Map {
         id: editCircle
         center: goalFlag.coordinate
         radius: 5
-        color: "#ff0000"
+        color: red
         border.width: 1
-        border.color: 'gray'
+        border.color: grey
         opacity: 0
         z: map.z + 2
     }
@@ -173,7 +177,7 @@ Map {
     MapPolyline {
         id: ulissePath
         line.width: 1
-        line.color: "#ffb300" //Material.color(Material.Amber, Material.Shade600)
+        line.color: orange
         property bool firstRun: true
         property real traceSize: 1000
         z: map.z + 2
