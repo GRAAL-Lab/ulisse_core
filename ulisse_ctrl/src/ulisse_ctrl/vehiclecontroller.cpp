@@ -201,8 +201,8 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         Json::Reader reader;
         Json::Value obj, obj2;
 
-        double bound_min = 25;
-        double bound_max = 10;
+        double bound_min = 10;
+        double bound_max = 3;
 
         asv_safety_boundaries->SetBoundaries(bound_min, bound_max);
         reader.parse(request->boundaries_json, obj);
