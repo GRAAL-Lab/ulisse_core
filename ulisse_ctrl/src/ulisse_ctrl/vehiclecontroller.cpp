@@ -113,7 +113,6 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         ikcl::ControlDistance(ulisse::task::asv_control_distance, robot_model, ulisse::robotModelID::ASV, tpik::CartesianTaskType::Equality));
     asv_control_distance->SetStatusContext(statusCxt_);
     asv_control_distance->SetGoalContext(goalCxt_);
-    asv_control_distance->SetConfiguration(conf_);
     cartesian_task.push_back(asv_control_distance);
     task_hierarchy.push_back(asv_control_distance);
     taskIDMap.insert(std::make_pair(ulisse::task::asv_control_distance, asv_control_distance));
@@ -202,8 +201,8 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         Json::Reader reader;
         Json::Value obj, obj2;
 
-        double bound_min = 6;
-        double bound_max = 2;
+        double bound_min = 10;
+        double bound_max = 3;
 
         asv_safety_boundaries->SetBoundaries(bound_min, bound_max);
         reader.parse(request->boundaries_json, obj);
@@ -550,7 +549,13 @@ void VehicleController::Run()
         }
     }
 
-    ctrlCxt_->desiredSurge = y_tpik[3];
+    double headingError;
+    if (conf_->enableSlowDownOnTurns) {
+        headingError = ctb::HeadingErrorRad(goalCxt_->goalHeading, statusCxt_->vehicleHeading);
+        ctrlCxt_->desiredSurge = SlowDownWhenTurning(headingError, y_tpik[3], *conf_);
+    } else {
+        ctrlCxt_->desiredSurge = y_tpik[3];
+    }
     ctrlCxt_->desiredJog = y_tpik[2];
 
     // Update references for the tasks => x, y, angle on theta

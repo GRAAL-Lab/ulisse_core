@@ -31,7 +31,6 @@ namespace states {
 
     void StateLatLong::SetPointGoTo(double latitude, double longitude, double accept_radius)
     {
-        std::cout << "ACTION MANAGER" << std::endl;
         actionManager_->SetAction(ulisse::action::goTo, true);
     }
 

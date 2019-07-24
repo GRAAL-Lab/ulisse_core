@@ -17,6 +17,8 @@ MapRulerForm {
         dist = Math.round(coord1.distanceTo(coord2))
 
         if (dist === 0) {
+
+
             // not visible
         } else {
             for (var i = 0; i < scaleLengths.length - 1; i++) {

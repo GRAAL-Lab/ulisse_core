@@ -11,24 +11,26 @@ import QtGraphicalEffects 1.0
 import QtQuick.Dialogs 1.2
 import "."
 
-
 MapComponentForm {
 
     id: map_component
 
     property var marker_coords: markerIcon.coordinate
 
-    function click_goto_handler(mouse){
+    function click_goto_handler(mouse) {
         markerIcon.coordinate = toCoordinate(Qt.point(mouse.x, mouse.y))
         markerIcon.opacity = 1
     }
 
-    property var click_handler : click_goto_handler
-    property var pos_changed_handler : function(){}
+    property var click_handler: click_goto_handler
+    property var pos_changed_handler: function () {}
 
-
-    mapMouseArea.onClicked: {click_handler(mouse)}
-    mapMouseArea.onPositionChanged: {pos_changed_handler(mouse)}
+    mapMouseArea.onClicked: {
+        click_handler(mouse)
+    }
+    mapMouseArea.onPositionChanged: {
+        pos_changed_handler(mouse)
+    }
 
     property MapPolygon poly_obj
 
@@ -41,8 +43,6 @@ MapComponentForm {
 
     //TODO -> Make relative
     property var path_file: "/home/alessio/Desktop/Prova"
-
-
 
     Component.onCompleted: {
         polyComponent = Qt.createComponent("MapPolygon.qml")
@@ -59,7 +59,6 @@ MapComponentForm {
         map.removeMapItem(poly_obj)
         map.center = fbkUpdater.ulisse_pos
     }
-
 
     function createPoly() {
         var poly_cur = polyComponent.createObject(map_component)
@@ -144,8 +143,7 @@ MapComponentForm {
             }
             // To reduce the line density (and avoid to overload the gui)
             // we add a new point only every 1.0 meter
-            var lastCoord = ulissePath.coordinateAt(
-                        ulissePath.pathLength() - 1)
+            var lastCoord = ulissePath.coordinateAt(ulissePath.pathLength() - 1)
             var distToNext = lastCoord.distanceTo(fbkUpdater.ulisse_pos)
             if (distToNext > 1.0) {
                 ulissePath.addCoordinate(fbkUpdater.ulisse_pos)
@@ -161,7 +159,7 @@ MapComponentForm {
         ulissePath.firstRun = true
     }
 
-    function clearAll(){
+    function clearAll() {
         clearUlisseTrace()
     }
 }

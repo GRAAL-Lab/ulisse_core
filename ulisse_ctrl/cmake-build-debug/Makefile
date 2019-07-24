@@ -168,19 +168,6 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named bongio
-
-# Build rule for target.
-bongio: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 bongio
-.PHONY : bongio
-
-# fast build rule for target.
-bongio/fast:
-	$(MAKE) -f CMakeFiles/bongio.dir/build.make CMakeFiles/bongio.dir/build
-.PHONY : bongio/fast
-
-#=============================================================================
 # Target rules for targets named ExperimentalStart
 
 # Build rule for target.
@@ -231,19 +218,6 @@ ExperimentalCoverage: cmake_check_build_system
 ExperimentalCoverage/fast:
 	$(MAKE) -f CMakeFiles/ExperimentalCoverage.dir/build.make CMakeFiles/ExperimentalCoverage.dir/build
 .PHONY : ExperimentalCoverage/fast
-
-#=============================================================================
-# Target rules for targets named nurbs
-
-# Build rule for target.
-nurbs: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 nurbs
-.PHONY : nurbs
-
-# fast build rule for target.
-nurbs/fast:
-	$(MAKE) -f CMakeFiles/nurbs.dir/build.make CMakeFiles/nurbs.dir/build
-.PHONY : nurbs/fast
 
 #=============================================================================
 # Target rules for targets named NightlyConfigure
@@ -597,19 +571,6 @@ ContinuousMemCheck/fast:
 .PHONY : ContinuousMemCheck/fast
 
 #=============================================================================
-# Target rules for targets named spline
-
-# Build rule for target.
-spline: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 spline
-.PHONY : spline
-
-# fast build rule for target.
-spline/fast:
-	$(MAKE) -f CMakeFiles/spline.dir/build.make CMakeFiles/spline.dir/build
-.PHONY : spline/fast
-
-#=============================================================================
 # Target rules for targets named ExperimentalConfigure
 
 # Build rule for target.
@@ -673,33 +634,6 @@ controller_console_node: cmake_check_build_system
 controller_console_node/fast:
 	$(MAKE) -f CMakeFiles/controller_console_node.dir/build.make CMakeFiles/controller_console_node.dir/build
 .PHONY : controller_console_node/fast
-
-src/bongio.o: src/bongio.cpp.o
-
-.PHONY : src/bongio.o
-
-# target to build an object file
-src/bongio.cpp.o:
-	$(MAKE) -f CMakeFiles/bongio.dir/build.make CMakeFiles/bongio.dir/src/bongio.cpp.o
-.PHONY : src/bongio.cpp.o
-
-src/bongio.i: src/bongio.cpp.i
-
-.PHONY : src/bongio.i
-
-# target to preprocess a source file
-src/bongio.cpp.i:
-	$(MAKE) -f CMakeFiles/bongio.dir/build.make CMakeFiles/bongio.dir/src/bongio.cpp.i
-.PHONY : src/bongio.cpp.i
-
-src/bongio.s: src/bongio.cpp.s
-
-.PHONY : src/bongio.s
-
-# target to generate assembly for a file
-src/bongio.cpp.s:
-	$(MAKE) -f CMakeFiles/bongio.dir/build.make CMakeFiles/bongio.dir/src/bongio.cpp.s
-.PHONY : src/bongio.cpp.s
 
 src/controller_console_node.o: src/controller_console_node.cpp.o
 
@@ -808,60 +742,6 @@ src/monitor_node.s: src/monitor_node.cpp.s
 src/monitor_node.cpp.s:
 	$(MAKE) -f CMakeFiles/monitor_node.dir/build.make CMakeFiles/monitor_node.dir/src/monitor_node.cpp.s
 .PHONY : src/monitor_node.cpp.s
-
-src/nurbs.o: src/nurbs.cpp.o
-
-.PHONY : src/nurbs.o
-
-# target to build an object file
-src/nurbs.cpp.o:
-	$(MAKE) -f CMakeFiles/nurbs.dir/build.make CMakeFiles/nurbs.dir/src/nurbs.cpp.o
-.PHONY : src/nurbs.cpp.o
-
-src/nurbs.i: src/nurbs.cpp.i
-
-.PHONY : src/nurbs.i
-
-# target to preprocess a source file
-src/nurbs.cpp.i:
-	$(MAKE) -f CMakeFiles/nurbs.dir/build.make CMakeFiles/nurbs.dir/src/nurbs.cpp.i
-.PHONY : src/nurbs.cpp.i
-
-src/nurbs.s: src/nurbs.cpp.s
-
-.PHONY : src/nurbs.s
-
-# target to generate assembly for a file
-src/nurbs.cpp.s:
-	$(MAKE) -f CMakeFiles/nurbs.dir/build.make CMakeFiles/nurbs.dir/src/nurbs.cpp.s
-.PHONY : src/nurbs.cpp.s
-
-src/spline.o: src/spline.cpp.o
-
-.PHONY : src/spline.o
-
-# target to build an object file
-src/spline.cpp.o:
-	$(MAKE) -f CMakeFiles/spline.dir/build.make CMakeFiles/spline.dir/src/spline.cpp.o
-.PHONY : src/spline.cpp.o
-
-src/spline.i: src/spline.cpp.i
-
-.PHONY : src/spline.i
-
-# target to preprocess a source file
-src/spline.cpp.i:
-	$(MAKE) -f CMakeFiles/spline.dir/build.make CMakeFiles/spline.dir/src/spline.cpp.i
-.PHONY : src/spline.cpp.i
-
-src/spline.s: src/spline.cpp.s
-
-.PHONY : src/spline.s
-
-# target to generate assembly for a file
-src/spline.cpp.s:
-	$(MAKE) -f CMakeFiles/spline.dir/build.make CMakeFiles/spline.dir/src/spline.cpp.s
-.PHONY : src/spline.cpp.s
 
 src/ulisse_ctrl/commands/command_halt.o: src/ulisse_ctrl/commands/command_halt.cpp.o
 
@@ -1522,12 +1402,10 @@ help:
 	@echo "... list_install_components"
 	@echo "... edit_cache"
 	@echo "... test"
-	@echo "... bongio"
 	@echo "... ExperimentalStart"
 	@echo "... Nightly"
 	@echo "... ContinuousStart"
 	@echo "... ExperimentalCoverage"
-	@echo "... nurbs"
 	@echo "... NightlyConfigure"
 	@echo "... NightlyCoverage"
 	@echo "... install/strip"
@@ -1557,15 +1435,11 @@ help:
 	@echo "... ContinuousConfigure"
 	@echo "... monitor_node"
 	@echo "... ContinuousMemCheck"
-	@echo "... spline"
 	@echo "... ExperimentalConfigure"
 	@echo "... ContinuousSubmit"
 	@echo "... ulisse_ctrl_lib"
 	@echo "... ContinuousBuild"
 	@echo "... controller_console_node"
-	@echo "... src/bongio.o"
-	@echo "... src/bongio.i"
-	@echo "... src/bongio.s"
 	@echo "... src/controller_console_node.o"
 	@echo "... src/controller_console_node.i"
 	@echo "... src/controller_console_node.s"
@@ -1578,12 +1452,6 @@ help:
 	@echo "... src/monitor_node.o"
 	@echo "... src/monitor_node.i"
 	@echo "... src/monitor_node.s"
-	@echo "... src/nurbs.o"
-	@echo "... src/nurbs.i"
-	@echo "... src/nurbs.s"
-	@echo "... src/spline.o"
-	@echo "... src/spline.i"
-	@echo "... src/spline.s"
 	@echo "... src/ulisse_ctrl/commands/command_halt.o"
 	@echo "... src/ulisse_ctrl/commands/command_halt.i"
 	@echo "... src/ulisse_ctrl/commands/command_halt.s"

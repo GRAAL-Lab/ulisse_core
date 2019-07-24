@@ -24,6 +24,7 @@ Map {
     property alias greenFlag: greenFlag
     property alias overlay_canvas: overlay_canvas
     property alias editCircle: editCircle
+    property alias sliderz: sliders.z
 
     ColorOverlay {
         id: marker
@@ -43,7 +44,7 @@ Map {
 
     MapSliders {
         id: sliders
-        z: map.z + 3
+        z: map.z + 5
         mapSource: map
         edge: Qt.RightEdge
     }

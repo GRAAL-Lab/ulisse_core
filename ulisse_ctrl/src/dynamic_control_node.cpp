@@ -86,8 +86,8 @@ int main(int argc, char* argv[])
 
     std::cout << tc::grayD << *conf << tc::none << std::endl;
 
-    slideSurge.Initialize(0.2,sampleTime, 2 , conf->dynamic_pidsat_surge);
-    slideHeading.Initialize(7.5,sampleTime, 2 , conf->dynamic_pidsat_yawrate);
+    slideSurge.Initialize(0.2, sampleTime, 2 , conf->dynamic_pidsat_surge);
+    slideHeading.Initialize(7.5, sampleTime, 2 , conf->dynamic_pidsat_yawrate);
 
     ulisse_msgs::msg::ControlData control_msg;
 

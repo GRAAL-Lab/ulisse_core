@@ -2,16 +2,16 @@ import QtQuick 2.0
 import QtLocation 5.6
 import QtPositioning 5.6
 
-MapQuickItem{
+MapQuickItem {
 
     property alias source: img.source
     id: root
     opacity: 0
     z: map.z + 2
-    sourceItem: Item{
+    sourceItem: Item {
         width: 40
         height: 40
-        Image{
+        Image {
             id: img
             width: 40
             height: 40
@@ -20,19 +20,3 @@ MapQuickItem{
     anchorPoint.x: 20
     anchorPoint.y: 20
 }
-
-/*
-
-        sourceItem: Image {
-            id: ulisseImage
-            width: 38
-            height: 38
-            source: 'qrc:/images/catamaran_icon_64_sat.png'
-        }
-        coordinate: fbkUpdater.ulisse_pos
-        anchorPoint.x: ulisseImage.width / 2
-        anchorPoint.y: ulisseImage.height / 2
-        z: map.z + 2
-    }
-
-*/

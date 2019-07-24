@@ -3,12 +3,10 @@
 /home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles/list_install_components.dir
 /home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles/edit_cache.dir
 /home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles/test.dir
-/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles/bongio.dir
 /home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles/ExperimentalStart.dir
 /home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles/Nightly.dir
 /home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles/ContinuousStart.dir
 /home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles/ExperimentalCoverage.dir
-/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles/nurbs.dir
 /home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles/NightlyConfigure.dir
 /home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles/NightlyCoverage.dir
 /home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles/install/strip.dir
@@ -38,7 +36,6 @@
 /home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles/ContinuousConfigure.dir
 /home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles/monitor_node.dir
 /home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles/ContinuousMemCheck.dir
-/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles/spline.dir
 /home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles/ExperimentalConfigure.dir
 /home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles/ContinuousSubmit.dir
 /home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles/ulisse_ctrl_lib.dir

@@ -63,11 +63,6 @@ namespace states {
         }
          */
 
-        if (conf_->enableSlowDownOnTurns) {
-            headingError = ctb::HeadingErrorRad(statusCxt_->vehicleHeading, goalCxt_->goalHeading);
-            goalCxt_->goalSurge = SlowDownWhenTurning(headingError, surgeRef, *conf_);
-        }
-
         angularPositionTask_->SetAngle(Eigen::Vector3d(0, 0, goalCxt_->goalHeading));
         linearVelocityTask_->SetVelocity(Eigen::Vector3d(goalCxt_->goalSurge, 0, 0));
 

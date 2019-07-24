@@ -7,7 +7,7 @@ import QtQuick.Controls.Material 2.1
 import "."
 
 Rectangle {
-    property var _tsize : 15
+    property var _tsize: 15
     property var _lsize: 13
     property real panesMargin: 14
     property real panesWidth: 252
@@ -18,11 +18,11 @@ Rectangle {
     GridLayout {
         id: gridView
 
-        anchors.fill:parent
+        anchors.fill: parent
         columnSpacing: 0
         rowSpacing: 1
-        rows:2
-        columns:2
+        rows: 2
+        columns: 2
 
         Pane {
             id: statusPane
@@ -30,7 +30,7 @@ Rectangle {
             Layout.rowSpan: 1
             Layout.columnSpan: 1
             Layout.fillWidth: true
-            Layout.preferredWidth: gridView.width/2
+            Layout.preferredWidth: gridView.width / 2
 
             ColumnLayout {
                 id: statusata
@@ -71,7 +71,8 @@ Rectangle {
                     labelColor: 'dodgerblue'
                     label: "GPS Pos"
                     textColor: 'grey'
-                    text: "%1, %2".arg(fbkUpdater.gps_pos.latitude).arg(fbkUpdater.gps_pos.longitude)
+                    text: "%1, %2".arg(fbkUpdater.gps_pos.latitude).arg(
+                              fbkUpdater.gps_pos.longitude)
                     lsize: _lsize
                     tsize: _tsize
                 }
@@ -81,7 +82,8 @@ Rectangle {
                     labelColor: 'dodgerblue'
                     label: "Filtered Pos"
                     textColor: 'grey'
-                    text: "%1, %2".arg(fbkUpdater.ulisse_pos.latitude).arg(fbkUpdater.ulisse_pos.longitude)
+                    text: "%1, %2".arg(fbkUpdater.ulisse_pos.latitude).arg(
+                              fbkUpdater.ulisse_pos.longitude)
                     lsize: _lsize
                     tsize: _tsize
                 }
@@ -114,7 +116,7 @@ Rectangle {
             Layout.rowSpan: 1
             Layout.columnSpan: 1
             Layout.fillWidth: true
-            Layout.preferredWidth: gridView.width/2
+            Layout.preferredWidth: gridView.width / 2
 
             ColumnLayout {
                 id: goalData
@@ -134,7 +136,8 @@ Rectangle {
                     labelColor: 'seagreen'
                     label: "Goal Position"
                     textColor: 'grey'
-                    text: "%1, %2".arg(fbkUpdater.goal_pos.latitude).arg(fbkUpdater.goal_pos.longitude)
+                    text: "%1, %2".arg(fbkUpdater.goal_pos.latitude).arg(
+                              fbkUpdater.goal_pos.longitude)
                     lsize: _lsize
                     tsize: _tsize
                 }
@@ -169,7 +172,7 @@ Rectangle {
             Layout.rowSpan: 1
             Layout.columnSpan: 1
             Layout.fillWidth: true
-            Layout.preferredWidth: gridView.width/2
+            Layout.preferredWidth: gridView.width / 2
             Layout.alignment: Qt.AlignHCenter
             ColumnLayout {
                 id: ctrlData
@@ -200,7 +203,7 @@ Rectangle {
                     labelColor: 'orange'
                     label: "Desired Jog"
                     textColor: 'grey'
-                    text:  "%1 rad/s".arg(fbkUpdater.desired_jog)
+                    text: "%1 rad/s".arg(fbkUpdater.desired_jog)
                     lsize: _lsize
                     tsize: _tsize
                 }
@@ -211,7 +214,9 @@ Rectangle {
                     labelColor: 'orange'
                     label: "Motor Control Ref"
                     textColor: 'grey'
-                    text: "L: %1 \%\nR: %2 \%".arg(fbkUpdater.thrust_ref_left).arg(fbkUpdater.thrust_ref_right)
+                    text: "L: %1 \%\nR: %2 \%".arg(
+                              fbkUpdater.thrust_ref_left).arg(
+                              fbkUpdater.thrust_ref_right)
                     lsize: _lsize
                     tsize: _tsize
                 }
@@ -224,7 +229,7 @@ Rectangle {
             Layout.rowSpan: 1
             Layout.columnSpan: 1
             Layout.fillWidth: true
-            Layout.preferredWidth: gridView.width/2
+            Layout.preferredWidth: gridView.width / 2
 
             ColumnLayout {
                 id: lowLevelData
@@ -244,7 +249,9 @@ Rectangle {
                     labelColor: 'tomato'
                     label: "Battery"
                     textColor: 'grey'
-                    text: "L: %1 \%\nR: %2 \%".arg(fbkUpdater.battery_perc_L).arg(fbkUpdater.battery_perc_R)
+                    text: "L: %1 \%\nR: %2 \%".arg(
+                              fbkUpdater.battery_perc_L).arg(
+                              fbkUpdater.battery_perc_R)
                     lsize: _lsize
                     tsize: _tsize
                 }
@@ -255,10 +262,11 @@ Rectangle {
                     labelColor: 'tomato'
                     label: "SW 485 Status"
                     textColor: 'grey'
-                    text: "right_satellite_received: %1".arg(fbkUpdater.right_satellite_received485);
+                    text: "right_satellite_received: %1".arg(
+                              fbkUpdater.right_satellite_received485)
                     lsize: _lsize
                     tsize: _tsize
-/* "missed_deadlines: %1
+                    /* "missed_deadlines: %1
 left_motor_received: %2
 left_motor_sent: %3
 right_motor_received: %4
@@ -270,7 +278,6 @@ right_satellite_sent: %9".arg(fbkUpdater.missed_deadlines485).arg(fbkUpdater.lef
 .arg(fbkUpdater.left_motor_sent485).arg(fbkUpdater.right_motor_received485).arg(fbkUpdater.right_motor_sent485)
 .arg(fbkUpdater.left_satellite_received485).arg(fbkUpdater.left_satellite_sent485)
 .arg(fbkUpdater.right_satellite_received485).arg(fbkUpdater.right_satellite_sent485); */
-
                 }
             }
         }
@@ -283,6 +290,5 @@ right_satellite_sent: %9".arg(fbkUpdater.missed_deadlines485).arg(fbkUpdater.lef
         Motor Map Out:	0, 0
         Motor Ctrl Ref:	0, 0
         */
-
     }
 }

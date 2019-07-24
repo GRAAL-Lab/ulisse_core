@@ -9,7 +9,6 @@ import QtQuick.Dialogs 1.2
 import "."
 import "../scripts/helper.js" as Helper
 
-
 Pane {
 
     property var buttonSafety: buttonSafety
@@ -43,7 +42,7 @@ Pane {
             Layout.fillWidth: true
 
             highlighted: true
-            Material.background: pressed? orange : blue
+            Material.background: pressed ? orange : blue
 
             font.capitalization: Font.AllUppercase
 
@@ -54,12 +53,11 @@ Pane {
             }
         }
 
-
         Rectangle {
-            clip:true
+            clip: true
             id: rectangle0
             width: 200
-            height:90
+            height: 90
             color: "transparent"
             Layout.fillHeight: false
             Layout.fillWidth: true
@@ -76,78 +74,78 @@ Pane {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
 
-                    GroupBox {
-                        id: groupBox01
-                        height: holdRadius.height+40
-                        visible: true
-                        Layout.fillWidth: true
-
-                        clip: false
-                        title: qsTr("Speed (m/s)")
-
-                        label: Label {
-                                x: groupBox01.leftPadding
-                                y: 25
-                                width: groupBox01.availableWidth
-                                text: groupBox01.title
-                                elide: Text.ElideRight
-                                background: Rectangle {
-                                    y: 0
-                                    width: 0
-                                    height: 0
-                                    color: "transparent"
-                                    border.color: "#ffffff"
-                                }
-                            }
-
-                        background: Rectangle {
-                                y: 0
-                                width: 0
-                                height: 0
-                                color: "transparent"
-                                border.color: "#ffffff"
-                            }
-
-                        TextField {
-                            id: speedText
-                            opacity: 1
-                            clip: false
-                            objectName: "moveToRadiusText"
-                            placeholderText: qsTr("Insert speed")
-                            enabled: true
-                        }
-                    }
-
-                    GroupBox {
-                    id: groupBox02
-                    height: holdRadius.height+40
+                GroupBox {
+                    id: groupBox01
+                    height: holdRadius.height + 40
+                    visible: true
                     Layout.fillWidth: true
 
                     clip: false
-                    title: qsTr("Heading (deg)")
+                    title: qsTr("Speed (m/s)")
 
                     label: Label {
-                            x: groupBox02.leftPadding
-                            y: 25
-                            width: groupBox02.availableWidth
-                            text: groupBox02.title
-                            elide: Text.ElideRight
-                            background: Rectangle {
-                                y: 0
-                                width: 0
-                                height: 0
-                                color: "transparent"
-                                border.color: "#ffffff"
-                            }
-                        }
-
-                    background: Rectangle {
+                        x: groupBox01.leftPadding
+                        y: 25
+                        width: groupBox01.availableWidth
+                        text: groupBox01.title
+                        elide: Text.ElideRight
+                        background: Rectangle {
                             y: 0
                             width: 0
                             height: 0
                             color: "transparent"
                             border.color: "#ffffff"
                         }
+                    }
+
+                    background: Rectangle {
+                        y: 0
+                        width: 0
+                        height: 0
+                        color: "transparent"
+                        border.color: "#ffffff"
+                    }
+
+                    TextField {
+                        id: speedText
+                        opacity: 1
+                        clip: false
+                        objectName: "moveToRadiusText"
+                        placeholderText: qsTr("Insert speed")
+                        enabled: true
+                    }
+                }
+
+                GroupBox {
+                    id: groupBox02
+                    height: holdRadius.height + 40
+                    Layout.fillWidth: true
+
+                    clip: false
+                    title: qsTr("Heading (deg)")
+
+                    label: Label {
+                        x: groupBox02.leftPadding
+                        y: 25
+                        width: groupBox02.availableWidth
+                        text: groupBox02.title
+                        elide: Text.ElideRight
+                        background: Rectangle {
+                            y: 0
+                            width: 0
+                            height: 0
+                            color: "transparent"
+                            border.color: "#ffffff"
+                        }
+                    }
+
+                    background: Rectangle {
+                        y: 0
+                        width: 0
+                        height: 0
+                        color: "transparent"
+                        border.color: "#ffffff"
+                    }
 
                     TextField {
                         id: headingText
@@ -172,11 +170,10 @@ Pane {
                 Layout.fillWidth: true
                 Layout.fillHeight: false
 
+                highlighted: true
+                Material.background: pressed ? orange : blue
 
-            highlighted: true
-            Material.background: pressed? orange : blue
-
-            onClicked: {
+                onClicked: {
                     if (speedText.text !== '' && headingText.text !== '') {
                         cmdWrapper.sendSpeedHeadingCommand(speedText.text,
                                                            headingText.text)
@@ -188,17 +185,17 @@ Pane {
         }
 
         Rectangle {
-            clip:true
+            clip: true
             id: rectangle1
             width: 200
-            height:90
+            height: 90
             color: "transparent"
             Layout.fillHeight: false
             Layout.fillWidth: true
 
             GroupBox {
                 id: groupBox1
-                height: holdRadius.height+40
+                height: holdRadius.height + 40
                 anchors.right: parent.right
                 anchors.rightMargin: 0
                 anchors.left: parent.left
@@ -209,27 +206,27 @@ Pane {
                 title: qsTr("Acceptance radius")
 
                 label: Label {
-                        x: groupBox1.leftPadding
-                        y: 25
-                        width: groupBox1.availableWidth
-                        text: "Acceptance radius (m)"
-                        elide: Text.ElideRight
-                        background: Rectangle {
-                            y: 0
-                            width: 0
-                            height: 0
-                            color: "transparent"
-                            border.color: "#ffffff"
-                        }
-                    }
-
-                background: Rectangle {
+                    x: groupBox1.leftPadding
+                    y: 25
+                    width: groupBox1.availableWidth
+                    text: "Acceptance radius (m)"
+                    elide: Text.ElideRight
+                    background: Rectangle {
                         y: 0
                         width: 0
                         height: 0
                         color: "transparent"
                         border.color: "#ffffff"
                     }
+                }
+
+                background: Rectangle {
+                    y: 0
+                    width: 0
+                    height: 0
+                    color: "transparent"
+                    border.color: "#ffffff"
+                }
 
                 TextField {
                     id: holdRadius
@@ -254,8 +251,8 @@ Pane {
                 anchors.bottom: parent.bottom
                 antialiasing: false
 
-            highlighted: true
-            Material.background: pressed? orange : blue
+                highlighted: true
+                Material.background: pressed ? orange : blue
 
                 onClicked: {
                     if (holdRadius.text !== '') {
@@ -267,19 +264,18 @@ Pane {
             }
         }
 
-
         Rectangle {
-            clip:true
+            clip: true
             id: rectangle2
             width: 200
-            height:90
+            height: 90
             color: "transparent"
             Layout.fillHeight: false
             Layout.fillWidth: true
 
             GroupBox {
                 id: groupBox2
-                height: holdRadius.height+40
+                height: holdRadius.height + 40
                 anchors.right: parent.right
                 anchors.rightMargin: 0
                 anchors.left: parent.left
@@ -290,27 +286,27 @@ Pane {
                 title: qsTr("Acceptance radius")
 
                 label: Label {
-                        x: groupBox2.leftPadding
-                        y: 25
-                        width: groupBox2.availableWidth
-                        text: "Acceptance radius (m)"
-                        elide: Text.ElideRight
-                        background: Rectangle {
-                            y: 0
-                            width: 0
-                            height: 0
-                            color: "transparent"
-                            border.color: "#ffffff"
-                        }
-                    }
-
-                background: Rectangle {
+                    x: groupBox2.leftPadding
+                    y: 25
+                    width: groupBox2.availableWidth
+                    text: "Acceptance radius (m)"
+                    elide: Text.ElideRight
+                    background: Rectangle {
                         y: 0
                         width: 0
                         height: 0
                         color: "transparent"
                         border.color: "#ffffff"
                     }
+                }
+
+                background: Rectangle {
+                    y: 0
+                    width: 0
+                    height: 0
+                    color: "transparent"
+                    border.color: "#ffffff"
+                }
 
                 TextField {
                     id: moveToRadius
@@ -334,8 +330,10 @@ Pane {
                 anchors.leftMargin: 0
                 anchors.bottom: parent.bottom
                 antialiasing: false
-                Material.background: pressed? orange : blue
-                enabled: Helper.coord_inside_polygon(map.marker_coords, map.polysec_cur.path) && (map.markerIcon.opacity > 0)
+                Material.background: pressed ? orange : blue
+                enabled: Helper.coord_inside_polygon(map.marker_coords,
+                                                     map.polysec_cur.path)
+                         && (map.markerIcon.opacity > 0)
                 highlighted: true
 
                 onClicked: {
@@ -343,6 +341,7 @@ Pane {
                         if (cmdWrapper.sendLatLongCommand(
                                     map.marker_coords,
                                     parseFloat(moveToRadius.text))) {
+
                         }
                     } else {
                         acceptRadDialog.open()
@@ -363,7 +362,7 @@ Pane {
                     text: "Save Path"
 
                     highlighted: true
-                    Material.background: pressed? orange : blue
+                    Material.background: pressed ? orange : blue
 
                     antialiasing: false
                     transformOrigin: Item.Left
@@ -381,7 +380,7 @@ Pane {
                     text: "Load Path"
 
                     highlighted: true
-                    Material.background: pressed? orange : blue
+                    Material.background: pressed ? orange : blue
 
                     focusPolicy: Qt.WheelFocus
                     transformOrigin: Item.Right
@@ -411,18 +410,19 @@ Pane {
                 Layout.fillHeight: false
 
                 highlighted: true
-                Material.background:  green
+                Material.background: green
 
-                function end(){
+                function end() {
                     enabled = true
                     map.polysec_cur.end.disconnect(end)
                     map.click_handler = map.click_goto_handler
-                    map.pos_changed_handler = function(){}
+                    map.pos_changed_handler = function () {}
                     text = "Redefine safety area"
                     slidersLeft.check_safety_all()
-                    cmdWrapper.sendBoundaries(JSON.stringify(map.polysec_cur.serialize()))
+                    cmdWrapper.sendBoundaries(JSON.stringify(
+                                                  map.polysec_cur.serialize()))
                 }
-                onClicked: function(){
+                onClicked: function () {
                     map.polysec_cur.clear_path()
                     map.center = fbkUpdater.ulisse_pos
                     map.click_handler = map.polysec_cur.click_handler
@@ -432,8 +432,6 @@ Pane {
                 }
             }
         }
-
-
     }
 
     FileDialog {
@@ -459,44 +457,46 @@ Pane {
 
         onAccepted: {
             var path = savePathDialog.fileUrl.toString()
-            path = path.replace(/^(file:\/{2})/, "") // remove prefixed "file://"
-            path = decodeURIComponent(path) // unescape html codes like '%23' for '#'
+            path = path.replace(/^(file:\/{2})/,
+                                "") // remove prefixed "file://"
+            path = decodeURIComponent(
+                        path) // unescape html codes like '%23' for '#'
             savePaths(path)
         }
     }
 
-    function savePaths(filePath){
-        if(slidersLeft.columnTrack.children.length === 0)
-        {
+    function savePaths(filePath) {
+        if (slidersLeft.columnTrack.children.length === 0) {
             toast.show("There is nothing to save!")
             return
         }
 
         var all_paths = {
-            security_box: null, //TODO security box
-            paths: []
+            security_box: null,
+            paths//TODO security box
+            : []
         }
 
-        for (var i=0; i<slidersLeft.columnTrack.children.length; i++){
-            all_paths.paths.push(slidersLeft.columnTrack.children[i]._comp.serialize())
+        for (var i = 0; i < slidersLeft.columnTrack.children.length; i++) {
+            all_paths.paths.push(
+                        slidersLeft.columnTrack.children[i]._comp.serialize())
         }
 
-        console.log("JSON to save "+JSON.stringify(all_paths))
-        console.log("PATH to save "+filePath)
+        console.log("JSON to save " + JSON.stringify(all_paths))
+        console.log("PATH to save " + filePath)
 
         cmdWrapper.savePathToFile(filePath, JSON.stringify(all_paths))
         //TODO show a toast
     }
 
-    function loadPaths(filePath){
+    function loadPaths(filePath) {
         var jsondata = cmdWrapper.loadPathFromFile(filePath)
         var data = JSON.parse(jsondata)
 
-        var i,j,lat,lon,p
+        var i, j, lat, lon, p
 
-
-        for(i = 0; i < data.paths.length; i++){
-            switch(data.paths[i].type){
+        for (i = 0; i < data.paths.length; i++) {
+            switch (data.paths[i].type) {
             case "PolyPath":
                 var cur_managed = map.createPoly()
                 cur_managed.deserialize(data.paths[i])
@@ -504,14 +504,13 @@ Pane {
                 var v = trackComponent.createObject(slidersLeft.columnTrack)
                 v._comp = cur_managed
                 v.ntrack = slidersLeft.columnTrack.children.length
-                v.selected.connect(function (path){
+                v.selected.connect(function (path) {
                     slidersLeft.update_selection(path)
                     pathRectPoly.manage(path)
                 })
 
                 cur_managed.draw_deferred()
                 break
-
             case "PointPath":
                 var cur_managed = map.createPath()
                 cur_managed.deserialize(data.paths[i])
@@ -519,14 +518,13 @@ Pane {
                 var v = trackComponent.createObject(slidersLeft.columnTrack)
                 v._comp = cur_managed
                 v.ntrack = slidersLeft.columnTrack.children.length
-                v.selected.connect(function (path){
+                v.selected.connect(function (path) {
                     slidersLeft.update_selection(path)
                     pathRectPoly.manage(path)
                 })
 
                 cur_managed.draw_deferred()
                 break
-
             case "SecurityPoly":
                 map.polysec_cur.clear_path()
                 polysec_cur.deserialize(data.paths[i])

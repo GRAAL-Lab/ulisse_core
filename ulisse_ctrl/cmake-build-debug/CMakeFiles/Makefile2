@@ -65,43 +65,6 @@ CMAKE_SOURCE_DIR = /home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl
 CMAKE_BINARY_DIR = /home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug
 
 #=============================================================================
-# Target rules for target CMakeFiles/bongio.dir
-
-# All Build rule for target.
-CMakeFiles/bongio.dir/all: CMakeFiles/ulisse_ctrl_lib.dir/all
-	$(MAKE) -f CMakeFiles/bongio.dir/build.make CMakeFiles/bongio.dir/depend
-	$(MAKE) -f CMakeFiles/bongio.dir/build.make CMakeFiles/bongio.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles --progress-num=1,2 "Built target bongio"
-.PHONY : CMakeFiles/bongio.dir/all
-
-# Include target in all.
-all: CMakeFiles/bongio.dir/all
-
-.PHONY : all
-
-# Build rule for subdir invocation for target.
-CMakeFiles/bongio.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles 26
-	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/bongio.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles 0
-.PHONY : CMakeFiles/bongio.dir/rule
-
-# Convenience name for target.
-bongio: CMakeFiles/bongio.dir/rule
-
-.PHONY : bongio
-
-# clean rule for target.
-CMakeFiles/bongio.dir/clean:
-	$(MAKE) -f CMakeFiles/bongio.dir/build.make CMakeFiles/bongio.dir/clean
-.PHONY : CMakeFiles/bongio.dir/clean
-
-# clean rule for target.
-clean: CMakeFiles/bongio.dir/clean
-
-.PHONY : clean
-
-#=============================================================================
 # Target rules for target CMakeFiles/ExperimentalStart.dir
 
 # All Build rule for target.
@@ -230,43 +193,6 @@ clean: CMakeFiles/ExperimentalCoverage.dir/clean
 .PHONY : clean
 
 #=============================================================================
-# Target rules for target CMakeFiles/nurbs.dir
-
-# All Build rule for target.
-CMakeFiles/nurbs.dir/all: CMakeFiles/ulisse_ctrl_lib.dir/all
-	$(MAKE) -f CMakeFiles/nurbs.dir/build.make CMakeFiles/nurbs.dir/depend
-	$(MAKE) -f CMakeFiles/nurbs.dir/build.make CMakeFiles/nurbs.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles --progress-num=13,14 "Built target nurbs"
-.PHONY : CMakeFiles/nurbs.dir/all
-
-# Include target in all.
-all: CMakeFiles/nurbs.dir/all
-
-.PHONY : all
-
-# Build rule for subdir invocation for target.
-CMakeFiles/nurbs.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles 26
-	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/nurbs.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles 0
-.PHONY : CMakeFiles/nurbs.dir/rule
-
-# Convenience name for target.
-nurbs: CMakeFiles/nurbs.dir/rule
-
-.PHONY : nurbs
-
-# clean rule for target.
-CMakeFiles/nurbs.dir/clean:
-	$(MAKE) -f CMakeFiles/nurbs.dir/build.make CMakeFiles/nurbs.dir/clean
-.PHONY : CMakeFiles/nurbs.dir/clean
-
-# clean rule for target.
-clean: CMakeFiles/nurbs.dir/clean
-
-.PHONY : clean
-
-#=============================================================================
 # Target rules for target CMakeFiles/NightlyConfigure.dir
 
 # All Build rule for target.
@@ -369,7 +295,7 @@ clean: CMakeFiles/NightlyUpdate.dir/clean
 CMakeFiles/dynamic_control_node.dir/all: CMakeFiles/ulisse_ctrl_lib.dir/all
 	$(MAKE) -f CMakeFiles/dynamic_control_node.dir/build.make CMakeFiles/dynamic_control_node.dir/depend
 	$(MAKE) -f CMakeFiles/dynamic_control_node.dir/build.make CMakeFiles/dynamic_control_node.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles --progress-num=7,8 "Built target dynamic_control_node"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles --progress-num=5,6 "Built target dynamic_control_node"
 .PHONY : CMakeFiles/dynamic_control_node.dir/all
 
 # Include target in all.
@@ -438,7 +364,7 @@ clean: CMakeFiles/NightlyTest.dir/clean
 CMakeFiles/kinematic_control_node.dir/all: CMakeFiles/ulisse_ctrl_lib.dir/all
 	$(MAKE) -f CMakeFiles/kinematic_control_node.dir/build.make CMakeFiles/kinematic_control_node.dir/depend
 	$(MAKE) -f CMakeFiles/kinematic_control_node.dir/build.make CMakeFiles/kinematic_control_node.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles --progress-num=9,10 "Built target kinematic_control_node"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles --progress-num=7,8 "Built target kinematic_control_node"
 .PHONY : CMakeFiles/kinematic_control_node.dir/all
 
 # Include target in all.
@@ -635,7 +561,7 @@ clean: CMakeFiles/ContinuousCoverage.dir/clean
 CMakeFiles/control_test.dir/all: CMakeFiles/ulisse_ctrl_lib.dir/all
 	$(MAKE) -f CMakeFiles/control_test.dir/build.make CMakeFiles/control_test.dir/depend
 	$(MAKE) -f CMakeFiles/control_test.dir/build.make CMakeFiles/control_test.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles --progress-num=3,4 "Built target control_test"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles --progress-num=1,2 "Built target control_test"
 .PHONY : CMakeFiles/control_test.dir/all
 
 # Include target in all.
@@ -1088,7 +1014,7 @@ clean: CMakeFiles/ContinuousConfigure.dir/clean
 CMakeFiles/monitor_node.dir/all: CMakeFiles/ulisse_ctrl_lib.dir/all
 	$(MAKE) -f CMakeFiles/monitor_node.dir/build.make CMakeFiles/monitor_node.dir/depend
 	$(MAKE) -f CMakeFiles/monitor_node.dir/build.make CMakeFiles/monitor_node.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles --progress-num=11,12 "Built target monitor_node"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles --progress-num=9,10 "Built target monitor_node"
 .PHONY : CMakeFiles/monitor_node.dir/all
 
 # Include target in all.
@@ -1147,43 +1073,6 @@ CMakeFiles/ContinuousMemCheck.dir/clean:
 
 # clean rule for target.
 clean: CMakeFiles/ContinuousMemCheck.dir/clean
-
-.PHONY : clean
-
-#=============================================================================
-# Target rules for target CMakeFiles/spline.dir
-
-# All Build rule for target.
-CMakeFiles/spline.dir/all: CMakeFiles/ulisse_ctrl_lib.dir/all
-	$(MAKE) -f CMakeFiles/spline.dir/build.make CMakeFiles/spline.dir/depend
-	$(MAKE) -f CMakeFiles/spline.dir/build.make CMakeFiles/spline.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles --progress-num=15,16 "Built target spline"
-.PHONY : CMakeFiles/spline.dir/all
-
-# Include target in all.
-all: CMakeFiles/spline.dir/all
-
-.PHONY : all
-
-# Build rule for subdir invocation for target.
-CMakeFiles/spline.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles 26
-	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/spline.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles 0
-.PHONY : CMakeFiles/spline.dir/rule
-
-# Convenience name for target.
-spline: CMakeFiles/spline.dir/rule
-
-.PHONY : spline
-
-# clean rule for target.
-CMakeFiles/spline.dir/clean:
-	$(MAKE) -f CMakeFiles/spline.dir/build.make CMakeFiles/spline.dir/clean
-.PHONY : CMakeFiles/spline.dir/clean
-
-# clean rule for target.
-clean: CMakeFiles/spline.dir/clean
 
 .PHONY : clean
 
@@ -1258,7 +1147,7 @@ clean: CMakeFiles/ContinuousSubmit.dir/clean
 CMakeFiles/ulisse_ctrl_lib.dir/all:
 	$(MAKE) -f CMakeFiles/ulisse_ctrl_lib.dir/build.make CMakeFiles/ulisse_ctrl_lib.dir/depend
 	$(MAKE) -f CMakeFiles/ulisse_ctrl_lib.dir/build.make CMakeFiles/ulisse_ctrl_lib.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles --progress-num=17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40 "Built target ulisse_ctrl_lib"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles --progress-num=11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34 "Built target ulisse_ctrl_lib"
 .PHONY : CMakeFiles/ulisse_ctrl_lib.dir/all
 
 # Include target in all.
@@ -1327,7 +1216,7 @@ clean: CMakeFiles/ContinuousBuild.dir/clean
 CMakeFiles/controller_console_node.dir/all: CMakeFiles/ulisse_ctrl_lib.dir/all
 	$(MAKE) -f CMakeFiles/controller_console_node.dir/build.make CMakeFiles/controller_console_node.dir/depend
 	$(MAKE) -f CMakeFiles/controller_console_node.dir/build.make CMakeFiles/controller_console_node.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles --progress-num=5,6 "Built target controller_console_node"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles --progress-num=3,4 "Built target controller_console_node"
 .PHONY : CMakeFiles/controller_console_node.dir/all
 
 # Include target in all.

@@ -111,19 +111,6 @@ add_executable(monitor_node src/monitor_node.cpp)
 ament_target_dependencies(monitor_node rclcpp std_msgs ulisse_msgs rml)
 target_link_libraries(monitor_node rml ulisse_ctrl_lib)
 
-add_executable(spline src/spline.cpp)
-ament_target_dependencies(spline rclcpp std_msgs ulisse_msgs rml)
-target_link_libraries(spline rml ulisse_ctrl_lib ${ulisse_msgs_LIBRARIES})
-
-add_executable(bongio src/bongio.cpp)
-ament_target_dependencies(bongio rclcpp std_msgs ulisse_msgs rml ${Boost_LIBRARIES} )
-target_link_libraries(bongio rml ulisse_ctrl_lib ${Boost_LIBRARIES} )
-
-add_executable(nurbs src/nurbs.cpp)
-ament_target_dependencies(nurbs rclcpp std_msgs ulisse_msgs rml)
-target_link_libraries(nurbs rml ulisse_ctrl_lib sisl openNURBS ${OPENNURBS_LINKLIBRARIES})
-#target_link_libraries(nurbs rml ulisse_ctrl_lib)
-
 target_link_libraries(${PROJECT_NAME}_lib ${catkin_LIBRARIES} ${Boost_LIBRARIES} ikcl tpik rml config++)
 ament_export_include_directories(include)
 
@@ -135,9 +122,6 @@ install(TARGETS
   controller_console_node
   monitor_node
   control_test
-  spline
-  bongio
-  nurbs
   DESTINATION lib/${PROJECT_NAME}
 )
   

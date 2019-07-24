@@ -3,40 +3,36 @@ import QtQuick.Layouts 1.3
 import QtQuick.Controls 2.1
 import "."
 
-ColumnLayout {
+RowLayout {
     property alias label: title.text
-    property int lsize: 9
-    property int tsize: 7
+    property int lsize: 11
+    property int tsize: 9
     property alias labelColor: title.color
     property alias text: label_data.text
     property alias textColor: label_data.color
     property alias textBoldness: label_data.font.weight
     property alias labelMouseArea: labelMouseArea
-
-    Layout.fillHeight: true
-    Layout.preferredHeight: title.contentHeight + label_data.contentHeight + 5
-    spacing: 0
+    //Layout.alignment: Qt.AlignHCenter
+    spacing: 1
 
     Label {
-        Layout.alignment: Qt.AlignHCenter
+
         id: title
+        horizontalAlignment: Qt.AlignRight
         font.pointSize: lsize
-        width: parent.width
         color: 'cadetblue'
-        leftPadding: 5.0
-        bottomPadding: -4
+        Layout.columnSpan: 1
         font.weight: Font.DemiBold
-        //text: "Coordinates"
     }
 
     Label {
-        Layout.alignment: Qt.AlignHCenter
-        id: label_data
-        font.pointSize: tsize
-        width: parent.width
-        //color: 'lightgrey'
-        leftPadding: 5.0
 
+        id: label_data
+        horizontalAlignment: Qt.AlignRight
+        Layout.columnSpan: 2
+        font.pointSize: tsize
+        leftPadding: 5
+        //Layout.fillWidth: true
         MouseArea {
             id: labelMouseArea
             anchors.fill: parent

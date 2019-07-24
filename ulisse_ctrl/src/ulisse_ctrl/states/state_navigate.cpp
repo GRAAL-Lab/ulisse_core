@@ -77,7 +77,10 @@ namespace states {
         centroid_.latitude = obj_master["centroid"][0].asDouble();
         centroid_.longitude = obj_master["centroid"][1].asDouble();
 
-        if (obj["direction"].asInt()) {
+        std::cout << "ARRIVATO : " << json_nurbs << std::endl;
+
+        std::cout << "DIR : " << obj_master["direction"] << std::endl;
+        if (obj_master["direction"].asInt()) {
             std::cout << "DIRECTION TRUE" << std::endl;
             reverse = true;
         } else {
@@ -200,7 +203,7 @@ namespace states {
         count = 0;
 
         curve = nurbs_[0];
-        double point_at[4];
+        double point_at[3];
         // Compute the point of the first curve at 0.0.
         s1227(curve, 0, 0.0, &leftknot, point_at, &stat);
 
@@ -214,7 +217,7 @@ namespace states {
 
         curve = nurbs_[0];
         // Compute the point of the first curve at 0.1.
-        s1227(curve, 0, 0.1, &leftknot, point_at, &stat);
+        s1227(curve, 0, 0.2, &leftknot, point_at, &stat);
 
         ctb::LatLong next_point = to_lat_long(point_at[0], point_at[1]);
 
@@ -276,9 +279,11 @@ namespace states {
                         std::cout << "*** START MISSION! ***" << std::endl;
                     }
                 }
-                angularPositionTask_->SetAngle(
-                    Eigen::Vector3d(0, 0, goalCxt_->goalHeading));
-                distanceTask_->SetDistance(Eigen::Vector3d(goalCxt_->goalDistance, 0, 0));
+                else {
+                    angularPositionTask_->SetAngle(
+                        Eigen::Vector3d(0, 0, goalCxt_->goalHeading));
+                    distanceTask_->SetDistance(Eigen::Vector3d(goalCxt_->goalDistance, 0, 0));
+                }
             }
             if (start && !oriented) {
                 std::cout << "*** ORIENTING! ***" << std::endl;
@@ -289,11 +294,12 @@ namespace states {
                         count = 0;
                         oriented = true;
                         std::cout << "*** ORIENTED! ***" << std::endl;
-                        conf_->slowOnTurns.alphaMin = 0.5;
                     }
                 }
+                else {
+                    angularPositionTask_->SetAngle(Eigen::Vector3d(0, 0, starting_angle));
+                }
                 distanceTask_->SetDistance(Eigen::Vector3d(0, 0, 0));
-                angularPositionTask_->SetAngle(Eigen::Vector3d(0, 0, starting_angle));
             }
 
             else if (start && oriented) {
@@ -306,11 +312,11 @@ namespace states {
                     goalCxt_->goalDistance, goalCxt_->goalHeading);
 
 
+                // Estimate curve length
                 s1240(curve, aepsge, &cur_length, &stat);
-                std::cout << "Current Curve Length : " << cur_length << std::endl;
-                delta_ = 0.5 / cur_length;
+                delta_ = 3.0 / cur_length;
 
-                curvilinear_abscissa = getCurvilinearAbscissa() + delta_;
+                curvilinear_abscissa = getCurvilinearAbscissa();
 
                 if (goalCxt_->goalDistance < 0.5 || curvilinear_abscissa >= number_of_curves_) {
                     std::cout << "*** MISSION FINISHED! ***" << std::endl;
@@ -326,11 +332,15 @@ namespace states {
                         current_curvilinear_abscissa -= current_curve;
                     }
 
-                    double point_at[4];
+                    double point_at[6];
                     // Compute the point of the first curve at current_curvilinear_abscissa.
-                    s1227(curve, 0, current_curvilinear_abscissa, &leftknot, point_at,
+                    s1227(curve, 1, current_curvilinear_abscissa, &leftknot, point_at,
                         &stat);
-                    lookAheadPoint = to_lat_long(point_at[0], point_at[1]);
+
+                    double tan_angle = atan2(point_at[4], point_at[3]);
+
+                    std::cout << "TANGENT ANGLE : " << tan_angle << std::endl;
+                    lookAheadPoint = to_lat_long(point_at[0] + 2.0 * cos(tan_angle), point_at[1] + 2.0 * sin(tan_angle));
 
                     std::cout << "*** POINTING TO LAT: " << lookAheadPoint.latitude
                               << " , LONG: " << lookAheadPoint.longitude << "   ;"

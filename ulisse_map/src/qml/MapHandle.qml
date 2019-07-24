@@ -4,28 +4,28 @@ import QtPositioning 5.6
 import "."
 import "../scripts/helper.js" as Helper
 
-MapQuickItem{
+MapQuickItem {
     id: root
-    property var h_center: QtPositioning.coordinate(0,0)
-    property var h_handle: QtPositioning.coordinate(0,0)
+    property var h_center: QtPositioning.coordinate(0, 0)
+    property var h_handle: QtPositioning.coordinate(0, 0)
     property var h_radius: 6
 
-    function handle_select(yes){
+    function handle_select(yes) {
         _handle.color = yes ? orange : green
     }
 
-    function center_select(yes){
+    function center_select(yes) {
         _center.color = yes ? orange : blue
     }
 
-    function add_to_map(map){
+    function add_to_map(map) {
         map.addMapItem(_handle)
         map.addMapItem(_center)
         map.addMapItem(_line)
         map.addMapItem(_canvas)
     }
 
-    function deregister_map_items(){
+    function deregister_map_items() {
         map.removeMapItem(_handle)
         map.removeMapItem(_center)
         map.removeMapItem(_line)
@@ -35,7 +35,7 @@ MapQuickItem{
     coordinate: h_center
     sourceItem: Item {
         z: map.z + 2
-        MapCircle{
+        MapCircle {
             id: _handle
             center: h_handle
             radius: h_radius
@@ -45,12 +45,12 @@ MapQuickItem{
             opacity: root.opacity
         }
 
-        MapPolyline{
+        MapPolyline {
             id: _line
             opacity: root.opacity
         }
 
-        MapCircle{
+        MapCircle {
             id: _center
             center: h_center
             radius: h_radius
@@ -60,7 +60,7 @@ MapQuickItem{
             opacity: root.opacity
         }
 
-        Canvas{
+        Canvas {
             id: _canvas
             property var _ctx
             antialiasing: true
@@ -68,42 +68,41 @@ MapQuickItem{
             height: 80
             x: parent.x - 40
             y: parent.y - 40
-            onAvailableChanged: {_ctx = getContext("2d")}
+            onAvailableChanged: {
+                _ctx = getContext("2d")
+            }
             opacity: root.opacity
         }
         opacity: root.opacity
     }
 
-    Component.onCompleted: function(){
-        _line.addCoordinate(QtPositioning.coordinate(0,0))
-        _line.addCoordinate(QtPositioning.coordinate(0,0))
+    Component.onCompleted: function () {
+        _line.addCoordinate(QtPositioning.coordinate(0, 0))
+        _line.addCoordinate(QtPositioning.coordinate(0, 0))
     }
-    onH_centerChanged: function(){
+    onH_centerChanged: function () {
         _line.replaceCoordinate(0, h_center)
     }
-    onH_handleChanged: function(){
+    onH_handleChanged: function () {
         _line.replaceCoordinate(1, h_handle)
     }
     property var cumulativeAngle: 0
 
-    function update_canvas(degrees){
-        cumulativeAngle+=degrees
+    function update_canvas(degrees) {
+        cumulativeAngle += degrees
         var ctx = _canvas._ctx
-        if (ctx === null || ctx === undefined) return
+        if (ctx === null || ctx === undefined)
+            return
         ctx.clearRect(0, 0, 80, 80)
         ctx.strokeStyle = "#transparent"
         ctx.lineWidth = 1
         ctx.lineJoin = "bevel"
         ctx.beginPath()
-        ctx.moveTo(40,40)
-        ctx.lineTo(5,40)
-        ctx.arc(40,
-               40,
-               35,
-               Math.PI,
-               Math.PI + Helper.deg_to_rad(cumulativeAngle),
-               false)
-        ctx.lineTo(40,40)
+        ctx.moveTo(40, 40)
+        ctx.lineTo(5, 40)
+        ctx.arc(40, 40, 35, Math.PI,
+                Math.PI + Helper.deg_to_rad(cumulativeAngle), false)
+        ctx.lineTo(40, 40)
         ctx.stroke()
         _canvas.requestPaint()
     }

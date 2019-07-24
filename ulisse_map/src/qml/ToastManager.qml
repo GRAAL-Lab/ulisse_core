@@ -1,9 +1,11 @@
 import QtQuick 2.0
 import "."
+
+
 /**
  * @brief Manager that creates Toasts dynamically
  */
-Column{
+Column {
 
     /**
      * Public
@@ -15,16 +17,15 @@ Column{
      * @param {string} text Text to show
      * @param {real} duration Duration to show in milliseconds, defaults to 3000
      */
-    function show(text, duration){
-        var toast = toastComponent.createObject(root);
-        toast.selfDestroying = true;
-        toast.show(text, duration);
+    function show(text, duration) {
+        var toast = toastComponent.createObject(root)
+        toast.selfDestroying = true
+        toast.show(text, duration)
     }
 
     /**
      * Private
      */
-
     id: root
 
     z: Infinity
@@ -37,4 +38,3 @@ Column{
 
     Component.onCompleted: toastComponent = Qt.createComponent("Toast.qml")
 }
-
