@@ -113,7 +113,6 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         ikcl::ControlDistance(ulisse::task::asv_control_distance, robot_model, ulisse::robotModelID::ASV, tpik::CartesianTaskType::Equality));
     asv_control_distance->SetStatusContext(statusCxt_);
     asv_control_distance->SetGoalContext(goalCxt_);
-    asv_control_distance->SetConfiguration(conf_);
     cartesian_task.push_back(asv_control_distance);
     task_hierarchy.push_back(asv_control_distance);
     taskIDMap.insert(std::make_pair(ulisse::task::asv_control_distance, asv_control_distance));

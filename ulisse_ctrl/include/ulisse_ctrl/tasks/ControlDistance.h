@@ -44,8 +44,6 @@ public:
      */
     void SetDistance(Eigen::Vector3d distance);
 
-    void SetConfiguration(std::shared_ptr<ulisse::ControllerConfiguration> conf);
-
     void SetStatusContext(const std::shared_ptr<ulisse::StatusContext>& posCxt);
 
     void SetGoalContext(const std::shared_ptr<ulisse::GoalContext>& goalCxt);

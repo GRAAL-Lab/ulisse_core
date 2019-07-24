@@ -27,11 +27,6 @@ void ControlDistance::SetDistance(Eigen::Vector3d distance)
     isDistanceInitialized_ = true;
 }
 
-void ControlDistance::SetConfiguration(std::shared_ptr<ulisse::ControllerConfiguration> conf)
-{
-    conf_ = conf;
-}
-
 void ControlDistance::SetStatusContext(const std::shared_ptr<ulisse::StatusContext>& statusCxt)
 {
     statusCxt_ = statusCxt;
