@@ -20,10 +20,10 @@ namespace states {
     {
         curvilinear_abscissa = 0;
         number_of_curves_ = 0;
-        max_range_abscissa = 0.3;
+        max_range_abscissa = 0.2;
 
         // TODO: Aumenta quando passiamo a metri
-        delta_ = 0.001;
+        delta_ = 0.01;
         isCurveSet = false;
     }
 
@@ -222,6 +222,30 @@ namespace states {
         double dist;
         ctb::DistanceAndAzimuthRad(starting_point, next_point, dist, starting_angle);
 
+        ctb::LatLong PPP, PPP2;
+        for(current_curve = 0; current_curve < nurbs_.size(); current_curve++){
+            curve = nurbs_[current_curve];
+
+            double ppp[4];
+            // Compute the point of the first curve at 0.0.
+            s1227(curve, 0, 0.0, &leftknot, ppp, &stat);
+
+            PPP = to_lat_long(ppp[0], ppp[1]);
+            std::cout << "*** START OF CURVE " << current_curve << ":: LAT: " << PPP.latitude
+                      << " LONG: " << PPP.longitude << std::endl;
+
+            if(current_curve != 0 && (PPP.latitude != PPP2.latitude || PPP.longitude != PPP2.longitude)){
+                std::cout << "REVERSING IT " << std::endl;
+                s1706(curve);
+            }
+            // Compute the point of the first curve at 0.0.
+            s1227(curve, 0, 1.0, &leftknot, ppp, &stat);
+
+            PPP2 = to_lat_long(ppp[0], ppp[1]);
+            std::cout << "*** END OF CURVE " << current_curve << ":: LAT: " << PPP2.latitude
+                      << " LONG: " << PPP2.longitude << std::endl;
+        }
+
         return fsm::ok;
     }
 
@@ -265,6 +289,7 @@ namespace states {
                         count = 0;
                         oriented = true;
                         std::cout << "*** ORIENTED! ***" << std::endl;
+                        conf_->slowOnTurns.alphaMin = 0.5;
                     }
                 }
                 distanceTask_->SetDistance(Eigen::Vector3d(0, 0, 0));
@@ -280,25 +305,36 @@ namespace states {
                 ctb::DistanceAndAzimuthRad(statusCxt_->vehiclePos, end_point,
                     goalCxt_->goalDistance, goalCxt_->goalHeading);
 
-                std::cout << "*** DISTANCE TO GOAL: " << goalCxt_->goalDistance
-                          << std::endl;
+
+                s1240(curve, aepsge, &cur_length, &stat);
+                std::cout << "Current Curve Length : " << cur_length << std::endl;
+                delta_ = 0.5 / cur_length;
 
                 curvilinear_abscissa = getCurvilinearAbscissa() + delta_;
 
-                if (goalCxt_->goalDistance < 2 || curvilinear_abscissa >= number_of_curves_) {
+                if (goalCxt_->goalDistance < 0.5 || curvilinear_abscissa >= number_of_curves_) {
                     std::cout << "*** MISSION FINISHED! ***" << std::endl;
                     isCurveSet = false;
                     asvHoldTask_->SetGoalHold(end_point);
                     fsm_->ExecuteCommand(ulisse::commands::ID::hold);
                 } else {
-
                     current_curve = floor(curvilinear_abscissa);
                     curve = nurbs_[current_curve];
 
-                    /*
-        s1240(curve, aepsge, &cur_length, &stat);
-        delta_ = 1.0 / cur_length;
-         */
+                    double ppp[4];
+                    // Compute the point of the first curve at 0.0.
+                    s1227(curve, 0, 0.0, &leftknot, ppp, &stat);
+
+                    ctb::LatLong PPP = to_lat_long(ppp[0], ppp[1]);
+                    std::cout << "*** START OF CURVE " << current_curve << ":: LAT: " << PPP.latitude
+                              << " LONG: " << PPP.longitude << std::endl;
+
+                    // Compute the point of the first curve at 0.0.
+                    s1227(curve, 0, 1.0, &leftknot, ppp, &stat);
+
+                    PPP = to_lat_long(ppp[0], ppp[1]);
+                    std::cout << "*** END OF CURVE " << current_curve << ":: LAT: " << PPP.latitude
+                              << " LONG: " << PPP.longitude << std::endl;
 
                     current_curvilinear_abscissa = curvilinear_abscissa;
                     if (current_curvilinear_abscissa > 1) {
@@ -321,22 +357,10 @@ namespace states {
                         goalCxt_->goalDistance,
                         goalCxt_->goalHeading);
 
-                    /*
-        if(goalCxt_->goalDistance < 0.5){
-            std::cout << "RADDOPPIA DELTA" << std::endl;
-            delta_ *= 2;
-        }
-
-        if(goalCxt_->goalDistance > 2.0){
-            std::cout << "DIMEZZA DELTA" << std::endl;
-            delta_ /= 2;
-        }
-         */
-
                     angularPositionTask_->SetAngle(
                         Eigen::Vector3d(0, 0, goalCxt_->goalHeading));
                     distanceTask_->SetDistance(
-                        Eigen::Vector3d(goalCxt_->goalDistance, 0, 0));
+                        Eigen::Vector3d(1.0, 0, 0));
 
                     std::cout << std::endl
                               << "************* DISTA: " << goalCxt_->goalDistance
@@ -345,27 +369,7 @@ namespace states {
                 }
             }
         }
-
-        /*
-   * calculate radius and clock/counterclock #@ ascissa curvilinea x
-   * asvMakeCurveTask_->SetCurve(radius, ulisse::curves::circle_arc, clockwise);
-   * "wait for raggiungere ascissa x
-   * calcola prossima
-   *
-   * parte intera di x = nurbs corrente
-   * parte decimale = avanzamento sulla nurb
-   */
-        /*
-  std::cout << "STATE NAVIGATE " << std::endl;
-
-  std::cout << "SPLINES: " << std::endl;
-
-  std::cout << splines_[0].knots[0] << std::endl;
-
-  std::cout << splines_[0].weights[1] << std::endl;
-
-  std::cout << splines_[0].points[1] << std::endl;
-   */
+        std::cout << "STATE PATH FOLLOWING" << std::endl;
 
         return fsm::ok;
     }
@@ -385,7 +389,8 @@ namespace states {
         current_point = to_meters(statusCxt_->vehiclePos.latitude,
             statusCxt_->vehiclePos.longitude);
 
-        if ((floor(max_abscissa) == floor(min_abscissa)) || ((max_abscissa - floor(max_abscissa)) == 0)) {
+        if (floor(max_abscissa) == floor(min_abscissa) || (max_abscissa == number_of_curves_)) {
+            std::cout << "ON A SINGLE CURVE" << std::endl;
             // To select the window part of curv, from min_abscissa to max_abscissa
             s1713(curve, DecimalPart(min_abscissa), DecimalPart(max_abscissa),
                 &newcurve, &stat);
@@ -396,6 +401,7 @@ namespace states {
             gpar = gpar + floor(min_abscissa);
 
         } else {
+            std::cout << "ON TWO CURVES" << std::endl;
             // To select the last part of first curve, from min_abscissa to 1.0
             s1713(curve, DecimalPart(min_abscissa), 1.0, &newcurve, &stat);
 
@@ -416,6 +422,8 @@ namespace states {
                 gpar = gpar2 + floor(max_abscissa);
             }
         }
+
+        std::cout << "ABS TO POINT AT: " << gpar << std::endl;
         return gpar;
     }
 
