@@ -11,7 +11,8 @@ Rectangle {
     property color labelColor2: "#000000"
     property color labelColor3: "#000000"
     property alias commandRect: commandRect
-    border.width: 1
+    border.width: 5
+    border.color: lightgrey
     visible: true
 
     ColumnLayout {
@@ -26,7 +27,7 @@ Rectangle {
             Layout.fillHeight: true
             Layout.minimumWidth: leftbarlayout.width
             Layout.preferredWidth: parent.width
-            Layout.minimumHeight: mycol.height
+            Layout.preferredHeight: parent.height/6
             Layout.alignment: Qt.AlignLeft
 
             ColumnLayout {
@@ -39,9 +40,8 @@ Rectangle {
                     width: mycol.width
                     Layout.minimumWidth: width
                     Layout.fillWidth: true
-                    Layout.fillHeight: true
                     Layout.alignment: Qt.AlignLeft
-                    Layout.bottomMargin: 5
+
                     height: my_label.Top - goalDistLabel.Bottom
                     clip: false
                     visible: true
@@ -57,29 +57,45 @@ Rectangle {
 
                     LabelledText {
                         id: ulisseStateLabel
-                        Layout.minimumWidth: statusdatalayout.width
                         labelColor: labelColor1
                         label: "Ulisse State"
                         text: fbkUpdater.vehicle_state
+                        Layout.fillWidth: true
                         textBoldness: Font.DemiBold
                     }
 
                     LabelledText {
                         id: ulissePosLabel
-                        Layout.minimumWidth: statusdatalayout.width
                         labelColor: labelColor1
                         label: "Ulisse Coordinates"
                         text: fbkUpdater.ulisse_pos.latitude + ", "
                               + fbkUpdater.ulisse_pos.longitude
+                        Layout.fillWidth: true
                     }
 
                     LabelledText {
                         id: goalDistLabel
-                        Layout.minimumWidth: statusdatalayout.width
                         objectName: "goalDistance"
                         labelColor: labelColor1
                         label: "Distance to Target"
                         text: fbkUpdater.goal_distance + " (m)"
+                        Layout.fillWidth: true
+                    }
+
+                    LabelledText {
+                        id: markerTextLabel
+                        labelColor: labelColor2
+                        label: "Marker Coordinates"
+                        text: "Left click on map"
+                        Layout.fillWidth: true
+                    }
+                    Text {
+                        id: markerText
+                        Layout.alignment: Qt.AlignHCenter
+                        font.pointSize: 8
+                        color: 'grey'
+                        text: "(Left click to set marker)"
+                        horizontalAlignment: Text.AlignHCenter
                     }
                 }
 
@@ -106,28 +122,6 @@ Rectangle {
 
 
                 }*/
-                ColumnLayout {
-                    id: markerlayout
-                    Layout.minimumWidth: mycol.width
-                    Layout.minimumHeight: markerTextLabel.Top - markerText.Bottom
-
-                    LabelledText {
-                        id: markerTextLabel
-                        Layout.minimumWidth: markerlayout.width
-                        labelColor: labelColor2
-                        label: "Marker Coordinates"
-                        text: "Left click on map"
-                    }
-                    Text {
-                        id: markerText
-                        Layout.alignment: Qt.AlignHCenter
-                        width: markerlayout.width
-                        font.pointSize: 8
-                        color: 'grey'
-                        text: "(Left click to set marker)"
-                        horizontalAlignment: Text.AlignHCenter
-                    }
-                }
             }
         }
 

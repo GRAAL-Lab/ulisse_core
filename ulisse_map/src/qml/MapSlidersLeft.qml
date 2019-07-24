@@ -104,8 +104,7 @@ Row {
         id: sliderContainerLeft
         height: parent.height
         width: sliderTogglerLeft.checked ? defheigth + 120 : defheigth
-        color: blue
-        Material.elevation: 20
+        color: lightgrey
         Material.accent: blue
         Material.foreground: orange
 

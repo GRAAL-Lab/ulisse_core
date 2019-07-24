@@ -26,7 +26,7 @@ ApplicationWindow {
     property color lightgreen: Material.color(Material.Green, Material.Shade500)
     property color cyan: Material.color(Material.Cyan, Material.Shade700)
     property color grey: Material.color(Material.Grey, Material.Shade700)
-    property color lightgrey: Material.color(Material.Grey, Material.Shade100)
+    property color lightgrey: Material.color(Material.Grey, Material.Shade50)
 
     property int mainColor: (settings.theme == "Light" ? Material.Cyan : Material.Red)
 
@@ -149,15 +149,14 @@ ApplicationWindow {
                 id: mapViewLoader
                 sourceComponent: mapViewComponent
                 active: false
-                Layout.fillHeight: true
+                //Layout.fillHeight: true
                 Layout.fillWidth: true
             }
 
             DataView {
                 id: dataView
-                Layout.fillHeight: true
                 Layout.fillWidth: true
-                Layout.margins: 10
+                //Layout.margins: 10
             }
         }
     }
