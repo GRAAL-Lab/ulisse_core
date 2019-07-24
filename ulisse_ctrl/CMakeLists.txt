@@ -121,7 +121,7 @@ target_link_libraries(bongio rml ulisse_ctrl_lib ${Boost_LIBRARIES} )
 
 add_executable(nurbs src/nurbs.cpp)
 ament_target_dependencies(nurbs rclcpp std_msgs ulisse_msgs rml)
-target_link_libraries(nurbs rml ulisse_ctrl_lib sisl openNURBS ${OPENNURBS_LINKLIBRARIES})
+target_link_libraries(nurbs rml ulisse_ctrl_lib sisl)
 #target_link_libraries(nurbs rml ulisse_ctrl_lib)
 
 target_link_libraries(${PROJECT_NAME}_lib ${catkin_LIBRARIES} ${Boost_LIBRARIES} ikcl tpik rml config++)

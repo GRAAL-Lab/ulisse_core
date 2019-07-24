@@ -292,7 +292,6 @@ namespace states {
                         count = 0;
                         oriented = true;
                         std::cout << "*** ORIENTED! ***" << std::endl;
-                        conf_->slowOnTurns.alphaMin = 0.5;
                     }
                 }
                 distanceTask_->SetDistance(Eigen::Vector3d(0, 0, 0));
