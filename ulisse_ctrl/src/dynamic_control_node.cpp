@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
     LoadLowLevelConfiguration(conf, par_client);
 
     struct SlidingSurface sl;
-    parameter_setting(sl,conf,0.4,0.001);
+    parameter_setting(sl,conf,0.4,10);
 
     ctb::DigitalSlidingMode<struct SlidingSurface> slideSurge=
             ctb::DigitalSlidingMode<struct SlidingSurface>(alpha_beta_u,s1,sl);
@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
     std::cout << tc::grayD << *conf << tc::none << std::endl;
 
     slideSurge.Initialize(0.2, sampleTime, 2 , conf->dynamic_pidsat_surge);
-    slideHeading.Initialize(7.5, sampleTime, 2 , conf->dynamic_pidsat_yawrate);
+    slideHeading.Initialize(9.5, sampleTime, 2 , conf->dynamic_pidsat_yawrate);
 
     ulisse_msgs::msg::ControlData control_msg;
 
@@ -162,11 +162,11 @@ int main(int argc, char* argv[])
             thrust_msg.motor_ctrlref.right = 0.0;
         }
 
-        control_msg.surge_control = ulisseModel.get_tau_x();
-        control_msg.yawr_control = ulisseModel.get_tau_n();
+        control_msg.surge_control = surgeFbk;
+        control_msg.yawr_control =jogFbk ;
 
-        control_msg.surge_error = ctrl_cxt_msg.desired_speed - surgeFbk;
-        control_msg.yawr_error = ctrl_cxt_msg.desired_jog - jogFbk;
+        control_msg.surge_error = desired_surge;
+        control_msg.yawr_error = ctrl_cxt_msg.desired_jog;
 
         control_pub->publish(control_msg);
 
