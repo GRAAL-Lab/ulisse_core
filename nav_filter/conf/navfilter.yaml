@@ -14,4 +14,4 @@ navigation_filter_node:
             diagonal: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         CovarianceMeasure:
             diagonal: [0.0, 0.0, 0.0, 0.0]
-        KalmanFilter: Y
+        KalmanFilter: n
