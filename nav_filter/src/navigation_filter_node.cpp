@@ -70,6 +70,7 @@ int main(int argc, char* argv[])
     auto ctrlcxt_sub = node->create_subscription<ulisse_msgs::msg::ControlContext>(ulisse_msgs::topicnames::control_context, controlcontext_cb);
     auto compass_sub = node->create_subscription<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass, compass_cb);
     auto gpsdata_sub = node->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data, gpsdata_cb);
+    auto imudata_sub = node->create_subscription<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu, imu_cb);
 
     double lastValidGPSTime = 0;
     ulisse_msgs::msg::NavFilterData filterData;
