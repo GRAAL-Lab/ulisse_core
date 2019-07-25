@@ -566,7 +566,11 @@ MapPolyline {
         var lom = Helper.lon_to_m_coeff(centroid.longitude)
         var points = Helper.points_map2euclidean(path, centroid, lam, lom)
 
-        var nurb_l = Helper.generate_nurb_broken_line(points)
+        var nurb_l = []
+
+        for (var i = 0; i < points.length-1; i++)
+                nurb_l.push(Helper.generate_nurb_line(points[i], points[i+1]))
+                
         var result = {
             centroid: [centroid.latitude, centroid.longitude],
             curves: [nurb_l],
