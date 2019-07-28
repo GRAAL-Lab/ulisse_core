@@ -119,6 +119,7 @@ Row {
                         id: addTracks
                         highlighted: true
                         width: parent.width
+                        height: defheigth
 
                         text: (sliderTogglerLeft.checked) ? qsTr("Add Path") : qsTr(
                                                                 "")
@@ -148,6 +149,7 @@ Row {
 
                     Button {
                         id: deleteTracks
+                        height: defheigth
                         visible: columnTrack.children.length > 0
                         enabled: true
                         text: sliderTogglerLeft.checked ? "Delete Paths" : ""
