@@ -37,38 +37,10 @@ RowLayout {
         nameTrack_ = (values.name !== undefined) ? values.name : "Path"
     }
 
-    GroupBox {
+    LabelledField {
         id: groupBoxname
-        y: -10
-        width: 200
-        height: textnametrack.height
-        font.capitalization: Font.AllUppercase
-        clip: true
         title: qsTr("Name")
 
-        label: Label {
-            x: groupBoxname.leftPadding
-            y: 20
-            width: groupBoxname.availableWidth
-            text: groupBoxname.title
-            scale: 0.01
-            horizontalAlignment: Text.AlignHCenter
-            elide: Text.ElideRight
-            background: Rectangle {
-                y: 0
-                width: 0
-                height: 0
-                color: "transparent"
-                border.color: "transparent"
-            }
-        }
-        background: Rectangle {
-            y: 0
-            width: 0
-            height: 0
-            color: "transparent"
-            border.color: "transparent"
-        }
         TextField {
             id: textnametrack
             text: (nameTrack_ !== undefined) ? nameTrack_ : ""
@@ -78,37 +50,10 @@ RowLayout {
         }
     }
 
-    GroupBox {
+    LabelledField {
         id: groupBoxoffset
-        y: -10
-        width: 200
-        height: offsetField.height + 40
-        font.capitalization: Font.AllUppercase
-        clip: true
         title: qsTr("Offset")
 
-        label: Label {
-            x: groupBoxoffset.leftPadding
-            y: 20
-            width: groupBoxoffset.availableWidth
-            text: groupBoxoffset.title
-            horizontalAlignment: Text.AlignHCenter
-            elide: Text.ElideRight
-            background: Rectangle {
-                y: 0
-                width: 0
-                height: 0
-                color: "transparent"
-                border.color: "transparent"
-            }
-        }
-        background: Rectangle {
-            y: 0
-            width: 0
-            height: 0
-            color: "transparent"
-            border.color: "transparent"
-        }
         TextField {
             id: offsetField
             text: (offset_ !== undefined) ? offset_ : ""
@@ -117,37 +62,10 @@ RowLayout {
         }
     }
 
-    GroupBox {
+    LabelledField {
         id: groupBoxangle
-        y: -10
-        width: 200
-        height: angleField.height
-        font.capitalization: Font.AllUppercase
-        clip: true
         title: qsTr("Angle")
 
-        label: Label {
-            x: groupBoxangle.leftPadding
-            y: 20
-            width: groupBoxangle.availableWidth
-            text: groupBoxangle.title
-            horizontalAlignment: Text.AlignHCenter
-            elide: Text.ElideRight
-            background: Rectangle {
-                y: 0
-                width: 0
-                height: 0
-                color: "transparent"
-                border.color: "transparent"
-            }
-        }
-        background: Rectangle {
-            y: 0
-            width: 0
-            height: 0
-            color: "transparent"
-            border.color: "transparent"
-        }
         TextField {
             id: angleField
             text: (angle_ !== undefined) ? angle_ : ""
@@ -156,37 +74,11 @@ RowLayout {
         }
     }
 
-    GroupBox {
+    LabelledField {
         id: groupBoxnurbs
-        y: -10
-        width: 200
         height: methodField.height + 40
-        font.capitalization: Font.AllUppercase
-        clip: true
         title: qsTr("Path Type")
 
-        label: Label {
-            x: groupBoxnurbs.leftPadding
-            y: 20
-            width: groupBoxnurbs.availableWidth
-            text: groupBoxnurbs.title
-            horizontalAlignment: Text.AlignHCenter
-            elide: Text.ElideRight
-            background: Rectangle {
-                y: 0
-                width: 0
-                height: 0
-                color: "transparent"
-                border.color: "transparent"
-            }
-        }
-        background: Rectangle {
-            y: 0
-            width: 0
-            height: 0
-            color: "transparent"
-            border.color: "transparent"
-        }
         ComboBox {
             id: methodField
             hoverEnabled: true

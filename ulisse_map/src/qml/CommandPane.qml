@@ -74,84 +74,28 @@ Pane {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
 
-                GroupBox {
+                LabelledField {
                     id: groupBox01
-                    height: holdRadius.height + 40
-                    visible: true
+                    height: contentHeight + 40
                     Layout.fillWidth: true
-
-                    clip: false
                     title: qsTr("Speed (m/s)")
-
-                    label: Label {
-                        x: groupBox01.leftPadding
-                        y: 25
-                        width: groupBox01.availableWidth
-                        text: groupBox01.title
-                        elide: Text.ElideRight
-                        background: Rectangle {
-                            y: 0
-                            width: 0
-                            height: 0
-                            color: "transparent"
-                            border.color: "#ffffff"
-                        }
-                    }
-
-                    background: Rectangle {
-                        y: 0
-                        width: 0
-                        height: 0
-                        color: "transparent"
-                        border.color: "#ffffff"
-                    }
-
                     TextField {
                         id: speedText
-                        opacity: 1
-                        clip: false
-                        objectName: "moveToRadiusText"
+                        width: parent.width
                         placeholderText: qsTr("Insert speed")
-                        enabled: true
                     }
                 }
 
-                GroupBox {
+                LabelledField {
                     id: groupBox02
-                    height: holdRadius.height + 40
+                    height: contentHeight + 40
                     Layout.fillWidth: true
-
-                    clip: false
                     title: qsTr("Heading (deg)")
-
-                    label: Label {
-                        x: groupBox02.leftPadding
-                        y: 25
-                        width: groupBox02.availableWidth
-                        text: groupBox02.title
-                        elide: Text.ElideRight
-                        background: Rectangle {
-                            y: 0
-                            width: 0
-                            height: 0
-                            color: "transparent"
-                            border.color: "#ffffff"
-                        }
-                    }
-
-                    background: Rectangle {
-                        y: 0
-                        width: 0
-                        height: 0
-                        color: "transparent"
-                        border.color: "#ffffff"
-                    }
 
                     TextField {
                         id: headingText
-                        objectName: "moveToRadiusText"
-                        placeholderText: qsTr("Insert speed")
-                        enabled: true
+                        width: parent.width
+                        placeholderText: qsTr("Insert heading")
                     }
                 }
             }
@@ -193,52 +137,22 @@ Pane {
             Layout.fillHeight: false
             Layout.fillWidth: true
 
-            GroupBox {
+            LabelledField {
                 id: groupBox1
-                height: holdRadius.height + 40
-                anchors.right: parent.right
-                anchors.rightMargin: 0
-                anchors.left: parent.left
-                anchors.leftMargin: 0
+                height: contentHeight + 40
+                width: parent.width
                 anchors.top: parent.top
                 anchors.topMargin: -28
-                clip: true
-                title: qsTr("Acceptance radius")
-
-                label: Label {
-                    x: groupBox1.leftPadding
-                    y: 25
-                    width: groupBox1.availableWidth
-                    text: "Acceptance radius (m)"
-                    elide: Text.ElideRight
-                    background: Rectangle {
-                        y: 0
-                        width: 0
-                        height: 0
-                        color: "transparent"
-                        border.color: "#ffffff"
-                    }
-                }
-
-                background: Rectangle {
-                    y: 0
-                    width: 0
-                    height: 0
-                    color: "transparent"
-                    border.color: "#ffffff"
-                }
+                title: qsTr("Acceptance radius (m)")
 
                 TextField {
                     id: holdRadius
                     objectName: "holdRadiusText"
-                    anchors.right: parent.right
-                    anchors.rightMargin: 0
-                    anchors.left: parent.left
-                    anchors.leftMargin: 0
+                    width: parent.width
                     placeholderText: qsTr("Insert acceptance radius")
-                    enabled: true
                 }
             }
+
             Button {
                 id: holdButton
                 y: 32
@@ -273,50 +187,20 @@ Pane {
             Layout.fillHeight: false
             Layout.fillWidth: true
 
-            GroupBox {
+            LabelledField {
                 id: groupBox2
-                height: holdRadius.height + 40
-                anchors.right: parent.right
-                anchors.rightMargin: 0
-                anchors.left: parent.left
-                anchors.leftMargin: 0
+                height: contentHeight + 40
+                width: parent.width
                 anchors.top: parent.top
                 anchors.topMargin: -28
                 clip: true
-                title: qsTr("Acceptance radius")
-
-                label: Label {
-                    x: groupBox2.leftPadding
-                    y: 25
-                    width: groupBox2.availableWidth
-                    text: "Acceptance radius (m)"
-                    elide: Text.ElideRight
-                    background: Rectangle {
-                        y: 0
-                        width: 0
-                        height: 0
-                        color: "transparent"
-                        border.color: "#ffffff"
-                    }
-                }
-
-                background: Rectangle {
-                    y: 0
-                    width: 0
-                    height: 0
-                    color: "transparent"
-                    border.color: "#ffffff"
-                }
+                title: qsTr("Acceptance radius (m)")
 
                 TextField {
                     id: moveToRadius
                     objectName: "moveToRadiusText"
-                    anchors.right: parent.right
-                    anchors.rightMargin: 0
-                    anchors.left: parent.left
-                    anchors.leftMargin: 0
+                    width: parent.width
                     placeholderText: qsTr("Insert acceptance radius")
-                    enabled: true
                 }
             }
             Button {

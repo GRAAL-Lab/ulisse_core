@@ -26,36 +26,9 @@ RowLayout {
         nameTrack_ = values.name
     }
 
-    GroupBox {
+    LabelledField {
         id: groupBox
-        y: -10
-        width: 200
-        height: textnametrack.height + 40
-        clip: true
         title: qsTr("Name")
-
-        label: Label {
-            x: groupBox.leftPadding
-            y: 20
-            width: groupBox.availableWidth
-            text: groupBox.title
-            elide: Text.ElideRight
-            background: Rectangle {
-                y: 0
-                width: 0
-                height: 0
-                color: "transparent"
-                border.color: "#ffffff"
-            }
-        }
-
-        background: Rectangle {
-            y: 0
-            width: 0
-            height: 0
-            color: "transparent"
-            border.color: "transparent"
-        }
 
         TextField {
             id: textnametrack

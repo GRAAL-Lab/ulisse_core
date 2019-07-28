@@ -1,0 +1,42 @@
+import QtQuick 2.9
+import QtQuick.Layouts 1.3
+import QtQuick.Controls 2.2
+import QtLocation 5.6
+import QtPositioning 5.6
+import QtQuick.Controls.Material 2.1
+import QtGraphicalEffects 1.0
+import QtQuick.Dialogs 1.2
+import "."
+
+GroupBox {
+    id: root
+    y: -10
+    width: 200
+    height: root.contentHeight
+    //font.capitalization: Font.AllUppercase
+    clip: true
+
+    label: Label {
+        x: root.leftPadding
+        y: 25
+        width: root.availableWidth
+        text: root.title
+        horizontalAlignment: Text.AlignHCenter
+        elide: Text.ElideRight
+
+        background: Rectangle {
+            y: 0
+            width: 0
+            height: 0
+            color: "transparent"
+            border.color: "transparent"
+        }
+    }
+    background: Rectangle {
+        y: 0
+        width: 0
+        height: 0
+        color: "transparent"
+        border.color: "transparent"
+    }
+}
