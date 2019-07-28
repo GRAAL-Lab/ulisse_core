@@ -28,7 +28,7 @@ function coord_inside_polygon(coord, coords) {
             d -= 360
         sum -= d
     }
-    return sum > 180
+    return Math.abs(sum) > 180
 }
 
 function point_map2canvas(coord, map, canvas) {
