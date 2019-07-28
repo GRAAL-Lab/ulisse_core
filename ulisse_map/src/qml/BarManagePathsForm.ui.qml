@@ -54,12 +54,12 @@ RowLayout {
         }
     }
 
-    BarPolygonParams {
+    BarParamsPolygon {
         id: panelParamsPolygon
         visible: false
     }
 
-    BarPolylineParams {
+    BarParamsPolyline {
         id: panelParamsPolyline
         visible: false
     }

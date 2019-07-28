@@ -9,7 +9,6 @@ import "."
 Row {
     id: containerRowLeft
 
-    property var mapSource
     property alias columnTrack: columnTrack
     property real fontSize: 14
     property var defheigth: 41

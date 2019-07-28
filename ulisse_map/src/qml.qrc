@@ -30,28 +30,26 @@
         <file>images/compass_icon.svg</file>
         <file>images/restart-256.png</file>
         <file>images/restart-256_grey.png</file>
-        <file>qml/WaypointControlsForm.ui.qml</file>
         <file>qml/MapComponent.qml</file>
-        <file>qml/WaypointControls.qml</file>
         <file>qml/MapRulerForm.ui.qml</file>
         <file>qml/MapSidebar.qml</file>
         <file>qml/LabelledTextForm.ui.qml</file>
         <file>qml/MapViewForm.ui.qml</file>
         <file>qml/MapComponentForm.ui.qml</file>
-        <file>qml/PathRectPoly.qml</file>
-        <file>qml/PathRectPolyForm.ui.qml</file>
+        <file>qml/BarManagePaths.qml</file>
+        <file>qml/BarManagePathsForm.ui.qml</file>
         <file>qml/MapPolygon.qml</file>
         <file>qml/MapPath.qml</file>
         <file>qml/MapCanvas.qml</file>
         <file>qml/MapMarker.qml</file>
         <file>qml/MapDashedLine.qml</file>
-        <file>qml/ElementTrack.qml</file>
-        <file>qml/ElementTrackForm.ui.qml</file>
+        <file>qml/PathIcon.qml</file>
+        <file>qml/PathIconForm.ui.qml</file>
         <file>qml/CommandPane.qml</file>
         <file>qml/MapHandle.qml</file>
-        <file>qml/MapSlidersLeft.qml</file>
-        <file>qml/BarPolygonParams.qml</file>
-        <file>qml/BarPolylineParams.qml</file>
+        <file>qml/SidebarManage.qml</file>
+        <file>qml/BarParamsPolygon.qml</file>
+        <file>qml/BarParamsPolyline.qml</file>
         <file>images/plus.png</file>
         <file>qml/MapMarkerLetter.qml</file>
         <file>images/a.png</file>

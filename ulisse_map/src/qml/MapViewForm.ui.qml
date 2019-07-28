@@ -26,9 +26,7 @@ RowLayout {
     property alias map: map
     property alias mapsidebar: mapsidebar
     property alias pathState: pathState
-    property alias generalState: generalState
-    property alias rectState: rectState
-    property alias slidersLeft: slidersLeft
+    property alias slidersLeft: sidebar_mange
 
     spacing: 0
     width: window.width
@@ -61,13 +59,6 @@ RowLayout {
 
     QtObject {
         id: pathState
-        property int empty: 0
-        property int creating: 1
-        property int active: 2
-        property int stopped: 3
-    }
-    QtObject {
-        id: rectState
         property int empty: 0
         property int creating: 1
         property int active: 2
@@ -114,9 +105,8 @@ RowLayout {
             zoomLevel: 17.5 //(maximumZoomLevel - minimumZoomLevel)/2
         }
 
-        MapSlidersLeft {
-            id: slidersLeft
-            mapSource: map
+        SidebarManage {
+            id: sidebar_mange
             edge: Qt.LeftEdge
         }
 
@@ -130,7 +120,7 @@ RowLayout {
             RowLayout {
                 anchors.fill: parent
 
-                PathRectPoly {
+                BarManagePaths {
                     id: pathRectPoly
                     width: parent.width
                     height: parent.height

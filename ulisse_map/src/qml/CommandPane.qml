@@ -18,7 +18,7 @@ Pane {
     Layout.fillHeight: true
 
     Component.onCompleted: {
-        trackComponent = Qt.createComponent("ElementTrack.qml")
+        trackComponent = Qt.createComponent("PathIcon.qml")
     }
 
     ColumnLayout {
@@ -302,7 +302,7 @@ Pane {
                     map.click_handler = map.click_goto_handler
                     map.pos_changed_handler = function () {}
                     text = "Redefine safety area"
-                    slidersLeft.check_safety_all()
+                    sidebar_mange.check_safety_all()
                     cmdWrapper.sendBoundaries(JSON.stringify(
                                                   map.polysec_cur.serialize()))
                 }
@@ -350,7 +350,7 @@ Pane {
     }
 
     function savePaths(filePath) {
-        if (slidersLeft.columnTrack.children.length === 0) {
+        if (sidebar_mange.columnTrack.children.length === 0) {
             toast.show("There is nothing to save!")
             return
         }
@@ -361,9 +361,9 @@ Pane {
             : []
         }
 
-        for (var i = 0; i < slidersLeft.columnTrack.children.length; i++) {
+        for (var i = 0; i < sidebar_mange.columnTrack.children.length; i++) {
             all_paths.paths.push(
-                        slidersLeft.columnTrack.children[i]._comp.serialize())
+                        sidebar_mange.columnTrack.children[i]._comp.serialize())
         }
 
         console.log("JSON to save " + JSON.stringify(all_paths))
@@ -385,11 +385,11 @@ Pane {
                 var cur_managed = map.createPoly()
                 cur_managed.deserialize(data.paths[i])
 
-                var v = trackComponent.createObject(slidersLeft.columnTrack)
+                var v = trackComponent.createObject(sidebar_mange.columnTrack)
                 v._comp = cur_managed
-                v.ntrack = slidersLeft.columnTrack.children.length
+                v.ntrack = sidebar_mange.columnTrack.children.length
                 v.selected.connect(function (path) {
-                    slidersLeft.update_selection(path)
+                    sidebar_mange.update_selection(path)
                     pathRectPoly.manage(path)
                 })
 
@@ -399,11 +399,11 @@ Pane {
                 var cur_managed = map.createPath()
                 cur_managed.deserialize(data.paths[i])
 
-                var v = trackComponent.createObject(slidersLeft.columnTrack)
+                var v = trackComponent.createObject(sidebar_mange.columnTrack)
                 v._comp = cur_managed
-                v.ntrack = slidersLeft.columnTrack.children.length
+                v.ntrack = sidebar_mange.columnTrack.children.length
                 v.selected.connect(function (path) {
-                    slidersLeft.update_selection(path)
+                    sidebar_mange.update_selection(path)
                     pathRectPoly.manage(path)
                 })
 

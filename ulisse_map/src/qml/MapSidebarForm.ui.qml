@@ -99,29 +99,6 @@ Rectangle {
                     }
                 }
 
-                /*ColumnLayout {
-                    id: goaldatalayout
-                    width: parent.width
-                    Layout.preferredHeight: goalTextLabel.height + goalDistLabel.height
-                    spacing: 2
-
-                    Label {
-                        Layout.alignment: Qt.AlignHCenter
-                        font.pointSize: 11
-                        font.weight: Font.DemiBold
-                        color: 'grey'
-                        text: "Goal"
-                    }
-
-                    LabelledText {
-                        id: goalTextLabel
-                        labelColor: Material.color(mainColor, Material.Shade700)
-                        label: "Goal Coordinates"
-                        text: "%1, %2".arg(fbkUpdater.goal_pos.latitude).arg(fbkUpdater.goal_pos.longitude)
-                    }
-
-
-                }*/
             }
         }
 

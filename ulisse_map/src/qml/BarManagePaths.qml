@@ -6,20 +6,21 @@ import QtPositioning 5.6
 import QtQuick.Controls.Material 2.1
 import QtGraphicalEffects 1.0
 import QtQuick.Dialogs 1.2
+import "."
 
-PathRectPolyForm {
+BarManagePathsForm {
     id: root
 
     property var trackComponent
 
     Component.onCompleted: function () {
         hide_all()
-        trackComponent = Qt.createComponent("ElementTrack.qml")
+        trackComponent = Qt.createComponent("PathIcon.qml")
     }
 
     cancelPathChoice.onClicked: function () {
-        slidersLeft.deselect_all()
-        slidersLeft.enableBtns(true)
+        sidebar_mange.deselect_all()
+        sidebar_mange.enableBtns(true)
         hide_all()
     }
 
@@ -78,7 +79,7 @@ PathRectPolyForm {
     function edit() {
         if (cur_managed === null)
             return
-        slidersLeft.enableBtns(false)
+        sidebar_mange.enableBtns(false)
         var cur_val = cur_managed.get_params()
         params_panel.fill_cur_values(cur_val)
         show_edit()
@@ -91,15 +92,15 @@ PathRectPolyForm {
     function end() {
         cur_managed.end.disconnect(end)
         confirm()
-        var v = trackComponent.createObject(slidersLeft.columnTrack)
+        var v = trackComponent.createObject(sidebar_mange.columnTrack)
         v._comp = cur_managed
         v.ntrack = ++n
         v.selected.connect(function (path) {
-            slidersLeft.update_selection(path)
+            sidebar_mange.update_selection(path)
             manage(path)
         })
         cur_managed.check_safe(map.polysec_cur)
-        slidersLeft.update_selection(cur_managed)
+        sidebar_mange.update_selection(cur_managed)
         manage(cur_managed)
     }
 
@@ -127,8 +128,8 @@ PathRectPolyForm {
     /*------------------ PATH MANAGEMENT ------------------------*/
     function manage(path) {
         cur_managed = path
-        for (var i = 0; i < slidersLeft.columnTrack.children.length; i++)
-            slidersLeft.columnTrack.children[i]._comp.disable_ab_markers()
+        for (var i = 0; i < sidebar_mange.columnTrack.children.length; i++)
+            sidebar_mange.columnTrack.children[i]._comp.disable_ab_markers()
         cur_managed.enable_ab_markers()
         show_manage()
     }
@@ -137,7 +138,7 @@ PathRectPolyForm {
         if (cur_managed === null)
             return
         edit()
-        slidersLeft.enableBtns(false)
+        sidebar_mange.enableBtns(false)
     }
 
     buttonPlay.onClicked: function () {
@@ -172,12 +173,12 @@ PathRectPolyForm {
 
     function show_manage() {
         show_panel(panelManage)
-        slidersLeft.enableBtns(true)
+        sidebar_mange.enableBtns(true)
     }
 
     function hide_all() {
-        for (var i = 0; i < slidersLeft.columnTrack.children.length; i++)
-            slidersLeft.columnTrack.children[i]._comp.disable_ab_markers()
+        for (var i = 0; i < sidebar_mange.columnTrack.children.length; i++)
+            sidebar_mange.columnTrack.children[i]._comp.disable_ab_markers()
         for (var i = 0; i < panels.length; i++)
             panels[i].visible = false
         manageToolbar.visible = false

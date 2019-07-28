@@ -22,7 +22,6 @@ Map {
     property alias goalFlag: goalFlag
     property alias ruler: ruler
     property alias greenFlag: greenFlag
-    property alias overlay_canvas: overlay_canvas
     property alias editCircle: editCircle
     property alias sliderz: sliders.z
 
@@ -189,11 +188,5 @@ Map {
         objectName: "mapMouseArea"
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton | Qt.RightButton
-    }
-
-    Canvas {
-        id: overlay_canvas
-        antialiasing: true
-        anchors.fill: parent
     }
 }
