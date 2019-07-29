@@ -6,6 +6,15 @@ function init_lib(qt_positioning) {
     QtPositioning = qt_positioning
 }
 
+function coordinate_deep_copy(c){
+    return QtPositioning.coordinate(c.latitude, c.longitude)
+}
+
+function set_bulk_opacity(bulk, val){
+    for (var i in bulk)
+        bulk[i].opacity = val
+}
+
 function coords_centroid(coords) {
     var lat = 0
     var lon = 0
@@ -311,13 +320,13 @@ function flip(x) {
 function add_and_wrap(x, mod, quota) {
     if (quota == null)
         quota = 1
-    return (x + quota < mod) ? x + quota : quota - 1
+    return (x + quota < mod) ? x + quota : x + quota - mod
 }
 
 function sub_and_wrap(x, mod, quota) {
     if (quota == null)
         quota = 1
-    return (x - quota >= 0) ? x - quota : mod - quota
+    return (x - quota >= 0) ? x - quota : x + mod - quota
 }
 
 function rotate(p, a) {
@@ -341,6 +350,20 @@ function three_point_direction(p1, p2, p3) {
     a2 = a2 - 360 * Math.floor(a2 / 360)
     return ((a1 < a2 && (a2 - a1) < 180)
             || (a1 > a2 && (a1 - a2) > 180)) ? 1 /*cc*/ : 2 /*c*/
+}
+
+function coherent_points_direction(pts, dir){
+    if (dir !== null && dir !== undefined){
+        for (var i = 0; i+2<=pts.length-1; i++)
+            if ( dir !== three_point_direction(pts[i], pts[i+1], pts[i+2]))
+                return false
+    } else {
+        dir = three_point_direction(pts[0], pts[1], pts[2])
+        for (var j = 1; j+2<=pts.length-1; j++)
+            if ( dir !== three_point_direction(pts[j], pts[j+1], pts[j+2]))
+                return false
+    }
+    return true
 }
 
 function lat_to_m_coeff(lat) {

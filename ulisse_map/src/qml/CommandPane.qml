@@ -366,7 +366,7 @@ Pane {
         }
 
         cmdWrapper.savePathToFile(filePath, JSON.stringify(all_paths))
-        //TODO show a toast
+        toast.show("Mission saved", 2000)
     }
 
     function loadPaths(filePath) {
@@ -412,5 +412,6 @@ Pane {
                 break
             }
         }
+        toast.show("Mission loaded", 2000)
     }
 }
