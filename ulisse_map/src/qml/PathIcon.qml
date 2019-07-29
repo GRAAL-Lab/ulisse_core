@@ -13,24 +13,22 @@ import "."
 import "../scripts/helper.js" as Helper
 
 PathIconForm {
-
-    property bool multichoice: false
-
     name.onClicked: function () {
-        selected(_comp)
+        selected(managed_path)
     }
 
     function toggle() {
         toggled = !toggled
         name.Material.background = toggled ? orange : green
-        _comp.highlighted(toggled)
+        managed_path.highlighted(toggled)
     }
 
     function highlight(yes) {
         toggled = yes
         name.Material.background = yes ? orange : green
-        _comp.highlighted(yes)
+        managed_path.highlighted(yes)
     }
+
     Material.background: green
 
     //tracklistlayout.y: tracklistlayout.height*(tracklistlayout.ntrack)

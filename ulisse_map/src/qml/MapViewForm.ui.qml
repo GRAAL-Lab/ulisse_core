@@ -26,7 +26,7 @@ RowLayout {
     property alias map: map
     property alias mapsidebar: mapsidebar
     property alias pathState: pathState
-    property alias slidersLeft: sidebar_mange
+    property alias slidersLeft: sidebar_manage
 
     spacing: 0
     width: window.width
@@ -106,13 +106,13 @@ RowLayout {
         }
 
         SidebarManage {
-            id: sidebar_mange
+            id: sidebar_manage
             edge: Qt.LeftEdge
         }
 
         Rectangle {
             id: manageToolbar
-            height: pathRectPoly.height
+            height: bar_manage.height
             color: Material.background
             anchors.bottom: bottomToolbar.top
             anchors.left: parent.left
@@ -121,7 +121,7 @@ RowLayout {
                 anchors.fill: parent
 
                 BarManagePaths {
-                    id: pathRectPoly
+                    id: bar_manage
                     width: parent.width
                     height: parent.height
                     Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom

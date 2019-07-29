@@ -302,7 +302,7 @@ Pane {
                     map.click_handler = map.click_goto_handler
                     map.pos_changed_handler = function () {}
                     text = "Redefine safety area"
-                    sidebar_mange.check_safety_all()
+                    sidebar_manage.check_safety_all()
                     cmdWrapper.sendBoundaries(JSON.stringify(
                                                   map.polysec_cur.serialize()))
                 }
@@ -327,7 +327,6 @@ Pane {
         onAccepted: {
             var path = loadPathDialog.fileUrl.toString()
             path = path.replace(/^(file:\/{2})/, "")
-            console.log(path)
             loadPaths(path)
         }
     }
@@ -350,7 +349,7 @@ Pane {
     }
 
     function savePaths(filePath) {
-        if (sidebar_mange.columnTrack.children.length === 0) {
+        if (sidebar_manage.columnTrack.children.length === 0) {
             toast.show("There is nothing to save!")
             return
         }
@@ -361,13 +360,10 @@ Pane {
             : []
         }
 
-        for (var i = 0; i < sidebar_mange.columnTrack.children.length; i++) {
+        for (var i = 0; i < sidebar_manage.columnTrack.children.length; i++) {
             all_paths.paths.push(
-                        sidebar_mange.columnTrack.children[i]._comp.serialize())
+                        sidebar_manage.columnTrack.children[i].managed_path.serialize())
         }
-
-        console.log("JSON to save " + JSON.stringify(all_paths))
-        console.log("PATH to save " + filePath)
 
         cmdWrapper.savePathToFile(filePath, JSON.stringify(all_paths))
         //TODO show a toast
@@ -385,12 +381,12 @@ Pane {
                 var cur_managed = map.createPoly()
                 cur_managed.deserialize(data.paths[i])
 
-                var v = trackComponent.createObject(sidebar_mange.columnTrack)
-                v._comp = cur_managed
-                v.ntrack = sidebar_mange.columnTrack.children.length
+                var v = trackComponent.createObject(sidebar_manage.columnTrack)
+                v.managed_path = cur_managed
+                v.ntrack = sidebar_manage.columnTrack.children.length
                 v.selected.connect(function (path) {
-                    sidebar_mange.update_selection(path)
-                    pathRectPoly.manage(path)
+                    sidebar_manage.update_selection(path)
+                    bar_manage.manage(path)
                 })
 
                 cur_managed.draw_deferred()
@@ -399,12 +395,12 @@ Pane {
                 var cur_managed = map.createPath()
                 cur_managed.deserialize(data.paths[i])
 
-                var v = trackComponent.createObject(sidebar_mange.columnTrack)
-                v._comp = cur_managed
-                v.ntrack = sidebar_mange.columnTrack.children.length
+                var v = trackComponent.createObject(sidebar_manage.columnTrack)
+                v.managed_path = cur_managed
+                v.ntrack = sidebar_manage.columnTrack.children.length
                 v.selected.connect(function (path) {
-                    sidebar_mange.update_selection(path)
-                    pathRectPoly.manage(path)
+                    sidebar_manage.update_selection(path)
+                    bar_manage.manage(path)
                 })
 
                 cur_managed.draw_deferred()

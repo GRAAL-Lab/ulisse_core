@@ -129,7 +129,7 @@ Row {
                         }
 
                         onClicked: function () {
-                            pathRectPoly.show_shape_choice()
+                            bar_manage.show_shape_choice()
                             enableBtns(false)
                         }
 
@@ -162,11 +162,11 @@ Row {
 
                         onClicked: function () {
                             multichoice = true
+                            bar_manage.inhibit = true
+                            bar_manage.hide_all()
+                            sidebar_manage.deselect_all()
                             main_btns.visible = false
                             confirm_btns.visible = true
-                            pathRectPoly.enableBtns(false)
-                            confirm.clicked.disconnect(delete_items)
-                            confirm.clicked.connect(delete_items)
                         }
 
                         background: Rectangle {
@@ -192,14 +192,17 @@ Row {
                         id: abort
                         text: sliderTogglerLeft.checked ? "No" : ""
                         width: parent.width
+                        height: defheigth
                         highlighted: true
 
                         onClicked: function () {
                             restoreBtns()
                             deselect_all()
                             enableBtns(y)
-                            pathRectPoly.hide_all()
-                            pathRectPoly.enableBtns(true)
+                            bar_manage.inhibit = false
+                            bar_manage.hide_all()
+                            bar_manage.show_manage()
+
                         }
 
                         onHoveredChanged: function () {
@@ -221,12 +224,13 @@ Row {
                         id: confirm
                         text: sliderTogglerLeft.checked ? "Yes" : ""
                         enabled: true
+                        height: defheigth
                         highlighted: true
                         width: parent.width
 
-                        onClicked: function () {
-                            pathRectPoly.enableBtns(true)
-                            enableBtns(y)
+                        onClicked: function(){
+                            delete_items()
+                            bar_manage.inhibit = false
                         }
 
                         onHoveredChanged: function () {
@@ -269,7 +273,7 @@ Row {
 
         function check_safety_all() {
             for (var i = 0; i < columnTrack.children.length; i++) {
-                columnTrack.children[i]._comp.check_safe(map.polysec_cur)
+                columnTrack.children[i].managed_path.check_safe(map.polysec_cur)
             }
         }
 
@@ -283,12 +287,12 @@ Row {
             if (!multichoice) {
                 for (var i = 0; i < columnTrack.children.length; i++) {
                     var c = columnTrack.children[i]
-                    c.highlight(poly === c._comp)
+                    c.highlight(poly === c.managed_path)
                 }
             } else {
                 for (i = 0; i < columnTrack.children.length; i++) {
                     c = columnTrack.children[i]
-                    if (poly === c._comp)
+                    if (poly === c.managed_path)
                         c.toggle()
                 }
             }
@@ -297,24 +301,22 @@ Row {
         function delete_all() {
             for (var i = columnTrack.children.length - 1; i >= 0; i--) {
                 var c = columnTrack.children[i]
-                c._comp.deregister_map_items()
-                map.removeMapItem(c._comp)
+                c.managed_path.deregister_map_items()
+                map.removeMapItem(c.managed_path)
                 c.destroy()
-                pathRectPoly.n--
+                bar_manage.n--
             }
         }
 
-        function save_items() {}
-
         function delete_items() {
-            pathRectPoly.hide_all()
+            bar_manage.hide_all()
             for (var i = columnTrack.children.length - 1; i >= 0; i--) {
                 var c = columnTrack.children[i]
                 if (c.toggled) {
-                    c._comp.deregister_map_items()
-                    map.removeMapItem(c._comp)
+                    c.managed_path.deregister_map_items()
+                    map.removeMapItem(c.managed_path)
                     c.destroy()
-                    pathRectPoly.n--
+                    bar_manage.n--
                 }
             }
             restoreBtns()

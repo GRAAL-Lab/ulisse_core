@@ -21,11 +21,7 @@ Dialog {
         }
 
         if (mapCacheDirectory.displayText != settings.esriMapCacheDir) {
-            console.log(("Previous chache dir: %1").arg(
-                            settings.esriMapCacheDir))
             settings.esriMapCacheDir = mapCacheDirectory.displayText
-            console.log(("Changed cache dir to: %1").arg(
-                            settings.esriMapCacheDir))
             toast.show("Changes will take effect on restart...", 2000)
         }
 

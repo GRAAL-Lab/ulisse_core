@@ -44,7 +44,6 @@ MapPolyline {
         b_marker.coordinate = QtPositioning.coordinate(
                     a_marker.coordinate.latitude, a_marker.coordinate.longitude)
         a_marker.coordinate = t
-        console.log(direction)
         generate_nurbs()
     }
 
@@ -898,7 +897,6 @@ MapPolyline {
             curves: curves,
             direction: direction
         }
-        console.log(JSON.stringify(result))
         return result
     }
 
@@ -938,6 +936,6 @@ MapPolyline {
     }
 
     function highlighted(yes) {
-        line.color = yes ? orange : lightgreen
+        //line.color = yes ? orange : lightgreen
     }
 }

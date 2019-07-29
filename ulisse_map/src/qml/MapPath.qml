@@ -523,7 +523,7 @@ MapPolyline {
                 mapMouseArea.hoverEnabled = true
                 addCoordinate(wp)
                 addCoordinate(wp)
-                line.color = orang
+                line.color = orange
                 return
             } else if (pathLength() > 1) {
                 var lastwp = coordinateAt(pathLength() - 2)
@@ -576,7 +576,6 @@ MapPolyline {
             curves: [nurb_l],
             direction: dir
         }
-        //console.log(JSON.stringify(result))
         return result
     }
 
@@ -619,6 +618,6 @@ MapPolyline {
     }
 
     function highlighted(yes) {
-        line.color = yes ? orange : green
+        //line.color = yes ? orange : green
     }
 }

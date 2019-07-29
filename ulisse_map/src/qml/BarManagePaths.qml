@@ -11,6 +11,7 @@ import "."
 BarManagePathsForm {
     id: root
 
+    property bool inhibit: false
     property var trackComponent
 
     Component.onCompleted: function () {
@@ -19,8 +20,8 @@ BarManagePathsForm {
     }
 
     cancelPathChoice.onClicked: function () {
-        sidebar_mange.deselect_all()
-        sidebar_mange.enableBtns(true)
+        sidebar_manage.deselect_all()
+        sidebar_manage.enableBtns(true)
         hide_all()
     }
 
@@ -79,7 +80,7 @@ BarManagePathsForm {
     function edit() {
         if (cur_managed === null)
             return
-        sidebar_mange.enableBtns(false)
+        sidebar_manage.enableBtns(false)
         var cur_val = cur_managed.get_params()
         params_panel.fill_cur_values(cur_val)
         show_edit()
@@ -92,15 +93,15 @@ BarManagePathsForm {
     function end() {
         cur_managed.end.disconnect(end)
         confirm()
-        var v = trackComponent.createObject(sidebar_mange.columnTrack)
-        v._comp = cur_managed
+        var v = trackComponent.createObject(sidebar_manage.columnTrack)
+        v.managed_path = cur_managed
         v.ntrack = ++n
         v.selected.connect(function (path) {
-            sidebar_mange.update_selection(path)
+            sidebar_manage.update_selection(path)
             manage(path)
         })
         cur_managed.check_safe(map.polysec_cur)
-        sidebar_mange.update_selection(cur_managed)
+        sidebar_manage.update_selection(cur_managed)
         manage(cur_managed)
     }
 
@@ -111,6 +112,7 @@ BarManagePathsForm {
         cur_managed.enable_ab_markers()
         cur_managed.confirm_edit(params_panel.nameTrack, p)
         cur_managed.check_safe(map.polysec_cur)
+        sidebar_manage.enableBtns(true)
         show_manage()
     }
 
@@ -118,8 +120,9 @@ BarManagePathsForm {
         map.click_handler = map.click_goto_handler
         map.pos_changed_handler = function () {}
         cur_managed.enable_ab_markers()
-        cur_managed.check_safe(map.polysec_cur)
         cur_managed.discard_edit()
+        cur_managed.check_safe(map.polysec_cur)
+        sidebar_manage.enableBtns(true)
         show_manage()
     }
 
@@ -127,10 +130,11 @@ BarManagePathsForm {
 
     /*------------------ PATH MANAGEMENT ------------------------*/
     function manage(path) {
+        for (var e in sidebar_manage.columnTrack.children)
+            sidebar_manage.columnTrack.children[e].managed_path.disable_ab_markers()
+        path.enable_ab_markers()
+        if (inhibit) return
         cur_managed = path
-        for (var i = 0; i < sidebar_mange.columnTrack.children.length; i++)
-            sidebar_mange.columnTrack.children[i]._comp.disable_ab_markers()
-        cur_managed.enable_ab_markers()
         show_manage()
     }
 
@@ -138,7 +142,7 @@ BarManagePathsForm {
         if (cur_managed === null)
             return
         edit()
-        sidebar_mange.enableBtns(false)
+        sidebar_manage.enableBtns(false)
     }
 
     buttonPlay.onClicked: function () {
@@ -157,7 +161,7 @@ BarManagePathsForm {
 
     function show_panel(panel) {
         manageToolbar.visible = true
-        for (var i = 0; i < panels.length; i++)
+        for (var i in panels)
             panels[i].visible = (panel === panels[i])
     }
 
@@ -173,13 +177,12 @@ BarManagePathsForm {
 
     function show_manage() {
         show_panel(panelManage)
-        sidebar_mange.enableBtns(true)
     }
 
     function hide_all() {
-        for (var i = 0; i < sidebar_mange.columnTrack.children.length; i++)
-            sidebar_mange.columnTrack.children[i]._comp.disable_ab_markers()
-        for (var i = 0; i < panels.length; i++)
+        for (var i in sidebar_manage.columnTrack.children)
+            sidebar_manage.columnTrack.children[i].managed_path.disable_ab_markers()
+        for (var i in panels)
             panels[i].visible = false
         manageToolbar.visible = false
     }
