@@ -137,7 +137,7 @@ MapPolyline {
         _handle.h_center = centroid
         _handle.h_handle = map.toCoordinate(Qt.point(c.x - 40, c.y), false)
         _handle.cumulativeAngle = 0
-        _handle.update_canvas(0)
+        _handle.add_angle(0)
     }
 
     function reposition_vertex_markers() {
@@ -172,7 +172,7 @@ MapPolyline {
 
     function disable_handle() {
         _handle.cumulativeAngle = 0
-        _handle.update_canvas(0)
+        _handle.add_angle(0)
         _handle.opacity = 0
     }
 
@@ -365,7 +365,7 @@ MapPolyline {
             var cn = centroid.atDistanceAndAzimuth(d * scale, a + angle)
             replaceCoordinate(i, cn)
         }
-        _handle.update_canvas(angle)
+        _handle.add_angle(angle)
     }
 
     function update_centroid() {

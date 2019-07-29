@@ -11,10 +11,10 @@ Row {
 
     property alias columnTrack: columnTrack
     property real fontSize: 14
-    property var defheigth: 41
+    property int defheigth: 41
     property color labelBackground: "transparent"
     property int edge: Qt.LeftEdge
-    property var togglerColor: orange
+    property color togglerColor: orange
     property alias sliderW: sliderTogglerLeft.width
     property bool multichoice: false
 

@@ -8,7 +8,7 @@ MapQuickItem {
     id: root
     property var h_center: QtPositioning.coordinate(0, 0)
     property var h_handle: QtPositioning.coordinate(0, 0)
-    property var h_radius: 6
+    property real h_radius: 6
 
     function handle_select(yes) {
         _handle.color = yes ? orange : green
@@ -86,10 +86,10 @@ MapQuickItem {
     onH_handleChanged: function () {
         _line.replaceCoordinate(1, h_handle)
     }
-    property var cumulativeAngle: 0
 
-    function update_canvas(degrees) {
-        cumulativeAngle += degrees
+    property real cumulativeAngle: 0
+
+    onCumulativeAngleChanged: function(){
         var ctx = _canvas._ctx
         if (ctx === null || ctx === undefined)
             return
@@ -105,5 +105,17 @@ MapQuickItem {
         ctx.lineTo(40, 40)
         ctx.stroke()
         _canvas.requestPaint()
+    }
+
+    function add_angle(degrees) {
+        cumulativeAngle += degrees
+    }
+
+    function set_angle(degrees){
+        cumulativeAngle = degrees
+    }
+
+    function reset_angle(){
+        cumulativeAngle = 0
     }
 }
