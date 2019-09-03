@@ -25,6 +25,8 @@
 
 #include <jsoncpp/json/json.h>
 
+#include <libconfig.h++>
+
 using namespace std::chrono_literals;
 using std::placeholders::_1;
 
@@ -149,37 +151,12 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     inequality_task.push_back(asv_safety_boundaries);
     task_hierarchy.push_back(asv_safety_boundaries);
     taskIDMap.insert(std::make_pair(ulisse::task::asv_safety_boundaries, asv_safety_boundaries));
-
-    // Action Manager initialization
-    std::string homedir;
-    homedir = getenv("HOME");
-    std::stringstream conf_path_priority_level;
-    conf_path_priority_level << homedir << "/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/conf/PriorityLevel.conf";
-    InitializeUnifiedHierarchyAndActions(action_manager, taskIDMap, conf_path_priority_level.str().c_str());
-
-    // Configure all tasks, each with the correspondent parameters
-    std::stringstream conf_tasks;
-    conf_tasks << homedir << "/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/conf/Tasks.conf";
-    ConfigureEqualityTaskFromFile(equality_task, conf_tasks.str().c_str());
-    ConfigureInequalityTaskFromFile(inequality_task, conf_tasks.str().c_str());
-    ConfigureCartesianTaskFromFile(cartesian_task, conf_tasks.str().c_str());
-    ConfigureActionTaskFromFile(action_task, conf_tasks.str().c_str());
-
     // Initialize Solver and iCAT
     dof = 6;
     i_cat = std::make_shared<tpik::iCAT>(tpik::iCAT(dof));
 
-    // Set Saturation values for the iCAT (read from conf file)
-    Eigen::VectorXd saturationMax(dof);
-    Eigen::VectorXd saturationMin(dof);
-    std::string saturationMaxProperty
-        = ulisse::priorityLevelParameter::priorityLevel + "." + ulisse::priorityLevelParameter::saturationMax;
-    std::string saturationMinProperty
-        = ulisse::priorityLevelParameter::priorityLevel + "." + ulisse::priorityLevelParameter::saturationMin;
-
-    GetVectorEigen(conf_path_priority_level.str().c_str(), saturationMaxProperty, saturationMax);
-    GetVectorEigen(conf_path_priority_level.str().c_str(), saturationMinProperty, saturationMin);
-    i_cat->SetSaturation(saturationMax, saturationMin);
+    // Setup Params for Tasks and iCAT
+    LoadKCLConfiguration();
 
     // Solver definition
     solver = std::make_shared<tpik::Solver>(tpik::Solver(action_manager, i_cat));
@@ -189,9 +166,6 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 
     // Command Server Setup
     SetupCommandServer();
-
-    // Setup Params for Safety and PathFollowing
-    LoadKCLConfiguration();
 
     // Create a callback function for when service requests are received.
     auto handle_set_boundaries = [this](
@@ -274,7 +248,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 
         LoadKCLConfiguration();
 
-        LoadConfiguration();
+        // LoadConfiguration();
 
         response->res = "ResetConfiguration::ok";
     };
@@ -298,21 +272,37 @@ int VehicleController::LoadConfiguration()
 
 void VehicleController::LoadKCLConfiguration(){
 
-    asv_safety_boundaries->SetBoundaries(par_client_->get_parameter("SafetyBoundary.BoundaryMinimumDistance", 3.0),
-                                         par_client_->get_parameter("SafetyBoundary.BoundaryMaximumDistance", 10.0));
-    asv_safety_boundaries->SetAlphaMinOnTurning(par_client_->get_parameter("SafetyBoundary.AlphaMin", 0.5));
-    asv_safety_boundaries->SetDesiredSpeedOnTurning(par_client_->get_parameter("SafetyBoundary.DesiredSpeed", 2.5));
+    libconfig::Config confObj;
 
-    state_navigate_.SetMaxRangeAbscissa(par_client_->get_parameter("PathFollowing.MaximumLookupAbscissa", 0.3));
-    state_navigate_.SetDelta(par_client_->get_parameter("PathFollowing.Delta", 2.0));
-    state_navigate_.SetTolleranceStartingPoint(par_client_->get_parameter("PathFollowing.TolleranceStartingPoint", 0.5));
-    state_navigate_.SetTolleranceEndingPoint(par_client_->get_parameter("PathFollowing.TolleranceEndingPoint", 0.5));
-    state_navigate_.SetTolleranceStartingAngle(par_client_->get_parameter("PathFollowing.TolleranceStartingAngle", 0.05));
-
-    /*
     // Action Manager initialization
     std::string homedir;
     homedir = getenv("HOME");
+    std::stringstream conf_path;
+    conf_path << homedir << "/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/conf/Tasks.conf";
+
+    std::string confPath = conf_path.str().c_str();
+    std::cout << "confPath: " << confPath << std::endl;
+
+    try {
+        confObj.readFile(confPath.c_str());
+    } catch (libconfig::ParseException& e) {
+        std::cerr << "Parse exception when reading:" << confPath << std::endl;
+        std::cerr << "line: " << e.getLine() << " error: " << e.getError() << std::endl;
+        return;
+    }
+
+    asv_safety_boundaries->SetBoundaries(confObj.lookup("task.ASV_safety_boundaries.BoundaryMinimumDistance"),
+                                         confObj.lookup("task.ASV_safety_boundaries.BoundaryMaximumDistance"));
+    asv_safety_boundaries->SetAlphaMinOnTurning(confObj.lookup("task.ASV_safety_boundaries.AlphaMin"));
+    asv_safety_boundaries->SetDesiredSpeedOnTurning(confObj.lookup("task.ASV_safety_boundaries.DesiredSpeed"));
+
+    state_navigate_.SetMaxRangeAbscissa(confObj.lookup("task.PathFollowing.MaximumLookupAbscissa"));
+    state_navigate_.SetDelta(confObj.lookup("task.PathFollowing.Delta"));
+    state_navigate_.SetTolleranceStartingPoint(confObj.lookup("task.PathFollowing.TolleranceStartingPoint"));
+    state_navigate_.SetTolleranceEndingPoint(confObj.lookup("task.PathFollowing.TolleranceEndingPoint"));
+    state_navigate_.SetTolleranceStartingAngle(confObj.lookup("task.PathFollowing.TolleranceStartingAngle"));
+
+    // Action Manager initialization
     std::stringstream conf_path_priority_level;
     conf_path_priority_level << homedir << "/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/conf/PriorityLevel.conf";
     InitializeUnifiedHierarchyAndActions(action_manager, taskIDMap, conf_path_priority_level.str().c_str());
@@ -325,7 +315,18 @@ void VehicleController::LoadKCLConfiguration(){
     ConfigureCartesianTaskFromFile(cartesian_task, conf_tasks.str().c_str());
     ConfigureActionTaskFromFile(action_task, conf_tasks.str().c_str());
 
-     */
+    // Set Saturation values for the iCAT (read from conf file)
+    int dof = 6;
+    Eigen::VectorXd saturationMax(dof);
+    Eigen::VectorXd saturationMin(dof);
+    std::string saturationMaxProperty
+        = ulisse::priorityLevelParameter::priorityLevel + "." + ulisse::priorityLevelParameter::saturationMax;
+    std::string saturationMinProperty
+        = ulisse::priorityLevelParameter::priorityLevel + "." + ulisse::priorityLevelParameter::saturationMin;
+
+    GetVectorEigen(conf_path_priority_level.str().c_str(), saturationMaxProperty, saturationMax);
+    GetVectorEigen(conf_path_priority_level.str().c_str(), saturationMinProperty, saturationMin);
+    i_cat->SetSaturation(saturationMax, saturationMin);
 }
 
 void VehicleController::SetUpFSM()
