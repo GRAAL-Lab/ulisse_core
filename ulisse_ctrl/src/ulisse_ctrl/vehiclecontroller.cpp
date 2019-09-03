@@ -68,7 +68,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     goalcxt_pub_ = nh_->create_publisher<ulisse_msgs::msg::GoalContext>(ulisse_msgs::topicnames::goal_context);
     statuscxt_pub_ = nh_->create_publisher<ulisse_msgs::msg::StatusContext>(ulisse_msgs::topicnames::status_context);
 
-    /// TPIK AND IKCL VARIABLES DEFINITION
+    /// TPIK Manager
     action_manager = std::make_shared<tpik::ActionManager>(tpik::ActionManager());
 
     /// ROBOT MODEL
@@ -129,6 +129,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     task_hierarchy.push_back(asv_hold_position);
     taskIDMap.insert(std::make_pair(ulisse::task::asv_hold_position, asv_hold_position));
 
+    /*
     // ASV MAKE CURVE
     asv_make_curve = std::make_shared<ikcl::MakeCurve>(
         ikcl::MakeCurve(ulisse::task::asv_make_curve, robot_model, ulisse::robotModelID::ASV));
@@ -140,6 +141,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     equality_task.push_back(asv_make_curve);
     task_hierarchy.push_back(asv_make_curve);
     taskIDMap.insert(std::make_pair(ulisse::task::asv_make_curve, asv_make_curve));
+     */
 
     // ASV SAFETY BOUNDARIES (INEQUALITY TASK)
     asv_safety_boundaries = std::make_shared<ikcl::SafetyBoundaries>(
@@ -151,6 +153,8 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     inequality_task.push_back(asv_safety_boundaries);
     task_hierarchy.push_back(asv_safety_boundaries);
     taskIDMap.insert(std::make_pair(ulisse::task::asv_safety_boundaries, asv_safety_boundaries));
+
+
     // Initialize Solver and iCAT
     dof = 6;
     i_cat = std::make_shared<tpik::iCAT>(tpik::iCAT(dof));
@@ -167,7 +171,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     // Command Server Setup
     SetupCommandServer();
 
-    // Create a callback function for when service requests are received.
+    // Create a callback function for when service set boundaries requests are received.
     auto handle_set_boundaries = [this](
                                      const std::shared_ptr<rmw_request_id_t> request_header,
                                      const std::shared_ptr<ulisse_msgs::srv::SetBoundaries::Request> request,
@@ -238,7 +242,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
             ulisse_msgs::topicnames::set_cruise_control_service, handle_set_cruise_control);
 
 
-    // Create a callback function for when service requests are received.
+    // Create a callback function for when service reset configuration requests are received.
     auto handle_reset_conf = [this](
             const std::shared_ptr<rmw_request_id_t> request_header,
             const std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Request> request,
