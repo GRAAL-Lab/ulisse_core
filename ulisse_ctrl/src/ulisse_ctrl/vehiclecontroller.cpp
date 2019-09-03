@@ -129,6 +129,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     task_hierarchy.push_back(asv_hold_position);
     taskIDMap.insert(std::make_pair(ulisse::task::asv_hold_position, asv_hold_position));
 
+    /*
     // ASV MAKE CURVE
     asv_make_curve = std::make_shared<ikcl::MakeCurve>(
         ikcl::MakeCurve(ulisse::task::asv_make_curve, robot_model, ulisse::robotModelID::ASV));
@@ -140,6 +141,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     equality_task.push_back(asv_make_curve);
     task_hierarchy.push_back(asv_make_curve);
     taskIDMap.insert(std::make_pair(ulisse::task::asv_make_curve, asv_make_curve));
+     */
 
     // ASV SAFETY BOUNDARIES (INEQUALITY TASK)
     asv_safety_boundaries = std::make_shared<ikcl::SafetyBoundaries>(
@@ -420,7 +422,6 @@ void VehicleController::SetUpFSM()
     state_navigate_.SetAngularVelocityTask(asv_control_velocity_angular);
     state_navigate_.SetAngularPositionTask(asv_angular_position);
     state_navigate_.SetASVHoldTask(asv_hold_position);
-    state_navigate_.SetASVMakeCurveTask(asv_make_curve);
     state_navigate_.SetDistanceTask(asv_control_distance);
 
     // ***** EVENTS *****

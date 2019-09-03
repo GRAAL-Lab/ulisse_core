@@ -26,9 +26,9 @@ controller_node:
 
         SlowDownOnTurns:
             enable: true
-            HeadingErrorMin: 0.2 # 10.0 degrllc
-            HeadingErrorMax: 0.3 # 25.0 degress
-            AlphaMin: 0.01
+            HeadingErrorMin: 0.2
+            HeadingErrorMax: 0.3
+            AlphaMin: 0.1
             AlphaMax: 1.0
 
         AvoidRotationCloseToTarget:
