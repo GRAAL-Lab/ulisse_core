@@ -151,6 +151,7 @@ class VehicleController {
     std::shared_ptr<ControlContext> ctrlCxt_;
 
     int LoadConfiguration();
+    void LoadKCLConfiguration();
     void SetUpFSM();
     void SetupCommandServer();
 
