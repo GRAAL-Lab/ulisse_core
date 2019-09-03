@@ -10,7 +10,7 @@
 namespace ikcl {
 
 ControlDistance::ControlDistance(std::string taskID, std::shared_ptr<rml::RobotModel> robotModel, std::string frameID, tpik::CartesianTaskType taskType)
-    : tpik::CartesianTask(taskID, robotModel->GetTotalDOFs(), taskType)
+    : tpik::CartesianTask(taskID, robotModel->GetTotalDOFs(), taskType, tpik::ProjectorType::Default)
     , robotModel_(robotModel)
     , frameID_(frameID)
     , isDistanceInitialized_(false)
@@ -18,6 +18,7 @@ ControlDistance::ControlDistance(std::string taskID, std::shared_ptr<rml::RobotM
 {
     // Vector normal to the plane the robot moves (z axle)
     normalOnBodyFrame = Eigen::Vector3d(0, 0, 1);
+    SetControlVariable(Eigen::Vector3d(0, 0, 0));
 }
 ControlDistance::~ControlDistance() {}
 
