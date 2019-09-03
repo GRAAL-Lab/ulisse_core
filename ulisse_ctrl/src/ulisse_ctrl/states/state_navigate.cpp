@@ -389,6 +389,7 @@ namespace states {
         std::cout << "STATE PATH FOLLOWING" << std::endl;
         std::cout << "Curvilinear Abscissa: " << current_curvilinear_abscissa << std::endl;
         std::cout << "Delta: " << delta_ << std::endl;
+        std::cout << "Cruise Control: " << cruise << std::endl;
 
         return fsm::ok;
     }
