@@ -556,6 +556,7 @@ void VehicleController::SetupCommandServer()
             RCLCPP_INFO(nh_->get_logger(), "Unsupported command: %s", request->command_type.c_str());
             ret = fsm::retval::fail;
         }
+
         if (ret != fsm::retval::ok) {
             response->res = "CommandAnswer::fail";
             RCLCPP_INFO(nh_->get_logger(), "SendAnswer returned %s", response->res.c_str());

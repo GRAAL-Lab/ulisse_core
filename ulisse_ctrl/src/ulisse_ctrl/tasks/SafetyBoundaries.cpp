@@ -94,7 +94,7 @@ void SafetyBoundaries::Update() throw(tpik::ExceptionWithHow)
 
         desired_pose = ulisse::point_euclidean2map(target.x, target.y, centroid, lam, lom);
 
-        std::cout.precision(10);
+        std::cout.precision(5);
         std::cout << " TARGET LAT : " << std::fixed << desired_pose.latitude << std::endl;
         std::cout << " TARGET LONG : " << std::fixed << desired_pose.longitude << std::endl;
 
@@ -132,10 +132,6 @@ void SafetyBoundaries::UpdateInternalActivationFunction()
     Ai_.setIdentity();
     Ai_ = target.gain * Ai_;
 
-    /*
-            Ai_ = rml::IncreasingBellShapedFunction(1, target.gain, 0, 1, 0);
-            Ai_ += rml::DecreasingBellShapedFunction(0, target.gain, 0, 1, 0);
-        */
 }
 
 void SafetyBoundaries::UpdateJacobian() { J_ = robotModel_->GetCartesianJacobian(frameID_).block(0, 0, 6, DoF_); }
