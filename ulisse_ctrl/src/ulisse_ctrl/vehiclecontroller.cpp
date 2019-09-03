@@ -129,7 +129,6 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     task_hierarchy.push_back(asv_hold_position);
     taskIDMap.insert(std::make_pair(ulisse::task::asv_hold_position, asv_hold_position));
 
-    /*
     // ASV MAKE CURVE
     asv_make_curve = std::make_shared<ikcl::MakeCurve>(
         ikcl::MakeCurve(ulisse::task::asv_make_curve, robot_model, ulisse::robotModelID::ASV));
@@ -141,7 +140,6 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     equality_task.push_back(asv_make_curve);
     task_hierarchy.push_back(asv_make_curve);
     taskIDMap.insert(std::make_pair(ulisse::task::asv_make_curve, asv_make_curve));
-     */
 
     // ASV SAFETY BOUNDARIES (INEQUALITY TASK)
     asv_safety_boundaries = std::make_shared<ikcl::SafetyBoundaries>(
