@@ -285,7 +285,6 @@ void VehicleController::LoadKCLConfiguration(){
     conf_path << homedir << "/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/conf/Tasks.conf";
 
     std::string confPath = conf_path.str().c_str();
-    std::cout << "confPath: " << confPath << std::endl;
 
     try {
         confObj.readFile(confPath.c_str());
