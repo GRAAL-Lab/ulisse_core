@@ -99,6 +99,11 @@ public:
         return os;
     }
 
+    void SetAlphaMinOnTurning(double alpha);
+    void SetDesiredSpeedOnTurning(double des_speed);
+    double GetAlphaMinOnTurning();
+    double GetDesiredSpeedOnTurning();
+
 protected:
     /**
 	 * @brief Method updating the internal activation function.
@@ -152,6 +157,8 @@ protected:
     bool first;
 
     double MAX_THRESHOLD, MIN_THRESHOLD;
+    double alpha_min_on_turn;
+    double desired_speed_on_turn;
 
     std::shared_ptr<ulisse::ControllerConfiguration> conf_;
     std::shared_ptr<ulisse::ControlContext> ctrlCxt_;

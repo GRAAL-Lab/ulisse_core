@@ -58,6 +58,10 @@ namespace states {
         double dist2 = 0;
         double* current_point;
         double max_range_abscissa;
+        double cruise;
+        double tollerance_start_point;
+        double tollerance_start_angle;
+        double tollerance_end_point;
         double cur_length;
         SISLCurve* newcurve;
         SISLCurve* curve2;
@@ -83,6 +87,20 @@ namespace states {
         void SetASVMakeCurveTask(std::shared_ptr<ikcl::MakeCurve> asvMakeCurveTask);
         void SetAngularVelocityTask(std::shared_ptr<ikcl::AngularVelocity> angularVelocityTask);
         void SetDistanceTask(std::shared_ptr<ikcl::ControlDistance> distanceTask);
+
+        void SetMaxRangeAbscissa(double max_range);
+        void SetDelta(double delta);
+        void SetCruiseControl(double cruise_control);
+        void SetTolleranceStartingPoint(double toll_start_point);
+        void SetTolleranceEndingPoint(double toll_end_point);
+        void SetTolleranceStartingAngle(double toll_start_angle);
+
+        double GetMaxRangeAbscissa();
+        double GetDelta();
+        double GetCruiseControl();
+        double GetTolleranceStartingPoint();
+        double GetTolleranceEndingPoint();
+        double GetTolleranceStartingAngle();
 
         bool LoadSpur(std::string json_nurbs);
 

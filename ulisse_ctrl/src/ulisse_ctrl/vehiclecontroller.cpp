@@ -33,7 +33,7 @@ namespace ulisse {
 VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double sampleTime)
     : nh_(nh)
     , sampleTime_(sampleTime)
-    , boundaries_set(false) //TODO: cambialo a false
+    , boundaries_set(false)
 {
     par_client_ = std::make_shared<rclcpp::SyncParametersClient>(nh_);
     ctrlCxt_ = std::make_shared<ControlContext>();
@@ -190,6 +190,9 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     // Command Server Setup
     SetupCommandServer();
 
+    // Setup Params for Safety and PathFollowing
+    LoadKCLConfiguration();
+
     // Create a callback function for when service requests are received.
     auto handle_set_boundaries = [this](
                                      const std::shared_ptr<rmw_request_id_t> request_header,
@@ -201,14 +204,10 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         Json::Reader reader;
         Json::Value obj, obj2;
 
-        double bound_min = 10;
-        double bound_max = 3;
-
-        asv_safety_boundaries->SetBoundaries(bound_min, bound_max);
         reader.parse(request->boundaries_json, obj);
 
         std::string polygon_ = "polygon((";
-
+        double latitude, longitude, lam, lom;
         try {
             bool first = true;
             for (Json::Value c : obj["values"]) {
@@ -219,11 +218,11 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
                 }
                 reader.parse(c.toStyledString(), obj2);
 
-                double latitude = obj2["latitude"].asDouble();
-                double longitude = obj2["longitude"].asDouble();
+                latitude = obj2["latitude"].asDouble();
+                longitude = obj2["longitude"].asDouble();
 
-                double lam = lat_to_m_coeff(statusCxt_->vehiclePos.latitude);
-                double lom = lon_to_m_coeff(statusCxt_->vehiclePos.longitude);
+                lam = lat_to_m_coeff(statusCxt_->vehiclePos.latitude);
+                lom = lon_to_m_coeff(statusCxt_->vehiclePos.longitude);
                 double* p = point_map2euclidean(latitude, longitude, statusCxt_->vehiclePos, lam, lom);
 
                 polygon_ = polygon_ + boost::lexical_cast<std::string>(p[0]) + " " + boost::lexical_cast<std::string>(p[1]);
@@ -248,6 +247,40 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 
     srv_boundaries = nh_->create_service<ulisse_msgs::srv::SetBoundaries>(
         ulisse_msgs::topicnames::set_boundaries_service, handle_set_boundaries);
+
+    // Create a callback function for when service requests are received.
+    auto handle_set_cruise_control = [this](
+            const std::shared_ptr<rmw_request_id_t> request_header,
+            const std::shared_ptr<ulisse_msgs::srv::SetCruiseControl::Request> request,
+            std::shared_ptr<ulisse_msgs::srv::SetCruiseControl::Response> response) -> void {
+        (void)request_header;
+        RCLCPP_INFO(nh_->get_logger(), "Incoming request for set cruise control");
+
+        state_navigate_.SetCruiseControl(request->cruise_control);
+        response->res = "SetCruiseControl::ok";
+    };
+
+    srv_cruise = nh_->create_service<ulisse_msgs::srv::SetCruiseControl>(
+            ulisse_msgs::topicnames::set_cruise_control_service, handle_set_cruise_control);
+
+
+    // Create a callback function for when service requests are received.
+    auto handle_reset_conf = [this](
+            const std::shared_ptr<rmw_request_id_t> request_header,
+            const std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Request> request,
+            std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Response> response) -> void {
+        (void)request_header;
+        RCLCPP_INFO(nh_->get_logger(), "Incoming request for reset conf");
+
+        LoadKCLConfiguration();
+
+        LoadConfiguration();
+
+        response->res = "ResetConfiguration::ok";
+    };
+
+    srv_reset_conf = nh_->create_service<ulisse_msgs::srv::ResetConfiguration>(
+            ulisse_msgs::topicnames::reset_configuration_service, handle_reset_conf);
 }
 
 VehicleController::~VehicleController() {}
@@ -261,6 +294,38 @@ int VehicleController::LoadConfiguration()
     std::cout << tc::grayD << *conf_ << tc::none << std::endl;
 
     return true;
+}
+
+void VehicleController::LoadKCLConfiguration(){
+
+    asv_safety_boundaries->SetBoundaries(par_client_->get_parameter("SafetyBoundary.BoundaryMinimumDistance", 3.0),
+                                         par_client_->get_parameter("SafetyBoundary.BoundaryMaximumDistance", 10.0));
+    asv_safety_boundaries->SetAlphaMinOnTurning(par_client_->get_parameter("SafetyBoundary.AlphaMin", 0.5));
+    asv_safety_boundaries->SetDesiredSpeedOnTurning(par_client_->get_parameter("SafetyBoundary.DesiredSpeed", 2.5));
+
+    state_navigate_.SetMaxRangeAbscissa(par_client_->get_parameter("PathFollowing.MaximumLookupAbscissa", 0.3));
+    state_navigate_.SetDelta(par_client_->get_parameter("PathFollowing.Delta", 2.0));
+    state_navigate_.SetTolleranceStartingPoint(par_client_->get_parameter("PathFollowing.TolleranceStartingPoint", 0.5));
+    state_navigate_.SetTolleranceEndingPoint(par_client_->get_parameter("PathFollowing.TolleranceEndingPoint", 0.5));
+    state_navigate_.SetTolleranceStartingAngle(par_client_->get_parameter("PathFollowing.TolleranceStartingAngle", 0.05));
+
+    /*
+    // Action Manager initialization
+    std::string homedir;
+    homedir = getenv("HOME");
+    std::stringstream conf_path_priority_level;
+    conf_path_priority_level << homedir << "/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/conf/PriorityLevel.conf";
+    InitializeUnifiedHierarchyAndActions(action_manager, taskIDMap, conf_path_priority_level.str().c_str());
+
+    // Configure all tasks, each with the correspondent parameters
+    std::stringstream conf_tasks;
+    conf_tasks << homedir << "/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/conf/Tasks.conf";
+    ConfigureEqualityTaskFromFile(equality_task, conf_tasks.str().c_str());
+    ConfigureInequalityTaskFromFile(inequality_task, conf_tasks.str().c_str());
+    ConfigureCartesianTaskFromFile(cartesian_task, conf_tasks.str().c_str());
+    ConfigureActionTaskFromFile(action_task, conf_tasks.str().c_str());
+
+     */
 }
 
 void VehicleController::SetUpFSM()
