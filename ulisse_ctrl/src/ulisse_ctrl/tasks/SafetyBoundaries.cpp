@@ -21,6 +21,9 @@ SafetyBoundaries::SafetyBoundaries(std::string taskID, std::shared_ptr<rml::Robo
 {
     MAX_THRESHOLD = 5.0;
     MIN_THRESHOLD = 3.0;
+
+    alpha_min_on_turn = 0.5;
+    desired_speed_on_turn = 2.5;
 }
 
 SafetyBoundaries::~SafetyBoundaries() {}
@@ -39,6 +42,22 @@ void SafetyBoundaries::SetBoundaries(double bound_min, double bound_max)
 {
     MAX_THRESHOLD = bound_max;
     MIN_THRESHOLD = bound_min;
+}
+
+void SafetyBoundaries::SetAlphaMinOnTurning(double alpha){
+    alpha_min_on_turn = alpha;
+}
+
+void SafetyBoundaries::SetDesiredSpeedOnTurning(double des_speed){
+    desired_speed_on_turn = des_speed;
+}
+
+double SafetyBoundaries::GetAlphaMinOnTurning(){
+    return alpha_min_on_turn;
+}
+
+double SafetyBoundaries::GetDesiredSpeedOnTurning(){
+    return desired_speed_on_turn;
 }
 
 void SafetyBoundaries::SetConf(const std::shared_ptr<ulisse::ControllerConfiguration>& conf)
@@ -82,8 +101,8 @@ void SafetyBoundaries::Update() throw(tpik::ExceptionWithHow)
         ctb::DistanceAndAzimuthRad(current_pose, desired_pose, goalDistance, goalHeading);
 
         double alph = conf_->slowOnTurns.alphaMin;
-        conf_->slowOnTurns.alphaMin = 0.5;
-        goalDistance = SlowDownWhenTurning(ctrlCxt_->desiredJog, 2.5, *conf_);
+        conf_->slowOnTurns.alphaMin = alpha_min_on_turn;
+        goalDistance = SlowDownWhenTurning(ctrlCxt_->desiredJog, desired_speed_on_turn, *conf_);
         conf_->slowOnTurns.alphaMin = alph;
         desired_speed = goalDistance;
         desired_jog = ulisse::MinimumAngleBetween((*pose_shared)(5), goalHeading);

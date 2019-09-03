@@ -190,6 +190,19 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     // Command Server Setup
     SetupCommandServer();
 
+
+    asv_safety_boundaries->SetBoundaries(par_client_->get_parameter("SafetyBoundary.BoundaryMinimumDistance", 3.0),
+                                         par_client_->get_parameter("SafetyBoundary.BoundaryMaximumDistance", 10.0));
+    asv_safety_boundaries->SetAlphaMinOnTurning(par_client_->get_parameter("SafetyBoundary.AlphaMin", 0.5));
+    asv_safety_boundaries->SetDesiredSpeedOnTurning(par_client_->get_parameter("SafetyBoundary.DesiredSpeed", 2.5));
+
+    state_navigate_.SetMaxRangeAbscissa(par_client_->get_parameter("PathFollowing.MaximumLookupAbscissa", 0.3));
+    state_navigate_.SetDelta(par_client_->get_parameter("PathFollowing.Delta", 2.0));
+    state_navigate_.SetTolleranceStartingPoint(par_client_->get_parameter("PathFollowing.TolleranceStartingPoint", 0.5));
+    state_navigate_.SetTolleranceEndingPoint(par_client_->get_parameter("PathFollowing.TolleranceEndingPoint", 0.5));
+    state_navigate_.SetTolleranceStartingAngle(par_client_->get_parameter("PathFollowing.TolleranceStartingAngle", 0.05));
+
+
     // Create a callback function for when service requests are received.
     auto handle_set_boundaries = [this](
                                      const std::shared_ptr<rmw_request_id_t> request_header,
@@ -248,6 +261,67 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 
     srv_boundaries = nh_->create_service<ulisse_msgs::srv::SetBoundaries>(
         ulisse_msgs::topicnames::set_boundaries_service, handle_set_boundaries);
+
+    // Create a callback function for when service requests are received.
+    auto handle_set_cruise_control = [this](
+            const std::shared_ptr<rmw_request_id_t> request_header,
+            const std::shared_ptr<ulisse_msgs::srv::SetCruiseControl::Request> request,
+            std::shared_ptr<ulisse_msgs::srv::SetCruiseControl::Response> response) -> void {
+        (void)request_header;
+        RCLCPP_INFO(nh_->get_logger(), "Incoming request for set cruise control");
+
+        state_navigate_.SetCruiseControl(request->cruise_control);
+        response->res = "SetCruiseControl::ok";
+    };
+
+    srv_cruise = nh_->create_service<ulisse_msgs::srv::SetCruiseControl>(
+            ulisse_msgs::topicnames::set_cruise_control_service, handle_set_cruise_control);
+
+
+    // Create a callback function for when service requests are received.
+    auto handle_reset_conf = [this](
+            const std::shared_ptr<rmw_request_id_t> request_header,
+            const std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Request> request,
+            std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Response> response) -> void {
+        (void)request_header;
+        RCLCPP_INFO(nh_->get_logger(), "Incoming request for reset conf");
+
+
+        asv_safety_boundaries->SetBoundaries(par_client_->get_parameter("SafetyBoundary.BoundaryMinimumDistance", 3.0),
+                                             par_client_->get_parameter("SafetyBoundary.BoundaryMaximumDistance", 10.0));
+        asv_safety_boundaries->SetAlphaMinOnTurning(par_client_->get_parameter("SafetyBoundary.AlphaMin", 0.5));
+        asv_safety_boundaries->SetDesiredSpeedOnTurning(par_client_->get_parameter("SafetyBoundary.DesiredSpeed", 2.5));
+
+        state_navigate_.SetMaxRangeAbscissa(par_client_->get_parameter("PathFollowing.MaximumLookupAbscissa", 0.3));
+        state_navigate_.SetDelta(par_client_->get_parameter("PathFollowing.Delta", 2.0));
+        state_navigate_.SetTolleranceStartingPoint(par_client_->get_parameter("PathFollowing.TolleranceStartingPoint", 0.5));
+        state_navigate_.SetTolleranceEndingPoint(par_client_->get_parameter("PathFollowing.TolleranceEndingPoint", 0.5));
+        state_navigate_.SetTolleranceStartingAngle(par_client_->get_parameter("PathFollowing.TolleranceStartingAngle", 0.05));
+
+        LoadConfiguration();
+
+        /*
+        // Action Manager initialization
+        std::string homedir;
+        homedir = getenv("HOME");
+        std::stringstream conf_path_priority_level;
+        conf_path_priority_level << homedir << "/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/conf/PriorityLevel.conf";
+        InitializeUnifiedHierarchyAndActions(action_manager, taskIDMap, conf_path_priority_level.str().c_str());
+
+        // Configure all tasks, each with the correspondent parameters
+        std::stringstream conf_tasks;
+        conf_tasks << homedir << "/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/conf/Tasks.conf";
+        ConfigureEqualityTaskFromFile(equality_task, conf_tasks.str().c_str());
+        ConfigureInequalityTaskFromFile(inequality_task, conf_tasks.str().c_str());
+        ConfigureCartesianTaskFromFile(cartesian_task, conf_tasks.str().c_str());
+        ConfigureActionTaskFromFile(action_task, conf_tasks.str().c_str());
+
+         */
+        response->res = "ResetConfiguration::ok";
+    };
+
+    srv_reset_conf = nh_->create_service<ulisse_msgs::srv::ResetConfiguration>(
+            ulisse_msgs::topicnames::reset_configuration_service, handle_reset_conf);
 }
 
 VehicleController::~VehicleController() {}

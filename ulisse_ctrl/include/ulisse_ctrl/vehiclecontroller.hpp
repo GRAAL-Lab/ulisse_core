@@ -6,6 +6,8 @@
 #include "std_msgs/msg/string.hpp"
 #include "ulisse_msgs/srv/control_command.hpp"
 #include "ulisse_msgs/srv/set_boundaries.hpp"
+#include "ulisse_msgs/srv/set_cruise_control.hpp"
+#include "ulisse_msgs/srv/reset_configuration.hpp"
 
 #include "ulisse_msgs/msg/ambient_sensors.hpp"
 #include "ulisse_msgs/msg/compass.hpp"
@@ -57,6 +59,8 @@ class VehicleController {
     rclcpp::SyncParametersClient::SharedPtr par_client_;
     rclcpp::Service<ulisse_msgs::srv::ControlCommand>::SharedPtr srv_;
     rclcpp::Service<ulisse_msgs::srv::SetBoundaries>::SharedPtr srv_boundaries;
+    rclcpp::Service<ulisse_msgs::srv::ResetConfiguration>::SharedPtr srv_reset_conf;
+    rclcpp::Service<ulisse_msgs::srv::SetCruiseControl>::SharedPtr srv_cruise;
 
     rclcpp::Subscription<ulisse_msgs::msg::GPSData>::SharedPtr gps_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::LLCStatus>::SharedPtr llc_status_sub_;
