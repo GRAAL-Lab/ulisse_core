@@ -40,6 +40,8 @@ setup(
             'log_llc_compass = csv_pkg.log_llc_compass:main',
             'log_generic = csv_pkg.log_generic:main',
             'stop_experiments = csv_pkg.stop_experiments:main',
+            'make_circle = csv_pkg.make_circle:main',
+            'make_ellipse = csv_pkg.make_ellipse:main',
         ],
     },
 )
