@@ -28,7 +28,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'pars = csv_pkg.pars:main'
+            'pars = csv_pkg.pars:main',
+            'test_node = csv_pkg.test_node:main'
         ],
     },
 )
