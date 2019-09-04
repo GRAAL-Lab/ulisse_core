@@ -56,3 +56,11 @@ low_level_control_node:
                 Kff: 0.0
                 N: 10.0
                 Tr: 0.5
+
+        sliding_surface:
+            gain_1: 10.0
+            gain_2: 0.4
+
+        sliding_control_parameter:
+            surge: 0.2
+            heading: 9.5

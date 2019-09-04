@@ -33,18 +33,22 @@ static ulisse_msgs::msg::ControlContext ctrl_cxt_msg;
 static ulisse_msgs::msg::StatusContext status_cxt;
 static ulisse_msgs::msg::NavFilterData filterData;
 
-
 void FilterDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
 void ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg);
 void StatusContextCB(const ulisse_msgs::msg::StatusContext::SharedPtr msg);
+void parameter_set(rclcpp::SyncParametersClient::SharedPtr par_client, std::shared_ptr<LowLevelConfiguration> conf);
+
+ctb::DigitalSlidingMode<struct SlidingSurface> Surge_set(rclcpp::SyncParametersClient::SharedPtr par_client,std::shared_ptr<LowLevelConfiguration> conf);
+ctb::DigitalSecOrdSlidingMode<struct SlidingSurface> Heading_set(rclcpp::SyncParametersClient::SharedPtr par_client,std::shared_ptr<LowLevelConfiguration> conf);
+
+static int rate = 10;
+static double sampleTime = 1.0 / rate;
 
 int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
     auto nh = rclcpp::Node::make_shared("low_level_control_node");
 
-    int rate = 10;
-    double sampleTime = 1.0 / rate;
     rclcpp::WallRate loop_rate(rate);
 
     auto ctrlcxt_sub = nh->create_subscription<ulisse_msgs::msg::ControlContext>(
@@ -76,18 +80,10 @@ int main(int argc, char* argv[])
     auto conf = std::make_shared<LowLevelConfiguration>();
     LoadLowLevelConfiguration(conf, par_client);
 
-    struct SlidingSurface sl;
-    parameter_setting(sl,conf,0.4,10);
-
-    ctb::DigitalSlidingMode<struct SlidingSurface> slideSurge=
-            ctb::DigitalSlidingMode<struct SlidingSurface>(alpha_beta_u,s1,sl);
-    ctb::DigitalSecOrdSlidingMode<struct SlidingSurface> slideHeading=
-            ctb::DigitalSecOrdSlidingMode<struct SlidingSurface>(alpha_beta_r,s2,sl);
+    auto slideSurge = Surge_set(par_client, conf);
+    auto slideHeading = Heading_set(par_client, conf);
 
     std::cout << tc::grayD << *conf << tc::none << std::endl;
-
-    slideSurge.Initialize(0.2, sampleTime, 2 , conf->dynamic_pidsat_surge);
-    slideHeading.Initialize(9.5, sampleTime, 2 , conf->dynamic_pidsat_yawrate);
 
     ulisse_msgs::msg::ControlData control_msg;
 
@@ -99,7 +95,6 @@ int main(int argc, char* argv[])
 
     double headingTrackDiff;
     double surgeFbk;
-
 
     double prev_heading = 0;
     double jogFbk;
@@ -177,6 +172,47 @@ int main(int argc, char* argv[])
     rclcpp::shutdown();
 
     return 0;
+}
+
+ctb::DigitalSecOrdSlidingMode<struct SlidingSurface> Heading_set(rclcpp::SyncParametersClient::SharedPtr par_client,std::shared_ptr<LowLevelConfiguration> conf) {
+
+    double gain_1 = par_client->get_parameter("sliding_surface.gain_1", 0.0);
+
+    double gain_2 = par_client->get_parameter("sliding_surface.gain_2", 0.0);
+
+    double surge_gain = par_client->get_parameter("sliding_control_parameter.surge", 0.0);
+
+    double heading_gain = par_client->get_parameter("sliding_control_parameter.heading", 0.0);
+
+    struct SlidingSurface sl;
+    parameter_setting(sl,conf,gain_1,gain_2);
+
+    ctb::DigitalSecOrdSlidingMode<struct SlidingSurface> slideHeading =
+            ctb::DigitalSecOrdSlidingMode<struct SlidingSurface>(alpha_beta_r, s2,sl);
+
+    slideHeading.Initialize(heading_gain, sampleTime, 2 , conf->dynamic_pidsat_yawrate);
+
+    return slideHeading;
+}
+
+ctb::DigitalSlidingMode<struct SlidingSurface> Surge_set(rclcpp::SyncParametersClient::SharedPtr par_client,std::shared_ptr<LowLevelConfiguration> conf) {
+
+    double gain_1 = par_client->get_parameter("sliding_surface.gain_1", 0.0);
+
+    double gain_2 = par_client->get_parameter("sliding_surface.gain_2", 0.0);
+
+    double surge_gain = par_client->get_parameter("sliding_control_parameter.surge", 0.0);
+
+    double heading_gain = par_client->get_parameter("sliding_control_parameter.heading", 0.0);
+
+    struct SlidingSurface sl;
+    parameter_setting(sl,conf,gain_1,gain_2);
+
+    ctb::DigitalSlidingMode<struct SlidingSurface> slideSurge =
+            ctb::DigitalSlidingMode<struct SlidingSurface>(alpha_beta_u,s1,sl);
+
+    slideSurge.Initialize(surge_gain, sampleTime, 2 , conf->dynamic_pidsat_surge);
+    return slideSurge;
 }
 
 void ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg)
