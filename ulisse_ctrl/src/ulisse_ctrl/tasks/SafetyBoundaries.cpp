@@ -86,17 +86,11 @@ void SafetyBoundaries::Update() throw(tpik::ExceptionWithHow)
     double* p = ulisse::point_map2euclidean((*pose_shared)(0), (*pose_shared)(1), centroid, lam, lom);
     target = distance_check(point_type(p[0], p[1]));
 
-    std::cout << " TARGET GAIN : " << target.gain << std::endl;
-
     if (target.gain > 0) {
         current_pose.latitude = (*pose_shared)(0);
         current_pose.longitude = (*pose_shared)(1);
 
         desired_pose = ulisse::point_euclidean2map(target.x, target.y, centroid, lam, lom);
-
-        std::cout.precision(10);
-        std::cout << " TARGET LAT : " << std::fixed << desired_pose.latitude << std::endl;
-        std::cout << " TARGET LONG : " << std::fixed << desired_pose.longitude << std::endl;
 
         ctb::DistanceAndAzimuthRad(current_pose, desired_pose, goalDistance, goalHeading);
 
@@ -109,11 +103,6 @@ void SafetyBoundaries::Update() throw(tpik::ExceptionWithHow)
 
         desiredVelocity_(2) = desired_jog;
         desiredVelocity_(3) = desired_speed;
-
-        std::cout << "Desired Surge: " << desired_speed << std::endl;
-        std::cout << "Desired Jog: " << desired_jog << std::endl;
-        std::cout << "Activation F: " << std::endl
-                  << Ai_ << std::endl;
 
     } else {
         target.gain = 0;
@@ -132,10 +121,6 @@ void SafetyBoundaries::UpdateInternalActivationFunction()
     Ai_.setIdentity();
     Ai_ = target.gain * Ai_;
 
-    /*
-            Ai_ = rml::IncreasingBellShapedFunction(1, target.gain, 0, 1, 0);
-            Ai_ += rml::DecreasingBellShapedFunction(0, target.gain, 0, 1, 0);
-        */
 }
 
 void SafetyBoundaries::UpdateJacobian() { J_ = robotModel_->GetCartesianJacobian(frameID_).block(0, 0, 6, DoF_); }
@@ -214,8 +199,6 @@ desired_target SafetyBoundaries::distance_check(Point const& p)
 
     double x_max, x_min, y_max, y_min;
 
-    std::cout << "P is at coordinates " << boost::geometry::get<0>(p) << " , " << boost::geometry::get<1>(p) << std::endl;
-
     nearest_p.set<0>(0.0);
     nearest_p.set<1>(0.0);
 
@@ -225,17 +208,10 @@ desired_target SafetyBoundaries::distance_check(Point const& p)
     double count = 0.0;
 
     for (auto i : segments) {
-        std::cout << "Points coordinates: ("
-                  << boost::geometry::get<0, 0>(i) << "," << boost::geometry::get<0, 1>(i) << ")\t("
-                  << boost::geometry::get<1, 0>(i) << "," << boost::geometry::get<1, 1>(i) << ")" << std::endl;
-        std::cout << "Point-Segments: " << boost::geometry::distance(p, i) << std::endl;
-
         d = boost::geometry::distance(p, i);
 
-        std::cout << "CHECK: D = " << d << " - MIN D = " << min_d << " " << std::endl;
         // Detect dangerous situation , remember to give back anyn time the nearest.
         if (d < MIN_THRESHOLD) {
-            std::cout << "SONO ENTRATO " << std::endl;
 
             point_type p1{ boost::geometry::get<0, 0>(i), boost::geometry::get<0, 1>(i) };
             point_type p2{ boost::geometry::get<1, 0>(i), boost::geometry::get<1, 1>(i) };
@@ -305,9 +281,6 @@ desired_target SafetyBoundaries::distance_check(Point const& p)
 
     target_value.x = boost::geometry::get<0>(p) + min_d * cos(theta);
     target_value.y = boost::geometry::get<1>(p) + min_d * sin(theta);
-
-    std::cout << "Closest Point : (" << boost::geometry::get<0>(nearest_p) << "," << boost::geometry::get<1>(nearest_p) << ") \t"
-              << "At a distance: " << min_d << std::endl;
 
     return target_value;
 }

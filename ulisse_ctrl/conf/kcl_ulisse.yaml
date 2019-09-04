@@ -26,9 +26,9 @@ controller_node:
 
         SlowDownOnTurns:
             enable: true
-            HeadingErrorMin: 0.2 # 10.0 degrllc
-            HeadingErrorMax: 0.3 # 25.0 degress
-            AlphaMin: 0.01
+            HeadingErrorMin: 0.2
+            HeadingErrorMax: 0.3
+            AlphaMin: 0.1
             AlphaMax: 1.0
 
         AvoidRotationCloseToTarget:
@@ -37,19 +37,6 @@ controller_node:
             SpeedMax: 0.25
             BetaMin: 0.01
             BetaMax: 1.0
-
-        SafetyBoundary:
-            AlphaMin: 0.5
-            DesiredSpeed: 2.5
-            BoundaryMinimumDistance: 3.0
-            BoundaryMaximumDistance: 10.0
-
-        PathFollowing:
-            MaximumLookupAbscissa: 0.3
-            Delta: 2.0
-            TolleranceStartingPoint: 2.0
-            TolleranceEndingPoint: 2.0
-            TolleranceStartingAngle: 0.05
 
         PIDPosition:
             Kp: 0.1

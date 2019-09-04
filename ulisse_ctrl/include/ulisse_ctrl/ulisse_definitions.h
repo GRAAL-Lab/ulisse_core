@@ -17,7 +17,7 @@ namespace ulisse {
         const std::string asv_make_curve = "ASV_make_curve";
         const std::string asv_safety_boundaries = "ASV_safety_boundaries";
 
-        const std::vector<std::string> unified_hierarchy = { asv_safety_boundaries, asv_hold_position, asv_make_curve,
+        const std::vector<std::string> unified_hierarchy = { asv_safety_boundaries, asv_hold_position,
                                                              asv_angular_position, asv_control_velocity_angular,
                                                              asv_control_distance, asv_control_velocity_linear
         };
@@ -45,7 +45,7 @@ namespace ulisse {
         const std::string asv_control_position_angular = "ASV_control_position_angular_PL";
         const std::string asv_control_distance = "ASV_control_distance_PL";
         const std::string asv_hold_position = "ASV_hold_position_PL";
-        const std::vector<std::string> unified_hierarchy = { asv_safety_boundaries, asv_hold_position, asv_make_curve,
+        const std::vector<std::string> unified_hierarchy = { asv_safety_boundaries, asv_hold_position,
                                                              asv_control_position_angular, asv_control_velocity_angular,
                                                              asv_control_distance, asv_control_velocity_linear
         }; //auv descendent movement lowest priority

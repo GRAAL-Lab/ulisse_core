@@ -129,10 +129,8 @@ namespace states {
         centroid_.longitude = obj_master["centroid"][1].asDouble();
 
         if (obj_master["direction"].asInt()) {
-            std::cout << "DIRECTION TRUE" << std::endl;
             reverse = true;
         } else {
-            std::cout << "DIRECTION FALSE" << std::endl;
             reverse = false;
         }
 
@@ -207,7 +205,7 @@ namespace states {
                     1); // no copying of information, 'borrow' array
 
                 if (!insert_curve) {
-                    std::cout << "SOMETHING GOES WRONG" << std::endl;
+                    std::cout << "Something Goes Wrong in NURBS Parsing" << std::endl;
                     return false;
                 }
 
@@ -316,8 +314,6 @@ namespace states {
         if (isCurveSet) {
             if (!start) {
                 std::cout << "*** GOING TO INITIAL POINT! ***" << std::endl;
-                std::cout << "*** INIT LAT: " << starting_point.latitude
-                          << " LONG: " << starting_point.longitude << std::endl;
                 ctb::DistanceAndAzimuthRad(statusCxt_->vehiclePos, starting_point,
                     goalCxt_->goalDistance, goalCxt_->goalHeading);
 
@@ -326,7 +322,6 @@ namespace states {
                     if (count > 50) {
                         count = 0;
                         start = true;
-                        std::cout << "*** START MISSION! ***" << std::endl;
                     }
                 }
                 else {
@@ -337,13 +332,11 @@ namespace states {
             }
             if (start && !oriented) {
                 std::cout << "*** ORIENTING! ***" << std::endl;
-                std::cout << "START ANGLE: " << starting_angle << std::endl;
                 if (abs(statusCxt_->vehicleHeading - starting_angle) < tollerance_start_angle) {
                     count++;
                     if (count > 50) {
                         count = 0;
                         oriented = true;
-                        std::cout << "*** ORIENTED! ***" << std::endl;
                     }
                 }
                 else {
@@ -353,14 +346,8 @@ namespace states {
             }
 
             else if (start && oriented) {
-                std::cout << "*** PLAYING MISSION! with curv abs: "
-                          << curvilinear_abscissa << std::endl;
-                std::cout << "*** END:: LAT: " << end_point.latitude
-                          << " LONG: " << end_point.longitude << std::endl;
-
                 ctb::DistanceAndAzimuthRad(statusCxt_->vehiclePos, end_point,
                     goalCxt_->goalDistance, goalCxt_->goalHeading);
-
 
                 // Estimate curve length
                 s1240(curve, aepsge, &cur_length, &stat);
@@ -388,15 +375,8 @@ namespace states {
 
                     double tan_angle = atan2(point_at[4], point_at[3]);
 
-                    std::cout << "TANGENT ANGLE : " << tan_angle << std::endl;
                     lookAheadPoint = to_lat_long(point_at[0] + delta_ * cos(tan_angle), point_at[1] + delta_ * sin(tan_angle));
 
-                    std::cout << "*** POINTING TO LAT: " << lookAheadPoint.latitude
-                              << " , LONG: " << lookAheadPoint.longitude << "   ;"
-                              << std::endl;
-
-                    std::cout << "CURVILINEAR ABSCISSA: " << current_curvilinear_abscissa
-                              << std::endl;
                     ctb::DistanceAndAzimuthRad(statusCxt_->vehiclePos, lookAheadPoint,
                         goalCxt_->goalDistance,
                         goalCxt_->goalHeading);
@@ -407,6 +387,9 @@ namespace states {
             }
         }
         std::cout << "STATE PATH FOLLOWING" << std::endl;
+        std::cout << "Curvilinear Abscissa: " << current_curvilinear_abscissa << std::endl;
+        std::cout << "Delta: " << delta_ << std::endl;
+        std::cout << "Cruise Control: " << cruise << std::endl;
 
         return fsm::ok;
     }
@@ -427,7 +410,6 @@ namespace states {
             statusCxt_->vehiclePos.longitude);
 
         if (floor(max_abscissa) == floor(min_abscissa) || (max_abscissa == number_of_curves_)) {
-            std::cout << "ON A SINGLE CURVE" << std::endl;
             // To select the window part of curv, from min_abscissa to max_abscissa
             s1713(curve, DecimalPart(min_abscissa), DecimalPart(max_abscissa),
                 &newcurve, &stat);
@@ -438,7 +420,6 @@ namespace states {
             gpar = gpar + floor(min_abscissa);
 
         } else {
-            std::cout << "ON TWO CURVES" << std::endl;
             // To select the last part of first curve, from min_abscissa to 1.0
             s1713(curve, DecimalPart(min_abscissa), 1.0, &newcurve, &stat);
 
@@ -460,7 +441,6 @@ namespace states {
             }
         }
 
-        std::cout << "ABS TO POINT AT: " << gpar << std::endl;
         return gpar;
     }
 
