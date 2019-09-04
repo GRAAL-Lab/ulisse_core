@@ -55,10 +55,6 @@ void MakeCurve::SetCurve(double radius, std::string curve_type, bool clockwise)
     clockwise_ = clockwise;
     isCurveInitialized_ = true;
 
-    goal_heading_ = statusCxt_->vehicleHeading + M_PI;
-    if(goal_heading_ >= 2 * M_PI)
-        goal_heading_ -= 2*M_PI;
-
     if(curve_type == ulisse::curves::circle_arc) {
         radius_curve_ = radius;
 
@@ -97,12 +93,6 @@ void MakeCurve::Update() throw(tpik::ExceptionWithHow)
         std::cout << "desired_speed_: " << desired_speed_ << std::endl;
         angularVelocityTask_->SetVelocity(Eigen::Vector3d(0, 0, desired_jog_));
         linearVelocityTask_->SetVelocity(Eigen::Vector3d(desired_speed_, 0, 0));
-
-        if(abs(statusCxt_->vehicleHeading - goal_heading_) < tollerance_)
-        {
-            angularVelocityTask_->SetVelocity(Eigen::Vector3d(0, 0, 0));
-            isCurveInitialized_ = false;
-        }
 
         desiredVelocity_(2) = desired_jog_;
         desiredVelocity_(3) = desired_speed_;

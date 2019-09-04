@@ -52,6 +52,7 @@
 #include <ulisse_ctrl/tasks/MakeCurve.h>
 
 #include "ulisse_msgs/srv/set_boundaries.hpp"
+#include <std_msgs/msg/string.hpp>
 
 namespace ulisse {
 class VehicleController {
@@ -71,6 +72,7 @@ class VehicleController {
     rclcpp::Publisher<ulisse_msgs::msg::ControlContext>::SharedPtr ctrlcxt_pub_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr vehiclestate_pub_;
 
+    rclcpp::Publisher<std_msgs::msg::String>::SharedPtr generic_log_pub_;
     /// ROBOT MODEL
     std::shared_ptr<rml::RobotModel> robot_model;
     std::shared_ptr<Eigen::Vector6d> vehiclePose_;
@@ -159,6 +161,7 @@ class VehicleController {
     void NavFilterCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
     void LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg);
 
+    void publishLog(std::string log);
 
 public:
     VehicleController(const rclcpp::Node::SharedPtr& nh, double sampleTime);

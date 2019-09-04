@@ -16,6 +16,8 @@
 #include <tpik/TPIKlib.h>
 #include <unistd.h>
 
+#include <std_msgs/msg/string.hpp>
+
 #include <ulisse_ctrl/configuration.h>
 #include <ulisse_ctrl/geometry_defines.h>
 #include <ulisse_ctrl/tasks/SafetyBoundaries.h>
@@ -67,6 +69,8 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     ctrlcxt_pub_ = nh_->create_publisher<ulisse_msgs::msg::ControlContext>(ulisse_msgs::topicnames::control_context);
     goalcxt_pub_ = nh_->create_publisher<ulisse_msgs::msg::GoalContext>(ulisse_msgs::topicnames::goal_context);
     statuscxt_pub_ = nh_->create_publisher<ulisse_msgs::msg::StatusContext>(ulisse_msgs::topicnames::status_context);
+
+    generic_log_pub_ = nh_->create_publisher<std_msgs::msg::String>("/ulisse/log/generic");
 
     /// TPIK Manager
     action_manager = std::make_shared<tpik::ActionManager>(tpik::ActionManager());
@@ -221,6 +225,10 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
             boundaries_set = false;
             response->res = "SetBound::error";
         }
+
+        std::stringstream log;
+        log << "Setting Bounding Box: " << polygon_;
+        publishLog(log.str().c_str());
     };
 
     srv_boundaries = nh_->create_service<ulisse_msgs::srv::SetBoundaries>(
@@ -233,6 +241,10 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
             std::shared_ptr<ulisse_msgs::srv::SetCruiseControl::Response> response) -> void {
         (void)request_header;
         RCLCPP_INFO(nh_->get_logger(), "Incoming request for set cruise control");
+
+        std::stringstream log;
+        log << "Cruise Control set to: " << request->cruise_control;
+        publishLog(log.str().c_str());
 
         state_navigate_.SetCruiseControl(request->cruise_control);
         response->res = "SetCruiseControl::ok";
@@ -250,9 +262,8 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         (void)request_header;
         RCLCPP_INFO(nh_->get_logger(), "Incoming request for reset conf");
 
+        publishLog("Configuration Reset");
         LoadKCLConfiguration();
-
-        // LoadConfiguration();
 
         response->res = "ResetConfiguration::ok";
     };
@@ -272,6 +283,12 @@ int VehicleController::LoadConfiguration()
     std::cout << tc::grayD << *conf_ << tc::none << std::endl;
 
     return true;
+}
+
+void VehicleController::publishLog(std::string log){
+    std_msgs::msg::String generic_log_pub_msg;
+    generic_log_pub_msg.data = log;
+    generic_log_pub_->publish(generic_log_pub_msg);
 }
 
 void VehicleController::LoadKCLConfiguration(){
@@ -515,6 +532,9 @@ void VehicleController::SetupCommandServer()
         (void)request_header;
         RCLCPP_INFO(nh_->get_logger(), "Incoming request: %s", request->command_type.c_str());
 
+        std::stringstream logg;
+        logg << "Incoming request: " << request->command_type.c_str();
+        publishLog(logg.str().c_str());
         fsm::retval ret = fsm::ok;
 
         if (!boundaries_set) {
@@ -522,8 +542,10 @@ void VehicleController::SetupCommandServer()
             return;
         }
 
+        std::stringstream log;
         if (request->command_type == ulisse::commands::ID::halt) {
             std::cout << "Received Command Halt" << std::endl;
+            publishLog("Received Command Halt");
         } else if (request->command_type == ulisse::commands::ID::hold) {
             std::cout << "Received Command Hold" << std::endl;
             ctb::LatLong goal_hold;
@@ -532,23 +554,34 @@ void VehicleController::SetupCommandServer()
             asv_hold_position->SetGoalHold(goal_hold);
 
             command_hold_.SetAcceptanceRadius(request->hold_cmd.acceptance_radius);
+
+            publishLog("Received Command Hold");
         } else if (request->command_type == ulisse::commands::ID::latlong) {
             std::cout << "Received Command LatLong" << std::endl;
             command_latlong_.SetGoal(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude,
                 request->latlong_cmd.acceptance_radius);
             state_latlong_.SetPointGoTo(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude,
                 request->latlong_cmd.acceptance_radius);
+
+            log << "Received Command GoTo (lat: " << request->latlong_cmd.goal.latitude << " , long: " << request->latlong_cmd.goal.longitude << " )";
+            publishLog(log.str().c_str());
         } else if (request->command_type == ulisse::commands::ID::speedheading) {
             std::cout << "Received Command SpeedHeading" << std::endl;
             state_speedheading_.SetSurgeRef(request->sh_cmd.speed);
             command_speedheading_.SetGoal(request->sh_cmd.speed, request->sh_cmd.heading, request->sh_cmd.timeout.sec);
             state_speedheading_.ResetTimer();
+
+            log << "Received Command SpeedHeading (speed: " << request->sh_cmd.speed << " , heading: " << request->sh_cmd.heading << " )";
+            publishLog(log.str().c_str());
         } else if (request->command_type == ulisse::commands::ID::navigate) {
-            std::cout << "Received Command Navigate" << std::endl;
+            std::cout << "Received Command Path Following" << std::endl;
 
             if (!state_navigate_.LoadSpur(request->nav_cmd.nurbs_json)) {
                 ret = fsm::retval::fail;
             }
+
+            log << "Received Command PathFollowing (nurbs: " << request->nav_cmd.nurbs_json << " )";
+            publishLog(log.str().c_str());
 
         } else {
             RCLCPP_INFO(nh_->get_logger(), "Unsupported command: %s", request->command_type.c_str());
