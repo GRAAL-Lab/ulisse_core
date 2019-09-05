@@ -354,7 +354,7 @@ namespace states {
 
                 curvilinear_abscissa = getCurvilinearAbscissa();
 
-                if (goalCxt_->goalDistance < tollerance_end_point || curvilinear_abscissa >= number_of_curves_) {
+                if (curvilinear_abscissa >= number_of_curves_) {
                     std::cout << "*** MISSION FINISHED! ***" << std::endl;
                     isCurveSet = false;
                     asvHoldTask_->SetGoalHold(end_point);

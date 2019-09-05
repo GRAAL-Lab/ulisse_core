@@ -1,14 +1,14 @@
-import QtQuick 2.6
-import QtQuick.Layouts 1.3
-import QtQuick.Controls 2.1
-import QtLocation 5.7
-import QtQml.Models 2.1
-import QtPositioning 5.6
-import Qt.labs.settings 1.0
-import QtQuick.Controls.Material 2.1
-import QtQuick.Controls.Universal 2.1
-import QtGraphicalEffects 1.0
+import QtQuick 2.11
+import QtQuick.Controls 2.4
+import QtQuick.Controls.Material 2.4
+import QtQuick.Controls.Universal 2.4
 import QtQuick.Dialogs 1.2
+import QtQuick.Layouts 1.11
+import QtQuick.Window 2.4
+import QtLocation 5.11
+import QtPositioning 5.11
+import Qt.labs.settings 1.0
+import QtGraphicalEffects 1.0
 import "."
 
 MapComponentForm {
@@ -41,7 +41,7 @@ MapComponentForm {
     property Component pathComponent
     property Component trackComponent
 
-    //TODO -> Make relative
+    //FIXME -> Make relative
     property var path_file: "/home/alessio/Desktop/Prova"
 
     Component.onCompleted: {
@@ -128,8 +128,8 @@ MapComponentForm {
     }
 
     markerIcon.onCoordinateChanged: {
-        mapsidebar.markerText = "%1, %2".arg(marker_coords.latitude).arg(
-                    marker_coords.longitude)
+        mapsidebar.markerText = "%1, %2".arg(marker_coords.latitude.toFixed(8)).arg(
+                    marker_coords.longitude.toFixed(8))
     }
 
     Timer {

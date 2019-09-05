@@ -1,12 +1,14 @@
-import QtQuick 2.6
-import QtQuick.Layouts 1.3
-import QtQuick.Controls 2.1
-import QtLocation 5.6
-import QtPositioning 5.6
-import Qt.labs.settings 1.0
-import QtQuick.Controls.Material 2.1
-import QtGraphicalEffects 1.0
+import QtQuick 2.11
+import QtQuick.Controls 2.4
+import QtQuick.Controls.Material 2.4
+import QtQuick.Controls.Universal 2.4
 import QtQuick.Dialogs 1.2
+import QtQuick.Layouts 1.11
+import QtQuick.Window 2.4
+import QtLocation 5.11
+import QtPositioning 5.11
+import Qt.labs.settings 1.0
+import QtGraphicalEffects 1.0
 import "."
 
 Map {
@@ -123,21 +125,6 @@ Map {
                   || (mapView.pathCurrentState === pathState.stopped) ? 1.0 : 0.0)
     }
 
-    Text {
-        id: leftClick
-        anchors.leftMargin: 10
-        anchors.bottomMargin: my_height + 10
-        anchors.left: parent.left
-        anchors.bottom: parent.bottom
-        color: "steelblue"
-        font.weight: Font.DemiBold
-        font.pointSize: 11
-        textFormat: Text.StyledText
-        text: 'LEFT Click: <font color="#008000">Add Waypoint</font><br>RIGHT Click: <font color="#C00000">Remove Waypoint</font>'
-        opacity: mapView.pathCurrentState === pathState.creating ? 1.0 : 0.0
-        z: goalAcceptRadius.z + 2
-    }
-
     MapQuickItem {
         id: overlayText
         sourceItem: Text {
@@ -190,3 +177,9 @@ Map {
         acceptedButtons: Qt.LeftButton | Qt.RightButton
     }
 }
+
+/*##^##
+Designer {
+    D{i:0;autoSize:true;height:480;width:640}
+}
+##^##*/

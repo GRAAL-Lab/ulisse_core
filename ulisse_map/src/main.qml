@@ -72,15 +72,11 @@ ApplicationWindow {
 
     SettingsDialog {
         id: settingsDialog
-        x: Math.round((window.width - width) / 2)
-        y: Math.round(window.height / 6)
         width: Math.round(Math.min(window.width, window.height) / 4 * 3)
     }
 
     HelpDialog {
         id: helpDialog
-        x: Math.round((window.width - width) / 2)
-        y: Math.round((window.height - height) / 2) - headerBar.height
         width: Math.round(window.width * 0.8)
         height: Math.round(window.height * 0.7)
     }

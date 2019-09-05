@@ -1,7 +1,14 @@
-import QtQuick 2.6
-import QtQuick.Layouts 1.3
-import QtQuick.Controls 2.1
-import QtQuick.Controls.Material 2.1
+import QtQuick 2.11
+import QtQuick.Controls 2.4
+import QtQuick.Controls.Material 2.4
+import QtQuick.Controls.Universal 2.4
+import QtQuick.Dialogs 1.2
+import QtQuick.Layouts 1.11
+import QtQuick.Window 2.4
+import QtLocation 5.11
+import QtPositioning 5.11
+import Qt.labs.settings 1.0
+import QtGraphicalEffects 1.0
 import "."
 
 Rectangle {
@@ -24,81 +31,81 @@ Rectangle {
 
         Pane {
             id: statusdatarect
+            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+            Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.minimumWidth: leftbarlayout.width
             Layout.preferredWidth: parent.width
             Layout.preferredHeight: parent.height / 6
-            Layout.alignment: Qt.AlignLeft
 
             ColumnLayout {
                 id: mycol
-                width: statusdatarect.width - 30
+                anchors.top: parent.top
+                anchors.topMargin: 0
+                anchors.right: parent.right
+                anchors.rightMargin: 0
+                anchors.left: parent.left
+                anchors.leftMargin: 0
                 Layout.alignment: Qt.AlignLeft
 
-                ColumnLayout {
-                    id: statusdatalayout
-                    width: mycol.width
-                    Layout.minimumWidth: width
+                Label {
+                    id: my_label
+                    font.pointSize: 12
+                    font.weight: Font.DemiBold
+                    color: labelColor3
+                    text: "Status"
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
                     Layout.fillWidth: true
-                    Layout.alignment: Qt.AlignLeft
-
-                    height: my_label.Top - goalDistLabel.Bottom
-                    clip: false
-                    visible: true
-
-                    Label {
-                        id: my_label
-                        Layout.alignment: Qt.AlignHCenter
-                        font.pointSize: 12
-                        font.weight: Font.DemiBold
-                        color: labelColor3
-                        text: "Status"
-                    }
-
-                    LabelledText {
-                        id: ulisseStateLabel
-                        labelColor: labelColor1
-                        label: "Ulisse State"
-                        text: fbkUpdater.vehicle_state
-                        Layout.fillWidth: true
-                        textBoldness: Font.DemiBold
-                    }
-
-                    LabelledText {
-                        id: ulissePosLabel
-                        labelColor: labelColor1
-                        label: "Ulisse Coordinates"
-                        text: fbkUpdater.ulisse_pos.latitude + ", "
-                              + fbkUpdater.ulisse_pos.longitude
-                        Layout.fillWidth: true
-                    }
-
-                    LabelledText {
-                        id: goalDistLabel
-                        objectName: "goalDistance"
-                        labelColor: labelColor1
-                        label: "Distance to Target"
-                        text: fbkUpdater.goal_distance + " (m)"
-                        Layout.fillWidth: true
-                    }
-
-                    LabelledText {
-                        id: markerTextLabel
-                        labelColor: labelColor2
-                        label: "Marker Coordinates"
-                        text: "Left click on map"
-                        Layout.fillWidth: true
-                    }
-                    Text {
-                        id: markerText
-                        Layout.alignment: Qt.AlignHCenter
-                        font.pointSize: 8
-                        color: 'grey'
-                        text: "(Left click to set marker)"
-                        horizontalAlignment: Text.AlignHCenter
-                    }
+                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                 }
 
+                LabelledText {
+                    id: ulisseStateLabel
+                    labelColor: labelColor1
+                    label: "State"
+                    text: fbkUpdater.vehicle_state
+                    Layout.fillWidth: true
+                    textBoldness: Font.DemiBold
+                }
+
+                LabelledText {
+                    id: ulissePosLabel
+                    labelColor: labelColor1
+                    label: "Position"
+                    text: fbkUpdater.ulisse_pos.latitude.toFixed(
+                              8) + ", " + fbkUpdater.ulisse_pos.longitude.toFixed(
+                              8)
+                    Layout.fillWidth: true
+                }
+
+                LabelledText {
+                    id: markerTextLabel
+                    labelColor: labelColor2
+                    label: "Target"
+                    text: "Left click on map"
+                    Layout.fillWidth: true
+                }
+
+                LabelledText {
+                    id: goalDistLabel
+                    text: fbkUpdater.goal_distance.toFixed(2) + " (m)"
+                    objectName: "goalDistance"
+                    labelColor: labelColor1
+                    label: "Distance"
+                    Layout.fillWidth: true
+                }
+
+                Text {
+                    id: markerText
+                    font.pointSize: 8
+                    color: 'grey'
+                    text: "(Left click to set marker)"
+                    verticalAlignment: Text.AlignVCenter
+                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                    Layout.fillWidth: true
+                    horizontalAlignment: Text.AlignHCenter
+                }
             }
         }
 
@@ -113,3 +120,10 @@ Rectangle {
         }
     }
 }
+
+/*##^##
+Designer {
+    D{i:0;autoSize:true;height:1000;width:640}D{i:3;anchors_width:610}
+}
+##^##*/
+

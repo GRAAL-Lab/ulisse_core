@@ -1,6 +1,14 @@
-import QtQuick 2.1
-import QtQuick.Layouts 1.3
-import QtQuick.Controls 2.1
+import QtQuick 2.11
+import QtQuick.Controls 2.4
+import QtQuick.Controls.Material 2.4
+import QtQuick.Controls.Universal 2.4
+import QtQuick.Dialogs 1.2
+import QtQuick.Layouts 1.11
+import QtQuick.Window 2.4
+import QtLocation 5.11
+import QtPositioning 5.11
+import Qt.labs.settings 1.0
+import QtGraphicalEffects 1.0
 import "."
 
 RowLayout {
@@ -18,9 +26,11 @@ RowLayout {
     Label {
 
         id: title
-        horizontalAlignment: Qt.AlignRight
+        width: 200
+        horizontalAlignment: Text.AlignLeft
         font.pointSize: lsize
         color: 'cadetblue'
+        Layout.fillWidth: false
         Layout.columnSpan: 1
         font.weight: Font.DemiBold
     }
@@ -28,8 +38,10 @@ RowLayout {
     Label {
 
         id: label_data
-        horizontalAlignment: Qt.AlignRight
-        Layout.columnSpan: 2
+        Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+        Layout.fillWidth: true
+        horizontalAlignment: Text.AlignLeft
+        Layout.columnSpan: 1
         font.pointSize: tsize
         leftPadding: 5
         //Layout.fillWidth: true
@@ -39,3 +51,10 @@ RowLayout {
         }
     }
 }
+
+/*##^##
+Designer {
+    D{i:0;width:400}
+}
+##^##*/
+
