@@ -4,7 +4,6 @@ import QtQuick.Controls 2.1
 import "."
 
 LabelledTextForm {
-
     labelMouseArea.onClicked: {
         fbkUpdater.copyToClipboard(text)
         toast.show("Copied to clipboard")

@@ -18,9 +18,11 @@ RowLayout {
     Label {
 
         id: title
-        horizontalAlignment: Qt.AlignRight
+        width: 200
+        horizontalAlignment: Text.AlignLeft
         font.pointSize: lsize
         color: 'cadetblue'
+        Layout.fillWidth: false
         Layout.columnSpan: 1
         font.weight: Font.DemiBold
     }
@@ -28,8 +30,10 @@ RowLayout {
     Label {
 
         id: label_data
-        horizontalAlignment: Qt.AlignRight
-        Layout.columnSpan: 2
+        Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+        Layout.fillWidth: true
+        horizontalAlignment: Text.AlignLeft
+        Layout.columnSpan: 1
         font.pointSize: tsize
         leftPadding: 5
         //Layout.fillWidth: true
@@ -39,3 +43,10 @@ RowLayout {
         }
     }
 }
+
+/*##^##
+Designer {
+    D{i:0;width:400}
+}
+##^##*/
+
