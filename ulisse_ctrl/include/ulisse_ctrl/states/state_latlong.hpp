@@ -22,6 +22,9 @@ namespace states {
         double desired_speed, desired_jog;
         double goalDistance;
         double headingError;
+        double cruise_;
+
+        double linear_velocity;
 
     public:
         StateLatLong();
@@ -36,6 +39,9 @@ namespace states {
         void SetHoldState(std::shared_ptr<ulisse::states::StateHold> state_hold);
 
         void SetPointGoTo(double latitude, double longitude, double accept_radius);
+
+        void SetCruiseControl(double cruise);
+        double GetCruiseControl();
 
 
     };

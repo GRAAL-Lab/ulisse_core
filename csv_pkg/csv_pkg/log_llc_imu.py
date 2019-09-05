@@ -1,10 +1,10 @@
 
 from ulisse_msgs.msg import IMUData
 from pandas import DataFrame
-import matplotlib.pyplot as plt
 import numpy as np
 import rclpy
 
+import os
 import time
 
 from std_msgs.msg import String
@@ -29,9 +29,8 @@ e['gyro_z'] = []
 timer_reached = True
 
 def chatter_callback(msg):
-    global e, t0, timer_reached
-    t1 = time.time()
-    e['time'].append(t1-t0) 
+    global e, timer_reached
+    e['time'].append(msg.stamp.sec + (msg.stamp.nanosec * 1e-9)) 
     e['accelerometer_x'].append(msg.accelerometer[0])
     e['accelerometer_y'].append(msg.accelerometer[1])
     e['accelerometer_z'].append(msg.accelerometer[2])
@@ -49,7 +48,7 @@ def stop_callback(request, response):
 
 
 def main(args=None):
-    global g_node, t0, e
+    global g_node, e
     rclpy.init(args=args)
 
     g_node = rclpy.create_node('logger_llc_imu_sensor')
@@ -59,14 +58,18 @@ def main(args=None):
 
     srv = g_node.create_service(Empty, 'ulisse/stop/llc_imu_sensor', stop_callback)
 
-    t0 = time.time()
     while(rclpy.ok() and timer_reached):
     	rclpy.spin_once(g_node)
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically
     # when the garbage collector destroys the node object)
     df = DataFrame(e, columns= ['time', 'accelerometer_x','accelerometer_y', 'accelerometer_z','gyro_x', 'gyro_y', 'gyro_z'])
-    export_csv = df.to_csv (home + '/log_llc_imu.csv', index = None, header=True)
+    
+    directory = home + "/log_ulisse"
+    if not os.path.isdir(directory):
+        os.mkdir(directory)
+
+    export_csv = df.to_csv (directory + '/log_llc_imu.csv', index = None, header=True)
 
     g_node.destroy_service(srv)
     g_node.destroy_node()

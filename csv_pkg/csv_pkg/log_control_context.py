@@ -1,9 +1,9 @@
 
 from ulisse_msgs.msg import ControlContext
 from pandas import DataFrame
-import matplotlib.pyplot as plt
 import numpy as np
 import rclpy
+import os
 
 import time
 
@@ -25,9 +25,8 @@ e['desired_jog'] = []
 timer_reached = True
 
 def chatter_callback(msg):
-    global e, t0, timer_reached
-    t1 = time.time()
-    e['time'].append(t1-t0) 
+    global e, timer_reached
+    e['time'].append(msg.stamp.sec + (msg.stamp.nanosec * 1e-9)) 
     e['desired_speed'].append(msg.desired_speed)
     e['desired_jog'].append(msg.desired_jog)
 
@@ -51,7 +50,6 @@ def main(args=None):
 
     srv = g_node.create_service(Empty, 'ulisse/stop/control_context', stop_callback)
 
-    t0 = time.time()
     while(rclpy.ok() and timer_reached):
     	rclpy.spin_once(g_node)
     # Destroy the node explicitly
@@ -59,7 +57,12 @@ def main(args=None):
     # when the garbage collector destroys the node object)
 
     df = DataFrame(e, columns= ['time', 'desired_speed','desired_jog'])
-    export_csv = df.to_csv (home + '/log_control_context.csv', index = None, header=True)
+
+    directory = home + "/log_ulisse"
+    if not os.path.isdir(directory):
+        os.mkdir(directory)
+
+    export_csv = df.to_csv (directory + '/log_control_context.csv', index = None, header=True)
 
     g_node.destroy_service(srv)
     g_node.destroy_node()

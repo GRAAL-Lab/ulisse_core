@@ -104,8 +104,8 @@ bool CommandWrapper::sendPath(const QString path)
 bool CommandWrapper::sendBoundaries(const QString boundary)
 {
     auto serviceReq = std::make_shared<ulisse_msgs::srv::SetBoundaries::Request>();
-    serviceReq->bound_min = 5;
-    serviceReq->bound_max = 3;
+    serviceReq->bound_min = -1;
+    serviceReq->bound_max = -1;
     serviceReq->boundaries_json = ""+boundary.toStdString();
 
     return SendBoundariesRequest(serviceReq);

@@ -152,6 +152,8 @@ class VehicleController {
     std::shared_ptr<GoalContext> goalCxt_;
     std::shared_ptr<ControlContext> ctrlCxt_;
 
+    std::chrono::system_clock::time_point t_now_;
+
     int LoadConfiguration();
     void LoadKCLConfiguration();
     void SetUpFSM();

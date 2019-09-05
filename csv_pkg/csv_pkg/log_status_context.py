@@ -1,10 +1,10 @@
 
 from ulisse_msgs.msg import StatusContext
 from pandas import DataFrame
-import matplotlib.pyplot as plt
 import numpy as np
-import rclpy
+import rclpy, os
 
+import os
 import time
 
 from std_msgs.msg import String
@@ -31,8 +31,7 @@ timer_reached = True
 
 def chatter_callback(msg):
     global e, t0, timer_reached
-    t1 = time.time()
-    e['time'].append(t1-t0) 
+    e['time'].append(msg.stamp.sec + (msg.stamp.nanosec * 1e-9)) 
     e['latitude'].append(msg.vehicle_pos.latitude)
     e['longitude'].append(msg.vehicle_pos.longitude)
     e['vehicle_heading'].append(msg.vehicle_heading)
@@ -69,7 +68,12 @@ def main(args=None):
     # when the garbage collector destroys the node object)
 
     df = DataFrame(e, columns= ['time', 'latitude','longitude', 'vehicle_heading', 'vehicle_speed', 'vehicle_state', 'vehicle_track','llc_status'])
-    export_csv = df.to_csv (home + '/log_status_context.csv', index = None, header=True)
+    
+    directory = home + "/log_ulisse"
+    if not os.path.isdir(directory):
+        os.mkdir(directory)
+
+    export_csv = df.to_csv (directory + '/log_status_context.csv', index = None, header=True)
 
     g_node.destroy_service(srv)
     g_node.destroy_node()

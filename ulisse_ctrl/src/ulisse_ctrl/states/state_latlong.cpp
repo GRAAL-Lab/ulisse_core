@@ -8,6 +8,7 @@ namespace states {
 
     StateLatLong::StateLatLong()
     {
+        cruise_ = -1;
     }
 
     StateLatLong::~StateLatLong()
@@ -32,6 +33,14 @@ namespace states {
     void StateLatLong::SetPointGoTo(double latitude, double longitude, double accept_radius)
     {
         actionManager_->SetAction(ulisse::action::goTo, true);
+    }
+
+    void StateLatLong::SetCruiseControl(double cruise){
+        cruise_ = cruise;
+    }
+
+    double StateLatLong::GetCruiseControl(){
+        return cruise_;
     }
 
     fsm::retval StateLatLong::OnEntry()
@@ -66,11 +75,18 @@ namespace states {
         }
         else {
             angularPositionTask_->SetAngle(Eigen::Vector3d(0, 0, goalCxt_->goalHeading));
-            distanceTask_->SetDistance(Eigen::Vector3d(goalCxt_->goalDistance, 0, 0));
+
+            linear_velocity = goalCxt_->goalDistance;
+
+            if(cruise_ > 0 && linear_velocity > cruise_){
+                linear_velocity = cruise_;
+            }
+            distanceTask_->SetDistance(Eigen::Vector3d(linear_velocity, 0, 0));
         }
 
         std::cout << "STATE LATLONG" << std::endl;
         std::cout << "Goal Heading: " << goalCxt_->goalHeading << std::endl;
+        std::cout << "Linear Velocity: " << linear_velocity << std::endl;
         std::cout << "Goal Distance: " << goalCxt_->goalDistance << std::endl;
         std::cout << "Acceptance radius:" << goalCxt_->currentGoal.acceptRadius << std::endl;
 

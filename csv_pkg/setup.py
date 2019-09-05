@@ -42,6 +42,7 @@ setup(
             'stop_experiments = csv_pkg.stop_experiments:main',
             'make_circle = csv_pkg.make_circle:main',
             'make_ellipse = csv_pkg.make_ellipse:main',
+            'finish_experiment = csv_pkg.finish_experiment:main',
         ],
     },
 )

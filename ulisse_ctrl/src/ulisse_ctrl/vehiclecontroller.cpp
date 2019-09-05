@@ -151,7 +151,6 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     asv_safety_boundaries = std::make_shared<ikcl::SafetyBoundaries>(
         ikcl::SafetyBoundaries(ulisse::task::asv_safety_boundaries, robot_model, ulisse::robotModelID::ASV));
     asv_safety_boundaries->SetPose(vehiclePose_);
-    asv_safety_boundaries->SetBoundaries(5.0, 3.0);
     asv_safety_boundaries->SetConf(conf_);
     asv_safety_boundaries->SetControlContext(ctrlCxt_);
     inequality_task.push_back(asv_safety_boundaries);
@@ -226,6 +225,15 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
             response->res = "SetBound::error";
         }
 
+        std::cout << "Bound Min from request: " << request->bound_min << std::endl;
+        std::cout << "Bound Max from request: " << request->bound_max << std::endl;
+        if(request->bound_min > 0 && request->bound_max > 0){
+            asv_safety_boundaries->SetBoundaries(request->bound_min, request->bound_max);
+        }
+        else{
+            RCLCPP_INFO(nh_->get_logger(), "No bounding set, keeping the defaults");
+        }
+
         std::stringstream log;
         log << "Setting Bounding Box: " << polygon_;
         publishLog(log.str().c_str());
@@ -247,6 +255,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         publishLog(log.str().c_str());
 
         state_navigate_.SetCruiseControl(request->cruise_control);
+        state_latlong_.SetCruiseControl(request->cruise_control);
         response->res = "SetCruiseControl::ok";
     };
 
@@ -682,6 +691,14 @@ void VehicleController::Run()
 void VehicleController::PublishControl()
 {
     ulisse_msgs::msg::StatusContext statuscxt_msg;
+
+    t_now_ = std::chrono::system_clock::now();
+    long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
+    auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / (int)1E9);
+    auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % (int)1E9);
+
+    statuscxt_msg.stamp.sec = now_stamp_secs;
+    statuscxt_msg.stamp.nanosec = now_stamp_nanosecs;
     statuscxt_msg.vehicle_pos.latitude = statusCxt_->vehiclePos.latitude;
     statuscxt_msg.vehicle_pos.longitude = statusCxt_->vehiclePos.longitude;
     statuscxt_msg.vehicle_heading = statusCxt_->vehicleHeading;
@@ -691,6 +708,8 @@ void VehicleController::PublishControl()
     statuscxt_pub_->publish(statuscxt_msg);
 
     ulisse_msgs::msg::GoalContext goalcxt_msg;
+    goalcxt_msg.stamp.sec = now_stamp_secs;
+    goalcxt_msg.stamp.nanosec = now_stamp_nanosecs;
     goalcxt_msg.current_goal.latitude = goalCxt_->currentGoal.pos.latitude;
     goalcxt_msg.current_goal.longitude = goalCxt_->currentGoal.pos.longitude;
     goalcxt_msg.accept_radius = goalCxt_->currentGoal.acceptRadius;
@@ -700,6 +719,8 @@ void VehicleController::PublishControl()
     goalcxt_pub_->publish(goalcxt_msg);
 
     ulisse_msgs::msg::ControlContext ctrlcxt_msg;
+    ctrlcxt_msg.stamp.sec = now_stamp_secs;
+    ctrlcxt_msg.stamp.nanosec = now_stamp_nanosecs;
     ctrlcxt_msg.desired_speed = ctrlCxt_->desiredSurge;
     ctrlcxt_msg.desired_jog = ctrlCxt_->desiredJog;
 

@@ -1,10 +1,10 @@
 
 from ulisse_msgs.msg import NavFilterData
 from pandas import DataFrame
-import matplotlib.pyplot as plt
 import numpy as np
 import rclpy
 
+import os
 import time
 
 from std_msgs.msg import String
@@ -39,9 +39,9 @@ e['current_y'] = []
 timer_reached = True
 
 def chatter_callback(msg):
-    global e, t0, timer_reached
+    global e, timer_reached
     t1 = time.time()
-    e['time'].append(t1-t0) 
+    e['time'].append(t1) 
     e['latitude'].append(msg.latitude)
     e['longitude'].append(msg.longitude)
     e['altitude'].append(msg.altitude)
@@ -69,7 +69,7 @@ def stop_callback(request, response):
 
 
 def main(args=None):
-    global g_node, t0, e
+    global g_node, e
     rclpy.init(args=args)
 
     g_node = rclpy.create_node('logger_nav_filter')
@@ -79,7 +79,6 @@ def main(args=None):
 
     srv = g_node.create_service(Empty, 'ulisse/stop/nav_filter', stop_callback)
 
-    t0 = time.time()
     while(rclpy.ok() and timer_reached):
     	rclpy.spin_once(g_node)
     # Destroy the node explicitly
@@ -87,7 +86,12 @@ def main(args=None):
     # when the garbage collector destroys the node object)
 
     df = DataFrame(e, columns= ['time', 'latitude', 'longitude', 'altitude', 'yaw', 'pitch', 'roll', 'accelerometer_x', 'accelerometer_y', 'accelerometer_z', 'gyro_x', 'gyro_y', 'gyro_z', 'speed_x', 'speed_y', 'current_x', 'current_y'])
-    export_csv = df.to_csv (home + '/log_nav_filter.csv', index = None, header=True)
+   
+    directory = home + "/log_ulisse"
+    if not os.path.isdir(directory):
+        os.mkdir(directory)
+ 
+    export_csv = df.to_csv (directory + '/log_nav_filter.csv', index = None, header=True)
 
     g_node.destroy_service(srv)
     g_node.destroy_node()

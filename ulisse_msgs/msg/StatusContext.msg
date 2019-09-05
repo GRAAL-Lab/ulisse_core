@@ -1,3 +1,4 @@
+Time stamp # (Two-integer timestamp that is expressed as seconds and nanoseconds)
 LatLong vehicle_pos
 float64 vehicle_heading
 float64 vehicle_track
