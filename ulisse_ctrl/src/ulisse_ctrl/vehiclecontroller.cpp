@@ -225,13 +225,8 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
             response->res = "SetBound::error";
         }
 
-        std::cout << "Bound Min from request: " << request->bound_min << std::endl;
-        std::cout << "Bound Max from request: " << request->bound_max << std::endl;
         if(request->bound_min > 0 && request->bound_max > 0){
             asv_safety_boundaries->SetBoundaries(request->bound_min, request->bound_max);
-        }
-        else{
-            RCLCPP_INFO(nh_->get_logger(), "No bounding set, keeping the defaults");
         }
 
         std::stringstream log;

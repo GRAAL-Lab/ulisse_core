@@ -81,8 +81,6 @@ void SafetyBoundaries::Update() throw(tpik::ExceptionWithHow)
         throw(jointsLimitException);
     }
 
-    std::cout << "Bound Min: " << MIN_THRESHOLD << std::endl;
-    std::cout << "Bound Max: " << MAX_THRESHOLD << std::endl;
     double lam = ulisse::lat_to_m_coeff(centroid.latitude);
     double lom = ulisse::lon_to_m_coeff(centroid.longitude);
     double* p = ulisse::point_map2euclidean((*pose_shared)(0), (*pose_shared)(1), centroid, lam, lom);
