@@ -49,6 +49,7 @@ void handle_service(
         const std::shared_ptr<ulisse_msgs::srv::MinSrv::Response> response
         );
 
+bool sliding_on;
 static int rate = 10;
 static double sampleTime = 1.0 / rate;
 auto conf = std::make_shared<LowLevelConfiguration>();
@@ -87,7 +88,6 @@ int main(int argc, char* argv[])
         RCLCPP_INFO(nh->get_logger(), "service not available, waiting again...");
     }
 
-
     LoadLowLevelConfiguration(conf, par_client);
 
     parameter_set();
@@ -109,7 +109,20 @@ int main(int argc, char* argv[])
     double jogFbk;
     double desired_surge;
 
-    ulisseModel.set_external_ctrl(true);
+    ulisseModel.set_external_ctrl(sliding_on);
+
+    ctb::DigitalPID pidSurge;
+    ctb::DigitalPID pidYawRate;
+
+    if (!sliding_on) {
+
+        pidSurge.Initialize(conf->mapping_pidgains_surge, sampleTime, conf->mapping_pidsat_surge);
+        pidSurge.SetSaturation(conf->mapping_pidsat_surge);
+
+        pidYawRate.Initialize(conf->dynamic_pidgains_yawrate, sampleTime, conf->dynamic_pidsat_yawrate);
+        pidYawRate.SetErrorFunction(ctb::HeadingErrorRadFunctor());
+
+    }
     while (rclcpp::ok()) {
 
         headingTrackDiff = ctb::HeadingErrorRad(status_cxt.vehicle_heading, status_cxt.vehicle_track);
@@ -119,21 +132,28 @@ int main(int argc, char* argv[])
         prev_heading = status_cxt.vehicle_heading;
 
         if (ctrl_cxt_msg.desired_speed > conf->mapping_pidsat_surge)
-            desired_surge=conf->mapping_pidsat_surge;
+            desired_surge = conf->mapping_pidsat_surge;
         else
-            desired_surge=ctrl_cxt_msg.desired_speed;
+            desired_surge = ctrl_cxt_msg.desired_speed;
 
-        const std::vector<double> state = {surgeFbk,jogFbk};
+        if (!sliding_on)
+        {
+            thrusterData.desiredSurge = pidSurge.Compute(ctrl_cxt_msg.desired_speed, surgeFbk);
+            thrusterData.desiredJog = pidYawRate.Compute(ctrl_cxt_msg.desired_jog, jogFbk);
+        }
+        else
+        {
+            const std::vector<double> state = {surgeFbk, jogFbk};
 
-        slideSurge.setState(state);
-        slideHeading.setState(state);
+            slideSurge.setState(state);
+            slideHeading.setState(state);
 
-        ulisseModel.set_tau_x(slideSurge.compute(desired_surge, surgeFbk));
-        ulisseModel.set_tau_n(slideHeading.compute(ctrl_cxt_msg.desired_jog, jogFbk));
+            ulisseModel.set_tau_x(slideSurge.compute(desired_surge, surgeFbk));
+            ulisseModel.set_tau_n(slideHeading.compute(ctrl_cxt_msg.desired_jog, jogFbk));
 
-        thrusterData.desiredSurge = desired_surge;
-        thrusterData.desiredJog = ctrl_cxt_msg.desired_jog;
-
+            thrusterData.desiredSurge = desired_surge;
+            thrusterData.desiredJog = ctrl_cxt_msg.desired_jog;
+        }
         if (status_cxt.vehicle_state != ulisse::states::ID::halt) {
 
             Eigen::Vector6d requestedVel;
@@ -202,6 +222,8 @@ void parameter_set() {
     double heading_gain = par_client->get_parameter("sliding_control_parameter.heading", 0.0);
     double surge_gain = par_client->get_parameter("sliding_control_parameter.surge", 0.0);
 
+    sliding_on = par_client->get_parameter("sliding_mode", true);
+
     struct SlidingSurface sl;
     parameter_setting(sl,conf,gain_1,gain_2);
 
@@ -212,6 +234,8 @@ void parameter_set() {
     slideSurge = ctb::DigitalSlidingMode<struct SlidingSurface>(alpha_beta_u,s1,sl);
 
     slideSurge.Initialize(surge_gain, sampleTime, 2 , conf->dynamic_pidsat_surge);
+
+
 
 }
 void ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg)

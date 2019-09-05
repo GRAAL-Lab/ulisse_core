@@ -64,3 +64,5 @@ low_level_control_node:
         sliding_control_parameter:
             surge: 0.2
             heading: 8.5
+
+        sliding_mode: true
