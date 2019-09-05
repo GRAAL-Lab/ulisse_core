@@ -72,6 +72,7 @@ rosidl_generate_interfaces(ulisse_msgs
   "srv/RosbagCmd.srv"
   "srv/NavFilterCommand.srv" 
   "srv/SetBoundaries.srv"
+  "srv/GetBoundaries.srv"
   "srv/SetCruiseControl.srv"
   "srv/ResetConfiguration.srv"
   "srv/MinSrv.srv"
