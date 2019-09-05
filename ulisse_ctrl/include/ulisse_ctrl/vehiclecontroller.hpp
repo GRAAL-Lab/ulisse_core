@@ -52,6 +52,7 @@
 #include <ulisse_ctrl/tasks/MakeCurve.h>
 
 #include "ulisse_msgs/srv/set_boundaries.hpp"
+#include "ulisse_msgs/srv/get_boundaries.hpp"
 #include <std_msgs/msg/string.hpp>
 
 namespace ulisse {
@@ -60,6 +61,7 @@ class VehicleController {
     rclcpp::SyncParametersClient::SharedPtr par_client_;
     rclcpp::Service<ulisse_msgs::srv::ControlCommand>::SharedPtr srv_;
     rclcpp::Service<ulisse_msgs::srv::SetBoundaries>::SharedPtr srv_boundaries;
+    rclcpp::Service<ulisse_msgs::srv::GetBoundaries>::SharedPtr srv_get_boundaries;
     rclcpp::Service<ulisse_msgs::srv::ResetConfiguration>::SharedPtr srv_reset_conf;
     rclcpp::Service<ulisse_msgs::srv::SetCruiseControl>::SharedPtr srv_cruise;
 
@@ -153,6 +155,8 @@ class VehicleController {
     std::shared_ptr<ControlContext> ctrlCxt_;
 
     std::chrono::system_clock::time_point t_now_;
+
+    std::string boundaries_json;
 
     int LoadConfiguration();
     void LoadKCLConfiguration();

@@ -219,6 +219,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 
         if (asv_safety_boundaries->InitializePoly(statusCxt_->vehiclePos, polygon_)) {
             boundaries_set = true;
+            boundaries_json = request->boundaries_json;
             response->res = "SetBound::ok";
         } else {
             boundaries_set = false;
@@ -274,6 +275,26 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 
     srv_reset_conf = nh_->create_service<ulisse_msgs::srv::ResetConfiguration>(
             ulisse_msgs::topicnames::reset_configuration_service, handle_reset_conf);
+
+
+    // Create a callback function for when service requests are received.
+    auto handle_get_bounds = [this](
+        const std::shared_ptr<rmw_request_id_t> request_header,
+        const std::shared_ptr<ulisse_msgs::srv::GetBoundaries::Request> request,
+        std::shared_ptr<ulisse_msgs::srv::GetBoundaries::Response> response) -> void {
+        (void)request_header;
+        RCLCPP_INFO(nh_->get_logger(), "Incoming request for get boundaries");
+
+        if(boundaries_set){
+            response->res = boundaries_json;
+        }
+        else{
+            response->res = "NoBoundSet";
+        }
+    };
+
+    srv_get_boundaries = nh_->create_service<ulisse_msgs::srv::GetBoundaries>(
+        ulisse_msgs::topicnames::get_boundaries_service, handle_get_bounds);
 }
 
 VehicleController::~VehicleController() {}
