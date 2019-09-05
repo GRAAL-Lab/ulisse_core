@@ -107,6 +107,8 @@ RowLayout {
 
         SidebarManage {
             id: sidebar_manage
+            anchors.bottom: bottomToolbar.top
+            anchors.bottomMargin: 20
             edge: Qt.LeftEdge
         }
 
@@ -180,3 +182,9 @@ RowLayout {
         }
     }
 }
+
+/*##^##
+Designer {
+    D{i:0;height:800;width:1000}
+}
+##^##*/

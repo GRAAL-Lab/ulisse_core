@@ -123,21 +123,6 @@ Map {
                   || (mapView.pathCurrentState === pathState.stopped) ? 1.0 : 0.0)
     }
 
-    Text {
-        id: leftClick
-        anchors.leftMargin: 10
-        anchors.bottomMargin: my_height + 10
-        anchors.left: parent.left
-        anchors.bottom: parent.bottom
-        color: "steelblue"
-        font.weight: Font.DemiBold
-        font.pointSize: 11
-        textFormat: Text.StyledText
-        text: 'LEFT Click: <font color="#008000">Add Waypoint</font><br>RIGHT Click: <font color="#C00000">Remove Waypoint</font>'
-        opacity: mapView.pathCurrentState === pathState.creating ? 1.0 : 0.0
-        z: goalAcceptRadius.z + 2
-    }
-
     MapQuickItem {
         id: overlayText
         sourceItem: Text {
@@ -190,3 +175,9 @@ Map {
         acceptedButtons: Qt.LeftButton | Qt.RightButton
     }
 }
+
+/*##^##
+Designer {
+    D{i:0;autoSize:true;height:480;width:640}
+}
+##^##*/

@@ -18,16 +18,6 @@ Row {
     property alias sliderW: sliderTogglerLeft.width
     property bool multichoice: false
 
-    state: {
-        0: "empty",
-                1: "path",
-                2: "rect",
-                3: "poly",
-                4: "polysec",
-                5: "editmode",
-                6: "deletemode"
-    }[mapView.currentState]
-
     function rightEdge() {
         return (containerRowLeft.edge === Qt.RightEdge)
     }

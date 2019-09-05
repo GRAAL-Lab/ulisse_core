@@ -41,7 +41,7 @@ MapComponentForm {
     property Component pathComponent
     property Component trackComponent
 
-    //TODO -> Make relative
+    //FIXME -> Make relative
     property var path_file: "/home/alessio/Desktop/Prova"
 
     Component.onCompleted: {
@@ -128,8 +128,8 @@ MapComponentForm {
     }
 
     markerIcon.onCoordinateChanged: {
-        mapsidebar.markerText = "%1, %2".arg(marker_coords.latitude).arg(
-                    marker_coords.longitude)
+        mapsidebar.markerText = "%1, %2".arg(marker_coords.latitude.toFixed(8)).arg(
+                    marker_coords.longitude.toFixed(8))
     }
 
     Timer {
