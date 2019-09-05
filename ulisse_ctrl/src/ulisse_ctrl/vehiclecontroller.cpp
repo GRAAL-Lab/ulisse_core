@@ -291,7 +291,6 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         else{
             response->res = "NoBoundSet";
         }
-
     };
 
     srv_get_boundaries = nh_->create_service<ulisse_msgs::srv::GetBoundaries>(

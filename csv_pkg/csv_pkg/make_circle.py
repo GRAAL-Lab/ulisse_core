@@ -48,7 +48,7 @@ def main(args=None):
     while not go:
         rclpy.spin_once(g_node)
         
-    radius = str(1)
+    radius = str(10)
     req = ControlCommand.Request()
     req.command_type = "navigate_command"
     req.nav_cmd.nurbs_json = "{\"centroid\":[" + str(latitude) +"," + str(longitude) + "],\"curves\":[{\"degree\":2,\"knots\":[0,0,0,0.25,0.25,0.5,0.5,0.75,0.75,1,1,1],\"points\":[[0,-" + radius + "],[-" + radius + ",-" + radius + "]," +  "[-" + radius + ",0],[-" + radius + "," + radius + "],[0," + radius + "],[" + radius + "," + radius + "],[" + radius + ",0],[" + radius + ",-" + radius + "]," + "[0,-" + radius + "]],\"weigths\":[1,0.707,1,0.707,1,0.707,1,0.707,1]}],\"direction\":0}"
