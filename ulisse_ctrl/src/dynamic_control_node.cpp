@@ -119,7 +119,7 @@ int main(int argc, char* argv[])
         pidSurge.Initialize(conf->mapping_pidgains_surge, sampleTime, conf->mapping_pidsat_surge);
         pidSurge.SetSaturation(conf->mapping_pidsat_surge);
 
-        pidYawRate.Initialize(conf->dynamic_pidgains_yawrate, sampleTime, conf->dynamic_pidsat_yawrate);
+        pidYawRate.Initialize(conf->dynamic_pidgains_yawrate, sampleTime,par_client->get_parameter("JogLimiter", 0.0));
         pidYawRate.SetErrorFunction(ctb::HeadingErrorRadFunctor());
 
     }
@@ -140,6 +140,8 @@ int main(int argc, char* argv[])
         {
             thrusterData.desiredSurge = pidSurge.Compute(ctrl_cxt_msg.desired_speed, surgeFbk);
             thrusterData.desiredJog = pidYawRate.Compute(ctrl_cxt_msg.desired_jog, jogFbk);
+            std::cout << pidYawRate.GetOutput() << std::endl;
+            std::cout << status_cxt.vehicle_heading << std::endl;
         }
         else
         {
@@ -158,9 +160,14 @@ int main(int argc, char* argv[])
 
             Eigen::Vector6d requestedVel;
             requestedVel.setZero();
-            requestedVel(0) = surgeFbk;
-            requestedVel(5) = jogFbk;
-
+            if (!sliding_on) {
+                requestedVel(0) = thrusterData.desiredSurge;
+                requestedVel(5) = thrusterData.desiredJog;
+            }
+            else {
+                requestedVel(0) = surgeFbk;
+                requestedVel(5) = jogFbk;
+            }
             if (conf->ctrlMode == ControlMode::ThrusterMapping) {
 
                 ulisseModel.ThrusterMapping(requestedVel, thrusterData.mapOut.left, thrusterData.mapOut.right);

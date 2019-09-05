@@ -65,4 +65,4 @@ low_level_control_node:
             surge: 0.2
             heading: 8.5
 
-        sliding_mode: true
+        sliding_mode: false

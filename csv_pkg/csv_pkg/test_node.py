@@ -32,7 +32,7 @@ def chatter_callback(msg):
     e['yawr_error'].append(msg.yawr_error)
     e['surge_control'].append(msg.surge_control)
     e['yawr_control'].append(msg.yawr_control)
-    if ((t1-t0) >= 20) :
+    if ((t1-t0) >= 40) :
         timer_reached = False
 
 def main(args=None):
