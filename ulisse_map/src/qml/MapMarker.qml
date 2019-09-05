@@ -4,10 +4,6 @@ import QtPositioning 5.6
 import "."
 
 MapCircle {
-
-    //    property alias center: center
-    //    property alias color: color
-    //    property alias opacity: opacity
     id: root
     radius: 5
     color: red

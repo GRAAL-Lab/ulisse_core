@@ -11,11 +11,6 @@ import QtQuick.Dialogs 1.2
 import "."
 
 MapViewForm {
-    Component.onCompleted: {
-        console.log(("Current cache for ESRI Map plugin: %1").arg(
-                        mapCache.value))
-    }
-
     Timer {
         id: followMeTimer
         interval: 250
@@ -58,8 +53,8 @@ MapViewForm {
 
     map.onZoomLevelChanged: {
         for (var i = 0; i < slidersLeft.columnTrack.children.length; i++) {
-            slidersLeft.columnTrack.children[i]._comp.a_marker.zoomLevel = map.zoomLevel / 2 + 9
-            slidersLeft.columnTrack.children[i]._comp.b_marker.zoomLevel = map.zoomLevel / 2 + 9
+            slidersLeft.columnTrack.children[i].managed_path.a_marker.zoomLevel = map.zoomLevel / 2 + 9
+            slidersLeft.columnTrack.children[i].managed_path.b_marker.zoomLevel = map.zoomLevel / 2 + 9
         }
     }
 }

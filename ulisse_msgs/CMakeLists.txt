@@ -74,6 +74,7 @@ rosidl_generate_interfaces(ulisse_msgs
   "srv/SetBoundaries.srv"
   "srv/SetCruiseControl.srv"
   "srv/ResetConfiguration.srv"
+  "srv/MinSrv.srv"
 )
 
 ament_export_include_directories(include)

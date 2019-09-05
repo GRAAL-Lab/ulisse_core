@@ -10,7 +10,7 @@
 namespace ikcl {
 
 AngularPosition::AngularPosition(std::string taskID, std::shared_ptr<rml::RobotModel> robotModel, std::string frameID, tpik::CartesianTaskType taskType)
-        : tpik::CartesianTask(taskID, robotModel->GetTotalDOFs(), taskType, tpik::ProjectorType::Default)
+    : tpik::CartesianTask(taskID, robotModel->GetTotalDOFs(), taskType, tpik::ProjectorType::Default)
     , robotModel_(robotModel)
     , frameID_(frameID)
     , isAngleInitialized_(false)

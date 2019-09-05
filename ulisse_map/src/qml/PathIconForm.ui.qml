@@ -16,7 +16,7 @@ RowLayout {
     id: tracklistlayout
     //elementi che definiscono l'elemento
     property int ntrack: -1
-    property var _comp
+    property var managed_path
     property alias name: name
     property alias tracklistlayout: tracklistlayout
     property bool toggled: false
@@ -41,7 +41,7 @@ RowLayout {
 
     Button {
         id: name
-        text: expanded ? _comp._pathName : ntrack
+        text: expanded ? managed_path._pathName : ntrack
         font.weight: Font.ExtraBold
         highlighted: true
         font.pointSize: 11

@@ -15,9 +15,6 @@ MapPolyline {
 
     signal end
 
-    property var polygonal_phase: 0
-    property var poligonal_direction: 0 //1: counterclockwise, 2: clockwise
-
     property var click_handler: click_handler_convex
     property var pos_changed_handler: pos_changed_handler_convex
 
@@ -26,42 +23,40 @@ MapPolyline {
     property Component mapMarkerLetterComponent
     property Component mapDashedLineComponent
     property Component mapHandleComponent
+
     property MapDashedLine _dashed_line
     property MapCanvas _canvas
     property MapMarker _marker
     property MapHandle _handle
+
     property var vertex_markers: []
     property var add_markers: []
     property var a_marker
     property var b_marker
 
-    property var direction: 0
-
-    function toggle_dir() {
-        direction = (direction + 1) % 2
-        var t = QtPositioning.coordinate(b_marker.coordinate.latitude,
-                                         b_marker.coordinate.longitude)
-        b_marker.coordinate = QtPositioning.coordinate(
-                    a_marker.coordinate.latitude, a_marker.coordinate.longitude)
-        a_marker.coordinate = t
-        console.log(direction)
-        generate_nurbs()
-    }
-
     property string _pathName: "Path"
     property real _angle: 30
     property real _offset: 30
-    property var _method: "single_winding" //"simple"
+    property var _method: "single_winding" // "simple"
+    property var direction: 0
 
-    property var debug_c: null
-
-    property var intersections_canvas: []
     property var centroid
+    property var intersections_canvas: []
     property var intersections_cartesian: []
     property var intersections_geographic: []
 
-    property var px_multiplier
+    property var polygonal_phase: 0
+    property var polygonal_direction: 0 //1: counterclockwise, 2: clockwise
 
+    property var safe: null
+    property var detection_intersect: 0
+
+    onSafeChanged: function () {
+            line.color = safe ? green : red
+    }
+
+    ////////////////////////////////////
+    // Initializazion / deinitialization
     Component.onCompleted: {
         Helper.init_lib(QtPositioning)
         mapCanvasComponent = Qt.createComponent("MapCanvas.qml")
@@ -76,12 +71,9 @@ MapPolyline {
         _handle = mapHandleComponent.createObject(map)
         a_marker = mapMarkerLetterComponent.createObject(map)
         b_marker = mapMarkerLetterComponent.createObject(map)
-        a_marker.opacity = 0
-        b_marker.opacity = 0
+
         a_marker.source = "/images/a.png"
         b_marker.source = "/images/b.png"
-        a_marker.z = z + 10
-        b_marker.z = z + 10
 
         map.addMapItem(_canvas)
         map.addMapItem(_marker)
@@ -96,58 +88,98 @@ MapPolyline {
         map.removeMapItem(_canvas)
         map.removeMapItem(a_marker)
         map.removeMapItem(b_marker)
-        for (var i = 0; i < vertex_markers.length - 1; i++)
-            map.removeMapItem(vertex_markers[i])
-        for (var i = 0; i < add_markers.length - 1; i++)
-            map.removeMapItem(add_markers[i])
         map.removeMapItem(_marker)
         map.removeMapItem(_dashed_line)
         map.removeMapItem(_handle)
+        clear_markers()
         _handle.deregister_map_items(map)
     }
 
-    function _draw() {
-        if (_method != null || _method !== undefined) {
-            generate_path()
-            draw_path()
-            generate_nurbs()
-        }
-        generate_markers()
-        reposition_markers()
-        disable_markers()
-        disable_handle()
-    }
-
-    function draw_deferred() {
-        if (_canvas.canvasCtx !== null && _canvas.canvasCtx !== undefined)
-            _draw()
-        else
-            _canvas.canvasCtxChanged.connect(_draw)
-    }
-
+    //////////////////////////////////////////
+    // Path query/editing as a circular buffer
     function get_path() {
         return path.slice(0, path.length - 1)
     }
 
-    function get_next_in_path(pos, plus) {
+    function next_in_path(pos, plus) {
         var _path = get_path()
         return _path[Helper.add_and_wrap(pos, _path.length, plus)]
     }
 
-    function get_prev_in_path(pos, minus) {
+    function prev_in_path(pos, minus) {
         var _path = get_path()
         return _path[Helper.sub_and_wrap(pos, _path.length, minus)]
     }
 
+    function clear_path() {
+        while (path.length > 0)
+            removeCoordinate(0)
+        centroid = null
+        detection_intersect = 0
+    }
+
+    function change_coordinate(idx, coord) {
+        replaceCoordinate(idx, coord)
+        if (idx === 0)
+            replaceCoordinate(path.length - 1, coord)
+        update_centroid()
+    }
+
+    function remove_coordinate(idx) {
+        removeCoordinate(idx)
+        if (idx === 0)
+            replaceCoordinate(pathLength() - 1, path[0])
+        update_centroid()
+    }
+
+    function split_edge(idx) {
+        var c = Helper.geo_midpoint(get_path()[idx], next_in_path(idx, 1))
+        insertCoordinate(idx+1, c)
+    }
+
+    function translate_coordinates(center) {
+        for (var i = 0; i < path.length; i++) {
+            var c = path[i]
+            var cn = QtPositioning.coordinate(
+                        c.latitude - centroid.latitude + center.latitude,
+                        c.longitude - centroid.longitude + center.longitude)
+            replaceCoordinate(i, cn)
+        }
+        update_centroid()
+    }
+
+    function rotate_and_scale_coordinates(angle, scale) {
+        for (var i = 0; i < path.length; i++) {
+            var c = path[i]
+            var d = centroid.distanceTo(c)
+            var a = centroid.azimuthTo(c)
+            var cn = centroid.atDistanceAndAzimuth(d * scale, a + angle)
+            replaceCoordinate(i, cn)
+        }
+        _handle.add_angle(angle)
+    }
+
+    function update_centroid() {
+        var _path = get_path()
+        centroid = Helper.coords_centroid(_path)
+        reposition_handle()
+    }
+
+    function close_polygon() {
+        replaceCoordinate(pathLength() - 1, path[0])
+        mapMouseArea.hoverEnabled = false
+        line.color = green
+        polygonal_phase = 0
+        end()
+    }
+
+
+    //////////////////////////////////
+    // Markers management
     function generate_markers() {
         var _path = get_path()
-        while (add_markers.length > 0)
-            map.removeMapItem(add_markers.pop())
-        while (vertex_markers.length > 0)
-            map.removeMapItem(vertex_markers.pop())
-        add_markers = []
-        vertex_markers = []
-        for (var i = 0; i < _path.length; i++) {
+        clear_markers()
+        for (var i in _path) {
             var marker1 = mapMarkerComponent.createObject(map)
             var marker2 = mapMarkerComponent.createObject(map)
             map.addMapItem(marker1)
@@ -156,15 +188,23 @@ MapPolyline {
             add_markers.push(marker2)
         }
         disable_handle()
-        update_scale()
+        update_markers_scale()
+    }
+
+    function clear_markers(){
+        while (add_markers.length > 0)
+            map.removeMapItem(add_markers.pop())
+        while (vertex_markers.length > 0)
+            map.removeMapItem(vertex_markers.pop())
+        add_markers = []
+        vertex_markers = []
     }
 
     function reposition_handle() {
         var c = map.fromCoordinate(centroid, false)
         _handle.h_center = centroid
         _handle.h_handle = map.toCoordinate(Qt.point(c.x - 40, c.y), false)
-        _handle.cumulativeAngle = 0
-        _handle.update_canvas(0)
+        _handle.reset_angle()
     }
 
     function reposition_vertex_markers() {
@@ -180,7 +220,7 @@ MapPolyline {
         var _path = get_path()
         for (var i = 0; i < add_markers.length; i++) {
             add_markers[i].center = Helper.geo_midpoint(_path[i],
-                                                        get_next_in_path(i, 1))
+                                                        next_in_path(i, 1))
             add_markers[i].opacity = 0
             add_markers[i].color = orange
         }
@@ -200,8 +240,7 @@ MapPolyline {
     }
 
     function disable_handle() {
-        _handle.cumulativeAngle = 0
-        _handle.update_canvas(0)
+        _handle.reset_angle()
         _handle.opacity = 0
     }
 
@@ -221,13 +260,11 @@ MapPolyline {
     }
 
     function enable_vertex_markers() {
-        for (var i = 0; i < vertex_markers.length; i++)
-            vertex_markers[i].opacity = 1
+        Helper.set_bulk_opacity(vertex_markers, 1)
     }
 
     function enable_add_markers() {
-        for (var i = 0; i < add_markers.length; i++)
-            add_markers[i].opacity = 1
+        Helper.set_bulk_opacity(add_markers, 1)
     }
 
     function disable_markers() {
@@ -236,99 +273,84 @@ MapPolyline {
     }
 
     function disable_vertex_markers() {
-        for (var i = 0; i < vertex_markers.length; i++)
-            vertex_markers[i].opacity = 0
+        Helper.set_bulk_opacity(vertex_markers, 0)
     }
 
     function disable_add_markers() {
-        for (var i = 0; i < add_markers.length; i++)
-            add_markers[i].opacity = 0
+        Helper.set_bulk_opacity(add_markers, 0)
     }
 
-    function clear_path() {
-        while (path.length > 0)
-            removeCoordinate(0)
-        detection_intersect = 0
+    function toggle_dir() {
+        direction = Helper.flip(direction)
+        var temp = Helper.coordinate_deep_copy(b_marker.coordinate)
+        b_marker.coordinate = Helper.coordinate_deep_copy(a_marker.coordinate)
+        a_marker.coordinate = temp
     }
 
-    function check_safe(box) {
-        var bpp = [], ppp = []
-        for (var i = 0; i < box.path.length; i++)
-            bpp.push(map.fromCoordinate(box.path[i], false))
-        for (var i = 0; i < path.length; i++)
-            ppp.push(map.fromCoordinate(path[i], false))
-        safe = Helper.polylines_disjoint(bpp, ppp)
-                && Helper.coord_inside_polygon(path[0], box.path)
-        return safe
-    }
-
-    line.color: green
-    property var safe: null
-    onSafeChanged: function () {
-        line.color = (safe ? green : red)
-    }
-
-    //FIXME: check it in the euclidean plane
-    function map_polygon_point_admissibility(pc) {
-        var pa = map.fromCoordinate(path[pathLength() - 3])
-        var pb = map.fromCoordinate(path[pathLength() - 2])
-        var pd = map.fromCoordinate(path[0])
-        var pe = map.fromCoordinate(path[1])
-        return (poligonal_direction === Helper.three_point_direction(pa, pb, pc)
-                && poligonal_direction === Helper.three_point_direction(
-                    pb, pc,
-                    pd) && poligonal_direction === Helper.three_point_direction(pc, pd, pe))
-    }
-
-    function map_polygon_point_mod_admissibility(pc, idx) {
-        var _path = get_path()
-        var pa = map.fromCoordinate(get_next_in_path(idx, 2))
-        var pb = map.fromCoordinate(get_next_in_path(idx, 1))
-        var pd = map.fromCoordinate(get_prev_in_path(idx, 1))
-        var pe = map.fromCoordinate(get_prev_in_path(idx, 2))
-        var r1 = Helper.three_point_direction(pa, pb, pc)
-        var r2 = Helper.three_point_direction(pb, pc, pd)
-        if (r1 !== r2)
-            return false
-        var r3 = Helper.three_point_direction(pc, pd, pe)
-        if (r2 !== r3)
-            return false
-        return true
-    }
-
-    property var detection_intersect: 0
-
-    function pos_changed_handler_simple(mouse) {
-        var p = Qt.point(mouse.x, mouse.y)
-        var pf = map.toCoordinate(p)
-        var last_idx = pathLength() - 1
-        var color = cyan
-
-        var ppp = []
-        detection_intersect = false
-        for (var i = 0; i < path.length - 1; i++)
-            ppp.push(map.fromCoordinate(path[i], false))
-        if (path.length > 3 && (!Helper.polylines_disjoint(
-                                    [p, ppp[ppp.length - 1]], ppp))) {
-            color = red
-            pf = coordinateAt(path.length - 1)
-            detection_intersect = true
-        } else if (path.length > 3 && Helper.distance(map.fromCoordinate(
-                                                          coordinateAt(0)),
-                                                      p) < 15) {
-            var pp = path
-            pp.push(p)
-            pp.push(pp[0])
-            if (Helper.coord_inside_polygon(fbkUpdater.ulisse_pos, pp)) {
-                pf = coordinateAt(0)
-                color = orange
+    function nearest_marker(point, markers, nearest, thresh) {
+        for (var i = 0; i < markers.length; i++) {
+            var v = map.fromCoordinate(markers[i].center)
+            var d = Helper.distance(point, v)
+            if (d < thresh) {
+                thresh = d
+                nearest = i
             }
         }
-
-        line.color = color
-        replaceCoordinate(last_idx, pf)
+        return {
+            nearest: nearest,
+            distance: thresh
+        }
     }
 
+    function nearest_than(p, d1, n1, p2, n2) {
+        var d2 = Helper.distance(p, p2)
+        return (d1 < d2) ? {
+                               nearest: n1,
+                               distance: d1
+                           } : {
+            nearest: n2,
+                     distance: d2
+        }
+    }
+
+    function change_marked(nearest) {
+        var _path = get_path()
+        if (marked >= 0 && marked < _path.length) {
+            vertex_markers[marked].color = green
+            _dashed_line.reset()
+        } else if (marked >= _path.length && marked < 2 * _path.length) {
+            add_markers[marked - _path.length].color = orange
+        }
+        marked = nearest
+        if (marked >= 0 && marked < _path.length) {
+            vertex_markers[marked].color = red
+            if (_path.length > 3) {
+                _dashed_line.replaceCoordinate(0, next_in_path(marked, 1))
+                _dashed_line.replaceCoordinate(1, prev_in_path(marked, 1))
+            }
+        } else if (marked >= _path.length && marked < 2 * _path.length) {
+            add_markers[marked - _path.length].color = red
+        }
+        _handle.center_select(marked === 2 * _path.length)
+        _handle.handle_select(marked === 2 * _path.length + 1)
+    }
+
+    function update_markers_scale() {
+        var a = map.toCoordinate(Qt.point(0, 0))
+        var b = map.toCoordinate(Qt.point(0, 1))
+        var p2m = a.distanceTo(b)
+        var r = 10 * p2m
+        for (var i = 0; i < vertex_markers.length; i++)
+            vertex_markers[i].radius = r
+        for (var i = 0; i < add_markers.length; i++)
+            add_markers[i].radius = r
+        _handle.h_radius = r
+        a_marker.zoomLevel = map.zoomLevel / 2 + 9
+        b_marker.zoomLevel = map.zoomLevel / 2 + 9
+    }
+
+    //////////////////////////////////////////////
+    // Event handlers for definition of simple, non-intersecting polygon
     function click_handler_simple(mouse) {
         var m = Qt.point(mouse.x, mouse.y)
         var p = map.toCoordinate(m)
@@ -340,13 +362,13 @@ MapPolyline {
             if (!detection_intersect)
                 addCoordinate(p)
         }
-        if (mouse.button & Qt.RightButton && !detection_intersect) {
-            if (path.length >= 3) {
+        if (mouse.button & Qt.RightButton) {
+            if (path.length >= 3 && !detection_intersect) {
                 var ppp = []
                 for (var i = 0; i < path.length - 1; i++)
                     ppp.push(map.fromCoordinate(path[i], false))
-                if (!Helper.polylines_disjoint([ppp[0], ppp[ppp.length - 1]],
-                                               ppp))
+                var closing_side = [ppp[0], ppp[ppp.length - 1]]
+                if (!Helper.polylines_disjoint(closing_side, ppp))
                     return
                 var p1 = map.fromCoordinate(coordinateAt(0))
                 var pp = path
@@ -360,6 +382,30 @@ MapPolyline {
         }
     }
 
+    function pos_changed_handler_simple(mouse) {
+        var p = Qt.point(mouse.x, mouse.y)
+        var pf = map.toCoordinate(p)
+        var last_idx = pathLength() - 1
+        var color = cyan
+
+        var ppp = []
+        detection_intersect = false
+        for (var i = 0; i < path.length - 1; i++)
+            ppp.push(map.fromCoordinate(path[i], false))
+        if (path.length > 3) {
+            var new_side = [p, ppp[ppp.length - 1]]
+            if (!Helper.polylines_disjoint(new_side, ppp)) {
+                color = red
+                pf = coordinateAt(path.length - 1)
+                detection_intersect = true
+            }
+        }
+        line.color = color
+        replaceCoordinate(last_idx, pf)
+    }
+
+    //////////////////////////////////////////////
+    // Logic for definition of rectangle
     function click_handler_rect(mouse) {
         if (mouse.button & Qt.LeftButton) {
             if (polygonal_phase === 0) {
@@ -432,6 +478,20 @@ MapPolyline {
         }
     }
 
+    //////////////////////////////////////////////
+    // Logic for definition of simple, convex polygon
+
+    //FIXME: check it in the euclidean plane
+    // used during polygon definition, supposing to close the polygon with
+    // point pc as the last added point
+    function map_polygon_point_admissibility(pc) {
+        var pa = map.fromCoordinate(path[pathLength() - 3])
+        var pb = map.fromCoordinate(path[pathLength() - 2])
+        var pd = map.fromCoordinate(path[0])
+        var pe = map.fromCoordinate(path[1])
+        return Helper.coherent_points_direction([pa, pb, pc, pd, pe], polygonal_direction)
+    }
+
     function pos_changed_handler_convex(mouse, box) {
         if (polygonal_phase === 0)
             return
@@ -464,7 +524,7 @@ MapPolyline {
             } else if (polygonal_phase === 2) {
                 var p1 = map.fromCoordinate(path[0])
                 var p2 = map.fromCoordinate(path[1])
-                poligonal_direction = Helper.three_point_direction(p1, p2, m)
+                polygonal_direction = Helper.three_point_direction(p1, p2, m)
                 addCoordinate(p)
                 polygonal_phase = 3
             } else if (polygonal_phase === 3) {
@@ -478,6 +538,10 @@ MapPolyline {
         }
     }
 
+
+
+    //////////////////////////////////////////////
+    // Event handlers for polygon editing
     property var moving_idx: -1
     property var marked: -1
     property bool translating: false
@@ -495,113 +559,14 @@ MapPolyline {
         return (translating || rotating) ? disable_markers() : enable_markers()
     }
 
-    function nearest_marker(point, markers, nearest, thresh) {
-        for (var i = 0; i < markers.length; i++) {
-            var v = map.fromCoordinate(markers[i].center)
-            var d = Helper.distance(point, v)
-            if (d < thresh) {
-                thresh = d
-                nearest = i
-            }
-        }
-        return {
-            nearest: nearest,
-            distance: thresh
-        }
-    }
-
-    function nearest_than(p, d1, n1, p2, n2) {
-        var d2 = Helper.distance(p, p2)
-        return (d1 < d2) ? {
-                               nearest: n1,
-                               distance: d1
-                           } : {
-            nearest: n2,
-                     distance: d2
-        }
-    }
-
-    function change_marked(nearest) {
-        var _path = get_path()
-        if (marked >= 0 && marked < _path.length) {
-            vertex_markers[marked].color = green
-            _dashed_line.reset()
-        } else if (marked >= _path.length && marked < 2 * _path.length) {
-            add_markers[marked - _path.length].color = orange
-        }
-        marked = nearest
-        if (marked >= 0 && marked < _path.length) {
-            vertex_markers[marked].color = red
-            if (_path.length > 3) {
-                _dashed_line.replaceCoordinate(0, get_next_in_path(marked, 1))
-                _dashed_line.replaceCoordinate(1, get_prev_in_path(marked, 1))
-            }
-        } else if (marked >= _path.length && marked < 2 * _path.length) {
-            add_markers[marked - _path.length].color = red
-        }
-        _handle.center_select(marked === 2 * _path.length)
-        _handle.handle_select(marked === 2 * _path.length + 1)
-    }
-
-    function change_coordinate(idx, coord) {
-        replaceCoordinate(idx, coord)
-        vertex_markers[idx].center = coord
-        if (idx === 0)
-            replaceCoordinate(path.length - 1, coord)
-        update_centroid()
-    }
-
-    function remove_coordinate(idx) {
-        removeCoordinate(idx)
-        if (idx === 0)
-            replaceCoordinate(pathLength() - 1, path[0])
-        map.removeMapItem(add_markers[idx])
-        map.removeMapItem(vertex_markers[idx])
-        add_markers.splice(idx, 1)
-        vertex_markers.splice(idx, 1)
-        reposition_add_markers()
-        update_centroid()
-    }
-
-    function add_mid_coordinate(_idx) {
-        var idx = _idx + 1
-        add_markers[_idx].color = orange
-        var c = add_markers[_idx].center
-        insertCoordinate(idx, c)
-        var marker1 = mapMarkerComponent.createObject(map)
-        map.addMapItem(marker1)
-        marker1.center = c
-        marker1.opacity = 1
-        marker1.color = green
-        vertex_markers.splice(idx, 0, marker1)
-        var marker2 = mapMarkerComponent.createObject(map)
-        map.addMapItem(marker2)
-        marker2.center = c
-        marker2.opacity = 0
-        marker2.color = orange
-        add_markers.splice(idx, 0, marker2)
-    }
-
-    function move_coordinates(center) {
-        for (var i = 0; i < path.length; i++) {
-            var c = path[i]
-            var cn = QtPositioning.coordinate(
-                        c.latitude - centroid.latitude + center.latitude,
-                        c.longitude - centroid.longitude + center.longitude)
-            replaceCoordinate(i, cn)
-        }
-        update_centroid()
-    }
-
-    function rotate_and_scale_coordinates(angle, scale) {
-        for (var i = 0; i < path.length; i++) {
-            var c = path[i]
-            var d = centroid.distanceTo(c)
-            var a = centroid.azimuthTo(c)
-            var cn = centroid.atDistanceAndAzimuth(d * scale, a + angle)
-            replaceCoordinate(i, cn)
-        }
-        _handle.update_canvas(angle)
+    //FIXME: check it in the euclidean plane
+    //used during polygon edit, assuming pc as the point that is being dragged
+    function map_polygon_point_mod_admissibility(pc, idx) {
+        var pa = map.fromCoordinate(prev_in_path(idx, 2))
+        var pb = map.fromCoordinate(prev_in_path(idx, 1))
+        var pd = map.fromCoordinate(next_in_path(idx, 1))
+        var pe = map.fromCoordinate(next_in_path(idx, 2))
+        return Helper.coherent_points_direction([pa, pb, pc, pd, pe])
     }
 
     function click_mod_handler(mouse) {
@@ -632,9 +597,10 @@ MapPolyline {
                     moving_idx = nearest
                 } else if (nearest >= _path.length
                            && nearest < 2 * _path.length) {
-                    add_mid_coordinate(nearest - _path.length)
-                    enable_markers()
-                    disable_add_markers()
+                    split_edge(nearest - _path.length)
+                    generate_markers()
+                    reposition_markers()
+                    enable_vertex_markers()
                     disable_handle()
                     moving_idx = nearest - _path.length + 1
                 } else if (nearest === 2 * _path.length) {
@@ -646,7 +612,9 @@ MapPolyline {
                 if (nearest >= 0 && nearest < _path.length) {
                     if (_path.length > 3) {
                         remove_coordinate(nearest)
-                        enable_add_markers()
+                        generate_markers()
+                        reposition_markers()
+                        enable_markers()
                     }
                 }
             }
@@ -687,8 +655,9 @@ MapPolyline {
             }
             line.color = color
             change_coordinate(moving_idx, pf)
+            vertex_markers[moving_idx].center = pf
         } else if (translating) {
-            move_coordinates(map.toCoordinate(p))
+            translate_coordinates(map.toCoordinate(p))
         } else if (rotating) {
             var scale = _handle.h_center.distanceTo(
                         pf) / _handle.h_center.distanceTo(_handle.h_handle)
@@ -699,35 +668,12 @@ MapPolyline {
         }
     }
 
-    function update_centroid() {
-        var _path = get_path()
-        centroid = Helper.coords_centroid(_path)
-        var c_p = map.fromCoordinate(centroid)
-        _handle.h_center = centroid
-        _handle.h_handle = map.toCoordinate(Qt.point(c_p.x - 40, c_p.y), false)
-    }
 
-    function update_scale() {
-        var a = map.toCoordinate(Qt.point(0, 0))
-        var b = map.toCoordinate(Qt.point(0, 1))
-        var p2m = a.distanceTo(b)
-        var r = 10 * p2m
-        for (var i = 0; i < vertex_markers.length; i++)
-            vertex_markers[i].radius = r
-        for (var i = 0; i < add_markers.length; i++)
-            add_markers[i].radius = r
-        _handle.h_radius = r
-        a_marker.zoomLevel = map.zoomLevel / 2 + 9
-        b_marker.zoomLevel = map.zoomLevel / 2 + 9
-    }
 
-    function close_polygon() {
-        replaceCoordinate(pathLength() - 1, path[0])
-        mapMouseArea.hoverEnabled = false
-        line.color = green
-        polygonal_phase = 0
-        end()
-    }
+
+
+
+
 
     function generate_path() {
         if (!(_method === "simple" || _method === "single_winding"))
@@ -736,7 +682,7 @@ MapPolyline {
         var orig_tilt = map.tilt
         map.tilt = 0
 
-        var shape_coords = path.slice(0, pathLength() - 1)
+        var shape_coords = get_path()
 
         centroid = Helper.coords_centroid(shape_coords)
         var limits = Helper.shape_geo_limits(shape_coords)
@@ -786,31 +732,21 @@ MapPolyline {
         map.tilt = orig_tilt
     }
 
-    function to_debug_canvas(pt, limits, lam, lom, canvas) {
-        var scale = 1
-        return Qt.point(
-                    canvas.canvasSize.width - (canvas.canvasSize.width / 2.0 + pt.x / scale),
-                    canvas.canvasSize.height / 2.0 + pt.y / scale)
-    }
 
+    /////////////////////////////////////////////////
+    // Editing/finalization utilities
     property var backup_path
-    property var backup_vertex_markers
-    property var backup_add_markers
-    property var backup_centroid
 
     function begin_edit() {
         mapMouseArea.hoverEnabled = true
         moving_idx = -1
         backup_path = path
-        backup_centroid = centroid
-        backup_vertex_markers = vertex_markers
-        backup_add_markers = add_markers
-        _canvas.clear_canvas()
         reposition_markers()
         reposition_handle()
         enable_markers()
         enable_handle()
         disable_ab_markers()
+        _canvas.clear_canvas()
     }
 
     function discard_edit() {
@@ -819,9 +755,8 @@ MapPolyline {
         translating = false
         rotating = false
         path = backup_path
-        vertex_markers = backup_vertex_markers
-        add_markers = backup_add_markers
-        centroid = backup_centroid
+        update_centroid()
+        generate_markers()
         reposition_markers()
         disable_markers()
         disable_handle()
@@ -855,6 +790,27 @@ MapPolyline {
         }
     }
 
+
+    //////////////////////////////////////////////////////////
+    // Draw utilities
+    function _draw() {
+        if (_method != null || _method !== undefined) {
+            generate_path()
+            draw_path()
+        }
+        generate_markers()
+        reposition_markers()
+        disable_markers()
+        disable_handle()
+    }
+
+    function draw_deferred() {
+        if (_canvas.canvasCtx !== null && _canvas.canvasCtx !== undefined)
+            _draw()
+        else
+            _canvas.canvasCtxChanged.connect(_draw)
+    }
+
     function draw_path() {
         // clear the canvas
         _canvas.clear_canvas()
@@ -869,6 +825,9 @@ MapPolyline {
             Helper.draw_manouvre_single_winding(_canvas, intersections_canvas)
     }
 
+
+    ////////////////////////////////////////////////////////
+    // Serialization/deserialization, rasterization
     function generate_nurbs() {
         var nurb_l = []
         var nurb_c = []
@@ -876,7 +835,7 @@ MapPolyline {
             var p0 = intersections_cartesian[i][i % 2]
             var p1 = intersections_cartesian[i][(i + 1) % 2]
             nurb_l.push(Helper.generate_nurb_line(p0, p1))
-        } //FIXME reverse each even (or odd?) line
+        }
 
         for (var i = 0; i < intersections_cartesian.length - 1; i++) {
             var dir = (i + 1) % 2
@@ -898,7 +857,6 @@ MapPolyline {
             curves: curves,
             direction: direction
         }
-        console.log(JSON.stringify(result))
         return result
     }
 
@@ -924,7 +882,6 @@ MapPolyline {
     }
 
     function deserialize(data) {
-
         var lat, lon
         for (var j = 0; j < data.values.length; j++) {
             lat = data.values[j].latitude
@@ -937,7 +894,21 @@ MapPolyline {
         _method = data.params.method
     }
 
+    ///////////////////////////////////////////////////
+    // Safety
+    function check_safe(box) {
+        var bpp = [], ppp = []
+        for (var i in box.path)
+            bpp.push(map.fromCoordinate(box.path[i], false))
+        for (var i in path)
+            ppp.push(map.fromCoordinate(path[i], false))
+        safe = Helper.polylines_disjoint(bpp, ppp)
+                && Helper.coord_inside_polygon(path[0], box.path)
+        return safe
+    }
+
+
     function highlighted(yes) {
-        line.color = yes ? orange : lightgreen
+        //line.color = yes ? orange : lightgreen
     }
 }

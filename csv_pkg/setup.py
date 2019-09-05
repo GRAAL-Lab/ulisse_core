@@ -43,6 +43,7 @@ setup(
             'make_circle = csv_pkg.make_circle:main',
             'make_ellipse = csv_pkg.make_ellipse:main',
             'finish_experiment = csv_pkg.finish_experiment:main',
+            'test_node = csv_pkg.test_node:main',
         ],
     },
 )
