@@ -230,7 +230,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         }
 
         std::stringstream log;
-        log << "Setting Bounding Box: " << polygon_;
+        log << "Setting Bounding Box: " << request->boundaries_json;
         publishLog(log.str().c_str());
     };
 
