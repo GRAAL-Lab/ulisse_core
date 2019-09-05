@@ -48,17 +48,17 @@ def main(args=None):
         rclpy.spin_once(g_node)
         
     if len(sys.argv) > 2:
-    	R1 = str(sys.argv[1])
-        R2 = str(sys.argv[2])
+        R_min = str(sys.argv[1])
+        R_max = str(sys.argv[2])
     else:
-        R1 = str(10)
-        R2 = str(20)
+        R_min = str(10)
+        R_max = str(20)
 
-    print("Making a ellipse with R1 " + R1 + " and R2 " + R2)
+    print("Making a ellipse with R_min " + R_min + " and R_max " + R_max)
 
     req = ControlCommand.Request()
     req.command_type = "navigate_command"
-    req.nav_cmd.nurbs_json = "{\"centroid\":[" + str(latitude) +"," + str(longitude) + "],\"curves\":[{\"degree\":2,\"knots\":[0,0,0,0.25,0.25,0.5,0.5,0.75,0.75,1,1,1],\"points\":[[0,-" + R1 + "],[-" + R1 + ",-" + R1 + "]," +  "[-" + R1 + ",0],[-" + R1 + "," + R1 + "],[0," + R1 + "],[" + R1 + "," + R1 + "],[" + R1 + ",0],[" + R1 + ",-" + R1 + "]," + "[0,-" + R1 + "]],\"weigths\":[1,0.707,1,0.707,1,0.707,1,0.707,1]}],\"direction\":0}"
+    req.nav_cmd.nurbs_json = "{\"centroid\":[" + str(latitude) +"," + str(longitude) + "],\"curves\":[{\"degree\":2,\"knots\":[0,0,0,0.25,0.25,0.5,0.5,0.75,0.75,1,1,1],\"points\":[[0,-" + R_min + "],[-" + R_max + ",-" + R_min + "]," +  "[-" + R_max + ",0],[-" + R_max + "," + R_min + "],[0," + R_min + "],[" + R_max + "," + R_min + "],[" + R_max + ",0],[" + R_max + ",-" + R_min + "]," + "[0,-" + R_min + "]],\"weigths\":[1,0.707,1,0.707,1,0.707,1,0.707,1]}],\"direction\":0}"
 
     while not clients.wait_for_service(timeout_sec=1.0):
         g_node.get_logger().info('service not available, waiting again...')
