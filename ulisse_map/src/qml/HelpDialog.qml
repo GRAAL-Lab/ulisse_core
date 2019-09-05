@@ -1,7 +1,13 @@
-import QtQuick 2.5
-import QtQuick.Layouts 1.3
-import QtQuick.Controls 2.1
-import QtQuick.Controls.Material 2.1
+import QtQuick 2.11
+import QtQuick.Controls 2.4
+import QtQuick.Controls.Material 2.4
+import QtQuick.Controls.Universal 2.4
+import QtQuick.Dialogs 1.2
+import QtQuick.Layouts 1.11
+import QtQuick.Window 2.4
+import QtLocation 5.11
+import QtPositioning 5.11
+import Qt.labs.settings 1.0
 import QtGraphicalEffects 1.0
 import "."
 
@@ -11,8 +17,7 @@ Dialog {
     id: dialog
     property alias dialog: dialog
 
-    modal: true
-    focus: true
+    modality: "ApplicationModal"
 
     standardButtons: Dialog.Ok
     onAccepted: {
@@ -23,8 +28,8 @@ Dialog {
     contentItem: ColumnLayout {
         id: helpColumn
         spacing: 10
-        width: parent.width
-        height: parent.height
+        width: dialog.width
+        height: dialog.height
 
         Label {
             id: shortcutsTitle

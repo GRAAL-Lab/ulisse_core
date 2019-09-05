@@ -1,11 +1,12 @@
-import QtQuick 2.9
-import QtQuick.Layouts 1.3
-import QtQuick.Controls 2.2
-import QtLocation 5.6
-import QtPositioning 5.6
-import QtQuick.Controls.Material 2.1
-import QtGraphicalEffects 1.0
+import QtQuick 2.11
+import QtQuick.Controls 2.4
+import QtQuick.Controls.Material 2.4
 import QtQuick.Dialogs 1.2
+import QtQuick.Layouts 1.11
+import QtLocation 5.11
+import QtPositioning 5.11
+import Qt.labs.settings 1.0
+import QtGraphicalEffects 1.0
 import "."
 
 RowLayout {
