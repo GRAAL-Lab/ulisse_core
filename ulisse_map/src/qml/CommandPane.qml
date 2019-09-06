@@ -14,6 +14,7 @@ Pane {
 
     property var buttonSafety: buttonSafety
     property var trackComponent
+    visible: true
 
     Layout.fillWidth: true
     Layout.fillHeight: true
@@ -28,12 +29,247 @@ Pane {
         spacing: 0
 
         Label {
+            color: green
+            text: "Parameters"
+            Layout.bottomMargin: 10
+            Layout.topMargin: 20
+            antialiasing: false
+            font.weight: Font.DemiBold
+            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+            font.pointSize: 12
+        }
+
+        Rectangle {
+            id: rectangle1
+            width: 200
+            height: 70
+
+            color: "#00ffffff"
+            Layout.fillWidth: true
+
+            ColumnLayout {
+                y: 0
+                anchors.right: parent.right
+                anchors.rightMargin: 0
+                anchors.left: parent.left
+                anchors.leftMargin: 0
+                id: b1
+
+                Label {
+                    id: label1
+                    text: qsTr("Cruise speed")
+                    font.pointSize: 12
+                    Layout.fillWidth: true
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
+                }
+
+                RowLayout {
+                    spacing: 5
+                    Layout.topMargin: 0
+                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                    Layout.fillWidth: true
+
+                    Slider {
+                        id: speedText
+                        width: 250
+                        height: 48
+                        Layout.leftMargin: 0
+                        Layout.fillWidth: true
+                        to: 5
+                        from: 0.1
+                        stepSize: 0.1
+                        value: 1
+                    }
+
+                    Text {
+                        id: element
+                        width: 80
+                        height: 48
+                        text: speedText.value.toFixed(1) + " m/s"
+                        Layout.maximumWidth: 65
+                        Layout.minimumWidth: 65
+                        Layout.preferredWidth: 65
+                        Layout.rightMargin: 0
+                        verticalAlignment: Text.AlignVCenter
+                        horizontalAlignment: Text.AlignLeft
+                        Layout.fillHeight: true
+                        Layout.leftMargin: 10
+                        Layout.fillWidth: false
+                        font.pixelSize: 18
+                    }
+                }
+
+            }
+
+        }
+
+        Rectangle {
+            id: rectangle2
+            width: 200
+            height: 70
+            color: "#00ffffff"
+            Layout.fillWidth: true
+            ColumnLayout {
+                id: b2
+                y: 0
+                anchors.rightMargin: 0
+                anchors.left: parent.left
+                anchors.right: parent.right
+                Label {
+                    id: label2
+                    text: qsTr("Acceptance radius")
+                    font.pointSize: 12
+                    Layout.fillWidth: true
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                    Slider {
+                        id: holdRadius
+                        width: 250
+                        value: 5
+                        Layout.fillWidth: true
+                        Layout.leftMargin: 0
+                        stepSize: 0.1
+                        from: 0.5
+                        to: 10
+                    }
+
+                    Text {
+                        id: element1
+                        width: 80
+                        text: holdRadius.value.toFixed(1) + " m"
+                        Layout.maximumWidth: 65
+                        Layout.preferredWidth: 65
+                        Layout.minimumWidth: 65
+                        Layout.leftMargin: 10
+                        Layout.fillWidth: false
+                        font.pixelSize: 18
+                        Layout.rightMargin: 0
+                        horizontalAlignment: Text.AlignLeft
+                        Layout.fillHeight: true
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                }
+                anchors.leftMargin: 0
+            }
+        }
+
+        Label {
             Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
             font.pointSize: 12
             font.weight: Font.DemiBold
             color: green
             text: "Commands"
+            Layout.bottomMargin: 10
+            Layout.topMargin: 20
             antialiasing: false
+        }
+
+        Rectangle {
+            clip: true
+            id: rectangle0
+            width: 200
+            height: 110
+            color: "transparent"
+            Layout.fillHeight: false
+            Layout.fillWidth: true
+
+            RowLayout {
+                id: speedHeadingRow
+                anchors.top: parent.top
+                anchors.right: parent.right
+                anchors.rightMargin: 0
+                anchors.left: parent.left
+                anchors.leftMargin: 0
+                anchors.topMargin: 0
+                antialiasing: true
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                Rectangle {
+                    id: rectangle3
+                    width: 200
+                    height: 70
+                    color: "#00ffffff"
+                    Layout.fillWidth: true
+                    ColumnLayout {
+                        id: b3
+                        y: 0
+                        anchors.rightMargin: 0
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        Label {
+                            id: label3
+                            text: qsTr("Heading")
+                            font.pointSize: 12
+                            Layout.fillWidth: true
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                        RowLayout {
+                            Layout.fillWidth: true
+                            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                            Slider {
+                                id: headingText
+                                width: 250
+                                wheelEnabled: false
+                                value: 5
+                                Layout.leftMargin: 0
+                                Layout.fillWidth: true
+                                stepSize: 0.1
+                                from: 0
+                                to: 359.9
+                            }
+
+                            Text {
+                                id: element2
+                                width: 80
+                                text: headingText.value.toFixed(1) + " °"
+                                Layout.minimumWidth: 65
+                                Layout.fillWidth: false
+                                Layout.leftMargin: 10
+                                Layout.preferredWidth: 65
+                                font.pixelSize: 18
+                                Layout.maximumWidth: 65
+                                Layout.rightMargin: 0
+                                horizontalAlignment: Text.AlignLeft
+                                Layout.fillHeight: true
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                        }
+                        anchors.leftMargin: 0
+                    }
+                }
+            }
+
+            Button {
+                id: speedHeadButton
+                y: 42
+                text: "follow orientation"
+                anchors.right: parent.right
+                anchors.rightMargin: 0
+                anchors.left: parent.left
+                anchors.leftMargin: 0
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 0
+                antialiasing: false
+                Layout.fillWidth: true
+                Layout.fillHeight: false
+
+                highlighted: true
+                Material.background: pressed ? orange : blue
+
+                onClicked: {
+                        cmdWrapper.sendSpeedHeadingCommand(speedText.value,
+                                                           headingText.value)
+                }
+            }
         }
 
         Button {
@@ -54,189 +290,54 @@ Pane {
             }
         }
 
-        Rectangle {
-            clip: true
-            id: rectangle0
-            width: 200
-            height: 90
-            color: "transparent"
-            Layout.fillHeight: false
+
+
+        Button {
+            id: holdButton
+            text: "Hold Position"
             Layout.fillWidth: true
+            antialiasing: false
 
-            RowLayout {
-                id: speedHeadingRow
-                anchors.top: parent.top
-                anchors.right: parent.right
-                anchors.rightMargin: 0
-                anchors.left: parent.left
-                anchors.leftMargin: 0
-                anchors.topMargin: -28
-                antialiasing: true
-                Layout.fillWidth: true
-                Layout.fillHeight: true
+            highlighted: true
+            Material.background: pressed ? orange : blue
 
-                LabelledField {
-                    id: groupBox01
-                    height: contentHeight + 40
-                    Layout.fillWidth: true
-                    title: qsTr("Speed (m/s)")
-                    TextField {
-                        id: speedText
-                        width: parent.width
-                        placeholderText: qsTr("Insert speed")
-                    }
-                }
-
-                LabelledField {
-                    id: groupBox02
-                    height: contentHeight + 40
-                    Layout.fillWidth: true
-                    title: qsTr("Heading (deg)")
-
-                    TextField {
-                        id: headingText
-                        width: parent.width
-                        placeholderText: qsTr("Insert heading")
-                    }
-                }
-            }
-
-            Button {
-                id: speedHeadButton
-                y: 42
-                text: "Speed-Heading"
-                anchors.right: parent.right
-                anchors.rightMargin: 0
-                anchors.left: parent.left
-                anchors.leftMargin: 0
-                anchors.bottom: parent.bottom
-                anchors.bottomMargin: 0
-                antialiasing: false
-                Layout.fillWidth: true
-                Layout.fillHeight: false
-
-                highlighted: true
-                Material.background: pressed ? orange : blue
-
-                onClicked: {
-                    if (speedText.text !== '' && headingText.text !== '') {
-                        cmdWrapper.sendSpeedHeadingCommand(speedText.text,
-                                                           headingText.text)
-                    } else {
-                        speedHeadingDialog.open()
-                    }
-                }
+            onClicked: {
+                    cmdWrapper.sendHoldCommand(holdRadius.value)
             }
         }
 
-        Rectangle {
-            clip: true
-            id: rectangle1
-            width: 200
-            height: 90
-            color: "transparent"
-            Layout.fillHeight: false
+        Button {
+            id: moveToButton
+            text: "Move to marker"
             Layout.fillWidth: true
+            antialiasing: false
+            Material.background: pressed ? orange : blue
+            enabled: Helper.coord_inside_polygon(map.marker_coords,
+                                                 map.polysec_cur.path)
+                     && (map.markerIcon.opacity > 0)
+            highlighted: true
 
-            LabelledField {
-                id: groupBox1
-                height: contentHeight + 40
-                width: parent.width
-                anchors.top: parent.top
-                anchors.topMargin: -28
-                title: qsTr("Acceptance radius (m)")
-
-                TextField {
-                    id: holdRadius
-                    objectName: "holdRadiusText"
-                    width: parent.width
-                    placeholderText: qsTr("Insert acceptance radius")
-                }
-            }
-
-            Button {
-                id: holdButton
-                y: 32
-                text: "Hold Position"
-                anchors.bottomMargin: 0
-                anchors.right: parent.right
-                anchors.rightMargin: 0
-                anchors.left: parent.left
-                anchors.leftMargin: 0
-                anchors.bottom: parent.bottom
-                antialiasing: false
-
-                highlighted: true
-                Material.background: pressed ? orange : blue
-
-                onClicked: {
-                    if (holdRadius.text !== '') {
-                        cmdWrapper.sendHoldCommand(parseFloat(holdRadius.text))
-                    } else {
-                        acceptRadDialog.open()
-                    }
-                }
+            onClicked: {
+                cmdWrapper.sendLatLongCommand(
+                                map.marker_coords,
+                                holdRadius.value)
             }
         }
 
-        Rectangle {
-            clip: true
-            id: rectangle2
-            width: 200
-            height: 90
-            color: "transparent"
-            Layout.fillHeight: false
-            Layout.fillWidth: true
-
-            LabelledField {
-                id: groupBox2
-                height: contentHeight + 40
-                width: parent.width
-                anchors.top: parent.top
-                anchors.topMargin: -28
-                clip: true
-                title: qsTr("Acceptance radius (m)")
-
-                TextField {
-                    id: moveToRadius
-                    objectName: "moveToRadiusText"
-                    width: parent.width
-                    placeholderText: qsTr("Insert acceptance radius")
-                }
-            }
-            Button {
-                id: moveToButton
-                y: 32
-                text: "Move to marker"
-                anchors.bottomMargin: 0
-                anchors.right: parent.right
-                anchors.rightMargin: 0
-                anchors.left: parent.left
-                anchors.leftMargin: 0
-                anchors.bottom: parent.bottom
-                antialiasing: false
-                Material.background: pressed ? orange : blue
-                enabled: Helper.coord_inside_polygon(map.marker_coords,
-                                                     map.polysec_cur.path)
-                         && (map.markerIcon.opacity > 0)
-                highlighted: true
-
-                onClicked: {
-                    if (moveToRadius.text !== '') {
-                        if (cmdWrapper.sendLatLongCommand(
-                                    map.marker_coords,
-                                    parseFloat(moveToRadius.text))) {
-
-                        }
-                    } else {
-                        acceptRadDialog.open()
-                    }
-                }
-            }
+        Label {
+            color: green
+            text: "Planning"
+            Layout.bottomMargin: 10
+            Layout.topMargin: 20
+            antialiasing: false
+            font.weight: Font.DemiBold
+            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+            font.pointSize: 12
         }
 
         RowLayout {
             id: rectid
+            Layout.fillWidth: true
             RowLayout {
                 id: loadSavePath
                 Layout.fillWidth: true
@@ -317,6 +418,33 @@ Pane {
                 }
             }
         }
+
+        Rectangle {
+            id: rectangle
+            width: 200
+            height: 200
+            color: "#ffffff"
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     }
 
     FileDialog {
@@ -416,3 +544,10 @@ Pane {
         toast.show("Mission loaded", 2000)
     }
 }
+
+/*##^##
+Designer {
+    D{i:0;autoSize:true;height:10;width:640}D{i:5;anchors_x:0}D{i:4;anchors_x:0}D{i:11;anchors_x:0}
+D{i:10;anchors_x:0}D{i:20;anchors_x:0}D{i:19;anchors_x:0}
+}
+##^##*/
