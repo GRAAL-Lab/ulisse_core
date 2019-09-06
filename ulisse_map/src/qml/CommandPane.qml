@@ -79,6 +79,10 @@ Pane {
                         from: 0.1
                         stepSize: 0.1
                         value: 1
+                        onPressedChanged: function() {
+                            if (speedText.pressed === false)
+                                cmdWrapper.setCruiseSpeedCommand(speedText.value)
+                        }
                     }
 
                     Text {
@@ -546,7 +550,7 @@ Pane {
 
 /*##^##
 Designer {
-    D{i:0;autoSize:true;height:10;width:640}D{i:5;anchors_x:0}D{i:4;anchors_x:0}D{i:11;anchors_x:0}
+    D{i:0;height:834;width:640}D{i:5;anchors_x:0}D{i:4;anchors_x:0}D{i:11;anchors_x:0}
 D{i:10;anchors_x:0}D{i:20;anchors_x:0}D{i:19;anchors_x:0}
 }
 ##^##*/

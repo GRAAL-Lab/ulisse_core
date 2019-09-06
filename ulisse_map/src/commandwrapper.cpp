@@ -62,6 +62,7 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
     }
 
     command_srv_ = np_->create_client<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service);
+    cruise_srv_ = np_->create_client<ulisse_msgs::srv::SetCruiseControl>(ulisse_msgs::topicnames::set_cruise_control_service);
     boundary_srv_ = np_->create_client<ulisse_msgs::srv::SetBoundaries>(ulisse_msgs::topicnames::set_boundaries_service);
 
     rmw_qos_profile_t custom_qos_profile = rmw_qos_profile_sensor_data;
@@ -197,6 +198,32 @@ bool CommandWrapper::sendSpeedHeadingCommand(double speed, double heading)
     serviceReq->sh_cmd.timeout.sec = (speedHeadTimoutObj_->property("text")).toUInt();
     serviceReq->sh_cmd.timeout.nanosec = 0;
     return SendCommandRequest(serviceReq);
+}
+
+bool CommandWrapper::setCruiseSpeedCommand(double speed)
+{
+    std::string result_msg;
+    bool serviceAvailable;
+    auto req = std::make_shared<ulisse_msgs::srv::SetCruiseControl::Request>();
+    req->cruise_control = speed;
+    if (cruise_srv_->service_is_ready()) {
+        auto result_future = cruise_srv_->async_send_request(req);
+        std::cout << "Sent Request to controller" << std::endl;
+        if (rclcpp::spin_until_future_complete(np_, result_future) != rclcpp::executor::FutureReturnCode::SUCCESS) {
+            result_msg = "service call failed :(";
+            RCLCPP_ERROR(np_->get_logger(), result_msg.c_str());
+        } else {
+            auto result = result_future.get();
+            result_msg = "Service returned: " + result->res;
+            RCLCPP_INFO(np_->get_logger(), result_msg.c_str());
+        }
+        serviceAvailable = true;
+    } else {
+        result_msg = "No Command Server Available";
+        serviceAvailable = false;
+    }
+    ShowToast(result_msg.c_str(), 2000);
+    return serviceAvailable;
 }
 
 bool CommandWrapper::startPath()
