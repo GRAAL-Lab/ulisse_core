@@ -252,6 +252,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 
         state_navigate_.SetCruiseControl(request->cruise_control);
         state_latlong_.SetCruiseControl(request->cruise_control);
+        goalCxt_->goalSurge = request->cruise_control;
         response->res = "SetCruiseControl::ok";
     };
 

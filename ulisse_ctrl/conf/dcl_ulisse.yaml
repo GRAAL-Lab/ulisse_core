@@ -40,7 +40,6 @@ low_level_control_node:
                 N: 10.0
                 Tr: 0.5
 
-
         DynamicControl:
             PIDSurge:
                 Kp: 0.4

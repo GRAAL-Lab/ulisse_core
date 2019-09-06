@@ -1,12 +1,11 @@
 
 from ulisse_msgs.msg import NavFilterData
 from ulisse_msgs.srv import ControlCommand
-from pandas import DataFrame
-import matplotlib.pyplot as plt
 import numpy as np
 import rclpy
 
 import time
+import sys
 
 from std_msgs.msg import String
 
@@ -37,7 +36,7 @@ def main(args=None):
     global latitude, longitude
     rclpy.init(args=args)
 
-    g_node = rclpy.create_node('make_curve_from_spot')
+    g_node = rclpy.create_node('make_circle_from_spot')
 
     subscription = g_node.create_subscription(NavFilterData, 'ulisse/nav_filter/data', chatter_callback)
     subscription  # prevent unused variable warning
@@ -48,7 +47,13 @@ def main(args=None):
     while not go:
         rclpy.spin_once(g_node)
         
-    radius = str(10)
+    if len(sys.argv) > 1:
+    	radius = str(sys.argv[1])
+    else:
+    	radius = str(10)
+
+    print("Making a circle with radius " + radius)
+
     req = ControlCommand.Request()
     req.command_type = "navigate_command"
     req.nav_cmd.nurbs_json = "{\"centroid\":[" + str(latitude) +"," + str(longitude) + "],\"curves\":[{\"degree\":2,\"knots\":[0,0,0,0.25,0.25,0.5,0.5,0.75,0.75,1,1,1],\"points\":[[0,-" + radius + "],[-" + radius + ",-" + radius + "]," +  "[-" + radius + ",0],[-" + radius + "," + radius + "],[0," + radius + "],[" + radius + "," + radius + "],[" + radius + ",0],[" + radius + ",-" + radius + "]," + "[0,-" + radius + "]],\"weigths\":[1,0.707,1,0.707,1,0.707,1,0.707,1]}],\"direction\":0}"
