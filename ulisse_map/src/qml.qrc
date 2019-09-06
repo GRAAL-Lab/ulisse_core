@@ -61,6 +61,5 @@
         <file>images/beta.svg</file>
         <file>images/alpha.svg</file>
         <file>qml/LabelledField.qml</file>
-        <file>qml/DoubleSpinBox.qml</file>
     </qresource>
 </RCC>
