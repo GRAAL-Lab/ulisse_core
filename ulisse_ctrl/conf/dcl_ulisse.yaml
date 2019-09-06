@@ -40,7 +40,6 @@ low_level_control_node:
                 N: 10.0
                 Tr: 0.5
 
-
         DynamicControl:
             PIDSurge:
                 Kp: 0.4
@@ -65,4 +64,4 @@ low_level_control_node:
             surge: 0.2
             heading: 8.5
 
-        sliding_mode: false
+        sliding_mode: true
