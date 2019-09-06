@@ -76,7 +76,7 @@ Pane {
                         Layout.leftMargin: 0
                         Layout.fillWidth: true
                         to: 5
-                        from: 0.1
+                        from: 0.0
                         stepSize: 0.1
                         value: 1
                         onPressedChanged: function() {
