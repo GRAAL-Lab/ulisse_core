@@ -66,7 +66,7 @@ def main(args=None):
     future = clients.call_async(req)
     rclpy.spin_until_future_complete(g_node, future)
 
-    g_node.get_logger().info('Make Circle Finished')
+    g_node.get_logger().info('Make Ellipse Finished')
 
     g_node.destroy_node()
     rclpy.shutdown()
