@@ -44,6 +44,7 @@ public:
      */
     void SetAngle(Eigen::Vector3d desiredAngle);
 
+    void SetConfidence(double confidence);
 
     void SetVehiclePoseStatus(std::shared_ptr<Eigen::Vector6d> vehiclePoseStatus);
 
@@ -71,6 +72,8 @@ protected:
     std::shared_ptr<ikcl::AngularVelocity> angularVelocityTask_;
     double angle1, angle2;
     double desired_jog;
+
+    double confidence_;
 
     Eigen::Vector3d angleBodyFrame_;
     Eigen::Matrix3d P_;

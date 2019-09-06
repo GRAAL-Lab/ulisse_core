@@ -7,6 +7,8 @@
 #include "ulisse_ctrl/helper_functions.hpp"
 #include "ulisse_ctrl/ctrl_data_structs.hpp"
 
+#include <math.h>
+
 namespace ikcl {
 
 AngularPosition::AngularPosition(std::string taskID, std::shared_ptr<rml::RobotModel> robotModel, std::string frameID, tpik::CartesianTaskType taskType)
@@ -17,6 +19,7 @@ AngularPosition::AngularPosition(std::string taskID, std::shared_ptr<rml::RobotM
 
 {
     SetControlVariable(Eigen::Vector3d(0, 0, 0));
+    confidence_ = 0;
 }
 AngularPosition::~AngularPosition() {}
 
@@ -24,6 +27,11 @@ void AngularPosition::SetAngle(Eigen::Vector3d desiredAngle)
 {
     desiredAngle_ = desiredAngle;
     isAngleInitialized_ = true;
+}
+
+void AngularPosition::SetConfidence(double confidence)
+{
+    confidence_ = confidence;
 }
 
 void AngularPosition::SetVehiclePoseStatus(std::shared_ptr<Eigen::Vector6d> vehiclePoseStatus)
@@ -43,6 +51,10 @@ void AngularPosition::Update() throw(tpik::ExceptionWithHow)
 
         // Use Versor Lemma Reduced to compute angle difference
         desired_jog = ulisse::MinimumAngleBetween((*vehiclePoseStatus_)(5), (desiredAngle_(2)));
+
+        if(std::abs(desired_jog) < confidence_){
+            desired_jog = 0;
+        }
 
         angleBodyFrame_ = Eigen::Vector3d(0, 0, desired_jog);
         angleBodyFrame_ = P_ * angleBodyFrame_;

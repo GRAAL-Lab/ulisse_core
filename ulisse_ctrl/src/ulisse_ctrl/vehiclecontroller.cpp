@@ -348,6 +348,8 @@ void VehicleController::LoadKCLConfiguration(){
     state_navigate_.SetTolleranceEndingPoint(confObj.lookup("task.PathFollowing.TolleranceEndingPoint"));
     state_navigate_.SetTolleranceStartingAngle(confObj.lookup("task.PathFollowing.TolleranceStartingAngle"));
 
+    asv_angular_position->SetConfidence(confObj.lookup("task.ASV_angular_position.confidence"));
+
     // Action Manager initialization
     std::stringstream conf_path_priority_level;
     conf_path_priority_level << homedir << "/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/conf/PriorityLevel.conf";
