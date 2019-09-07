@@ -58,10 +58,10 @@ low_level_control_node:
 
         sliding_surface:
             gain_1: 10.0
-            gain_2: 0.01
+            gain_2: 0.04
 
         sliding_control_parameter:
             surge: 0.2
-            heading: 8.5
+            heading: 9.5
 
         sliding_mode: true
