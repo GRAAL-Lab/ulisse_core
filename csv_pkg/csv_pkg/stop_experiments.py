@@ -30,6 +30,7 @@ def main(args=None):
     clients.append(node.create_client(Empty, 'ulisse/stop/llc_magnetometer_sensor'))
     clients.append(node.create_client(Empty, 'ulisse/stop/llc_compass_sensor'))
     clients.append(node.create_client(Empty, 'ulisse/stop/generic'))
+    clients.append(node.create_client(Empty, 'ulisse/stop/dcl_control'))
 
     req = Empty.Request()
 

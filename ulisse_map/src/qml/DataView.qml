@@ -245,19 +245,6 @@ Rectangle {
 
                 LabelledText {
                     Layout.alignment: Qt.AlignHCenter
-                    id: batteryPercLeft
-                    labelColor: 'tomato'
-                    label: "Battery"
-                    textColor: 'grey'
-                    text: "L: %1 \%\nR: %2 \%".arg(
-                              fbkUpdater.battery_perc_L).arg(
-                              fbkUpdater.battery_perc_R)
-                    lsize: _lsize
-                    tsize: _tsize
-                }
-
-                LabelledText {
-                    Layout.alignment: Qt.AlignHCenter
                     id: sw485status
                     labelColor: 'tomato'
                     label: "SW 485 Status"
@@ -278,6 +265,19 @@ right_satellite_sent: %9".arg(fbkUpdater.missed_deadlines485).arg(fbkUpdater.lef
 .arg(fbkUpdater.left_motor_sent485).arg(fbkUpdater.right_motor_received485).arg(fbkUpdater.right_motor_sent485)
 .arg(fbkUpdater.left_satellite_received485).arg(fbkUpdater.left_satellite_sent485)
 .arg(fbkUpdater.right_satellite_received485).arg(fbkUpdater.right_satellite_sent485); */
+                }
+
+                LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
+                    id: batteryPercLeft
+                    labelColor: 'tomato'
+                    label: "Battery"
+                    textColor: 'grey'
+                    text: "L: %1 \%\nR: %2 \%".arg(
+                              fbkUpdater.battery_perc_L).arg(
+                              fbkUpdater.battery_perc_R)
+                    lsize: _lsize
+                    tsize: _tsize
                 }
             }
         }
