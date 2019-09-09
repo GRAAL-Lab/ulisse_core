@@ -44,6 +44,7 @@ setup(
             'make_ellipse = csv_pkg.make_ellipse:main',
             'finish_experiment = csv_pkg.finish_experiment:main',
             'test_node = csv_pkg.test_node:main',
+            'dcl_log = csv_pkg.dcl_log:main',
         ],
     },
 )

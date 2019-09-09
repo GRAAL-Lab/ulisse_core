@@ -23,6 +23,8 @@ def generate_launch_description():
             package='csv_pkg', node_executable='log_llc_compass', output='screen')
     log_generic = launch_ros.actions.Node(
             package='csv_pkg', node_executable='log_generic', output='screen')
+    log_dcl = launch_ros.actions.Node(
+            package='csv_pkg', node_executable='dcl_log', output='screen')
 
 
     return LaunchDescription([
@@ -33,6 +35,7 @@ def generate_launch_description():
         log_llc_imu,
         log_llc_magnetometer,
         log_llc_compass,
-        log_generic
+        log_generic,
+        log_dcl
         # more nodes can be added here
     ])
