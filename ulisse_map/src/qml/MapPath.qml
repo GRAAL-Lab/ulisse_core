@@ -38,6 +38,7 @@ MapPolyline {
         b_marker.coordinate = QtPositioning.coordinate(
                     a_marker.coordinate.latitude, a_marker.coordinate.longitude)
         a_marker.coordinate = t
+        direction = 0
     }
 
     property string _pathName: "Path"
