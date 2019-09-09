@@ -41,15 +41,15 @@ def main(args=None):
 
     g_node = rclpy.create_node('test_service')
 
-    srv = g_node.create_client(ControlCommand, str(sys.argv[1]))
+    srv = g_node.create_client(ControlCommand, "/ulisse/service/control_cmd")
 
     while not srv.wait_for_service(timeout_sec=1.0):
         g_node.get_logger().info('service not available, waiting again...')
 
     req = ControlCommand.Request()
     req.command_type = "speedheading_command"
-    req.sh_cmd.speed = 0.0 
-    req.sh_cmd.heading = 90 * 3.14/180 
+    req.sh_cmd.speed = float(sys.argv[1])
+    req.sh_cmd.heading = float(sys.argv[2])* 3.14/180 
     future = srv.call_async(req)
     rclpy.spin_until_future_complete(g_node, future)
 

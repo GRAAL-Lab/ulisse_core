@@ -43,12 +43,6 @@ ctb::DigitalSlidingMode<struct SlidingSurface>  slideSurge;
 ctb::DigitalSecOrdSlidingMode<struct SlidingSurface> slideHeading;
 void parameter_set();
 
-void handle_service(
-        const std::shared_ptr<rmw_request_id_t> request_header,
-        const std::shared_ptr<ulisse_msgs::srv::MinSrv::Request> request,
-        const std::shared_ptr<ulisse_msgs::srv::MinSrv::Response> response
-        );
-
 bool sliding_on;
 static int rate = 10;
 static double sampleTime = 1.0 / rate;
@@ -75,8 +69,6 @@ int main(int argc, char* argv[])
 
     auto navfilter_sub = nh->create_subscription<ulisse_msgs::msg::NavFilterData>(
             ulisse_msgs::topicnames::nav_filter_data, FilterDataCB);
-
-    auto MinSrv = nh->create_service<ulisse_msgs::srv::MinSrv>("MinSrv", handle_service);
 
 
     par_client = std::make_shared<rclcpp::SyncParametersClient>(nh);
@@ -209,16 +201,6 @@ int main(int argc, char* argv[])
 
     return 0;
 }
-
-void handle_service(
-        const std::shared_ptr<rmw_request_id_t> request_header,
-        const std::shared_ptr<ulisse_msgs::srv::MinSrv::Request> request,
-        const std::shared_ptr<ulisse_msgs::srv::MinSrv::Response> response)
-{
-    std::cout << "okokokokokokokok" << std::endl;
-    response->response=true;
-}
-
 
 void parameter_set() {
 
