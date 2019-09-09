@@ -23,9 +23,12 @@ Short description of all the packages included in this meta package:
 - **ikcl**: http://bitbucket.org/isme_robotics/ikcl
 - **libgeographic**: `sudo apt install libgeographic-*`
 - **libgps**: `sudo apt install libgps-dev`
+- **libconfig++-dev**: `sudo apt install libconfig++-dev` 
+- **libz3-dev**: `sudo apt install libz3-dev`
+- **SISL lib**: `git clone https://github.com/SINTEF-Geometry/SISL.git`
 - **qt5-libraries**: When building the package on the catamaran you don't need the **ulisse_map** sub-package (so you can add a COLCON_IGNORE file inside it), and these dependencies can be skipped.Otherwise, to use the interface, type:
 
-    `sudo apt install qtquickcontrols2-5-dev qtlocation5-dev qtpositioning5-dev qml-module-qtquick-controls2 qml-module-qtlocation qml-module-qt-labs-* qml-module-qtpositioning qml-module-qtquick-extras qml-module-qtgraphicaleffects qml-module-qtquick-dialogs qml-module-qtquick-controls`
+`sudo apt install libgeographic-* libeigen3-dev libgps-dev python-gps qtquickcontrols2-5-dev qtlocation5-dev qtpositioning5-dev qml-module-qtquick-controls2 qml-module-qtlocation qml-module-qt-labs-* qml-module-qtpositioning qml-module-qtquick-extras qml-module-qtgraphicaleffects qml-module-qtquick-dialogs qml-module-qtquick-controls python3-colcon-common-extensions libconfig++-dev python3-pip libz3-dev`
 
 ### Additional packages not coming with ros2
 
