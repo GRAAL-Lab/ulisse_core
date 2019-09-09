@@ -49,6 +49,7 @@ void AngularPosition::Update() throw(tpik::ExceptionWithHow)
 
         // desired_jog = pidHeading.Compute(desiredAngle_(2), (*vehicleAngleStatus_)(2));
 
+        desiredAngle_(2) = ctb::FilterAngularJump((*vehiclePoseStatus_)(5), desiredAngle_(2));
         // Use Versor Lemma Reduced to compute angle difference
         desired_jog = ulisse::MinimumAngleBetween((*vehiclePoseStatus_)(5), (desiredAngle_(2)));
 
