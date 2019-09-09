@@ -29,6 +29,7 @@ RowLayout {
 
     spacing: 0
     width: window.width
+    property alias engine: engine
     Plugin {
         id: mapPlugin
         name: settings.mapPluginType
@@ -142,32 +143,44 @@ RowLayout {
                 anchors.fill: parent
                 width: parent.width
                 height: parent.height - recenterButton.height
+                spacing: 2
 
                 Button {
                     id: recenterButton
                     text: "Recenter"
                     highlighted: true
                     Material.background: blue
-                    Layout.leftMargin: 5
-                }
-
-                CheckBox {
-                    id: followMeCheckbox
-                    text: "Follow vehicle"
-                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                    Material.accent: mainColor
-                    checked: false
+                    Layout.leftMargin: 10
                 }
 
                 Button {
                     id: clearPathButton
                     anchors.rightMargin: parent.anchors.rightMargin
-                    //Layout.rightMargin: 5
                     text: "Clear trace"
                     highlighted: true
                     Material.accent: orange
+                    Layout.alignment: Qt.AlignLeft
+                    anchors.left: recenterButton.right
+                    anchors.leftMargin: 10
+                }
+                CheckBox {
+                    id: followMeCheckbox
+                    text: "Follow vehicle"
+                    Layout.alignment: Qt.AlignLeft
+                    anchors.left: clearPathButton.right
+                    Material.accent: mainColor
+                    checked: false
+                    anchors.leftMargin: 10
+                }
+                Button {
+                    id: engine
+                    anchors.rightMargin: parent.anchors.rightMargin
+                    //Layout.rightMargin: 5
+                    text: "engine"
+                    highlighted: true
+                    Material.accent: red
                     Layout.alignment: Qt.AlignRight
-                    Layout.rightMargin: 5
+                    Layout.rightMargin: 20
                 }
             }
         }
