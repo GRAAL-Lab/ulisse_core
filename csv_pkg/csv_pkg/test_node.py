@@ -63,7 +63,7 @@ def main(args=None):
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically
     # when the garbage collector destroys the node object)
-    df = DataFrame(e, columns= ['time', 'surge_error','yawr_error', 'surge_control','yawr_control'])
+    df = DataFrame(e, columns= ['time', 'surge_ref','yawr_ref', 'surge_out','yawr_out'])
     export_csv = df.to_csv (r'export_dataframe.csv', index = None, header=True)
     
     req.command_type = "speedheading_command"
