@@ -38,7 +38,6 @@ MapPolyline {
         b_marker.coordinate = QtPositioning.coordinate(
                     a_marker.coordinate.latitude, a_marker.coordinate.longitude)
         a_marker.coordinate = t
-        direction = 0
     }
 
     property string _pathName: "Path"
@@ -165,6 +164,8 @@ MapPolyline {
         reposition_vertex_markers()
         a_marker.coordinate = path[0]
         b_marker.coordinate = path[path.length - 1]
+        if (direction === 1) toggle_dir()
+        direction = 1
     }
 
     function enable_handle() {
