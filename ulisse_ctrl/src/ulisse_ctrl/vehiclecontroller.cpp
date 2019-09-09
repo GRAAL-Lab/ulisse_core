@@ -212,7 +212,6 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
                 polygon_ = polygon_ + boost::lexical_cast<std::string>(p[0]) + " " + boost::lexical_cast<std::string>(p[1]);
                 polygon_2_ = polygon_2_ + boost::lexical_cast<std::string>(latitude) + " " + boost::lexical_cast<std::string>(longitude);
 
-
             }
         } catch (Json::Exception& e) {
             // output exception information

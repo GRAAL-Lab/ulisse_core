@@ -233,6 +233,7 @@ MapPolyline {
         b_marker.coordinate = intersections_geographic[intersections_geographic.length
                                                        - 1][(intersections_geographic.length
                                                              % 2 === 0) ? 0 : 1]
+        direction = 0
     }
 
     function enable_handle() {
