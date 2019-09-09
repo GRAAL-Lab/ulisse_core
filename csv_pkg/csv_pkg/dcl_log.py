@@ -17,10 +17,10 @@ g_node = None
 
 e = dict()
 e['time'] = []
-e['surge_ref'] = []
-e['yawr_ref'] = []
-e['surge_out'] = []
-e['yawr_out'] = []
+e['surge_fbk'] = []
+e['yawr_fbk'] = []
+e['surge_desired'] = []
+e['yawr_desired'] = []
 e['thruster_map_right'] = []
 e['thruster_map_left'] = []
 e['thruster_right'] = []
@@ -32,14 +32,14 @@ home = expanduser("~")
 def chatter_callback(msg):
     global e, timer_reached
     e['time'].append(msg.stamp.sec + (msg.stamp.nanosec * 1e-9)) 
-    e['surge_ref'].append(msg.surge_error)
-    e['yawr_ref'].append(msg.yawr_error)
-    e['surge_out'].append(msg.surge_control)
-    e['yawr_out'].append(msg.yawr_control)
-    e['thruster_map_right'].append(msg.thrust_map_right)
-    e['thruster_map_left'].append(msg.thrust_map_left)
+    e['surge_fbk'].append(msg.surge_error)
+    e['yawr_fbk'].append(msg.yawr_error)
+    e['surge_desired'].append(msg.surge_control)
+    e['yawr_desired'].append(msg.yawr_control)
     e['thruster_right'].append(msg.thrust_right)
     e['thruster_left'].append(msg.thrust_left)
+    e['thruster_map_right'].append(msg.thrust_map_right)
+    e['thruster_map_left'].append(msg.thrust_map_left)
 
 def stop_callback(request, response):
     global g_node
@@ -69,7 +69,7 @@ def main(args=None):
     # Destroy the node explicitly
     # (optional - otherwise it will be done automatically
     # when the garbage collector destroys the node object)
-    df = DataFrame(e, columns= ['time', 'surge_ref','yawr_ref', 'surge_out','yawr_out','thruster_map_right','thruster_map_left','thruster_right','thruster_left'])
+    df = DataFrame(e, columns= ['time', 'surge_desired','yawr_desired', 'surge_fbk','yawr_fbk','thruster_right','thruster_left','thruster_map_right','thruster_map_left'])
     export_csv = df.to_csv (directory + '/export_dataframe.csv', index = None, header=True)
     
     g_node.destroy_node()
