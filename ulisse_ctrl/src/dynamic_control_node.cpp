@@ -203,6 +203,9 @@ int main(int argc, char* argv[])
         control_msg.thrust_left = ulisseModel.get_tau_x();
         control_msg.thrust_right = ulisseModel.get_tau_n();
 
+        control_msg.thrust_map_left = thrusterData.ctrlRef.left;
+        control_msg.thrust_map_right = thrusterData.ctrlRef.right;
+
         control_pub->publish(control_msg);
 
         rclcpp::spin_some(nh);
