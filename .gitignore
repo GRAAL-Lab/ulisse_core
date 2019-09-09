@@ -212,4 +212,5 @@ qtcreator-*
 CATKIN_IGNORE
 COLCON_IGNORE
 
-
+ulisse_ctrl/cmake-build-debug/*
+Experiments/*
