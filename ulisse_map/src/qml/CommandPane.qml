@@ -13,6 +13,7 @@ Pane {
 
     property var buttonSafety: buttonSafety
     property var trackComponent
+    property alias spinBox: spinBox
     visible: true
 
     Layout.fillWidth: true
@@ -48,6 +49,7 @@ Pane {
 
             ColumnLayout {
                 y: 0
+                spacing: 0
                 anchors.right: parent.right
                 anchors.rightMargin: 0
                 anchors.left: parent.left
@@ -57,13 +59,16 @@ Pane {
                 Label {
                     id: label1
                     text: qsTr("Cruise speed")
+                    clip: false
+                    leftPadding: 5
                     font.pointSize: 12
                     Layout.fillWidth: true
                     verticalAlignment: Text.AlignVCenter
-                    horizontalAlignment: Text.AlignHCenter
+                    horizontalAlignment: Text.AlignLeft
                 }
 
                 RowLayout {
+                    y: 18
                     spacing: 5
                     Layout.topMargin: 0
                     Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
@@ -116,15 +121,17 @@ Pane {
             ColumnLayout {
                 id: b2
                 y: 0
+                spacing: 0
                 anchors.rightMargin: 0
                 anchors.left: parent.left
                 anchors.right: parent.right
                 Label {
                     id: label2
                     text: qsTr("Acceptance radius")
+                    leftPadding: 5
                     font.pointSize: 12
                     Layout.fillWidth: true
-                    horizontalAlignment: Text.AlignHCenter
+                    horizontalAlignment: Text.AlignLeft
                     verticalAlignment: Text.AlignVCenter
                 }
 
@@ -177,7 +184,7 @@ Pane {
             clip: true
             id: rectangle0
             width: 200
-            height: 110
+            height: 170
             color: "transparent"
             Layout.fillHeight: false
             Layout.fillWidth: true
@@ -203,15 +210,17 @@ Pane {
                     ColumnLayout {
                         id: b3
                         y: 0
+                        spacing: 0
                         anchors.rightMargin: 0
                         anchors.left: parent.left
                         anchors.right: parent.right
                         Label {
                             id: label3
                             text: qsTr("Heading")
+                            leftPadding: 5
                             font.pointSize: 12
                             Layout.fillWidth: true
-                            horizontalAlignment: Text.AlignHCenter
+                            horizontalAlignment: Text.AlignLeft
                             verticalAlignment: Text.AlignVCenter
                         }
 
@@ -251,6 +260,53 @@ Pane {
                 }
             }
 
+            Rectangle {
+                id: rectangle4
+                y: 62
+                height: 70
+                color: "#00ffffff"
+                anchors.right: parent.right
+                anchors.rightMargin: 0
+                anchors.left: parent.left
+                anchors.leftMargin: 0
+                Layout.fillWidth: true
+                ColumnLayout {
+                    id: b4
+                    y: 0
+                    spacing: 0
+                    anchors.rightMargin: 0
+                    anchors.left: parent.left
+                    Label {
+                        id: label4
+                        text: qsTr("Duration (0 = indefinite)")
+                        leftPadding: 5
+                        font.pointSize: 12
+                        horizontalAlignment: Text.AlignLeft
+                        Layout.fillWidth: true
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    RowLayout {
+                        id: rowLayout
+                        height: 100
+                        Layout.fillWidth: true
+
+                        SpinBox {
+                            id: spinBox
+                            editable: true
+                            to: 1000
+                            value: 200
+                            Layout.fillWidth: true
+                            onValueChanged: function(){
+                                settings.shTimeout = spinBox.value
+                            }
+                        }
+                    }
+                    anchors.right: parent.right
+                    anchors.leftMargin: 0
+                }
+            }
+
             Button {
                 id: speedHeadButton
                 y: 42
@@ -269,10 +325,11 @@ Pane {
                 Material.background: pressed ? orange : blue
 
                 onClicked: {
-                        cmdWrapper.sendSpeedHeadingCommand(speedText.value,
-                                                           headingText.value)
+                    cmdWrapper.sendSpeedHeadingCommand(speedText.value,
+                                                       headingText.value)
                 }
             }
+
         }
 
         Button {
@@ -305,7 +362,7 @@ Pane {
             Material.background: pressed ? orange : blue
 
             onClicked: {
-                    cmdWrapper.sendHoldCommand(holdRadius.value)
+                cmdWrapper.sendHoldCommand(holdRadius.value)
             }
         }
 
@@ -322,8 +379,8 @@ Pane {
 
             onClicked: {
                 cmdWrapper.sendLatLongCommand(
-                                map.marker_coords,
-                                holdRadius.value)
+                            map.marker_coords,
+                            holdRadius.value)
             }
         }
 
@@ -436,18 +493,6 @@ Pane {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
     }
 
     FileDialog {
@@ -551,6 +596,6 @@ Pane {
 /*##^##
 Designer {
     D{i:0;height:834;width:640}D{i:5;anchors_x:0}D{i:4;anchors_x:0}D{i:11;anchors_x:0}
-D{i:10;anchors_x:0}D{i:20;anchors_x:0}D{i:19;anchors_x:0}
+D{i:10;anchors_x:0}D{i:20;anchors_x:0}D{i:19;anchors_x:0}D{i:24;anchors_width:200;anchors_x:0}
 }
 ##^##*/

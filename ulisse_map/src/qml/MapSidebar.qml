@@ -8,4 +8,6 @@ MapSidebarForm {
     labelColor1: blue
     labelColor2: red
     labelColor3: green
+
+
 }

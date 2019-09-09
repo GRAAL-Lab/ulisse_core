@@ -13,8 +13,6 @@ Dialog {
 
     standardButtons: Dialog.Ok | Dialog.Cancel
     onAccepted: {
-        settings.shTimeout = speedHeadingTimeout.displayText
-
         if (mapTypeBox.displayText != futureMapPlugin) {
             futureMapPlugin = mapTypeBox.displayText
             toast.show("Changes will take effect on restart...", 2000)
@@ -31,7 +29,6 @@ Dialog {
         stackViewContainer.forceActiveFocus()
     }
     onRejected: {
-        speedHeadingTimeout.text = settings.shTimeout
         styleBox.currentIndex = styleBox.styleIndex
         mapTypeBox.currentIndex = mapTypeBox.mapTypeIndex
         mapCacheDirectory.text = settings.esriMapCacheDir
@@ -43,32 +40,6 @@ Dialog {
     contentItem: ColumnLayout {
         id: settingsColumn
         spacing: 20
-
-        RowLayout {
-            id: shtimeoutsetting
-            spacing: 10
-            width: parent.width
-
-            Label {
-                text: "Speed/Heading Timeout (s):"
-            }
-
-            TextField {
-                id: speedHeadingTimeout
-                objectName: "speedHeadingTimeout"
-                Layout.preferredWidth: 45
-                Layout.fillWidth: true
-                font.pointSize: 11
-                text: settings.shTimeout
-                placeholderText: "Timeout"
-                selectByMouse: true
-
-                validator: IntValidator {
-                    bottom: 0.0
-                    top: 5000.0
-                }
-            }
-        }
 
         RowLayout {
             id: mapTypesetting
