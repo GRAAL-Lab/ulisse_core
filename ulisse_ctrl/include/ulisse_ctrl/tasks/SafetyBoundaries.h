@@ -78,7 +78,7 @@ public:
 	 */
     void Update() throw(tpik::ExceptionWithHow) override;
 
-    bool InitializePoly(ctb::LatLong current_position, std::string polygon_to_string);
+    bool InitializePoly(ctb::LatLong current_position, std::string polygon_to_string, std::string polygon_lat_long);
 
     void SetBoundaries(double bound_min, double bound_max);
 
@@ -142,6 +142,7 @@ protected:
     std::list<segment_type> segments;
 
     polygon_type poly;
+    polygon_type poly_lat_long;
     point_type nearest_p;
     double coord_max, coord_min;
     double min_d;
