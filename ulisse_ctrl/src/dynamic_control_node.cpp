@@ -8,6 +8,7 @@
  */
 
 #include "rclcpp/rclcpp.hpp"
+#include <chrono>
 
 #include "ctrl_toolbox/DigitalSlidingMode.h"
 #include "ulisse_msgs/msg/control_context.hpp"
@@ -115,6 +116,9 @@ int main(int argc, char* argv[])
         pidYawRate.SetErrorFunction(ctb::HeadingErrorRadFunctor());
 
     }
+
+
+    
     while (rclcpp::ok()) {
 
         headingTrackDiff = ctb::HeadingErrorRad(status_cxt.vehicle_heading, status_cxt.vehicle_track);
@@ -132,8 +136,6 @@ int main(int argc, char* argv[])
         {
             thrusterData.desiredSurge = pidSurge.Compute(ctrl_cxt_msg.desired_speed, surgeFbk);
             thrusterData.desiredJog = pidYawRate.Compute(ctrl_cxt_msg.desired_jog, jogFbk);
-            std::cout << pidYawRate.GetOutput() << std::endl;
-            std::cout << status_cxt.vehicle_heading << std::endl;
         }
         else
         {
@@ -185,11 +187,21 @@ int main(int argc, char* argv[])
             thrust_msg.motor_ctrlref.right = 0.0;
         }
 
+        auto t_now_ = std::chrono::system_clock::now();
+        long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
+        auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / (int)1E9);
+        auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % (int)1E9);
+
+        control_msg.stamp.sec = now_stamp_secs;
+        control_msg.stamp.nanosec = now_stamp_nanosecs; 
         control_msg.surge_control = surgeFbk;
-        control_msg.yawr_control =jogFbk ;
+        control_msg.yawr_control = jogFbk ;
 
         control_msg.surge_error = desired_surge;
         control_msg.yawr_error = ctrl_cxt_msg.desired_jog;
+
+        control_msg.thrust_left = ulisseModel.get_tau_x();
+        control_msg.thrust_right = ulisseModel.get_tau_n();
 
         control_pub->publish(control_msg);
 

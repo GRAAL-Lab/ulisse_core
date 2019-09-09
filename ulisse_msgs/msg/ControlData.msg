@@ -3,4 +3,6 @@ float64 surge_control
 float64 yawr_control
 float64 surge_error
 float64 yawr_error
+float64 thrust_left
+float64 thrust_right
 
