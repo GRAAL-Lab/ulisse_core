@@ -46,11 +46,6 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
         qDebug("No 'speedHeadingTimeout' found!");
     }
 
-    waypointRadiusObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("moveToRadiusText");
-    if (!waypointRadiusObj_) {
-        qDebug("No 'moveToRadiusText' found!");
-    }
-
     mapMouseAreaObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("mapMouseArea");
     if (!mapMouseAreaObj_) {
         qDebug("No 'mapMouseArea' found!");

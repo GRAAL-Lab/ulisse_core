@@ -118,9 +118,13 @@ void FeedbackUpdater::GPSDataCB(const ulisse_msgs::msg::GPSData::SharedPtr msg)
 
     long now_secs = static_cast<long>(gps_data_msg_.time);
     std::time_t current = now_secs;
-    std::string timedate = std::ctime(&current);
-    timedate.erase(std::remove(timedate.begin(), timedate.end(), '\n'), timedate.end());
-    q_gps_time_ = QString::fromStdString(timedate);
+    if (std::ctime(&current) != nullptr){
+        std::string timedate = std::ctime(&current);
+        timedate.erase(std::remove(timedate.begin(), timedate.end(), '\n'), timedate.end());
+        q_gps_time_ = QString::fromStdString(timedate);
+    } else {
+        q_gps_time_ = "not avaiable";
+    }
 
     q_gps_pos_.setLatitude(gps_data_msg_.latitude);
     q_gps_pos_.setLongitude(gps_data_msg_.longitude);

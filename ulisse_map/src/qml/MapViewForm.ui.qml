@@ -21,7 +21,6 @@ RowLayout {
     property alias recenterButton: recenterButton
     property alias followMeCheckbox: followMeCheckbox
     property alias clearPathButton: clearPathButton
-    property alias overlayStatusCbox: overlayStatusCbox
     property alias mapCache: mapCache
     property alias map: map
     property alias mapsidebar: mapsidebar
@@ -157,14 +156,6 @@ RowLayout {
                     text: "Follow vehicle"
                     Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                     Material.accent: mainColor
-                    checked: false
-                }
-
-                CheckBox {
-                    id: overlayStatusCbox
-                    text: "Show Overlay"
-                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                    Material.accent: orange
                     checked: false
                 }
 

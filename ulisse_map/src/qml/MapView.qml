@@ -39,13 +39,6 @@ MapViewForm {
     recenterButton.onClicked: {
         map.center = fbkUpdater.ulisse_pos
     }
-    overlayStatusCbox.onCheckStateChanged: {
-        if (checked === true) {
-            followMeTimer.start()
-        } else {
-            followMeTimer.stop()
-        }
-    }
 
     clearPathButton.onClicked: {
         map.clearUlisseTrace()
