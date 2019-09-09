@@ -13,7 +13,7 @@ Pane {
 
     property var buttonSafety: buttonSafety
     property var trackComponent
-    property alias spinBox: spinBox
+    property alias speedHeadTimeout: speedHeadTimeout
     visible: true
 
     Layout.fillWidth: true
@@ -292,13 +292,14 @@ Pane {
                         Layout.fillWidth: true
 
                         SpinBox {
-                            id: spinBox
+                            id: speedHeadTimeout
+                            objectName: "shTimeout"
                             editable: true
                             to: 1000
                             value: 200
                             Layout.fillWidth: true
                             onValueChanged: function(){
-                                settings.shTimeout = spinBox.value
+                                settings.shTimeout = speedHeadTimeout.value
                             }
                         }
                     }
@@ -595,7 +596,7 @@ Pane {
 
 /*##^##
 Designer {
-    D{i:0;height:834;width:640}D{i:5;anchors_x:0}D{i:4;anchors_x:0}D{i:11;anchors_x:0}
+    D{i:0;height:838;width:640}D{i:5;anchors_x:0}D{i:4;anchors_x:0}D{i:11;anchors_x:0}
 D{i:10;anchors_x:0}D{i:20;anchors_x:0}D{i:19;anchors_x:0}D{i:24;anchors_width:200;anchors_x:0}
 }
 ##^##*/

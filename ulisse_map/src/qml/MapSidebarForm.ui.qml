@@ -11,6 +11,7 @@ Rectangle {
     property color labelColor2: "#000000"
     property color labelColor3: "#000000"
     property alias commandRect: commandRect
+    property alias speedHeadTimeout: commandRect.speedHeadTimeout
     border.width: 5
     border.color: lightgrey
     visible: true

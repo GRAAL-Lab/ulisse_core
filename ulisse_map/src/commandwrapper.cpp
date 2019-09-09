@@ -52,6 +52,11 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
         qDebug("No 'goalDistance' found!");
     }
 
+    speedHeadTimoutObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("shTimeout");
+    if (!speedHeadTimoutObj_) {
+        qDebug("No 'speedHeadTimeout' found!");
+    }
+
     command_srv_ = np_->create_client<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service);
     cruise_srv_ = np_->create_client<ulisse_msgs::srv::SetCruiseControl>(ulisse_msgs::topicnames::set_cruise_control_service);
     boundary_srv_ = np_->create_client<ulisse_msgs::srv::SetBoundaries>(ulisse_msgs::topicnames::set_boundaries_service);
