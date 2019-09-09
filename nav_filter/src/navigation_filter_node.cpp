@@ -120,16 +120,11 @@ int main(int argc, char *argv[]) {
     ctb::ExtendedKalmanFilter ulisse_EKF(8, angle_ulisse, ulisse_kalman_filter);
     ctb::ExtendedKalmanFilter ulisse_angle_EKF(3, angle_af, angle_filter);
 
-
-    auto navfilter_pub = node->create_publisher<ulisse_msgs::msg::NavFilterData>(
-            ulisse_msgs::topicnames::nav_filter_data);
-
-    auto ctrlcxt_sub = node->create_subscription<ulisse_msgs::msg::ControlContext>(
-            ulisse_msgs::topicnames::control_context, controlcontext_cb);
-    auto compass_sub = node->create_subscription<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass,
-                                                                            compass_cb);
-    auto gpsdata_sub = node->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data,
-                                                                            gpsdata_cb);
+    auto navfilter_pub = node->create_publisher<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data);
+    auto ctrlcxt_sub = node->create_subscription<ulisse_msgs::msg::ControlContext>(ulisse_msgs::topicnames::control_context, controlcontext_cb);
+    auto compass_sub = node->create_subscription<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass, compass_cb);
+    auto gpsdata_sub = node->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data, gpsdata_cb);
+    auto imudata_sub = node->create_subscription<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu, imu_cb);
 
     double lastValidGPSTime = 0;
     ulisse_msgs::msg::NavFilterData filterData;
