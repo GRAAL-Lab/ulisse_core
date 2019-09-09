@@ -143,17 +143,18 @@ void SafetyBoundaries::make_segments(Point const& p, Point const& next)
     segments.push_front(seg);
 }
 
-bool SafetyBoundaries::InitializePoly(ctb::LatLong current_position, std::string polygon_to_string)
+bool SafetyBoundaries::InitializePoly(ctb::LatLong current_position, std::string polygon_to_string, std::string polygon_lat_long)
 {
     centroid = current_position;
 
     lam = ulisse::lat_to_m_coeff(centroid.latitude);
     lom = ulisse::lon_to_m_coeff(centroid.longitude);
 
-    point_type p(0.0, 0.0);
+    point_type p(centroid.latitude, centroid.longitude);
 
     boost::geometry::read_wkt(polygon_to_string, poly);
-    if (!boost::geometry::covered_by(p, poly))
+    boost::geometry::read_wkt(polygon_lat_long, poly_lat_long);
+    if (!boost::geometry::covered_by(p, poly_lat_long))
         return false;
 
     //Generate a list with all the segments

@@ -1,41 +1,17 @@
 /home/marco/clion-2019.1.3/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl
--- The C compiler identification is GNU 7.4.0
--- The CXX compiler identification is GNU 7.4.0
--- Check for working C compiler: /usr/bin/cc
--- Check for working C compiler: /usr/bin/cc -- works
--- Detecting C compiler ABI info
--- Detecting C compiler ABI info - done
--- Detecting C compile features
--- Detecting C compile features - done
--- Check for working CXX compiler: /usr/bin/c++
--- Check for working CXX compiler: /usr/bin/c++ -- works
--- Detecting CXX compiler ABI info
--- Detecting CXX compiler ABI info - done
--- Detecting CXX compile features
--- Detecting CXX compile features - done
 -- Found ament_cmake: 0.6.1 (/opt/ros/crystal/share/ament_cmake/cmake)
--- Found PythonInterp: /usr/bin/python3 (found suitable version "3.6.9", minimum required is "3") 
 -- Using PYTHON_EXECUTABLE: /usr/bin/python3
 -- Found rclcpp: 0.6.4 (/opt/ros/crystal/share/rclcpp/cmake)
 -- Found rosidl_adapter: 0.6.3 (/opt/ros/crystal/share/rosidl_adapter/cmake)
 -- Found rmw_implementation_cmake: 0.6.1 (/opt/ros/crystal/share/rmw_implementation_cmake/cmake)
 -- Found std_msgs: 0.6.1 (/opt/ros/crystal/share/std_msgs/cmake)
-CMake Error at CMakeLists.txt:16 (find_package):
-  By not providing "Findsurface_vehicle_model.cmake" in CMAKE_MODULE_PATH
-  this project has asked CMake to find a package configuration file provided
-  by "surface_vehicle_model", but CMake did not find one.
-
-  Could not find a package configuration file provided by
-  "surface_vehicle_model" with any of the following names:
-
-    surface_vehicle_modelConfig.cmake
-    surface_vehicle_model-config.cmake
-
-  Add the installation prefix of "surface_vehicle_model" to CMAKE_PREFIX_PATH
-  or set "surface_vehicle_model_DIR" to a directory containing one of the
-  above files.  If "surface_vehicle_model" provides a separate development
-  package or SDK, be sure it has been installed.
-
-
--- Configuring incomplete, errors occurred!
-See also "/home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug/CMakeFiles/CMakeOutput.log".
+-- Found surface_vehicle_model: 0.0.1 (/home/marco/group_project/ros2_ws/install/surface_vehicle_model/share/surface_vehicle_model/cmake)
+-- Found ulisse_msgs: 0.0.1 (/home/marco/group_project/ros2_ws/install/ulisse_msgs/share/ulisse_msgs/cmake)
+-- Found ulisse_driver: 0.0.1 (/home/marco/group_project/ros2_ws/install/ulisse_driver/share/ulisse_driver/cmake)
+-- Boost version: 1.65.1
+-- Found PkgConfig: /usr/bin/pkg-config (found version "0.29.1") 
+-- Checking for module 'jsoncpp'
+--   Found jsoncpp, version 1.7.4
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/marco/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/cmake-build-debug
