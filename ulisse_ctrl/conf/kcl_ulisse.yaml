@@ -28,7 +28,7 @@ controller_node:
             enable: true
             HeadingErrorMin: 0.2
             HeadingErrorMax: 0.3
-            AlphaMin: 0.25
+            AlphaMin: 0.1
             AlphaMax: 1.0
 
         AvoidRotationCloseToTarget:

@@ -192,7 +192,7 @@ bool CommandWrapper::sendSpeedHeadingCommand(double speed, double heading)
     serviceReq->command_type = ulisse::commands::ID::speedheading;
     serviceReq->sh_cmd.speed = speed;
     serviceReq->sh_cmd.heading = heading * M_PI / 180.0; // Converting to radians
-    serviceReq->sh_cmd.timeout.sec = (speedHeadTimoutObj_->property("text")).toUInt();
+    serviceReq->sh_cmd.timeout.sec = (speedHeadTimoutObj_->property("value")).toUInt();
     serviceReq->sh_cmd.timeout.nanosec = 0;
     return SendCommandRequest(serviceReq);
 }

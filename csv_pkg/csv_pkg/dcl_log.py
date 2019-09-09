@@ -17,10 +17,10 @@ g_node = None
 
 e = dict()
 e['time'] = []
-e['surge_error'] = []
-e['yawr_error'] = []
-e['surge_control'] = []
-e['yawr_control'] = []
+e['surge_ref'] = []
+e['yawr_ref'] = []
+e['surge_out'] = []
+e['yawr_out'] = []
 e['thruster_map_right'] = []
 e['thruster_map_left'] = []
 e['thruster_right'] = []
@@ -32,10 +32,10 @@ home = expanduser("~")
 def chatter_callback(msg):
     global e, timer_reached
     e['time'].append(msg.stamp.sec + (msg.stamp.nanosec * 1e-9)) 
-    e['surge_error'].append(msg.surge_error)
-    e['yawr_error'].append(msg.yawr_error)
-    e['surge_control'].append(msg.surge_control)
-    e['yawr_control'].append(msg.yawr_control)
+    e['surge_ref'].append(msg.surge_error)
+    e['yawr_ref'].append(msg.yawr_error)
+    e['surge_out'].append(msg.surge_control)
+    e['yawr_out'].append(msg.yawr_control)
     e['thruster_map_right'].append(msg.thrust_map_right)
     e['thruster_map_left'].append(msg.thrust_map_left)
     e['thruster_right'].append(msg.thrust_right)
