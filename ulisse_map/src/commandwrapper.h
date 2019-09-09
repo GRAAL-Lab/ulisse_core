@@ -15,6 +15,7 @@
 #include "ulisse_msgs/srv/control_command.hpp"
 #include "ulisse_msgs/srv/set_boundaries.hpp"
 #include "ulisse_msgs/srv/set_cruise_control.hpp"
+#include "ulisse_msgs/srv/llc_command.hpp"
 
 
 #include "ulisse_msgs/topicnames.hpp"
@@ -30,6 +31,8 @@ class CommandWrapper : public QObject {
     rclcpp::Client<ulisse_msgs::srv::ControlCommand>::SharedPtr command_srv_;
     rclcpp::Client<ulisse_msgs::srv::SetCruiseControl>::SharedPtr cruise_srv_;
     rclcpp::Client<ulisse_msgs::srv::SetBoundaries>::SharedPtr boundary_srv_;
+    rclcpp::Client<ulisse_msgs::srv::LLCCommand>::SharedPtr llc_srv_;
+
     rclcpp::Subscription<ulisse_msgs::msg::GoalContext>::SharedPtr goal_cxt_sub_;
 
     ulisse_msgs::msg::GoalContext goal_cxt_msg_;
@@ -61,6 +64,7 @@ public:
     Q_INVOKABLE bool sendLatLongCommand(const QGeoCoordinate& goal, double radius);
     Q_INVOKABLE bool sendSpeedHeadingCommand(double speed, double heading);
     Q_INVOKABLE bool setCruiseSpeedCommand(double speed);
+    Q_INVOKABLE bool sendThrusterActivation(bool activate);
     Q_INVOKABLE bool startPath();
     Q_INVOKABLE void stopPath();
     Q_INVOKABLE void cancelPath();

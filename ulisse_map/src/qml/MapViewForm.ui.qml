@@ -29,6 +29,7 @@ RowLayout {
 
     spacing: 0
     width: window.width
+    property alias engine: engine
     Plugin {
         id: mapPlugin
         name: settings.mapPluginType

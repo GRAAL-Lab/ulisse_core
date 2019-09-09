@@ -44,6 +44,10 @@ MapViewForm {
         map.clearUlisseTrace()
     }
 
+    engine.onClicked: {
+        cmdWrapper.sendThrusterActivation(true);
+    }
+
     map.onZoomLevelChanged: {
         for (var i = 0; i < slidersLeft.columnTrack.children.length; i++) {
             slidersLeft.columnTrack.children[i].managed_path.a_marker.zoomLevel = map.zoomLevel / 2 + 9
