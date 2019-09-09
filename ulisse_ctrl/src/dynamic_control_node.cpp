@@ -124,7 +124,7 @@ int main(int argc, char* argv[])
         headingTrackDiff = ctb::HeadingErrorRad(status_cxt.vehicle_heading, status_cxt.vehicle_track);
         surgeFbk = status_cxt.vehicle_speed * cos(headingTrackDiff);
 
-        jogFbk = (status_cxt.vehicle_heading - prev_heading) / sampleTime;
+        jogFbk = ctb::HeadingErrorRad(status_cxt.vehicle_heading,prev_heading) / sampleTime;
         prev_heading = status_cxt.vehicle_heading;
 
         if (ctrl_cxt_msg.desired_speed > conf->mapping_pidsat_surge)
@@ -194,11 +194,11 @@ int main(int argc, char* argv[])
 
         control_msg.stamp.sec = now_stamp_secs;
         control_msg.stamp.nanosec = now_stamp_nanosecs; 
-        control_msg.surge_control = surgeFbk;
-        control_msg.yawr_control = jogFbk ;
+        control_msg.surge_control = desired_surge;
+        control_msg.yawr_control = ctrl_cxt_msg.desired_jog;
 
-        control_msg.surge_error = desired_surge;
-        control_msg.yawr_error = ctrl_cxt_msg.desired_jog;
+        control_msg.surge_error = surgeFbk;
+        control_msg.yawr_error = jogFbk ;
 
         control_msg.thrust_left = ulisseModel.get_tau_x();
         control_msg.thrust_right = ulisseModel.get_tau_n();
