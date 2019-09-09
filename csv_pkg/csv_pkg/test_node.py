@@ -45,14 +45,14 @@ def chatter_callback(msg):
     e['yawr_control'].append(msg.yawr_control)
     e['thruster_right'].append(msg.thrust_right)
     e['thruster_left'].append(msg.thrust_left)
+    e['thruster_map_right'].append(msg.thrust_map_right)
+    e['thruster_map_left'].append(msg.thrust_map_left)
 
     if ((t1-t0) >= 40) :
         timer_reached = False
 
 def cb(msg):
     global e
-    e['thruster_map_right'].append(msg.motor_ctrlref.right)
-    e['thruster_map_left'].append(msg.motor_ctrlref.left)
 
 def main(args=None):
     global g_node, t0, e

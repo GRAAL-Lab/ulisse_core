@@ -29,9 +29,6 @@ e['thruster_left'] = []
 timer_reached = True
 home = expanduser("~")
 
-def clb(request,response):
-    pass
-    
 def chatter_callback(msg):
     global e, timer_reached
     e['time'].append(msg.stamp.sec + (msg.stamp.nanosec * 1e-9)) 
@@ -39,13 +36,10 @@ def chatter_callback(msg):
     e['yawr_error'].append(msg.yawr_error)
     e['surge_control'].append(msg.surge_control)
     e['yawr_control'].append(msg.yawr_control)
+    e['thruster_map_right'].append(msg.thrust_map_right)
+    e['thruster_map_left'].append(msg.thrust_map_left)
     e['thruster_right'].append(msg.thrust_right)
     e['thruster_left'].append(msg.thrust_left)
-
-def cb(msg):
-    global e
-    e['thruster_map_right'].append(msg.motor_ctrlref.right)
-    e['thruster_map_left'].append(msg.motor_ctrlref.left)
 
 def stop_callback(request, response):
     global g_node
@@ -63,7 +57,6 @@ def main(args=None):
 
     srv_ = g_node.create_service(Empty, 'ulisse/stop/dcl_control', stop_callback)
 
-    subscription1 = g_node.create_subscription(ThrustersData, "ulisse/ctrl/thruster_ref", cb )
     subscription = g_node.create_subscription(ControlData, 'ulisse/ControlData', chatter_callback)
     subscription  # prevent unused variable warning
 
