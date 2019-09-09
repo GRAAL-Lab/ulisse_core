@@ -72,6 +72,8 @@ void Hold::Update() throw(tpik::ExceptionWithHow)
 
             desiredHeading = ulisse::NormalizeHeadingOn2PI(currentDirection + M_PI);
 
+            desiredHeading = ctb::FilterAngularJump(statusCxt_->vehicleHeading, desiredHeading);
+
             currentNorm = sqrt(
                     pow(statusCxt_->seacurrent[0], 2) + pow(statusCxt_->seacurrent[1], 2));
 
