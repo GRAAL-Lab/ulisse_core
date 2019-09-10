@@ -5,7 +5,7 @@ controller_node:
         PosAcceptanceRadius: 5.0
 
         SpeedLimiter: 2.5               # m/s [Be careful to make the mapping saturation bigger than this values] (to avoid double saturation)
-        JogLimiter: 2.5                 # rad/s
+        JogLimiter: 0.3                # rad/s
 
         #DistanceThreshold: 5.0          # m
         #MaximumTargetDistance: 50000.0  # m

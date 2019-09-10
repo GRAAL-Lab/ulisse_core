@@ -71,3 +71,8 @@ low_level_control_node:
 	
 	sliding_mode: true
 
+	filter_parameter:
+		gain_1: 0.9
+		gain_2: 0.1
+
+
