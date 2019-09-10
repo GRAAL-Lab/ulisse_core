@@ -44,6 +44,8 @@ ctb::DigitalSlidingMode<struct SlidingSurface>  slideSurge;
 ctb::DigitalSecOrdSlidingMode<struct SlidingSurface> slideHeading;
 void parameter_set();
 
+double filter_parameter[2];
+
 bool sliding_on;
 static int rate = 10;
 static double sampleTime = 1.0 / rate;
@@ -118,7 +120,7 @@ int main(int argc, char* argv[])
 
     }
 
-
+    std::vector<double> state;
 
     while (rclcpp::ok()) {
 
@@ -128,7 +130,7 @@ int main(int argc, char* argv[])
         derivative_jogFbk = ctb::HeadingErrorRad(status_cxt.vehicle_heading,prev_heading) / sampleTime;
         prev_heading = status_cxt.vehicle_heading;
 
-        jogFbk = 0.9*jogFbk + 0.1*derivative_jogFbk;
+        jogFbk = filter_parameter[0]*jogFbk + filter_parameter[1]*derivative_jogFbk; 
 
         if (ctrl_cxt_msg.desired_speed > conf->mapping_pidsat_surge)
             desired_surge = conf->mapping_pidsat_surge;
@@ -142,7 +144,9 @@ int main(int argc, char* argv[])
         }
         else
         {
-            const std::vector<double> state = {surgeFbk, jogFbk};
+            state.clear();
+            state.push_back(surgeFbk);
+            state.push_back(jogFbk);
 
             slideSurge.setState(state);
             slideHeading.setState(state);
@@ -188,6 +192,17 @@ int main(int argc, char* argv[])
         } else {
             thrust_msg.motor_ctrlref.left = 0.0;
             thrust_msg.motor_ctrlref.right = 0.0;
+
+            if(!sliding_on)
+            {
+                pidSurge.Reset();
+                pidYawRate.Reset();
+            }
+            else
+            {
+                slideHeading.setState(state, true);
+            }
+
         }
 
         auto t_now_ = std::chrono::system_clock::now();
@@ -228,6 +243,9 @@ void parameter_set() {
 
     double heading_gain = par_client->get_parameter("sliding_control_parameter.heading", 0.0);
     double surge_gain = par_client->get_parameter("sliding_control_parameter.surge", 0.0);
+
+    filter_parameter[0] = par_client->get_parameter("filter_parameter.gain_1", 0.0);
+    filter_parameter[1] = par_client->get_parameter("filter_parameter.gain_2", 0.0); 
 
     sliding_on = par_client->get_parameter("sliding_mode", true);
 
