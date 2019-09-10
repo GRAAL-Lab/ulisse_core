@@ -121,11 +121,11 @@ void SafetyBoundaries::UpdateInternalActivationFunction()
     Ai_.setIdentity();
     Ai_ = target.gain * Ai_;
 
-    /*
+
     std::cout << Ai_ << std::endl;
     std::cout << "Max Thresh" << MAX_THRESHOLD << std::endl;
     std::cout << "Min Thresh" << MIN_THRESHOLD << std::endl;
-     */
+
 
 }
 
