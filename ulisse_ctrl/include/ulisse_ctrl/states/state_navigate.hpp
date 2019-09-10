@@ -63,6 +63,9 @@ namespace states {
         double tollerance_start_angle;
         double tollerance_end_point;
         double cur_length;
+
+        bool use_line_of_sight;
+
         SISLCurve* newcurve;
         SISLCurve* curve2;
         SISLCurve* newcurve2;
@@ -87,6 +90,9 @@ namespace states {
         void SetASVMakeCurveTask(std::shared_ptr<ikcl::MakeCurve> asvMakeCurveTask);
         void SetAngularVelocityTask(std::shared_ptr<ikcl::AngularVelocity> angularVelocityTask);
         void SetDistanceTask(std::shared_ptr<ikcl::ControlDistance> distanceTask);
+
+        void SetLineOfSightMethod(bool status);
+        bool GetLineOfSightMethod();
 
         void SetMaxRangeAbscissa(double max_range);
         void SetDelta(double delta);

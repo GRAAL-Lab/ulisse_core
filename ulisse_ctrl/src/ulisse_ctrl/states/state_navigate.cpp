@@ -28,6 +28,8 @@ namespace states {
         tollerance_start_point = 2.0;
         tollerance_start_angle = 0.05;
         tollerance_end_point = 1.0;
+
+        use_line_of_sight = true;
     }
 
     StateNavigate::~StateNavigate() {}
@@ -89,6 +91,14 @@ namespace states {
 
     void StateNavigate::SetTolleranceStartingAngle(double toll_start_angle){
         tollerance_start_angle = toll_start_angle;
+    }
+
+    void StateNavigate::SetLineOfSightMethod(bool status){
+        use_line_of_sight = status;
+    }
+
+    bool StateNavigate::GetLineOfSightMethod() {
+        return use_line_of_sight;
     }
 
     double StateNavigate::GetMaxRangeAbscissa(){
@@ -270,31 +280,17 @@ namespace states {
         double dist;
         ctb::DistanceAndAzimuthRad(starting_point, next_point, dist, starting_angle);
 
-        /*
-        ctb::LatLong PPP, PPP2;
         for(current_curve = 0; current_curve < nurbs_.size(); current_curve++){
             curve = nurbs_[current_curve];
 
-            double ppp[4];
-            // Compute the point of the first curve at 0.0.
-            s1227(curve, 0, 0.0, &leftknot, ppp, &stat);
+            // Estimate curve length
+            s1240(curve, aepsge, &cur_length, &stat);
 
-            PPP = to_lat_long(ppp[0], ppp[1]);
-            std::cout << "*** START OF CURVE " << current_curve << ":: LAT: " << PPP.latitude
-                      << " LONG: " << PPP.longitude << std::endl;
-
-            if(current_curve != 0 && (PPP.latitude != PPP2.latitude || PPP.longitude != PPP2.longitude)){
-                std::cout << "REVERSING IT " << std::endl;
-                s1706(curve);
+            if(cur_length < delta_){
+                std::cout << "Delta too high!" << std::endl;
+                return fsm::fail;
             }
-            // Compute the point of the first curve at 0.0.
-            s1227(curve, 0, 1.0, &leftknot, ppp, &stat);
-
-            PPP2 = to_lat_long(ppp[0], ppp[1]);
-            std::cout << "*** END OF CURVE " << current_curve << ":: LAT: " << PPP2.latitude
-                      << " LONG: " << PPP2.longitude << std::endl;
         }
-         */
 
         actionManager_->SetAction(ulisse::action::navigate, true);
         return fsm::ok;
@@ -349,8 +345,6 @@ namespace states {
                 ctb::DistanceAndAzimuthRad(statusCxt_->vehiclePos, end_point,
                     goalCxt_->goalDistance, goalCxt_->goalHeading);
 
-                // Estimate curve length
-                s1240(curve, aepsge, &cur_length, &stat);
 
                 curvilinear_abscissa = getCurvilinearAbscissa();
 
@@ -368,21 +362,47 @@ namespace states {
                         current_curvilinear_abscissa -= current_curve;
                     }
 
-                    double point_at[6];
-                    // Compute the point of the first curve at current_curvilinear_abscissa.
-                    s1227(curve, 1, current_curvilinear_abscissa, &leftknot, point_at,
-                        &stat);
+                    if(use_line_of_sight) {
+                        double point_at[6];
+                        // Compute the point of the first curve at current_curvilinear_abscissa.
+                        s1227(curve, 1, current_curvilinear_abscissa, &leftknot, point_at,
+                            &stat);
 
-                    double tan_angle = atan2(point_at[4], point_at[3]);
+                        double tan_angle = atan2(point_at[4], point_at[3]);
 
-                    lookAheadPoint = to_lat_long(point_at[0] + delta_ * cos(tan_angle), point_at[1] + delta_ * sin(tan_angle));
+                        lookAheadPoint = to_lat_long(point_at[0] + delta_ * cos(tan_angle), point_at[1] + delta_ * sin(tan_angle));
+                    }
+                    else {
+                        // Estimate curve length
+                        s1240(curve, aepsge, &cur_length, &stat);
 
+                        double next_curvilinear_abscissa = current_curvilinear_abscissa + (delta_ / cur_length);
+                        int next_curve_index = current_curve;
+                        SISLCurve* next_curve;
+
+                        if (next_curvilinear_abscissa > 1) {
+                            if (current_curve == number_of_curves_ - 1) {
+                                next_curvilinear_abscissa = 1;
+                            } else {
+                                next_curvilinear_abscissa = next_curvilinear_abscissa - 1;
+                                next_curve_index++;
+                                next_curve = nurbs_[next_curve_index];
+                            }
+                        }
+                        double point_at[6];
+                        // Compute the point of the first curve at current_curvilinear_abscissa.
+                        s1227(next_curve, 1, next_curvilinear_abscissa, &leftknot, point_at,
+                            &stat);
+
+                        lookAheadPoint = to_lat_long(point_at[0], point_at[1]);
+                    }
                     ctb::DistanceAndAzimuthRad(statusCxt_->vehiclePos, lookAheadPoint,
-                        goalCxt_->goalDistance,
-                        goalCxt_->goalHeading);
+                                                   goalCxt_->goalDistance,
+                                                   goalCxt_->goalHeading);
 
                     angularPositionTask_->SetAngle(Eigen::Vector3d(0, 0, goalCxt_->goalHeading));
                     linearVelocityTask_->SetVelocity(Eigen::Vector3d(cruise, 0, 0));
+
                 }
             }
         }

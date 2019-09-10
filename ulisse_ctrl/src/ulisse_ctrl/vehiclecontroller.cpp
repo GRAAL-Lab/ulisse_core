@@ -357,6 +357,7 @@ void VehicleController::LoadKCLConfiguration(){
     state_navigate_.SetTolleranceStartingPoint(confObj.lookup("task.PathFollowing.TolleranceStartingPoint"));
     state_navigate_.SetTolleranceEndingPoint(confObj.lookup("task.PathFollowing.TolleranceEndingPoint"));
     state_navigate_.SetTolleranceStartingAngle(confObj.lookup("task.PathFollowing.TolleranceStartingAngle"));
+    state_navigate_.SetLineOfSightMethod(confObj.lookup("task.PathFollowing.UseLineOfSight"));
 
     asv_angular_position->SetConfidence(confObj.lookup("task.ASV_angular_position.confidence"));
 
@@ -654,8 +655,6 @@ void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::Share
 {
     statusCxt_->vehiclePos.latitude = msg->latitude;
     statusCxt_->vehiclePos.longitude = msg->longitude;
-
-    std::cout << "Letto da NavFilter: lat " << statusCxt_->vehiclePos.latitude << " long: " << statusCxt_->vehiclePos.longitude << std::endl;
     statusCxt_->vehicleHeading = msg->orientation.yaw;
 
     statusCxt_->seacurrent[0] = msg->current[0];
@@ -670,7 +669,7 @@ void VehicleController::LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr
 void VehicleController::Run()
 {
     if (!boundaries_set) {
-        std::cout << "Waiting for the Safety Bounding Box";
+        std::cout << "Waiting for the Safety Bounding Box" << std::endl;
         return;
     }
     // Switch State (if something happens)

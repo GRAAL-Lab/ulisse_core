@@ -57,7 +57,7 @@ controller_node:
         PIDHeading:
             Kp: 0.75
             Ki: 0.0
-            Kd: 1.5
+            Kd: 0.0
             Kff: 0.0
             N: 10.0
             Tr: 0.5
