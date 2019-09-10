@@ -136,6 +136,9 @@ int main(int argc, char* argv[])
         {
             thrusterData.desiredSurge = pidSurge.Compute(ctrl_cxt_msg.desired_speed, surgeFbk);
             thrusterData.desiredJog = pidYawRate.Compute(ctrl_cxt_msg.desired_jog, jogFbk);
+
+            std::cout << "Thruster data desired surge: " << thrusterData.desiredSurge << std::endl;
+            std::cout << "Thruster data desired jog: " << thrusterData.desiredJog << std::endl;
         }
         else
         {
