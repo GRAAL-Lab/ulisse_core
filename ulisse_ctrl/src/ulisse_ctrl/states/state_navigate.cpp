@@ -382,7 +382,7 @@ namespace states {
                         goalCxt_->goalHeading);
 
                     angularPositionTask_->SetAngle(Eigen::Vector3d(0, 0, goalCxt_->goalHeading));
-                    distanceTask_->SetDistance(Eigen::Vector3d(cruise, 0, 0));
+                    linearVelocityTask_->SetVelocity(Eigen::Vector3d(cruise, 0, 0));
                 }
             }
         }
