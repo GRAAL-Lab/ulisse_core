@@ -639,7 +639,7 @@ void VehicleController::GPSSensorCB(const ulisse_msgs::msg::GPSData::SharedPtr m
 {
     timestamp_ = msg->time;
     statusCxt_->gpsSpeed = msg->speed;
-    statusCxt_->gpsTrack = msg->track;
+    statusCxt_->gpsTrack = msg->track * M_PI / 180.0;
 
     //std::cout << "GPS (lat, long): " << msg->latitude << ", " << msg->longitude << std::endl;
     //std::cout << "GPS speed: " << msg->speed << std::endl;
