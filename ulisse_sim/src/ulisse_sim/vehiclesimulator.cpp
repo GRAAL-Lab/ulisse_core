@@ -169,7 +169,7 @@ void VehicleSimulator::SimulateSensors(double h_p, double h_s)
     micro_loop_count_msg_.stepssincepps = stepssincepps_count_;
 
     gpsdata_msg_.time = static_cast<double>(now_nanosecs / 1E9);
-    gpsdata_msg_.track = vehTrack_;
+    gpsdata_msg_.track = vehTrack_ * 180.0 / M_PI;
     gpsdata_msg_.speed = vehSpeed_;
     gpsdata_msg_.latitude = lat_now_;
     gpsdata_msg_.longitude = long_now_;
