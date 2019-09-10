@@ -20,12 +20,14 @@ RowLayout {
     property var mapCircles: []
     property alias recenterButton: recenterButton
     property alias followMeCheckbox: followMeCheckbox
+    property alias overlayStatusCbox: overlayStatusCbox
     property alias clearPathButton: clearPathButton
     property alias mapCache: mapCache
     property alias map: map
     property alias mapsidebar: mapsidebar
     property alias pathState: pathState
     property alias slidersLeft: sidebar_manage
+
 
     spacing: 0
     width: window.width
@@ -172,6 +174,15 @@ RowLayout {
                     checked: false
                     anchors.leftMargin: 10
                 }
+
+                CheckBox {
+                    id: overlayStatusCbox
+                    text: "Show Overlay"
+                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                    Material.accent: orange
+                    checked: false
+                }
+
                 Button {
                     id: engine
                     anchors.rightMargin: parent.anchors.rightMargin

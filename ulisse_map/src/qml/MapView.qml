@@ -54,4 +54,12 @@ MapViewForm {
             slidersLeft.columnTrack.children[i].managed_path.b_marker.zoomLevel = map.zoomLevel / 2 + 9
         }
     }
+
+    followMeCheckbox.onCheckStateChanged: {
+        followMeCheckbox.checked ? followMeTimer.start() : followMeTimer.stop()
+    }
+
+    overlayStatusCbox.onCheckStateChanged: {
+        map.overlayTextOpacity = overlayStatusCbox.checked ? 1.0 : 0.0
+    }
 }
