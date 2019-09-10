@@ -78,9 +78,6 @@ namespace states {
 
             linear_velocity = goalCxt_->goalDistance;
 
-            if(cruise_ > 0 && linear_velocity > cruise_){
-                linear_velocity = cruise_;
-            }
             distanceTask_->SetDistance(Eigen::Vector3d(linear_velocity, 0, 0));
         }
 

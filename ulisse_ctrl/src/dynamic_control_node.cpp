@@ -58,12 +58,12 @@ int main(int argc, char* argv[])
     rclcpp::WallRate loop_rate(rate);
 
     auto ctrlcxt_sub = nh->create_subscription<ulisse_msgs::msg::ControlContext>(
-        ulisse_msgs::topicnames::control_context, ControlContextCB);
+            ulisse_msgs::topicnames::control_context, ControlContextCB);
     auto statuscxt_sub = nh->create_subscription<ulisse_msgs::msg::StatusContext>(
-        ulisse_msgs::topicnames::status_context, StatusContextCB);
+            ulisse_msgs::topicnames::status_context, StatusContextCB);
 
     auto thrusterdata_pub = nh->create_publisher<ulisse_msgs::msg::ThrustersData>(
-        ulisse_msgs::topicnames::thrusters_data);
+            ulisse_msgs::topicnames::thrusters_data);
 
     auto control_pub = nh->create_publisher<ulisse_msgs::msg::ControlData>(
             "ulisse/ControlData");
@@ -99,7 +99,8 @@ int main(int argc, char* argv[])
     double surgeFbk;
 
     double prev_heading = 0;
-    double jogFbk;
+    double jogFbk=0;
+    double derivative_jogFbk=0;
     double desired_surge;
 
     ulisseModel.set_external_ctrl(sliding_on);
@@ -118,20 +119,16 @@ int main(int argc, char* argv[])
     }
 
 
-    
+
     while (rclcpp::ok()) {
 
         headingTrackDiff = ctb::HeadingErrorRad(status_cxt.vehicle_heading, status_cxt.vehicle_track);
         surgeFbk = status_cxt.vehicle_speed * cos(headingTrackDiff);
 
-        std::cout << "status_cxt.vehicle_heading: " << status_cxt.vehicle_heading << std::endl;
-        std::cout << "status_cxt.vehicle_track: " << status_cxt.vehicle_track << std::endl;
-        std::cout << "status_cxt.vehicle_speed: " << status_cxt.vehicle_speed << std::endl;
-        std::cout << "headingTrackDiff: " << headingTrackDiff << std::endl;
-        std::cout << "surgeFbk: " << surgeFbk << std::endl;
-
-        jogFbk = ctb::HeadingErrorRad(status_cxt.vehicle_heading,prev_heading) / sampleTime;
+        derivative_jogFbk = ctb::HeadingErrorRad(status_cxt.vehicle_heading,prev_heading) / sampleTime;
         prev_heading = status_cxt.vehicle_heading;
+
+        jogFbk = 0.9*jogFbk + 0.1*derivative_jogFbk;
 
         if (ctrl_cxt_msg.desired_speed > conf->mapping_pidsat_surge)
             desired_surge = conf->mapping_pidsat_surge;
@@ -142,9 +139,6 @@ int main(int argc, char* argv[])
         {
             thrusterData.desiredSurge = pidSurge.Compute(ctrl_cxt_msg.desired_speed, surgeFbk);
             thrusterData.desiredJog = pidYawRate.Compute(ctrl_cxt_msg.desired_jog, jogFbk);
-
-            std::cout << "Thruster data desired surge: " << thrusterData.desiredSurge << std::endl;
-            std::cout << "Thruster data desired jog: " << thrusterData.desiredJog << std::endl;
         }
         else
         {
@@ -176,8 +170,8 @@ int main(int argc, char* argv[])
                 ulisseModel.ThrusterMapping(requestedVel, thrusterData.mapOut.left, thrusterData.mapOut.right);
 
                 ThrustersSaturation(thrusterData.mapOut.left, thrusterData.mapOut.right,
-                    -conf->thrusterPercLimit, conf->thrusterPercLimit,
-                    thrusterData.ctrlRef.left, thrusterData.ctrlRef.right);
+                                    -conf->thrusterPercLimit, conf->thrusterPercLimit,
+                                    thrusterData.ctrlRef.left, thrusterData.ctrlRef.right);
 
                 thrust_msg.motor_mapout.left = thrusterData.mapOut.left;
                 thrust_msg.motor_mapout.right = thrusterData.mapOut.right;
@@ -194,9 +188,6 @@ int main(int argc, char* argv[])
         } else {
             thrust_msg.motor_ctrlref.left = 0.0;
             thrust_msg.motor_ctrlref.right = 0.0;
-
-            pidSurge.Reset();
-            pidYawRate.Reset();
         }
 
         auto t_now_ = std::chrono::system_clock::now();
@@ -205,7 +196,7 @@ int main(int argc, char* argv[])
         auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % (int)1E9);
 
         control_msg.stamp.sec = now_stamp_secs;
-        control_msg.stamp.nanosec = now_stamp_nanosecs; 
+        control_msg.stamp.nanosec = now_stamp_nanosecs;
         control_msg.surge_control = desired_surge;
         control_msg.yawr_control = ctrl_cxt_msg.desired_jog;
 

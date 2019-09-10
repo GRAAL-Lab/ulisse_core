@@ -92,6 +92,8 @@ class VehicleController {
 
     std::shared_ptr<tpik::iCAT> i_cat;
     int dof;
+
+    double cruise_;
     std::shared_ptr<tpik::Solver> solver;
 
     // Solution of TPIK

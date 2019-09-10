@@ -45,6 +45,8 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     statusCxt_ = std::make_shared<StatusContext>();
     conf_ = std::make_shared<ControllerConfiguration>();
 
+    cruise_ = 0;
+
     while (!par_client_->wait_for_service(1ms)) {
         if (!rclcpp::ok()) {
             RCLCPP_ERROR(nh_->get_logger(), "Interrupted while waiting for the service. Exiting.");
@@ -259,6 +261,8 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         state_navigate_.SetCruiseControl(request->cruise_control);
         state_latlong_.SetCruiseControl(request->cruise_control);
         goalCxt_->goalSurge = request->cruise_control;
+
+        cruise_ = request->cruise_control;
         response->res = "SetCruiseControl::ok";
     };
 
@@ -685,6 +689,11 @@ void VehicleController::Run()
             y_tpik(i) = 0.0;
             RCLCPP_INFO(nh_->get_logger(), "NaN requested velocity");
         }
+    }
+
+
+    if(cruise_ > 0 && y_tpik[3] > cruise_){
+        y_tpik[3] = cruise_;
     }
 
     double headingError;
