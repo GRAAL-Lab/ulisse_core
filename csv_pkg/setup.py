@@ -45,6 +45,7 @@ setup(
             'finish_experiment = csv_pkg.finish_experiment:main',
             'test_node = csv_pkg.test_node:main',
             'dcl_log = csv_pkg.dcl_log:main',
+            'log_goal_context = csv_pkg.log_goal_context:main',
         ],
     },
 )

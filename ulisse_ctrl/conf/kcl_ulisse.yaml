@@ -17,8 +17,8 @@ controller_node:
             # above CurrentMax the desired heading will be set equal to the
             # estimated current direction
             # below CurrentMin the desired heading is the actual one
-            CurrentMin: 0.0
-            CurrentMax: 0.1
+            CurrentMin: 0.1
+            CurrentMax: 0.2
 
         GotoHoldAfterMove: true
 
