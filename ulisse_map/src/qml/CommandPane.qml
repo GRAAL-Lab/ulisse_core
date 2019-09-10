@@ -14,6 +14,7 @@ Pane {
     property var buttonSafety: buttonSafety
     property var trackComponent
     property alias speedHeadTimeout: speedHeadTimeout
+    property alias buttonSafety1: buttonSafety1
     visible: true
 
     Layout.fillWidth: true
@@ -32,7 +33,7 @@ Pane {
             color: green
             text: "Parameters"
             Layout.bottomMargin: 10
-            Layout.topMargin: 20
+            Layout.topMargin: 5
             antialiasing: false
             font.weight: Font.DemiBold
             Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
@@ -76,6 +77,7 @@ Pane {
 
                     Slider {
                         id: speedText
+                        objectName: "cruiseSpeed"
                         width: 250
                         height: 48
                         Layout.leftMargin: 0
@@ -225,6 +227,7 @@ Pane {
                         }
 
                         RowLayout {
+                            y: 18
                             Layout.fillWidth: true
                             Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                             Slider {
@@ -288,6 +291,7 @@ Pane {
 
                     RowLayout {
                         id: rowLayout
+                        y: 18
                         height: 100
                         Layout.fillWidth: true
 
@@ -301,6 +305,22 @@ Pane {
                             onValueChanged: function(){
                                 settings.shTimeout = speedHeadTimeout.value
                             }
+                        }
+
+                        Text {
+                            id: element3
+                            width: 80
+                            text: "s"
+                            font.pixelSize: 18
+                            horizontalAlignment: Text.AlignLeft
+                            Layout.maximumWidth: 65
+                            Layout.fillWidth: false
+                            Layout.rightMargin: 0
+                            Layout.fillHeight: true
+                            Layout.preferredWidth: 65
+                            Layout.leftMargin: 10
+                            verticalAlignment: Text.AlignVCenter
+                            Layout.minimumWidth: 65
                         }
                     }
                     anchors.right: parent.right
@@ -387,7 +407,7 @@ Pane {
 
         Label {
             color: green
-            text: "Planning"
+            text: "Paths"
             Layout.bottomMargin: 10
             Layout.topMargin: 20
             antialiasing: false
@@ -441,41 +461,73 @@ Pane {
             }
         }
 
+        Label {
+            color: green
+            text: "Safety area"
+            antialiasing: false
+            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+            Layout.bottomMargin: 10
+            font.pointSize: 12
+            Layout.topMargin: 20
+            font.weight: Font.DemiBold
+        }
+
         RowLayout {
             id: additionalWpControls
             spacing: 0
             Layout.fillHeight: true
             Layout.fillWidth: true
+        }
 
-            Button {
-                id: buttonSafety
-                text: qsTr("Define safety area")
-
-                padding: 5
-                antialiasing: false
+        RowLayout {
+            id: additionalWpControls2
+            Layout.fillWidth: true
+            RowLayout {
+                id: loadSavePath1
                 Layout.fillWidth: true
-                Layout.fillHeight: false
+                Button {
+                    id: buttonSafety
+                    text: qsTr("Define")
 
-                highlighted: true
-                Material.background: green
+                    padding: 5
+                    antialiasing: false
+                    Layout.fillWidth: true
+                    Layout.fillHeight: false
 
-                function end() {
-                    enabled = true
-                    map.polysec_cur.end.disconnect(end)
-                    map.click_handler = map.click_goto_handler
-                    map.pos_changed_handler = function () {}
-                    text = "Redefine safety area"
-                    sidebar_manage.check_safety_all()
-                    cmdWrapper.sendBoundaries(JSON.stringify(
-                                                  map.polysec_cur.serialize()))
+                    highlighted: true
+                    Material.background: green
+
+                    function end() {
+                        enabled = true
+                        map.polysec_cur.end.disconnect(end)
+                        map.click_handler = map.click_goto_handler
+                        map.pos_changed_handler = function () {}
+                        text = "Redefine"
+                        buttonSafety1.enabled = true
+                        sidebar_manage.check_safety_all()
+                        cmdWrapper.sendBoundaries(JSON.stringify(
+                                                      map.polysec_cur.serialize()))
+                    }
+                    onClicked: function () {
+                        map.polysec_cur.clear_path()
+                        map.center = fbkUpdater.ulisse_pos
+                        map.click_handler = map.polysec_cur.click_handler
+                        map.pos_changed_handler = map.polysec_cur.pos_changed_handler
+                        enabled = false
+                        map.polysec_cur.end.connect(end)
+                    }
                 }
-                onClicked: function () {
-                    map.polysec_cur.clear_path()
-                    map.center = fbkUpdater.ulisse_pos
-                    map.click_handler = map.polysec_cur.click_handler
-                    map.pos_changed_handler = map.polysec_cur.pos_changed_handler
-                    enabled = false
-                    map.polysec_cur.end.connect(end)
+
+                Button {
+                    id: buttonSafety1
+                    enabled: false
+                    text: qsTr("Resend")
+                    padding: 5
+                    antialiasing: false
+                    Layout.fillWidth: true
+                    highlighted: true
+                    Layout.fillHeight: false
+                    onClicked: cmdWrapper.sendBoundaries(JSON.stringify(map.polysec_cur.serialize()))
                 }
             }
         }
@@ -488,6 +540,8 @@ Pane {
             Layout.fillHeight: true
             Layout.fillWidth: true
         }
+
+
 
 
 
@@ -596,7 +650,7 @@ Pane {
 
 /*##^##
 Designer {
-    D{i:0;height:838;width:640}D{i:5;anchors_x:0}D{i:4;anchors_x:0}D{i:11;anchors_x:0}
+    D{i:0;height:1078;width:300}D{i:5;anchors_x:0}D{i:4;anchors_x:0}D{i:11;anchors_x:0}
 D{i:10;anchors_x:0}D{i:20;anchors_x:0}D{i:19;anchors_x:0}D{i:24;anchors_width:200;anchors_x:0}
 }
 ##^##*/

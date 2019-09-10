@@ -25,7 +25,7 @@ class CommandWrapper : public QObject {
     QQmlApplicationEngine* appEngine_;
     QTimer* myTimer_;
     QObject *toastMgrObj_, *speedHeadTimoutObj_;
-    QObject *goalDistanceObj_, *waypointPathObj_, *waypointRadiusObj_, *loopPathObj_, *mapMouseAreaObj_;
+    QObject *cruiseSpeedObj_, *goalDistanceObj_, *waypointPathObj_, *waypointRadiusObj_, *loopPathObj_, *mapMouseAreaObj_;
 
     rclcpp::Node::SharedPtr np_;
     rclcpp::Client<ulisse_msgs::srv::ControlCommand>::SharedPtr command_srv_;
@@ -56,6 +56,7 @@ public:
     virtual ~CommandWrapper();
     void Init(QQmlApplicationEngine* engine);
     void SetNodeHandle(const rclcpp::Node::SharedPtr& np);
+    std::future<void> notificator;
 
     Q_INVOKABLE bool sendBoundaries(const QString boundary);
     Q_INVOKABLE bool sendPath(const QString path);
@@ -80,6 +81,7 @@ public slots:
 
 signals:
     void callbacks_processed();
+    void connected();
 };
 
 #endif // COMMANDWRAPPER_H

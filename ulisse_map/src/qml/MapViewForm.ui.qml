@@ -28,7 +28,6 @@ RowLayout {
     property alias pathState: pathState
     property alias slidersLeft: sidebar_manage
 
-
     spacing: 0
     width: window.width
     property alias engine: engine
@@ -145,7 +144,7 @@ RowLayout {
                 anchors.fill: parent
                 width: parent.width
                 height: parent.height - recenterButton.height
-                spacing: 2
+                spacing: 8
 
                 Button {
                     id: recenterButton
@@ -157,30 +156,34 @@ RowLayout {
 
                 Button {
                     id: clearPathButton
-                    anchors.rightMargin: parent.anchors.rightMargin
                     text: "Clear trace"
                     highlighted: true
                     Material.accent: orange
                     Layout.alignment: Qt.AlignLeft
-                    anchors.left: recenterButton.right
-                    anchors.leftMargin: 10
                 }
+
                 CheckBox {
                     id: followMeCheckbox
                     text: "Follow vehicle"
                     Layout.alignment: Qt.AlignLeft
-                    anchors.left: clearPathButton.right
                     Material.accent: mainColor
                     checked: false
-                    anchors.leftMargin: 10
                 }
 
                 CheckBox {
                     id: overlayStatusCbox
                     text: "Show Overlay"
-                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                     Material.accent: orange
                     checked: false
+                }
+
+                Rectangle {
+                    id: rectangle
+                    width: 200
+                    height: 200
+                    color: "#ffffff"
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
                 }
 
                 Button {
@@ -203,3 +206,4 @@ Designer {
     D{i:0;height:800;width:1000}
 }
 ##^##*/
+
