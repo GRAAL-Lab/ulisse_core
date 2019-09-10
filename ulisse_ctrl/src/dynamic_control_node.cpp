@@ -40,8 +40,6 @@ void ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg);
 void StatusContextCB(const ulisse_msgs::msg::StatusContext::SharedPtr msg);
 void parameter_set(rclcpp::SyncParametersClient::SharedPtr par_client, std::shared_ptr<LowLevelConfiguration> conf);
 
-double filter_parameter[2];
-
 ctb::DigitalSlidingMode<struct SlidingSurface>  slideSurge;
 ctb::DigitalSecOrdSlidingMode<struct SlidingSurface> slideHeading;
 void parameter_set();
