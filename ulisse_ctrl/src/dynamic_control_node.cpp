@@ -185,6 +185,9 @@ int main(int argc, char* argv[])
         } else {
             thrust_msg.motor_ctrlref.left = 0.0;
             thrust_msg.motor_ctrlref.right = 0.0;
+
+            pidSurge.Reset();
+            pidYawRate.Reset();
         }
 
         auto t_now_ = std::chrono::system_clock::now();

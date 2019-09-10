@@ -25,7 +25,7 @@ e['thruster_right'] = []
 e['thruster_left'] = []
 
 timer_reached = True
-home = expanduser.("~")
+home = expanduser("~")
 
 def stop_callback(request, response):
     global g_node

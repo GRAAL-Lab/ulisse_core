@@ -650,6 +650,8 @@ void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::Share
 {
     statusCxt_->vehiclePos.latitude = msg->latitude;
     statusCxt_->vehiclePos.longitude = msg->longitude;
+
+    std::cout << "Letto da NavFilter: lat " << statusCxt_->vehiclePos.latitude << " long: " << statusCxt_->vehiclePos.longitude << std::endl;
     statusCxt_->vehicleHeading = msg->orientation.yaw;
 
     statusCxt_->seacurrent[0] = msg->current[0];
