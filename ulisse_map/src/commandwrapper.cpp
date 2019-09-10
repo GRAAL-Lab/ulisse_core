@@ -2,12 +2,14 @@
 
 #include <chrono>
 #include <fstream>
+#include <future>
 
 #include "ulisse_ctrl/fsm_defines.hpp"
 #include "ulisse_driver/LLCHelperDataStructs.h"
 
 using namespace std::chrono_literals;
 using std::placeholders::_1;
+using namespace std;
 
 CommandWrapper::CommandWrapper(QObject* parent)
     : QObject(parent)
@@ -52,6 +54,11 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
         qDebug("No 'goalDistance' found!");
     }
 
+    cruiseSpeedObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("cruiseSpeed");
+    if (!cruiseSpeedObj_) {
+        qDebug("No 'cruiseSpeed' found!");
+    }
+
     speedHeadTimoutObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("shTimeout");
     if (!speedHeadTimoutObj_) {
         qDebug("No 'speedHeadTimeout' found!");
@@ -66,6 +73,13 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
 
     goal_cxt_sub_ = np_->create_subscription<ulisse_msgs::msg::GoalContext>(
         ulisse_msgs::topicnames::goal_context, std::bind(&CommandWrapper::GoalContextCB, this, _1), custom_qos_profile);
+
+    connect(this, &CommandWrapper::connected, [](){std::cout << "service connected" << std::endl;});
+    notificator = std::async([&]{
+        command_srv_->wait_for_service();
+        emit connected();
+        setCruiseSpeedCommand(cruiseSpeedObj_->property("value").toUInt());
+    });
 }
 
 void CommandWrapper::SetNodeHandle(const rclcpp::Node::SharedPtr& np)
@@ -391,8 +405,7 @@ bool CommandWrapper::goToNextWaypoint()
 
 bool CommandWrapper::goToPreviousWaypoint()
 {
-    bool ret = false;
-    wpCurrentIndex_--;
+    bool ret = false;    wpCurrentIndex_--;
 
     if (wpCurrentIndex_ >= 0) {
         ret = sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), 0);

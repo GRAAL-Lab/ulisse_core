@@ -25,12 +25,11 @@ Rectangle {
 
         Pane {
             id: statusdatarect
-            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+            height: 120
+            clip: false
+            Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
             Layout.fillWidth: true
-            Layout.fillHeight: true
-            Layout.minimumWidth: leftbarlayout.width
-            Layout.preferredWidth: parent.width
-            Layout.preferredHeight: parent.height / 6
+            Layout.fillHeight: false
 
             ColumnLayout {
                 id: mycol
@@ -114,7 +113,7 @@ Rectangle {
         CommandPane {
             id: commandRect
             antialiasing: true
-            Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+            Layout.alignment: Qt.AlignLeft | Qt.AlignTop
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.bottomMargin: 2
