@@ -121,6 +121,8 @@ void SafetyBoundaries::UpdateInternalActivationFunction()
     Ai_.setIdentity();
     Ai_ = target.gain * Ai_;
 
+    std::cout << Ai_ << std::endl;
+
 }
 
 void SafetyBoundaries::UpdateJacobian() { J_ = robotModel_->GetCartesianJacobian(frameID_).block(0, 0, 6, DoF_); }
