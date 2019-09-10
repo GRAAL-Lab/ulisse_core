@@ -124,6 +124,12 @@ int main(int argc, char* argv[])
         headingTrackDiff = ctb::HeadingErrorRad(status_cxt.vehicle_heading, status_cxt.vehicle_track);
         surgeFbk = status_cxt.vehicle_speed * cos(headingTrackDiff);
 
+        std::cout << "status_cxt.vehicle_heading: " << status_cxt.vehicle_heading << std::endl;
+        std::cout << "status_cxt.vehicle_track: " << status_cxt.vehicle_track << std::endl;
+        std::cout << "status_cxt.vehicle_speed: " << status_cxt.vehicle_speed << std::endl;
+        std::cout << "headingTrackDiff: " << headingTrackDiff << std::endl;
+        std::cout << "surgeFbk: " << surgeFbk << std::endl;
+
         jogFbk = ctb::HeadingErrorRad(status_cxt.vehicle_heading,prev_heading) / sampleTime;
         prev_heading = status_cxt.vehicle_heading;
 
