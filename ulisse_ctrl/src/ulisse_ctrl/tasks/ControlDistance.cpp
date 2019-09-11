@@ -26,6 +26,7 @@ void ControlDistance::SetDistance(Eigen::Vector3d distance)
 {
     distance_ = distance;
     isDistanceInitialized_ = true;
+    isActive_ = true;
 }
 
 void ControlDistance::SetStatusContext(const std::shared_ptr<ulisse::StatusContext>& statusCxt)
@@ -36,6 +37,11 @@ void ControlDistance::SetStatusContext(const std::shared_ptr<ulisse::StatusConte
 void ControlDistance::SetGoalContext(const std::shared_ptr<ulisse::GoalContext> &goalCxt)
 {
     goalCxt_ = goalCxt;
+}
+
+void ControlDistance::Reset() {
+    isDistanceInitialized_ = false;
+    isActive_ = false;
 }
 
 void ControlDistance::Update() throw(tpik::ExceptionWithHow)

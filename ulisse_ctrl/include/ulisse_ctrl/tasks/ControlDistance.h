@@ -48,6 +48,8 @@ public:
 
     void SetGoalContext(const std::shared_ptr<ulisse::GoalContext>& goalCxt);
 
+    void Reset();
+
     /**
      * @brief Update Method to update the task status.
      * @details Implememntation of the pure virtual method of the base class tpik::Equality task, used to update the task parameters

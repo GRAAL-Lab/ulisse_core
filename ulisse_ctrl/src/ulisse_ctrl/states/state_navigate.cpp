@@ -376,7 +376,9 @@ namespace states {
                         // Estimate curve length
                         s1240(curve, aepsge, &cur_length, &stat);
 
-                        double next_curvilinear_abscissa = current_curvilinear_abscissa + (delta_ / cur_length);
+                        double delta_increment = (delta_ / cur_length);
+                        double next_curvilinear_abscissa = current_curvilinear_abscissa + delta_increment;
+
                         int next_curve_index = current_curve;
                         SISLCurve* next_curve;
 
@@ -386,9 +388,10 @@ namespace states {
                             } else {
                                 next_curvilinear_abscissa = next_curvilinear_abscissa - 1;
                                 next_curve_index++;
-                                next_curve = nurbs_[next_curve_index];
                             }
                         }
+
+                        next_curve = nurbs_[next_curve_index];
                         double point_at[6];
                         // Compute the point of the first curve at current_curvilinear_abscissa.
                         s1227(next_curve, 1, next_curvilinear_abscissa, &leftknot, point_at,
@@ -401,6 +404,7 @@ namespace states {
                                                    goalCxt_->goalHeading);
 
                     angularPositionTask_->SetAngle(Eigen::Vector3d(0, 0, goalCxt_->goalHeading));
+                    distanceTask_->Reset();
                     linearVelocityTask_->SetVelocity(Eigen::Vector3d(cruise, 0, 0));
 
                 }
@@ -488,6 +492,7 @@ namespace states {
         current_curve = 0;
         start = false;
         oriented = false;
+        count = 0;
         isCurveSet = false;
         return fsm::ok;
     }

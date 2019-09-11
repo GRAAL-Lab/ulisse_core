@@ -97,7 +97,8 @@ namespace ulisse {
         const std::vector<std::string> navigatePriorityLevels = { priorityLevelID::asv_safety_boundaries,
                                                                   priorityLevelID::asv_control_position_angular,
                                                                   priorityLevelID::asv_control_velocity_angular,
-                                                                  priorityLevelID::asv_control_distance , priorityLevelID::asv_control_velocity_linear
+                                                                  priorityLevelID::asv_control_velocity_linear,
+                                                                  priorityLevelID::asv_control_distance
                                                                   };
 
 
