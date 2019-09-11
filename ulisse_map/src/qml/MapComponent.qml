@@ -99,7 +99,7 @@ MapComponentForm {
             Rotation {
                 origin.x: current.width / 2
                 origin.y: current.height / 2
-                angle: -map.bearing +fbkUpdater.current_deg
+                angle: map.bearing -fbkUpdater.current_deg
             },
             Rotation {
                 origin.x: ulisseIcon.sourceItem.width / 2

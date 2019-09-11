@@ -70,8 +70,8 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
     q_gps_pos_ = q_goal_pos_ = q_ulisse_pos_;
     q_gps_time_ = "undefined";
 
-    current_data_x= 0;
-    current_data_y= 0;
+    current_data_n= 0;
+    current_data_e= 0;
     current_data_deg= 0;
     current_data_norm= 0;
 
@@ -117,10 +117,10 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
 
 void FeedbackUpdater::NavFilterData(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)
 {
-    current_data_x= msg->current[0];
-    current_data_y= msg->current[1];
-    current_data_deg= atan2(current_data_y,current_data_x)*(180/M_PI);
-    current_data_norm= (sqrt(pow(current_data_x,2)+pow(current_data_y,2)));
+    current_data_n= msg->current[0];
+    current_data_e= msg->current[1];
+    current_data_deg= atan2(current_data_n,current_data_e)*(180.0/M_PI);
+    current_data_norm= (sqrt(pow(current_data_n,2)+pow(current_data_e,2)));
 }
 
 void FeedbackUpdater::SetNodeHandle(const rclcpp::Node::SharedPtr& np)
