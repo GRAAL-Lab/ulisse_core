@@ -241,10 +241,6 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         std::stringstream log;
         log << "Setting Bounding Box: " << request->boundaries_json;
         publishLog(log.str().c_str());
-
-
-        log << "Setting Bounding Box poly: " << polygon_;
-        publishLog(log.str().c_str());
     };
 
     srv_boundaries = nh_->create_service<ulisse_msgs::srv::SetBoundaries>(
@@ -726,16 +722,26 @@ void VehicleController::Run()
     std::cout << "Desired Jog: " << ctrlCxt_->desiredJog << std::endl;
     std::cout << "----------------------------------" << std::endl;
 
-    /*
-
     for (auto& task : task_hierarchy) {
         try {
+
+            /*
+            ulisse_msgs::msg::TaskStatus taskstatus_msg;
 
             t_now_ = std::chrono::system_clock::now();
             long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
             auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / (int)1E9);
             auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % (int)1E9);
 
+            taskstatus_msg.stamp.sec = now_stamp_secs;
+            taskstatus_msg.stamp.nanosec = now_stamp_nanosecs;
+            taskstatus_msg.vehicle_pos.latitude = statusCxt_->vehiclePos.latitude;
+            taskstatus_msg.id = task->GetID();
+            taskstatus_msg.is_active = task->GetIsActive();
+            taskstatus_msg.activation_function = task->GetInternalActivationFunction().diagonal();
+            taskstatus_msg.reference = task->GetReference();
+
+             */
             std::vector<double> diagonal_activation_function;
             // diagonal_activation_function = task->GetInternalActivationFunction().diagonal();
             std::cout << "LOG: " << task->GetID() << " ACT FUNC: " << task->GetInternalActivationFunction().diagonal() << " ISACT: " << task->GetIsActive() << std::endl;
@@ -744,7 +750,7 @@ void VehicleController::Run()
             std::cerr << "who " << e.what() << " how: " << e.how() << std::endl;
         }
     }
-     */
+
 }
 
 void VehicleController::PublishControl()
