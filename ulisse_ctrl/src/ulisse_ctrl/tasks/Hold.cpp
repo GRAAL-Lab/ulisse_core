@@ -83,10 +83,6 @@ void Hold::Update() throw(tpik::ExceptionWithHow)
             hrefA = rml::DecreasingBellShapedFunction(conf_->holdData.currentMin, conf_->holdData.currentMax, 0, 1,
                                                       currentNorm);
 
-            std::cout << "hREFA: " << hrefA << std::endl;
-            std::cout << "desiredHeading: " << desiredHeading << std::endl;
-            std::cout << "currentNorm: " << currentNorm << std::endl;
-
             goalCxt_->goalHeading = ulisse::NormalizeHeadingOn2PI(
                     (1 - hrefA) * (desiredHeading) + hrefA * statusCxt_->vehicleHeading);
 
