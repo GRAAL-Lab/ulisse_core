@@ -20,6 +20,7 @@
 #include "ulisse_msgs/msg/micro_loop_count.hpp"
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
 #include "ulisse_msgs/msg/status_context.hpp"
+#include "ulisse_msgs/msg/task_status.hpp"
 
 #include "rml/RML.h"
 
@@ -73,6 +74,8 @@ class VehicleController {
     rclcpp::Publisher<ulisse_msgs::msg::GoalContext>::SharedPtr goalcxt_pub_;
     rclcpp::Publisher<ulisse_msgs::msg::ControlContext>::SharedPtr ctrlcxt_pub_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr vehiclestate_pub_;
+
+    std::unordered_map<std::string, rclcpp::Publisher<ulisse_msgs::msg::TaskStatus>::SharedPtr > taskLogPublisherMap;
 
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr generic_log_pub_;
     /// ROBOT MODEL

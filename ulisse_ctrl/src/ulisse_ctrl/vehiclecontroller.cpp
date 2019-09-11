@@ -99,6 +99,8 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     equality_task.push_back(asv_control_velocity_linear);
     task_hierarchy.push_back(asv_control_velocity_linear);
     taskIDMap.insert(std::make_pair(ulisse::task::asv_control_velocity_linear, asv_control_velocity_linear));
+    taskLogPublisherMap.insert(std::make_pair(ulisse::task::asv_control_velocity_linear, nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_control_velocity_linear")));
+
 
     // AUV CONTROL VELOCITY ANGULAR
     asv_control_velocity_angular = std::make_shared<ikcl::AngularVelocity>(
@@ -107,6 +109,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     equality_task.push_back(asv_control_velocity_angular);
     task_hierarchy.push_back(asv_control_velocity_angular);
     taskIDMap.insert(std::make_pair(ulisse::task::asv_control_velocity_angular, asv_control_velocity_angular));
+    taskLogPublisherMap.insert(std::make_pair(ulisse::task::asv_control_velocity_angular, nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_control_velocity_angular")));
 
     // ASV ANGULAR POSITION
     asv_angular_position = std::make_shared<ikcl::AngularPosition>(
@@ -115,6 +118,8 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     cartesian_task.push_back(asv_angular_position);
     task_hierarchy.push_back(asv_angular_position);
     taskIDMap.insert(std::make_pair(ulisse::task::asv_angular_position, asv_angular_position));
+    taskLogPublisherMap.insert(std::make_pair(ulisse::task::asv_angular_position, nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_angular_position")));
+
 
     // ASV CONTROL DISTANCE
     asv_control_distance = std::make_shared<ikcl::ControlDistance>(
@@ -124,6 +129,8 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     cartesian_task.push_back(asv_control_distance);
     task_hierarchy.push_back(asv_control_distance);
     taskIDMap.insert(std::make_pair(ulisse::task::asv_control_distance, asv_control_distance));
+    taskLogPublisherMap.insert(std::make_pair(ulisse::task::asv_control_distance, nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_control_distance")));
+
 
     // ASV HOLD POSITION
     asv_hold_position = std::make_shared<ikcl::Hold>(
@@ -134,6 +141,8 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     equality_task.push_back(asv_hold_position);
     task_hierarchy.push_back(asv_hold_position);
     taskIDMap.insert(std::make_pair(ulisse::task::asv_hold_position, asv_hold_position));
+    taskLogPublisherMap.insert(std::make_pair(ulisse::task::asv_hold_position, nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_hold_position")));
+
 
     /*
     // ASV MAKE CURVE
@@ -158,6 +167,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     inequality_task.push_back(asv_safety_boundaries);
     task_hierarchy.push_back(asv_safety_boundaries);
     taskIDMap.insert(std::make_pair(ulisse::task::asv_safety_boundaries, asv_safety_boundaries));
+    taskLogPublisherMap.insert(std::make_pair(ulisse::task::asv_safety_boundaries, nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_safety_boundaries")));
 
 
     // Initialize Solver and iCAT
@@ -722,15 +732,40 @@ void VehicleController::Run()
     std::cout << "Desired Jog: " << ctrlCxt_->desiredJog << std::endl;
     std::cout << "----------------------------------" << std::endl;
 
-
     for (auto& task : task_hierarchy) {
         try {
-            std::cout << "LOG: " << task->GetID() << " ACT FUNC: " << task->GetInternalActivationFunction() << " ISACT: " << task->GetIsActive() << std::endl;
+
+            std::vector<double> diagonal_activation_function;
+            for(int i = 0; i < task->GetInternalActivationFunction().rows(); i++){
+                diagonal_activation_function.push_back(task->GetInternalActivationFunction().at(i, i));
+            }
+            std::vector<double> reference;
+            for(int i = 0; i < task->GetReference().size(); i++){
+                reference.push_back(task->GetReference().at(i));
+            }
+
+            ulisse_msgs::msg::TaskStatus taskstatus_msg;
+
+            t_now_ = std::chrono::system_clock::now();
+            long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
+            auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / (int)1E9);
+            auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % (int)1E9);
+
+            taskstatus_msg.stamp.sec = now_stamp_secs;
+            taskstatus_msg.stamp.nanosec = now_stamp_nanosecs;
+            taskstatus_msg.id = task->GetID();
+            taskstatus_msg.is_active = task->GetIsActive();
+            taskstatus_msg.activation_function = diagonal_activation_function;
+            taskstatus_msg.reference = reference;
+
+            taskLogPublisherMap[task->GetID()]->publish(taskstatus_msg);
+
         } catch (tpik::ExceptionWithHow& e) {
             std::cerr << "LOG TASK EXCEPTION" << std::endl;
             std::cerr << "who " << e.what() << " how: " << e.how() << std::endl;
         }
     }
+
 }
 
 void VehicleController::PublishControl()
