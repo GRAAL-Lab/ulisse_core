@@ -758,7 +758,7 @@ void VehicleController::Run()
             taskstatus_msg.activation_function = diagonal_activation_function;
             taskstatus_msg.reference = reference;
 
-            taskLogPublisherMap.
+            taskLogPublisherMap[task->GetID()]->publish(taskstatus_msg);
 
         } catch (tpik::ExceptionWithHow& e) {
             std::cerr << "LOG TASK EXCEPTION" << std::endl;
