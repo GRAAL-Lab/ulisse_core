@@ -27,6 +27,8 @@ def generate_launch_description():
             package='csv_pkg', node_executable='dcl_log', output='screen')
     log_goal_context = launch_ros.actions.Node(
             package='csv_pkg', node_executable='log_goal_context', output='screen')
+    log_task = launch_ros.actions.Node(
+            package='csv_pkg', node_executable='log_task', output='screen')
 
 
     return LaunchDescription([
@@ -39,6 +41,7 @@ def generate_launch_description():
         log_llc_compass,
         log_generic,
         log_dcl,
-        log_goal_context
+        log_goal_context,
+        log_task_angular_posion,
         # more nodes can be added here
     ])

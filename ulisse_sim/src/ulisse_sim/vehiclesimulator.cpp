@@ -37,6 +37,9 @@ VehicleSimulator::VehicleSimulator(const rclcpp::Node::SharedPtr& nh)
     ambsens_pub_ = nh_->create_publisher<ulisse_msgs::msg::AmbientSensors>(ulisse_msgs::topicnames::sensor_ambient);
     magneto_pub_ = nh_->create_publisher<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer);
     applied_motorref_pub_ = nh_->create_publisher<ulisse_msgs::msg::MotorReference>(ulisse_msgs::topicnames::motor_applied_ref);
+
+	waterVel_world_(0) = 0.2;
+	waterVel_world_(1) = 0.0;
 }
 
 rml::EulerRPY VehicleSimulator::VehAtt() const
@@ -116,7 +119,11 @@ void VehicleSimulator::SimulateActuation(double h_p, double h_s)
     vehRelVel_world_ = vehAtt_now_.ToRotMatrix().GetCartesianRotationMatrix() * vehRelVel_body_;
 
     // Get the vehicle absolute velocity by adding the water current velocity
+
+std::cout << "vehRelVel_world_: "  << vehRelVel_world_ << std::endl;
+std::cout << "waterVel_world_: "  << waterVel_world_ << std::endl;
     vehVel_world_ = vehRelVel_world_ + waterVel_world_;
+std::cout << "vehVel_world_: "  << vehVel_world_ << std::endl;
 
     // Passing from angular vehicle acceleration to Euler rates
     Eigen::Matrix3d S;

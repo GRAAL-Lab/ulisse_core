@@ -46,6 +46,12 @@ setup(
             'test_node = csv_pkg.test_node:main',
             'dcl_log = csv_pkg.dcl_log:main',
             'log_goal_context = csv_pkg.log_goal_context:main',
+            'log_task_angular_position = csv_pkg.log_task_angular_position:main',
+            'log_task_angular_velocity = csv_pkg.log_task_angular_velocity:main',
+            'log_task_linear_velocity = csv_pkg.log_task_linear_velocity:main',
+            'log_task_control_distance = csv_pkg.log_task_control_distance:main',
+            'log_task_safety_boundaries = csv_pkg.log_task_safety_boundaries:main',
+            'log_task_hold_position = csv_pkg.log_task_hold_position:main',
         ],
     },
 )
