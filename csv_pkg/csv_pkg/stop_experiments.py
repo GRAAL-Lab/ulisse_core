@@ -31,7 +31,12 @@ def main(args=None):
     clients.append(node.create_client(Empty, 'ulisse/stop/llc_compass_sensor'))
     clients.append(node.create_client(Empty, 'ulisse/stop/generic'))
     clients.append(node.create_client(Empty, 'ulisse/stop/dcl_control'))
-    clients.append(node.create_client(Empty, 'ulisse/stop/goal_context'))
+    clients.append(node.create_client(Empty, 'ulisse/stop/asv_angular_velocity'))
+    clients.append(node.create_client(Empty, 'ulisse/stop/asv_linear_velocity'))
+    clients.append(node.create_client(Empty, 'ulisse/stop/asv_safety_boundaries'))
+    clients.append(node.create_client(Empty, 'ulisse/stop/asv_control_distance'))
+    clients.append(node.create_client(Empty, 'ulisse/stop/asv_hold_position'))
+    clients.append(node.create_client(Empty, 'ulisse/stop/asv_angular_position'))
 
     req = Empty.Request()
 
