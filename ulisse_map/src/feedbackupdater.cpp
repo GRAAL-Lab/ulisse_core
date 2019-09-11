@@ -70,6 +70,11 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
     q_gps_pos_ = q_goal_pos_ = q_ulisse_pos_;
     q_gps_time_ = "undefined";
 
+    current_data_x= 0;
+    current_data_y= 0;
+    current_data_deg= 0;
+    current_data_norm= 0;
+
     goalFlagObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("goalFlag");
     if (!goalFlagObj_) {
         qDebug() << "goalFlagObj_ Object NOT found!";
@@ -104,6 +109,18 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
 
     sw485_status_sub_ = np_->create_subscription<ulisse_msgs::msg::LLCSw485Status>(
         ulisse_msgs::topicnames::llc_sw485status, std::bind(&FeedbackUpdater::LLCSw485StatusCB, this, _1));
+
+    current_status_sub_ = np_->create_subscription<ulisse_msgs::msg::NavFilterData>(
+        ulisse_msgs::topicnames::nav_filter_data, std::bind(&FeedbackUpdater::NavFilterData, this, _1), custom_qos_profile);
+}
+
+
+void FeedbackUpdater::NavFilterData(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)
+{
+    current_data_x= msg->current[0];
+    current_data_y= msg->current[1];
+    current_data_deg= atan2(current_data_y,current_data_x)*(180/M_PI);
+    current_data_norm= (sqrt(pow(current_data_x,2)+pow(current_data_y,2)));
 }
 
 void FeedbackUpdater::SetNodeHandle(const rclcpp::Node::SharedPtr& np)
@@ -333,6 +350,7 @@ int FeedbackUpdater::get_right_satellite_sent()
 
 void FeedbackUpdater::process_callbacks_slot()
 {
+
     rclcpp::spin_some(np_);
 
     emit callbacks_processed();
@@ -346,4 +364,14 @@ QVector<double> FeedbackUpdater::GenerateRandFloatVector(int size)
         randVect[i] = fRand(0.0, 1.0);
     }
     return randVect;
+}
+
+float FeedbackUpdater::get_current_data_deg()
+{
+    return current_data_deg;
+}
+
+float FeedbackUpdater::get_current_data_norm()
+{
+    return current_data_norm;
 }
