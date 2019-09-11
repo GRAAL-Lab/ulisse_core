@@ -721,6 +721,16 @@ void VehicleController::Run()
     std::cout << "Desired Surge: " << ctrlCxt_->desiredSurge << std::endl;
     std::cout << "Desired Jog: " << ctrlCxt_->desiredJog << std::endl;
     std::cout << "----------------------------------" << std::endl;
+
+
+    for (auto& task : task_hierarchy) {
+        try {
+            std::cout << "LOG: " << task->GetID() << " ACT FUNC: " << task->GetInternalActivationFunction() << " ISACT: " << task->GetIsActive() << std::endl;
+        } catch (tpik::ExceptionWithHow& e) {
+            std::cerr << "LOG TASK EXCEPTION" << std::endl;
+            std::cerr << "who " << e.what() << " how: " << e.how() << std::endl;
+        }
+    }
 }
 
 void VehicleController::PublishControl()
