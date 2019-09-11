@@ -75,6 +75,8 @@ class VehicleController {
     rclcpp::Publisher<ulisse_msgs::msg::ControlContext>::SharedPtr ctrlcxt_pub_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr vehiclestate_pub_;
 
+    std::unordered_map<std::string, rclcpp::Publisher<ulisse_msgs::msg::TaskStatus>::SharedPtr > taskLogPublisherMap;
+
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr generic_log_pub_;
     /// ROBOT MODEL
     std::shared_ptr<rml::RobotModel> robot_model;
