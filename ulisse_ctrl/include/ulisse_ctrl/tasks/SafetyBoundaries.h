@@ -84,6 +84,8 @@ public:
 
     void SetControlContext(const std::shared_ptr<ulisse::ControlContext>& ctrlCxt);
 
+   void SetGoalContext(const std::shared_ptr<ulisse::GoalContext>& goalCxt);
+
     void SetConf(const std::shared_ptr<ulisse::ControllerConfiguration>& conf);
     /**
 	 * @brief Overloading of the cout operator
@@ -163,6 +165,7 @@ protected:
 
     std::shared_ptr<ulisse::ControllerConfiguration> conf_;
     std::shared_ptr<ulisse::ControlContext> ctrlCxt_;
+   std::shared_ptr<ulisse::GoalContext> goalCxt_;
 };
 }
 #endif
