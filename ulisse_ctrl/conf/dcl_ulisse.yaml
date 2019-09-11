@@ -64,7 +64,7 @@ low_level_control_node:
             surge: 0.2
             heading: 5.5
 
-        sliding_mode: true
+        sliding_mode: false
 
         filter_parameter:
             gain_1: 0.9

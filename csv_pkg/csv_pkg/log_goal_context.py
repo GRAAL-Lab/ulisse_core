@@ -45,7 +45,7 @@ def main(args=None):
     global g_node, t0, e
     rclpy.init(args=args)
 
-    g_node = rclpy.create_node('logger_status_context')
+    g_node = rclpy.create_node('logger_goal_context')
 
     subscription = g_node.create_subscription(GoalContext, 'ulisse/ctrl/pos_context', chatter_callback)
     subscription  # prevent unused variable warning

@@ -148,7 +148,7 @@ int main(int argc, char *argv[]) {
 
                     float64_t speedRef;
 
-                    speedRef = controlCxt.desired_speed;
+                    speedRef = controlData.surge_pid_speed;
 
                     int zone;
                     bool northp;
@@ -231,7 +231,7 @@ int main(int argc, char *argv[]) {
 
                 float64_t speedRef;
 
-                speedRef = controlCxt.desired_speed;
+                speedRef = controlData.surge_pid_speed;
 
                 int zone;
                 bool northp;

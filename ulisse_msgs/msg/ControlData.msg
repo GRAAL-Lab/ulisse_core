@@ -7,4 +7,5 @@ float64 thrust_left
 float64 thrust_right
 float64 thrust_map_left
 float64 thrust_map_right
+float64 surge_pid_speed
 
