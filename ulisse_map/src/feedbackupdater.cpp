@@ -119,7 +119,7 @@ void FeedbackUpdater::NavFilterData(const ulisse_msgs::msg::NavFilterData::Share
 {
     current_data_x= msg->current[0];
     current_data_y= msg->current[1];
-    current_data_deg= atan2(current_data_x,current_data_y)*(180/M_PI);
+    current_data_deg= atan2(current_data_y,current_data_x)*(180/M_PI);
     current_data_norm= (sqrt(pow(current_data_x,2)+pow(current_data_y,2)));
 }
 
