@@ -56,7 +56,7 @@ namespace states {
         t_now_ = std::chrono::system_clock::now();
         total_elapsed_ = std::chrono::duration_cast<std::chrono::seconds>(t_now_ - t_start_);
 
-        if (total_elapsed_.count() > goalCxt_->cmdTimeout) {
+        if (goalCxt_->cmdTimeout != 0 && total_elapsed_.count() > goalCxt_->cmdTimeout) {
             std::cout << "Speed Heading Timeout reached!" << std::endl;
             fsm_->ExecuteCommand(ulisse::commands::ID::halt);
         }
