@@ -151,6 +151,7 @@ void SafetyBoundaries::make_segments(Point const& p, Point const& next)
 
 bool SafetyBoundaries::InitializePoly(ctb::LatLong current_position, std::string polygon_to_string, std::string polygon_lat_long)
 {
+    segments.clear();
     centroid = current_position;
 
     lam = ulisse::lat_to_m_coeff(centroid.latitude);

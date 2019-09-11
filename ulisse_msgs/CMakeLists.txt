@@ -66,6 +66,7 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/LLCPumps.msg"
   # Other
   "msg/NavFilterData.msg"
+  "msg/TaskStatus.msg"
   ## Services ##
   "srv/ControlCommand.srv"
   "srv/LLCCommand.srv"

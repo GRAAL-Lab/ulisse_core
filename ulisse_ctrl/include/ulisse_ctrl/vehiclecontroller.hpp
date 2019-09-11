@@ -20,6 +20,7 @@
 #include "ulisse_msgs/msg/micro_loop_count.hpp"
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
 #include "ulisse_msgs/msg/status_context.hpp"
+#include "ulisse_msgs/msg/task_status.hpp"
 
 #include "rml/RML.h"
 
