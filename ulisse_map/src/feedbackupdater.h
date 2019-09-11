@@ -15,7 +15,7 @@
 #include "ulisse_msgs/msg/llc_battery.hpp"
 #include "ulisse_msgs/msg/llc_sw485_status.hpp"
 #include "ulisse_msgs/msg/status_context.hpp"
-
+#include "ulisse_msgs/msg/nav_filter_data.hpp"
 #include "ulisse_msgs/msg/thrusters_data.hpp"
 
 class FeedbackUpdater : public QObject {
@@ -54,6 +54,9 @@ class FeedbackUpdater : public QObject {
     Q_PROPERTY(int right_satellite_received485 READ get_right_satellite_received NOTIFY callbacks_processed)
     Q_PROPERTY(int right_satellite_sent485 READ get_right_satellite_sent NOTIFY callbacks_processed)
 
+    Q_PROPERTY(float current_norm READ get_current_data_norm NOTIFY callbacks_processed)
+    Q_PROPERTY(float current_deg READ get_current_data_deg NOTIFY callbacks_processed)
+
     QGeoCoordinate q_ulisse_pos_, q_goal_pos_, q_gps_pos_;
     double q_goal_distance_, q_goal_heading_deg_;
     double q_ulisse_surge_;
@@ -74,6 +77,10 @@ class FeedbackUpdater : public QObject {
     int left_satellite_sent_;
     int right_satellite_received_;
     int right_satellite_sent_;
+    float current_data_deg;
+    float current_data_norm;
+    float current_data_x;
+    float current_data_y;
 
     rclcpp::Node::SharedPtr np_;
     rclcpp::Subscription<ulisse_msgs::msg::StatusContext>::SharedPtr status_cxt_sub_;
@@ -84,6 +91,7 @@ class FeedbackUpdater : public QObject {
     rclcpp::Subscription<ulisse_msgs::msg::LLCBattery>::SharedPtr battery_right_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::ThrustersData>::SharedPtr thruster_data_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::LLCSw485Status>::SharedPtr sw485_status_sub_;
+    rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr current_status_sub_;
 
     ulisse_msgs::msg::StatusContext status_cxt_msg_;
     ulisse_msgs::msg::GoalContext goal_cxt_msg_;
@@ -109,6 +117,7 @@ public:
     void GoalContextCB(const ulisse_msgs::msg::GoalContext::SharedPtr msg);
     void ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg);
     void StatusContextCB(const ulisse_msgs::msg::StatusContext::SharedPtr msg);
+    void NavFilterData(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
 
     Q_INVOKABLE void copyToClipboard(QString value);
 
@@ -140,6 +149,8 @@ public:
     int get_left_satellite_sent();
     int get_right_satellite_received();
     int get_right_satellite_sent();
+    float get_current_data_norm();
+    float get_current_data_deg();
 
 signals:
     void callbacks_processed();

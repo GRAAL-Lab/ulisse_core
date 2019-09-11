@@ -45,6 +45,14 @@ BarManagePathsForm {
         cur_managed = map.createRect()
         params_panel = panelParamsPolygon
         start()
+
+
+    }
+
+    Keys.onEscapePressed: {
+        discard()
+        console.log("escapeItem is handling escape");
+        // event.accepted is set to true by default for the specific key handlers
     }
 
     b_path.onClicked: function () {
@@ -190,4 +198,5 @@ BarManagePathsForm {
     function enableBtns(y) {
         panelManage.visible = y
     }
+
 }

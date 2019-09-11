@@ -43,7 +43,7 @@ RowLayout {
             id: label_data
             Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
             Layout.fillWidth: true
-            horizontalAlignment: Text.Text.AlignHCenter
+//            horizontalAlignment: Text.Text.AlignHCenter
             Layout.columnSpan: 1
             font.pointSize: tsize
             //Layout.fillWidth: true
