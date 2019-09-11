@@ -1,7 +1,7 @@
 navigation_filter_node:
     ros__parameters:
         Rate: 10
-        Gains: [1.0, 1.0, 0.2, 0.2]
+        Gains: [1.0, 1.0, 2.0, 2.0]
         ThrusterMapping:
             cX: [0.0, 0.0, 45.47]
             cN: [520.0, 0.0, 600.0]
