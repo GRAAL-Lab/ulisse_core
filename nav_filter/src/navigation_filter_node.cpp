@@ -207,6 +207,15 @@ int main(int argc, char *argv[]) {
                         filterData.gyro = imuData.gyro;
                         filterData.gyro[2] = state[5];
 
+
+                        t_now_ = std::chrono::system_clock::now();
+                        long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
+                        auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / (int)1E9);
+                        auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % (int)1E9);
+
+                        filterData.stamp.sec = now_stamp_secs;
+                        filterData.stamp.nanosec = now_stamp_nanosecs;
+                        
                         navfilter_pub->publish(filterData);
                     } catch (const GeographicLib::GeographicErr &e) {
                         RCLCPP_ERROR(node->get_logger(), "GeographicLib exception: what = %s", e.what());

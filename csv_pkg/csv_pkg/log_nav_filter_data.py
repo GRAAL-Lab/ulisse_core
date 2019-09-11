@@ -40,8 +40,7 @@ timer_reached = True
 
 def chatter_callback(msg):
     global e, timer_reached
-    t1 = time.time()
-    e['time'].append(t1) 
+    e['time'].append(msg.stamp.sec + (msg.stamp.nanosec * 1e-9)) 
     e['latitude'].append(msg.latitude)
     e['longitude'].append(msg.longitude)
     e['altitude'].append(msg.altitude)
