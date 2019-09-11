@@ -27,8 +27,18 @@ def generate_launch_description():
             package='csv_pkg', node_executable='dcl_log', output='screen')
     log_goal_context = launch_ros.actions.Node(
             package='csv_pkg', node_executable='log_goal_context', output='screen')
-    log_task = launch_ros.actions.Node(
-            package='csv_pkg', node_executable='log_task', output='screen')
+    log_task_angular_position = launch_ros.actions.Node(
+            package='csv_pkg', node_executable='log_task_angular_position', output='screen')
+    log_task_angular_velocity = launch_ros.actions.Node(
+            package='csv_pkg', node_executable='log_task_angular_velocity', output='screen')
+    log_task_control_distance = launch_ros.actions.Node(
+            package='csv_pkg', node_executable='log_task_control_distance', output='screen')
+    log_task_hold_position = launch_ros.actions.Node(
+            package='csv_pkg', node_executable='log_task_hold_position', output='screen')
+    log_task_linear_velocity = launch_ros.actions.Node(
+            package='csv_pkg', node_executable='log_task_linear_velocity', output='screen')
+    log_task_safety_boundaries = launch_ros.actions.Node(
+            package='csv_pkg', node_executable='log_task_safety_boundaries', output='screen')
 
 
     return LaunchDescription([
@@ -42,6 +52,11 @@ def generate_launch_description():
         log_generic,
         log_dcl,
         log_goal_context,
-        log_task_angular_posion,
+        log_task_angular_position,
+        log_task_angular_velocity,
+        log_task_control_distance,
+        log_task_hold_position,
+        log_task_linear_velocity,
+        log_task_safety_boundaries,
         # more nodes can be added here
     ])

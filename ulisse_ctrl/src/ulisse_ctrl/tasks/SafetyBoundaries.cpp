@@ -219,7 +219,7 @@ desired_target SafetyBoundaries::distance_check(Point const& p)
         d = boost::geometry::distance(p, i);
 
         // Detect dangerous situation , remember to give back anyn time the nearest.
-        if (d < MIN_THRESHOLD) {
+        if (d < MIN_THRESHOLD || !boost::geometry::covered_by(p, poly)) {
 
             point_type p1{ boost::geometry::get<0, 0>(i), boost::geometry::get<0, 1>(i) };
             point_type p2{ boost::geometry::get<1, 0>(i), boost::geometry::get<1, 1>(i) };
@@ -286,6 +286,14 @@ desired_target SafetyBoundaries::distance_check(Point const& p)
 
     // return these values: target(x,y) and "gain"
     theta = atan2(boost::geometry::get<1>(p) - (boost::geometry::get<1>(nearest_p) / count), boost::geometry::get<0>(p) - (boost::geometry::get<0>(nearest_p) / count));
+
+   if(!boost::geometry::covered_by(p, poly))
+   {
+      std::cout << "SEI FUORI!!!!" << std::endl;
+      theta = theta + M_PI;
+      target_value.gain = 1;
+
+   }
 
     target_value.x = boost::geometry::get<0>(p) + min_d * cos(theta);
     target_value.y = boost::geometry::get<1>(p) + min_d * sin(theta);

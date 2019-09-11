@@ -220,7 +220,7 @@ int main(int argc, char* argv[])
         control_msg.surge_error = surgeFbk;
         control_msg.yawr_error = jogFbk ;
 
-        
+
 
         control_msg.thrust_left = ulisseModel.get_tau_x();
         control_msg.thrust_right = ulisseModel.get_tau_n();
