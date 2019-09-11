@@ -11,6 +11,7 @@ import "../scripts/helper.js" as Helper
 
 Pane {
 
+    property var polysec_bkp: []
     property var buttonSafety: buttonSafety
     property var trackComponent
     property alias speedHeadTimeout: speedHeadTimeout
@@ -219,11 +220,12 @@ Pane {
                         Label {
                             id: label3
                             text: qsTr("Heading")
+                            font.underline: false
                             leftPadding: 5
                             font.pointSize: 12
                             Layout.fillWidth: true
                             horizontalAlignment: Text.AlignLeft
-                            verticalAlignment: Text.AlignVCenter
+                            verticalAlignment: Text.AlignBottom
                         }
 
                         RowLayout {
@@ -282,11 +284,12 @@ Pane {
                     Label {
                         id: label4
                         text: qsTr("Duration (0 = indefinite)")
+                        font.underline: false
                         leftPadding: 5
                         font.pointSize: 12
                         horizontalAlignment: Text.AlignLeft
                         Layout.fillWidth: true
-                        verticalAlignment: Text.AlignVCenter
+                        verticalAlignment: Text.AlignBottom
                     }
 
                     RowLayout {
@@ -426,7 +429,7 @@ Pane {
                     id: savePath
                     Layout.fillWidth: true
                     Layout.fillHeight: false
-                    text: "Save Path"
+                    text: "Save"
 
                     highlighted: true
                     Material.background: pressed ? orange : blue
@@ -444,7 +447,7 @@ Pane {
                     id: loadPath
                     Layout.fillWidth: true
                     Layout.fillHeight: false
-                    text: "Load Path"
+                    text: "Load"
 
                     highlighted: true
                     Material.background: pressed ? orange : blue
@@ -500,6 +503,7 @@ Pane {
                     function end() {
                         enabled = true
                         map.polysec_cur.end.disconnect(end)
+                        window.sig_escape.disconnect(reset_polysec)
                         map.click_handler = map.click_goto_handler
                         map.pos_changed_handler = function () {}
                         text = "Redefine"
@@ -508,12 +512,24 @@ Pane {
                         cmdWrapper.sendBoundaries(JSON.stringify(
                                                       map.polysec_cur.serialize()))
                     }
-                    onClicked: function () {
+
+                    function reset_polysec(){
+                        enabled = true
+                        map.polysec_cur.end.disconnect(end)
+                        window.sig_escape.disconnect(reset_polysec)
+                        map.polysec_cur.path = polysec_bkp
+                        map.click_handler = map.click_goto_handler
+                        map.pos_changed_handler = function () {}
+                    }
+
+                    onClicked: function () {                        
+                        polysec_bkp = map.polysec_cur.path
                         map.polysec_cur.clear_path()
                         map.center = fbkUpdater.ulisse_pos
                         map.click_handler = map.polysec_cur.click_handler
                         map.pos_changed_handler = map.polysec_cur.pos_changed_handler
                         enabled = false
+                        window.sig_escape.connect(reset_polysec)
                         map.polysec_cur.end.connect(end)
                     }
                 }

@@ -51,6 +51,16 @@ ApplicationWindow {
         }
     }
 
+    Shortcut {
+        sequence: "q"
+        context: Qt.ApplicationShortcut
+        onActivated: {
+            sig_escape()
+        }
+    }
+
+    signal sig_escape
+
     Settings {
         id: settings
         property int shTimeout: 120

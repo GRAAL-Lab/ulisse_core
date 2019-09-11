@@ -73,8 +73,21 @@ BarManagePathsForm {
         var cur_val = cur_managed.get_params()
         params_panel.fill_cur_values(cur_val)
         cur_managed.end.connect(end)
+        window.sig_escape.connect(abort_h)
         map.click_handler = cur_managed.click_handler
         map.pos_changed_handler = cur_managed.pos_changed_handler
+    }
+
+    function abort_h(){
+        map.click_handler = map.click_goto_handler
+        map.pos_changed_handler = function () {}
+        sidebar_manage.enableBtns(true)
+        hide_all()
+        cur_managed.deregister_map_items()
+        map.removeMapItem(cur_managed)
+        cur_managed.destroy()
+        map.mapMouseArea.hoverEnabled = false
+        window.sig_escape.disconnect(abort_h)
     }
 
     function edit() {
@@ -91,6 +104,7 @@ BarManagePathsForm {
 
     property int n: 0
     function end() {
+        window.sig_escape.disconnect(abort_h)
         cur_managed.end.disconnect(end)
         confirm()
         var v = trackComponent.createObject(sidebar_manage.columnTrack)
