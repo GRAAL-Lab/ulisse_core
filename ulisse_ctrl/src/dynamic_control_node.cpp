@@ -104,25 +104,26 @@ int main(int argc, char* argv[])
     double prev_heading = 0;
     double jogFbk=0;
     double derivative_jogFbk=0;
-    double desired_surge;
 
     ulisseModel.set_external_ctrl(sliding_on);
 
     ctb::DigitalPID pidSurge;
     ctb::DigitalPID pidYawRate;
 
+
     if (!sliding_on) {
 
         pidSurge.Initialize(conf->mapping_pidgains_surge, sampleTime, conf->mapping_pidsat_surge);
         pidSurge.SetSaturation(conf->mapping_pidsat_surge);
 
-        pidYawRate.Initialize(conf->dynamic_pidgains_yawrate, sampleTime,par_client->get_parameter("JogLimiter", 0.0));
+        pidYawRate.Initialize(conf->dynamic_pidgains_yawrate, sampleTime, par_client->get_parameter("JogLimiter", 0.0));
         pidYawRate.SetErrorFunction(ctb::HeadingErrorRadFunctor());
 
     }
 
     std::vector<double> state;
 
+    double surge_p=0;
     while (rclcpp::ok()) {
 
         headingTrackDiff = ctb::HeadingErrorRad(status_cxt.vehicle_heading, status_cxt.vehicle_track);
@@ -131,12 +132,7 @@ int main(int argc, char* argv[])
         derivative_jogFbk = ctb::HeadingErrorRad(status_cxt.vehicle_heading,prev_heading) / sampleTime;
         prev_heading = status_cxt.vehicle_heading;
 
-        jogFbk = filter_parameter[0]*jogFbk + filter_parameter[1]*derivative_jogFbk; 
-
-        if (ctrl_cxt_msg.desired_speed > conf->mapping_pidsat_surge)
-            desired_surge = conf->mapping_pidsat_surge;
-        else
-            desired_surge = ctrl_cxt_msg.desired_speed;
+        jogFbk = filter_parameter[0]*jogFbk + filter_parameter[1]*derivative_jogFbk;
 
         if (!sliding_on)
         {
@@ -153,10 +149,15 @@ int main(int argc, char* argv[])
             slideSurge.setState(state);
             slideHeading.setState(state);
 
-            ulisseModel.set_tau_x(slideSurge.compute(desired_surge, surgeFbk));
+            //double surge_prev = (ctrl_cxt_msg.desired_speed - surgeFbk) * 0.1 ;
+            //surge_p = filter_parameter[0]*surge_p + filter_parameter[1]*surge_prev;
+            surge_p = ctrl_cxt_msg.desired_speed;
+            control_msg.surge_pid_speed = surge_p;
+
+            ulisseModel.set_tau_x(slideSurge.compute(ctrl_cxt_msg.desired_speed, surgeFbk));
             ulisseModel.set_tau_n(slideHeading.compute(ctrl_cxt_msg.desired_jog, jogFbk));
 
-            thrusterData.desiredSurge = desired_surge;
+            thrusterData.desiredSurge = ctrl_cxt_msg.desired_speed;
             thrusterData.desiredJog = ctrl_cxt_msg.desired_jog;
         }
         if (status_cxt.vehicle_state != ulisse::states::ID::halt) {
@@ -214,13 +215,11 @@ int main(int argc, char* argv[])
 
         control_msg.stamp.sec = now_stamp_secs;
         control_msg.stamp.nanosec = now_stamp_nanosecs;
-        control_msg.surge_control = desired_surge;
+        control_msg.surge_control = ctrl_cxt_msg.desired_speed;
         control_msg.yawr_control = ctrl_cxt_msg.desired_jog;
 
         control_msg.surge_error = surgeFbk;
         control_msg.yawr_error = jogFbk ;
-
-
 
         control_msg.thrust_left = ulisseModel.get_tau_x();
         control_msg.thrust_right = ulisseModel.get_tau_n();
