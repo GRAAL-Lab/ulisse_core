@@ -38,8 +38,8 @@ VehicleSimulator::VehicleSimulator(const rclcpp::Node::SharedPtr& nh)
     magneto_pub_ = nh_->create_publisher<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer);
     applied_motorref_pub_ = nh_->create_publisher<ulisse_msgs::msg::MotorReference>(ulisse_msgs::topicnames::motor_applied_ref);
 
-	waterVel_world_(0) = 0.1;
-	waterVel_world_(1) = 0.1;
+	waterVel_world_(0) = 0.0;
+	waterVel_world_(1) = 0.0;
 }
 
 rml::EulerRPY VehicleSimulator::VehAtt() const

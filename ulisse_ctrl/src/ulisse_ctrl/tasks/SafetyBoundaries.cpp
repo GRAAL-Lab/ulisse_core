@@ -377,7 +377,7 @@ desired_target SafetyBoundaries::distance_check(Point const& p)
    }
 
     // return these values: target(x,y) and "gain"
-    theta = atan2(boost::geometry::get<1>(p) - (boost::geometry::get<1>(nearest_p) / count), boost::geometry::get<0>(p) - (boost::geometry::get<0>(nearest_p) / count));
+    theta = atan2(boost::geometry::get<0>(p) - (boost::geometry::get<0>(nearest_p) / count), boost::geometry::get<1>(p) - (boost::geometry::get<1>(nearest_p) / count));
 
    if(!boost::geometry::covered_by(p, poly)){ theta = theta + M_PI;}
 
