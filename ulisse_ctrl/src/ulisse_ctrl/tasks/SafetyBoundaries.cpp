@@ -103,6 +103,8 @@ void SafetyBoundaries::Update() throw(tpik::ExceptionWithHow)
                     "\nlongitude: " << desired_pose.longitude << std::endl;
 
         desired_speed = desired_speed_on_turn;
+
+        goalHeading = ctb::FilterAngularJump((*pose_shared)(5), goalHeading);
         desired_jog = ulisse::MinimumAngleBetween((*pose_shared)(5), goalHeading);
 
         desiredVelocity_(2) = desired_jog;
@@ -377,7 +379,12 @@ desired_target SafetyBoundaries::distance_check(Point const& p)
    }
 
     // return these values: target(x,y) and "gain"
-    theta = atan2(boost::geometry::get<0>(p) - (boost::geometry::get<0>(nearest_p) / count), boost::geometry::get<1>(p) - (boost::geometry::get<1>(nearest_p) / count));
+    if((*pose_shared)(5) < M_PI/2 || (*pose_shared)(5) > 3*M_PI/2){
+        theta = atan2(boost::geometry::get<1>(p) - (boost::geometry::get<1>(nearest_p) / count), boost::geometry::get<0>(p) - (boost::geometry::get<0>(nearest_p) / count));
+    }
+    else{
+        theta = atan2(boost::geometry::get<0>(p) - (boost::geometry::get<0>(nearest_p) / count), boost::geometry::get<1>(p) - (boost::geometry::get<1>(nearest_p) / count));
+    }
 
    if(!boost::geometry::covered_by(p, poly)){ theta = theta + M_PI;}
 
