@@ -378,19 +378,20 @@ desired_target SafetyBoundaries::distance_check(Point const& p)
       }
    }
 
-    // return these values: target(x,y) and "gain"
-    if((*pose_shared)(5) < M_PI/2 || (*pose_shared)(5) > 3*M_PI/2){
-        theta = atan2(boost::geometry::get<1>(p) - (boost::geometry::get<1>(nearest_p) / count), boost::geometry::get<0>(p) - (boost::geometry::get<0>(nearest_p) / count));
-    }
-    else{
-        theta = atan2(boost::geometry::get<0>(p) - (boost::geometry::get<0>(nearest_p) / count), boost::geometry::get<1>(p) - (boost::geometry::get<1>(nearest_p) / count));
-    }
+    if(min_d < INFINITY) {
+       // return these values: target(x,y) and "gain"
+       theta = atan2(boost::geometry::get<1>(p) - (boost::geometry::get<1>(nearest_p) / count), boost::geometry::get<0>(p) - (boost::geometry::get<0>(nearest_p) / count));
 
-   if(!boost::geometry::covered_by(p, poly)){ theta = theta + M_PI;}
+       if (!boost::geometry::covered_by(p, poly)) {
+           theta = theta + M_PI;
+       } else {
 
-    target_value.x = boost::geometry::get<0>(p) + min_d * cos(theta);
-    target_value.y = boost::geometry::get<1>(p) + min_d * sin(theta);
+           theta = theta + ulisse::MinimumAngleBetween((*pose_shared)(5), goalCxt_->goalHeading);
+       }
 
+       target_value.x = boost::geometry::get<0>(p) + min_d * cos(theta);
+       target_value.y = boost::geometry::get<1>(p) + min_d * sin(theta);
+   }
     return target_value;
 }
 
