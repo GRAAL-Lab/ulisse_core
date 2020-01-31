@@ -23,23 +23,23 @@ VehicleSimulator::VehicleSimulator(const rclcpp::Node::SharedPtr& nh)
     , realtime_(true)
 {
     lat_now_ = 44.393; // Genova Harbour lat-long
-    long_now_ =  8.945;
+    long_now_ = 8.945;
 
     lat_last_ = lat_now_;
     long_last_ = long_now_;
 
     t_start_ = t_last_ = t_now_ = std::chrono::system_clock::now();
 
-    micro_loop_count_pub_ = nh_->create_publisher<ulisse_msgs::msg::MicroLoopCount>(ulisse_msgs::topicnames::micro_loop_count);
-    gpsdata_pub_ = nh_->create_publisher<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data);
-    compass_pub_ = nh_->create_publisher<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass);
-    imudata_pub_ = nh_->create_publisher<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu);
-    ambsens_pub_ = nh_->create_publisher<ulisse_msgs::msg::AmbientSensors>(ulisse_msgs::topicnames::sensor_ambient);
-    magneto_pub_ = nh_->create_publisher<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer);
-    applied_motorref_pub_ = nh_->create_publisher<ulisse_msgs::msg::MotorReference>(ulisse_msgs::topicnames::motor_applied_ref);
+    micro_loop_count_pub_ = nh_->create_publisher<ulisse_msgs::msg::MicroLoopCount>(ulisse_msgs::topicnames::micro_loop_count, 10);
+    gpsdata_pub_ = nh_->create_publisher<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data, 10);
+    compass_pub_ = nh_->create_publisher<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass, 10);
+    imudata_pub_ = nh_->create_publisher<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu, 10);
+    ambsens_pub_ = nh_->create_publisher<ulisse_msgs::msg::AmbientSensors>(ulisse_msgs::topicnames::sensor_ambient, 10);
+    magneto_pub_ = nh_->create_publisher<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer, 10);
+    applied_motorref_pub_ = nh_->create_publisher<ulisse_msgs::msg::MotorReference>(ulisse_msgs::topicnames::motor_applied_ref, 10);
 
-	waterVel_world_(0) = 0.0;
-	waterVel_world_(1) = 0.0;
+    waterVel_world_(0) = 0.0;
+    waterVel_world_(1) = 0.0;
 }
 
 rml::EulerRPY VehicleSimulator::VehAtt() const
@@ -62,10 +62,10 @@ double VehicleSimulator::VehLongitude() const
     return long_now_;
 }
 
-void VehicleSimulator::SetParameters(double Ts, const ThrusterMappingParameters& thmapparams)
+void VehicleSimulator::SetParameters(double Ts, const UlisseModelParameters& thmapparams)
 {
     Ts_fixed_ = Ts;
-    ulisseModel_.SetMappingParams(thmapparams);
+    ulisseModel_.SetUlisseParams(thmapparams);
 
     std::cout << "=====  THRUSTER MAPPING   =====" << std::endl;
     std::cout << thmapparams << std::endl;
@@ -120,10 +120,10 @@ void VehicleSimulator::SimulateActuation(double h_p, double h_s)
 
     // Get the vehicle absolute velocity by adding the water current velocity
 
-std::cout << "vehRelVel_world_: "  << vehRelVel_world_ << std::endl;
-std::cout << "waterVel_world_: "  << waterVel_world_ << std::endl;
+    std::cout << "vehRelVel_world_: " << vehRelVel_world_ << std::endl;
+    std::cout << "waterVel_world_: " << waterVel_world_ << std::endl;
     vehVel_world_ = vehRelVel_world_ + waterVel_world_;
-std::cout << "vehVel_world_: "  << vehVel_world_ << std::endl;
+    std::cout << "vehVel_world_: " << vehVel_world_ << std::endl;
 
     // Passing from angular vehicle acceleration to Euler rates
     Eigen::Matrix3d S;
@@ -152,7 +152,6 @@ std::cout << "vehVel_world_: "  << vehVel_world_ << std::endl;
     vehAtt_now_.SetRoll(std::fmod((vehAtt_last_.GetRoll() + rpyEulerRates(0) * Ts_) + 2 * M_PI, 2 * M_PI));
     vehAtt_now_.SetPitch(std::fmod((vehAtt_last_.GetPitch() + rpyEulerRates(1) * Ts_) + 2 * M_PI, 2 * M_PI));
     vehAtt_now_.SetYaw(std::fmod((vehAtt_last_.GetYaw() + rpyEulerRates(2) * Ts_) + 2 * M_PI, 2 * M_PI));
-
 }
 
 double VehicleSimulator::GetCurrentTimestamp() const
@@ -165,8 +164,8 @@ double VehicleSimulator::GetCurrentTimestamp() const
 void VehicleSimulator::SimulateSensors(double h_p, double h_s)
 {
     long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
-    auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / (int)1E9);
-    auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % (int)1E9);
+    auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
+    auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
 
     auto elapsed_secs = static_cast<double>(total_elapsed_.count()) / 1E9;
     timestamp_count_ = static_cast<uint32_t>(elapsed_secs * 200.0);
@@ -199,8 +198,8 @@ void VehicleSimulator::SimulateSensors(double h_p, double h_s)
 
     ambsens_msg_.stamp.sec = now_stamp_secs;
     ambsens_msg_.stamp.nanosec = now_stamp_nanosecs;
-    ambsens_msg_.temperaturectrlbox = 23.0 + (rand() / (double)RAND_MAX) * 2.0;
-    ambsens_msg_.humidityctrlbox = 50.0 + (rand() / (double)RAND_MAX) * 2.0;
+    ambsens_msg_.temperaturectrlbox = 23.0 + (rand() / static_cast<double>(RAND_MAX)) * 2.0;
+    ambsens_msg_.humidityctrlbox = 50.0 + (rand() / static_cast<double>(RAND_MAX)) * 2.0;
 
     magneto_msg_.stamp.sec = now_stamp_secs;
     magneto_msg_.stamp.nanosec = now_stamp_nanosecs;
@@ -217,16 +216,16 @@ void VehicleSimulator::PublishSensors()
     micro_loop_count_pub_->publish(micro_loop_count_msg_);
 
     //std::cout << "timestamp_count_ % 200: " << timestamp_count_ % 200 << std::endl;
-    if ((int)(timestamp_count_ / 20) > gpspubcounter_) {
-        gpspubcounter_ = (int)(timestamp_count_ / 20);
+    if (static_cast<int>(timestamp_count_ / 20) > gpspubcounter_) {
+        gpspubcounter_ = static_cast<int>(timestamp_count_ / 20);
         gpsdata_pub_->publish(gpsdata_msg_);
     }
 
     //std::cout << "(int)(timestamp_count_ % 20):" << (int)(timestamp_count_ % 20) << std::endl;
     //std::cout << "sensorpubcounter: " << sensorpubcounter_ << std::endl;
-    if ((int)(timestamp_count_ / 20) > sensorpubcounter_) {
+    if (static_cast<int>(timestamp_count_ / 20) > sensorpubcounter_) {
 
-        sensorpubcounter_ = (int)(timestamp_count_ / 20);
+        sensorpubcounter_ = static_cast<int>(timestamp_count_ / 20);
         //std::cout << "Ma ci passiamo di qua?" << std::endl;
         compass_pub_->publish(compassdata_msg_);
         imudata_pub_->publish(imudata_msg_);

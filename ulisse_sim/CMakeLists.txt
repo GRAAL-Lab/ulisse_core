@@ -16,6 +16,7 @@ find_package(std_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(surface_vehicle_model REQUIRED)
 find_package(ulisse_msgs REQUIRED)
+find_package(ament_index_cpp REQUIRED)
 
 # Add files in the tree of "Projects" view in QtCreator
 file(GLOB_RECURSE SOURCE_FILES
@@ -39,8 +40,8 @@ target_link_libraries(VehicleSimulatorClass ${surface_vehicle_model_LIBRARIES} G
 
 ## Executables
 add_executable(simulator_node src/simulator_node.cpp)
-ament_target_dependencies(simulator_node rclcpp std_msgs ulisse_msgs surface_vehicle_model)
-target_link_libraries(simulator_node VehicleSimulatorClass)
+ament_target_dependencies(simulator_node rclcpp std_msgs ulisse_msgs surface_vehicle_model ament_index_cpp)
+target_link_libraries(simulator_node VehicleSimulatorClass config++)
 
 install(TARGETS
   simulator_node

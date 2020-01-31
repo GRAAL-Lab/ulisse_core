@@ -4,10 +4,18 @@
 #include "rclcpp/rclcpp.hpp"
 
 #include "ulisse_ctrl/ctrl_data_structs.hpp"
+#include "ulisse_msgs/msg/control_context.hpp"
+#include "ulisse_msgs/msg/control_data.hpp"
+#include "ulisse_msgs/msg/status_context.hpp"
+#include "ulisse_msgs/msg/thrusters_data.hpp"
+#include "ulisse_msgs/srv/min_srv.hpp"
+#include "ulisse_msgs/terminal_utils.hpp"
+#include "ulisse_msgs/topicnames.hpp"
 
-#include <vector>
+#include "ulisse_msgs/msg/nav_filter_data.hpp"
+
 #include <math.h>
-
+#include <vector>
 
 #define R_EARTH 6378.137 // Radius of earth in KM
 
@@ -20,30 +28,34 @@ struct SlidingSurface {
     std::vector<double> _inertia;
     double _k;
     double _k1;
-
 };
 
+struct SlidingParameter {
+    Eigen::Vector2d filter_parameter;
+    double gain_1, gain_2, surge_gain, heading_gain;
+};
 
 double NormalizeHeadingOn2PI(double angle);
 
-void ThrustersSaturation(double lThruster, double rThruster, double thMin, double thMax, double &lSatOut, double &rSatOut);
+void ThrustersSaturation(double lThruster, double rThruster, double thMin, double thMax, double& lSatOut, double& rSatOut);
 
 double SlowDownWhenTurning(double headingError, double desiredSpeed, const ControllerConfiguration& conf);
 
-void LoadControllerConfiguration(std::shared_ptr<ControllerConfiguration> conf, rclcpp::SyncParametersClient::SharedPtr par_client);
+void LoadControllerConfiguration(std::shared_ptr<ControllerConfiguration> conf, std::string file_name);
 
-void LoadLowLevelConfiguration(std::shared_ptr<LowLevelConfiguration> conf, rclcpp::SyncParametersClient::SharedPtr par_client);
+void LoadLowLevelConfiguration(std::shared_ptr<LowLevelConfiguration> conf);
 
+void ParameterSet(std::shared_ptr<LowLevelConfiguration> conf, std::string filename, SlidingSurface& sl, std::shared_ptr<SlidingParameter> sp);
 
-void parameter_setting(struct SlidingSurface &param,std::shared_ptr<LowLevelConfiguration> conf, double k, double k1);
+void parameter_setting(SlidingSurface& param, std::shared_ptr<LowLevelConfiguration> conf, double k, double k1);
 
-std::vector<double> alpha_beta_u(const std::vector<double> state,struct SlidingSurface param);
+std::vector<double> alpha_beta_u(const std::vector<double> state, SlidingSurface param);
 
-std::vector<double> alpha_beta_r(const std::vector<double> state,struct SlidingSurface param);
+std::vector<double> alpha_beta_r(const std::vector<double> state, SlidingSurface param);
 
-double s1 (const double ref, const double fb, struct SlidingSurface param);
+double s1(const double ref, const double fb, SlidingSurface param);
 
-double s2 (const double ref, const double fb, struct SlidingSurface param);
+double s2(const double ref, const double fb, SlidingSurface param);
 
 double MinimumAngleBetween(double from, double to);
 
@@ -62,6 +74,8 @@ double* point_map2euclidean(double latitude, double longitude, ctb::LatLong cent
 ctb::LatLong point_euclidean2map(double x, double y, ctb::LatLong centroid, double lam, double lom);
 
 double from_lat_long_to_measure(double lat1, double lon1, double lat2, double lon2);
+
+void PublishControl(rclcpp::Publisher<ulisse_msgs::msg::ControlData>::SharedPtr pub);
 }
 
 #endif // HELPERFUNCTIONS_HPP

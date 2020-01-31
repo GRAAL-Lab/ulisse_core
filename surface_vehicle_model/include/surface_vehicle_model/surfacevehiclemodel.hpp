@@ -4,7 +4,7 @@
 #include "eigen3/Eigen/Dense"
 #include "rml/RML.h"
 
-struct ThrusterMappingParameters {
+struct UlisseModelParameters {
 
     double surgeMin, surgeMax;
     double yawRateMin, yawRateMax;
@@ -15,7 +15,7 @@ struct ThrusterMappingParameters {
     double b1_pos, b2_pos, b1_neg, b2_neg;
     Eigen::Matrix3d Inertia;
 
-    ThrusterMappingParameters()
+    UlisseModelParameters()
         : surgeMin(0.0)
         , surgeMax(0.0)
         , yawRateMin(0.0)
@@ -33,7 +33,7 @@ struct ThrusterMappingParameters {
         Inertia.setZero();
     }
 
-    friend std::ostream& operator<<(std::ostream& os, ThrusterMappingParameters const& a)
+    friend std::ostream& operator<<(std::ostream& os, UlisseModelParameters const& a)
     {
         Eigen::IOFormat TabbedCleanFmt(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", " ", "\t", "\n", "", "");
         return os << "Thruster Mapping:\n"
@@ -41,7 +41,7 @@ struct ThrusterMappingParameters {
                   << "\tsurgeMax: " << a.surgeMax << "\n"
                   << "\tyawRateMin: " << a.yawRateMin << "\n"
                   << "\tyawRateMax: " << a.yawRateMax << "\n"
-                  << "\tlambda_pos: " << (int)a.lambda_pos << "\n"
+                  << "\tlambda_pos: " << static_cast<int>(a.lambda_pos) << "\n"
                   << "\tlambda_neg: " << a.lambda_neg << "\n"
                   << "\tmotors distance: " << a.d << "\n"
                   << "\tcX: " << a.cX.transpose() << "\n"
@@ -68,39 +68,22 @@ struct ThrusterMappingParameters {
 class SurfaceVehicleModel {
 
     /**
-     * @brief vehvel_ The vehicle velocity vector in the form of: [u v w p q r],
-     * where the first three components are the linear x-y-z velocities and the
-     * second ones are the angular x-y-z velocities.
+     * @brief Class of ulisse model
      */
-    Eigen::Vector6d vehvel_;
-    //double tauX_, tauN_;
-    Eigen::Vector3d tauStar_, nir_;
-    ThrusterMappingParameters params_;
-    double tau_x;
-    double tau_n;
-    bool external_ctrl;
+    UlisseModelParameters params_;
 
-    double GetTauX();
-    double GetTauN();
-    double GetThrusterForceFromRPM(double n, double linXVel);
-    double GetThrusterForceFromMapping();
-    double PercentageToRPM(double h);
-    double RPMToPercentage(double n);
-    void SingleThrusterMapping(const Eigen::Vector6d& linAngVel, double& perc);
+    void SingleThrusterAllocation(const Eigen::Vector6d& linAngVel, double thrust_force, double& thruster_perc);
 
 public:
     SurfaceVehicleModel();
-
-    double get_tau_x () const {return tau_x;};
-    double get_tau_n () const {return tau_n;};
-    void set_tau_x (const double tau) {tau_x=tau;};
-    void set_tau_n (const double tau) {tau_n=tau;};
-    bool get_external_ctrl () const {return external_ctrl;};
-    void set_external_ctrl (const bool flag) {external_ctrl=flag;};
-
-    void SetMappingParams(const ThrusterMappingParameters& params);
+    Eigen::Vector2d ComputeCoriolisAndDragForces(Eigen::Vector6d vel);
+    double GetThrusterForce(double n, double linXVel);
+    double PercentageToRPM(double h);
+    double RPMToPercentage(double n);
     void DirectDynamics(double h_p, double h_s, const Eigen::Vector6d& linAngVel_, Eigen::Vector6d& linAngAcc_);
-    void ThrusterMapping(const Eigen::Vector6d& linAngVel, double& h_p, double& h_s);
+    Eigen::Vector2d ComputeThrusterForces(Eigen::Vector2d& tau);
+    void SetUlisseParams(const UlisseModelParameters& params);
+    void ThusterAllocation(const Eigen::Vector6d& linAngVel, Eigen::Vector2d thrust_force, double& h_p, double& h_s);
     //void ThrusterDynamicAllocator(const double f_des, const double n_des, double& h_s, double &h_p);
 };
 

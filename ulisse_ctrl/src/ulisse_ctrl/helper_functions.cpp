@@ -1,5 +1,9 @@
 #include "ulisse_ctrl/helper_functions.hpp"
+#include <ament_index_cpp/get_package_share_directory.hpp>
+#include <cstdlib>
 #include <iostream>
+#include <libconfig.h++>
+
 namespace ulisse {
 
 double NormalizeHeadingOn2PI(double angle)
@@ -84,99 +88,499 @@ double AvoidRotationCloseToTarget(double desiredHeading, double heading, double 
     return newHeading;
 }
 
-void LoadControllerConfiguration(std::shared_ptr<ControllerConfiguration> conf, rclcpp::SyncParametersClient::SharedPtr par_client)
+void LoadControllerConfiguration(std::shared_ptr<ControllerConfiguration> conf, std::string file_name)
 {
-    conf->posAcceptanceRadius = par_client->get_parameter("PosAcceptanceRadius", 0.0);
-    conf->goToHoldAfterMove = par_client->get_parameter("GotoHoldAfterMove", false);
+    libconfig::Config confObj;
+
+    //Inizialization
+    std::string package_share_directory = ament_index_cpp::get_package_share_directory("ulisse_ctrl");
+    std::stringstream conf_path;
+    conf_path << package_share_directory << "/conf/" << file_name;
+
+    std::string confPath = conf_path.str().c_str();
+
+    std::cout << "PATH TO CONF FILE : " << confPath << std::endl;
+
+    //read conf file
+    try {
+        confObj.readFile(confPath.c_str());
+    } catch (libconfig::ParseException& e) {
+        std::cerr << "Parse exception when reading:" << confPath << std::endl;
+        std::cerr << "line: " << e.getLine() << " error: " << e.getError() << std::endl;
+        return;
+    }
+
+    try {
+        conf->posAcceptanceRadius = confObj.lookup("PosAcceptanceRadius");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'PosAcceptanceRadius' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->goToHoldAfterMove = confObj.lookup("kinematic_control_params.GotoHoldAfterMove");
+
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'GotoHoldAfterMove' setting in configuration file." << std::endl;
+    }
 
     // Hold
-    conf->holdData.hysteresis = par_client->get_parameter("Hold.Hysteresis", 1.0);
-    conf->holdData.defaultRadius = par_client->get_parameter("Hold.DefaultRadius", 1.0);
-    conf->holdData.enableCurrentCompensation = par_client->get_parameter("Hold.enableCurrentCompensation", false);
-    conf->holdData.currentMin = par_client->get_parameter("Hold.CurrentMin", 0.0);
-    conf->holdData.currentMax = par_client->get_parameter("Hold.CurrentMax", 0.0);
+    try {
+        conf->holdData.hysteresis = confObj.lookup("kinematic_control_params.Hold.Hysteresis");
+
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'Hold.Hysteresis' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->holdData.defaultRadius = confObj.lookup("kinematic_control_params.Hold.DefaultRadius");
+
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'Hold.DefaultRadius' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->holdData.enableCurrentCompensation = confObj.lookup("kinematic_control_params.Hold.enableCurrentCompensation");
+
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'Hold.enableCurrentCompensation' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->holdData.currentMin = confObj.lookup("kinematic_control_params.Hold.CurrentMin");
+
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'Hold.CurrentMin' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->holdData.currentMax = confObj.lookup("kinematic_control_params.Hold.CurrentMax");
+
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'Hold.CurrentMax' setting in configuration file." << std::endl;
+    }
 
     // Slow Down on turns
-    conf->enableSlowDownOnTurns = par_client->get_parameter("SlowDownOnTurns.enable", false);
-    conf->slowOnTurns.headingErrorMin = par_client->get_parameter("SlowDownOnTurns.HeadingErrorMin", 0.0);
-    conf->slowOnTurns.headingErrorMax = par_client->get_parameter("SlowDownOnTurns.HeadingErrorMax", 0.0);
-    conf->slowOnTurns.alphaMin = par_client->get_parameter("SlowDownOnTurns.AlphaMin", 0.0);
-    conf->slowOnTurns.alphaMax = par_client->get_parameter("SlowDownOnTurns.AlphaMax", 0.0);
+    try {
+        conf->enableSlowDownOnTurns = confObj.lookup("kinematic_control_params.SlowDownOnTurns.enable");
+
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'SlowDownOnTurns.enablex' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->slowOnTurns.headingErrorMin = confObj.lookup("kinematic_control_params.SlowDownOnTurns.HeadingErrorMin");
+
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'SlowDownOnTurns.HeadingErrorMin' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->slowOnTurns.headingErrorMax = confObj.lookup("kinematic_control_params.SlowDownOnTurns.HeadingErrorMax");
+
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'SlowDownOnTurns.HeadingErrorMax' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->slowOnTurns.alphaMin = confObj.lookup("kinematic_control_params.SlowDownOnTurns.AlphaMin");
+
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'SlowDownOnTurns.AlphaMin' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->slowOnTurns.alphaMax = confObj.lookup("kinematic_control_params.SlowDownOnTurns.AlphaMax");
+
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'SlowDownOnTurns.AlphaMax' setting in configuration file." << std::endl;
+    }
 
     // PID
-    conf->pidgains_position.Kp = par_client->get_parameter("PIDPosition.Kp", 0.0);
-    conf->pidgains_position.Ki = par_client->get_parameter("PIDPosition.Ki", 0.0);
-    conf->pidgains_position.Kd = par_client->get_parameter("PIDPosition.Kd", 0.0);
-    conf->pidgains_position.Kff = par_client->get_parameter("PIDPosition.Kff", 0.0);
-    conf->pidgains_position.N = par_client->get_parameter("PIDPosition.N", 0.0);
-    conf->pidgains_position.Tr = par_client->get_parameter("PIDPosition.Tr", 0.0);
-    conf->pidsat_position = par_client->get_parameter("SpeedLimiter", 0.0);
+    try {
+        conf->pidgains_position.Kp = confObj.lookup("kinematic_control_params.PIDPosition.Kp");
 
-    conf->pidgains_heading.Kp = par_client->get_parameter("PIDHeading.Kp", 0.0);
-    conf->pidgains_heading.Ki = par_client->get_parameter("PIDHeading.Ki", 0.0);
-    conf->pidgains_heading.Kd = par_client->get_parameter("PIDHeading.Kd", 0.0);
-    conf->pidgains_heading.Kff = par_client->get_parameter("PIDHeading.Kff", 0.0);
-    conf->pidgains_heading.N = par_client->get_parameter("PIDHeading.N", 0.0);
-    conf->pidgains_heading.Tr = par_client->get_parameter("PIDHeading.Tr", 0.0);
-    conf->pidsat_heading = par_client->get_parameter("JogLimiter", 0.0);
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'PIDPosition.Kp' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->pidgains_position.Ki = confObj.lookup("kinematic_control_params.PIDPosition.Ki");
+
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'PIDPosition.Ki' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->pidgains_position.Kd = confObj.lookup("kinematic_control_params.PIDPosition.Kd");
+
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'PIDPosition.Kd' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->pidgains_position.Kff = confObj.lookup("kinematic_control_params.PIDPosition.Kff");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'PIDPosition.Kff' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->pidgains_position.N = confObj.lookup("kinematic_control_params.PIDPosition.N");
+
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'PIDPosition.N' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->pidgains_position.Tr = confObj.lookup("kinematic_control_params.PIDPosition.Tr");
+
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'PIDPosition.Tr' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->pidsat_position = confObj.lookup("kinematic_control_params.SpeedLimiter");
+
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'SpeedLimiter' setting in configuration file." << std::endl;
+    }
+
+    try {
+        conf->pidgains_heading.Kp = confObj.lookup("kinematic_control_params.PIDHeading.Kp");
+
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'PIDHeading.Kp' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->pidgains_heading.Ki = confObj.lookup("kinematic_control_params.PIDHeading.Ki");
+
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'PIDHeading.Ki' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->pidgains_heading.Kd = confObj.lookup("kinematic_control_params.PIDHeading.Kd");
+
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'PIDHeading.Kd' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->pidgains_heading.Kff = confObj.lookup("kinematic_control_params.PIDHeading.Kff");
+
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'PIDHeading.Kff' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->pidgains_heading.N = confObj.lookup("kinematic_control_params.PIDHeading.N");
+
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'PIDHeading.N' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->pidgains_heading.Tr = confObj.lookup("kinematic_control_params.PIDHeading.Tr");
+
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'PIDHeading.Tr' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->pidsat_heading = confObj.lookup("kinematic_control_params.JogLimiter");
+
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'JogLimiter' setting in configuration file." << std::endl;
+    }
 }
 
-void LoadLowLevelConfiguration(std::shared_ptr<LowLevelConfiguration> conf, rclcpp::SyncParametersClient::SharedPtr par_client)
+void LoadLowLevelConfiguration(std::shared_ptr<LowLevelConfiguration> conf)
 {
-    conf->ctrlMode = static_cast<ControlMode>(par_client->get_parameter("ControlMode", 0));
-    conf->enableThrusters = par_client->get_parameter("EnableThrusters", false);
-    conf->thrusterPercLimit = par_client->get_parameter("ThrusterPercLimit", 0.0);
+    libconfig::Config confObj;
 
-    conf->mapping_pidgains_surge.Kp = par_client->get_parameter("ThrusterMapping.PIDSurge.Kp", 0.0);
-    conf->mapping_pidgains_surge.Ki = par_client->get_parameter("ThrusterMapping.PIDSurge.Ki", 0.0);
-    conf->mapping_pidgains_surge.Kd = par_client->get_parameter("ThrusterMapping.PIDSurge.Kd", 0.0);
-    conf->mapping_pidgains_surge.Kff = par_client->get_parameter("ThrusterMapping.PIDSurge.Kff", 0.0);
-    conf->mapping_pidgains_surge.N = par_client->get_parameter("ThrusterMapping.PIDSurge.N", 0.0);
-    conf->mapping_pidgains_surge.Tr = par_client->get_parameter("ThrusterMapping.PIDSurge.Tr", 0.0);
-    conf->mapping_pidsat_surge = par_client->get_parameter("SpeedLimiter", 0.0);
+    //Inizialization
+    std::string package_share_directory = ament_index_cpp::get_package_share_directory("ulisse_ctrl");
+    std::stringstream conf_path;
+    conf_path << package_share_directory << "/conf/dcl_ulisse.conf";
+
+    std::string confPath = conf_path.str().c_str();
+
+    std::cout << "PATH TO CONF FILE : " << confPath << std::endl;
+
+    try {
+        confObj.readFile(confPath.c_str());
+    } catch (libconfig::ParseException& e) {
+        std::cerr << "Parse exception when reading:" << confPath << std::endl;
+        std::cerr << "line: " << e.getLine() << " error: " << e.getError() << std::endl;
+        return;
+    }
+
+    try {
+        int tmp_ctrlMode = confObj.lookup("low_level_control_params.ControlMode");
+        conf->ctrlMode = static_cast<ControlMode>(tmp_ctrlMode);
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'ControlMode' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->enableThrusters = confObj.lookup("low_level_control_params.EnableThrusters");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'EnableThrusters' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->thrusterPercLimit = confObj.lookup("low_level_control_params.ThrusterPercLimit");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'thrusterPercLimit' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->mapping_pidgains_surge.Kp = confObj.lookup("low_level_control_params.ThrusterMapping.PIDSurge.Kp");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'ThrusterMapping PIDSurge.Kp' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->mapping_pidgains_surge.Ki = confObj.lookup("low_level_control_params.ThrusterMapping.PIDSurge.Ki");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'ThrusterMapping PIDSurge.Ki' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->mapping_pidgains_surge.Kd = confObj.lookup("low_level_control_params.ThrusterMapping.PIDSurge.Kd");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'ThrusterMapping PIDSurge.Kd' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->mapping_pidgains_surge.Kff = confObj.lookup("low_level_control_params.ThrusterMapping.PIDSurge.Kff");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'ThrusterMapping PIDSurge.Kff' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->mapping_pidgains_surge.N = confObj.lookup("low_level_control_params.ThrusterMapping.PIDSurge.N");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'ThrusterMapping PIDSurge.N' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->mapping_pidgains_surge.Tr = confObj.lookup("low_level_control_params.ThrusterMapping.PIDSurge.Tr");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'ThrusterMapping PIDSurge.Tr' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->mapping_pidsat_surge = confObj.lookup("low_level_control_params.SpeedLimiter");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'SpeedLimiter' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->jogLimiter = confObj.lookup("low_level_control_params.JogLimiter");
+    }
+
+    catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No  'JogLimiter' setting in configuration file." << std::endl;
+    }
 
     // THRUSTER MAPPING
-    conf->thrusterMap.surgeMin = par_client->get_parameter("ThrusterMapping.SurgeMin", 0.0);
-    conf->thrusterMap.surgeMax = par_client->get_parameter("ThrusterMapping.SurgeMax", 0.0);
-    conf->thrusterMap.yawRateMin = par_client->get_parameter("ThrusterMapping.YawrateMin", 0.0);
-    conf->thrusterMap.yawRateMax = par_client->get_parameter("ThrusterMapping.YawRateMax", 0.0);
-    conf->thrusterMap.d = par_client->get_parameter("ThrusterMapping.motors_distance", 0.0);
-    conf->thrusterMap.lambda_pos = par_client->get_parameter("ThrusterMapping.lambda_pos", 0.0);
-    conf->thrusterMap.lambda_neg = par_client->get_parameter("ThrusterMapping.lambda_neg", 0.0);
-    conf->thrusterMap.cX
-        = Eigen::Vector3d((par_client->get_parameter("ThrusterMapping.cX", std::vector<double>(3, 0.0))).data());
-    conf->thrusterMap.cN
-        = Eigen::Vector3d((par_client->get_parameter("ThrusterMapping.cN", std::vector<double>(3, 0.0))).data());
-    conf->thrusterMap.b1_pos = par_client->get_parameter("ThrusterMapping.b1_pos", 0.0);
-    conf->thrusterMap.b2_pos = par_client->get_parameter("ThrusterMapping.b2_pos", 0.0);
-    conf->thrusterMap.b1_neg = par_client->get_parameter("ThrusterMapping.b1_neg", 0.0);
-    conf->thrusterMap.b2_neg = par_client->get_parameter("ThrusterMapping.b2_neg", 0.0);
-    conf->thrusterMap.Inertia.diagonal()
-        = Eigen::Vector3d((par_client->get_parameter("ThrusterMapping.Inertia", std::vector<double>(3, 0.0))).data());
+    try {
+        conf->thrusterMap.surgeMin = confObj.lookup("low_level_control_params.ThrusterMapping.SurgeMin");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'ThrusterMapping SurgeMin' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->thrusterMap.surgeMax = confObj.lookup("low_level_control_params.ThrusterMapping.SurgeMax");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'ThrusterMapping surgeMax' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->thrusterMap.yawRateMin = confObj.lookup("low_level_control_params.ThrusterMapping.YawRateMin");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'ThrusterMapping YawRateMin' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->thrusterMap.yawRateMax = confObj.lookup("low_level_control_params.ThrusterMapping.YawRateMax");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'ThrusterMapping YawRateMax' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->thrusterMap.d = confObj.lookup("low_level_control_params.ThrusterMapping.motors_distance");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'motors_distance' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->thrusterMap.lambda_pos = confObj.lookup("low_level_control_params.ThrusterMapping.lambda_pos");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'lambda_pos' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->thrusterMap.lambda_neg = confObj.lookup("low_level_control_params.ThrusterMapping.lambda_neg");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'lambda_neg' setting in configuration file." << std::endl;
+    }
+    try {
+        const libconfig::Setting& cX_settings = confObj.lookup("low_level_control_params.ThrusterMapping.cX");
+        std::vector<double> tmp_X;
+        for (int n = 0; n < cX_settings.getLength(); ++n) {
+            tmp_X.push_back(cX_settings[n]);
+        }
+
+        conf->thrusterMap.cX = Eigen::Vector3d(tmp_X.data());
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'ThrusterMapping.cX' setting in configuration file." << std::endl;
+    }
+    try {
+        const libconfig::Setting& cN_settings = confObj.lookup("low_level_control_params.ThrusterMapping.cN");
+        std::vector<double> tmp_N;
+        for (int n = 0; n < cN_settings.getLength(); ++n) {
+            tmp_N.push_back(cN_settings[n]);
+        }
+
+        conf->thrusterMap.cN
+            = Eigen::Vector3d(tmp_N.data());
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'ThrusterMapping.cN' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->thrusterMap.b1_pos = confObj.lookup("low_level_control_params.ThrusterMapping.b1_pos");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'b1_pos' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->thrusterMap.b2_pos = confObj.lookup("low_level_control_params.ThrusterMapping.b2_pos");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'b2_pos' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->thrusterMap.b1_neg = confObj.lookup("low_level_control_params.ThrusterMapping.b1_neg");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'b1_neg' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->thrusterMap.b2_neg = confObj.lookup("low_level_control_params.ThrusterMapping.b2_neg");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'b2_neg' setting in configuration file." << std::endl;
+    }
+    try {
+        const libconfig::Setting& I_settings = confObj.lookup("low_level_control_params.ThrusterMapping.Inertia");
+        std::vector<double> tmp_I;
+        for (int n = 0; n < I_settings.getLength(); ++n) {
+            tmp_I.push_back(I_settings[n]);
+        }
+
+        conf->thrusterMap.Inertia.diagonal()
+            = Eigen::Map<Eigen::Matrix<double, 3, 1>>(tmp_I.data());
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'Inertia' setting in configuration file." << std::endl;
+    }
 
     // DYNAMIC CONTROL
-    conf->dynamic_pidgains_surge.Kp = par_client->get_parameter("DynamicControl.PIDSurge.Kp", 0.0);
-    conf->dynamic_pidgains_surge.Ki = par_client->get_parameter("DynamicControl.PIDSurge.Ki", 0.0);
-    conf->dynamic_pidgains_surge.Kd = par_client->get_parameter("DynamicControl.PIDSurge.Kd", 0.0);
-    conf->dynamic_pidgains_surge.Kff = par_client->get_parameter("DynamicControl.PIDSurge.Kff", 0.0);
-    conf->dynamic_pidgains_surge.N = par_client->get_parameter("DynamicControl.PIDSurge.N", 0.0);
-    conf->dynamic_pidgains_surge.Tr = par_client->get_parameter("DynamicControl.PIDSurge.Tr", 0.0);
-    conf->dynamic_pidsat_surge = par_client->get_parameter("ForceLimiter", 0.0);
+    try {
+        conf->dynamic_pidgains_surge.Kp = confObj.lookup("low_level_control_params.DynamicControl.PIDSurge.Kp");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'DynamicControl.PIDSurge.Kp' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->dynamic_pidgains_surge.Ki = confObj.lookup("low_level_control_params.DynamicControl.PIDSurge.Ki");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'DynamicControl.PIDSurge.Ki' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->dynamic_pidgains_surge.Kd = confObj.lookup("low_level_control_params.DynamicControl.PIDSurge.Kd");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'DynamicControl.PIDSurge.Kd' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->dynamic_pidgains_surge.Kff = confObj.lookup("low_level_control_params.DynamicControl.PIDSurge.Kff");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'DynamicControl.PIDSurge.Kff' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->dynamic_pidgains_surge.N = confObj.lookup("low_level_control_params.DynamicControl.PIDSurge.N");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'DynamicControl.PIDSurge.N' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->dynamic_pidgains_surge.Tr = confObj.lookup("low_level_control_params.DynamicControl.PIDSurge.Tr");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'DynamicControl.PIDSurge.Tr' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->dynamic_pidsat_surge = confObj.lookup("low_level_control_params.ForceLimiter");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'ForceLimiter' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->dynamic_pidgains_yawrate.Kp = confObj.lookup("low_level_control_params.DynamicControl.PIDYawRate.Kp");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'DynamicControl.PIDYawRate.Kp' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->dynamic_pidgains_yawrate.Ki = confObj.lookup("low_level_control_params.DynamicControl.PIDYawRate.Ki");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'DynamicControl.PIDYawRate.Ki' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->dynamic_pidgains_yawrate.Kd = confObj.lookup("low_level_control_params.DynamicControl.PIDYawRate.Kd");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'DynamicControl.PIDYawRate.Kd' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->dynamic_pidgains_yawrate.Kff = confObj.lookup("low_level_control_params.DynamicControl.PIDYawRate.Kff");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'DynamicControl.PIDYawRate.Kff' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->dynamic_pidgains_yawrate.N = confObj.lookup("low_level_control_params.DynamicControl.PIDYawRate.N");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'DynamicControl.PIDYawRate.N' setting in configuration file." << std::endl;
+    }
+    try {
+        conf->dynamic_pidgains_yawrate.Tr = confObj.lookup("low_level_control_params.DynamicControl.PIDYawRate.Tr");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'DynamicControl.PIDYawRate.Tr' setting in configuration file." << std::endl;
+    }
 
-    conf->dynamic_pidgains_yawrate.Kp = par_client->get_parameter("DynamicControl.PIDYawRate.Kp", 0.0);
-    conf->dynamic_pidgains_yawrate.Ki = par_client->get_parameter("DynamicControl.PIDYawRate.Ki", 0.0);
-    conf->dynamic_pidgains_yawrate.Kd = par_client->get_parameter("DynamicControl.PIDYawRate.Kd", 0.0);
-    conf->dynamic_pidgains_yawrate.Kff = par_client->get_parameter("DynamicControl.PIDYawRate.Kff", 0.0);
-    conf->dynamic_pidgains_yawrate.N = par_client->get_parameter("DynamicControl.PIDYawRate.N", 0.0);
-    conf->dynamic_pidgains_yawrate.Tr = par_client->get_parameter("DynamicControl.PIDYawRate.Tr", 0.0);
-    conf->dynamic_pidsat_yawrate = par_client->get_parameter("TorqueLimiter", 0.0);
+    try {
+        conf->dynamic_pidsat_yawrate = confObj.lookup("low_level_control_params.TorqueLimiter");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'TorqueLimiter' setting in configuration file." << std::endl;
+    }
+}
+
+void ParameterSet(std::shared_ptr<LowLevelConfiguration> conf, std::string filename, SlidingSurface& sl, std::shared_ptr<SlidingParameter> sp)
+{
+
+    libconfig::Config confObj;
+    //Inizialization
+    std::string package_share_directory = ament_index_cpp::get_package_share_directory("ulisse_ctrl");
+    std::stringstream conf_path;
+    conf_path << package_share_directory << "/conf/" << filename;
+
+    std::string confPath = conf_path.str().c_str();
+
+    std::cout << "PATH TO CONF FILE : " << confPath << std::endl;
+
+    try {
+        confObj.readFile(confPath.c_str());
+    } catch (libconfig::ParseException& e) {
+        std::cerr << "Parse exception when reading:" << confPath << std::endl;
+        std::cerr << "line: " << e.getLine() << " error: " << e.getError() << std::endl;
+        return;
+    }
+
+    try {
+        sp->gain_1 = confObj.lookup("low_level_control_params.sliding_surface.gain_1");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'sliding_surface.gain_1' setting in configuration file." << std::endl;
+    }
+    try {
+        sp->gain_2 = confObj.lookup("low_level_control_params.sliding_surface.gain_2");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'sliding_surface.gain_1' setting in configuration file." << std::endl;
+    }
+    try {
+        sp->heading_gain = confObj.lookup("low_level_control_params.sliding_control_parameter.heading");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'heading_gain' setting in configuration file." << std::endl;
+    }
+    try {
+        sp->surge_gain = confObj.lookup("low_level_control_params.sliding_control_parameter.surge");
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'surge_gain' setting in configuration file." << std::endl;
+    }
+    try {
+        const libconfig::Setting& filter_settings = confObj.lookup("low_level_control_params.filter_parameter.gains");
+        std::vector<double> tmp_N;
+        for (int n = 0; n < filter_settings.getLength(); ++n) {
+            tmp_N.push_back(filter_settings[n]);
+        }
+
+        sp->filter_parameter
+            = Eigen::Vector2d(tmp_N.data());
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'ThrusterMapping.cN' setting in configuration file." << std::endl;
+    }
+
+    parameter_setting(sl, conf, sp->gain_1, sp->gain_2);
 }
 
 double s1(const double ref, const double fb, struct SlidingSurface param) { return param._k * (ref - fb); }
 
 double s2(const double ref, const double fb, struct SlidingSurface param) { return param._k1 * (ref - fb); }
 
-void parameter_setting(struct SlidingSurface& param, std::shared_ptr<LowLevelConfiguration> conf, double k, double k1)
+void parameter_setting(SlidingSurface& param, std::shared_ptr<LowLevelConfiguration> conf, double k, double k1)
 {
 
     param._inertia.resize(3);

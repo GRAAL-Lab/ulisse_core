@@ -22,6 +22,7 @@ find_package(ctrl_toolbox REQUIRED)
 find_package(tpik REQUIRED)
 find_package(ikcl REQUIRED)
 find_package(Boost REQUIRED)
+find_package(ament_index_cpp REQUIRED)
 
 link_directories(${Boost_LIBRARIES})
 
@@ -35,6 +36,7 @@ file(GLOB_RECURSE SOURCE_FILES
     "*.xml"
     "launch/*.py"
     "conf/*.yaml"
+    "conf/*.conf"
 )
 add_custom_target(.Files. SOURCES ${SOURCE_FILES})
 
@@ -83,7 +85,7 @@ set(ulisse_ctrl_lib_sources
 
 ## Libraries
 add_library(ulisse_ctrl_lib ${ulisse_ctrl_lib_sources})
-ament_target_dependencies(ulisse_ctrl_lib rclcpp std_msgs ulisse_msgs surface_vehicle_model)
+ament_target_dependencies(ulisse_ctrl_lib rclcpp std_msgs ulisse_msgs surface_vehicle_model ament_index_cpp)
 target_link_libraries(ulisse_ctrl_lib ${surface_vehicle_model_LIBRARIES} ${ulisse_msgs_LIBRARIES} Geographic rml fsm ctrl_toolbox)
 
 ## Executables
@@ -96,7 +98,7 @@ ament_target_dependencies(kinematic_control_node rclcpp std_msgs ulisse_msgs rml
 target_link_libraries(kinematic_control_node rml ulisse_ctrl_lib ${JSONCPP_LIBRARIES})
 
 add_executable(dynamic_control_node src/dynamic_control_node.cpp)
-ament_target_dependencies(dynamic_control_node rclcpp std_msgs ulisse_msgs rml)
+ament_target_dependencies(dynamic_control_node rclcpp std_msgs ulisse_msgs rml ament_index_cpp)
 target_link_libraries(dynamic_control_node rml ulisse_ctrl_lib)
 
 #add_executable(navigation_filter_node src/navigation_filter_node.cpp)

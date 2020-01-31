@@ -13,9 +13,9 @@
 #include "ctrl_toolbox/DigitalSlidingMode.h"
 #include "ulisse_msgs/msg/control_context.hpp"
 #include "ulisse_msgs/msg/control_data.hpp"
-#include "ulisse_msgs/srv/min_srv.hpp"
 #include "ulisse_msgs/msg/status_context.hpp"
 #include "ulisse_msgs/msg/thrusters_data.hpp"
+#include "ulisse_msgs/srv/min_srv.hpp"
 #include "ulisse_msgs/terminal_utils.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 
@@ -24,9 +24,11 @@
 #include "surface_vehicle_model/surfacevehiclemodel.hpp"
 #include "ulisse_ctrl/fsm_defines.hpp"
 #include "ulisse_ctrl/helper_functions.hpp"
+#include <ament_index_cpp/get_package_share_directory.hpp>
+#include <libconfig.h++>
 
-#include <iostream>
 #include "rml/RML.h"
+#include <iostream>
 
 using namespace std::chrono_literals;
 using namespace ulisse;
@@ -38,110 +40,99 @@ static ulisse_msgs::msg::NavFilterData filterData;
 void FilterDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
 void ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg);
 void StatusContextCB(const ulisse_msgs::msg::StatusContext::SharedPtr msg);
-void parameter_set(rclcpp::SyncParametersClient::SharedPtr par_client, std::shared_ptr<LowLevelConfiguration> conf);
-
-ctb::DigitalSlidingMode<struct SlidingSurface>  slideSurge;
-ctb::DigitalSecOrdSlidingMode<struct SlidingSurface> slideHeading;
-void parameter_set();
-
-double filter_parameter[2];
-
-bool sliding_on;
-static int rate = 10;
-static double sampleTime = 1.0 / rate;
-auto conf = std::make_shared<LowLevelConfiguration>();
-rclcpp::SyncParametersClient::SharedPtr par_client;
 
 int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
+    static int rate = 10;
+    static double sampleTime = 1.0 / rate;
     auto nh = rclcpp::Node::make_shared("low_level_control_node");
 
     rclcpp::WallRate loop_rate(rate);
 
-    auto ctrlcxt_sub = nh->create_subscription<ulisse_msgs::msg::ControlContext>(
-            ulisse_msgs::topicnames::control_context, ControlContextCB);
-    auto statuscxt_sub = nh->create_subscription<ulisse_msgs::msg::StatusContext>(
-            ulisse_msgs::topicnames::status_context, StatusContextCB);
+    auto ctrlcxt_sub = nh->create_subscription<ulisse_msgs::msg::ControlContext>(ulisse_msgs::topicnames::control_context, 10, ControlContextCB);
+    auto statuscxt_sub = nh->create_subscription<ulisse_msgs::msg::StatusContext>(ulisse_msgs::topicnames::status_context, 10, StatusContextCB);
+    auto thrusterdata_pub = nh->create_publisher<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data, 10);
+    auto control_pub = nh->create_publisher<ulisse_msgs::msg::ControlData>("ulisse/ControlData", 10);
+    auto navfilter_sub = nh->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 10, FilterDataCB);
 
-    auto thrusterdata_pub = nh->create_publisher<ulisse_msgs::msg::ThrustersData>(
-            ulisse_msgs::topicnames::thrusters_data);
+    auto conf = std::make_shared<LowLevelConfiguration>();
+    //    auto sl = std::make_shared<SlidingSurface>();
+    SlidingSurface sl;
+    auto sp = std::make_shared<SlidingParameter>();
+    std::string filename = "dcl_ulisse.conf";
 
-    auto control_pub = nh->create_publisher<ulisse_msgs::msg::ControlData>(
-            "ulisse/ControlData");
+    LoadLowLevelConfiguration(conf);
 
-
-    auto navfilter_sub = nh->create_subscription<ulisse_msgs::msg::NavFilterData>(
-            ulisse_msgs::topicnames::nav_filter_data, FilterDataCB);
-
-
-    par_client = std::make_shared<rclcpp::SyncParametersClient>(nh);
-    while (!par_client->wait_for_service(1ms)) {
-        if (!rclcpp::ok()) {
-            RCLCPP_ERROR(nh->get_logger(), "Interrupted while waiting for the service. Exiting.");
-            exit(0);
-        }
-        RCLCPP_INFO(nh->get_logger(), "service not available, waiting again...");
-    }
-
-    LoadLowLevelConfiguration(conf, par_client);
-
-    parameter_set();
+    ParameterSet(conf, filename, sl, sp);
 
     std::cout << tc::grayD << *conf << tc::none << std::endl;
 
-    ulisse_msgs::msg::ControlData control_msg;
-
     SurfaceVehicleModel ulisseModel;
-    ulisseModel.SetMappingParams(conf->thrusterMap);
+    ulisseModel.SetUlisseParams(conf->thrusterMap);
 
     ThrusterControlData thrusterData;
     ulisse_msgs::msg::ThrustersData thrust_msg;
+    ulisse_msgs::msg::ControlData control_msg;
 
     double headingTrackDiff;
     double surgeFbk;
 
     double prev_heading = 0;
-    double jogFbk=0;
-    double derivative_jogFbk=0;
+    double jogFbk = 0;
+    double derivative_jogFbk = 0;
 
-    ulisseModel.set_external_ctrl(sliding_on);
+    std::vector<double> state;
+    double surge_p = 0;
 
     ctb::DigitalPID pidSurge;
     ctb::DigitalPID pidYawRate;
 
+    ctb::DigitalSlidingMode<SlidingSurface> slideSurge;
+    ctb::DigitalSecOrdSlidingMode<SlidingSurface> slideHeading;
 
-    if (!sliding_on) {
+    Eigen::Vector2d tau;
+    tau.setZero();
+
+    //ThrusterMapping mode inizialization
+    if (conf->ctrlMode == ControlMode::ThrusterMapping) {
 
         pidSurge.Initialize(conf->mapping_pidgains_surge, sampleTime, conf->mapping_pidsat_surge);
         pidSurge.SetSaturation(conf->mapping_pidsat_surge);
 
-        pidYawRate.Initialize(conf->dynamic_pidgains_yawrate, sampleTime, par_client->get_parameter("JogLimiter", 0.0));
-        pidYawRate.SetErrorFunction(ctb::HeadingErrorRadFunctor());
+        //        pidYawRate.Initialize(conf->dynamic_pidgains_yawrate, sampleTime, conf->jogLimiter);
+        //        pidYawRate.SetErrorFunction(ctb::HeadingErrorRadFunctor());
 
+    } else if (conf->ctrlMode == ControlMode::SlidingMode) {
+
+        slideHeading = ctb::DigitalSecOrdSlidingMode<SlidingSurface>(alpha_beta_r, s2, sl);
+        slideHeading.Initialize(sp->heading_gain, sampleTime, 2, conf->dynamic_pidsat_yawrate);
+
+        slideSurge = ctb::DigitalSlidingMode<SlidingSurface>(alpha_beta_u, s1, sl);
+        slideSurge.Initialize(sp->surge_gain, sampleTime, 2, conf->dynamic_pidsat_surge);
     }
 
-    std::vector<double> state;
-
-    double surge_p=0;
     while (rclcpp::ok()) {
 
         headingTrackDiff = ctb::HeadingErrorRad(status_cxt.vehicle_heading, status_cxt.vehicle_track);
         surgeFbk = status_cxt.vehicle_speed * cos(headingTrackDiff);
 
-        derivative_jogFbk = ctb::HeadingErrorRad(status_cxt.vehicle_heading,prev_heading) / sampleTime;
+        derivative_jogFbk = ctb::HeadingErrorRad(status_cxt.vehicle_heading, prev_heading) / sampleTime;
         prev_heading = status_cxt.vehicle_heading;
 
-        jogFbk = filter_parameter[0]*jogFbk + filter_parameter[1]*derivative_jogFbk;
+        jogFbk = sp->filter_parameter[0] * jogFbk + sp->filter_parameter[1] * derivative_jogFbk;
 
-        if (!sliding_on)
-        {
+        //ThrusterMapping mode
+        if (conf->ctrlMode == ControlMode::ThrusterMapping) {
             thrusterData.desiredSurge = pidSurge.Compute(ctrl_cxt_msg.desired_speed, surgeFbk);
-            thrusterData.desiredJog = pidYawRate.Compute(ctrl_cxt_msg.desired_jog, jogFbk);
+            //            thrusterData.desiredJog = pidYawRate.Compute(ctrl_cxt_msg.desired_jog, jogFbk);
+            thrusterData.desiredJog = ctrl_cxt_msg.desired_jog;
             control_msg.surge_pid_speed = pidSurge.GetOutput();
+            //            control_msg.surge_pid_speed = ctrl_cxt_msg.desired_speed;
+
         }
-        else
-        {
+        //Sliding mode
+        else if (conf->ctrlMode == ControlMode::SlidingMode) {
             state.clear();
             state.push_back(surgeFbk);
             state.push_back(jogFbk);
@@ -154,38 +145,45 @@ int main(int argc, char* argv[])
             surge_p = ctrl_cxt_msg.desired_speed;
             control_msg.surge_pid_speed = surge_p;
 
-            ulisseModel.set_tau_x(slideSurge.compute(ctrl_cxt_msg.desired_speed, surgeFbk));
-            ulisseModel.set_tau_n(slideHeading.compute(ctrl_cxt_msg.desired_jog, jogFbk));
-
             thrusterData.desiredSurge = ctrl_cxt_msg.desired_speed;
             thrusterData.desiredJog = ctrl_cxt_msg.desired_jog;
         }
+
         if (status_cxt.vehicle_state != ulisse::states::ID::halt) {
 
-            Eigen::Vector6d requestedVel;
-            requestedVel.setZero();
-            if (!sliding_on) {
-                requestedVel(0) = thrusterData.desiredSurge;
-                requestedVel(5) = thrusterData.desiredJog;
-            }
-            else {
-                requestedVel(0) = surgeFbk;
-                requestedVel(5) = jogFbk;
-            }
             if (conf->ctrlMode == ControlMode::ThrusterMapping) {
 
-                ulisseModel.ThrusterMapping(requestedVel, thrusterData.mapOut.left, thrusterData.mapOut.right);
+                Eigen::Vector6d requestedVel;
+                requestedVel.setZero();
 
-                ThrustersSaturation(thrusterData.mapOut.left, thrusterData.mapOut.right,
-                                    -conf->thrusterPercLimit, conf->thrusterPercLimit,
-                                    thrusterData.ctrlRef.left, thrusterData.ctrlRef.right);
+                requestedVel(0) = thrusterData.desiredSurge;
+                requestedVel(5) = thrusterData.desiredJog;
 
-                thrust_msg.motor_mapout.left = thrusterData.mapOut.left;
-                thrust_msg.motor_mapout.right = thrusterData.mapOut.right;
+                tau = ulisseModel.ComputeCoriolisAndDragForces(requestedVel);
+                Eigen::Vector2d forces = ulisseModel.ComputeThrusterForces(tau);
+                ulisseModel.ThusterAllocation(requestedVel, forces, thrusterData.mapOut.left, thrusterData.mapOut.right);
+            } else if (conf->ctrlMode == ControlMode::SlidingMode) {
 
+                Eigen::Vector6d feedbackVel;
+                feedbackVel.setZero();
+
+                tau = { slideSurge.compute(ctrl_cxt_msg.desired_speed, surgeFbk), slideHeading.compute(ctrl_cxt_msg.desired_jog, jogFbk) };
+                feedbackVel(0) = surgeFbk;
+                feedbackVel(5) = jogFbk;
+
+                Eigen::Vector2d forces = ulisseModel.ComputeThrusterForces(tau);
+                ulisseModel.ThusterAllocation(feedbackVel, forces, thrusterData.mapOut.left, thrusterData.mapOut.right);
             } else if (conf->ctrlMode == ControlMode::DynamicModel) {
                 // Dyamic Code Here
             }
+
+            //            ulisseModel.ThrusterMapping(requestedVel, thrusterData.mapOut.left, thrusterData.mapOut.right);
+
+            ThrustersSaturation(thrusterData.mapOut.left, thrusterData.mapOut.right, -conf->thrusterPercLimit, conf->thrusterPercLimit,
+                thrusterData.ctrlRef.left, thrusterData.ctrlRef.right);
+
+            thrust_msg.motor_mapout.left = thrusterData.mapOut.left;
+            thrust_msg.motor_mapout.right = thrusterData.mapOut.right;
 
             thrust_msg.motor_ctrlref.left = thrusterData.ctrlRef.left;
             thrust_msg.motor_ctrlref.right = thrusterData.ctrlRef.right;
@@ -196,22 +194,18 @@ int main(int argc, char* argv[])
             thrust_msg.motor_ctrlref.left = 0.0;
             thrust_msg.motor_ctrlref.right = 0.0;
 
-            if(!sliding_on)
-            {
+            if (conf->ctrlMode == ControlMode::ThrusterMapping) {
                 pidSurge.Reset();
-                pidYawRate.Reset();
-            }
-            else
-            {
+                //                pidYawRate.Reset();
+            } else if (conf->ctrlMode == ControlMode::SlidingMode) {
                 slideHeading.setState(state, true);
             }
-
         }
 
         auto t_now_ = std::chrono::system_clock::now();
         long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
-        auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / (int)1E9);
-        auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % (int)1E9);
+        auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
+        auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
 
         control_msg.stamp.sec = now_stamp_secs;
         control_msg.stamp.nanosec = now_stamp_nanosecs;
@@ -219,10 +213,10 @@ int main(int argc, char* argv[])
         control_msg.yawr_control = ctrl_cxt_msg.desired_jog;
 
         control_msg.surge_error = surgeFbk;
-        control_msg.yawr_error = jogFbk ;
+        control_msg.yawr_error = jogFbk;
 
-        control_msg.thrust_left = ulisseModel.get_tau_x();
-        control_msg.thrust_right = ulisseModel.get_tau_n();
+        control_msg.thrust_left = tau[0];
+        control_msg.thrust_right = tau[1];
 
         control_msg.thrust_map_left = thrusterData.ctrlRef.left;
         control_msg.thrust_map_right = thrusterData.ctrlRef.right;
@@ -238,36 +232,6 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-void parameter_set() {
-
-    double gain_1 = par_client->get_parameter("sliding_surface.gain_1", 0.0);
-
-    double gain_2 = par_client->get_parameter("sliding_surface.gain_2", 0.0);
-
-    double heading_gain = par_client->get_parameter("sliding_control_parameter.heading", 0.0);
-    double surge_gain = par_client->get_parameter("sliding_control_parameter.surge", 0.0);
-
-    filter_parameter[0] = par_client->get_parameter("filter_parameter.gain_1", 0.0);
-    filter_parameter[1] = par_client->get_parameter("filter_parameter.gain_2", 0.0); 
-
-    sliding_on = par_client->get_parameter("sliding_mode", true);
-
-    struct SlidingSurface sl;
-    parameter_setting(sl,conf,gain_1,gain_2);
-
-    slideHeading = ctb::DigitalSecOrdSlidingMode<struct SlidingSurface>(alpha_beta_r, s2,sl);
-
-    slideHeading.Initialize(heading_gain, sampleTime, 2 , conf->dynamic_pidsat_yawrate);
-
-    slideSurge = ctb::DigitalSlidingMode<struct SlidingSurface>(alpha_beta_u,s1,sl);
-
-    slideSurge.Initialize(surge_gain, sampleTime, 2 , conf->dynamic_pidsat_surge);
-
-
-
-
-
-}
 void ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg)
 {
     ctrl_cxt_msg = *msg;

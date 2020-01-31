@@ -10,7 +10,8 @@ namespace ulisse {
 
 enum class ControlMode : int {
     ThrusterMapping,
-    DynamicModel
+    DynamicModel,
+    SlidingMode
 };
 
 struct MotorReference {
@@ -88,6 +89,9 @@ struct StatusContext {
 };
 
 struct ControlContext {
+    ctb::DigitalPID pidSurge;
+    ctb::DigitalPID pidPosition;
+    ctb::DigitalPID pidHeading;
     double desiredSurge;
     double desiredJog;
 };
@@ -145,12 +149,13 @@ struct ControllerConfiguration {
 struct LowLevelConfiguration {
 
     bool enableThrusters;
-    ThrusterMappingParameters thrusterMap;
+    UlisseModelParameters thrusterMap;
     double thrusterPercLimit;
 
     ControlMode ctrlMode;
     ctb::PIDGains mapping_pidgains_surge;
     double mapping_pidsat_surge;
+    double jogLimiter;
 
     ctb::PIDGains dynamic_pidgains_surge;
     ctb::PIDGains dynamic_pidgains_yawrate;

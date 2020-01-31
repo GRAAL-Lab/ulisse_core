@@ -9,7 +9,7 @@ namespace nav {
     std::string CommandTypeToString(CommandType type)
     {
         std::string name;
-        uint16_t type_uint = (uint16_t)type;
+        uint16_t type_uint = static_cast<uint16_t>(type); //new type of cast in C++11
 
         switch (type_uint) {
         case (uint16_t)CommandType::undefined:

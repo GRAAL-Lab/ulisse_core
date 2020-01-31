@@ -16,44 +16,22 @@ bool SolveSecondOrderEquation(double a, double b, double c, std::pair<double, do
         solutions = std::make_pair<double, double>(0.0, 0.0);
         return false;
     } else {
-        solutions.first  = (-b + std::sqrt(delta)) / (2.0 * a);
+        solutions.first = (-b + std::sqrt(delta)) / (2.0 * a);
         solutions.second = (-b - std::sqrt(delta)) / (2.0 * a);
         return true;
     }
 }
 
 SurfaceVehicleModel::SurfaceVehicleModel()
-    //: tauX_(0.0)
-    //, tauN_(0.0)
 {
-    nir_.setZero();
-    tauStar_.setZero();
 }
 
-void SurfaceVehicleModel::SetMappingParams(const ThrusterMappingParameters& params)
+void SurfaceVehicleModel::SetUlisseParams(const UlisseModelParameters &params)
 {
     params_ = params;
 }
 
-double SurfaceVehicleModel::GetTauX()
-{
-    Eigen::RowVector3d tempX;
-    tempX(0) = vehvel_(5) * vehvel_(5);
-    tempX(1) = vehvel_(0);
-    tempX(2) = vehvel_(0) * std::fabs(vehvel_(0));
-    return (tempX * params_.cX);
-}
-
-double SurfaceVehicleModel::GetTauN()
-{
-    Eigen::RowVector3d tempN;
-    tempN(0) = vehvel_(0) * vehvel_(5);
-    tempN(1) = vehvel_(5);
-    tempN(2) = vehvel_(5) * std::fabs(vehvel_(5));
-    return (tempN * params_.cN);
-}
-
-double SurfaceVehicleModel::GetThrusterForceFromRPM(double n, double linXVel)
+double SurfaceVehicleModel::GetThrusterForce(double n, double linXVel)
 {
     double force;
     if (n > 0.0) {
@@ -64,21 +42,6 @@ double SurfaceVehicleModel::GetThrusterForceFromRPM(double n, double linXVel)
     return force;
 }
 
-double SurfaceVehicleModel::GetThrusterForceFromMapping()
-{
-    double force;
-    if (!external_ctrl) {
-        tau_x = GetTauX();
-        tau_n = GetTauN();
-        force = 0.5 * (GetTauX() + GetTauN() / params_.d);
-    }
-    else
-    {
-        force = 0.5 * (tau_x + tau_n/params_.d);
-        tau_n=-tau_n;
-    }
-    return force;
-}
 double SurfaceVehicleModel::PercentageToRPM(double h)
 {
     double rpm;
@@ -103,20 +66,24 @@ double SurfaceVehicleModel::RPMToPercentage(double rpm)
 
 void SurfaceVehicleModel::DirectDynamics(double h_p, double h_s, const Eigen::Vector6d& linAngVel, Eigen::Vector6d& linAngAcc)
 {
-    vehvel_ = linAngVel;
+    Eigen::Vector3d nir, tauStar;
+    nir.setZero();
+    tauStar.setZero();
 
-    tauStar_(0) = GetTauX();
-    tauStar_(1) = 0.0;
-    tauStar_(2) = GetTauN();
+    Eigen::Vector2d tau = ComputeCoriolisAndDragForces(linAngVel);
 
-    double motorlinearXVel_p = vehvel_(0) + vehvel_(5) * params_.d;
-    double motorlinearXVel_s = vehvel_(0) - vehvel_(5) * params_.d;
+    tauStar(0) = tau[0];
+    tauStar(1) = 0.0;
+    tauStar(2) = tau[1];
+
+    double motorlinearXVel_p = linAngVel(0) + linAngVel(5) * params_.d;
+    double motorlinearXVel_s = linAngVel(0) - linAngVel(5) * params_.d;
 
     double n_p = PercentageToRPM(h_p);
     double n_s = PercentageToRPM(h_s);
 
-    double thrust_force_p = GetThrusterForceFromRPM(n_p, motorlinearXVel_p);
-    double thrust_force_s = GetThrusterForceFromRPM(n_s, motorlinearXVel_s);
+    double thrust_force_p = GetThrusterForce(n_p, motorlinearXVel_p);
+    double thrust_force_s = GetThrusterForce(n_s, motorlinearXVel_s);
 
     Eigen::Vector3d tauC;
     tauC(0) = thrust_force_p + thrust_force_s;
@@ -127,14 +94,14 @@ void SurfaceVehicleModel::DirectDynamics(double h_p, double h_s, const Eigen::Ve
     regData.params.lambda = 0.001;
     regData.params.threshold = 0.00001;
     Eigen::Matrix3d I_pinv = rml::RegularizedPseudoInverse(params_.Inertia, regData);
-    nir_ = I_pinv * (tauC - tauStar_);
+    nir = I_pinv * (tauC - tauStar);
 
-    linAngAcc(0) = nir_(0);
-    linAngAcc(1) = nir_(1);
+    linAngAcc(0) = nir(0);
+    linAngAcc(1) = nir(1);
     linAngAcc(2) = 0.0;
     linAngAcc(3) = 0.0;
     linAngAcc(4) = 0.0;
-    linAngAcc(5) = nir_(2);
+    linAngAcc(5) = nir(2);
 
     /*
     std::cout << "tauX_: " << tauX_ << std::endl;
@@ -147,14 +114,62 @@ void SurfaceVehicleModel::DirectDynamics(double h_p, double h_s, const Eigen::Ve
     */
 }
 
-void SurfaceVehicleModel::SingleThrusterMapping(const Eigen::Vector6d& linAngVel, double& thruster_perc)
+Eigen::Vector2d SurfaceVehicleModel::ComputeCoriolisAndDragForces(Eigen::Vector6d vehvel)
 {
-    vehvel_ = linAngVel;
-    //GetTauX();
-    //GetTauN();
-    double motorlinearXVel = vehvel_(0) + vehvel_(5) * params_.d;
+    Eigen::RowVector3d tempX;
+    tempX(0) = vehvel(5) * vehvel(5);
+    tempX(1) = vehvel(0);
+    tempX(2) = vehvel(0) * std::fabs(vehvel(0));
 
-    double thrust_force = GetThrusterForceFromMapping();
+    Eigen::RowVector3d tempN;
+    tempN(0) = vehvel(0) * vehvel(5);
+    tempN(1) = vehvel(5);
+    tempN(2) = vehvel(5) * std::fabs(vehvel(5));
+
+    return { tempX * params_.cX, tempN * params_.cN };
+}
+
+Eigen::Vector2d SurfaceVehicleModel::ComputeThrusterForces(Eigen::Vector2d& tau)
+{
+    double forceP;
+    double forceS;
+
+    forceP = 0.5 * (tau[0] + tau[1] / params_.d);
+
+    forceS = 0.5 * (tau[0] - tau[1] / params_.d);
+
+    return { forceP, forceS };
+}
+
+void SurfaceVehicleModel::ThusterAllocation(const Eigen::Vector6d& linAngVel, Eigen::Vector2d thrust_force, double& h_p, double& h_s)
+{
+    Eigen::Vector6d inputVel = linAngVel;
+
+    inputVel(0) = clamp(inputVel(0), params_.surgeMin, params_.surgeMax);
+    inputVel(5) = clamp(inputVel(5), params_.yawRateMin, params_.yawRateMax);
+
+    SingleThrusterAllocation(inputVel, thrust_force[0], h_p);
+    //    std::cout << "-LEFT MOTOR MAPPING-" << std::endl;
+    //    std::cout << "Req Vel: " << inputVel.transpose() << std::endl;
+    //    std::cout << "tauX_: " << GetTauX() << std::endl;
+    //    std::cout << "tauN_: " << GetTauN() << std::endl;
+    //    std::cout << "h_p: " << h_p << std::endl;
+
+    Eigen::Vector6d inputVel_s = inputVel;
+    inputVel_s(5) = -inputVel_s(5);
+    SingleThrusterAllocation(inputVel_s, thrust_force[1], h_s);
+    //    std::cout << "-RIGHT MOTOR MAPPING-" << std::endl;
+    //    std::cout << "Req Vel: " << inputVel_s.transpose() << std::endl;
+    //    std::cout << "tauX_: " << GetTauX() << std::endl;
+    //    std::cout << "tauN_: " << GetTauN() << std::endl;
+    //    std::cout << "h_s: " << h_s << std::endl;
+
+    //    std::cout << "****************************" << std::endl;
+}
+
+void SurfaceVehicleModel::SingleThrusterAllocation(const Eigen::Vector6d& linAngVel, double thrust_force, double& thruster_perc)
+{
+    double motorlinearXVel = linAngVel(0) + linAngVel(5) * params_.d;
     double rpmsolution;
 
     std::pair<double, double> solutions;
@@ -176,35 +191,5 @@ void SurfaceVehicleModel::SingleThrusterMapping(const Eigen::Vector6d& linAngVel
     thruster_perc = RPMToPercentage(rpmsolution);
 }
 
-void SurfaceVehicleModel::ThrusterMapping(const Eigen::Vector6d& linAngVel, double& h_p, double& h_s)
-{
-    Eigen::Vector6d inputVel = linAngVel;
-
-    // Saturating input to max acceptable surge and yawrate values
-    inputVel(0) = clamp(inputVel(0), params_.surgeMin, params_.surgeMax);
-    inputVel(5) = clamp(inputVel(5), params_.yawRateMin, params_.yawRateMax);
-
-    //std::cout << "****************************" << std::endl;
-
-    SingleThrusterMapping(inputVel, h_p);
-    /*std::cout << "-LEFT MOTOR MAPPING-" << std::endl;
-    std::cout << "Req Vel: " << inputVel.transpose() << std::endl;
-    std::cout << "tauX_: " << tauX_ << std::endl;
-    std::cout << "tauN_: " << tauN_ << std::endl;
-    std::cout << "h_p: " << h_p << std::endl;*/
-
-    Eigen::Vector6d inputVel_s = inputVel;
-    inputVel_s(5) = -inputVel_s(5);
-    SingleThrusterMapping(inputVel_s, h_s);
-    /*std::cout << "-RIGHT MOTOR MAPPING-" << std::endl;
-    std::cout << "Req Vel: " << inputVel_s.transpose() << std::endl;
-    std::cout << "tauX_: " << tauX_ << std::endl;
-    std::cout << "tauN_: " << tauN_ << std::endl;
-    std::cout << "h_s: " << h_s << std::endl;
-
-    std::cout << "****************************" << std::endl;*/
-}
-
 /*void SurfaceVehicleModel::ThrusterDynamicAllocator(const double f_des, const double n_des, double &h_s, double& h_p){
-
 }*/

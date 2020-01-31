@@ -34,7 +34,7 @@ using std::placeholders::_1;
 
 namespace ulisse {
 
-VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double sampleTime)
+VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double sampleTime, std::string file_name)
     : nh_(nh)
     , sampleTime_(sampleTime)
     , boundaries_set(false)
@@ -44,7 +44,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     goalCxt_ = std::make_shared<GoalContext>();
     statusCxt_ = std::make_shared<StatusContext>();
     conf_ = std::make_shared<ControllerConfiguration>();
-
+    file_name_= file_name;
     cruise_ = 0;
 
     while (!par_client_->wait_for_service(1ms)) {
@@ -325,9 +325,13 @@ std::shared_ptr<ControlContext> VehicleController::CtrlContext() const { return 
 
 int VehicleController::LoadConfiguration()
 {
-    LoadControllerConfiguration(conf_, par_client_);
+    LoadControllerConfiguration(conf_, file_name_);
 
     std::cout << tc::grayD << *conf_ << tc::none << std::endl;
+
+//    ctrlCxt_->pidPosition.Initialize(conf_->pidgains_position, sampleTime_, conf_->pidsat_position);
+//    ctrlCxt_->pidHeading.Initialize(conf_->pidgains_heading, sampleTime_, conf_->pidsat_heading);
+//    ctrlCxt_->pidHeading.SetErrorFunction(ctb::HeadingErrorRadFunctor());
 
     return true;
 }
@@ -346,7 +350,7 @@ void VehicleController::LoadKCLConfiguration(){
     std::string homedir;
     homedir = getenv("HOME");
     std::stringstream conf_path;
-    conf_path << homedir << "/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/conf/Tasks.conf";
+    conf_path << homedir << "/ros2_ws/src/ulisse_core/ulisse_ctrl/conf/Tasks.conf";
 
     std::string confPath = conf_path.str().c_str();
 
@@ -374,12 +378,12 @@ void VehicleController::LoadKCLConfiguration(){
 
     // Action Manager initialization
     std::stringstream conf_path_priority_level;
-    conf_path_priority_level << homedir << "/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/conf/PriorityLevel.conf";
+    conf_path_priority_level << homedir << "/ros2_ws/src/ulisse_core/ulisse_ctrl/conf/PriorityLevel.conf";
     InitializeUnifiedHierarchyAndActions(action_manager, taskIDMap, conf_path_priority_level.str().c_str());
 
     // Configure all tasks, each with the correspondent parameters
     std::stringstream conf_tasks;
-    conf_tasks << homedir << "/group_project/ros2_ws/src/ulisse_core/ulisse_ctrl/conf/Tasks.conf";
+    conf_tasks << homedir << "/ros2_ws/src/ulisse_core/ulisse_ctrl/conf/Tasks.conf";
     ConfigureEqualityTaskFromFile(equality_task, conf_tasks.str().c_str());
     ConfigureInequalityTaskFromFile(inequality_task, conf_tasks.str().c_str());
     ConfigureCartesianTaskFromFile(cartesian_task, conf_tasks.str().c_str());
@@ -801,6 +805,15 @@ void VehicleController::PublishControl()
     ulisse_msgs::msg::ControlContext ctrlcxt_msg;
     ctrlcxt_msg.stamp.sec = now_stamp_secs;
     ctrlcxt_msg.stamp.nanosec = now_stamp_nanosecs;
+
+//    ctrlcxt_msg.pidposition.feedback = ctrlCxt_->pidPosition.GetFbk();
+//    ctrlcxt_msg.pidposition.reference = ctrlCxt_->pidPosition.GetRef();
+//    ctrlcxt_msg.pidposition.output = ctrlCxt_->pidPosition.GetOutput();
+
+//    ctrlcxt_msg.pidheading.feedback = ctrlCxt_->pidHeading.GetFbk();
+//    ctrlcxt_msg.pidheading.reference = ctrlCxt_->pidHeading.GetRef();
+//    ctrlcxt_msg.pidheading.output = ctrlCxt_->pidHeading.GetOutput();
+
     ctrlcxt_msg.desired_speed = ctrlCxt_->desiredSurge;
     ctrlcxt_msg.desired_jog = ctrlCxt_->desiredJog;
 

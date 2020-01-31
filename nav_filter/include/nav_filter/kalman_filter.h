@@ -16,9 +16,9 @@ namespace ulisse {
 
         struct ModelParameter {
 
-            std::vector<double> _Cx;
-            std::vector<double> _Cn;
-            std::vector<double> _inertia;
+             Eigen::Vector3d _Cx;
+             Eigen::Vector3d _Cn;
+             Eigen::Vector3d _inertia;
         };
 
         class UlisseKalmanFilter : public ctb::ModelKalmanFilter {

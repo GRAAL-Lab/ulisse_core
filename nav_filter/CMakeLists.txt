@@ -22,6 +22,7 @@ find_package(ctrl_toolbox REQUIRED)
 find_package(tpik REQUIRED)
 find_package(ikcl REQUIRED)
 find_package(ctrl_toolbox REQUIRED)
+find_package(ament_index_cpp REQUIRED)
 
 
 
@@ -30,7 +31,7 @@ file(GLOB_RECURSE SOURCE_FILES
     "msg/*.msg"
     "*.xml"
     "launch/*.py"
-    "conf/*.yaml"
+    "conf/*"
 )
 add_custom_target(.Files. SOURCES ${SOURCE_FILES})
 
@@ -61,8 +62,8 @@ target_link_libraries(nav_filter_lib ${surface_vehicle_model_LIBRARIES} Geograph
 
 ## Executables
 add_executable(navigation_filter_node src/navigation_filter_node.cpp)
-ament_target_dependencies(navigation_filter_node rclcpp std_msgs ulisse_msgs rml ctrl_toolbox)
-target_link_libraries(navigation_filter_node rml nav_filter_lib ctrl_toolbox)
+ament_target_dependencies(navigation_filter_node rclcpp std_msgs ulisse_msgs rml ctrl_toolbox ament_index_cpp)
+target_link_libraries(navigation_filter_node rml nav_filter_lib ctrl_toolbox config++)
 
 ament_export_include_directories(include)
 

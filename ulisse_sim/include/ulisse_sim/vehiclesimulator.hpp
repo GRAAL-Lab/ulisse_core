@@ -68,7 +68,7 @@ class VehicleSimulator {
 public:
     VehicleSimulator(const rclcpp::Node::SharedPtr& nh);
 
-    void SetParameters(double dt, const ThrusterMappingParameters& thmapparams);
+    void SetParameters(double dt, const UlisseModelParameters &thmapparams);
     void ExecuteStep(double h_p, double h_s);
     void PublishSensors();
 

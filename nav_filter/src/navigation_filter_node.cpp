@@ -17,20 +17,23 @@
 
 #include "ulisse_driver/GPSDHelperDataStructs.h"
 
+#include "nav_filter/angle_filter.h"
+#include "nav_filter/kalman_filter.h"
 #include "nav_filter/nav_data_structs.hpp"
 #include "nav_filter/pos_vel_observer.hpp"
-#include "nav_filter/kalman_filter.h"
-#include "nav_filter/angle_filter.h"
-#include <ctrl_toolbox/ExtendedKalmanFilter.h>
 #include "ulisse_msgs/msg/control_data.hpp"
+#include <ctrl_toolbox/ExtendedKalmanFilter.h>
 
+#include <ament_index_cpp/get_package_share_directory.hpp>
+#include <cstdlib>
+#include <libconfig.h++>
 
 using namespace ulisse::nav;
 using namespace std::chrono_literals;
 
 static PosVelObserver obs;
 static rclcpp::Node::SharedPtr node = nullptr;
-static std::shared_ptr <rclcpp::SyncParametersClient> par_client;
+static std::shared_ptr<rclcpp::SyncParametersClient> par_client;
 static ulisse_msgs::msg::Compass compass;
 static ulisse_msgs::msg::GPSData gpsData;
 static ulisse_msgs::msg::IMUData imuData;
@@ -38,12 +41,11 @@ static ulisse_msgs::msg::ControlContext controlCxt;
 static ulisse_msgs::msg::ControlData controlData;
 static int rate = 10;
 
-
 void ReloadConfig();
 
-void handle_navfilter_commands(const std::shared_ptr <rmw_request_id_t> request_header,
-                               const std::shared_ptr <ulisse_msgs::srv::NavFilterCommand::Request> request,
-                               std::shared_ptr <ulisse_msgs::srv::NavFilterCommand::Response> response);
+void handle_navfilter_commands(const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<ulisse_msgs::srv::NavFilterCommand::Request> request,
+    std::shared_ptr<ulisse_msgs::srv::NavFilterCommand::Response> response);
 
 void controlcontext_cb(const ulisse_msgs::msg::ControlContext::SharedPtr msg);
 
@@ -53,24 +55,25 @@ void gpsdata_cb(const ulisse_msgs::msg::GPSData::SharedPtr msg);
 
 void imu_cb(const ulisse_msgs::msg::IMUData::SharedPtr msg);
 
-void parameter_setting(struct ModelParameter &param);
+void parameter_setting(struct ModelParameter& param, libconfig::Config& confObj);
 
 void InputDataCB(const ulisse_msgs::msg::ControlData::SharedPtr msg);
 
-void covariance_setting(Eigen::MatrixXd &cov_model, Eigen::MatrixXd &cov_model_angle,
-                        Eigen::MatrixXd &cov_measure_angle, Eigen::MatrixXd &cov_measure);
+void covariance_setting(Eigen::MatrixXd& cov_model, Eigen::MatrixXd& cov_model_angle,
+    Eigen::MatrixXd& cov_measure_angle, Eigen::MatrixXd& cov_measure);
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[])
+{
     rclcpp::init(argc, argv);
     auto node = rclcpp::Node::make_shared("navigation_filter_node");
 
     rclcpp::WallRate loop_rate(rate);
 
     auto srv_ = node->create_service<ulisse_msgs::srv::NavFilterCommand>(
-            ulisse_msgs::topicnames::navfilter_cmd_service, handle_navfilter_commands);
+        ulisse_msgs::topicnames::navfilter_cmd_service, handle_navfilter_commands);
 
     auto navfilter_sub = node->create_subscription<ulisse_msgs::msg::ControlData>(
-            "ulisse/ControlData", InputDataCB);
+        "ulisse/ControlData", InputDataCB);
 
     par_client = std::make_shared<rclcpp::SyncParametersClient>(node);
     while (!par_client->wait_for_service(1ms)) {
@@ -80,26 +83,45 @@ int main(int argc, char *argv[]) {
         }
         RCLCPP_INFO(node->get_logger(), "service not available, waiting again...");
     }
+    //read conf file
+    libconfig::Config confObj;
 
+    //Inizialization
+    std::string package_share_directory = ament_index_cpp::get_package_share_directory("nav_filter");
+    std::stringstream conf_path;
+    conf_path << package_share_directory << "/conf/navfilter.conf";
+
+    std::string confPath = conf_path.str().c_str();
+
+    std::cout << "PATH TO CONF FILE : " << confPath << std::endl;
+
+    try {
+        confObj.readFile(confPath.c_str());
+    } catch (libconfig::ParseException& e) {
+        std::cerr << "Parse exception when reading:" << confPath << std::endl;
+        std::cerr << "line: " << e.getLine() << " error: " << e.getError() << std::endl;
+        return -1;
+    }
     ReloadConfig();
 
-    auto ison_KalmanFilter = par_client->get_parameter("KalmanFilter", false);
+    //    bool ison_KalmanFilter = confObj.lookup("KalmanFilter");
 
+    bool ison_KalmanFilter = 0;
 
     struct ModelParameter ulisse_parameter;
-    parameter_setting(ulisse_parameter);
+    parameter_setting(ulisse_parameter, confObj);
 
-    std::shared_ptr <MeasureAngle> measure_angle = std::make_shared<MeasureAngle>(MeasureAngle());
-    std::shared_ptr <MeasureUlisse> measure_ulisse = std::make_shared<MeasureUlisse>(MeasureUlisse());
+    std::shared_ptr<MeasureAngle> measure_angle = std::make_shared<MeasureAngle>(MeasureAngle());
+    std::shared_ptr<MeasureUlisse> measure_ulisse = std::make_shared<MeasureUlisse>(MeasureUlisse());
 
-    std::shared_ptr <AngleKalmanFilter> angle_filter = std::make_shared<AngleKalmanFilter>(AngleKalmanFilter());
-    std::shared_ptr <UlisseKalmanFilter> ulisse_kalman_filter = std::make_shared<UlisseKalmanFilter>(
-            UlisseKalmanFilter());
+    std::shared_ptr<AngleKalmanFilter> angle_filter = std::make_shared<AngleKalmanFilter>(AngleKalmanFilter());
+    std::shared_ptr<UlisseKalmanFilter> ulisse_kalman_filter = std::make_shared<UlisseKalmanFilter>(
+        UlisseKalmanFilter());
 
     ulisse_kalman_filter->set_param(ulisse_parameter);
 
-    std::vector<int> angle_ulisse = {2};
-    std::vector<int> angle_af = {0, 1, 2};
+    std::vector<int> angle_ulisse = { 2 };
+    std::vector<int> angle_af = { 0, 1, 2 };
 
     //TODO set covariance for the model filter and measure in navfilter conf
 
@@ -109,7 +131,7 @@ int main(int argc, char *argv[]) {
     Eigen::MatrixXd cov_measure(4, 4);
 
     covariance_setting(cov_model, cov_model_angle,
-                       cov_measure_angle, cov_measure);
+        cov_measure_angle, cov_measure);
 
     ulisse_kalman_filter->SetCovariance(cov_model);
     angle_filter->SetCovariance(cov_model_angle);
@@ -144,7 +166,7 @@ int main(int argc, char *argv[]) {
 
         if (ison_KalmanFilter) {
             if (gpsData.time > lastValidGPSTime) {
-                if (gpsData.gpsfixmode >= (int) ulisse::gpsd::GpsFixMode::mode_2d) {
+                if (gpsData.gpsfixmode >= (int)ulisse::gpsd::GpsFixMode::mode_2d) {
 
                     float64_t speedRef;
 
@@ -162,8 +184,7 @@ int main(int argc, char *argv[]) {
                         double x_ned = y_utm;
                         double y_ned = x_utm;
 
-
-                        input << (double) controlData.surge_control, (double) controlData.yawr_control;
+                        input << (double)controlData.surge_control, (double)controlData.yawr_control;
                         input1 << imuData.gyro[0], imuData.gyro[1], imuData.gyro[2];
 
                         angleMeasure << compass.orientation.roll, compass.orientation.pitch, compass.orientation.yaw;
@@ -194,10 +215,10 @@ int main(int argc, char *argv[]) {
                         filterData.speed[0] = state[3];
                         filterData.speed[1] = state[4];
                         filterData.current[0] = state[6];
-                        filterData.current[1] =state[7];
+                        filterData.current[1] = state[7];
 
                         GeographicLib::UTMUPS::Reverse(zone, northp, x_utm, y_utm, filterData.latitude,
-                                                       filterData.longitude);
+                            filterData.longitude);
 
                         filterData.altitude = 0.0;
                         filterData.orientation.yaw = state_ang[2];
@@ -217,7 +238,7 @@ int main(int argc, char *argv[]) {
                         filterData.stamp.nanosec = now_stamp_nanosecs;
 
                         navfilter_pub->publish(filterData);
-                    } catch (const GeographicLib::GeographicErr &e) {
+                    } catch (const GeographicLib::GeographicErr& e) {
                         RCLCPP_ERROR(node->get_logger(), "GeographicLib exception: what = %s", e.what());
                         obs.Reset();
                     }
@@ -227,7 +248,7 @@ int main(int argc, char *argv[]) {
             }
         }
         if (gpsData.time > lastValidGPSTime) {
-            if (gpsData.gpsfixmode >= (int) ulisse::gpsd::GpsFixMode::mode_2d) {
+            if (gpsData.gpsfixmode >= (int)ulisse::gpsd::GpsFixMode::mode_2d) {
 
                 float64_t speedRef;
 
@@ -239,7 +260,7 @@ int main(int argc, char *argv[]) {
 
                 try {
                     GeographicLib::UTMUPS::Forward(gpsData.latitude, gpsData.longitude, zone, northp, x_utm,
-                                                   y_utm);
+                        y_utm);
 
                     // The geographic lib conversion outputs UTM coordinates but
                     // the filter uses NED.
@@ -248,12 +269,14 @@ int main(int argc, char *argv[]) {
 
                     if (filterEnable) {
                         obs.Update(speedRef, compass.orientation.yaw, x_ned, y_ned);
+                        filterData.current.fill(0.0);
                         obs.GetCurrent(filterData.current[0], filterData.current[1]);
-                        obs.GetSpeed(filterData.speed[0], filterData.speed[1]);
+                        filterData.speed.fill(0.0);
+                        //                        obs.GetSpeed(filterData.speed[0], filterData.speed[1]);
                         obs.GetPosition(x_ned, y_ned);
 
                         GeographicLib::UTMUPS::Reverse(zone, northp, x_utm, y_utm, filterData.latitude,
-                                                       filterData.longitude);
+                            filterData.longitude);
                     } else {
                         filterData.latitude = gpsData.latitude;
                         filterData.longitude = gpsData.longitude;
@@ -269,7 +292,7 @@ int main(int argc, char *argv[]) {
 
                     navfilter_pub->publish(filterData);
 
-                } catch (const GeographicLib::GeographicErr &e) {
+                } catch (const GeographicLib::GeographicErr& e) {
                     RCLCPP_ERROR(node->get_logger(), "GeographicLib exception: what = %s", e.what());
                     obs.Reset();
                 }
@@ -285,89 +308,202 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-void ReloadConfig() {
+void ReloadConfig()
+{
     static NavFilterConfigData navFilterConfig;
 
-    std::vector<double> gains = par_client->get_parameter("Gains", std::vector<double>(4, 0.0));
-    rate = par_client->get_parameter("Rate", 10);
+    //read conf file
+    libconfig::Config confObj;
+
+    //Inizialization
+    std::string package_share_directory = ament_index_cpp::get_package_share_directory("nav_filter");
+    std::stringstream conf_path;
+    conf_path << package_share_directory << "/conf/navfilter.conf";
+
+    std::string confPath = conf_path.str().c_str();
+
+    std::cout << "PATH TO CONF FILE : " << confPath << std::endl;
+
+    try {
+        confObj.readFile(confPath.c_str());
+    } catch (libconfig::ParseException& e) {
+        std::cerr << "Parse exception when reading:" << confPath << std::endl;
+        std::cerr << "line: " << e.getLine() << " error: " << e.getError() << std::endl;
+        return;
+    }
+
+    try {
+        rate = confObj.lookup("Rate");
+    }
+
+    catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "Rate' setting in configuration file." << std::endl;
+    }
+
+    std::vector<double> tmp_gain;
+
+    try {
+        const libconfig::Setting& gain_settings = confObj.lookup("Gains");
+
+        for (int n = 0; n < gain_settings.getLength(); ++n) {
+            tmp_gain.push_back(gain_settings[n]);
+        }
+    }
+
+    catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'Gains' setting in configuration file." << std::endl;
+    }
 
     for (size_t i = 0; i < 4; ++i) {
-        navFilterConfig.k[i] = gains.at(i);
+        navFilterConfig.k[i] = tmp_gain.at(i);
     }
 
     obs.SetConfig(navFilterConfig);
 }
 
-void parameter_setting(struct ModelParameter &param) {
+void parameter_setting(struct ModelParameter& param, libconfig::Config& confObj)
+{
 
-    param._inertia.resize(3);
-    param._inertia = par_client->get_parameter("ThrusterMapping.Inertia", std::vector<double>(3, 0.0));
+    try {
+        const libconfig::Setting& cX_settings = confObj.lookup("ThrusterMapping.cX");
+        std::vector<double> tmp_X;
+        for (int n = 0; n < cX_settings.getLength(); ++n) {
+            tmp_X.push_back(cX_settings[n]);
+        }
 
-    param._Cx.resize(3);
-    param._Cx = par_client->get_parameter("ThrusterMapping.cX", std::vector<double>(3, 0.0));
+        param._inertia = Eigen::Vector3d(tmp_X.data());
+    }
 
-    param._Cn.resize(3);
-    param._Cn = par_client->get_parameter("ThrusterMapping.cN", std::vector<double>(3, 0.0));
+    catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'ThrusterMapping.cX' setting in configuration file." << std::endl;
+    }
+
+    try {
+        const libconfig::Setting& cN_settings = confObj.lookup("ThrusterMapping.cN");
+        std::vector<double> tmp_N;
+        for (int n = 0; n < cN_settings.getLength(); ++n) {
+            tmp_N.push_back(cN_settings[n]);
+        }
+
+        param._Cn = Eigen::Vector3d(tmp_N.data());
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'ThrusterMapping.cN' setting in configuration file." << std::endl;
+    }
+
+    try {
+        const libconfig::Setting& I_settings = confObj.lookup("ThrusterMapping.Inertia");
+        std::vector<double> tmp_I;
+        for (int n = 0; n < I_settings.getLength(); ++n) {
+            tmp_I.push_back(I_settings[n]);
+        }
+
+        param._inertia = Eigen::Vector3d(tmp_I.data());
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'Inertia' setting in configuration file." << std::endl;
+    }
 }
 
 void covariance_setting(
-        Eigen::MatrixXd &cov_model,
-        Eigen::MatrixXd &cov_model_angle,
-        Eigen::MatrixXd &cov_measure_angle,
-        Eigen::MatrixXd &cov_measure
-) {
+    Eigen::MatrixXd& cov_model,
+    Eigen::MatrixXd& cov_model_angle,
+    Eigen::MatrixXd& cov_measure_angle,
+    Eigen::MatrixXd& cov_measure)
+{
+    //read conf file
+    libconfig::Config confObj;
 
-    cov_model.diagonal() =
-            Eigen::Map<Eigen::VectorXd>(
-                    par_client->get_parameter("CovarianceModel.diagonal",
-                                              std::vector<double>(8, 0.0)).data(), 8);
+    //Inizialization
+    std::string package_share_directory = ament_index_cpp::get_package_share_directory("nav_filter");
+    std::stringstream conf_path;
+    conf_path << package_share_directory << "/conf/navfilter.conf";
 
-    cov_model_angle.diagonal() =
-            Eigen::Map<Eigen::VectorXd>(
-                    par_client->get_parameter("CovarianceAngle.diagonal",
-                                              std::vector<double>(3, 0.0)).data(), 3);
+    std::string confPath = conf_path.str().c_str();
 
-    cov_measure_angle.diagonal() =
-            Eigen::Map<Eigen::VectorXd>(
-                    par_client->get_parameter("CovarianceMeasureAngle.diagonal",
-                                              std::vector<double>(3, 0.0)).data(),
-                    3);
+    std::cout << "PATH TO CONF FILE : " << confPath << std::endl;
 
-    cov_measure.diagonal() =
-            Eigen::Map<Eigen::VectorXd>(
-                    par_client->get_parameter("CovarianceMeasure.diagonal",
-                                              std::vector<double>(4, 0.0)).data(), 4);
+    try {
+        confObj.readFile(confPath.c_str());
+    } catch (libconfig::ParseException& e) {
+        std::cerr << "Parse exception when reading:" << confPath << std::endl;
+        std::cerr << "line: " << e.getLine() << " error: " << e.getError() << std::endl;
+        return;
+    }
 
+    try {
+        const libconfig::Setting& covmod_settings = confObj.lookup("CovarianceModel.diagonal");
+        std::vector<double> tmp_I;
+        for (int n = 0; n < covmod_settings.getLength(); ++n) {
+            tmp_I.push_back(covmod_settings[n]);
+        }
+
+        cov_model.diagonal() = Eigen::Map<Eigen::Matrix<double, 8, 1>>(tmp_I.data());
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'CovarianceModel' setting in configuration file." << std::endl;
+    }
+    try {
+        const libconfig::Setting& covang_settings = confObj.lookup("CovarianceAngle.diagonal");
+        std::vector<double> tmp_I;
+        for (int n = 0; n < covang_settings.getLength(); ++n) {
+            tmp_I.push_back(covang_settings[n]);
+        }
+
+        cov_model_angle.diagonal() = Eigen::Map<Eigen::Matrix<double, 3, 1>>(tmp_I.data());
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'CovarianceAngle.diagonal' setting in configuration file." << std::endl;
+    }
+    try {
+        const libconfig::Setting& covmang_settings = confObj.lookup("CovarianceMeasureAngle.diagonal");
+        std::vector<double> tmp_I;
+        for (int n = 0; n < covmang_settings.getLength(); ++n) {
+            tmp_I.push_back(covmang_settings[n]);
+        }
+
+        cov_measure_angle.diagonal() = Eigen::Map<Eigen::Matrix<double, 3, 1>>(tmp_I.data());
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'CovarianceMeasureAngle.diagonal' setting in configuration file." << std::endl;
+    }
+    try {
+        const libconfig::Setting& covm_settings = confObj.lookup("CovarianceMeasure.diagonal");
+        std::vector<double> tmp_I;
+        for (int n = 0; n < covm_settings.getLength(); ++n) {
+            tmp_I.push_back(covm_settings[n]);
+        }
+
+        cov_measure.diagonal() = Eigen::Map<Eigen::Matrix<double, 4, 1>>(tmp_I.data());
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No 'CovarianceMeasure.diagonal' setting in configuration file." << std::endl;
+    }
 }
 
-
-void InputDataCB(const ulisse_msgs::msg::ControlData::SharedPtr msg) {
+void InputDataCB(const ulisse_msgs::msg::ControlData::SharedPtr msg)
+{
     controlData = *msg;
 }
 
-void handle_navfilter_commands(const std::shared_ptr <rmw_request_id_t> request_header,
-                               const std::shared_ptr <ulisse_msgs::srv::NavFilterCommand::Request> request,
-                               std::shared_ptr <ulisse_msgs::srv::NavFilterCommand::Response> response) {
-    (void) request_header;
+void handle_navfilter_commands(const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<ulisse_msgs::srv::NavFilterCommand::Request> request,
+    std::shared_ptr<ulisse_msgs::srv::NavFilterCommand::Response> response)
+{
+    (void)request_header;
     RCLCPP_INFO(node->get_logger(), "Incoming request: %s",
-                CommandTypeToString((CommandType)(request->command_type)).c_str());
+        CommandTypeToString((CommandType)(request->command_type)).c_str());
 
     CommandAnswer ret = CommandAnswer::ok;
 
     switch (request->command_type) {
-        case (uint16_t) CommandType::undefined:
-            RCLCPP_WARN(node->get_logger(), "CommandType undefined");
-            ret = CommandAnswer::fail;
-            break;
-        case (uint16_t) CommandType::reset:
-            obs.Reset();
-            break;
-        case (uint16_t) CommandType::reloadconfig:
-            ReloadConfig();
-            break;
-        default:
-            RCLCPP_WARN(node->get_logger(), "Unsupported Command Code");
-            break;
+    case (uint16_t)CommandType::undefined:
+        RCLCPP_WARN(node->get_logger(), "CommandType undefined");
+        ret = CommandAnswer::fail;
+        break;
+    case (uint16_t)CommandType::reset:
+        obs.Reset();
+        break;
+    case (uint16_t)CommandType::reloadconfig:
+        ReloadConfig();
+        break;
+    default:
+        RCLCPP_WARN(node->get_logger(), "Unsupported Command Code");
+        break;
     }
     if (ret != CommandAnswer::ok) {
         response->res = (int16_t)(CommandAnswer::fail);
@@ -376,18 +512,22 @@ void handle_navfilter_commands(const std::shared_ptr <rmw_request_id_t> request_
     }
 }
 
-void controlcontext_cb(const ulisse_msgs::msg::ControlContext::SharedPtr msg) {
+void controlcontext_cb(const ulisse_msgs::msg::ControlContext::SharedPtr msg)
+{
     controlCxt = *msg;
 }
 
-void compass_cb(const ulisse_msgs::msg::Compass::SharedPtr msg) {
+void compass_cb(const ulisse_msgs::msg::Compass::SharedPtr msg)
+{
     compass = *msg;
 }
 
-void gpsdata_cb(const ulisse_msgs::msg::GPSData::SharedPtr msg) {
+void gpsdata_cb(const ulisse_msgs::msg::GPSData::SharedPtr msg)
+{
     gpsData = *msg;
 }
 
-void imu_cb(const ulisse_msgs::msg::IMUData::SharedPtr msg) {
+void imu_cb(const ulisse_msgs::msg::IMUData::SharedPtr msg)
+{
     imuData = *msg;
 }

@@ -60,6 +60,7 @@ namespace ulisse {
 class VehicleController {
     rclcpp::Node::SharedPtr nh_;
     rclcpp::SyncParametersClient::SharedPtr par_client_;
+    std::string file_name_;
     rclcpp::Service<ulisse_msgs::srv::ControlCommand>::SharedPtr srv_;
     rclcpp::Service<ulisse_msgs::srv::SetBoundaries>::SharedPtr srv_boundaries;
     rclcpp::Service<ulisse_msgs::srv::GetBoundaries>::SharedPtr srv_get_boundaries;
@@ -175,7 +176,7 @@ class VehicleController {
     void publishLog(std::string log);
 
 public:
-    VehicleController(const rclcpp::Node::SharedPtr& nh, double sampleTime);
+    VehicleController(const rclcpp::Node::SharedPtr& nh, double sampleTime, std::string file_name);
     virtual ~VehicleController();
     void Run();
     void PublishControl();
