@@ -72,7 +72,7 @@ class SurfaceVehicleModel {
      */
     UlisseModelParameters params_;
 
-    void SingleThrusterAllocation(const Eigen::Vector6d& linAngVel, double thrust_force, double& thruster_perc);
+    void InverseMotorEquation(const Eigen::Vector6d& linAngVel, double thrust_force, double& thruster_perc);
 
 public:
     SurfaceVehicleModel();
@@ -81,9 +81,9 @@ public:
     double PercentageToRPM(double h);
     double RPMToPercentage(double n);
     void DirectDynamics(double h_p, double h_s, const Eigen::Vector6d& linAngVel_, Eigen::Vector6d& linAngAcc_);
-    Eigen::Vector2d ComputeThrusterForces(Eigen::Vector2d& tau);
+    Eigen::Vector2d ThusterAllocation(Eigen::Vector2d& tau);
     void SetUlisseParams(const UlisseModelParameters& params);
-    void ThusterAllocation(const Eigen::Vector6d& linAngVel, Eigen::Vector2d thrust_force, double& h_p, double& h_s);
+    void InverseMotorsEquations(const Eigen::Vector6d& linAngVel, Eigen::Vector2d thrust_force, double& h_p, double& h_s);
     //void ThrusterDynamicAllocator(const double f_des, const double n_des, double& h_s, double &h_p);
 };
 

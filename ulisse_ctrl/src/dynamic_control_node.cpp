@@ -11,19 +11,17 @@
 #include <chrono>
 
 #include "ctrl_toolbox/DigitalSlidingMode.h"
-#include "ulisse_msgs/msg/control_context.hpp"
-#include "ulisse_msgs/msg/control_data.hpp"
-#include "ulisse_msgs/msg/status_context.hpp"
-#include "ulisse_msgs/msg/thrusters_data.hpp"
-#include "ulisse_msgs/srv/min_srv.hpp"
-#include "ulisse_msgs/terminal_utils.hpp"
-#include "ulisse_msgs/topicnames.hpp"
-
-#include "ulisse_msgs/msg/nav_filter_data.hpp"
-
 #include "surface_vehicle_model/surfacevehiclemodel.hpp"
 #include "ulisse_ctrl/fsm_defines.hpp"
 #include "ulisse_ctrl/helper_functions.hpp"
+#include "ulisse_msgs/msg/control_context.hpp"
+#include "ulisse_msgs/msg/control_data.hpp"
+#include "ulisse_msgs/msg/nav_filter_data.hpp"
+#include "ulisse_msgs/msg/status_context.hpp"
+#include "ulisse_msgs/msg/thrusters_data.hpp"
+#include "ulisse_msgs/srv/min_srv.hpp"
+#include "ulisse_msgs/srv/reset_configuration.hpp"
+#include "ulisse_msgs/terminal_utils.hpp"
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <libconfig.h++>
 
@@ -47,6 +45,10 @@ int main(int argc, char* argv[])
     static int rate = 10;
     static double sampleTime = 1.0 / rate;
     auto nh = rclcpp::Node::make_shared("low_level_control_node");
+    auto conf = std::make_shared<LowLevelConfiguration>();
+    //    auto sl = std::make_shared<SlidingSurface>();
+    SlidingSurface sl;
+    auto sp = std::make_shared<SlidingParameter>();
 
     rclcpp::WallRate loop_rate(rate);
 
@@ -56,13 +58,9 @@ int main(int argc, char* argv[])
     auto control_pub = nh->create_publisher<ulisse_msgs::msg::ControlData>("ulisse/ControlData", 10);
     auto navfilter_sub = nh->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 10, FilterDataCB);
 
-    auto conf = std::make_shared<LowLevelConfiguration>();
-    //    auto sl = std::make_shared<SlidingSurface>();
-    SlidingSurface sl;
-    auto sp = std::make_shared<SlidingParameter>();
-    std::string filename = "dcl_ulisse.conf";
-
     LoadLowLevelConfiguration(conf);
+
+    std::string filename = "dcl_ulisse.conf";
 
     ParameterSet(conf, filename, sl, sp);
 
@@ -94,7 +92,7 @@ int main(int argc, char* argv[])
     Eigen::Vector2d tau;
     tau.setZero();
 
-    //ThrusterMapping mode inizialization
+    //Controller inizialization
     if (conf->ctrlMode == ControlMode::ThrusterMapping) {
 
         pidSurge.Initialize(conf->mapping_pidgains_surge, sampleTime, conf->mapping_pidsat_surge);
@@ -111,6 +109,22 @@ int main(int argc, char* argv[])
         slideSurge = ctb::DigitalSlidingMode<SlidingSurface>(alpha_beta_u, s1, sl);
         slideSurge.Initialize(sp->surge_gain, sampleTime, 2, conf->dynamic_pidsat_surge);
     }
+
+    // Create a callback function for when service reset configuration requests are received.
+    auto handle_reset_conf = [nh, conf, &ulisseModel](
+                                 const std::shared_ptr<rmw_request_id_t> request_header,
+                                 const std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Request> request,
+                                 std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Response> response) -> void {
+        (void)request_header;
+        RCLCPP_INFO(nh->get_logger(), "Incoming request for reset conf");
+
+        LoadLowLevelConfiguration(conf);
+        ulisseModel.SetUlisseParams(conf->thrusterMap);
+        response->res = "ResetConfiguration::ok";
+    };
+
+    auto srv_reset_conf = nh->create_service<ulisse_msgs::srv::ResetConfiguration>(
+        ulisse_msgs::topicnames::reset_configuration_service, handle_reset_conf);
 
     while (rclcpp::ok()) {
 
@@ -160,8 +174,8 @@ int main(int argc, char* argv[])
                 requestedVel(5) = thrusterData.desiredJog;
 
                 tau = ulisseModel.ComputeCoriolisAndDragForces(requestedVel);
-                Eigen::Vector2d forces = ulisseModel.ComputeThrusterForces(tau);
-                ulisseModel.ThusterAllocation(requestedVel, forces, thrusterData.mapOut.left, thrusterData.mapOut.right);
+                Eigen::Vector2d forces = ulisseModel.ThusterAllocation(tau);
+                ulisseModel.InverseMotorsEquations(requestedVel, forces, thrusterData.mapOut.left, thrusterData.mapOut.right);
             } else if (conf->ctrlMode == ControlMode::SlidingMode) {
 
                 Eigen::Vector6d feedbackVel;
@@ -171,8 +185,8 @@ int main(int argc, char* argv[])
                 feedbackVel(0) = surgeFbk;
                 feedbackVel(5) = jogFbk;
 
-                Eigen::Vector2d forces = ulisseModel.ComputeThrusterForces(tau);
-                ulisseModel.ThusterAllocation(feedbackVel, forces, thrusterData.mapOut.left, thrusterData.mapOut.right);
+                Eigen::Vector2d forces = ulisseModel.ThusterAllocation(tau);
+                ulisseModel.InverseMotorsEquations(feedbackVel, forces, thrusterData.mapOut.left, thrusterData.mapOut.right);
             } else if (conf->ctrlMode == ControlMode::DynamicModel) {
                 // Dyamic Code Here
             }

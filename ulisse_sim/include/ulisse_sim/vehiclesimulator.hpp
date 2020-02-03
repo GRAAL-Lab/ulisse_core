@@ -10,8 +10,8 @@
 #include "ulisse_msgs/msg/gps_data.hpp"
 #include "ulisse_msgs/msg/imu_data.hpp"
 #include "ulisse_msgs/msg/magnetometer.hpp"
-#include "ulisse_msgs/msg/motor_reference.hpp"
 #include "ulisse_msgs/msg/micro_loop_count.hpp"
+#include "ulisse_msgs/msg/motor_reference.hpp"
 
 #include "GeographicLib/Geodesic.hpp"
 #include "eigen3/Eigen/Dense"
@@ -68,7 +68,7 @@ class VehicleSimulator {
 public:
     VehicleSimulator(const rclcpp::Node::SharedPtr& nh);
 
-    void SetParameters(double dt, const UlisseModelParameters &thmapparams);
+    void SetParameters(double dt, const UlisseModelParameters& thmapparams);
     void ExecuteStep(double h_p, double h_s);
     void PublishSensors();
 
@@ -90,7 +90,6 @@ public:
     void SetRealtime(bool realtime);
     double GetCurrentTimestamp() const;
 };
-
 }
 
 #endif // VEHICLESIMULATOR_H

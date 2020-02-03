@@ -174,7 +174,6 @@ struct LowLevelConfiguration {
                   << "==============================\n";
     }
 };
-
 }
 
 #endif //  ULISSE_CTRL_DATA_STRUCTS_HPP
