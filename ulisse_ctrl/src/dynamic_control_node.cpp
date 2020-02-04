@@ -45,30 +45,41 @@ int main(int argc, char* argv[])
     static int rate = 10;
     static double sampleTime = 1.0 / rate;
     auto nh = rclcpp::Node::make_shared("low_level_control_node");
+
+    //config struct
     auto conf = std::make_shared<LowLevelConfiguration>();
     //    auto sl = std::make_shared<SlidingSurface>();
+
+    // ulisse model
+    SurfaceVehicleModel ulisseModel;
+
+    //Variable for sliding mode control
     SlidingSurface sl;
     auto sp = std::make_shared<SlidingParameter>();
 
     rclcpp::WallRate loop_rate(rate);
 
+    //create pub and sub
     auto ctrlcxt_sub = nh->create_subscription<ulisse_msgs::msg::ControlContext>(ulisse_msgs::topicnames::control_context, 10, ControlContextCB);
     auto statuscxt_sub = nh->create_subscription<ulisse_msgs::msg::StatusContext>(ulisse_msgs::topicnames::status_context, 10, StatusContextCB);
     auto thrusterdata_pub = nh->create_publisher<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data, 10);
     auto control_pub = nh->create_publisher<ulisse_msgs::msg::ControlData>("ulisse/ControlData", 10);
     auto navfilter_sub = nh->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 10, FilterDataCB);
 
-    LoadLowLevelConfiguration(conf);
-
+    //name of conf file
     std::string filename = "dcl_ulisse.conf";
 
+    //Ulisse params configuration
+    LoadLowLevelConfiguration(conf, filename);
+
+    //Sliding mode params setting
     ParameterSet(conf, filename, sl, sp);
 
     std::cout << tc::grayD << *conf << tc::none << std::endl;
 
-    SurfaceVehicleModel ulisseModel;
     ulisseModel.SetUlisseParams(conf->thrusterMap);
 
+    //local variables
     ThrusterControlData thrusterData;
     ulisse_msgs::msg::ThrustersData thrust_msg;
     ulisse_msgs::msg::ControlData control_msg;
@@ -95,31 +106,34 @@ int main(int argc, char* argv[])
     //Controller inizialization
     if (conf->ctrlMode == ControlMode::ThrusterMapping) {
 
-        pidSurge.Initialize(conf->mapping_pidgains_surge, sampleTime, conf->mapping_pidsat_surge);
-        pidSurge.SetSaturation(conf->mapping_pidsat_surge);
-
-        //        pidYawRate.Initialize(conf->dynamic_pidgains_yawrate, sampleTime, conf->jogLimiter);
-        //        pidYawRate.SetErrorFunction(ctb::HeadingErrorRadFunctor());
+        ThrusterMappingInizialization(conf, sampleTime, pidSurge);
 
     } else if (conf->ctrlMode == ControlMode::SlidingMode) {
 
-        slideHeading = ctb::DigitalSecOrdSlidingMode<SlidingSurface>(alpha_beta_r, s2, sl);
-        slideHeading.Initialize(sp->heading_gain, sampleTime, 2, conf->dynamic_pidsat_yawrate);
-
-        slideSurge = ctb::DigitalSlidingMode<SlidingSurface>(alpha_beta_u, s1, sl);
-        slideSurge.Initialize(sp->surge_gain, sampleTime, 2, conf->dynamic_pidsat_surge);
+        SlidingModeInizialization(conf, sl, sp, slideSurge, slideHeading, sampleTime);
     }
 
     // Create a callback function for when service reset configuration requests are received.
-    auto handle_reset_conf = [nh, conf, &ulisseModel](
+    auto handle_reset_conf = [nh, conf, &ulisseModel, filename, &sl, sp, &pidSurge, &slideSurge, &slideHeading](
                                  const std::shared_ptr<rmw_request_id_t> request_header,
                                  const std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Request> request,
                                  std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Response> response) -> void {
         (void)request_header;
         RCLCPP_INFO(nh->get_logger(), "Incoming request for reset conf");
 
-        LoadLowLevelConfiguration(conf);
+        LoadLowLevelConfiguration(conf, filename);
+        ParameterSet(conf, filename, sl, sp);
         ulisseModel.SetUlisseParams(conf->thrusterMap);
+
+        //Controller inizialization
+        if (conf->ctrlMode == ControlMode::ThrusterMapping) {
+
+            ThrusterMappingInizialization(conf, sampleTime, pidSurge);
+
+        } else if (conf->ctrlMode == ControlMode::SlidingMode) {
+
+            SlidingModeInizialization(conf, sl, sp, slideSurge, slideHeading, sampleTime);
+        }
         response->res = "ResetConfiguration::ok";
     };
 

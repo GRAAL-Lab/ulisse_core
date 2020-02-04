@@ -12,6 +12,7 @@
 #include "ulisse_msgs/terminal_utils.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 
+#include "ctrl_toolbox/DigitalSlidingMode.h"
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
 
 #include <math.h>
@@ -23,11 +24,11 @@ namespace ulisse {
 
 struct SlidingSurface {
 
-    std::vector<double> _Cx;
-    std::vector<double> _Cn;
-    std::vector<double> _inertia;
-    double _k;
-    double _k1;
+    std::vector<double> cX;
+    std::vector<double> cN;
+    std::vector<double> inertia;
+    double k;
+    double k1;
 };
 
 struct SlidingParameter {
@@ -43,11 +44,16 @@ double SlowDownWhenTurning(double headingError, double desiredSpeed, const Contr
 
 void LoadControllerConfiguration(std::shared_ptr<ControllerConfiguration> conf, std::string file_name);
 
-void LoadLowLevelConfiguration(std::shared_ptr<LowLevelConfiguration> conf);
+void LoadLowLevelConfiguration(std::shared_ptr<LowLevelConfiguration> conf, std::string filename);
 
 void ParameterSet(std::shared_ptr<LowLevelConfiguration> conf, std::string filename, SlidingSurface& sl, std::shared_ptr<SlidingParameter> sp);
 
 void parameter_setting(SlidingSurface& param, std::shared_ptr<LowLevelConfiguration> conf, double k, double k1);
+
+void ThrusterMappingInizialization(std::shared_ptr<LowLevelConfiguration> conf, double sampleTime, ctb::DigitalPID& pid);
+
+void SlidingModeInizialization(std::shared_ptr<LowLevelConfiguration> conf, SlidingSurface &sl, std::shared_ptr<SlidingParameter> sp, ctb::DigitalSlidingMode<SlidingSurface> &slideSurge,
+    ctb::DigitalSecOrdSlidingMode<SlidingSurface> &slideHeading,  double sampleTime);
 
 std::vector<double> alpha_beta_u(const std::vector<double> state, SlidingSurface param);
 

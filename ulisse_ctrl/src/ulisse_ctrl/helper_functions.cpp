@@ -273,14 +273,14 @@ void LoadControllerConfiguration(std::shared_ptr<ControllerConfiguration> conf, 
     }
 }
 
-void LoadLowLevelConfiguration(std::shared_ptr<LowLevelConfiguration> conf)
+void LoadLowLevelConfiguration(std::shared_ptr<LowLevelConfiguration> conf, std::string filename)
 {
     libconfig::Config confObj;
 
     //Inizialization
     std::string package_share_directory = ament_index_cpp::get_package_share_directory("ulisse_ctrl");
     std::stringstream conf_path;
-    conf_path << package_share_directory << "/conf/dcl_ulisse.conf";
+    conf_path << package_share_directory << "/conf/" << filename;
 
     std::string confPath = conf_path.str().c_str();
 
@@ -576,46 +576,46 @@ void ParameterSet(std::shared_ptr<LowLevelConfiguration> conf, std::string filen
     parameter_setting(sl, conf, sp->gain_1, sp->gain_2);
 }
 
-double s1(const double ref, const double fb, struct SlidingSurface param) { return param._k * (ref - fb); }
+double s1(const double ref, const double fb, struct SlidingSurface param) { return param.k * (ref - fb); }
 
-double s2(const double ref, const double fb, struct SlidingSurface param) { return param._k1 * (ref - fb); }
+double s2(const double ref, const double fb, struct SlidingSurface param) { return param.k1 * (ref - fb); }
 
 void parameter_setting(SlidingSurface& param, std::shared_ptr<LowLevelConfiguration> conf, double k, double k1)
 {
 
-    param._inertia.resize(3);
-    param._inertia[0] = conf->thrusterMap.Inertia.diagonal()[0];
-    param._inertia[1] = conf->thrusterMap.Inertia.diagonal()[1];
-    param._inertia[2] = conf->thrusterMap.Inertia.diagonal()[2];
+    param.inertia.resize(3);
+    param.inertia[0] = conf->thrusterMap.Inertia.diagonal()[0];
+    param.inertia[1] = conf->thrusterMap.Inertia.diagonal()[1];
+    param.inertia[2] = conf->thrusterMap.Inertia.diagonal()[2];
 
-    param._Cx.resize(3);
-    param._Cx[0] = conf->thrusterMap.cX[0];
-    param._Cx[1] = conf->thrusterMap.cX[1];
-    param._Cx[2] = conf->thrusterMap.cX[2];
+    param.cX.resize(3);
+    param.cX[0] = conf->thrusterMap.cX[0];
+    param.cX[1] = conf->thrusterMap.cX[1];
+    param.cX[2] = conf->thrusterMap.cX[2];
 
-    param._Cn.resize(3);
-    param._Cn[0] = conf->thrusterMap.cN[0];
-    param._Cn[1] = conf->thrusterMap.cN[1];
-    param._Cn[2] = conf->thrusterMap.cN[2];
+    param.cN.resize(3);
+    param.cN[0] = conf->thrusterMap.cN[0];
+    param.cN[1] = conf->thrusterMap.cN[1];
+    param.cN[2] = conf->thrusterMap.cN[2];
 
-    param._k = k;
-    param._k1 = k1;
+    param.k = k;
+    param.k1 = k1;
 }
 
 std::vector<double> alpha_beta_u(const std::vector<double> state, struct SlidingSurface param)
 {
-    auto alpha = state[0] / 0.1 - param._Cx[0] * std::pow(state[1], 2) - param._Cx[1] * state[0] - param._Cx[2] * std::abs(state[0]) * state[0];
-    alpha = -1 / param._inertia[0] * param._k * alpha;
-    auto beta = -1 / param._inertia[0] * param._k;
+    auto alpha = state[0] / 0.1 - param.cX[0] * std::pow(state[1], 2) - param.cX[1] * state[0] - param.cX[2] * std::abs(state[0]) * state[0];
+    alpha = -1 / param.inertia[0] * param.k * alpha;
+    auto beta = -1 / param.inertia[0] * param.k;
     std::vector<double> alphaBeta = { alpha, beta };
     return alphaBeta;
 }
 
 std::vector<double> alpha_beta_r(const std::vector<double> state, struct SlidingSurface param)
 {
-    auto alpha = state[1] / 0.1 + param._Cn[0] * state[0] * state[1] - param._Cn[1] * state[1] - param._Cn[2] * std::abs(state[1]) * state[1];
-    alpha = -1 / param._inertia[2] * param._k1 * alpha;
-    auto beta = -1 / param._inertia[2] * param._k1;
+    auto alpha = state[1] / 0.1 + param.cN[0] * state[0] * state[1] - param.cN[1] * state[1] - param.cN[2] * std::abs(state[1]) * state[1];
+    alpha = -1 / param.inertia[2] * param.k1 * alpha;
+    auto beta = -1 / param.inertia[2] * param.k1;
     std::vector<double> alphaBeta = { alpha, beta };
     return alphaBeta;
 }
@@ -694,5 +694,25 @@ double measure(double lat1, double lon1, double lat2, double lon2)
     double c = 2 * atan2(sqrt(a), sqrt(1 - a));
     double d = R_EARTH * c;
     return d * 1000; // meters
+}
+
+void ThrusterMappingInizialization(std::shared_ptr<LowLevelConfiguration> conf, double sampleTime, ctb::DigitalPID &pid)
+{
+
+    pid.Initialize(conf->mapping_pidgains_surge, sampleTime, conf->mapping_pidsat_surge);
+    pid.SetSaturation(conf->mapping_pidsat_surge);
+
+    //        pidYawRate.Initialize(conf->dynamic_pidgains_yawrate, sampleTime, conf->jogLimiter);
+    //        pidYawRate.SetErrorFunction(ctb::HeadingErrorRadFunctor());
+}
+
+void SlidingModeInizialization(std::shared_ptr<LowLevelConfiguration> conf, SlidingSurface &sl, std::shared_ptr<SlidingParameter> sp, ctb::DigitalSlidingMode<SlidingSurface>& slideSurge,
+    ctb::DigitalSecOrdSlidingMode<SlidingSurface> &slideHeading, double sampleTime)
+{
+    slideHeading = ctb::DigitalSecOrdSlidingMode<SlidingSurface>(alpha_beta_r, s2, sl);
+    slideHeading.Initialize(sp->heading_gain, sampleTime, 2, conf->dynamic_pidsat_yawrate);
+
+    slideSurge = ctb::DigitalSlidingMode<SlidingSurface>(alpha_beta_u, s1, sl);
+    slideSurge.Initialize(sp->surge_gain, sampleTime, 2, conf->dynamic_pidsat_surge);
 }
 }
