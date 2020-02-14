@@ -16,7 +16,6 @@
 
 #include "ulisse_ctrl/ctrl_data_structs.hpp"
 #include "ulisse_ctrl/helper_functions.hpp"
-#include "ulisse_ctrl/tasks/ActionTask.h"
 
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/adapted/boost_tuple.hpp>
@@ -84,7 +83,7 @@ public:
 
     void SetControlContext(const std::shared_ptr<ulisse::ControlContext>& ctrlCxt);
 
-   void SetGoalContext(const std::shared_ptr<ulisse::GoalContext>& goalCxt);
+    void SetGoalContext(const std::shared_ptr<ulisse::GoalContext>& goalCxt);
 
     void SetConf(const std::shared_ptr<ulisse::ControllerConfiguration>& conf);
     /**
@@ -165,7 +164,7 @@ protected:
 
     std::shared_ptr<ulisse::ControllerConfiguration> conf_;
     std::shared_ptr<ulisse::ControlContext> ctrlCxt_;
-   std::shared_ptr<ulisse::GoalContext> goalCxt_;
+    std::shared_ptr<ulisse::GoalContext> goalCxt_;
 };
 }
 #endif

@@ -15,7 +15,8 @@ namespace states {
         std::chrono::seconds total_elapsed_;
 
     protected:
-        std::shared_ptr<ikcl::AngularPosition> angularPositionTask_;
+        std::shared_ptr<ikcl::AlignToTarget> angularPositionTask_;
+//         std::shared_ptr<ikcl::AngularPosition> angularPositionTask_;
         std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask_;
 
         double surgeRef;
@@ -29,7 +30,8 @@ namespace states {
         void ResetTimer();
         void SetSurgeRef(double surge);
 
-        void SetAngularPositionTask(std::shared_ptr<ikcl::AngularPosition> angularPositionTask);
+        void SetAngularPositionTask(std::shared_ptr<ikcl::AlignToTarget> angularPositionTask);
+//         void SetAngularPositionTask(std::shared_ptr<ikcl::AngularPosition> angularPositionTask);
         void SetLinearVelocityTask(std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask);
     };
 }

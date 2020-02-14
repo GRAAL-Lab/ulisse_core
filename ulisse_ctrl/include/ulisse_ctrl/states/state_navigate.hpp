@@ -6,10 +6,10 @@
 #include <memory>
 
 #include "sisl.h"
-#include <iostream>
 #include <fstream>
-#include <string>
+#include <iostream>
 #include <stdexcept>
+#include <string>
 
 namespace ulisse {
 
@@ -18,12 +18,12 @@ namespace states {
     class StateNavigate : public GenericState {
 
     protected:
-        std::shared_ptr<ikcl::AngularPosition> angularPositionTask_;
+        std::shared_ptr<ikcl::AlignToTarget> angularPositionTask_;
+//        std::shared_ptr<ikcl::AngularPosition> angularPositionTask_;
         std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask_;
         std::shared_ptr<ikcl::AngularVelocity> angularVelocityTask_;
         std::shared_ptr<ikcl::Hold> asvHoldTask_;
-        std::shared_ptr<ikcl::MakeCurve> asvMakeCurveTask_;
-        std::shared_ptr<ikcl::ControlDistance> distanceTask_;
+        std::shared_ptr<ikcl::ControlCartesianDistance> distanceTask_;
 
         ctb::LatLong centroid_;
 
@@ -84,12 +84,11 @@ namespace states {
         virtual fsm::retval Execute();
         virtual fsm::retval OnExit();
 
-        void SetAngularPositionTask(std::shared_ptr<ikcl::AngularPosition> angularPositionTask);
+        void SetAngularPositionTask(std::shared_ptr<ikcl::AlignToTarget> angularPositionTask);
         void SetLinearVelocityTask(std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask);
         void SetASVHoldTask(std::shared_ptr<ikcl::Hold> asvHoldTask);
-        void SetASVMakeCurveTask(std::shared_ptr<ikcl::MakeCurve> asvMakeCurveTask);
         void SetAngularVelocityTask(std::shared_ptr<ikcl::AngularVelocity> angularVelocityTask);
-        void SetDistanceTask(std::shared_ptr<ikcl::ControlDistance> distanceTask);
+        void SetDistanceTask(std::shared_ptr<ikcl::ControlCartesianDistance> distanceTask);
 
         void SetLineOfSightMethod(bool status);
         bool GetLineOfSightMethod();
@@ -109,8 +108,6 @@ namespace states {
         double GetTolleranceStartingAngle();
 
         bool LoadSpur(std::string json_nurbs);
-
-
     };
 }
 }

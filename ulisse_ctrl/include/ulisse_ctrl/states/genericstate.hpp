@@ -7,12 +7,6 @@
 #include "ulisse_ctrl/ctrl_data_structs.hpp"
 #include "ulisse_ctrl/fsm_defines.hpp"
 
-#include "ulisse_ctrl/tasks/ActionTask.h"
-#include "ulisse_ctrl/tasks/AngularPosition.h"
-#include "ulisse_ctrl/tasks/ControlDistance.h"
-#include "ulisse_ctrl/tasks/Hold.h"
-#include "ulisse_ctrl/tasks/MakeCurve.h"
-
 #include <ikcl/ikcl.h>
 #include <rml/RML.h>
 #include <tpik/TPIKlib.h>

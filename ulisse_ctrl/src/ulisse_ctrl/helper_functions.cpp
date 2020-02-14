@@ -696,7 +696,7 @@ double measure(double lat1, double lon1, double lat2, double lon2)
     return d * 1000; // meters
 }
 
-void ThrusterMappingInizialization(std::shared_ptr<LowLevelConfiguration> conf, double sampleTime, ctb::DigitalPID &pid)
+void ThrusterMappingInizialization(std::shared_ptr<LowLevelConfiguration> conf, double sampleTime, ctb::DigitalPID& pid)
 {
 
     pid.Initialize(conf->mapping_pidgains_surge, sampleTime, conf->mapping_pidsat_surge);
@@ -706,8 +706,8 @@ void ThrusterMappingInizialization(std::shared_ptr<LowLevelConfiguration> conf, 
     //        pidYawRate.SetErrorFunction(ctb::HeadingErrorRadFunctor());
 }
 
-void SlidingModeInizialization(std::shared_ptr<LowLevelConfiguration> conf, SlidingSurface &sl, std::shared_ptr<SlidingParameter> sp, ctb::DigitalSlidingMode<SlidingSurface>& slideSurge,
-    ctb::DigitalSecOrdSlidingMode<SlidingSurface> &slideHeading, double sampleTime)
+void SlidingModeInizialization(std::shared_ptr<LowLevelConfiguration> conf, SlidingSurface& sl, std::shared_ptr<SlidingParameter> sp, ctb::DigitalSlidingMode<SlidingSurface>& slideSurge,
+    ctb::DigitalSecOrdSlidingMode<SlidingSurface>& slideHeading, double sampleTime)
 {
     slideHeading = ctb::DigitalSecOrdSlidingMode<SlidingSurface>(alpha_beta_r, s2, sl);
     slideHeading.Initialize(sp->heading_gain, sampleTime, 2, conf->dynamic_pidsat_yawrate);

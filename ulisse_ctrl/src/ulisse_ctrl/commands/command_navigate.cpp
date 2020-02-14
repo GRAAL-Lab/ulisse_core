@@ -4,13 +4,9 @@ namespace ulisse {
 
 namespace commands {
 
-    CommandNavigate::CommandNavigate()
-    {
-    }
+    CommandNavigate::CommandNavigate() {}
 
-    CommandNavigate::~CommandNavigate()
-    {
-    }
+    CommandNavigate::~CommandNavigate() {}
 
     fsm::retval CommandNavigate::Execute()
     {

@@ -6,31 +6,22 @@ namespace ulisse {
 
 namespace states {
 
-    StateHold::StateHold()
+    StateHold::StateHold() {}
+
+    StateHold::~StateHold() {}
+
+    void StateHold::SetAngularPositionTask(std::shared_ptr<ikcl::AlignToTarget> angularPositionTask)
     {
+        angularPositionTask_ = angularPositionTask;
     }
 
-    StateHold::~StateHold()
+    void StateHold::SetLinearVelocityTask(std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask)
     {
-    }
-
-
-    void StateHold::SetHoldTask(std::shared_ptr<ikcl::Hold> holdTask)
-    {
-        holdTask_ = holdTask;
+        linearVelocityTask_ = linearVelocityTask;
     }
 
     fsm::retval StateHold::OnEntry()
     {
-        Eigen::TransfMatrix wTasv = robotModel_->GetTransformation(ulisse::robotModelID::ASV);
-        // attitudeTask_->SetwTg(wTauv, rml::FrameID::WorldFrame);
-
-        if(!holdTask_->IsGoalSet()){
-            ctb::LatLong target_;
-            target_.latitude = statusCxt_->vehiclePos.latitude;
-            target_.longitude = statusCxt_->vehiclePos.longitude;
-            holdTask_->SetGoalHold(target_);
-        }
 
         actionManager_->SetAction(ulisse::action::hold, true);
 
@@ -50,6 +41,11 @@ namespace states {
 
         CheckRadioController();
 
+        angularPositionTask_->SetDistanceToTarget(Eigen::Vector3d(statusCxt_->seacurrent[0], statusCxt_->seacurrent[1], 0), rml::FrameID::WorldFrame);
+        angularPositionTask_->SetAlignmentAxis(Eigen::Vector3d(1, 0, 0));
+
+        linearVelocityTask_->SetVelocity(Eigen::VectorXd::Zero(3));
+
         std::cout << "STATE HOLD" << std::endl;
         std::cout << "Goal Distance: " << goalCxt_->goalDistance << std::endl;
         std::cout << "Acceptance radius: " << goalCxt_->currentGoal.acceptRadius << std::endl;
@@ -60,8 +56,6 @@ namespace states {
 
     fsm::retval StateHold::OnExit()
     {
-        holdTask_->ResetGoal();
-
         return fsm::ok;
     }
 }

@@ -2,6 +2,7 @@
 #include "ctrl_toolbox/HelperFunctions.h"
 #include "ulisse_ctrl/helper_functions.hpp"
 #include "ulisse_msgs/topicnames.hpp"
+#include <ament_index_cpp/get_package_share_directory.hpp>
 
 #include <chrono>
 #include <iomanip>
@@ -44,35 +45,19 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     goalCxt_ = std::make_shared<GoalContext>();
     statusCxt_ = std::make_shared<StatusContext>();
     conf_ = std::make_shared<ControllerConfiguration>();
-    file_name_= file_name;
+    file_name_ = file_name;
     cruise_ = 0;
 
-    while (!par_client_->wait_for_service(1ms)) {
-        if (!rclcpp::ok()) {
-            RCLCPP_ERROR(nh_->get_logger(), "Interrupted while waiting for the service. Exiting.");
-            exit(0);
-        }
-        RCLCPP_INFO(nh_->get_logger(), "service not available, waiting again...");
-    }
-
-    LoadConfiguration();
-
     // Sensor Subscriptions
-    gps_sub_ = nh_->create_subscription<ulisse_msgs::msg::GPSData>(
-        ulisse_msgs::topicnames::sensor_gps_data, std::bind(&VehicleController::GPSSensorCB, this, _1));
-
+    gps_sub_ = nh_->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data, 10, std::bind(&VehicleController::GPSSensorCB, this, _1));
     //    compass_sub_ = nh_->create_subscription<ulisse_msgs::msg::Compass>(
     //        ulisse_msgs::topicnames::sensor_compass, std::bind(&VehicleController::CompassSensorCB, this, _1));
-
-    nav_filter_sub_ = nh_->create_subscription<ulisse_msgs::msg::NavFilterData>(
-        ulisse_msgs::topicnames::nav_filter_data, std::bind(&VehicleController::NavFilterCB, this, _1));
-
+    nav_filter_sub_ = nh_->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 10, std::bind(&VehicleController::NavFilterCB, this, _1));
     // Control Publishers
-    ctrlcxt_pub_ = nh_->create_publisher<ulisse_msgs::msg::ControlContext>(ulisse_msgs::topicnames::control_context);
-    goalcxt_pub_ = nh_->create_publisher<ulisse_msgs::msg::GoalContext>(ulisse_msgs::topicnames::goal_context);
-    statuscxt_pub_ = nh_->create_publisher<ulisse_msgs::msg::StatusContext>(ulisse_msgs::topicnames::status_context);
-
-    generic_log_pub_ = nh_->create_publisher<std_msgs::msg::String>("/ulisse/log/generic");
+    ctrlcxt_pub_ = nh_->create_publisher<ulisse_msgs::msg::ControlContext>(ulisse_msgs::topicnames::control_context, 10);
+    goalcxt_pub_ = nh_->create_publisher<ulisse_msgs::msg::GoalContext>(ulisse_msgs::topicnames::goal_context, 10);
+    statuscxt_pub_ = nh_->create_publisher<ulisse_msgs::msg::StatusContext>(ulisse_msgs::topicnames::status_context, 10);
+    generic_log_pub_ = nh_->create_publisher<std_msgs::msg::String>("/ulisse/log/generic", 10);
 
     /// TPIK Manager
     action_manager = std::make_shared<tpik::ActionManager>(tpik::ActionManager());
@@ -93,74 +78,40 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     // ***** SETUP TASKS *****
 
     // ASV CONTROL VELOCITY LINEAR
-    asv_control_velocity_linear = std::make_shared<ikcl::LinearVelocity>(
-        ikcl::LinearVelocity(ulisse::task::asv_control_velocity_linear, robot_model, ulisse::robotModelID::ASV));
+    asv_control_velocity_linear = std::make_shared<ikcl::LinearVelocity>(ikcl::LinearVelocity(ulisse::task::asv_control_velocity_linear, robot_model, ulisse::robotModelID::ASV));
     asv_control_velocity_linear->SetVelocity(Eigen::VectorXd::Zero(3));
     equality_task.push_back(asv_control_velocity_linear);
     task_hierarchy.push_back(asv_control_velocity_linear);
     taskIDMap.insert(std::make_pair(ulisse::task::asv_control_velocity_linear, asv_control_velocity_linear));
-    taskLogPublisherMap.insert(std::make_pair(ulisse::task::asv_control_velocity_linear, nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_control_velocity_linear")));
-
+    taskLogPublisherMap.insert(std::make_pair(ulisse::task::asv_control_velocity_linear, nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_control_velocity_linear", 10)));
 
     // AUV CONTROL VELOCITY ANGULAR
-    asv_control_velocity_angular = std::make_shared<ikcl::AngularVelocity>(
-        ikcl::AngularVelocity(ulisse::task::asv_control_velocity_angular, robot_model, ulisse::robotModelID::ASV));
+    asv_control_velocity_angular = std::make_shared<ikcl::AngularVelocity>(ikcl::AngularVelocity(ulisse::task::asv_control_velocity_angular, robot_model, ulisse::robotModelID::ASV));
     asv_control_velocity_angular->SetVelocity(Eigen::VectorXd::Zero(3));
     equality_task.push_back(asv_control_velocity_angular);
     task_hierarchy.push_back(asv_control_velocity_angular);
     taskIDMap.insert(std::make_pair(ulisse::task::asv_control_velocity_angular, asv_control_velocity_angular));
-    taskLogPublisherMap.insert(std::make_pair(ulisse::task::asv_control_velocity_angular, nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_control_velocity_angular")));
+    taskLogPublisherMap.insert(std::make_pair(ulisse::task::asv_control_velocity_angular, nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_control_velocity_angular", 10)));
 
-    // ASV ANGULAR POSITION
-    asv_angular_position = std::make_shared<ikcl::AngularPosition>(
-        ikcl::AngularPosition(ulisse::task::asv_angular_position, robot_model, ulisse::robotModelID::ASV, tpik::CartesianTaskType::Equality));
-    asv_angular_position->SetVehiclePoseStatus(vehiclePose_);
+    // AUV CONTROL ANGULAR POSITION
+    asv_angular_position = std::make_shared<ikcl::AlignToTarget>(ikcl::AlignToTarget(ulisse::task::asv_angular_position, robot_model, ulisse::robotModelID::ASV, tpik::CartesianTaskType::Equality, tpik::ProjectorType::Default));
+    asv_angular_position->SetAlignmentAxis(Eigen::VectorXd::Zero(3));
+    asv_angular_position->SetDistanceToTarget(Eigen::VectorXd::Zero(3), rml::FrameID::WorldFrame);
     cartesian_task.push_back(asv_angular_position);
     task_hierarchy.push_back(asv_angular_position);
     taskIDMap.insert(std::make_pair(ulisse::task::asv_angular_position, asv_angular_position));
-    taskLogPublisherMap.insert(std::make_pair(ulisse::task::asv_angular_position, nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_angular_position")));
-
+    taskLogPublisherMap.insert(std::make_pair(ulisse::task::asv_angular_position, nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_angular_position", 10)));
 
     // ASV CONTROL DISTANCE
-    asv_control_distance = std::make_shared<ikcl::ControlDistance>(
-        ikcl::ControlDistance(ulisse::task::asv_control_distance, robot_model, ulisse::robotModelID::ASV, tpik::CartesianTaskType::Equality));
-    asv_control_distance->SetStatusContext(statusCxt_);
-    asv_control_distance->SetGoalContext(goalCxt_);
+    asv_control_distance = std::make_shared<ikcl::ControlCartesianDistance>(ikcl::ControlCartesianDistance(ulisse::task::asv_control_distance, robot_model, ulisse::robotModelID::ASV, tpik::CartesianTaskType::Equality, tpik::ProjectorType::Default));
+    asv_control_distance->SetDistance(Eigen::VectorXd::Zero(3), rml::FrameID::WorldFrame);
     cartesian_task.push_back(asv_control_distance);
     task_hierarchy.push_back(asv_control_distance);
     taskIDMap.insert(std::make_pair(ulisse::task::asv_control_distance, asv_control_distance));
-    taskLogPublisherMap.insert(std::make_pair(ulisse::task::asv_control_distance, nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_control_distance")));
-
-
-    // ASV HOLD POSITION
-    asv_hold_position = std::make_shared<ikcl::Hold>(
-        ikcl::Hold(ulisse::task::asv_hold_position, robot_model, ulisse::robotModelID::ASV));
-    asv_hold_position->SetStatusContext(statusCxt_);
-    asv_hold_position->SetGoalContext(goalCxt_);
-    asv_hold_position->SetConf(conf_);
-    equality_task.push_back(asv_hold_position);
-    task_hierarchy.push_back(asv_hold_position);
-    taskIDMap.insert(std::make_pair(ulisse::task::asv_hold_position, asv_hold_position));
-    taskLogPublisherMap.insert(std::make_pair(ulisse::task::asv_hold_position, nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_hold_position")));
-
-
-    /*
-    // ASV MAKE CURVE
-    asv_make_curve = std::make_shared<ikcl::MakeCurve>(
-        ikcl::MakeCurve(ulisse::task::asv_make_curve, robot_model, ulisse::robotModelID::ASV));
-    asv_make_curve->SetAngularVelocityTask(asv_control_velocity_angular);
-    asv_make_curve->SetLinearVelocityTask(asv_control_velocity_linear);
-    asv_make_curve->SetStatusContext(statusCxt_);
-    asv_make_curve->SetControlContext(ctrlCxt_);
-    asv_make_curve->SetSaturationLimits(9.0, 9.0);
-    equality_task.push_back(asv_make_curve);
-    task_hierarchy.push_back(asv_make_curve);
-    taskIDMap.insert(std::make_pair(ulisse::task::asv_make_curve, asv_make_curve));
-     */
+    taskLogPublisherMap.insert(std::make_pair(ulisse::task::asv_control_distance, nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_control_distance", 10)));
 
     // ASV SAFETY BOUNDARIES (INEQUALITY TASK)
-    asv_safety_boundaries = std::make_shared<ikcl::SafetyBoundaries>(
-        ikcl::SafetyBoundaries(ulisse::task::asv_safety_boundaries, robot_model, ulisse::robotModelID::ASV));
+    asv_safety_boundaries = std::make_shared<ikcl::SafetyBoundaries>(ikcl::SafetyBoundaries(ulisse::task::asv_safety_boundaries, robot_model, ulisse::robotModelID::ASV));
     asv_safety_boundaries->SetPose(vehiclePose_);
     asv_safety_boundaries->SetConf(conf_);
     asv_safety_boundaries->SetControlContext(ctrlCxt_);
@@ -168,15 +119,15 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     inequality_task.push_back(asv_safety_boundaries);
     task_hierarchy.push_back(asv_safety_boundaries);
     taskIDMap.insert(std::make_pair(ulisse::task::asv_safety_boundaries, asv_safety_boundaries));
-    taskLogPublisherMap.insert(std::make_pair(ulisse::task::asv_safety_boundaries, nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_safety_boundaries")));
-
+    taskLogPublisherMap.insert(std::make_pair(ulisse::task::asv_safety_boundaries, nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_safety_boundaries", 10)));
 
     // Initialize Solver and iCAT
     dof = 6;
     i_cat = std::make_shared<tpik::iCAT>(tpik::iCAT(dof));
 
+    //load config file
     // Setup Params for Tasks and iCAT
-    LoadKCLConfiguration();
+    LoadConfiguration();
 
     // Solver definition
     solver = std::make_shared<tpik::Solver>(tpik::Solver(action_manager, i_cat));
@@ -188,9 +139,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     SetupCommandServer();
 
     // Create a callback function for when service set boundaries requests are received.
-    auto handle_set_boundaries = [this](
-                                     const std::shared_ptr<rmw_request_id_t> request_header,
-                                     const std::shared_ptr<ulisse_msgs::srv::SetBoundaries::Request> request,
+    auto handle_set_boundaries = [this](const std::shared_ptr<rmw_request_id_t> request_header, const std::shared_ptr<ulisse_msgs::srv::SetBoundaries::Request> request,
                                      std::shared_ptr<ulisse_msgs::srv::SetBoundaries::Response> response) -> void {
         (void)request_header;
         RCLCPP_INFO(nh_->get_logger(), "Incoming request for set boundaries");
@@ -224,7 +173,6 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 
                 polygon_ = polygon_ + boost::lexical_cast<std::string>(p[0]) + " " + boost::lexical_cast<std::string>(p[1]);
                 polygon_2_ = polygon_2_ + boost::lexical_cast<std::string>(latitude) + " " + boost::lexical_cast<std::string>(longitude);
-
             }
         } catch (Json::Exception& e) {
             // output exception information
@@ -245,7 +193,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
             response->res = "SetBound::error";
         }
 
-        if(request->bound_min > 0 && request->bound_max > 0){
+        if (request->bound_min > 0 && request->bound_max > 0) {
             asv_safety_boundaries->SetBoundaries(request->bound_min, request->bound_max);
         }
 
@@ -258,10 +206,9 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         ulisse_msgs::topicnames::set_boundaries_service, handle_set_boundaries);
 
     // Create a callback function for when service requests are received.
-    auto handle_set_cruise_control = [this](
-            const std::shared_ptr<rmw_request_id_t> request_header,
-            const std::shared_ptr<ulisse_msgs::srv::SetCruiseControl::Request> request,
-            std::shared_ptr<ulisse_msgs::srv::SetCruiseControl::Response> response) -> void {
+    auto handle_set_cruise_control = [this](const std::shared_ptr<rmw_request_id_t> request_header,
+                                         const std::shared_ptr<ulisse_msgs::srv::SetCruiseControl::Request> request,
+                                         std::shared_ptr<ulisse_msgs::srv::SetCruiseControl::Response> response) -> void {
         (void)request_header;
         RCLCPP_INFO(nh_->get_logger(), "Incoming request for set cruise control");
 
@@ -278,39 +225,34 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     };
 
     srv_cruise = nh_->create_service<ulisse_msgs::srv::SetCruiseControl>(
-            ulisse_msgs::topicnames::set_cruise_control_service, handle_set_cruise_control);
-
+        ulisse_msgs::topicnames::set_cruise_control_service, handle_set_cruise_control);
 
     // Create a callback function for when service reset configuration requests are received.
-    auto handle_reset_conf = [this](
-            const std::shared_ptr<rmw_request_id_t> request_header,
-            const std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Request> request,
-            std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Response> response) -> void {
+    auto handle_reset_conf = [this](const std::shared_ptr<rmw_request_id_t> request_header,
+                                 const std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Request> request,
+                                 std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Response> response) -> void {
         (void)request_header;
         RCLCPP_INFO(nh_->get_logger(), "Incoming request for reset conf");
 
         publishLog("Configuration Reset");
-        LoadKCLConfiguration();
+        LoadConfiguration();
 
         response->res = "ResetConfiguration::ok";
     };
 
     srv_reset_conf = nh_->create_service<ulisse_msgs::srv::ResetConfiguration>(
-            ulisse_msgs::topicnames::reset_configuration_service, handle_reset_conf);
-
+        ulisse_msgs::topicnames::reset_configuration_service, handle_reset_conf);
 
     // Create a callback function for when service requests are received.
-    auto handle_get_bounds = [this](
-        const std::shared_ptr<rmw_request_id_t> request_header,
-        const std::shared_ptr<ulisse_msgs::srv::GetBoundaries::Request> request,
-        std::shared_ptr<ulisse_msgs::srv::GetBoundaries::Response> response) -> void {
+    auto handle_get_bounds = [this](const std::shared_ptr<rmw_request_id_t> request_header,
+                                 const std::shared_ptr<ulisse_msgs::srv::GetBoundaries::Request> request,
+                                 std::shared_ptr<ulisse_msgs::srv::GetBoundaries::Response> response) -> void {
         (void)request_header;
         RCLCPP_INFO(nh_->get_logger(), "Incoming request for get boundaries");
 
-        if(boundaries_set){
+        if (boundaries_set) {
             response->res = boundaries_json;
-        }
-        else{
+        } else {
             response->res = "NoBoundSet";
         }
     };
@@ -326,33 +268,37 @@ std::shared_ptr<ControlContext> VehicleController::CtrlContext() const { return 
 int VehicleController::LoadConfiguration()
 {
     LoadControllerConfiguration(conf_, file_name_);
+    std::string task = "Tasks.conf", priorityLevel = "PriorityLevel.conf";
+    LoadKCLConfiguration(task, priorityLevel);
 
     std::cout << tc::grayD << *conf_ << tc::none << std::endl;
 
-//    ctrlCxt_->pidPosition.Initialize(conf_->pidgains_position, sampleTime_, conf_->pidsat_position);
-//    ctrlCxt_->pidHeading.Initialize(conf_->pidgains_heading, sampleTime_, conf_->pidsat_heading);
-//    ctrlCxt_->pidHeading.SetErrorFunction(ctb::HeadingErrorRadFunctor());
+    //    ctrlCxt_->pidPosition.Initialize(conf_->pidgains_position, sampleTime_, conf_->pidsat_position);
+    //    ctrlCxt_->pidHeading.Initialize(conf_->pidgains_heading, sampleTime_, conf_->pidsat_heading);
+    //    ctrlCxt_->pidHeading.SetErrorFunction(ctb::HeadingErrorRadFunctor());
 
     return true;
 }
 
-void VehicleController::publishLog(std::string log){
+void VehicleController::publishLog(std::string log)
+{
     std_msgs::msg::String generic_log_pub_msg;
     generic_log_pub_msg.data = log;
     generic_log_pub_->publish(generic_log_pub_msg);
 }
 
-void VehicleController::LoadKCLConfiguration(){
+void VehicleController::LoadKCLConfiguration(std::string task, std::string priorityLevel)
+{
 
     libconfig::Config confObj;
 
-    // Action Manager initialization
-    std::string homedir;
-    homedir = getenv("HOME");
+    //Inizialization
+    std::string package_share_directory = ament_index_cpp::get_package_share_directory("ulisse_ctrl");
     std::stringstream conf_path;
-    conf_path << homedir << "/ros2_ws/src/ulisse_core/ulisse_ctrl/conf/Tasks.conf";
-
+    conf_path << package_share_directory << "/conf/" << task;
     std::string confPath = conf_path.str().c_str();
+
+    std::cout << "PATH TO CONF FILE : " << confPath << std::endl;
 
     try {
         confObj.readFile(confPath.c_str());
@@ -363,7 +309,7 @@ void VehicleController::LoadKCLConfiguration(){
     }
 
     asv_safety_boundaries->SetBoundaries(confObj.lookup("task.ASV_safety_boundaries.BoundaryMinimumDistance"),
-                                         confObj.lookup("task.ASV_safety_boundaries.BoundaryMaximumDistance"));
+        confObj.lookup("task.ASV_safety_boundaries.BoundaryMaximumDistance"));
     asv_safety_boundaries->SetAlphaMinOnTurning(confObj.lookup("task.ASV_safety_boundaries.AlphaMin"));
     asv_safety_boundaries->SetDesiredSpeedOnTurning(confObj.lookup("task.ASV_safety_boundaries.DesiredSpeed"));
 
@@ -374,20 +320,17 @@ void VehicleController::LoadKCLConfiguration(){
     state_navigate_.SetTolleranceStartingAngle(confObj.lookup("task.PathFollowing.TolleranceStartingAngle"));
     state_navigate_.SetLineOfSightMethod(confObj.lookup("task.PathFollowing.UseLineOfSight"));
 
-    asv_angular_position->SetConfidence(confObj.lookup("task.ASV_angular_position.confidence"));
+    //        asv_angular_position->SetConfidence(confObj.lookup("task.ASV_angular_position.confidence"));
 
     // Action Manager initialization
     std::stringstream conf_path_priority_level;
-    conf_path_priority_level << homedir << "/ros2_ws/src/ulisse_core/ulisse_ctrl/conf/PriorityLevel.conf";
+    conf_path_priority_level << package_share_directory << "/conf/" << priorityLevel;
     InitializeUnifiedHierarchyAndActions(action_manager, taskIDMap, conf_path_priority_level.str().c_str());
 
     // Configure all tasks, each with the correspondent parameters
-    std::stringstream conf_tasks;
-    conf_tasks << homedir << "/ros2_ws/src/ulisse_core/ulisse_ctrl/conf/Tasks.conf";
-    ConfigureEqualityTaskFromFile(equality_task, conf_tasks.str().c_str());
-    ConfigureInequalityTaskFromFile(inequality_task, conf_tasks.str().c_str());
-    ConfigureCartesianTaskFromFile(cartesian_task, conf_tasks.str().c_str());
-    ConfigureActionTaskFromFile(action_task, conf_tasks.str().c_str());
+    ConfigureEqualityTaskFromFile(equality_task, conf_path.str().c_str());
+    ConfigureInequalityTaskFromFile(inequality_task, conf_path.str().c_str());
+    ConfigureCartesianTaskFromFile(cartesian_task, conf_path.str().c_str());
 
     // Set Saturation values for the iCAT (read from conf file)
     int dof = 6;
@@ -415,7 +358,6 @@ void VehicleController::SetUpFSM()
     command_hold_.SetGoalContext(goalCxt_);
     command_hold_.SetControlContext(ctrlCxt_);
     command_hold_.SetStatusContext(statusCxt_);
-    command_hold_.SetAcceptanceRadius(conf_->holdData.defaultRadius);
 
     // LatLong
     command_latlong_.SetFSM(&u_fsm_);
@@ -441,8 +383,6 @@ void VehicleController::SetUpFSM()
     state_halt_.SetActionManager(action_manager);
     state_halt_.SetUnifiedHierarchy(task_hierarchy);
     state_halt_.SetRobotModel(robot_model);
-    state_halt_.SetLinearVelocityTask(asv_control_velocity_linear);
-    state_halt_.SetAngularVelocityTask(asv_control_velocity_angular);
 
     // Hold
     state_hold_.SetFSM(&u_fsm_);
@@ -453,7 +393,8 @@ void VehicleController::SetUpFSM()
     state_hold_.SetActionManager(action_manager);
     state_hold_.SetUnifiedHierarchy(task_hierarchy);
     state_hold_.SetRobotModel(robot_model);
-    state_hold_.SetHoldTask(asv_hold_position);
+    state_hold_.SetLinearVelocityTask(asv_control_velocity_linear);
+    state_hold_.SetAngularPositionTask(asv_angular_position);
 
     // LatLong
     state_latlong_.SetFSM(&u_fsm_);
@@ -466,7 +407,6 @@ void VehicleController::SetUpFSM()
     state_latlong_.SetRobotModel(robot_model);
     state_latlong_.SetDistanceTask(asv_control_distance);
     state_latlong_.SetAngularPositionTask(asv_angular_position);
-    state_latlong_.SetASVHoldTask(asv_hold_position);
 
     // SpeedHeading
     state_speedheading_.SetFSM(&u_fsm_);
@@ -602,12 +542,6 @@ void VehicleController::SetupCommandServer()
             publishLog("Received Command Halt");
         } else if (request->command_type == ulisse::commands::ID::hold) {
             std::cout << "Received Command Hold" << std::endl;
-            ctb::LatLong goal_hold;
-            goal_hold.latitude = statusCxt_->vehiclePos.latitude;
-            goal_hold.longitude = statusCxt_->vehiclePos.longitude;
-            asv_hold_position->SetGoalHold(goal_hold);
-
-            command_hold_.SetAcceptanceRadius(request->hold_cmd.acceptance_radius);
 
             publishLog("Received Command Hold");
         } else if (request->command_type == ulisse::commands::ID::latlong) {
@@ -674,6 +608,28 @@ void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::Share
 
     statusCxt_->seacurrent[0] = msg->current[0];
     statusCxt_->seacurrent[1] = msg->current[1];
+
+    //Linear position in world frame
+    Eigen::Vector3d w_position(statusCxt_->vehiclePos.latitude, statusCxt_->vehiclePos.longitude, 0);
+
+    //Angualr position in world frame
+    rml::EulerRPY rpy;
+    rpy.SetRoll(0);
+    rpy.SetPitch(0);
+    rpy.SetYaw(msg->orientation.yaw);
+
+    Eigen::Vector6d velocity_fbk;
+    velocity_fbk.setZero();
+    velocity_fbk(0) = msg->speed[0];
+    velocity_fbk(1) = msg->speed[1];
+    velocity_fbk(5) = msg->speed[5];
+
+    // Updating the robot model
+    Eigen::TransfMatrix auv_position_transf;
+    auv_position_transf.SetTransl(w_position);
+    auv_position_transf.SetRotMatrix(rpy.ToRotMatrix());
+    robot_model->SetBodyFramePosition(auv_position_transf);
+    robot_model->SetVelocityVector(ulisse::robotModelID::ASV, velocity_fbk);
 }
 
 void VehicleController::LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg)
@@ -697,6 +653,16 @@ void VehicleController::Run()
     // Computing Kinematic Control via TPIK
     y_tpik = solver->ComputeVelocities();
 
+    std::cout << y_tpik << std::endl;
+
+    std::vector<Eigen::VectorXd> tmp = solver->GetDeltaYs();
+
+    //    for (int i=0; i < tmp.size(); i++) {
+
+    //        std::cout << "i: " << i << std::endl;
+    //        std::cout << tmp.at(i).transpose() << std::endl;
+    //    }
+
     //
     for (int i = 0; i < y_tpik.size(); i++) {
         if (std::isnan(y_tpik(i))) {
@@ -705,7 +671,7 @@ void VehicleController::Run()
         }
     }
 
-    if(cruise_ > 0 && y_tpik[3] > cruise_){
+    if (cruise_ > 0 && y_tpik[3] > cruise_) {
         y_tpik[3] = cruise_;
     }
 
@@ -740,11 +706,11 @@ void VehicleController::Run()
         try {
 
             std::vector<double> diagonal_activation_function;
-            for(int i = 0; i < task->GetInternalActivationFunction().rows(); i++){
+            for (unsigned int i = 0; i < task->GetInternalActivationFunction().rows(); i++) {
                 diagonal_activation_function.push_back(task->GetInternalActivationFunction().at(i, i));
             }
             std::vector<double> reference;
-            for(int i = 0; i < task->GetReference().size(); i++){
+            for (unsigned int i = 0; i < task->GetReference().size(); i++) {
                 reference.push_back(task->GetReference().at(i));
             }
 
@@ -752,8 +718,8 @@ void VehicleController::Run()
 
             t_now_ = std::chrono::system_clock::now();
             long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
-            auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / (int)1E9);
-            auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % (int)1E9);
+            auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
+            auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
 
             taskstatus_msg.stamp.sec = now_stamp_secs;
             taskstatus_msg.stamp.nanosec = now_stamp_nanosecs;
@@ -769,7 +735,6 @@ void VehicleController::Run()
             std::cerr << "who " << e.what() << " how: " << e.how() << std::endl;
         }
     }
-
 }
 
 void VehicleController::PublishControl()
@@ -778,8 +743,8 @@ void VehicleController::PublishControl()
 
     t_now_ = std::chrono::system_clock::now();
     long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
-    auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / (int)1E9);
-    auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % (int)1E9);
+    auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
+    auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
 
     statuscxt_msg.stamp.sec = now_stamp_secs;
     statuscxt_msg.stamp.nanosec = now_stamp_nanosecs;
@@ -805,14 +770,6 @@ void VehicleController::PublishControl()
     ulisse_msgs::msg::ControlContext ctrlcxt_msg;
     ctrlcxt_msg.stamp.sec = now_stamp_secs;
     ctrlcxt_msg.stamp.nanosec = now_stamp_nanosecs;
-
-//    ctrlcxt_msg.pidposition.feedback = ctrlCxt_->pidPosition.GetFbk();
-//    ctrlcxt_msg.pidposition.reference = ctrlCxt_->pidPosition.GetRef();
-//    ctrlcxt_msg.pidposition.output = ctrlCxt_->pidPosition.GetOutput();
-
-//    ctrlcxt_msg.pidheading.feedback = ctrlCxt_->pidHeading.GetFbk();
-//    ctrlcxt_msg.pidheading.reference = ctrlCxt_->pidHeading.GetRef();
-//    ctrlcxt_msg.pidheading.output = ctrlCxt_->pidHeading.GetOutput();
 
     ctrlcxt_msg.desired_speed = ctrlCxt_->desiredSurge;
     ctrlcxt_msg.desired_jog = ctrlCxt_->desiredJog;

@@ -5,17 +5,17 @@
 
 #include "std_msgs/msg/string.hpp"
 #include "ulisse_msgs/srv/control_command.hpp"
+#include "ulisse_msgs/srv/reset_configuration.hpp"
 #include "ulisse_msgs/srv/set_boundaries.hpp"
 #include "ulisse_msgs/srv/set_cruise_control.hpp"
-#include "ulisse_msgs/srv/reset_configuration.hpp"
 
 #include "ulisse_msgs/msg/ambient_sensors.hpp"
 #include "ulisse_msgs/msg/compass.hpp"
 #include "ulisse_msgs/msg/control_context.hpp"
-#include "ulisse_msgs/msg/llc_status.hpp"
 #include "ulisse_msgs/msg/goal_context.hpp"
 #include "ulisse_msgs/msg/gps_data.hpp"
 #include "ulisse_msgs/msg/imu_data.hpp"
+#include "ulisse_msgs/msg/llc_status.hpp"
 #include "ulisse_msgs/msg/magnetometer.hpp"
 #include "ulisse_msgs/msg/micro_loop_count.hpp"
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
@@ -27,19 +27,17 @@
 #include <ulisse_ctrl/commands/command_halt.hpp>
 #include <ulisse_ctrl/commands/command_hold.hpp>
 #include <ulisse_ctrl/commands/command_latlong.hpp>
-#include <ulisse_ctrl/commands/command_speedheading.hpp>
 #include <ulisse_ctrl/commands/command_navigate.hpp>
+#include <ulisse_ctrl/commands/command_speedheading.hpp>
 
 #include <ulisse_ctrl/states/state_halt.hpp>
 #include <ulisse_ctrl/states/state_hold.hpp>
 #include <ulisse_ctrl/states/state_latlong.hpp>
-#include <ulisse_ctrl/states/state_speedheading.hpp>
 #include <ulisse_ctrl/states/state_navigate.hpp>
+#include <ulisse_ctrl/states/state_speedheading.hpp>
 
 #include <ulisse_ctrl/events/event_rc_enabled.hpp>
 
-#include <ulisse_ctrl/tasks/AngularPosition.h>
-#include <ulisse_ctrl/tasks/ControlDistance.h>
 #include <ulisse_ctrl/tasks/SafetyBoundaries.h>
 
 #include <ulisse_ctrl/geometry_defines.h>
@@ -47,13 +45,12 @@
 // Libraries
 #include <fsm/fsm.h>
 #include <ikcl/ikcl.h>
+#include <memory.h>
 #include <rml/RML.h>
 #include <tpik/TPIKlib.h>
-#include <memory.h>
-#include <ulisse_ctrl/tasks/MakeCurve.h>
 
-#include "ulisse_msgs/srv/set_boundaries.hpp"
 #include "ulisse_msgs/srv/get_boundaries.hpp"
+#include "ulisse_msgs/srv/set_boundaries.hpp"
 #include <std_msgs/msg/string.hpp>
 
 namespace ulisse {
@@ -76,7 +73,7 @@ class VehicleController {
     rclcpp::Publisher<ulisse_msgs::msg::ControlContext>::SharedPtr ctrlcxt_pub_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr vehiclestate_pub_;
 
-    std::unordered_map<std::string, rclcpp::Publisher<ulisse_msgs::msg::TaskStatus>::SharedPtr > taskLogPublisherMap;
+    std::unordered_map<std::string, rclcpp::Publisher<ulisse_msgs::msg::TaskStatus>::SharedPtr> taskLogPublisherMap;
 
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr generic_log_pub_;
     /// ROBOT MODEL
@@ -87,12 +84,11 @@ class VehicleController {
     std::shared_ptr<tpik::ActionManager> action_manager;
 
     /// Tasks vector for configuration
-    std::vector<std::shared_ptr<tpik::Task> > task_hierarchy;
-    std::vector<std::shared_ptr<tpik::EqualityTask> > equality_task;
-    std::vector<std::shared_ptr<tpik::InequalityTask> > inequality_task;
-    std::vector<std::shared_ptr<tpik::CartesianTask> > cartesian_task;
-    std::vector<std::shared_ptr<tpik::ActionTask> > action_task;
-    std::unordered_map<std::string, std::shared_ptr<tpik::Task> > taskIDMap;
+    std::vector<std::shared_ptr<tpik::Task>> task_hierarchy;
+    std::vector<std::shared_ptr<tpik::EqualityTask>> equality_task;
+    std::vector<std::shared_ptr<tpik::InequalityTask>> inequality_task;
+    std::vector<std::shared_ptr<tpik::CartesianTask>> cartesian_task;
+    std::unordered_map<std::string, std::shared_ptr<tpik::Task>> taskIDMap;
 
     std::shared_ptr<tpik::iCAT> i_cat;
     int dof;
@@ -113,20 +109,16 @@ class VehicleController {
     // ASV HOLD POSITION
     std::shared_ptr<ikcl::Hold> asv_hold_position;
 
-    // ASV LINEAR POSITION GO TO
-    std::shared_ptr<ikcl::ControlCartesianDistance> asv_linear_position_go_to;
-
-    // ASV DIRECTION OF ALIGNMENT
-    std::shared_ptr<ikcl::AlignToTarget> asv_direction_alignment;
+    //    // ASV DIRECTION OF ALIGNMENT
+    //    std::shared_ptr<ikcl::AlignToTarget> asv_direction_alignment;
 
     // ASV ANGULAR POSITION
-    std::shared_ptr<ikcl::AngularPosition> asv_angular_position;
 
-    // ASV MAKE CURVE
-    std::shared_ptr<ikcl::MakeCurve> asv_make_curve;
+    std::shared_ptr<ikcl::AlignToTarget> asv_angular_position;
+//    std::shared_ptr<ikcl::AngularPosition> asv_angular_position;
 
     // ASV CONTROL DISTANCE
-    std::shared_ptr<ikcl::ControlDistance> asv_control_distance;
+    std::shared_ptr<ikcl::ControlCartesianDistance> asv_control_distance;
 
     // ASV SAFETY BOUNDARIES
     std::shared_ptr<ikcl::SafetyBoundaries> asv_safety_boundaries;
@@ -165,7 +157,7 @@ class VehicleController {
     std::string boundaries_json;
 
     int LoadConfiguration();
-    void LoadKCLConfiguration();
+    void LoadKCLConfiguration(std::string task, std::string priorityLevel);
     void SetUpFSM();
     void SetupCommandServer();
 

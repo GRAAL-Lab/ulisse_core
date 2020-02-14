@@ -4,13 +4,9 @@ namespace ulisse {
 
 namespace commands {
 
-    CommandLatLong::CommandLatLong()
-    {
-    }
+    CommandLatLong::CommandLatLong() {}
 
-    CommandLatLong::~CommandLatLong()
-    {
-    }
+    CommandLatLong::~CommandLatLong() {}
 
     fsm::retval CommandLatLong::Execute()
     {
@@ -22,7 +18,6 @@ namespace commands {
         goalCxt_->nextGoal.pos.latitude = latitude;
         goalCxt_->nextGoal.pos.longitude = longitude;
         goalCxt_->nextGoal.acceptRadius = acceptanceRadius;
-
         goalCxt_->currentGoal = goalCxt_->nextGoal;
     }
 }

@@ -11,16 +11,11 @@ namespace states {
 
     class StateHalt : public GenericState {
 
-        std::shared_ptr<ikcl::AngularVelocity> angularVelocityTask_;
-        std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask_;
-
     public:
         StateHalt();
         virtual ~StateHalt();
         virtual fsm::retval OnEntry();
         virtual fsm::retval Execute();
-        void SetAngularVelocityTask(std::shared_ptr<ikcl::AngularVelocity> angularVelocityTask);
-        void SetLinearVelocityTask(std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask);
     };
 }
 }

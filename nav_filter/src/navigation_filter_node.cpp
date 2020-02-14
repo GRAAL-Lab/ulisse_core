@@ -289,6 +289,9 @@ int main(int argc, char* argv[])
                     filterData.orientation = compass.orientation;
                     filterData.accelerometer = imuData.accelerometer;
                     filterData.gyro = imuData.gyro;
+                    //set current to 0 until a corret EKF implementation
+                    filterData.current[0] = 0.0;
+                    filterData.current[1] = 0.0;
 
                     navfilter_pub->publish(filterData);
 

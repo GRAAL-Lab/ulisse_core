@@ -12,7 +12,8 @@ namespace states {
     class StateHold : public GenericState {
 
     protected:
-        std::shared_ptr<ikcl::Hold> holdTask_;
+        std::shared_ptr<ikcl::AlignToTarget> angularPositionTask_;
+        std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask_;
 
     public:
         StateHold();
@@ -21,7 +22,9 @@ namespace states {
         virtual fsm::retval Execute();
         virtual fsm::retval OnExit();
 
-        void SetHoldTask(std::shared_ptr<ikcl::Hold> holdTask);
+        //        void SetHoldTask(std::shared_ptr<ikcl::Hold> holdTask);
+        void SetAngularPositionTask(std::shared_ptr<ikcl::AlignToTarget> angularPositionTask);
+        void SetLinearVelocityTask(std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask);
     };
 }
 }

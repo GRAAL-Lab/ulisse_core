@@ -19,7 +19,7 @@ namespace states {
     {
 }
 
-    void StateSpeedHeading::SetAngularPositionTask(std::shared_ptr<ikcl::AngularPosition> angularPositionTask)
+    void StateSpeedHeading::SetAngularPositionTask(std::shared_ptr<ikcl::AlignToTarget> angularPositionTask)
     {
         angularPositionTask_ = angularPositionTask;
     }
@@ -61,7 +61,7 @@ namespace states {
             fsm_->ExecuteCommand(ulisse::commands::ID::halt);
         }
 
-        angularPositionTask_->SetAngle(Eigen::Vector3d(0, 0, goalCxt_->goalHeading));
+//        angularPositionTask_->SetAngle(Eigen::Vector3d(0, 0, goalCxt_->goalHeading));
         linearVelocityTask_->SetVelocity(Eigen::Vector3d(goalCxt_->goalSurge, 0, 0));
 
         std::cout << "STATE SPEED HEADING " << std::endl;

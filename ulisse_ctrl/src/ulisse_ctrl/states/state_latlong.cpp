@@ -1,6 +1,7 @@
 #include "ulisse_ctrl/states/state_latlong.hpp"
 #include "ctrl_toolbox/HelperFunctions.h"
 #include "ulisse_ctrl/helper_functions.hpp"
+#include <complex>
 
 namespace ulisse {
 
@@ -15,19 +16,14 @@ namespace states {
     {
     }
 
-    void StateLatLong::SetAngularPositionTask(std::shared_ptr<ikcl::AngularPosition> angularPositionTask)
+    void StateLatLong::SetAngularPositionTask(std::shared_ptr<ikcl::AlignToTarget> angularPositionTask)
     {
         angularPositionTask_ = angularPositionTask;
     }
 
-    void StateLatLong::SetDistanceTask(std::shared_ptr<ikcl::ControlDistance> distanceTask)
+    void StateLatLong::SetDistanceTask(std::shared_ptr<ikcl::ControlCartesianDistance> distanceTask)
     {
         distanceTask_ = distanceTask;
-    }
-
-    void StateLatLong::SetASVHoldTask(std::shared_ptr<ikcl::Hold> asvHoldTask)
-    {
-        asvHoldTask_ = asvHoldTask;
     }
 
     void StateLatLong::SetPointGoTo(double latitude, double longitude, double accept_radius)
@@ -35,11 +31,13 @@ namespace states {
         actionManager_->SetAction(ulisse::action::goTo, true);
     }
 
-    void StateLatLong::SetCruiseControl(double cruise){
+    void StateLatLong::SetCruiseControl(double cruise)
+    {
         cruise_ = cruise;
     }
 
-    double StateLatLong::GetCruiseControl(){
+    double StateLatLong::GetCruiseControl()
+    {
         return cruise_;
     }
 
@@ -67,23 +65,21 @@ namespace states {
         if (goalCxt_->goalDistance < goalCxt_->currentGoal.acceptRadius) {
             std::cout << "*** GOAL REACHED! ***" << std::endl;
             if (conf_->goToHoldAfterMove) {
-                asvHoldTask_->SetGoalHold(goalCxt_->currentGoal.pos);
                 fsm_->ExecuteCommand(ulisse::commands::ID::hold);
             } else {
                 fsm_->ExecuteCommand(ulisse::commands::ID::halt);
             }
-        }
-        else {
-            angularPositionTask_->SetAngle(Eigen::Vector3d(0, 0, goalCxt_->goalHeading));
+        } else {
 
-            linear_velocity = goalCxt_->goalDistance;
+            // angularPositionTask_->SetAngle(Eigen::Vector3d(0, 0, goalCxt_->goalHeading));
+            distanceTask_->SetDistance(Eigen::Vector3d(goalCxt_->goalDistance * cos(goalCxt_->goalHeading), goalCxt_->goalDistance * sin(goalCxt_->goalHeading), 0), rml::FrameID::WorldFrame);
 
-            distanceTask_->SetDistance(Eigen::Vector3d(linear_velocity, 0, 0));
+            angularPositionTask_->SetDistanceToTarget(Eigen::Vector3d(goalCxt_->goalDistance * cos(goalCxt_->goalHeading), goalCxt_->goalDistance * sin(goalCxt_->goalHeading), 0), rml::FrameID::WorldFrame);
+            angularPositionTask_->SetAlignmentAxis(Eigen::Vector3d(1, 0, 0));
         }
 
         std::cout << "STATE LATLONG" << std::endl;
         std::cout << "Goal Heading: " << goalCxt_->goalHeading << std::endl;
-        std::cout << "Linear Velocity: " << linear_velocity << std::endl;
         std::cout << "Goal Distance: " << goalCxt_->goalDistance << std::endl;
         std::cout << "Acceptance radius:" << goalCxt_->currentGoal.acceptRadius << std::endl;
 

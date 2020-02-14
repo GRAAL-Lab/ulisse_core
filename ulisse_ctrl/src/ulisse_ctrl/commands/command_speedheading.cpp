@@ -4,13 +4,9 @@ namespace ulisse {
 
 namespace commands {
 
-    CommandSpeedHeading::CommandSpeedHeading()
-    {
-    }
+    CommandSpeedHeading::CommandSpeedHeading() {}
 
-    CommandSpeedHeading::~CommandSpeedHeading()
-    {
-    }
+    CommandSpeedHeading::~CommandSpeedHeading() {}
 
     fsm::retval CommandSpeedHeading::Execute()
     {

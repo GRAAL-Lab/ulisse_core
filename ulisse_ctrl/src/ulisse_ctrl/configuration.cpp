@@ -40,23 +40,26 @@ bool FindVectorConfFile(std::string property, Eigen::VectorXd& vector, const std
     }
 }
 
-bool InitializeUnifiedHierarchyAndActions(std::shared_ptr<tpik::ActionManager> actionManager,
-    std::unordered_map<std::string, std::shared_ptr<tpik::Task>> taskIDMap, std::string confPath)
+bool InitializeUnifiedHierarchyAndActions(std::shared_ptr<tpik::ActionManager> actionManager, std::unordered_map<std::string, std::shared_ptr<tpik::Task>> taskIDMap, std::string confPath)
 {
-    for (int i = 0; i < ulisse::priorityLevelID::unified_hierarchy.size(); i++) {
+    // 1:1 mapping each priority level with the corresponing task
+    for (size_t i = 0; i < ulisse::priorityLevelID::unified_hierarchy.size(); i++) {
         rml::RegularizationData regularization_data;
         std::string PLID = ulisse::priorityLevelID::unified_hierarchy.at(i);
+        //if the task is in the file
         if (GetPriorityLevelRegularizationDataFromFile(PLID, confPath, &regularization_data, ulisse::priorityLevelParameter::priorityLevel)) {
+            //Inizialized the PL with data
             actionManager->AddPriorityLevelWithRegularization(PLID, regularization_data);
             std::cout << "ADD TASK " << ulisse::task::unified_hierarchy.at(i) << std::endl;
+            //Add the task to the proper level
             actionManager->AddTaskToPriorityLevel(taskIDMap.at(ulisse::task::unified_hierarchy.at(i)), PLID);
         }
     }
 
     actionManager->SetUnifiedHierarchy(ulisse::priorityLevelID::unified_hierarchy);
+
     try {
         actionManager->AddAction(ulisse::action::idle, ulisse::action::idlePriorityLevels);
-        actionManager->AddAction(ulisse::action::orient, ulisse::action::orientPriorityLevels);
         actionManager->AddAction(ulisse::action::speed_heading, ulisse::action::speed_headingPriorityLevels);
         actionManager->AddAction(ulisse::action::goTo, ulisse::action::goToPriorityLevels);
         actionManager->AddAction(ulisse::action::hold, ulisse::action::holdPriorityLevels);
@@ -71,10 +74,7 @@ bool InitializeUnifiedHierarchyAndActions(std::shared_ptr<tpik::ActionManager> a
     }
 }
 
-bool GetPriorityLevelRegularizationDataFromFile //KCL
-    (
-        const std::string ID, const std::string confPath,
-        rml::RegularizationData* regularizationData, const std::string propertyID)
+bool GetPriorityLevelRegularizationDataFromFile(const std::string ID, const std::string confPath, rml::RegularizationData* regularizationData, const std::string propertyID)
 {
     libconfig::Config confObj;
     try {
@@ -315,35 +315,6 @@ void ConfigureCartesianTaskFromFile(std::vector<std::shared_ptr<tpik::CartesianT
     }
 }
 
-void ConfigureActionTaskFromFile(std::vector<std::shared_ptr<tpik::ActionTask>> taskVector, const std::string confPath)
-{
-    for (auto& task : taskVector) {
-        libconfig::Config confObj;
-        try {
-            confObj.readFile(confPath.c_str());
-        } catch (libconfig::ParseException& e) {
-            std::cerr << "Parse exception when reading:" << confPath << std::endl;
-            std::cerr << "line: " << e.getLine() << " error: " << e.getError() << std::endl;
-        }
-
-        try {
-
-            std::string taskID = ulisse::task::task + "." + task->GetID();
-            tpik::TaskParameter taskParameter;
-            std::string lookUpTaskEnable = taskID + "." + ulisse::taskParameter::taskEnable;
-            taskParameter.taskEnable = confObj.lookup(lookUpTaskEnable.c_str());
-            task->SetTaskParameter(taskParameter);
-
-        } catch (libconfig::SettingException& e) {
-            std::cerr << "Setting exception:" << std::endl;
-            std::cerr << "path: " << e.getPath() << " what: " << e.what() << std::endl;
-
-        } catch (libconfig::ConfigException& e) {
-            std::cerr << "Config exception:" << std::endl;
-            std::cerr << "what: " << e.what() << std::endl;
-        }
-    }
-}
 
 bool GetVectorEigen(const std::string confPath, const std::string property,
     Eigen::VectorXd& out)
