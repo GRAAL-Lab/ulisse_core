@@ -34,20 +34,9 @@ namespace states {
 
     StateNavigate::~StateNavigate() {}
 
-    void StateNavigate::SetAngularVelocityTask(std::shared_ptr<ikcl::AngularVelocity> angularVelocityTask)
-    {
-        angularVelocityTask_ = angularVelocityTask;
-    }
-
     void StateNavigate::SetAngularPositionTask(std::shared_ptr<ikcl::AlignToTarget> angularPositionTask)
     {
         angularPositionTask_ = angularPositionTask;
-    }
-
-    void StateNavigate::SetLinearVelocityTask(
-        std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask)
-    {
-        linearVelocityTask_ = linearVelocityTask;
     }
 
     void StateNavigate::SetDistanceTask(
@@ -321,9 +310,9 @@ namespace states {
                         start = true;
                     }
                 } else {
-                    //                    angularPositionTask_->SetAngle(
-                    //                        Eigen::Vector3d(0, 0, goalCxt_->goalHeading));
-                    distanceTask_->SetDistance(Eigen::Vector3d(goalCxt_->goalDistance, 0, 0), robotModel_->GetBodyFrameID());
+                    angularPositionTask_->SetAlignmentAxis(Eigen::Vector3d(1, 0, 0));
+                    angularPositionTask_->SetDistanceToTarget(Eigen::Vector3d(goalCxt_->goalDistance * cos(goalCxt_->goalHeading), goalCxt_->goalDistance * sin(goalCxt_->goalHeading), 0), rml::FrameID::WorldFrame);
+                    distanceTask_->SetDistance(Eigen::Vector3d(goalCxt_->goalDistance * cos(goalCxt_->goalHeading), goalCxt_->goalDistance * sin(goalCxt_->goalHeading), 0), rml::FrameID::WorldFrame);
                 }
             }
             if (start && !oriented) {
@@ -335,9 +324,10 @@ namespace states {
                         oriented = true;
                     }
                 } else {
-                    //                    angularPositionTask_->SetAngle(Eigen::Vector3d(0, 0, starting_angle));
+                    angularPositionTask_->SetAlignmentAxis(Eigen::Vector3d(1, 0, 0));
+                    angularPositionTask_->SetDistanceToTarget(Eigen::Vector3d(cos(starting_angle), sin(starting_angle), 0), rml::FrameID::WorldFrame);
                 }
-                distanceTask_->SetDistance(Eigen::Vector3d(0, 0, 0), robotModel_->GetBodyFrameID());
+                distanceTask_->SetDistance(Eigen::Vector3d::Zero(), rml::FrameID::WorldFrame);
             }
 
             else if (start && oriented) {
@@ -395,13 +385,11 @@ namespace states {
 
                         lookAheadPoint = to_lat_long(point_at[0], point_at[1]);
                     }
-                    ctb::DistanceAndAzimuthRad(statusCxt_->vehiclePos, lookAheadPoint,
-                        goalCxt_->goalDistance,
-                        goalCxt_->goalHeading);
+                    ctb::DistanceAndAzimuthRad(statusCxt_->vehiclePos, lookAheadPoint, goalCxt_->goalDistance, goalCxt_->goalHeading);
 
-                    //                    angularPositionTask_->SetAngle(Eigen::Vector3d(0, 0, goalCxt_->goalHeading));
+                    angularPositionTask_->SetAlignmentAxis(Eigen::Vector3d(1, 0, 0));
+                    angularPositionTask_->SetDistanceToTarget(Eigen::Vector3d(goalCxt_->goalDistance * cos(goalCxt_->goalHeading), goalCxt_->goalDistance * sin(goalCxt_->goalHeading), 0), rml::FrameID::WorldFrame);
                     distanceTask_.reset();
-                    linearVelocityTask_->SetVelocity(Eigen::Vector3d(cruise, 0, 0));
                 }
             }
         }

@@ -103,13 +103,8 @@ class VehicleController {
     // ASV CONTROL VELOCITY LINEAR
     std::shared_ptr<ikcl::LinearVelocity> asv_control_velocity_linear;
 
-    // ASV CONTROL VELOCITY ANGULAR
-    std::shared_ptr<ikcl::AngularVelocity> asv_control_velocity_angular;
-
     // ASV ANGULAR POSITION
-
     std::shared_ptr<ikcl::AlignToTarget> asv_angular_position;
-//    std::shared_ptr<ikcl::AngularPosition> asv_angular_position;
 
     // ASV CONTROL DISTANCE
     std::shared_ptr<ikcl::ControlCartesianDistance> asv_control_distance;

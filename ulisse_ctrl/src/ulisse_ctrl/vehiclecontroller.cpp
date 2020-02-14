@@ -85,14 +85,6 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     taskIDMap.insert(std::make_pair(ulisse::task::asv_control_velocity_linear, asv_control_velocity_linear));
     taskLogPublisherMap.insert(std::make_pair(ulisse::task::asv_control_velocity_linear, nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_control_velocity_linear", 10)));
 
-    // AUV CONTROL VELOCITY ANGULAR
-    asv_control_velocity_angular = std::make_shared<ikcl::AngularVelocity>(ikcl::AngularVelocity(ulisse::task::asv_control_velocity_angular, robot_model, ulisse::robotModelID::ASV));
-    asv_control_velocity_angular->SetVelocity(Eigen::VectorXd::Zero(3));
-    equality_task.push_back(asv_control_velocity_angular);
-    task_hierarchy.push_back(asv_control_velocity_angular);
-    taskIDMap.insert(std::make_pair(ulisse::task::asv_control_velocity_angular, asv_control_velocity_angular));
-    taskLogPublisherMap.insert(std::make_pair(ulisse::task::asv_control_velocity_angular, nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_control_velocity_angular", 10)));
-
     // AUV CONTROL ANGULAR POSITION
     asv_angular_position = std::make_shared<ikcl::AlignToTarget>(ikcl::AlignToTarget(ulisse::task::asv_angular_position, robot_model, ulisse::robotModelID::ASV, tpik::CartesianTaskType::Equality, tpik::ProjectorType::Default));
     asv_angular_position->SetAlignmentAxis(Eigen::VectorXd::Zero(3));
@@ -425,8 +417,6 @@ void VehicleController::SetUpFSM()
     state_navigate_.SetActionManager(action_manager);
     state_navigate_.SetUnifiedHierarchy(task_hierarchy);
     state_navigate_.SetRobotModel(robot_model);
-    state_navigate_.SetLinearVelocityTask(asv_control_velocity_linear);
-    state_navigate_.SetAngularVelocityTask(asv_control_velocity_angular);
     state_navigate_.SetAngularPositionTask(asv_angular_position);
     state_navigate_.SetDistanceTask(asv_control_distance);
 
