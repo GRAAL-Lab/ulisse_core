@@ -56,11 +56,6 @@ namespace states {
         distanceTask_ = distanceTask;
     }
 
-    void StateNavigate::SetASVHoldTask(std::shared_ptr<ikcl::Hold> asvHoldTask)
-    {
-        asvHoldTask_ = asvHoldTask;
-    }
-
     void StateNavigate::SetMaxRangeAbscissa(double max_range)
     {
         max_range_abscissa = max_range;
@@ -326,8 +321,8 @@ namespace states {
                         start = true;
                     }
                 } else {
-//                    angularPositionTask_->SetAngle(
-//                        Eigen::Vector3d(0, 0, goalCxt_->goalHeading));
+                    //                    angularPositionTask_->SetAngle(
+                    //                        Eigen::Vector3d(0, 0, goalCxt_->goalHeading));
                     distanceTask_->SetDistance(Eigen::Vector3d(goalCxt_->goalDistance, 0, 0), robotModel_->GetBodyFrameID());
                 }
             }
@@ -340,7 +335,7 @@ namespace states {
                         oriented = true;
                     }
                 } else {
-//                    angularPositionTask_->SetAngle(Eigen::Vector3d(0, 0, starting_angle));
+                    //                    angularPositionTask_->SetAngle(Eigen::Vector3d(0, 0, starting_angle));
                 }
                 distanceTask_->SetDistance(Eigen::Vector3d(0, 0, 0), robotModel_->GetBodyFrameID());
             }
@@ -354,7 +349,6 @@ namespace states {
                 if (curvilinear_abscissa >= number_of_curves_) {
                     std::cout << "*** MISSION FINISHED! ***" << std::endl;
                     isCurveSet = false;
-                    asvHoldTask_->SetGoalHold(end_point);
                     fsm_->ExecuteCommand(ulisse::commands::ID::hold);
                 } else {
                     current_curve = floor(curvilinear_abscissa);
@@ -405,7 +399,7 @@ namespace states {
                         goalCxt_->goalDistance,
                         goalCxt_->goalHeading);
 
-//                    angularPositionTask_->SetAngle(Eigen::Vector3d(0, 0, goalCxt_->goalHeading));
+                    //                    angularPositionTask_->SetAngle(Eigen::Vector3d(0, 0, goalCxt_->goalHeading));
                     distanceTask_.reset();
                     linearVelocityTask_->SetVelocity(Eigen::Vector3d(cruise, 0, 0));
                 }

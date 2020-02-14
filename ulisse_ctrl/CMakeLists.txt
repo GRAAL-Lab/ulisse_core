@@ -74,12 +74,8 @@ set(ulisse_ctrl_lib_sources
     src/ulisse_ctrl/events/generic_event.cpp
     src/ulisse_ctrl/events/event_rc_enabled.cpp
     # TASKS
-#    src/ulisse_ctrl/tasks/ActionTask.cpp
     src/ulisse_ctrl/tasks/SafetyBoundaries.cpp
-    src/ulisse_ctrl/tasks/AngularPosition.cpp
-#    src/ulisse_ctrl/tasks/ControlDistance.cpp
-#    src/ulisse_ctrl/tasks/MakeCurve.cpp
-    src/ulisse_ctrl/tasks/Hold.cpp
+
 
         )
 

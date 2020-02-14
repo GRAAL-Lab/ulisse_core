@@ -19,10 +19,8 @@ namespace states {
 
     protected:
         std::shared_ptr<ikcl::AlignToTarget> angularPositionTask_;
-//        std::shared_ptr<ikcl::AngularPosition> angularPositionTask_;
         std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask_;
         std::shared_ptr<ikcl::AngularVelocity> angularVelocityTask_;
-        std::shared_ptr<ikcl::Hold> asvHoldTask_;
         std::shared_ptr<ikcl::ControlCartesianDistance> distanceTask_;
 
         ctb::LatLong centroid_;
@@ -86,7 +84,6 @@ namespace states {
 
         void SetAngularPositionTask(std::shared_ptr<ikcl::AlignToTarget> angularPositionTask);
         void SetLinearVelocityTask(std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask);
-        void SetASVHoldTask(std::shared_ptr<ikcl::Hold> asvHoldTask);
         void SetAngularVelocityTask(std::shared_ptr<ikcl::AngularVelocity> angularVelocityTask);
         void SetDistanceTask(std::shared_ptr<ikcl::ControlCartesianDistance> distanceTask);
 

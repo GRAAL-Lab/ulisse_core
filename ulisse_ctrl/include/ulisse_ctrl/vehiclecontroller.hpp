@@ -106,12 +106,6 @@ class VehicleController {
     // ASV CONTROL VELOCITY ANGULAR
     std::shared_ptr<ikcl::AngularVelocity> asv_control_velocity_angular;
 
-    // ASV HOLD POSITION
-    std::shared_ptr<ikcl::Hold> asv_hold_position;
-
-    //    // ASV DIRECTION OF ALIGNMENT
-    //    std::shared_ptr<ikcl::AlignToTarget> asv_direction_alignment;
-
     // ASV ANGULAR POSITION
 
     std::shared_ptr<ikcl::AlignToTarget> asv_angular_position;

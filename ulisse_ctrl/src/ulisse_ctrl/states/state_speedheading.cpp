@@ -11,13 +11,9 @@ namespace states {
         t_start_ = std::chrono::system_clock::now();
     }
 
-    StateSpeedHeading::StateSpeedHeading()
-    {
-    }
+    StateSpeedHeading::StateSpeedHeading() {}
 
-    StateSpeedHeading::~StateSpeedHeading()
-    {
-}
+    StateSpeedHeading::~StateSpeedHeading() {}
 
     void StateSpeedHeading::SetAngularPositionTask(std::shared_ptr<ikcl::AlignToTarget> angularPositionTask)
     {
@@ -27,10 +23,6 @@ namespace states {
     void StateSpeedHeading::SetLinearVelocityTask(std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask)
     {
         linearVelocityTask_ = linearVelocityTask;
-    }
-
-    void StateSpeedHeading::SetSurgeRef(double surge){
-        surgeRef = surge;
     }
 
     fsm::retval StateSpeedHeading::OnEntry()
@@ -61,7 +53,8 @@ namespace states {
             fsm_->ExecuteCommand(ulisse::commands::ID::halt);
         }
 
-//        angularPositionTask_->SetAngle(Eigen::Vector3d(0, 0, goalCxt_->goalHeading));
+        angularPositionTask_->SetAlignmentAxis(Eigen::Vector3d(1,0,0));
+        angularPositionTask_->SetDistanceToTarget(Eigen::Vector3d(cos(goalCxt_->goalHeading),sin(goalCxt_->goalHeading),0), rml::FrameID::WorldFrame);
         linearVelocityTask_->SetVelocity(Eigen::Vector3d(goalCxt_->goalSurge, 0, 0));
 
         std::cout << "STATE SPEED HEADING " << std::endl;

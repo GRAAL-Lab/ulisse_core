@@ -18,7 +18,6 @@ namespace commands {
         goalCxt_->goalSurge = speed;
         goalCxt_->goalHeading = heading;
         goalCxt_->cmdTimeout = timeout_sec;
-
         goalCxt_->goalDistance = 0.0;
     }
 }

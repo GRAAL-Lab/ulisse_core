@@ -273,10 +273,6 @@ int VehicleController::LoadConfiguration()
 
     std::cout << tc::grayD << *conf_ << tc::none << std::endl;
 
-    //    ctrlCxt_->pidPosition.Initialize(conf_->pidgains_position, sampleTime_, conf_->pidsat_position);
-    //    ctrlCxt_->pidHeading.Initialize(conf_->pidgains_heading, sampleTime_, conf_->pidsat_heading);
-    //    ctrlCxt_->pidHeading.SetErrorFunction(ctb::HeadingErrorRadFunctor());
-
     return true;
 }
 
@@ -432,7 +428,6 @@ void VehicleController::SetUpFSM()
     state_navigate_.SetLinearVelocityTask(asv_control_velocity_linear);
     state_navigate_.SetAngularVelocityTask(asv_control_velocity_angular);
     state_navigate_.SetAngularPositionTask(asv_angular_position);
-    state_navigate_.SetASVHoldTask(asv_hold_position);
     state_navigate_.SetDistanceTask(asv_control_distance);
 
     // ***** EVENTS *****
@@ -555,7 +550,6 @@ void VehicleController::SetupCommandServer()
             publishLog(log.str().c_str());
         } else if (request->command_type == ulisse::commands::ID::speedheading) {
             std::cout << "Received Command SpeedHeading" << std::endl;
-            state_speedheading_.SetSurgeRef(request->sh_cmd.speed);
             command_speedheading_.SetGoal(request->sh_cmd.speed, request->sh_cmd.heading, request->sh_cmd.timeout.sec);
             state_speedheading_.ResetTimer();
 

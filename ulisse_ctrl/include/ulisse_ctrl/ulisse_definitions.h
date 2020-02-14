@@ -11,14 +11,12 @@ namespace task {
     const std::string task = "task";
     const std::string asv_control_velocity_linear = "ASV_control_velocity_linear";
     const std::string asv_control_velocity_angular = "ASV_control_velocity_angular";
-//    const std::string asv_hold_position = "ASV_hold_position";
     const std::string asv_angular_position = "ASV_angular_position";
     const std::string asv_control_distance = "ASV_control_distance";
     const std::string asv_safety_boundaries = "ASV_safety_boundaries";
 
     const std::vector<std::string> unified_hierarchy = {
         asv_safety_boundaries,
-//        asv_hold_position,
         asv_angular_position,
         asv_control_velocity_angular,
         asv_control_distance,
@@ -46,10 +44,8 @@ namespace priorityLevelID {
     const std::string asv_control_velocity_angular = "ASV_control_velocity_angular_PL";
     const std::string asv_control_position_angular = "ASV_control_position_angular_PL";
     const std::string asv_control_distance = "ASV_control_distance_PL";
-//    const std::string asv_hold_position = "ASV_hold_position_PL";
     const std::vector<std::string> unified_hierarchy = {
         asv_safety_boundaries,
-//        asv_hold_position,
         asv_control_position_angular,
         asv_control_velocity_angular,
         asv_control_distance,
