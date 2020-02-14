@@ -207,7 +207,7 @@ template <typename Point>
 desired_target SafetyBoundaries::distance_check(Point const& p)
 {
     desired_target target_value = { 0.0, 0.0, 0.0 };
-    double d, d_p1, d_p2, tmp_d;
+    double d, d_p1, d_p2;
     double m, x_2, y_2, theta;
     std::deque<point_type> output;
     linestring_type l1, l2;
@@ -217,7 +217,7 @@ desired_target SafetyBoundaries::distance_check(Point const& p)
     nearest_p.set<0>(0.0);
     nearest_p.set<1>(0.0);
 
-    min_d = INFINITY;
+    min_d = static_cast<double>(INFINITY) ;
     first = true;
 
     double count = 0.0;
@@ -252,7 +252,7 @@ desired_target SafetyBoundaries::distance_check(Point const& p)
                 y_max = boost::geometry::get<1>(p1) > boost::geometry::get<1>(p2) ? boost::geometry::get<1>(p1)
                                                                                   : boost::geometry::get<1>(p2);
 
-                if (boost::geometry::get<0>(p) < x_max && boost::geometry::get<0>(p) > x_min || boost::geometry::get<0>(p) < y_max && boost::geometry::get<0>(p) > y_min) {
+                if ((boost::geometry::get<0>(p) < x_max && boost::geometry::get<0>(p) > x_min) || (boost::geometry::get<0>(p) < y_max && boost::geometry::get<0>(p) > y_min)) {
                     d = boost::geometry::distance(p, i, boost::geometry::strategy::distance::projected_point<>{});
 
                     m = (boost::geometry::get<1>(p2) - boost::geometry::get<1>(p1)) / (boost::geometry::get<0>(p2) - boost::geometry::get<0>(p1));
@@ -312,7 +312,7 @@ desired_target SafetyBoundaries::distance_check(Point const& p)
                 y_max = boost::geometry::get<1>(p1) > boost::geometry::get<1>(p2) ? boost::geometry::get<1>(p1)
                                                                                   : boost::geometry::get<1>(p2);
 
-                if (boost::geometry::get<0>(p) < x_max && boost::geometry::get<0>(p) > x_min || boost::geometry::get<0>(p) < y_max && boost::geometry::get<0>(p) > y_min) {
+                if ((boost::geometry::get<0>(p) < x_max && boost::geometry::get<0>(p) > x_min)|| (boost::geometry::get<0>(p) < y_max && boost::geometry::get<0>(p) > y_min)) {
                     d = boost::geometry::distance(p, i, boost::geometry::strategy::distance::projected_point<>{});
 
                     m = (boost::geometry::get<1>(p2) - boost::geometry::get<1>(p1)) / (boost::geometry::get<0>(p2) - boost::geometry::get<0>(p1));
@@ -357,7 +357,7 @@ desired_target SafetyBoundaries::distance_check(Point const& p)
         }
     }
 
-    if (min_d < INFINITY) {
+    if (min_d < static_cast<double>(INFINITY)) {
         // return these values: target(x,y) and "gain"
         theta = atan2(boost::geometry::get<1>(p) - (boost::geometry::get<1>(nearest_p) / count), boost::geometry::get<0>(p) - (boost::geometry::get<0>(nearest_p) / count));
 

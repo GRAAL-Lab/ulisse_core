@@ -194,8 +194,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         publishLog(log.str().c_str());
     };
 
-    srv_boundaries = nh_->create_service<ulisse_msgs::srv::SetBoundaries>(
-        ulisse_msgs::topicnames::set_boundaries_service, handle_set_boundaries);
+    srv_boundaries = nh_->create_service<ulisse_msgs::srv::SetBoundaries>(ulisse_msgs::topicnames::set_boundaries_service, handle_set_boundaries);
 
     // Create a callback function for when service requests are received.
     auto handle_set_cruise_control = [this](const std::shared_ptr<rmw_request_id_t> request_header,
@@ -307,8 +306,6 @@ void VehicleController::LoadKCLConfiguration(std::string task, std::string prior
     state_navigate_.SetTolleranceEndingPoint(confObj.lookup("task.PathFollowing.TolleranceEndingPoint"));
     state_navigate_.SetTolleranceStartingAngle(confObj.lookup("task.PathFollowing.TolleranceStartingAngle"));
     state_navigate_.SetLineOfSightMethod(confObj.lookup("task.PathFollowing.UseLineOfSight"));
-
-    //        asv_angular_position->SetConfidence(confObj.lookup("task.ASV_angular_position.confidence"));
 
     // Action Manager initialization
     std::stringstream conf_path_priority_level;

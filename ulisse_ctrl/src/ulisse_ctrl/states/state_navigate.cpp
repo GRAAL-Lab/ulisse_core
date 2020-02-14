@@ -39,8 +39,7 @@ namespace states {
         angularPositionTask_ = angularPositionTask;
     }
 
-    void StateNavigate::SetDistanceTask(
-        std::shared_ptr<ikcl::ControlCartesianDistance> distanceTask)
+    void StateNavigate::SetDistanceTask(std::shared_ptr<ikcl::ControlCartesianDistance> distanceTask)
     {
         distanceTask_ = distanceTask;
     }
@@ -300,8 +299,7 @@ namespace states {
         if (isCurveSet) {
             if (!start) {
                 std::cout << "*** GOING TO INITIAL POINT! ***" << std::endl;
-                ctb::DistanceAndAzimuthRad(statusCxt_->vehiclePos, starting_point,
-                    goalCxt_->goalDistance, goalCxt_->goalHeading);
+                ctb::DistanceAndAzimuthRad(statusCxt_->vehiclePos, starting_point, goalCxt_->goalDistance, goalCxt_->goalHeading);
 
                 if (goalCxt_->goalDistance < tollerance_start_point) {
                     count++;
