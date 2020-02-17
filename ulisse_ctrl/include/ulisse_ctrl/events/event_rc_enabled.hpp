@@ -4,21 +4,18 @@
 
 #include "ulisse_ctrl/events/generic_event.hpp"
 
-namespace ulisse
-{
+namespace ulisse {
 
-namespace events
-{
+namespace events {
 
-class EventRCEnabled : public GenericEvent {
-public:
-    EventRCEnabled(void) {}
-    virtual ~EventRCEnabled(void) {}
-    virtual fsm::retval Execute(void);
-};
+    class EventRCEnabled : public GenericEvent {
+    public:
+        EventRCEnabled(void) {}
+        virtual ~EventRCEnabled(void) {}
+        virtual fsm::retval Execute(void);
+    };
 
 } // namespace events
-
 
 } // namespace ulisse
 

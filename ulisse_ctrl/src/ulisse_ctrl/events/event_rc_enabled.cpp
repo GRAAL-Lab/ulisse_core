@@ -1,22 +1,19 @@
 #include "ulisse_ctrl/events/event_rc_enabled.hpp"
 
-namespace ulisse
-{
+namespace ulisse {
 
-namespace events
-{
+namespace events {
 
-fsm::retval EventRCEnabled::Execute() {
+    fsm::retval EventRCEnabled::Execute()
+    {
 
-    std::cout << "RC Controller Detected: Halting!" << std::endl;
+        std::cout << "RC Controller Detected: Halting!" << std::endl;
 
-    fsm_->SetNextState(ulisse::states::ID::halt);
+        fsm_->SetNextState(ulisse::states::ID::halt);
 
-    return fsm::retval::ok;
-}
+        return fsm::retval::ok;
+    }
 
 } // namespace events
 
 } // namespace ulisse
-
-

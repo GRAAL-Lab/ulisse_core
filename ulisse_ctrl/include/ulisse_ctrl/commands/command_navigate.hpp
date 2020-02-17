@@ -14,8 +14,6 @@ namespace commands {
         CommandNavigate();
         virtual ~CommandNavigate();
         virtual fsm::retval Execute();
-
-
     };
 }
 }

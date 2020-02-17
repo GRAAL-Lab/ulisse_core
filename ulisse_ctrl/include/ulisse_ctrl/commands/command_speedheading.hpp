@@ -15,7 +15,6 @@ namespace commands {
         virtual ~CommandSpeedHeading();
         virtual fsm::retval Execute(void);
         void SetGoal(double speed, double heading, uint timeout_sec);
-
     };
 }
 }

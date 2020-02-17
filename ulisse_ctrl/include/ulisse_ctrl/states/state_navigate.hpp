@@ -23,13 +23,13 @@ namespace states {
 
         ctb::LatLong centroid_;
 
-        int number_of_curves_;
+        unsigned int number_of_curves_;
 
         double curvilinear_abscissa;
 
         double current_curvilinear_abscissa;
         double delta_;
-        int current_curve;
+        unsigned int current_curve;
 
         bool isCurveSet;
         bool start;

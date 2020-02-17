@@ -315,7 +315,6 @@ void ConfigureCartesianTaskFromFile(std::vector<std::shared_ptr<tpik::CartesianT
     }
 }
 
-
 bool GetVectorEigen(const std::string confPath, const std::string property,
     Eigen::VectorXd& out)
 {

@@ -137,8 +137,8 @@ namespace states {
 
         int dimension = 3;
         int degree = 0;
-        int cv_count = 0;
-        int knot_count = 0;
+        unsigned int cv_count = 0;
+        unsigned int knot_count = 0;
 
         double x, y;
         int count = 0;
@@ -195,7 +195,7 @@ namespace states {
                 }
 
                 SISLCurve* insert_curve = newCurve(
-                    cv_count, // number of control points
+                    static_cast<int>(cv_count), // number of control points
                     degree + 1, // order of spline curve (degree + 1)
                     knots, // pointer to knot vector (parametrization)
                     control_points, // pointer to coefficient vector (control points)
@@ -260,15 +260,6 @@ namespace states {
 
         end_point = to_lat_long(point_at[0], point_at[1]);
 
-        curve = nurbs_[0];
-        // Compute the point of the first curve at 0.1.
-        s1227(curve, 0, 0.1, &leftknot, point_at, &stat);
-
-        ctb::LatLong next_point = to_lat_long(point_at[0], point_at[1]);
-
-        double dist;
-        ctb::DistanceAndAzimuthRad(starting_point, next_point, dist, starting_angle);
-
         for (current_curve = 0; current_curve < nurbs_.size(); current_curve++) {
             curve = nurbs_[current_curve];
 
@@ -297,6 +288,7 @@ namespace states {
         }
 
         if (isCurveSet) {
+            //Going to the starting point
             if (!start) {
                 std::cout << "*** GOING TO INITIAL POINT! ***" << std::endl;
                 ctb::DistanceAndAzimuthRad(statusCxt_->vehiclePos, starting_point, goalCxt_->goalDistance, goalCxt_->goalHeading);
@@ -313,24 +305,8 @@ namespace states {
                     distanceTask_->SetDistance(Eigen::Vector3d(goalCxt_->goalDistance * cos(goalCxt_->goalHeading), goalCxt_->goalDistance * sin(goalCxt_->goalHeading), 0), rml::FrameID::WorldFrame);
                 }
             }
-            if (start && !oriented) {
-                std::cout << "*** ORIENTING! ***" << std::endl;
-                if (abs(statusCxt_->vehicleHeading - starting_angle) < tollerance_start_angle) {
-                    count++;
-                    if (count > 50) {
-                        count = 0;
-                        oriented = true;
-                    }
-                } else {
-                    angularPositionTask_->SetAlignmentAxis(Eigen::Vector3d(1, 0, 0));
-                    angularPositionTask_->SetDistanceToTarget(Eigen::Vector3d(cos(starting_angle), sin(starting_angle), 0), rml::FrameID::WorldFrame);
-                }
-                distanceTask_->SetDistance(Eigen::Vector3d::Zero(), rml::FrameID::WorldFrame);
-            }
-
-            else if (start && oriented) {
-                ctb::DistanceAndAzimuthRad(statusCxt_->vehiclePos, end_point,
-                    goalCxt_->goalDistance, goalCxt_->goalHeading);
+            if (start) {
+                ctb::DistanceAndAzimuthRad(statusCxt_->vehiclePos, end_point, goalCxt_->goalDistance, goalCxt_->goalHeading);
 
                 curvilinear_abscissa = getCurvilinearAbscissa();
 
@@ -339,7 +315,7 @@ namespace states {
                     isCurveSet = false;
                     fsm_->ExecuteCommand(ulisse::commands::ID::hold);
                 } else {
-                    current_curve = floor(curvilinear_abscissa);
+                    current_curve = static_cast<unsigned int>(floor(curvilinear_abscissa));
                     curve = nurbs_[current_curve];
 
                     current_curvilinear_abscissa = curvilinear_abscissa;
@@ -350,8 +326,7 @@ namespace states {
                     if (use_line_of_sight) {
                         double point_at[6];
                         // Compute the point of the first curve at current_curvilinear_abscissa.
-                        s1227(curve, 1, current_curvilinear_abscissa, &leftknot, point_at,
-                            &stat);
+                        s1227(curve, 1, current_curvilinear_abscissa, &leftknot, point_at, &stat);
 
                         double tan_angle = atan2(point_at[4], point_at[3]);
 
@@ -363,7 +338,7 @@ namespace states {
                         double delta_increment = (delta_ / cur_length);
                         double next_curvilinear_abscissa = current_curvilinear_abscissa + delta_increment;
 
-                        int next_curve_index = current_curve;
+                        unsigned int next_curve_index = current_curve;
                         SISLCurve* next_curve;
 
                         if (next_curvilinear_abscissa > 1) {
@@ -387,7 +362,9 @@ namespace states {
 
                     angularPositionTask_->SetAlignmentAxis(Eigen::Vector3d(1, 0, 0));
                     angularPositionTask_->SetDistanceToTarget(Eigen::Vector3d(goalCxt_->goalDistance * cos(goalCxt_->goalHeading), goalCxt_->goalDistance * sin(goalCxt_->goalHeading), 0), rml::FrameID::WorldFrame);
-                    distanceTask_.reset();
+                    distanceTask_->SetDistance(Eigen::Vector3d(goalCxt_->goalDistance * cos(goalCxt_->goalHeading), goalCxt_->goalDistance * sin(goalCxt_->goalHeading), 0), rml::FrameID::WorldFrame);
+
+                    //                    distanceTask_.reset();
                 }
             }
         }
@@ -407,14 +384,14 @@ namespace states {
             max_abscissa = number_of_curves_;
         }
 
-        current_curve = floor(curvilinear_abscissa);
+        current_curve = static_cast<unsigned int>(floor(curvilinear_abscissa));
 
         curve = nurbs_[current_curve];
 
         current_point = to_meters(statusCxt_->vehiclePos.latitude,
             statusCxt_->vehiclePos.longitude);
 
-        if (floor(max_abscissa) == floor(min_abscissa) || (max_abscissa == number_of_curves_)) {
+        if (floor(max_abscissa) == floor(min_abscissa) || (floor(max_abscissa) == number_of_curves_)) {
             // To select the window part of curv, from min_abscissa to max_abscissa
             s1713(curve, DecimalPart(min_abscissa), DecimalPart(max_abscissa),
                 &newcurve, &stat);

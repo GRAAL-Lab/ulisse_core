@@ -52,8 +52,8 @@ void parameter_setting(SlidingSurface& param, std::shared_ptr<LowLevelConfigurat
 
 void ThrusterMappingInizialization(std::shared_ptr<LowLevelConfiguration> conf, double sampleTime, ctb::DigitalPID& pid);
 
-void SlidingModeInizialization(std::shared_ptr<LowLevelConfiguration> conf, SlidingSurface &sl, std::shared_ptr<SlidingParameter> sp, ctb::DigitalSlidingMode<SlidingSurface> &slideSurge,
-    ctb::DigitalSecOrdSlidingMode<SlidingSurface> &slideHeading,  double sampleTime);
+void SlidingModeInizialization(std::shared_ptr<LowLevelConfiguration> conf, SlidingSurface& sl, std::shared_ptr<SlidingParameter> sp, ctb::DigitalSlidingMode<SlidingSurface>& slideSurge,
+    ctb::DigitalSecOrdSlidingMode<SlidingSurface>& slideHeading, double sampleTime);
 
 std::vector<double> alpha_beta_u(const std::vector<double> state, SlidingSurface param);
 

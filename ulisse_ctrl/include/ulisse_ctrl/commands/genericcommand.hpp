@@ -1,11 +1,10 @@
 #ifndef ULISSE_CTRL_GENERICCOMMAND_HPP
 #define ULISSE_CTRL_GENERICCOMMAND_HPP
 
-#include <rclcpp/logger.hpp>
-#include <fsm/fsm.h>
-#include "ulisse_ctrl/fsm_defines.hpp"
 #include "ulisse_ctrl/ctrl_data_structs.hpp"
-
+#include "ulisse_ctrl/fsm_defines.hpp"
+#include <fsm/fsm.h>
+#include <rclcpp/logger.hpp>
 
 namespace ulisse {
 

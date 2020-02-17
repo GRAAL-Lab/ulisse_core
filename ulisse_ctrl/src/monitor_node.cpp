@@ -4,9 +4,9 @@
 
 #include "ulisse_msgs/msg/control_context.hpp"
 #include "ulisse_msgs/msg/goal_context.hpp"
-#include "ulisse_msgs/msg/status_context.hpp"
-#include "ulisse_msgs/msg/llc_battery.hpp"
 #include "ulisse_msgs/msg/gps_data.hpp"
+#include "ulisse_msgs/msg/llc_battery.hpp"
+#include "ulisse_msgs/msg/status_context.hpp"
 #include "ulisse_msgs/msg/thrusters_data.hpp"
 
 #include "ulisse_msgs/terminal_utils.hpp"
@@ -43,23 +43,13 @@ int main(int argc, char* argv[])
     int rate = 10;
     rclcpp::WallRate loop_rate(rate);
 
-    auto gps_sub = nh->create_subscription<ulisse_msgs::msg::GPSData>(
-        ulisse_msgs::topicnames::sensor_gps_data, GpsCB);
-    auto poscxt_sub = nh->create_subscription<ulisse_msgs::msg::GoalContext>(
-        ulisse_msgs::topicnames::goal_context, GoalContextCB);
-    auto ctrlcxt_sub = nh->create_subscription<ulisse_msgs::msg::ControlContext>(
-        ulisse_msgs::topicnames::control_context, ControlContextCB);
-    auto statuscxt_sub = nh->create_subscription<ulisse_msgs::msg::StatusContext>(
-        ulisse_msgs::topicnames::status_context, StatusContextCB);
-
-    auto thrusterdata_sub = nh->create_subscription<ulisse_msgs::msg::ThrustersData>(
-        ulisse_msgs::topicnames::thrusters_data, ThrustersDataCB);
-
-    auto batteryleft_sub = nh->create_subscription<ulisse_msgs::msg::LLCBattery>(
-        ulisse_msgs::topicnames::llc_battery_left, BatteryLeftCB);
-    auto batteryright_sub = nh->create_subscription<ulisse_msgs::msg::LLCBattery>(
-        ulisse_msgs::topicnames::llc_battery_right, BatteryRightCB);
-
+    auto gps_sub = nh->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data, 10, GpsCB);
+    auto poscxt_sub = nh->create_subscription<ulisse_msgs::msg::GoalContext>(ulisse_msgs::topicnames::goal_context, 10, GoalContextCB);
+    auto ctrlcxt_sub = nh->create_subscription<ulisse_msgs::msg::ControlContext>(ulisse_msgs::topicnames::control_context, 10, ControlContextCB);
+    auto statuscxt_sub = nh->create_subscription<ulisse_msgs::msg::StatusContext>(ulisse_msgs::topicnames::status_context, 10, StatusContextCB);
+    auto thrusterdata_sub = nh->create_subscription<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data, 10, ThrustersDataCB);
+    auto batteryleft_sub = nh->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_left, 10, BatteryLeftCB);
+    auto batteryright_sub = nh->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_right, 10, BatteryRightCB);
 
     while (rclcpp::ok()) {
 
@@ -94,37 +84,16 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-void GpsCB(const ulisse_msgs::msg::GPSData::SharedPtr msg)
-{
-    gps_data = *msg;
-}
+void GpsCB(const ulisse_msgs::msg::GPSData::SharedPtr msg) { gps_data = *msg; }
 
-void GoalContextCB(const ulisse_msgs::msg::GoalContext::SharedPtr msg)
-{
-    goal_cxt = *msg;
-}
+void GoalContextCB(const ulisse_msgs::msg::GoalContext::SharedPtr msg) { goal_cxt = *msg; }
 
-void ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg)
-{
-    control_cxt = *msg;
-}
+void ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg) { control_cxt = *msg; }
 
-void StatusContextCB(const ulisse_msgs::msg::StatusContext::SharedPtr msg)
-{
-    status_cxt = *msg;
-}
+void StatusContextCB(const ulisse_msgs::msg::StatusContext::SharedPtr msg) { status_cxt = *msg; }
 
-void ThrustersDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg)
-{
-    thrusters_data = *msg;
-}
+void ThrustersDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg) { thrusters_data = *msg; }
 
-void BatteryLeftCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg)
-{
-    battery_left = *msg;
-}
+void BatteryLeftCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg) { battery_left = *msg; }
 
-void BatteryRightCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg)
-{
-    battery_right = *msg;
-}
+void BatteryRightCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg) { battery_right = *msg; }

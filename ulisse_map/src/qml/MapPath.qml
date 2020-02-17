@@ -29,10 +29,10 @@ MapPolyline {
     property var a_marker
     property var b_marker
 
-    property var dir: 0
+    property var direction: 0
 
     function toggle_dir() {
-        dir = (++dir) % 2
+        direction = (++direction) % 2
         var t = QtPositioning.coordinate(b_marker.coordinate.latitude,
                                          b_marker.coordinate.longitude)
         b_marker.coordinate = QtPositioning.coordinate(
@@ -576,7 +576,7 @@ MapPolyline {
         var result = {
             centroid: [centroid.latitude, centroid.longitude],
             curves: [nurb_l],
-            direction: dir
+            direction: direction
         }
         return result
     }
