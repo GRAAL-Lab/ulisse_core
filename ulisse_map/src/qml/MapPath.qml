@@ -165,7 +165,7 @@ MapPolyline {
         a_marker.coordinate = path[0]
         b_marker.coordinate = path[path.length - 1]
         if (direction === 1) toggle_dir()
-        direction = 1
+//        direction = 1
     }
 
     function enable_handle() {
@@ -575,7 +575,7 @@ MapPolyline {
                 
         var result = {
             centroid: [centroid.latitude, centroid.longitude],
-            curves: [nurb_l],
+            curves: nurb_l,
             direction: direction
         }
         return result

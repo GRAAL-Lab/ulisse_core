@@ -260,6 +260,15 @@ namespace states {
 
         end_point = to_lat_long(point_at[0], point_at[1]);
 
+        curve = nurbs_[0];
+        // Compute the point of the first curve at 0.1.
+        s1227(curve, 0, 0.5, &leftknot, point_at, &stat);
+
+        ctb::LatLong next_point = to_lat_long(point_at[0], point_at[1]);
+
+        double dist;
+        ctb::DistanceAndAzimuthRad(starting_point, next_point, dist, starting_angle);
+
         for (current_curve = 0; current_curve < nurbs_.size(); current_curve++) {
             curve = nurbs_[current_curve];
 
@@ -305,7 +314,22 @@ namespace states {
                     distanceTask_->SetDistance(Eigen::Vector3d(goalCxt_->goalDistance * cos(goalCxt_->goalHeading), goalCxt_->goalDistance * sin(goalCxt_->goalHeading), 0), rml::FrameID::WorldFrame);
                 }
             }
-            if (start) {
+
+            if (start && !oriented) {
+                std::cout << "*** ORIENTING! ***" << std::endl;
+                if (abs(statusCxt_->vehicleHeading - starting_angle) < tollerance_start_angle) {
+                    count++;
+                    if (count > 50) {
+                        count = 0;
+                        oriented = true;
+                    }
+                } else {
+                    angularPositionTask_->SetAlignmentAxis(Eigen::Vector3d(1, 0, 0));
+                    angularPositionTask_->SetDistanceToTarget(Eigen::Vector3d(cos(starting_angle), sin(starting_angle), 0), rml::FrameID::WorldFrame);
+
+                    std::cout << "Starting angle " << abs(statusCxt_->vehicleHeading - starting_angle) << std::endl;
+                }
+            } else if (start && oriented) {
                 ctb::DistanceAndAzimuthRad(statusCxt_->vehiclePos, end_point, goalCxt_->goalDistance, goalCxt_->goalHeading);
 
                 curvilinear_abscissa = getCurvilinearAbscissa();
@@ -363,8 +387,6 @@ namespace states {
                     angularPositionTask_->SetAlignmentAxis(Eigen::Vector3d(1, 0, 0));
                     angularPositionTask_->SetDistanceToTarget(Eigen::Vector3d(goalCxt_->goalDistance * cos(goalCxt_->goalHeading), goalCxt_->goalDistance * sin(goalCxt_->goalHeading), 0), rml::FrameID::WorldFrame);
                     distanceTask_->SetDistance(Eigen::Vector3d(goalCxt_->goalDistance * cos(goalCxt_->goalHeading), goalCxt_->goalDistance * sin(goalCxt_->goalHeading), 0), rml::FrameID::WorldFrame);
-
-                    //                    distanceTask_.reset();
                 }
             }
         }

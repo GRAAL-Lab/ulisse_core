@@ -165,7 +165,7 @@ struct LowLevelConfiguration {
     friend std::ostream& operator<<(std::ostream& os, LowLevelConfiguration const& a)
     {
         return os << "======= LOW LEVEL CONF =======\n"
-                  << "CtrlMode: " << (int)a.ctrlMode << "\n"
+                  << "CtrlMode: " << static_cast<int>(a.ctrlMode)  << "\n"
                   << "EnableThrusters: " << a.enableThrusters << "\n"
                   << "ThrusterPercLimit: " << a.thrusterPercLimit << "\n"
                   << "----------------------\n"

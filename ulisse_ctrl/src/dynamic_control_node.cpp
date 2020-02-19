@@ -35,6 +35,8 @@ static ulisse_msgs::msg::ControlContext ctrl_cxt_msg;
 static ulisse_msgs::msg::StatusContext status_cxt;
 static ulisse_msgs::msg::NavFilterData filterData;
 
+double clamp(double n, double lower, double upper);
+
 void FilterDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
 void ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg);
 void StatusContextCB(const ulisse_msgs::msg::StatusContext::SharedPtr msg);
@@ -137,8 +139,7 @@ int main(int argc, char* argv[])
         response->res = "ResetConfiguration::ok";
     };
 
-    auto srv_reset_conf = nh->create_service<ulisse_msgs::srv::ResetConfiguration>(
-        ulisse_msgs::topicnames::reset_configuration_service, handle_reset_conf);
+    auto srv_reset_conf = nh->create_service<ulisse_msgs::srv::ResetConfiguration>(ulisse_msgs::topicnames::reset_configuration_service, handle_reset_conf);
 
     while (rclcpp::ok()) {
 
@@ -189,6 +190,11 @@ int main(int argc, char* argv[])
 
                 tau = ulisseModel.ComputeCoriolisAndDragForces(requestedVel);
                 Eigen::Vector2d forces = ulisseModel.ThusterAllocation(tau);
+
+                //saturation
+                requestedVel(0) = clamp(requestedVel(0), conf->thrusterMap.surgeMin, conf->thrusterMap.surgeMax);
+                requestedVel(5) = clamp(requestedVel(5), conf->thrusterMap.yawRateMin, conf->thrusterMap.yawRateMax);
+
                 ulisseModel.InverseMotorsEquations(requestedVel, forces, thrusterData.mapOut.left, thrusterData.mapOut.right);
             } else if (conf->ctrlMode == ControlMode::SlidingMode) {
 
@@ -200,6 +206,11 @@ int main(int argc, char* argv[])
                 feedbackVel(5) = jogFbk;
 
                 Eigen::Vector2d forces = ulisseModel.ThusterAllocation(tau);
+
+                //saturation
+                feedbackVel(0) = clamp(feedbackVel(0), conf->thrusterMap.surgeMin, conf->thrusterMap.surgeMax);
+                feedbackVel(5) = clamp(feedbackVel(5), conf->thrusterMap.yawRateMin, conf->thrusterMap.yawRateMax);
+
                 ulisseModel.InverseMotorsEquations(feedbackVel, forces, thrusterData.mapOut.left, thrusterData.mapOut.right);
             } else if (conf->ctrlMode == ControlMode::DynamicModel) {
                 // Dyamic Code Here
@@ -273,4 +284,9 @@ void StatusContextCB(const ulisse_msgs::msg::StatusContext::SharedPtr msg)
 void FilterDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)
 {
     filterData = *msg;
+}
+
+double clamp(double n, double lower, double upper)
+{
+    return std::max(lower, std::min(n, upper));
 }

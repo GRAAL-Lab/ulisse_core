@@ -15,6 +15,8 @@
 #include "ctrl_toolbox/DigitalSlidingMode.h"
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
 
+#include <libconfig.h++>
+
 #include <math.h>
 #include <vector>
 
@@ -82,6 +84,10 @@ ctb::LatLong point_euclidean2map(double x, double y, ctb::LatLong centroid, doub
 double from_lat_long_to_measure(double lat1, double lon1, double lat2, double lon2);
 
 void PublishControl(rclcpp::Publisher<ulisse_msgs::msg::ControlData>::SharedPtr pub);
-}
 
+template <class A>
+void setParam(libconfig::Config &confObj, A& param, std::string name);
+void setParam(libconfig::Config &confObj, std::string name, Eigen::VectorXd &param);
+
+}
 #endif // HELPERFUNCTIONS_HPP

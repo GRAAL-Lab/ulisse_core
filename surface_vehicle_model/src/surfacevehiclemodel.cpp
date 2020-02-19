@@ -3,10 +3,6 @@
 /**
  * Helper clipping function
  */
-double clamp(double n, double lower, double upper)
-{
-    return std::max(lower, std::min(n, upper));
-}
 
 bool SolveSecondOrderEquation(double a, double b, double c, std::pair<double, double>& solutions)
 {
@@ -22,14 +18,9 @@ bool SolveSecondOrderEquation(double a, double b, double c, std::pair<double, do
     }
 }
 
-SurfaceVehicleModel::SurfaceVehicleModel()
-{
-}
+SurfaceVehicleModel::SurfaceVehicleModel() {}
 
-void SurfaceVehicleModel::SetUlisseParams(const UlisseModelParameters& params)
-{
-    params_ = params;
-}
+void SurfaceVehicleModel::SetUlisseParams(const UlisseModelParameters& params) { params_ = params; }
 
 double SurfaceVehicleModel::GetThrusterForce(double n, double linXVel)
 {
@@ -135,7 +126,6 @@ Eigen::Vector2d SurfaceVehicleModel::ThusterAllocation(Eigen::Vector2d& tau)
     double forceS;
 
     forceP = 0.5 * (tau[0] + tau[1] / params_.d);
-
     forceS = 0.5 * (tau[0] - tau[1] / params_.d);
 
     return { forceP, forceS };
@@ -144,9 +134,6 @@ Eigen::Vector2d SurfaceVehicleModel::ThusterAllocation(Eigen::Vector2d& tau)
 void SurfaceVehicleModel::InverseMotorsEquations(const Eigen::Vector6d& linAngVel, Eigen::Vector2d thrust_force, double& h_p, double& h_s)
 {
     Eigen::Vector6d inputVel = linAngVel;
-
-    inputVel(0) = clamp(inputVel(0), params_.surgeMin, params_.surgeMax);
-    inputVel(5) = clamp(inputVel(5), params_.yawRateMin, params_.yawRateMax);
 
     InverseMotorEquation(inputVel, thrust_force[0], h_p);
     //    std::cout << "-LEFT MOTOR MAPPING-" << std::endl;

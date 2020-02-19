@@ -294,6 +294,8 @@ void LoadLowLevelConfiguration(std::shared_ptr<LowLevelConfiguration> conf, std:
         return;
     }
 
+    setParam(confObj, conf->thrusterPercLimit, "low_level_control_params.ThrusterPercLimit");
+
     try {
         int tmp_ctrlMode = confObj.lookup("low_level_control_params.ControlMode");
         conf->ctrlMode = static_cast<ControlMode>(tmp_ctrlMode);
@@ -305,11 +307,11 @@ void LoadLowLevelConfiguration(std::shared_ptr<LowLevelConfiguration> conf, std:
     } catch (const libconfig::SettingNotFoundException) {
         std::cerr << "No 'EnableThrusters' setting in configuration file." << std::endl;
     }
-    try {
-        conf->thrusterPercLimit = confObj.lookup("low_level_control_params.ThrusterPercLimit");
-    } catch (const libconfig::SettingNotFoundException) {
-        std::cerr << "No 'thrusterPercLimit' setting in configuration file." << std::endl;
-    }
+    //    try {
+    //        conf->thrusterPercLimit = confObj.lookup("low_level_control_params.ThrusterPercLimit");
+    //    } catch (const libconfig::SettingNotFoundException) {
+    //        std::cerr << "No 'thrusterPercLimit' setting in configuration file." << std::endl;
+    //    }
     try {
         conf->mapping_pidgains_surge.Kp = confObj.lookup("low_level_control_params.ThrusterMapping.PIDSurge.Kp");
     } catch (const libconfig::SettingNotFoundException) {
@@ -389,17 +391,21 @@ void LoadLowLevelConfiguration(std::shared_ptr<LowLevelConfiguration> conf, std:
     } catch (const libconfig::SettingNotFoundException) {
         std::cerr << "No 'lambda_neg' setting in configuration file." << std::endl;
     }
-    try {
-        const libconfig::Setting& cX_settings = confObj.lookup("low_level_control_params.ThrusterMapping.cX");
-        std::vector<double> tmp_X;
-        for (int n = 0; n < cX_settings.getLength(); ++n) {
-            tmp_X.push_back(cX_settings[n]);
-        }
+    //    try {
+    //        const libconfig::Setting& cX_settings = confObj.lookup("low_level_control_params.ThrusterMapping.cX");
+    //        std::vector<double> tmp_X;
+    //        for (int n = 0; n < cX_settings.getLength(); ++n) {
+    //            tmp_X.push_back(cX_settings[n]);
+    //        }
 
-        conf->thrusterMap.cX = Eigen::Vector3d(tmp_X.data());
-    } catch (const libconfig::SettingNotFoundException) {
-        std::cerr << "No 'ThrusterMapping.cX' setting in configuration file." << std::endl;
-    }
+    //        conf->thrusterMap.cX = Eigen::Vector3d(tmp_X.data());
+    //    } catch (const libconfig::SettingNotFoundException) {
+    //        std::cerr << "No 'ThrusterMapping.cX' setting in configuration file." << std::endl;
+    //    }
+    Eigen::VectorXd tmp = conf->thrusterMap.cX;
+    setParam(confObj, "low_level_control_params.ThrusterMapping.cX", tmp);
+    conf->thrusterMap.cX = tmp;
+
     try {
         const libconfig::Setting& cN_settings = confObj.lookup("low_level_control_params.ThrusterMapping.cN");
         std::vector<double> tmp_N;
@@ -407,8 +413,7 @@ void LoadLowLevelConfiguration(std::shared_ptr<LowLevelConfiguration> conf, std:
             tmp_N.push_back(cN_settings[n]);
         }
 
-        conf->thrusterMap.cN
-            = Eigen::Vector3d(tmp_N.data());
+        conf->thrusterMap.cN = Eigen::Vector3d(tmp_N.data());
     } catch (const libconfig::SettingNotFoundException) {
         std::cerr << "No 'ThrusterMapping.cN' setting in configuration file." << std::endl;
     }
@@ -439,8 +444,7 @@ void LoadLowLevelConfiguration(std::shared_ptr<LowLevelConfiguration> conf, std:
             tmp_I.push_back(I_settings[n]);
         }
 
-        conf->thrusterMap.Inertia.diagonal()
-            = Eigen::Map<Eigen::Matrix<double, 3, 1>>(tmp_I.data());
+        conf->thrusterMap.Inertia.diagonal() = Eigen::Map<Eigen::Matrix<double, 3, 1>>(tmp_I.data());
     } catch (const libconfig::SettingNotFoundException) {
         std::cerr << "No 'Inertia' setting in configuration file." << std::endl;
     }
@@ -566,14 +570,39 @@ void ParameterSet(std::shared_ptr<LowLevelConfiguration> conf, std::string filen
         for (int n = 0; n < filter_settings.getLength(); ++n) {
             tmp_N.push_back(filter_settings[n]);
         }
-
-        sp->filter_parameter
-            = Eigen::Vector2d(tmp_N.data());
+        sp->filter_parameter = Eigen::Vector2d(tmp_N.data());
     } catch (const libconfig::SettingNotFoundException) {
         std::cerr << "No 'ThrusterMapping.cN' setting in configuration file." << std::endl;
     }
 
     parameter_setting(sl, conf, sp->gain_1, sp->gain_2);
+}
+
+template <class A>
+void setParam(libconfig::Config& confObj, A& param, std::string name)
+{
+
+    try {
+        param = confObj.lookup(name);
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No " << name << " setting in configuration file." << std::endl;
+    }
+}
+
+void setParam(libconfig::Config& confObj, std::string name, Eigen::VectorXd& param)
+{
+    try {
+        const libconfig::Setting& filter_settings = confObj.lookup(name);
+
+        for (unsigned int n = 0; n < filter_settings.getLength(); n++) {
+
+            param.at(n) = filter_settings[n];
+            std::cout << "PORCODIO " << param.at(n) << std::endl;
+        }
+
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No " << name << " setting in configuration file." << std::endl;
+    }
 }
 
 double s1(const double ref, const double fb, struct SlidingSurface param) { return param.k * (ref - fb); }
