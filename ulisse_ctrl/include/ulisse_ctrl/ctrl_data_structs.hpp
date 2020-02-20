@@ -161,7 +161,6 @@ struct SlidingParameter {
 };
 
 struct SlidingMode {
-    SlidingSurface ss;
     SlidingParameter sp;
 };
 

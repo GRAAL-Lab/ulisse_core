@@ -1,5 +1,6 @@
 #include "rclcpp/rclcpp.hpp"
 
+#include "ctrl_toolbox/HelperFunctions.h"
 #include "ulisse_msgs/msg/thrusters_data.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 #include "ulisse_sim/futils.h"
@@ -23,7 +24,7 @@ using namespace std::chrono_literals;
 static double test_h_p(0.0), test_h_s(0.0);
 static futils::Timer motor_timeout;
 
-void ReadMappingParameters(std::string file_name, UlisseModelParameters& tmp);
+void ReadMappingParameters(UlisseModelParameters& tmp, std::string file_name);
 
 void ThrusterDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg)
 {
@@ -39,8 +40,8 @@ int main(int argc, char* argv[])
     auto thrusters_sub = node->create_subscription<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data, 10, ThrusterDataCB);
 
     UlisseModelParameters myTMP;
-    std::string file_name = "simparams.conf";
-    ReadMappingParameters(file_name, myTMP);
+    std::string filename = "simparams.conf";
+    ReadMappingParameters(myTMP, filename);
 
     int rate = 10000;
     rclcpp::WallRate loop_rate(rate);
@@ -144,7 +145,7 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-void ReadMappingParameters(std::string file_name, UlisseModelParameters& tmp)
+void ReadMappingParameters(UlisseModelParameters& tmp, std::string file_name)
 {
     libconfig::Config confObj;
 
@@ -166,109 +167,21 @@ void ReadMappingParameters(std::string file_name, UlisseModelParameters& tmp)
         return;
     }
 
-    try {
-        tmp.d = confObj.lookup("sim.thruster_mapping.motors_distance");
+    ctb::SetParam(confObj, tmp.d, "sim.thruster_mapping.motors_distance");
+    ctb::SetParam(confObj, tmp.lambda_pos, "sim.thruster_mapping.lambda_pos");
+    ctb::SetParam(confObj, tmp.lambda_neg, "sim.thruster_mapping.lambda_neg");
+    ctb::SetParam(confObj, tmp.lambda_neg, "sim.thruster_mapping.lambda_neg");
+    ctb::SetParam(confObj, tmp.b1_pos, "sim.thruster_mapping.b1_pos");
+    ctb::SetParam(confObj, tmp.b2_pos, "sim.thruster_mapping.b2_pos");
+    ctb::SetParam(confObj, tmp.b1_neg, "sim.thruster_mapping.b1_neg");
+    ctb::SetParam(confObj, tmp.b1_neg, "sim.thruster_mapping.b2_neg");
+    ctb::SetParamVector(confObj, tmp.cN, "sim.thruster_mapping.cN");
+    ctb::SetParamVector(confObj, tmp.cX, "sim.thruster_mapping.cX");
 
-    } catch (const libconfig::SettingNotFoundException) {
-        std::cerr << "No 'thruster_mapping.motors_distance' setting in configuration file." << std::endl;
-    }
-
-    try {
-        tmp.lambda_pos = confObj.lookup("sim.thruster_mapping.lambda_pos");
-
-    } catch (const libconfig::SettingNotFoundException) {
-        std::cerr << "No 'lambda_pos' setting in configuration file." << std::endl;
-    }
-
-    try {
-        tmp.lambda_neg = confObj.lookup("sim.thruster_mapping.lambda_neg");
-
-    } catch (const libconfig::SettingNotFoundException) {
-        std::cerr << "No 'lambda_neg' setting in configuration file." << std::endl;
-    }
-
-    // tmp.cb = Eigen::Vector4d((pc->get_parameter("thruster_mapping.cb", std::vector<double>(4, 0.0))).data());
-    try {
-        const libconfig::Setting& cX_settings = confObj.lookup("sim.thruster_mapping.cX");
-        std::vector<double> tmp_X;
-        for (int n = 0; n < cX_settings.getLength(); ++n) {
-            tmp_X.push_back(cX_settings[n]);
-        }
-
-        tmp.cX = Eigen::Vector3d(tmp_X.data());
-    } catch (const libconfig::SettingNotFoundException) {
-        std::cerr << "No 'ThrusterMapping.cX' setting in configuration file." << std::endl;
-    }
-    try {
-        const libconfig::Setting& cN_settings = confObj.lookup("sim.thruster_mapping.cN");
-        std::vector<double> tmp_N;
-        for (int n = 0; n < cN_settings.getLength(); ++n) {
-            tmp_N.push_back(cN_settings[n]);
-        }
-
-        tmp.cN
-            = Eigen::Vector3d(tmp_N.data());
-    } catch (const libconfig::SettingNotFoundException) {
-        std::cerr << "No 'ThrusterMapping.cN' setting in configuration file." << std::endl;
-    }
-    try {
-        tmp.b1_pos = confObj.lookup("sim.thruster_mapping.b1_pos");
-    } catch (const libconfig::SettingNotFoundException) {
-        std::cerr << "No 'b1_pos' setting in configuration file." << std::endl;
-    }
-    try {
-        tmp.b2_pos = confObj.lookup("sim.thruster_mapping.b2_pos");
-    } catch (const libconfig::SettingNotFoundException) {
-        std::cerr << "No 'b2_pos' setting in configuration file." << std::endl;
-    }
-    try {
-        tmp.b1_neg = confObj.lookup("sim.thruster_mapping.b1_neg");
-    } catch (const libconfig::SettingNotFoundException) {
-        std::cerr << "No 'b1_neg' setting in configuration file." << std::endl;
-    }
-    try {
-        tmp.b2_neg = confObj.lookup("sim.thruster_mapping.b2_neg");
-    } catch (const libconfig::SettingNotFoundException) {
-        std::cerr << "No 'b2_neg' setting in configuration file." << std::endl;
-    }
-    try {
-        const libconfig::Setting& I_settings = confObj.lookup("sim.thruster_mapping.Inertia");
-        std::vector<double> tmp_I;
-        for (int n = 0; n < I_settings.getLength(); ++n) {
-            tmp_I.push_back(I_settings[n]);
-        }
-
-        tmp.Inertia.diagonal()
-            = Eigen::Vector3d(tmp_I.data());
-    } catch (const libconfig::SettingNotFoundException) {
-        std::cerr << "No 'Inertia' setting in configuration file." << std::endl;
-    }
+    Eigen::Vector3d tmp_Inerzia;
+    tmp_Inerzia.setZero();
+    ctb::SetParamVector(confObj, tmp_Inerzia, "sim.thruster_mapping.Inertia");
+    tmp.Inertia.diagonal() = Eigen::Map<Eigen::Matrix<double, 3, 1>>(tmp_Inerzia.data());
 
     std::cout << "Parameters read!" << std::endl;
 }
-
-/*
-// Set several different types of parameters.
-auto set_parameters_results = parameters_client->set_parameters({
-    rclcpp::Parameter("foo", 2),
-    rclcpp::Parameter("bar", "hello"),
-    rclcpp::Parameter("baz", 1.45),
-    rclcpp::Parameter("foobar", true),
-    rclcpp::Parameter("foobarbaz", std::vector<bool>({ true, false })),
-    rclcpp::Parameter("toto", std::vector<uint8_t>({ 0xff, 0x7f })),
-});
-
-// Check to see if they were set.
-for (auto& result : set_parameters_results) {
-    if (!result.successful) {
-        RCLCPP_ERROR(node->get_logger(), "Failed to set parameter: %s", result.reason.c_str())
-    }
-}
-
-std::stringstream ss;
-// Get a few of the parameters just set.
-for (auto& parameter : parameters_client->get_parameters({ "foo", "baz", "foobarbaz", "toto" })) {
-    ss << "\nParameter name: " << parameter.get_name();
-    ss << "\nParameter value (" << parameter.get_type_name() << "): " << parameter.value_to_string();
-}
-RCLCPP_INFO(node->get_logger(), ss.str().c_str()) */

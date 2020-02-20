@@ -94,8 +94,8 @@ ament_target_dependencies(kinematic_control_node rclcpp std_msgs ulisse_msgs rml
 target_link_libraries(kinematic_control_node rml ulisse_ctrl_lib ${JSONCPP_LIBRARIES})
 
 add_executable(dynamic_control_node src/dynamic_control_node.cpp)
-ament_target_dependencies(dynamic_control_node rclcpp std_msgs ulisse_msgs rml ament_index_cpp)
-target_link_libraries(dynamic_control_node rml ulisse_ctrl_lib)
+ament_target_dependencies(dynamic_control_node rclcpp std_msgs ulisse_msgs rml ament_index_cpp ctrl_toolbox)
+target_link_libraries(dynamic_control_node rml ulisse_ctrl_lib )
 
 #add_executable(navigation_filter_node src/navigation_filter_node.cpp)
 #ament_target_dependencies(navigation_filter_node rclcpp std_msgs ulisse_msgs rml)
@@ -109,7 +109,7 @@ add_executable(monitor_node src/monitor_node.cpp)
 ament_target_dependencies(monitor_node rclcpp std_msgs ulisse_msgs rml)
 target_link_libraries(monitor_node rml ulisse_ctrl_lib)
 
-target_link_libraries(${PROJECT_NAME}_lib ${catkin_LIBRARIES} ${Boost_LIBRARIES} ikcl tpik rml config++)
+target_link_libraries(${PROJECT_NAME}_lib ${catkin_LIBRARIES} ${Boost_LIBRARIES} ikcl tpik rml config++ )
 ament_export_include_directories(include)
 
 ## Install

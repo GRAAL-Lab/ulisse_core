@@ -11,6 +11,7 @@
 #include <chrono>
 
 #include "ctrl_toolbox/DigitalSlidingMode.h"
+#include "ctrl_toolbox/HelperFunctions.h"
 #include "surface_vehicle_model/surfacevehiclemodel.hpp"
 #include "ulisse_ctrl/fsm_defines.hpp"
 #include "ulisse_ctrl/helper_functions.hpp"
@@ -30,17 +31,11 @@
 
 using namespace std::chrono_literals;
 using namespace ulisse;
+using namespace ctb;
 
 static ulisse_msgs::msg::ControlContext ctrl_cxt_msg;
 static ulisse_msgs::msg::StatusContext status_cxt;
 static ulisse_msgs::msg::NavFilterData filterData;
-
-template <class A>
-void SetParam(libconfig::Config& confObj, A& param, std::string name);
-template <class A>
-void SetParamVector(libconfig::Config& confObj, A& param, std::string name);
-
-double clamp(double n, double lower, double upper);
 
 void LoadDclConfiguration(std::shared_ptr<DCLConfiguration> conf, std::string filename);
 
@@ -125,7 +120,6 @@ int main(int argc, char* argv[])
         SlidingModeInizialization(conf, ss, slideSurge, slideHeading, sampleTime);
     }
 
-    std::cout << "Debug:: " << ss.cN[0] << std::endl;
     // Create a callback function for when service reset configuration requests are received.
     auto handle_reset_conf = [nh, conf, &ulisseModel, filename, &ss, &pidSurge, &slideSurge, &slideHeading](
                                  const std::shared_ptr<rmw_request_id_t> request_header,
@@ -274,32 +268,6 @@ int main(int argc, char* argv[])
     rclcpp::shutdown();
 
     return 0;
-}
-
-template <class A>
-void SetParam(libconfig::Config& confObj, A& param, std::string name)
-{
-
-    try {
-        param = confObj.lookup(name);
-    } catch (const libconfig::SettingNotFoundException) {
-        std::cerr << "No " << name << " setting in configuration file." << std::endl;
-    }
-}
-
-template <class A>
-void SetParamVector(libconfig::Config& confObj, A& param, std::string name)
-{
-    try {
-        const libconfig::Setting& filter_settings = confObj.lookup(name);
-
-        for (int n = 0; n < filter_settings.getLength(); n++) {
-
-            param.at(n) = filter_settings[n];
-        }
-    } catch (const libconfig::SettingNotFoundException) {
-        std::cerr << "No " << name << " setting in configuration file." << std::endl;
-    }
 }
 
 void LoadDclConfiguration(std::shared_ptr<DCLConfiguration> conf, std::string filename)
@@ -471,9 +439,4 @@ void StatusContextCB(const ulisse_msgs::msg::StatusContext::SharedPtr msg)
 void FilterDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)
 {
     filterData = *msg;
-}
-
-double clamp(double n, double lower, double upper)
-{
-    return std::max(lower, std::min(n, upper));
 }
