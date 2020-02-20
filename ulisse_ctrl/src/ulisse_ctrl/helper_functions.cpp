@@ -1,47 +1,11 @@
 #include "ulisse_ctrl/helper_functions.hpp"
+#include "cmath"
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <cstdlib>
 #include <iostream>
 #include <libconfig.h++>
 
 namespace ulisse {
-
-double NormalizeHeadingOn2PI(double angle)
-{
-    return std::fmod(angle + 2 * M_PI, 2 * M_PI);
-}
-
-void ThrustersSaturation(double lThruster, double rThruster, double thMin, double thMax, double& lSatOut, double& rSatOut)
-{
-    //std::cout << "min-max: " << thMin << ", " << thMax << std::endl;
-    double factor = 1.0;
-    if (lThruster > thMax) {
-        double newFactor = thMax / lThruster;
-        if (newFactor < factor) {
-            factor = newFactor;
-        }
-    } else if (lThruster < thMin) {
-        double newFactor = thMin / lThruster;
-        if (newFactor < factor) {
-            factor = newFactor;
-        }
-    }
-
-    if (rThruster > thMax) {
-        double newFactor = thMax / rThruster;
-        if (newFactor < factor) {
-            factor = newFactor;
-        }
-    } else if (rThruster < thMin) {
-        double newFactor = thMin / rThruster;
-        if (newFactor < factor) {
-            factor = newFactor;
-        }
-    }
-
-    lSatOut = lThruster * factor;
-    rSatOut = rThruster * factor;
-}
 
 double SlowDownWhenTurning(double headingError, double desiredSpeed, const ControllerConfiguration& conf)
 {

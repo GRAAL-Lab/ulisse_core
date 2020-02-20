@@ -170,11 +170,10 @@ void ReadMappingParameters(UlisseModelParameters& tmp, std::string file_name)
     ctb::SetParam(confObj, tmp.d, "sim.thruster_mapping.motors_distance");
     ctb::SetParam(confObj, tmp.lambda_pos, "sim.thruster_mapping.lambda_pos");
     ctb::SetParam(confObj, tmp.lambda_neg, "sim.thruster_mapping.lambda_neg");
-    ctb::SetParam(confObj, tmp.lambda_neg, "sim.thruster_mapping.lambda_neg");
     ctb::SetParam(confObj, tmp.b1_pos, "sim.thruster_mapping.b1_pos");
     ctb::SetParam(confObj, tmp.b2_pos, "sim.thruster_mapping.b2_pos");
     ctb::SetParam(confObj, tmp.b1_neg, "sim.thruster_mapping.b1_neg");
-    ctb::SetParam(confObj, tmp.b1_neg, "sim.thruster_mapping.b2_neg");
+    ctb::SetParam(confObj, tmp.b2_neg, "sim.thruster_mapping.b2_neg");
     ctb::SetParamVector(confObj, tmp.cN, "sim.thruster_mapping.cN");
     ctb::SetParamVector(confObj, tmp.cX, "sim.thruster_mapping.cX");
 

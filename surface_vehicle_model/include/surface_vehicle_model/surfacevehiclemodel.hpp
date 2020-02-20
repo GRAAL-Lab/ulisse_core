@@ -74,6 +74,7 @@ public:
     Eigen::Vector2d ThusterAllocation(Eigen::Vector2d& tau);
     void SetUlisseParams(const UlisseModelParameters& params);
     void InverseMotorsEquations(const Eigen::Vector6d& linAngVel, Eigen::Vector2d thrust_force, double& h_p, double& h_s);
+    void ThrustersSaturation(double lThruster, double rThruster, double thMin, double thMax, double& lSatOut, double& rSatOut);
     //void ThrusterDynamicAllocator(const double f_des, const double n_des, double& h_s, double &h_p);
 };
 

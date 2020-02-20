@@ -44,6 +44,7 @@ void ThrusterMappingInizialization(std::shared_ptr<DCLConfiguration> conf, doubl
 void SlidingModeInizialization(std::shared_ptr<DCLConfiguration> conf, SlidingSurface& ss, ctb::DigitalSlidingMode<SlidingSurface>& slideSurge,
     ctb::DigitalSecOrdSlidingMode<SlidingSurface>& slideHeading, double sampleTime);
 void SetSlidingSurface(SlidingSurface& ss, std::shared_ptr<DCLConfiguration> conf);
+
 std::vector<double> alpha_beta_u(const std::vector<double> state, SlidingSurface param);
 std::vector<double> alpha_beta_r(const std::vector<double> state, SlidingSurface param);
 double s1(const double ref, const double fb, SlidingSurface param);
@@ -217,7 +218,7 @@ int main(int argc, char* argv[])
                 // Dyamic Code Here
             }
 
-            ThrustersSaturation(thrusterData.mapOut.left, thrusterData.mapOut.right, -conf->thrusterPercLimit, conf->thrusterPercLimit,
+            ulisseModel.ThrustersSaturation(thrusterData.mapOut.left, thrusterData.mapOut.right, -conf->thrusterPercLimit, conf->thrusterPercLimit,
                 thrusterData.ctrlRef.left, thrusterData.ctrlRef.right);
 
             thrust_msg.motor_mapout.left = thrusterData.mapOut.left;

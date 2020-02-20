@@ -12,7 +12,6 @@
 #include "ulisse_msgs/terminal_utils.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 
-
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
 
 #include <libconfig.h++>
@@ -23,10 +22,6 @@
 #define R_EARTH 6378.137 // Radius of earth in KM
 
 namespace ulisse {
-
-double NormalizeHeadingOn2PI(double angle);
-
-void ThrustersSaturation(double lThruster, double rThruster, double thMin, double thMax, double& lSatOut, double& rSatOut);
 
 double SlowDownWhenTurning(double headingError, double desiredSpeed, const ControllerConfiguration& conf);
 
