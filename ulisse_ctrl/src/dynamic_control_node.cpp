@@ -35,7 +35,24 @@ static ulisse_msgs::msg::ControlContext ctrl_cxt_msg;
 static ulisse_msgs::msg::StatusContext status_cxt;
 static ulisse_msgs::msg::NavFilterData filterData;
 
+template <class A>
+void SetParam(libconfig::Config& confObj, A& param, std::string name);
+template <class A>
+void SetParamVector(libconfig::Config& confObj, A& param, std::string name);
+
 double clamp(double n, double lower, double upper);
+
+void LoadDclConfiguration(std::shared_ptr<DCLConfiguration> conf, std::string filename);
+
+void ThrusterMappingInizialization(std::shared_ptr<DCLConfiguration> conf, double sampleTime, ctb::DigitalPID& pid);
+
+void SlidingModeInizialization(std::shared_ptr<DCLConfiguration> conf, SlidingSurface& ss, ctb::DigitalSlidingMode<SlidingSurface>& slideSurge,
+    ctb::DigitalSecOrdSlidingMode<SlidingSurface>& slideHeading, double sampleTime);
+void SetSlidingSurface(SlidingSurface& ss, std::shared_ptr<DCLConfiguration> conf);
+std::vector<double> alpha_beta_u(const std::vector<double> state, SlidingSurface param);
+std::vector<double> alpha_beta_r(const std::vector<double> state, SlidingSurface param);
+double s1(const double ref, const double fb, SlidingSurface param);
+double s2(const double ref, const double fb, SlidingSurface param);
 
 void FilterDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
 void ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg);
@@ -49,15 +66,11 @@ int main(int argc, char* argv[])
     auto nh = rclcpp::Node::make_shared("low_level_control_node");
 
     //config struct
-    auto conf = std::make_shared<LowLevelConfiguration>();
-    //    auto sl = std::make_shared<SlidingSurface>();
-
+    auto conf = std::make_shared<DCLConfiguration>();
     // ulisse model
     SurfaceVehicleModel ulisseModel;
-
     //Variable for sliding mode control
-    SlidingSurface sl;
-    auto sp = std::make_shared<SlidingParameter>();
+    SlidingSurface ss;
 
     rclcpp::WallRate loop_rate(rate);
 
@@ -72,14 +85,11 @@ int main(int argc, char* argv[])
     std::string filename = "dcl_ulisse.conf";
 
     //Ulisse params configuration
-    LoadLowLevelConfiguration(conf, filename);
-
-    //Sliding mode params setting
-    ParameterSet(conf, filename, sl, sp);
+    LoadDclConfiguration(conf, filename);
 
     std::cout << tc::grayD << *conf << tc::none << std::endl;
 
-    ulisseModel.SetUlisseParams(conf->thrusterMap);
+    ulisseModel.SetUlisseParams(conf->ulisseConfig);
 
     //local variables
     ThrusterControlData thrusterData;
@@ -112,20 +122,21 @@ int main(int argc, char* argv[])
 
     } else if (conf->ctrlMode == ControlMode::SlidingMode) {
 
-        SlidingModeInizialization(conf, sl, sp, slideSurge, slideHeading, sampleTime);
+        SlidingModeInizialization(conf, ss, slideSurge, slideHeading, sampleTime);
     }
 
+    std::cout << "Debug:: " << ss.cN[0] << std::endl;
     // Create a callback function for when service reset configuration requests are received.
-    auto handle_reset_conf = [nh, conf, &ulisseModel, filename, &sl, sp, &pidSurge, &slideSurge, &slideHeading](
+    auto handle_reset_conf = [nh, conf, &ulisseModel, filename, &ss, &pidSurge, &slideSurge, &slideHeading](
                                  const std::shared_ptr<rmw_request_id_t> request_header,
                                  const std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Request> request,
                                  std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Response> response) -> void {
         (void)request_header;
         RCLCPP_INFO(nh->get_logger(), "Incoming request for reset conf");
 
-        LoadLowLevelConfiguration(conf, filename);
-        ParameterSet(conf, filename, sl, sp);
-        ulisseModel.SetUlisseParams(conf->thrusterMap);
+        //Ulisse params configuration
+        LoadDclConfiguration(conf, filename);
+        ulisseModel.SetUlisseParams(conf->ulisseConfig);
 
         //Controller inizialization
         if (conf->ctrlMode == ControlMode::ThrusterMapping) {
@@ -134,7 +145,7 @@ int main(int argc, char* argv[])
 
         } else if (conf->ctrlMode == ControlMode::SlidingMode) {
 
-            SlidingModeInizialization(conf, sl, sp, slideSurge, slideHeading, sampleTime);
+            SlidingModeInizialization(conf, ss, slideSurge, slideHeading, sampleTime);
         }
         response->res = "ResetConfiguration::ok";
     };
@@ -149,7 +160,7 @@ int main(int argc, char* argv[])
         derivative_jogFbk = ctb::HeadingErrorRad(status_cxt.vehicle_heading, prev_heading) / sampleTime;
         prev_heading = status_cxt.vehicle_heading;
 
-        jogFbk = sp->filter_parameter[0] * jogFbk + sp->filter_parameter[1] * derivative_jogFbk;
+        jogFbk = conf->filterParameter[0] * jogFbk + conf->filterParameter[1] * derivative_jogFbk;
 
         //ThrusterMapping mode
         if (conf->ctrlMode == ControlMode::ThrusterMapping) {
@@ -192,8 +203,8 @@ int main(int argc, char* argv[])
                 Eigen::Vector2d forces = ulisseModel.ThusterAllocation(tau);
 
                 //saturation
-                requestedVel(0) = clamp(requestedVel(0), conf->thrusterMap.surgeMin, conf->thrusterMap.surgeMax);
-                requestedVel(5) = clamp(requestedVel(5), conf->thrusterMap.yawRateMin, conf->thrusterMap.yawRateMax);
+                requestedVel(0) = clamp(requestedVel(0), conf->surgeMin, conf->surgeMax);
+                requestedVel(5) = clamp(requestedVel(5), conf->yawRateMin, conf->yawRateMax);
 
                 ulisseModel.InverseMotorsEquations(requestedVel, forces, thrusterData.mapOut.left, thrusterData.mapOut.right);
             } else if (conf->ctrlMode == ControlMode::SlidingMode) {
@@ -207,16 +218,10 @@ int main(int argc, char* argv[])
 
                 Eigen::Vector2d forces = ulisseModel.ThusterAllocation(tau);
 
-                //saturation
-                feedbackVel(0) = clamp(feedbackVel(0), conf->thrusterMap.surgeMin, conf->thrusterMap.surgeMax);
-                feedbackVel(5) = clamp(feedbackVel(5), conf->thrusterMap.yawRateMin, conf->thrusterMap.yawRateMax);
-
                 ulisseModel.InverseMotorsEquations(feedbackVel, forces, thrusterData.mapOut.left, thrusterData.mapOut.right);
-            } else if (conf->ctrlMode == ControlMode::DynamicModel) {
+            } else if (conf->ctrlMode == ControlMode::ClassicPIDControl) {
                 // Dyamic Code Here
             }
-
-            //            ulisseModel.ThrusterMapping(requestedVel, thrusterData.mapOut.left, thrusterData.mapOut.right);
 
             ThrustersSaturation(thrusterData.mapOut.left, thrusterData.mapOut.right, -conf->thrusterPercLimit, conf->thrusterPercLimit,
                 thrusterData.ctrlRef.left, thrusterData.ctrlRef.right);
@@ -269,6 +274,188 @@ int main(int argc, char* argv[])
     rclcpp::shutdown();
 
     return 0;
+}
+
+template <class A>
+void SetParam(libconfig::Config& confObj, A& param, std::string name)
+{
+
+    try {
+        param = confObj.lookup(name);
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No " << name << " setting in configuration file." << std::endl;
+    }
+}
+
+template <class A>
+void SetParamVector(libconfig::Config& confObj, A& param, std::string name)
+{
+    try {
+        const libconfig::Setting& filter_settings = confObj.lookup(name);
+
+        for (int n = 0; n < filter_settings.getLength(); n++) {
+
+            param.at(n) = filter_settings[n];
+        }
+    } catch (const libconfig::SettingNotFoundException) {
+        std::cerr << "No " << name << " setting in configuration file." << std::endl;
+    }
+}
+
+void LoadDclConfiguration(std::shared_ptr<DCLConfiguration> conf, std::string filename)
+{
+    libconfig::Config confObj;
+
+    //Inizialization
+    std::string package_share_directory = ament_index_cpp::get_package_share_directory("ulisse_ctrl");
+    std::stringstream conf_path;
+    conf_path << package_share_directory << "/conf/" << filename;
+
+    std::string confPath = conf_path.str().c_str();
+
+    std::cout << "PATH TO CONF FILE : " << confPath << std::endl;
+
+    //read the config file
+    try {
+        confObj.readFile(confPath.c_str());
+    } catch (libconfig::ParseException& e) {
+        std::cerr << "Parse exception when reading:" << confPath << std::endl;
+        std::cerr << "line: " << e.getLine() << " error: " << e.getError() << std::endl;
+        return;
+    }
+
+    // Load DCL Config
+    int tmpCtrlMode;
+    SetParam(confObj, tmpCtrlMode, "dcl_ulisse.ctrlMode");
+    conf->ctrlMode = static_cast<ControlMode>(tmpCtrlMode);
+    SetParam(confObj, conf->enableThrusters, "dcl_ulisse.enableThrusters");
+    SetParam(confObj, conf->thrusterPercLimit, "dcl_ulisse.thrusterPercLimit");
+    SetParam(confObj, conf->surgeMin, "dcl_ulisse.surgeMin");
+    SetParam(confObj, conf->surgeMax, "dcl_ulisse.surgeMax");
+    SetParam(confObj, conf->yawRateMin, "dcl_ulisse.yawRateMin");
+    SetParam(confObj, conf->yawRateMax, "dcl_ulisse.yawRateMax");
+    //Filter params
+    SetParamVector(confObj, conf->filterParameter, "dcl_ulisse.filterParameter.gains");
+
+    //Load Ulisse Params
+    SetParam(confObj, conf->ulisseConfig.d, "dcl_ulisse.ulisseModel.motorsDistance");
+    SetParam(confObj, conf->ulisseConfig.lambda_pos, "dcl_ulisse.ulisseModel.lambdaPos");
+    SetParam(confObj, conf->ulisseConfig.lambda_neg, "dcl_ulisse.ulisseModel.lambdaNeg");
+    SetParamVector(confObj, conf->ulisseConfig.cX, "dcl_ulisse.ulisseModel.cX");
+    SetParamVector(confObj, conf->ulisseConfig.cN, "dcl_ulisse.ulisseModel.cN");
+    SetParam(confObj, conf->ulisseConfig.b1_pos, "dcl_ulisse.ulisseModel.b1Pos");
+    SetParam(confObj, conf->ulisseConfig.b1_neg, "dcl_ulisse.ulisseModel.b1Neg");
+    SetParam(confObj, conf->ulisseConfig.b2_pos, "dcl_ulisse.ulisseModel.b2Pos");
+    SetParam(confObj, conf->ulisseConfig.b2_neg, "dcl_ulisse.ulisseModel.b2Neg");
+
+    Eigen::Vector3d tmp_Inerzia;
+    tmp_Inerzia.setZero();
+    SetParamVector(confObj, tmp_Inerzia, "dcl_ulisse.ulisseModel.inertia");
+    conf->ulisseConfig.Inertia.diagonal() = Eigen::Map<Eigen::Matrix<double, 3, 1>>(tmp_Inerzia.data());
+
+    //if CtrlMdoe is Thruster Mapping
+    if (conf->ctrlMode == ControlMode::ThrusterMapping) {
+        SetParam(confObj, conf->thrusterMapping.pidGainsSurge.Kp, "dcl_ulisse.thrusterMapping.pidSurge.kp");
+        SetParam(confObj, conf->thrusterMapping.pidGainsSurge.Ki, "dcl_ulisse.thrusterMapping.pidSurge.ki");
+        SetParam(confObj, conf->thrusterMapping.pidGainsSurge.Kd, "dcl_ulisse.thrusterMapping.pidSurge.kd");
+        SetParam(confObj, conf->thrusterMapping.pidGainsSurge.Kff, "dcl_ulisse.thrusterMapping.pidSurge.kff");
+        SetParam(confObj, conf->thrusterMapping.pidGainsSurge.N, "dcl_ulisse.thrusterMapping.pidSurge.n");
+        SetParam(confObj, conf->thrusterMapping.pidGainsSurge.Tr, "dcl_ulisse.thrusterMapping.pidSurge.tr");
+        SetParam(confObj, conf->thrusterMapping.pidSatSurge, "dcl_ulisse.thrusterMapping.pidSurge.sat");
+
+    }
+    //if CtrlMdoe is Sliding Mode
+    else if (conf->ctrlMode == ControlMode::SlidingMode) {
+        SetParam(confObj, conf->slidingMode.sp.gain1, "dcl_ulisse.slidingMode.gain1");
+        SetParam(confObj, conf->slidingMode.sp.surgeGain, "dcl_ulisse.slidingMode.surgeGain");
+        SetParam(confObj, conf->slidingMode.sp.forceLimiter, "dcl_ulisse.slidingMode.forceLimiter");
+        SetParam(confObj, conf->slidingMode.sp.gain2, "dcl_ulisse.slidingMode.gain2");
+        SetParam(confObj, conf->slidingMode.sp.headingGain, "dcl_ulisse.slidingMode.headingGain");
+        SetParam(confObj, conf->slidingMode.sp.torqueLimiter, "dcl_ulisse.slidingMode.torqueLimiter");
+
+    }
+    //if CtrlMdoe is Classic PID
+    else if (conf->ctrlMode == ControlMode::ClassicPIDControl) {
+        //Initialize pidSurge
+        SetParam(confObj, conf->classicPidControl.pidGainsSurge.Kp, "dcl_ulisse.classicPidControl.pidSurge.kp");
+        SetParam(confObj, conf->classicPidControl.pidGainsSurge.Ki, "dcl_ulisse.classicPidControl.pidSurge.ki");
+        SetParam(confObj, conf->classicPidControl.pidGainsSurge.Kd, "dcl_ulisse.classicPidControl.pidSurge.kd");
+        SetParam(confObj, conf->classicPidControl.pidGainsSurge.Kff, "dcl_ulisse.classicPidControl.pidSurge.kff");
+        SetParam(confObj, conf->classicPidControl.pidGainsSurge.N, "dcl_ulisse.classicPidControl.pidSurge.n");
+        SetParam(confObj, conf->classicPidControl.pidGainsSurge.Tr, "dcl_ulisse.classicPidControl.pidSurge.tr");
+        SetParam(confObj, conf->classicPidControl.pidSatSurge, "dcl_ulisse.classicPidControl.pidSurge.sat");
+
+        //Initialize pidYawRate
+        SetParam(confObj, conf->classicPidControl.pidGainsYawRate.Kp, "dcl_ulisse.classicPidControl.pidYawRate.kp");
+        SetParam(confObj, conf->classicPidControl.pidGainsYawRate.Ki, "dcl_ulisse.classicPidControl.pidYawRate.ki");
+        SetParam(confObj, conf->classicPidControl.pidGainsYawRate.Kd, "dcl_ulisse.classicPidControl.pidYawRate.kd");
+        SetParam(confObj, conf->classicPidControl.pidGainsYawRate.Kff, "dcl_ulisse.classicPidControl.pidYawRate.kff");
+        SetParam(confObj, conf->classicPidControl.pidGainsYawRate.N, "dcl_ulisse.classicPidControl.pidYawRate.n");
+        SetParam(confObj, conf->classicPidControl.pidGainsYawRate.Tr, "dcl_ulisse.classicPidControl.pidYawRate.tr");
+        SetParam(confObj, conf->classicPidControl.pidSatYawRate, "dcl_ulisse.classicPidControl.pidYawRate.sat");
+    }
+}
+
+void SetSlidingSurface(SlidingSurface& ss, std::shared_ptr<DCLConfiguration> conf)
+{
+    ss.inertia.resize(3);
+    ss.inertia[0] = conf->ulisseConfig.Inertia.diagonal()[0];
+    ss.inertia[1] = conf->ulisseConfig.Inertia.diagonal()[1];
+    ss.inertia[2] = conf->ulisseConfig.Inertia.diagonal()[2];
+
+    ss.cX.resize(3);
+    ss.cX[0] = conf->ulisseConfig.cX[0];
+    ss.cX[1] = conf->ulisseConfig.cX[1];
+    ss.cX[2] = conf->ulisseConfig.cX[2];
+
+    ss.cN.resize(3);
+    ss.cN[0] = conf->ulisseConfig.cN[0];
+    ss.cN[1] = conf->ulisseConfig.cN[1];
+    ss.cN[2] = conf->ulisseConfig.cN[2];
+
+    ss.k = conf->slidingMode.sp.gain1;
+    ss.k1 = conf->slidingMode.sp.gain2;
+}
+
+double s1(const double ref, const double fb, struct SlidingSurface param) { return param.k * (ref - fb); }
+
+double s2(const double ref, const double fb, struct SlidingSurface param) { return param.k1 * (ref - fb); }
+
+std::vector<double> alpha_beta_u(const std::vector<double> state, struct SlidingSurface param)
+{
+    auto alpha = state[0] / 0.1 - param.cX[0] * std::pow(state[1], 2) - param.cX[1] * state[0] - param.cX[2] * std::abs(state[0]) * state[0];
+    alpha = -1 / param.inertia[0] * param.k * alpha;
+    auto beta = -1 / param.inertia[0] * param.k;
+    std::vector<double> alphaBeta = { alpha, beta };
+    return alphaBeta;
+}
+
+std::vector<double> alpha_beta_r(const std::vector<double> state, struct SlidingSurface param)
+{
+    auto alpha = state[1] / 0.1 + param.cN[0] * state[0] * state[1] - param.cN[1] * state[1] - param.cN[2] * std::abs(state[1]) * state[1];
+    alpha = -1 / param.inertia[2] * param.k1 * alpha;
+    auto beta = -1 / param.inertia[2] * param.k1;
+    std::vector<double> alphaBeta = { alpha, beta };
+    return alphaBeta;
+}
+void ThrusterMappingInizialization(std::shared_ptr<DCLConfiguration> conf, double sampleTime, ctb::DigitalPID& pid)
+{
+
+    pid.Initialize(conf->thrusterMapping.pidGainsSurge, sampleTime, conf->thrusterMapping.pidSatSurge);
+    //        pidYawRate.Initialize(conf->dynamic_pidgains_yawrate, sampleTime, conf->jogLimiter);
+    //        pidYawRate.SetErrorFunction(ctb::HeadingErrorRadFunctor());
+}
+
+void SlidingModeInizialization(std::shared_ptr<DCLConfiguration> conf, SlidingSurface& ss, ctb::DigitalSlidingMode<SlidingSurface>& slideSurge,
+    ctb::DigitalSecOrdSlidingMode<SlidingSurface>& slideHeading, double sampleTime)
+{
+    //Initialize Sliding Surfaces
+    SetSlidingSurface(ss, conf);
+    slideHeading = ctb::DigitalSecOrdSlidingMode<SlidingSurface>(alpha_beta_r, s2, ss);
+    slideHeading.Initialize(conf->slidingMode.sp.headingGain, sampleTime, 2, conf->slidingMode.sp.torqueLimiter);
+
+    slideSurge = ctb::DigitalSlidingMode<SlidingSurface>(alpha_beta_u, s1, ss);
+    slideSurge.Initialize(conf->slidingMode.sp.surgeGain, sampleTime, 2, conf->slidingMode.sp.forceLimiter);
 }
 
 void ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg)

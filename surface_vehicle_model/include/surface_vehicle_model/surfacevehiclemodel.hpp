@@ -6,8 +6,6 @@
 
 struct UlisseModelParameters {
 
-    double surgeMin, surgeMax;
-    double yawRateMin, yawRateMax;
     double lambda_pos, lambda_neg;
     double d;
     Eigen::Vector3d cX;
@@ -16,11 +14,7 @@ struct UlisseModelParameters {
     Eigen::Matrix3d Inertia;
 
     UlisseModelParameters()
-        : surgeMin(0.0)
-        , surgeMax(0.0)
-        , yawRateMin(0.0)
-        , yawRateMax(0.0)
-        , lambda_pos(0.0)
+        : lambda_pos(0.0)
         , lambda_neg(0.0)
         , d(0.0)
         , b1_pos(0.0)
@@ -36,11 +30,7 @@ struct UlisseModelParameters {
     friend std::ostream& operator<<(std::ostream& os, UlisseModelParameters const& a)
     {
         Eigen::IOFormat TabbedCleanFmt(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", " ", "\t", "\n", "", "");
-        return os << "Thruster Mapping:\n"
-                  << "\tsurgeMin: " << a.surgeMin << "\n"
-                  << "\tsurgeMax: " << a.surgeMax << "\n"
-                  << "\tyawRateMin: " << a.yawRateMin << "\n"
-                  << "\tyawRateMax: " << a.yawRateMax << "\n"
+        return os << "Ulisse Model Params:\n"
                   << "\tlambda_pos: " << static_cast<int>(a.lambda_pos) << "\n"
                   << "\tlambda_neg: " << a.lambda_neg << "\n"
                   << "\tmotors distance: " << a.d << "\n"

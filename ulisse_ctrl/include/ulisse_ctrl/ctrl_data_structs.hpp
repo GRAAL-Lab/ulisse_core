@@ -10,7 +10,7 @@ namespace ulisse {
 
 enum class ControlMode : int {
     ThrusterMapping,
-    DynamicModel,
+    ClassicPIDControl,
     SlidingMode
 };
 
@@ -146,30 +146,60 @@ struct ControllerConfiguration {
     }
 };
 
-struct LowLevelConfiguration {
+struct SlidingSurface {
+
+    std::vector<double> cX;
+    std::vector<double> cN;
+    std::vector<double> inertia;
+    double k;
+    double k1;
+};
+
+struct SlidingParameter {
+    double gain1, gain2, surgeGain, headingGain;
+    double forceLimiter, torqueLimiter;
+};
+
+struct SlidingMode {
+    SlidingSurface ss;
+    SlidingParameter sp;
+};
+
+struct ThrusterMapping {
+    ctb::PIDGains pidGainsSurge;
+    double pidSatSurge;
+};
+
+struct ClassicPidControl {
+    ctb::PIDGains pidGainsSurge;
+    double pidSatSurge;
+    ctb::PIDGains pidGainsYawRate;
+    double pidSatYawRate;
+};
+
+struct DCLConfiguration {
 
     bool enableThrusters;
-    UlisseModelParameters thrusterMap;
     double thrusterPercLimit;
-
     ControlMode ctrlMode;
-    ctb::PIDGains mapping_pidgains_surge;
-    double mapping_pidsat_surge;
-    double jogLimiter;
+    double surgeMin, surgeMax;
+    double yawRateMin, yawRateMax;
 
-    ctb::PIDGains dynamic_pidgains_surge;
-    ctb::PIDGains dynamic_pidgains_yawrate;
-    double dynamic_pidsat_surge;
-    double dynamic_pidsat_yawrate;
+    UlisseModelParameters ulisseConfig;
+    ThrusterMapping thrusterMapping;
+    ClassicPidControl classicPidControl;
+    SlidingMode slidingMode;
 
-    friend std::ostream& operator<<(std::ostream& os, LowLevelConfiguration const& a)
+    Eigen::Vector2d filterParameter;
+
+    friend std::ostream& operator<<(std::ostream& os, DCLConfiguration const& a)
     {
-        return os << "======= LOW LEVEL CONF =======\n"
-                  << "CtrlMode: " << static_cast<int>(a.ctrlMode)  << "\n"
+        return os << "======= DCL CONF =======\n"
+                  << "CtrlMode: " << static_cast<int>(a.ctrlMode) << "\n"
                   << "EnableThrusters: " << a.enableThrusters << "\n"
                   << "ThrusterPercLimit: " << a.thrusterPercLimit << "\n"
                   << "----------------------\n"
-                  << a.thrusterMap
+                  << a.ulisseConfig
                   << "----------------------\n"
                   << "==============================\n";
     }
