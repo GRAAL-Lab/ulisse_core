@@ -146,6 +146,9 @@ class VehicleController {
     std::string boundaries_json;
 
     int LoadConfiguration();
+    void LoadControllerConfiguration(std::shared_ptr<ControllerConfiguration> conf, std::string file_name);
+    double SlowDownWhenTurning(double headingError, double desiredSpeed, const ControllerConfiguration& conf);
+    double AvoidRotationCloseToTarget(double desiredHeading, double heading, double desiredSpeed, const ControllerConfiguration& conf);
     void LoadKCLConfiguration(std::string task, std::string priorityLevel);
     void SetUpFSM();
     void SetupCommandServer();

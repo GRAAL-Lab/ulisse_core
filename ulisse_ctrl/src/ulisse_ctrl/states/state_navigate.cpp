@@ -4,7 +4,7 @@
 
 #include <jsoncpp/json/json.h>
 
-#include <math.h>
+#include <cmath>
 
 #include "sisl.h"
 #include <fstream>
@@ -315,7 +315,7 @@ namespace states {
                 }
             }
 
-            if (start && !oriented) {
+/*            if (start && !oriented) {
                 std::cout << "*** ORIENTING! ***" << std::endl;
                 if (abs(statusCxt_->vehicleHeading - starting_angle) < tollerance_start_angle) {
                     count++;
@@ -329,7 +329,7 @@ namespace states {
 
                     std::cout << "Starting angle " << abs(statusCxt_->vehicleHeading - starting_angle) << std::endl;
                 }
-            } else if (start && oriented) {
+            } else*/ if (start/* && oriented*/) {
                 ctb::DistanceAndAzimuthRad(statusCxt_->vehiclePos, end_point, goalCxt_->goalDistance, goalCxt_->goalHeading);
 
                 curvilinear_abscissa = getCurvilinearAbscissa();
@@ -415,8 +415,10 @@ namespace states {
 
         if (floor(max_abscissa) == floor(min_abscissa) || (floor(max_abscissa) == number_of_curves_)) {
             // To select the window part of curv, from min_abscissa to max_abscissa
-            s1713(curve, DecimalPart(min_abscissa), DecimalPart(max_abscissa),
-                &newcurve, &stat);
+            double decMinAbscissa, decMaxAbscissa;
+            std::modf(min_abscissa, &decMinAbscissa);
+            std::modf(min_abscissa, &decMaxAbscissa);
+            s1713(curve, decMinAbscissa, (decMaxAbscissa), &newcurve, &stat);
 
             // Find the closest point between a curve and a point
             s1957(newcurve, current_point, 3, aepsco, aepsge, &gpar, &dist, &stat);
@@ -424,13 +426,16 @@ namespace states {
             gpar = gpar + floor(min_abscissa);
 
         } else {
-            // To select the last part of first curve, from min_abscissa to 1.0
-            s1713(curve, DecimalPart(min_abscissa), 1.0, &newcurve, &stat);
+            // To select the last part of first curve, from min_abscissa to 1.
+            double decMinAbscissa, decMaxAbscissa;
+            std::modf(min_abscissa, &decMinAbscissa);
+            std::modf(min_abscissa, &decMaxAbscissa);
+            s1713(curve, decMinAbscissa, 1.0, &newcurve, &stat);
 
             // Select the second curve
             curve2 = nurbs_[current_curve + 1];
             // To select the first part of the second curve, from 0.0 to max_abscissa
-            s1713(curve2, 0.0, DecimalPart(max_abscissa), &newcurve2, &stat);
+            s1713(curve2, 0.0, decMaxAbscissa, &newcurve2, &stat);
 
             // Find the closest point between the first curve and the point
             s1957(curve, current_point, 3, aepsco, aepsge, &gpar, &dist, &stat);

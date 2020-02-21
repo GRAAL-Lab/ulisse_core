@@ -718,6 +718,91 @@ void VehicleController::Run()
     }
 }
 
+void VehicleController::LoadControllerConfiguration(std::shared_ptr<ControllerConfiguration> conf, std::string file_name)
+{
+    libconfig::Config confObj;
+
+    //Inizialization
+    std::string package_share_directory = ament_index_cpp::get_package_share_directory("ulisse_ctrl");
+    std::stringstream conf_path;
+    conf_path << package_share_directory << "/conf/" << file_name;
+
+    std::string confPath = conf_path.str().c_str();
+
+    std::cout << "PATH TO CONF FILE : " << confPath << std::endl;
+
+    //read conf file
+    try {
+        confObj.readFile(confPath.c_str());
+    } catch (libconfig::ParseException& e) {
+        std::cerr << "Parse exception when reading:" << confPath << std::endl;
+        std::cerr << "line: " << e.getLine() << " error: " << e.getError() << std::endl;
+        return;
+    }
+
+    ctb::SetParam(confObj, conf->posAcceptanceRadius, "kinematic_control_params.PosAcceptanceRadius");
+    ctb::SetParam(confObj, conf->goToHoldAfterMove, "kinematic_control_params.GotoHoldAfterMove");
+
+    // Hold
+    ctb::SetParam(confObj, conf->holdData.hysteresis, "kinematic_control_params.Hold.Hysteresis");
+    ctb::SetParam(confObj, conf->holdData.defaultRadius, "kinematic_control_params.Hold.DefaultRadius");
+    ctb::SetParam(confObj, conf->holdData.enableCurrentCompensation, "kinematic_control_params.Hold.enableCurrentCompensation");
+    ctb::SetParam(confObj, conf->holdData.currentMin, "kinematic_control_params.Hold.CurrentMin");
+    ctb::SetParam(confObj, conf->holdData.currentMax, "kinematic_control_params.Hold.CurrentMax");
+
+    // Slow Down on turns
+    ctb::SetParam(confObj, conf->enableSlowDownOnTurns, "kinematic_control_params.SlowDownOnTurns.enable");
+    ctb::SetParam(confObj, conf->slowOnTurns.headingErrorMin, "kinematic_control_params.SlowDownOnTurns.HeadingErrorMin");
+    ctb::SetParam(confObj, conf->slowOnTurns.headingErrorMax, "kinematic_control_params.SlowDownOnTurns.HeadingErrorMax");
+    ctb::SetParam(confObj, conf->slowOnTurns.alphaMin, "kinematic_control_params.SlowDownOnTurns.AlphaMin");
+    ctb::SetParam(confObj, conf->slowOnTurns.alphaMax, "kinematic_control_params.SlowDownOnTurns.AlphaMax");
+}
+
+double VehicleController::SlowDownWhenTurning(double headingError, double desiredSpeed, const ControllerConfiguration& conf)
+{
+    double herrMin = conf.slowOnTurns.headingErrorMin;
+    double herrMax = conf.slowOnTurns.headingErrorMax;
+    double alphaMin = conf.slowOnTurns.alphaMin;
+    double alphaMax = conf.slowOnTurns.alphaMax;
+    double herrabs = std::abs(headingError);
+    double factor = 1.0;
+    if (herrabs < herrMax && herrabs > herrMin) {
+        factor = (herrabs - herrMin) / (herrMax - herrMin) * (alphaMin - alphaMax) + alphaMax;
+    } else if (herrabs > herrMax) {
+        factor = alphaMin;
+    } else {
+        factor = alphaMax;
+    }
+
+    double newSpeed = desiredSpeed * factor;
+    //double newKp = conf.pidgains_position.Kp * factor;
+    /*ortos::DebugConsole::Write(ortos::LogLevel::info, "SlowDownWhenTurning", "Desired value: %lf Factor: %lf Final value: %lf",
+            desiredSpeed, factor, newSpeed);*/
+    return newSpeed;
+}
+
+double VehicleController::AvoidRotationCloseToTarget(double desiredHeading, double heading, double desiredSpeed, const ControllerConfiguration& conf)
+{
+    double sMin = conf.avoidRot.speedMin;
+    double sMax = conf.avoidRot.speedMax;
+    double betaMin = conf.avoidRot.betaMin;
+    double betaMax = conf.avoidRot.betaMax;
+
+    double beta;
+    if (desiredSpeed < sMax && desiredSpeed > sMin) {
+        beta = (desiredSpeed - sMin) / (sMax - sMin) * (betaMax - betaMin) + betaMin;
+    } else if (desiredSpeed > sMax) {
+        beta = 1;
+    } else {
+        beta = betaMin;
+    }
+
+    double newHeading = (1 - beta) * heading + beta * desiredHeading;
+    /*ortos::DebugConsole::Write(ortos::LogLevel::info, "AvoidRotationWhenCloseToTarget", "Desired heading: %lf Factor: %lf Final heading: %lf",
+            desiredHeading, beta, newHeading);*/
+    return newHeading;
+}
+
 void VehicleController::PublishControl()
 {
     ulisse_msgs::msg::StatusContext statuscxt_msg;
