@@ -1,4 +1,5 @@
 #include "ulisse_ctrl/states/genericstate.hpp"
+#include "ulisse_ctrl/fsm_defines.hpp"
 #include "ulisse_driver/LLCHelperDefines.h"
 
 namespace ulisse {

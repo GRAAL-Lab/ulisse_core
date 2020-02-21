@@ -1,14 +1,5 @@
 #include "ulisse_ctrl/tasks/SafetyBoundaries.h"
-
-#include "ctrl_toolbox/DataStructs.h"
-#include <ikcl/ikcl.h>
-#include <rml/RML.h>
-#include <tpik/TPIKlib.h>
-
-#include "ulisse_ctrl/ctrl_data_structs.hpp"
 #include "ulisse_ctrl/helper_functions.hpp"
-
-#include <algorithm>
 
 using namespace ctb;
 namespace ikcl {
@@ -217,7 +208,7 @@ desired_target SafetyBoundaries::distance_check(Point const& p)
     nearest_p.set<0>(0.0);
     nearest_p.set<1>(0.0);
 
-    min_d = static_cast<double>(INFINITY) ;
+    min_d = static_cast<double>(INFINITY);
     first = true;
 
     double count = 0.0;
@@ -312,7 +303,7 @@ desired_target SafetyBoundaries::distance_check(Point const& p)
                 y_max = boost::geometry::get<1>(p1) > boost::geometry::get<1>(p2) ? boost::geometry::get<1>(p1)
                                                                                   : boost::geometry::get<1>(p2);
 
-                if ((boost::geometry::get<0>(p) < x_max && boost::geometry::get<0>(p) > x_min)|| (boost::geometry::get<0>(p) < y_max && boost::geometry::get<0>(p) > y_min)) {
+                if ((boost::geometry::get<0>(p) < x_max && boost::geometry::get<0>(p) > x_min) || (boost::geometry::get<0>(p) < y_max && boost::geometry::get<0>(p) > y_min)) {
                     d = boost::geometry::distance(p, i, boost::geometry::strategy::distance::projected_point<>{});
 
                     m = (boost::geometry::get<1>(p2) - boost::geometry::get<1>(p1)) / (boost::geometry::get<0>(p2) - boost::geometry::get<0>(p1));

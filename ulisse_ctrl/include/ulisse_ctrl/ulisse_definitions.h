@@ -1,8 +1,6 @@
 #ifndef ULISSEDEFINES_H
 #define ULISSEDEFINES_H
 
-#include <eigen3/Eigen/Dense>
-#include <iostream>
 #include <rml/RMLDefines.h>
 #include <vector>
 

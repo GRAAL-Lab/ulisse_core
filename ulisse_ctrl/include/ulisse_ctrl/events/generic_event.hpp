@@ -9,7 +9,6 @@
 #define ULISSE_CTRL_EVENTS_GENERICEVENT_H_
 
 #include "ulisse_ctrl/ctrl_data_structs.hpp"
-#include "ulisse_ctrl/fsm_defines.hpp"
 #include <fsm/fsm.h>
 
 namespace ulisse {

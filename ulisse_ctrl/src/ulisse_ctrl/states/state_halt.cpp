@@ -1,4 +1,5 @@
 #include "ulisse_ctrl/states/state_halt.hpp"
+#include <ulisse_ctrl/ulisse_definitions.h>
 
 namespace ulisse {
 

@@ -1,4 +1,5 @@
 #include "ulisse_ctrl/events/event_rc_enabled.hpp"
+#include "ulisse_ctrl/fsm_defines.hpp"
 
 namespace ulisse {
 

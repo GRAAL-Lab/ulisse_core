@@ -1,33 +1,12 @@
 #ifndef __CONTROLSAFETYBOUNDARIES_H__
 #define __CONTROLSAFETYBOUNDARIES_H__
 
-#include "ctrl_toolbox/DataStructs.h"
-#include "ctrl_toolbox/DigitalPID.h"
-#include <eigen3/Eigen/Dense>
-#include <iostream>
-#include <list>
-#include <rml/RML.h>
-#include <tpik/TPIKlib.h>
-
-#include "ctrl_toolbox/DataStructs.h"
-#include <ikcl/ikcl.h>
-#include <rml/RML.h>
 #include <tpik/TPIKlib.h>
 
 #include "ulisse_ctrl/ctrl_data_structs.hpp"
-#include "ulisse_ctrl/helper_functions.hpp"
 
 #include <boost/geometry.hpp>
-#include <boost/geometry/geometries/adapted/boost_tuple.hpp>
-#include <boost/geometry/geometries/linestring.hpp>
 #include <boost/geometry/geometries/point_xy.hpp>
-#include <boost/geometry/geometries/polygon.hpp>
-#include <boost/geometry/geometries/segment.hpp>
-#include <boost/geometry/strategies/cartesian/distance_projected_point.hpp>
-#include <math.h>
-
-#include <boost/foreach.hpp>
-#include <boost/numeric/conversion/bounds.hpp>
 
 using namespace ctb;
 

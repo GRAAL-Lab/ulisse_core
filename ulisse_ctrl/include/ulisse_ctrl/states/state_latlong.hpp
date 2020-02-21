@@ -1,10 +1,8 @@
 #ifndef ULISSE_CTRL_STATEMOVE_HPP
 #define ULISSE_CTRL_STATEMOVE_HPP
 
-#include "ulisse_ctrl/fsm_defines.hpp"
 #include "ulisse_ctrl/states/genericstate.hpp"
 #include "ulisse_ctrl/states/state_hold.hpp"
-#include <memory>
 
 namespace ulisse {
 

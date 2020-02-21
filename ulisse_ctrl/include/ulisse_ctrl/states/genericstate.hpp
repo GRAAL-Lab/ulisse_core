@@ -1,18 +1,9 @@
 #ifndef ULISSE_CTRL_GENERICSTATE_HPP
 #define ULISSE_CTRL_GENERICSTATE_HPP
 
-#include <fsm/fsm.h>
-#include <rclcpp/logger.hpp>
-
 #include "ulisse_ctrl/ctrl_data_structs.hpp"
-#include "ulisse_ctrl/fsm_defines.hpp"
-
+#include <fsm/fsm.h>
 #include <ikcl/ikcl.h>
-#include <rml/RML.h>
-#include <tpik/TPIKlib.h>
-
-#include <ulisse_ctrl/geometry_defines.h>
-#include <ulisse_ctrl/ulisse_definitions.h>
 
 namespace ulisse {
 

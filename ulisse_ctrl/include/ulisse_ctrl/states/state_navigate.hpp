@@ -1,15 +1,8 @@
 #ifndef ULISSE_CTRL_STATENAVIGATE_HPP
 #define ULISSE_CTRL_STATENAVIGATE_HPP
 
-#include "ulisse_ctrl/fsm_defines.hpp"
-#include "ulisse_ctrl/states/genericstate.hpp"
-#include <memory>
-
 #include "sisl.h"
-#include <fstream>
-#include <iostream>
-#include <stdexcept>
-#include <string>
+#include "ulisse_ctrl/states/genericstate.hpp"
 
 namespace ulisse {
 
@@ -70,8 +63,8 @@ namespace states {
         ctb::LatLong lookAheadPoint;
 
         double getCurvilinearAbscissa();
-        ctb::LatLong to_lat_long(double x, double y);
-        double* to_meters(double latitude, double longitude);
+        ctb::LatLong ToLatLong(double x, double y);
+        double* ToMeters(double latitude, double longitude);
 
     public:
         StateNavigate();

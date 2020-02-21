@@ -1,8 +1,6 @@
 #ifndef ULISSE_CTRL_FSM_DEFINES_HPP
 #define ULISSE_CTRL_FSM_DEFINES_HPP
 
-#include <string>
-
 #include "ctrl_toolbox/DataStructs.h"
 
 namespace ulisse {

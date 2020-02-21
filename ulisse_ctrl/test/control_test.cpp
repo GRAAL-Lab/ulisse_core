@@ -1,16 +1,9 @@
-#include "rclcpp/rclcpp.hpp"
-
-#include "ulisse_msgs/msg/compass.hpp"
-#include "ulisse_msgs/msg/gps_data.hpp"
-#include "ulisse_msgs/msg/motor_reference.hpp"
 #include "ulisse_msgs/srv/llc_command.hpp"
 #include "ulisse_msgs/srv/rosbag_cmd.hpp"
 #include "ulisse_msgs/topicnames.hpp"
-
-#include "ulisse_ctrl/ctrl_data_structs.hpp"
 #include "ulisse_driver/LLCHelperDataStructs.h"
+#include "ulisse_msgs/terminal_utils.hpp"
 
-#include "rml/RML.h"
 
 using namespace ulisse::llc;
 using namespace std::chrono_literals;
@@ -47,7 +40,6 @@ int main(int argc, char* argv[])
         auto result_bag = result_future_bag.get();
         std::cout << "SENT REQUEST TO ROSBAG COMMAND SERVICE" << std::endl;
         RCLCPP_INFO(node->get_logger(), "Service returned: %s", (result_bag->res).c_str());
-
     }
     //////////////////////////////////////////////////
 

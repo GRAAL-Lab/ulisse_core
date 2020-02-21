@@ -1,36 +1,14 @@
 #include "ulisse_ctrl/vehiclecontroller.hpp"
-#include "ctrl_toolbox/HelperFunctions.h"
+#include "ulisse_ctrl/fsm_defines.hpp"
 #include "ulisse_ctrl/helper_functions.hpp"
+#include "ulisse_msgs/terminal_utils.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 #include <ament_index_cpp/get_package_share_directory.hpp>
-
-#include <chrono>
-#include <iomanip>
-
-// Libraries
-#include <fsm/fsm.h>
-#include <ikcl/ikcl.h>
-#include <iostream>
-#include <pwd.h>
-#include <rml/RML.h>
-#include <tpik/Action.h>
-#include <tpik/TPIKlib.h>
-#include <unistd.h>
-
-#include <std_msgs/msg/string.hpp>
-
+#include <jsoncpp/json/json.h>
 #include <ulisse_ctrl/configuration.h>
 #include <ulisse_ctrl/geometry_defines.h>
-#include <ulisse_ctrl/tasks/SafetyBoundaries.h>
 #include <ulisse_ctrl/ulisse_definitions.h>
 
-#include "ulisse_msgs/srv/set_boundaries.hpp"
-
-#include <jsoncpp/json/json.h>
-
-#include <libconfig.h++>
-
-using namespace std::chrono_literals;
 using std::placeholders::_1;
 
 namespace ulisse {
@@ -313,9 +291,9 @@ void VehicleController::LoadKCLConfiguration(std::string task, std::string prior
     InitializeUnifiedHierarchyAndActions(action_manager, taskIDMap, conf_path_priority_level.str().c_str());
 
     // Configure all tasks, each with the correspondent parameters
-    ConfigureEqualityTaskFromFile(equality_task, conf_path.str().c_str());
-    ConfigureInequalityTaskFromFile(inequality_task, conf_path.str().c_str());
-    ConfigureCartesianTaskFromFile(cartesian_task, conf_path.str().c_str());
+    ConfigureTaskFromFile(equality_task, conf_path.str().c_str());
+    ConfigureTaskFromFile(inequality_task, conf_path.str().c_str());
+    ConfigureTaskFromFile(cartesian_task, conf_path.str().c_str());
 
     // Set Saturation values for the iCAT (read from conf file)
     int dof = 6;

@@ -2,9 +2,7 @@
 #define ULISSE_CTRL_GENERICCOMMAND_HPP
 
 #include "ulisse_ctrl/ctrl_data_structs.hpp"
-#include "ulisse_ctrl/fsm_defines.hpp"
 #include <fsm/fsm.h>
-#include <rclcpp/logger.hpp>
 
 namespace ulisse {
 

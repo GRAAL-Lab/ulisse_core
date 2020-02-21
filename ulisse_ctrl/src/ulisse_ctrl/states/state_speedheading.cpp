@@ -1,6 +1,6 @@
 #include "ulisse_ctrl/states/state_speedheading.hpp"
-#include "ctrl_toolbox/HelperFunctions.h"
-#include "ulisse_ctrl/helper_functions.hpp"
+#include <ulisse_ctrl/ulisse_definitions.h>
+#include "ulisse_ctrl/fsm_defines.hpp"
 
 namespace ulisse {
 

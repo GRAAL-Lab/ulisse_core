@@ -1,6 +1,5 @@
 #include "ulisse_ctrl/states/state_hold.hpp"
-#include "ctrl_toolbox/HelperFunctions.h"
-#include "ulisse_ctrl/helper_functions.hpp"
+#include <ulisse_ctrl/ulisse_definitions.h>
 
 namespace ulisse {
 

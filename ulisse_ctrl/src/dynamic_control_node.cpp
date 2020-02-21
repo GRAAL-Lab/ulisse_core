@@ -8,13 +8,7 @@
  */
 
 #include "rclcpp/rclcpp.hpp"
-#include <chrono>
 
-#include "ctrl_toolbox/DigitalSlidingMode.h"
-#include "ctrl_toolbox/HelperFunctions.h"
-#include "surface_vehicle_model/surfacevehiclemodel.hpp"
-#include "ulisse_ctrl/fsm_defines.hpp"
-#include "ulisse_ctrl/helper_functions.hpp"
 #include "ulisse_msgs/msg/control_context.hpp"
 #include "ulisse_msgs/msg/control_data.hpp"
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
@@ -22,16 +16,20 @@
 #include "ulisse_msgs/msg/thrusters_data.hpp"
 #include "ulisse_msgs/srv/min_srv.hpp"
 #include "ulisse_msgs/srv/reset_configuration.hpp"
+#include "ulisse_msgs/topicnames.hpp"
+
+#include "ctrl_toolbox/DigitalSlidingMode.h"
+#include "ctrl_toolbox/HelperFunctions.h"
+
+#include "ulisse_ctrl/ctrl_data_structs.hpp"
+#include "ulisse_ctrl/fsm_defines.hpp"
+
+#include "surface_vehicle_model/surfacevehiclemodel.hpp"
+
 #include "ulisse_msgs/terminal_utils.hpp"
 #include <ament_index_cpp/get_package_share_directory.hpp>
-#include <libconfig.h++>
 
-#include "rml/RML.h"
-#include <iostream>
-
-using namespace std::chrono_literals;
 using namespace ulisse;
-using namespace ctb;
 
 static ulisse_msgs::msg::ControlContext ctrl_cxt_msg;
 static ulisse_msgs::msg::StatusContext status_cxt;
@@ -198,8 +196,8 @@ int main(int argc, char* argv[])
                 Eigen::Vector2d forces = ulisseModel.ThusterAllocation(tau);
 
                 //saturation
-                requestedVel(0) = clamp(requestedVel(0), conf->surgeMin, conf->surgeMax);
-                requestedVel(5) = clamp(requestedVel(5), conf->yawRateMin, conf->yawRateMax);
+                requestedVel(0) = ctb::clamp(requestedVel(0), conf->surgeMin, conf->surgeMax);
+                requestedVel(5) = ctb::clamp(requestedVel(5), conf->yawRateMin, conf->yawRateMax);
 
                 ulisseModel.InverseMotorsEquations(requestedVel, forces, thrusterData.mapOut.left, thrusterData.mapOut.right);
             } else if (conf->ctrlMode == ControlMode::SlidingMode) {
@@ -295,73 +293,73 @@ void LoadDclConfiguration(std::shared_ptr<DCLConfiguration> conf, std::string fi
 
     // Load DCL Config
     int tmpCtrlMode;
-    SetParam(confObj, tmpCtrlMode, "dcl_ulisse.ctrlMode");
+    ctb::SetParam(confObj, tmpCtrlMode, "dcl_ulisse.ctrlMode");
     conf->ctrlMode = static_cast<ControlMode>(tmpCtrlMode);
-    SetParam(confObj, conf->enableThrusters, "dcl_ulisse.enableThrusters");
-    SetParam(confObj, conf->thrusterPercLimit, "dcl_ulisse.thrusterPercLimit");
-    SetParam(confObj, conf->surgeMin, "dcl_ulisse.surgeMin");
-    SetParam(confObj, conf->surgeMax, "dcl_ulisse.surgeMax");
-    SetParam(confObj, conf->yawRateMin, "dcl_ulisse.yawRateMin");
-    SetParam(confObj, conf->yawRateMax, "dcl_ulisse.yawRateMax");
+    ctb::SetParam(confObj, conf->enableThrusters, "dcl_ulisse.enableThrusters");
+    ctb::SetParam(confObj, conf->thrusterPercLimit, "dcl_ulisse.thrusterPercLimit");
+    ctb::SetParam(confObj, conf->surgeMin, "dcl_ulisse.surgeMin");
+    ctb::SetParam(confObj, conf->surgeMax, "dcl_ulisse.surgeMax");
+    ctb::SetParam(confObj, conf->yawRateMin, "dcl_ulisse.yawRateMin");
+    ctb::SetParam(confObj, conf->yawRateMax, "dcl_ulisse.yawRateMax");
     //Filter params
-    SetParamVector(confObj, conf->filterParameter, "dcl_ulisse.filterParameter.gains");
+    ctb::SetParamVector(confObj, conf->filterParameter, "dcl_ulisse.filterParameter.gains");
 
     //Load Ulisse Params
-    SetParam(confObj, conf->ulisseConfig.d, "dcl_ulisse.ulisseModel.motorsDistance");
-    SetParam(confObj, conf->ulisseConfig.lambda_pos, "dcl_ulisse.ulisseModel.lambdaPos");
-    SetParam(confObj, conf->ulisseConfig.lambda_neg, "dcl_ulisse.ulisseModel.lambdaNeg");
-    SetParamVector(confObj, conf->ulisseConfig.cX, "dcl_ulisse.ulisseModel.cX");
-    SetParamVector(confObj, conf->ulisseConfig.cN, "dcl_ulisse.ulisseModel.cN");
-    SetParam(confObj, conf->ulisseConfig.b1_pos, "dcl_ulisse.ulisseModel.b1Pos");
-    SetParam(confObj, conf->ulisseConfig.b1_neg, "dcl_ulisse.ulisseModel.b1Neg");
-    SetParam(confObj, conf->ulisseConfig.b2_pos, "dcl_ulisse.ulisseModel.b2Pos");
-    SetParam(confObj, conf->ulisseConfig.b2_neg, "dcl_ulisse.ulisseModel.b2Neg");
+    ctb::SetParam(confObj, conf->ulisseConfig.d, "dcl_ulisse.ulisseModel.motorsDistance");
+    ctb::SetParam(confObj, conf->ulisseConfig.lambda_pos, "dcl_ulisse.ulisseModel.lambdaPos");
+    ctb::SetParam(confObj, conf->ulisseConfig.lambda_neg, "dcl_ulisse.ulisseModel.lambdaNeg");
+    ctb::SetParamVector(confObj, conf->ulisseConfig.cX, "dcl_ulisse.ulisseModel.cX");
+    ctb::SetParamVector(confObj, conf->ulisseConfig.cN, "dcl_ulisse.ulisseModel.cN");
+    ctb::SetParam(confObj, conf->ulisseConfig.b1_pos, "dcl_ulisse.ulisseModel.b1Pos");
+    ctb::SetParam(confObj, conf->ulisseConfig.b1_neg, "dcl_ulisse.ulisseModel.b1Neg");
+    ctb::SetParam(confObj, conf->ulisseConfig.b2_pos, "dcl_ulisse.ulisseModel.b2Pos");
+    ctb::SetParam(confObj, conf->ulisseConfig.b2_neg, "dcl_ulisse.ulisseModel.b2Neg");
 
     Eigen::Vector3d tmp_Inerzia;
     tmp_Inerzia.setZero();
-    SetParamVector(confObj, tmp_Inerzia, "dcl_ulisse.ulisseModel.inertia");
+    ctb::SetParamVector(confObj, tmp_Inerzia, "dcl_ulisse.ulisseModel.inertia");
     conf->ulisseConfig.Inertia.diagonal() = Eigen::Map<Eigen::Matrix<double, 3, 1>>(tmp_Inerzia.data());
 
     //if CtrlMdoe is Thruster Mapping
     if (conf->ctrlMode == ControlMode::ThrusterMapping) {
-        SetParam(confObj, conf->thrusterMapping.pidGainsSurge.Kp, "dcl_ulisse.thrusterMapping.pidSurge.kp");
-        SetParam(confObj, conf->thrusterMapping.pidGainsSurge.Ki, "dcl_ulisse.thrusterMapping.pidSurge.ki");
-        SetParam(confObj, conf->thrusterMapping.pidGainsSurge.Kd, "dcl_ulisse.thrusterMapping.pidSurge.kd");
-        SetParam(confObj, conf->thrusterMapping.pidGainsSurge.Kff, "dcl_ulisse.thrusterMapping.pidSurge.kff");
-        SetParam(confObj, conf->thrusterMapping.pidGainsSurge.N, "dcl_ulisse.thrusterMapping.pidSurge.n");
-        SetParam(confObj, conf->thrusterMapping.pidGainsSurge.Tr, "dcl_ulisse.thrusterMapping.pidSurge.tr");
-        SetParam(confObj, conf->thrusterMapping.pidSatSurge, "dcl_ulisse.thrusterMapping.pidSurge.sat");
+        ctb::SetParam(confObj, conf->thrusterMapping.pidGainsSurge.Kp, "dcl_ulisse.thrusterMapping.pidSurge.kp");
+        ctb::SetParam(confObj, conf->thrusterMapping.pidGainsSurge.Ki, "dcl_ulisse.thrusterMapping.pidSurge.ki");
+        ctb::SetParam(confObj, conf->thrusterMapping.pidGainsSurge.Kd, "dcl_ulisse.thrusterMapping.pidSurge.kd");
+        ctb::SetParam(confObj, conf->thrusterMapping.pidGainsSurge.Kff, "dcl_ulisse.thrusterMapping.pidSurge.kff");
+        ctb::SetParam(confObj, conf->thrusterMapping.pidGainsSurge.N, "dcl_ulisse.thrusterMapping.pidSurge.n");
+        ctb::SetParam(confObj, conf->thrusterMapping.pidGainsSurge.Tr, "dcl_ulisse.thrusterMapping.pidSurge.tr");
+        ctb::SetParam(confObj, conf->thrusterMapping.pidSatSurge, "dcl_ulisse.thrusterMapping.pidSurge.sat");
 
     }
     //if CtrlMdoe is Sliding Mode
     else if (conf->ctrlMode == ControlMode::SlidingMode) {
-        SetParam(confObj, conf->slidingMode.sp.gain1, "dcl_ulisse.slidingMode.gain1");
-        SetParam(confObj, conf->slidingMode.sp.surgeGain, "dcl_ulisse.slidingMode.surgeGain");
-        SetParam(confObj, conf->slidingMode.sp.forceLimiter, "dcl_ulisse.slidingMode.forceLimiter");
-        SetParam(confObj, conf->slidingMode.sp.gain2, "dcl_ulisse.slidingMode.gain2");
-        SetParam(confObj, conf->slidingMode.sp.headingGain, "dcl_ulisse.slidingMode.headingGain");
-        SetParam(confObj, conf->slidingMode.sp.torqueLimiter, "dcl_ulisse.slidingMode.torqueLimiter");
+        ctb::SetParam(confObj, conf->slidingMode.sp.gain1, "dcl_ulisse.slidingMode.gain1");
+        ctb::SetParam(confObj, conf->slidingMode.sp.surgeGain, "dcl_ulisse.slidingMode.surgeGain");
+        ctb::SetParam(confObj, conf->slidingMode.sp.forceLimiter, "dcl_ulisse.slidingMode.forceLimiter");
+        ctb::SetParam(confObj, conf->slidingMode.sp.gain2, "dcl_ulisse.slidingMode.gain2");
+        ctb::SetParam(confObj, conf->slidingMode.sp.headingGain, "dcl_ulisse.slidingMode.headingGain");
+        ctb::SetParam(confObj, conf->slidingMode.sp.torqueLimiter, "dcl_ulisse.slidingMode.torqueLimiter");
 
     }
     //if CtrlMdoe is Classic PID
     else if (conf->ctrlMode == ControlMode::ClassicPIDControl) {
         //Initialize pidSurge
-        SetParam(confObj, conf->classicPidControl.pidGainsSurge.Kp, "dcl_ulisse.classicPidControl.pidSurge.kp");
-        SetParam(confObj, conf->classicPidControl.pidGainsSurge.Ki, "dcl_ulisse.classicPidControl.pidSurge.ki");
-        SetParam(confObj, conf->classicPidControl.pidGainsSurge.Kd, "dcl_ulisse.classicPidControl.pidSurge.kd");
-        SetParam(confObj, conf->classicPidControl.pidGainsSurge.Kff, "dcl_ulisse.classicPidControl.pidSurge.kff");
-        SetParam(confObj, conf->classicPidControl.pidGainsSurge.N, "dcl_ulisse.classicPidControl.pidSurge.n");
-        SetParam(confObj, conf->classicPidControl.pidGainsSurge.Tr, "dcl_ulisse.classicPidControl.pidSurge.tr");
-        SetParam(confObj, conf->classicPidControl.pidSatSurge, "dcl_ulisse.classicPidControl.pidSurge.sat");
+        ctb::SetParam(confObj, conf->classicPidControl.pidGainsSurge.Kp, "dcl_ulisse.classicPidControl.pidSurge.kp");
+        ctb::SetParam(confObj, conf->classicPidControl.pidGainsSurge.Ki, "dcl_ulisse.classicPidControl.pidSurge.ki");
+        ctb::SetParam(confObj, conf->classicPidControl.pidGainsSurge.Kd, "dcl_ulisse.classicPidControl.pidSurge.kd");
+        ctb::SetParam(confObj, conf->classicPidControl.pidGainsSurge.Kff, "dcl_ulisse.classicPidControl.pidSurge.kff");
+        ctb::SetParam(confObj, conf->classicPidControl.pidGainsSurge.N, "dcl_ulisse.classicPidControl.pidSurge.n");
+        ctb::SetParam(confObj, conf->classicPidControl.pidGainsSurge.Tr, "dcl_ulisse.classicPidControl.pidSurge.tr");
+        ctb::SetParam(confObj, conf->classicPidControl.pidSatSurge, "dcl_ulisse.classicPidControl.pidSurge.sat");
 
         //Initialize pidYawRate
-        SetParam(confObj, conf->classicPidControl.pidGainsYawRate.Kp, "dcl_ulisse.classicPidControl.pidYawRate.kp");
-        SetParam(confObj, conf->classicPidControl.pidGainsYawRate.Ki, "dcl_ulisse.classicPidControl.pidYawRate.ki");
-        SetParam(confObj, conf->classicPidControl.pidGainsYawRate.Kd, "dcl_ulisse.classicPidControl.pidYawRate.kd");
-        SetParam(confObj, conf->classicPidControl.pidGainsYawRate.Kff, "dcl_ulisse.classicPidControl.pidYawRate.kff");
-        SetParam(confObj, conf->classicPidControl.pidGainsYawRate.N, "dcl_ulisse.classicPidControl.pidYawRate.n");
-        SetParam(confObj, conf->classicPidControl.pidGainsYawRate.Tr, "dcl_ulisse.classicPidControl.pidYawRate.tr");
-        SetParam(confObj, conf->classicPidControl.pidSatYawRate, "dcl_ulisse.classicPidControl.pidYawRate.sat");
+        ctb::SetParam(confObj, conf->classicPidControl.pidGainsYawRate.Kp, "dcl_ulisse.classicPidControl.pidYawRate.kp");
+        ctb::SetParam(confObj, conf->classicPidControl.pidGainsYawRate.Ki, "dcl_ulisse.classicPidControl.pidYawRate.ki");
+        ctb::SetParam(confObj, conf->classicPidControl.pidGainsYawRate.Kd, "dcl_ulisse.classicPidControl.pidYawRate.kd");
+        ctb::SetParam(confObj, conf->classicPidControl.pidGainsYawRate.Kff, "dcl_ulisse.classicPidControl.pidYawRate.kff");
+        ctb::SetParam(confObj, conf->classicPidControl.pidGainsYawRate.N, "dcl_ulisse.classicPidControl.pidYawRate.n");
+        ctb::SetParam(confObj, conf->classicPidControl.pidGainsYawRate.Tr, "dcl_ulisse.classicPidControl.pidYawRate.tr");
+        ctb::SetParam(confObj, conf->classicPidControl.pidSatYawRate, "dcl_ulisse.classicPidControl.pidYawRate.sat");
     }
 }
 

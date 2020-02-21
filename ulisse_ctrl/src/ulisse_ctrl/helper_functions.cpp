@@ -1,9 +1,4 @@
 #include "ulisse_ctrl/helper_functions.hpp"
-#include "cmath"
-#include <ament_index_cpp/get_package_share_directory.hpp>
-#include <cstdlib>
-#include <iostream>
-#include <libconfig.h++>
 
 namespace ulisse {
 

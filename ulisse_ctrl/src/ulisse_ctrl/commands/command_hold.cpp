@@ -1,4 +1,5 @@
 #include "ulisse_ctrl/commands/command_hold.hpp"
+#include "ulisse_ctrl/fsm_defines.hpp"
 
 namespace ulisse {
 

@@ -1,16 +1,8 @@
 #include "ulisse_ctrl/states/state_navigate.hpp"
-#include "ctrl_toolbox/HelperFunctions.h"
+#include "ulisse_ctrl/fsm_defines.hpp"
 #include "ulisse_ctrl/helper_functions.hpp"
-
 #include <jsoncpp/json/json.h>
-
-#include <cmath>
-
-#include "sisl.h"
-#include <fstream>
-#include <iostream>
-#include <stdexcept>
-#include <string>
+#include <ulisse_ctrl/ulisse_definitions.h>
 
 namespace ulisse {
 
@@ -252,19 +244,19 @@ namespace states {
         // Compute the point of the first curve at 0.0.
         s1227(curve, 0, 0.0, &leftknot, point_at, &stat);
 
-        starting_point = to_lat_long(point_at[0], point_at[1]);
+        starting_point = ToLatLong(point_at[0], point_at[1]);
 
         curve = nurbs_[number_of_curves_ - 1];
         // Compute the point of the last curve at 1.0.
         s1227(curve, 0, 1.0, &leftknot, point_at, &stat);
 
-        end_point = to_lat_long(point_at[0], point_at[1]);
+        end_point = ToLatLong(point_at[0], point_at[1]);
 
         curve = nurbs_[0];
         // Compute the point of the first curve at 0.1.
         s1227(curve, 0, 0.5, &leftknot, point_at, &stat);
 
-        ctb::LatLong next_point = to_lat_long(point_at[0], point_at[1]);
+        ctb::LatLong next_point = ToLatLong(point_at[0], point_at[1]);
 
         double dist;
         ctb::DistanceAndAzimuthRad(starting_point, next_point, dist, starting_angle);
@@ -315,7 +307,7 @@ namespace states {
                 }
             }
 
-/*            if (start && !oriented) {
+            /*            if (start && !oriented) {
                 std::cout << "*** ORIENTING! ***" << std::endl;
                 if (abs(statusCxt_->vehicleHeading - starting_angle) < tollerance_start_angle) {
                     count++;
@@ -329,7 +321,8 @@ namespace states {
 
                     std::cout << "Starting angle " << abs(statusCxt_->vehicleHeading - starting_angle) << std::endl;
                 }
-            } else*/ if (start/* && oriented*/) {
+            } else*/
+            if (start /* && oriented*/) {
                 ctb::DistanceAndAzimuthRad(statusCxt_->vehiclePos, end_point, goalCxt_->goalDistance, goalCxt_->goalHeading);
 
                 curvilinear_abscissa = getCurvilinearAbscissa();
@@ -354,7 +347,7 @@ namespace states {
 
                         double tan_angle = atan2(point_at[4], point_at[3]);
 
-                        lookAheadPoint = to_lat_long(point_at[0] + delta_ * cos(tan_angle), point_at[1] + delta_ * sin(tan_angle));
+                        lookAheadPoint = ToLatLong(point_at[0] + delta_ * cos(tan_angle), point_at[1] + delta_ * sin(tan_angle));
                     } else {
                         // Estimate curve length
                         s1240(curve, aepsge, &cur_length, &stat);
@@ -380,7 +373,7 @@ namespace states {
                         s1227(next_curve, 1, next_curvilinear_abscissa, &leftknot, point_at,
                             &stat);
 
-                        lookAheadPoint = to_lat_long(point_at[0], point_at[1]);
+                        lookAheadPoint = ToLatLong(point_at[0], point_at[1]);
                     }
                     ctb::DistanceAndAzimuthRad(statusCxt_->vehiclePos, lookAheadPoint, goalCxt_->goalDistance, goalCxt_->goalHeading);
 
@@ -410,8 +403,7 @@ namespace states {
 
         curve = nurbs_[current_curve];
 
-        current_point = to_meters(statusCxt_->vehiclePos.latitude,
-            statusCxt_->vehiclePos.longitude);
+        current_point = ToMeters(statusCxt_->vehiclePos.latitude, statusCxt_->vehiclePos.longitude);
 
         if (floor(max_abscissa) == floor(min_abscissa) || (floor(max_abscissa) == number_of_curves_)) {
             // To select the window part of curv, from min_abscissa to max_abscissa
@@ -453,7 +445,7 @@ namespace states {
         return gpar;
     }
 
-    ctb::LatLong StateNavigate::to_lat_long(double x, double y)
+    ctb::LatLong StateNavigate::ToLatLong(double x, double y)
     {
         double lam = lat_to_m_coeff(centroid_.latitude);
         double lom = lon_to_m_coeff(centroid_.longitude);
@@ -462,7 +454,7 @@ namespace states {
         return p;
     }
 
-    double* StateNavigate::to_meters(double latitude, double longitude)
+    double* StateNavigate::ToMeters(double latitude, double longitude)
     {
         double lam = lat_to_m_coeff(centroid_.latitude);
         double lom = lon_to_m_coeff(centroid_.longitude);

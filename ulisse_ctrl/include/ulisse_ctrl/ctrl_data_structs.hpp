@@ -1,10 +1,8 @@
 #ifndef ULISSE_CTRL_DATA_STRUCTS_HPP
 #define ULISSE_CTRL_DATA_STRUCTS_HPP
 
-#include "ctrl_toolbox/DataStructs.h"
 #include "ctrl_toolbox/DigitalPID.h"
 #include "surface_vehicle_model/surfacevehiclemodel.hpp"
-#include "ulisse_msgs/terminal_utils.hpp"
 
 namespace ulisse {
 

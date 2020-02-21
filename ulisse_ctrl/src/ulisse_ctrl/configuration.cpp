@@ -1,13 +1,6 @@
-#include <ctime>
-#include <eigen3/Eigen/Dense>
-#include <fstream>
 #include <libconfig.h++>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <ulisse_ctrl/configuration.h>
-#include <ulisse_ctrl/geometry_defines.h>
 #include <ulisse_ctrl/ulisse_definitions.h>
-#include <vector>
 
 bool FindVectorConfFile(std::string property, Eigen::VectorXd& vector, const std::string confPath)
 
@@ -105,7 +98,7 @@ bool GetPriorityLevelRegularizationDataFromFile(const std::string ID, const std:
     return true;
 }
 
-void ConfigureEqualityTaskFromFile(std::vector<std::shared_ptr<tpik::EqualityTask>> taskVector, const std::string confPath)
+void ConfigureTaskFromFile(std::vector<std::shared_ptr<tpik::EqualityTask>> taskVector, const std::string confPath)
 {
     for (auto& task : taskVector) {
         libconfig::Config confObj;
@@ -139,8 +132,7 @@ void ConfigureEqualityTaskFromFile(std::vector<std::shared_ptr<tpik::EqualityTas
     }
 }
 
-void ConfigureInequalityTaskFromFile(std::vector<std::shared_ptr<tpik::InequalityTask>> taskVector,
-    const std::string confPath)
+void ConfigureTaskFromFile(std::vector<std::shared_ptr<tpik::InequalityTask>> taskVector, const std::string confPath)
 {
     for (auto& task : taskVector) {
         libconfig::Config confObj;
@@ -208,8 +200,7 @@ void ConfigureInequalityTaskFromFile(std::vector<std::shared_ptr<tpik::Inequalit
     }
 }
 
-void ConfigureCartesianTaskFromFile(std::vector<std::shared_ptr<tpik::CartesianTask>> taskVector,
-    const std::string confPath)
+void ConfigureTaskFromFile(std::vector<std::shared_ptr<tpik::CartesianTask>> taskVector, const std::string confPath)
 {
     for (auto& task : taskVector) {
         libconfig::Config confObj;
@@ -315,8 +306,7 @@ void ConfigureCartesianTaskFromFile(std::vector<std::shared_ptr<tpik::CartesianT
     }
 }
 
-bool GetVectorEigen(const std::string confPath, const std::string property,
-    Eigen::VectorXd& out)
+bool GetVectorEigen(const std::string confPath, const std::string property, Eigen::VectorXd& out)
 {
     libconfig::Config confObj;
     try {

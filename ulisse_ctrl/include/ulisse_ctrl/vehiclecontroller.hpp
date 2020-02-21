@@ -2,13 +2,7 @@
 #define ULISSE_CTRL_VEHICLECONTROLLER_HPP
 
 #include "rclcpp/rclcpp.hpp"
-
 #include "std_msgs/msg/string.hpp"
-#include "ulisse_msgs/srv/control_command.hpp"
-#include "ulisse_msgs/srv/reset_configuration.hpp"
-#include "ulisse_msgs/srv/set_boundaries.hpp"
-#include "ulisse_msgs/srv/set_cruise_control.hpp"
-
 #include "ulisse_msgs/msg/ambient_sensors.hpp"
 #include "ulisse_msgs/msg/compass.hpp"
 #include "ulisse_msgs/msg/control_context.hpp"
@@ -21,37 +15,23 @@
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
 #include "ulisse_msgs/msg/status_context.hpp"
 #include "ulisse_msgs/msg/task_status.hpp"
-
-#include "rml/RML.h"
-
+#include "ulisse_msgs/srv/control_command.hpp"
+#include "ulisse_msgs/srv/get_boundaries.hpp"
+#include "ulisse_msgs/srv/reset_configuration.hpp"
+#include "ulisse_msgs/srv/set_boundaries.hpp"
+#include "ulisse_msgs/srv/set_cruise_control.hpp"
 #include <ulisse_ctrl/commands/command_halt.hpp>
 #include <ulisse_ctrl/commands/command_hold.hpp>
 #include <ulisse_ctrl/commands/command_latlong.hpp>
 #include <ulisse_ctrl/commands/command_navigate.hpp>
 #include <ulisse_ctrl/commands/command_speedheading.hpp>
-
+#include <ulisse_ctrl/events/event_rc_enabled.hpp>
 #include <ulisse_ctrl/states/state_halt.hpp>
 #include <ulisse_ctrl/states/state_hold.hpp>
 #include <ulisse_ctrl/states/state_latlong.hpp>
 #include <ulisse_ctrl/states/state_navigate.hpp>
 #include <ulisse_ctrl/states/state_speedheading.hpp>
-
-#include <ulisse_ctrl/events/event_rc_enabled.hpp>
-
 #include <ulisse_ctrl/tasks/SafetyBoundaries.h>
-
-#include <ulisse_ctrl/geometry_defines.h>
-#include <ulisse_ctrl/ulisse_definitions.h>
-// Libraries
-#include <fsm/fsm.h>
-#include <ikcl/ikcl.h>
-#include <memory.h>
-#include <rml/RML.h>
-#include <tpik/TPIKlib.h>
-
-#include "ulisse_msgs/srv/get_boundaries.hpp"
-#include "ulisse_msgs/srv/set_boundaries.hpp"
-#include <std_msgs/msg/string.hpp>
 
 namespace ulisse {
 class VehicleController {

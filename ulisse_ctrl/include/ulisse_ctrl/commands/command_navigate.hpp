@@ -2,7 +2,6 @@
 #define ULISSE_CTRL_COMMANDNAVIGATE_HPP
 
 #include "ulisse_ctrl/commands/genericcommand.hpp"
-#include <memory>
 
 namespace ulisse {
 

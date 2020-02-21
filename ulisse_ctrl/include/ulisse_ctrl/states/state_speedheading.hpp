@@ -1,10 +1,7 @@
 #ifndef ULISSE_CTRL_STATESPEEDHEADING_HPP
 #define ULISSE_CTRL_STATESPEEDHEADING_HPP
 
-#include "ulisse_ctrl/fsm_defines.hpp"
 #include "ulisse_ctrl/states/genericstate.hpp"
-#include <chrono>
-#include <memory>
 
 namespace ulisse {
 

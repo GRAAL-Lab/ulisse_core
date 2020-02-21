@@ -1,6 +1,6 @@
 #ifndef ULISSEGEOMETRYDEFINES_H
 #define ULISSEGEOMETRYDEFINES_H
-#include <iostream>
+
 #include <rml/RMLDefines.h>
 
 namespace ulisse {
