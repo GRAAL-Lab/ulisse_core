@@ -81,16 +81,23 @@ void SafetyBoundaries::Update() throw(tpik::ExceptionWithHow)
         throw(jointsLimitException);
     }
 
-    double lam = ulisse::lat_to_m_coeff(centroid.latitude);
-    double lom = ulisse::lon_to_m_coeff(centroid.longitude);
-    double* p = ulisse::point_map2euclidean((*pose_shared)(0), (*pose_shared)(1), centroid, lam, lom);
+    double* p = nullptr;
+    LatLong pose;
+    pose.latitude = (*pose_shared)(0);
+    pose.latitude = (*pose_shared)(1);
+
+    ctb::Map2EuclidianPoint(pose, centroid, p);
     target = distance_check(point_type(p[0], p[1]));
 
     if (target.gain > 0) {
         current_pose.latitude = (*pose_shared)(0);
         current_pose.longitude = (*pose_shared)(1);
 
-        desired_pose = ulisse::point_euclidean2map(target.x, target.y, centroid, lam, lom);
+        std::vector<double> targetEuclidian;
+        targetEuclidian[0] = target.x;
+        targetEuclidian[1] = target.y;
+
+        Euclidian2MapPoint(targetEuclidian, centroid, desired_pose);
 
         ctb::DistanceAndAzimuthRad(current_pose, desired_pose, goalDistance, goalHeading);
 
@@ -151,9 +158,6 @@ bool SafetyBoundaries::InitializePoly(ctb::LatLong current_position, std::string
 {
     segments.clear();
     centroid = current_position;
-
-    lam = ulisse::lat_to_m_coeff(centroid.latitude);
-    lom = ulisse::lon_to_m_coeff(centroid.longitude);
 
     point_type p(centroid.latitude, centroid.longitude);
 

@@ -244,19 +244,21 @@ namespace states {
         // Compute the point of the first curve at 0.0.
         s1227(curve, 0, 0.0, &leftknot, point_at, &stat);
 
-        starting_point = ToLatLong(point_at[0], point_at[1]);
+        ctb::Euclidian2MapPoint(point_at, centroid_, starting_point);
+        //        starting_point = ToLatLong(point_at[0], point_at[1]);
 
         curve = nurbs_[number_of_curves_ - 1];
         // Compute the point of the last curve at 1.0.
         s1227(curve, 0, 1.0, &leftknot, point_at, &stat);
 
-        end_point = ToLatLong(point_at[0], point_at[1]);
+        ctb::Euclidian2MapPoint(point_at, centroid_, end_point);
 
         curve = nurbs_[0];
         // Compute the point of the first curve at 0.1.
         s1227(curve, 0, 0.5, &leftknot, point_at, &stat);
 
-        ctb::LatLong next_point = ToLatLong(point_at[0], point_at[1]);
+        ctb::LatLong next_point;
+        ctb::Euclidian2MapPoint(point_at, centroid_, next_point);
 
         double dist;
         ctb::DistanceAndAzimuthRad(starting_point, next_point, dist, starting_angle);
@@ -347,7 +349,10 @@ namespace states {
 
                         double tan_angle = atan2(point_at[4], point_at[3]);
 
-                        lookAheadPoint = ToLatLong(point_at[0] + delta_ * cos(tan_angle), point_at[1] + delta_ * sin(tan_angle));
+                        point_at[0] = point_at[0] + delta_ * cos(tan_angle);
+                        point_at[1] = point_at[1] + delta_ * sin(tan_angle);
+
+                        ctb::Euclidian2MapPoint(point_at, centroid_, lookAheadPoint);
                     } else {
                         // Estimate curve length
                         s1240(curve, aepsge, &cur_length, &stat);
@@ -373,7 +378,7 @@ namespace states {
                         s1227(next_curve, 1, next_curvilinear_abscissa, &leftknot, point_at,
                             &stat);
 
-                        lookAheadPoint = ToLatLong(point_at[0], point_at[1]);
+                        Euclidian2MapPoint(point_at, centroid_, lookAheadPoint);
                     }
                     ctb::DistanceAndAzimuthRad(statusCxt_->vehiclePos, lookAheadPoint, goalCxt_->goalDistance, goalCxt_->goalHeading);
 
@@ -403,7 +408,7 @@ namespace states {
 
         curve = nurbs_[current_curve];
 
-        current_point = ToMeters(statusCxt_->vehiclePos.latitude, statusCxt_->vehiclePos.longitude);
+        ctb::Map2EuclidianPoint(statusCxt_->vehiclePos, centroid_, current_point);
 
         if (floor(max_abscissa) == floor(min_abscissa) || (floor(max_abscissa) == number_of_curves_)) {
             // To select the window part of curv, from min_abscissa to max_abscissa
@@ -443,24 +448,6 @@ namespace states {
         }
 
         return gpar;
-    }
-
-    ctb::LatLong StateNavigate::ToLatLong(double x, double y)
-    {
-        double lam = lat_to_m_coeff(centroid_.latitude);
-        double lom = lon_to_m_coeff(centroid_.longitude);
-        ctb::LatLong p = point_euclidean2map(x, y, centroid_, lam, lom);
-
-        return p;
-    }
-
-    double* StateNavigate::ToMeters(double latitude, double longitude)
-    {
-        double lam = lat_to_m_coeff(centroid_.latitude);
-        double lom = lon_to_m_coeff(centroid_.longitude);
-        double* p = point_map2euclidean(latitude, longitude, centroid_, lam, lom);
-
-        return p;
     }
 
     fsm::retval StateNavigate::OnExit()

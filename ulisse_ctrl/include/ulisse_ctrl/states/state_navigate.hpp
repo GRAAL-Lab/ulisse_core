@@ -63,8 +63,6 @@ namespace states {
         ctb::LatLong lookAheadPoint;
 
         double getCurvilinearAbscissa();
-        ctb::LatLong ToLatLong(double x, double y);
-        double* ToMeters(double latitude, double longitude);
 
     public:
         StateNavigate();
