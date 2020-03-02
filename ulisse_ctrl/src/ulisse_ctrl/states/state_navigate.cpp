@@ -240,7 +240,12 @@ namespace states {
         count = 0;
 
         curve = nurbs_[0];
-        double point_at[3];
+        double* point_at;
+        try {
+            point_at = new double[3];
+        } catch (std::bad_alloc& ba) {
+            std::cerr << "bad_alloc caught: " << ba.what() << '\n';
+        }
         // Compute the point of the first curve at 0.0.
         s1227(curve, 0, 0.0, &leftknot, point_at, &stat);
 
@@ -343,7 +348,12 @@ namespace states {
                     }
 
                     if (use_line_of_sight) {
-                        double point_at[6];
+                        double* point_at;
+                        try {
+                            point_at = new double[6];
+                        } catch (std::bad_alloc& ba) {
+                            std::cerr << "bad_alloc caught: " << ba.what() << '\n';
+                        }
                         // Compute the point of the first curve at current_curvilinear_abscissa.
                         s1227(curve, 1, current_curvilinear_abscissa, &leftknot, point_at, &stat);
 
@@ -373,7 +383,12 @@ namespace states {
                         }
 
                         next_curve = nurbs_[next_curve_index];
-                        double point_at[6];
+                        double* point_at;
+                        try {
+                            point_at = new double[6];
+                        } catch (std::bad_alloc& ba) {
+                            std::cerr << "bad_alloc caught: " << ba.what() << '\n';
+                        }
                         // Compute the point of the first curve at current_curvilinear_abscissa.
                         s1227(next_curve, 1, next_curvilinear_abscissa, &leftknot, point_at,
                             &stat);

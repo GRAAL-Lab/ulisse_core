@@ -81,21 +81,35 @@ void SafetyBoundaries::Update() throw(tpik::ExceptionWithHow)
         throw(jointsLimitException);
     }
 
-    double* p = nullptr;
+    double* p;
+    try {
+        p = new double[3];
+    } catch (std::bad_alloc& ba) {
+        std::cerr << "bad_alloc caught: " << ba.what() << '\n';
+    }
     LatLong pose;
     pose.latitude = (*pose_shared)(0);
-    pose.latitude = (*pose_shared)(1);
+    pose.longitude = (*pose_shared)(1);
 
     ctb::Map2EuclidianPoint(pose, centroid, p);
+
     target = distance_check(point_type(p[0], p[1]));
 
     if (target.gain > 0) {
         current_pose.latitude = (*pose_shared)(0);
         current_pose.longitude = (*pose_shared)(1);
 
-        std::vector<double> targetEuclidian;
+        double* targetEuclidian;
+        try {
+            targetEuclidian = new double[3];
+        } catch (std::bad_alloc& ba) {
+            std::cerr << "bad_alloc caught: " << ba.what() << '\n';
+        }
+
         targetEuclidian[0] = target.x;
         targetEuclidian[1] = target.y;
+        targetEuclidian[2] = 0.0;
+
 
         Euclidian2MapPoint(targetEuclidian, centroid, desired_pose);
 

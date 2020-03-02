@@ -123,8 +123,14 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 
         std::string polygon2 = "polygon((";
         LatLong currentPoint, LatLongM;
-        double latitude, longitude, lam, lom;
-        double* p = nullptr;
+
+        double* p;
+        try {
+            p = new double[3];
+        } catch (std::bad_alloc& ba) {
+            std::cerr << "bad_alloc caught: " << ba.what() << '\n';
+        }
+
         try {
             bool first = true;
             for (Json::Value c : obj["values"]) {
@@ -193,8 +199,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         response->res = "SetCruiseControl::ok";
     };
 
-    srv_cruise = nh_->create_service<ulisse_msgs::srv::SetCruiseControl>(
-        ulisse_msgs::topicnames::set_cruise_control_service, handle_set_cruise_control);
+    srv_cruise = nh_->create_service<ulisse_msgs::srv::SetCruiseControl>(ulisse_msgs::topicnames::set_cruise_control_service, handle_set_cruise_control);
 
     // Create a callback function for when service reset configuration requests are received.
     auto handle_reset_conf = [this](const std::shared_ptr<rmw_request_id_t> request_header,
@@ -209,8 +214,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         response->res = "ResetConfiguration::ok";
     };
 
-    srv_reset_conf = nh_->create_service<ulisse_msgs::srv::ResetConfiguration>(
-        ulisse_msgs::topicnames::reset_configuration_service, handle_reset_conf);
+    srv_reset_conf = nh_->create_service<ulisse_msgs::srv::ResetConfiguration>(ulisse_msgs::topicnames::reset_configuration_service, handle_reset_conf);
 
     // Create a callback function for when service requests are received.
     auto handle_get_bounds = [this](const std::shared_ptr<rmw_request_id_t> request_header,
@@ -226,8 +230,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         }
     };
 
-    srv_get_boundaries = nh_->create_service<ulisse_msgs::srv::GetBoundaries>(
-        ulisse_msgs::topicnames::get_boundaries_service, handle_get_bounds);
+    srv_get_boundaries = nh_->create_service<ulisse_msgs::srv::GetBoundaries>(ulisse_msgs::topicnames::get_boundaries_service, handle_get_bounds);
 }
 
 VehicleController::~VehicleController() {}
@@ -602,6 +605,7 @@ void VehicleController::Run()
         std::cout << "Waiting for the Safety Bounding Box" << std::endl;
         return;
     }
+
     // Switch State (if something happens)
     u_fsm_.SwitchState();
     // Process Events
