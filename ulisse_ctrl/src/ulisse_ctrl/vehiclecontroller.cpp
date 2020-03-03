@@ -18,7 +18,6 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     , sampleTime_(sampleTime)
     , boundaries_set(false)
 {
-    par_client_ = std::make_shared<rclcpp::SyncParametersClient>(nh_);
     ctrlCxt_ = std::make_shared<ControlContext>();
     goalCxt_ = std::make_shared<GoalContext>();
     statusCxt_ = std::make_shared<StatusContext>();
@@ -28,9 +27,9 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 
     // Sensor Subscriptions
     gps_sub_ = nh_->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data, 10, std::bind(&VehicleController::GPSSensorCB, this, _1));
-    //    compass_sub_ = nh_->create_subscription<ulisse_msgs::msg::Compass>(
-    //        ulisse_msgs::topicnames::sensor_compass, std::bind(&VehicleController::CompassSensorCB, this, _1));
+    //    compass_sub_ = nh_->create_subscription<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass, std::bind(&VehicleController::CompassSensorCB, this, _1));
     nav_filter_sub_ = nh_->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 10, std::bind(&VehicleController::NavFilterCB, this, _1));
+
     // Control Publishers
     ctrlcxt_pub_ = nh_->create_publisher<ulisse_msgs::msg::ControlContext>(ulisse_msgs::topicnames::control_context, 10);
     goalcxt_pub_ = nh_->create_publisher<ulisse_msgs::msg::GoalContext>(ulisse_msgs::topicnames::goal_context, 10);
@@ -83,8 +82,6 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     // ASV SAFETY BOUNDARIES (INEQUALITY TASK)
     asv_safety_boundaries = std::make_shared<ikcl::SafetyBoundaries>(ikcl::SafetyBoundaries(ulisse::task::asv_safety_boundaries, robot_model, ulisse::robotModelID::ASV));
     asv_safety_boundaries->SetPose(vehiclePose_);
-    asv_safety_boundaries->SetConf(conf_);
-    asv_safety_boundaries->SetControlContext(ctrlCxt_);
     asv_safety_boundaries->SetGoalContext(goalCxt_);
     inequality_task.push_back(asv_safety_boundaries);
     task_hierarchy.push_back(asv_safety_boundaries);
@@ -92,7 +89,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     taskLogPublisherMap.insert(std::make_pair(ulisse::task::asv_safety_boundaries, nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_safety_boundaries", 10)));
 
     // Initialize Solver and iCAT
-    dof = 6;
+    int dof = 6;
     i_cat = std::make_shared<tpik::iCAT>(tpik::iCAT(dof));
 
     //load config file
@@ -302,10 +299,8 @@ void VehicleController::LoadKCLConfiguration(std::string task, std::string prior
     int dof = 6;
     Eigen::VectorXd saturationMax(dof);
     Eigen::VectorXd saturationMin(dof);
-    std::string saturationMaxProperty
-        = ulisse::priorityLevelParameter::priorityLevel + "." + ulisse::priorityLevelParameter::saturationMax;
-    std::string saturationMinProperty
-        = ulisse::priorityLevelParameter::priorityLevel + "." + ulisse::priorityLevelParameter::saturationMin;
+    std::string saturationMaxProperty = ulisse::priorityLevelParameter::priorityLevel + "." + ulisse::priorityLevelParameter::saturationMax;
+    std::string saturationMinProperty = ulisse::priorityLevelParameter::priorityLevel + "." + ulisse::priorityLevelParameter::saturationMin;
 
     GetVectorEigen(conf_path_priority_level.str().c_str(), saturationMaxProperty, saturationMax);
     GetVectorEigen(conf_path_priority_level.str().c_str(), saturationMinProperty, saturationMin);

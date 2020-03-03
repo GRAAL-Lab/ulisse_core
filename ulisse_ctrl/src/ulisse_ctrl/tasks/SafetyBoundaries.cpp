@@ -17,8 +17,6 @@ SafetyBoundaries::SafetyBoundaries(std::string taskID, std::shared_ptr<rml::Robo
     desired_speed_on_turn = 2.5;
 }
 
-SafetyBoundaries::~SafetyBoundaries() {}
-
 void SafetyBoundaries::SetTolleranceBellShape(double tollerance)
 {
     tollerance_ = tollerance;
@@ -53,16 +51,6 @@ double SafetyBoundaries::GetAlphaMinOnTurning()
 double SafetyBoundaries::GetDesiredSpeedOnTurning()
 {
     return desired_speed_on_turn;
-}
-
-void SafetyBoundaries::SetConf(const std::shared_ptr<ulisse::ControllerConfiguration>& conf)
-{
-    conf_ = conf;
-}
-
-void SafetyBoundaries::SetControlContext(const std::shared_ptr<ulisse::ControlContext>& ctrlCxt)
-{
-    ctrlCxt_ = ctrlCxt;
 }
 
 void SafetyBoundaries::SetGoalContext(const std::shared_ptr<ulisse::GoalContext>& goalCxt)
@@ -110,7 +98,6 @@ void SafetyBoundaries::Update() throw(tpik::ExceptionWithHow)
         targetEuclidian[1] = target.y;
         targetEuclidian[2] = 0.0;
 
-
         Euclidian2MapPoint(targetEuclidian, centroid, desired_pose);
 
         ctb::DistanceAndAzimuthRad(current_pose, desired_pose, goalDistance, goalHeading);
@@ -122,8 +109,8 @@ void SafetyBoundaries::Update() throw(tpik::ExceptionWithHow)
         goalHeading = ctb::FilterAngularJump((*pose_shared)(5), goalHeading);
         desired_jog = ulisse::MinimumAngleBetween((*pose_shared)(5), goalHeading);
 
-        desiredVelocity_(2) = desired_jog;
         desiredVelocity_(3) = desired_speed;
+        desiredVelocity_(2) = desired_jog;
 
     } else {
         target.gain = 0;

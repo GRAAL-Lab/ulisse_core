@@ -36,7 +36,6 @@
 namespace ulisse {
 class VehicleController {
     rclcpp::Node::SharedPtr nh_;
-    rclcpp::SyncParametersClient::SharedPtr par_client_;
     std::string file_name_;
     rclcpp::Service<ulisse_msgs::srv::ControlCommand>::SharedPtr srv_;
     rclcpp::Service<ulisse_msgs::srv::SetBoundaries>::SharedPtr srv_boundaries;
@@ -71,7 +70,6 @@ class VehicleController {
     std::unordered_map<std::string, std::shared_ptr<tpik::Task>> taskIDMap;
 
     std::shared_ptr<tpik::iCAT> i_cat;
-    int dof;
 
     double cruise_;
     std::shared_ptr<tpik::Solver> solver;

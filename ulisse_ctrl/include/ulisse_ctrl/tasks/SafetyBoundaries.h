@@ -1,12 +1,10 @@
 #ifndef __CONTROLSAFETYBOUNDARIES_H__
 #define __CONTROLSAFETYBOUNDARIES_H__
 
-#include <tpik/TPIKlib.h>
-
 #include "ulisse_ctrl/ctrl_data_structs.hpp"
-
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/point_xy.hpp>
+#include <tpik/TPIKlib.h>
 
 using namespace ctb;
 
@@ -44,7 +42,6 @@ public:
     SafetyBoundaries(std::string taskID, std::shared_ptr<rml::RobotModel> robotModel, std::string frameID);
     /**@brief ~ControlLinearVelocity default deconstructor
     */
-    ~SafetyBoundaries();
 
     void SetPose(std::shared_ptr<Eigen::Vector6d> pose);
 
@@ -60,11 +57,8 @@ public:
 
     void SetBoundaries(double bound_min, double bound_max);
 
-    void SetControlContext(const std::shared_ptr<ulisse::ControlContext>& ctrlCxt);
-
     void SetGoalContext(const std::shared_ptr<ulisse::GoalContext>& goalCxt);
 
-    void SetConf(const std::shared_ptr<ulisse::ControllerConfiguration>& conf);
     /**
 	 * @brief Overloading of the cout operator
 	 */
@@ -91,14 +85,14 @@ protected:
 	 */
     void UpdateInternalActivationFunction() override;
     /**
-	 * @brief Method updating the Jacobian.
+     * @brief Method updating the Jacobian.
      * Implementation of the pure virtual method of the base class tpik::InequalityTask.
-	 */
+     */
     void UpdateJacobian() override;
     /**
-	 * @brief Method updating the reference.
+     * @brief Method updating the reference.
      * Implementation of the pure virtual method of the base class tpik::InequalityTask.
-	 */
+     */
     void UpdateReference() override;
 
     template <typename Point>
@@ -141,8 +135,6 @@ protected:
     double alpha_min_on_turn;
     double desired_speed_on_turn;
 
-    std::shared_ptr<ulisse::ControllerConfiguration> conf_;
-    std::shared_ptr<ulisse::ControlContext> ctrlCxt_;
     std::shared_ptr<ulisse::GoalContext> goalCxt_;
 };
 }
