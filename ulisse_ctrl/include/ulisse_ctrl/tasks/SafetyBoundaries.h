@@ -73,9 +73,8 @@ public:
         return os;
     }
 
-    void SetAlphaMinOnTurning(double alpha);
     void SetDesiredSpeedOnTurning(double des_speed);
-    double GetAlphaMinOnTurning();
+
     double GetDesiredSpeedOnTurning();
 
 protected:
@@ -103,36 +102,18 @@ protected:
 
     std::shared_ptr<rml::RobotModel> robotModel_; //!< The shared ptr to the robot model
     std::string frameID_; //!< The id of the frame to be controlled
-
-    Eigen::VectorXd aMin_; //!< Eigen::Vector containing the diagonal of the Activation Matrix for the min bound
-    Eigen::VectorXd aMax_; //!< Eigen::Vector containing the diagonal of the Activation Matrix for the max bound
-
     bool isBoundariesInitialized{ false }; //!< Boolean used to state whehther deltaJL has been setted
-
     std::shared_ptr<Eigen::Vector6d> pose_shared;
-    Eigen::VectorXd pose_;
     double tollerance_;
-
     std::list<segment_type> segments;
-
-    polygon_type poly;
-    polygon_type poly_lat_long;
-    point_type nearest_p;
     double coord_max, coord_min;
-    double min_d;
-
     ctb::LatLong centroid;
     desired_target target;
-    ctb::LatLong current_pose;
-    ctb::LatLong desired_pose;
-    double goalDistance, goalHeading;
-    double desired_speed, desired_jog;
     Eigen::Vector6d desiredVelocity_;
-    double lam, lom;
-    bool first;
+    polygon_type poly;
 
     double MAX_THRESHOLD, MIN_THRESHOLD;
-    double alpha_min_on_turn;
+
     double desired_speed_on_turn;
 
     std::shared_ptr<ulisse::GoalContext> goalCxt_;

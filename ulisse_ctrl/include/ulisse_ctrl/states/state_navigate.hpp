@@ -45,7 +45,6 @@ namespace states {
         double gpar2 = 0;
         double dist = 0;
         double dist2 = 0;
-        double* current_point;
         double max_range_abscissa;
         double cruise;
         double tollerance_start_point;

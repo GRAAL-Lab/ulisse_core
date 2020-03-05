@@ -70,7 +70,6 @@ namespace states {
             }
         } else {
 
-            // angularPositionTask_->SetAngle(Eigen::Vector3d(0, 0, goalCxt_->goalHeading));
             distanceTask_->SetDistance(Eigen::Vector3d(goalCxt_->goalDistance * cos(goalCxt_->goalHeading), goalCxt_->goalDistance * sin(goalCxt_->goalHeading), 0), rml::FrameID::WorldFrame);
 
             angularPositionTask_->SetDistanceToTarget(Eigen::Vector3d(goalCxt_->goalDistance * cos(goalCxt_->goalHeading), goalCxt_->goalDistance * sin(goalCxt_->goalHeading), 0), rml::FrameID::WorldFrame);

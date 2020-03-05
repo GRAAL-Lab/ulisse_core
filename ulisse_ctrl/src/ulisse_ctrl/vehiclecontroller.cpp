@@ -121,12 +121,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         std::string polygon2 = "polygon((";
         LatLong currentPoint, LatLongM;
 
-        double* p;
-        try {
-            p = new double[3];
-        } catch (std::bad_alloc& ba) {
-            std::cerr << "bad_alloc caught: " << ba.what() << '\n';
-        }
+        std::shared_ptr<double[]> p(new double[3]);
 
         try {
             bool first = true;
@@ -275,7 +270,6 @@ void VehicleController::LoadKCLConfiguration(std::string task, std::string prior
 
     asv_safety_boundaries->SetBoundaries(confObj.lookup("task.ASV_safety_boundaries.BoundaryMinimumDistance"),
         confObj.lookup("task.ASV_safety_boundaries.BoundaryMaximumDistance"));
-    asv_safety_boundaries->SetAlphaMinOnTurning(confObj.lookup("task.ASV_safety_boundaries.AlphaMin"));
     asv_safety_boundaries->SetDesiredSpeedOnTurning(confObj.lookup("task.ASV_safety_boundaries.DesiredSpeed"));
 
     state_navigate_.SetMaxRangeAbscissa(confObj.lookup("task.PathFollowing.MaximumLookupAbscissa"));

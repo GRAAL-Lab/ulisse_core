@@ -13,7 +13,6 @@ SafetyBoundaries::SafetyBoundaries(std::string taskID, std::shared_ptr<rml::Robo
     MAX_THRESHOLD = 5.0;
     MIN_THRESHOLD = 3.0;
 
-    alpha_min_on_turn = 0.5;
     desired_speed_on_turn = 2.5;
 }
 
@@ -33,19 +32,9 @@ void SafetyBoundaries::SetBoundaries(double bound_min, double bound_max)
     MIN_THRESHOLD = bound_min;
 }
 
-void SafetyBoundaries::SetAlphaMinOnTurning(double alpha)
-{
-    alpha_min_on_turn = alpha;
-}
-
 void SafetyBoundaries::SetDesiredSpeedOnTurning(double des_speed)
 {
     desired_speed_on_turn = des_speed;
-}
-
-double SafetyBoundaries::GetAlphaMinOnTurning()
-{
-    return alpha_min_on_turn;
 }
 
 double SafetyBoundaries::GetDesiredSpeedOnTurning()
@@ -69,12 +58,10 @@ void SafetyBoundaries::Update() throw(tpik::ExceptionWithHow)
         throw(jointsLimitException);
     }
 
-    double* p;
-    try {
-        p = new double[3];
-    } catch (std::bad_alloc& ba) {
-        std::cerr << "bad_alloc caught: " << ba.what() << '\n';
-    }
+    double goalDistance, goalHeading = 0.0;
+    double desired_speed, desired_jog;
+    ctb::LatLong desired_pose;
+    std::shared_ptr<double[]> p(new double[3]);
     LatLong pose;
     pose.latitude = (*pose_shared)(0);
     pose.longitude = (*pose_shared)(1);
@@ -84,15 +71,13 @@ void SafetyBoundaries::Update() throw(tpik::ExceptionWithHow)
     target = distance_check(point_type(p[0], p[1]));
 
     if (target.gain > 0) {
+
+        LatLong current_pose;
+
         current_pose.latitude = (*pose_shared)(0);
         current_pose.longitude = (*pose_shared)(1);
 
-        double* targetEuclidian;
-        try {
-            targetEuclidian = new double[3];
-        } catch (std::bad_alloc& ba) {
-            std::cerr << "bad_alloc caught: " << ba.what() << '\n';
-        }
+        std::shared_ptr<double[]> targetEuclidian(new double[3]);
 
         targetEuclidian[0] = target.x;
         targetEuclidian[1] = target.y;
@@ -142,24 +127,12 @@ void SafetyBoundaries::UpdateReference()
     x_dot_ = taskParameter_.gain * target.gain * (desiredVelocity_);
 }
 
-template <typename Point>
-void SafetyBoundaries::make_segments(Point const& p, Point const& next)
-{
-    segment_type seg;
-
-    boost::geometry::set<0, 0>(seg, boost::geometry::get<0>(p));
-    boost::geometry::set<0, 1>(seg, boost::geometry::get<1>(p));
-    boost::geometry::set<1, 0>(seg, boost::geometry::get<0>(next));
-    boost::geometry::set<1, 1>(seg, boost::geometry::get<1>(next));
-
-    segments.push_front(seg);
-}
-
 bool SafetyBoundaries::InitializePoly(ctb::LatLong current_position, std::string polygon_to_string, std::string polygon_lat_long)
 {
     segments.clear();
     centroid = current_position;
 
+    polygon_type poly_lat_long;
     point_type p(centroid.latitude, centroid.longitude);
 
     boost::geometry::read_wkt(polygon_to_string, poly);
@@ -210,11 +183,13 @@ desired_target SafetyBoundaries::distance_check(Point const& p)
 
     double x_max, x_min, y_max, y_min;
 
+    point_type nearest_p;
+
     nearest_p.set<0>(0.0);
     nearest_p.set<1>(0.0);
 
-    min_d = static_cast<double>(INFINITY);
-    first = true;
+    double min_d = static_cast<double>(INFINITY);
+    bool first = true;
 
     double count = 0.0;
 
@@ -367,6 +342,21 @@ desired_target SafetyBoundaries::distance_check(Point const& p)
         target_value.x = boost::geometry::get<0>(p) + min_d * cos(theta);
         target_value.y = boost::geometry::get<1>(p) + min_d * sin(theta);
     }
+
+    std::cout << "DEBUG:: MIN_D:" << min_d << std::endl;
+
     return target_value;
+}
+template <typename Point>
+void SafetyBoundaries::make_segments(Point const& p, Point const& next)
+{
+    segment_type seg;
+
+    boost::geometry::set<0, 0>(seg, boost::geometry::get<0>(p));
+    boost::geometry::set<0, 1>(seg, boost::geometry::get<1>(p));
+    boost::geometry::set<1, 0>(seg, boost::geometry::get<0>(next));
+    boost::geometry::set<1, 1>(seg, boost::geometry::get<1>(next));
+
+    segments.push_front(seg);
 }
 }

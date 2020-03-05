@@ -135,10 +135,6 @@ namespace states {
         double x, y;
         int count = 0;
 
-        double* knots;
-        double* control_points;
-        double* weights;
-
         try {
             for (Json::Value c : obj_master["curves"]) {
 
@@ -156,14 +152,16 @@ namespace states {
                     knot_count++;
                 }
 
-                weights = new double[cv_count];
+                std::shared_ptr<double[]> weights(new double[cv_count]);
+
                 count = 0;
                 for (Json::ArrayIndex i = 0; i < obj["weigths"].size(); i++) {
                     weights[count] = obj["weigths"][i].asDouble();
                     count++;
                 }
 
-                control_points = new double[cv_count * 4];
+                std::shared_ptr<double[]> control_points(new double[cv_count * 4]);
+
                 count = 0;
                 int weight_index = 0;
                 for (Json::ArrayIndex i = 0; i < obj["points"].size(); i++) {
@@ -179,18 +177,18 @@ namespace states {
                     weight_index++;
                 }
 
-                count = 0;
-                knots = new double[knot_count];
+                std::shared_ptr<double[]> knots(new double[obj["knots"].size()]);
+
                 for (Json::ArrayIndex i = 0; i < obj["knots"].size(); i++) {
-                    knots[count] = obj["knots"][i].asDouble();
+                    knots[i] = obj["knots"][i].asDouble();
                     count++;
                 }
 
                 SISLCurve* insert_curve = newCurve(
                     static_cast<int>(cv_count), // number of control points
                     degree + 1, // order of spline curve (degree + 1)
-                    knots, // pointer to knot vector (parametrization)
-                    control_points, // pointer to coefficient vector (control points)
+                    knots.get(), // pointer to knot vector (parametrization)
+                    control_points.get(), // pointer to coefficient vector (control points)
                     2, // kind => 2 : NURBS curve
                     dimension, // dimension
                     1); // no copying of information, 'borrow' array
@@ -207,10 +205,6 @@ namespace states {
                 }
 
                 nurbs_.push_back(insert_curve);
-
-                delete (knots);
-                delete (control_points);
-                delete (weights);
 
                 number_of_curves_++;
             }
@@ -240,27 +234,22 @@ namespace states {
         count = 0;
 
         curve = nurbs_[0];
-        double* point_at;
-        try {
-            point_at = new double[3];
-        } catch (std::bad_alloc& ba) {
-            std::cerr << "bad_alloc caught: " << ba.what() << '\n';
-        }
+        std::shared_ptr<double[]> point_at(new double[3]);
         // Compute the point of the first curve at 0.0.
-        s1227(curve, 0, 0.0, &leftknot, point_at, &stat);
+        s1227(curve, 0, 0.0, &leftknot, point_at.get(), &stat);
 
         ctb::Euclidian2MapPoint(point_at, centroid_, starting_point);
         //        starting_point = ToLatLong(point_at[0], point_at[1]);
 
         curve = nurbs_[number_of_curves_ - 1];
         // Compute the point of the last curve at 1.0.
-        s1227(curve, 0, 1.0, &leftknot, point_at, &stat);
+        s1227(curve, 0, 1.0, &leftknot, point_at.get(), &stat);
 
         ctb::Euclidian2MapPoint(point_at, centroid_, end_point);
 
         curve = nurbs_[0];
         // Compute the point of the first curve at 0.1.
-        s1227(curve, 0, 0.5, &leftknot, point_at, &stat);
+        s1227(curve, 0, 0.5, &leftknot, point_at.get(), &stat);
 
         ctb::LatLong next_point;
         ctb::Euclidian2MapPoint(point_at, centroid_, next_point);
@@ -330,6 +319,8 @@ namespace states {
                 }
             } else*/
             if (start /* && oriented*/) {
+
+                std::cout << "*** STARTING POINT! ***" << std::endl;
                 ctb::DistanceAndAzimuthRad(statusCxt_->vehiclePos, end_point, goalCxt_->goalDistance, goalCxt_->goalHeading);
 
                 curvilinear_abscissa = getCurvilinearAbscissa();
@@ -348,14 +339,9 @@ namespace states {
                     }
 
                     if (use_line_of_sight) {
-                        double* point_at;
-                        try {
-                            point_at = new double[6];
-                        } catch (std::bad_alloc& ba) {
-                            std::cerr << "bad_alloc caught: " << ba.what() << '\n';
-                        }
+                        std::shared_ptr<double[]> point_at(new double[6]);
                         // Compute the point of the first curve at current_curvilinear_abscissa.
-                        s1227(curve, 1, current_curvilinear_abscissa, &leftknot, point_at, &stat);
+                        s1227(curve, 1, current_curvilinear_abscissa, &leftknot, point_at.get(), &stat);
 
                         double tan_angle = atan2(point_at[4], point_at[3]);
 
@@ -363,6 +349,7 @@ namespace states {
                         point_at[1] = point_at[1] + delta_ * sin(tan_angle);
 
                         ctb::Euclidian2MapPoint(point_at, centroid_, lookAheadPoint);
+
                     } else {
                         // Estimate curve length
                         s1240(curve, aepsge, &cur_length, &stat);
@@ -383,14 +370,9 @@ namespace states {
                         }
 
                         next_curve = nurbs_[next_curve_index];
-                        double* point_at;
-                        try {
-                            point_at = new double[6];
-                        } catch (std::bad_alloc& ba) {
-                            std::cerr << "bad_alloc caught: " << ba.what() << '\n';
-                        }
+                        std::shared_ptr<double[]> point_at(new double[6]);
                         // Compute the point of the first curve at current_curvilinear_abscissa.
-                        s1227(next_curve, 1, next_curvilinear_abscissa, &leftknot, point_at,
+                        s1227(next_curve, 1, next_curvilinear_abscissa, &leftknot, point_at.get(),
                             &stat);
 
                         Euclidian2MapPoint(point_at, centroid_, lookAheadPoint);
@@ -419,11 +401,14 @@ namespace states {
             max_abscissa = number_of_curves_;
         }
 
+        std::shared_ptr<double[]> current_point(new double[3]);
+
         current_curve = static_cast<unsigned int>(floor(curvilinear_abscissa));
 
         curve = nurbs_[current_curve];
 
         ctb::Map2EuclidianPoint(statusCxt_->vehiclePos, centroid_, current_point);
+
 
         if (floor(max_abscissa) == floor(min_abscissa) || (floor(max_abscissa) == number_of_curves_)) {
             // To select the window part of curv, from min_abscissa to max_abscissa
@@ -433,7 +418,7 @@ namespace states {
             s1713(curve, decMinAbscissa, (decMaxAbscissa), &newcurve, &stat);
 
             // Find the closest point between a curve and a point
-            s1957(newcurve, current_point, 3, aepsco, aepsge, &gpar, &dist, &stat);
+            s1957(newcurve, current_point.get(), 3, aepsco, aepsge, &gpar, &dist, &stat);
 
             gpar = gpar + floor(min_abscissa);
 
@@ -450,10 +435,10 @@ namespace states {
             s1713(curve2, 0.0, decMaxAbscissa, &newcurve2, &stat);
 
             // Find the closest point between the first curve and the point
-            s1957(curve, current_point, 3, aepsco, aepsge, &gpar, &dist, &stat);
+            s1957(curve, current_point.get(), 3, aepsco, aepsge, &gpar, &dist, &stat);
 
             // Find the closest point between the second curve and the point
-            s1957(curve2, current_point, 3, aepsco, aepsge, &gpar2, &dist2, &stat);
+            s1957(curve2, current_point.get(), 3, aepsco, aepsge, &gpar2, &dist2, &stat);
 
             if (dist < dist2) {
                 gpar = gpar + floor(min_abscissa);
