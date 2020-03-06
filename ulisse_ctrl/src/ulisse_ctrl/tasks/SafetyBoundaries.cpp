@@ -184,7 +184,7 @@ desired_target SafetyBoundaries::DistanceCheck(point_type const& currentPosition
     desired_target target_value = { 0.0, 0.0, 0.0 };
     double d, d_p1, d_p2;
     double m, x_2, y_2, theta;
-    std::deque<point_type> output;
+    std::deque<point_type> intersectionP;
     linestring_type l1, l2;
 
     double x_max, x_min, y_max, y_min;
@@ -235,16 +235,21 @@ desired_target SafetyBoundaries::DistanceCheck(point_type const& currentPosition
                 y_min = p1.y() < p2.y() ? p1.y() : p2.y();
                 y_max = p1.y() > p2.y() ? p1.y() : p2.y();
 
+                //???
                 if ((currentPosition.x() < x_max && currentPosition.x() > x_min) || (currentPosition.y() < y_max && currentPosition.y() > y_min)) {
 
                     d = boost::geometry::distance(currentPosition, i, boost::geometry::strategy::distance::projected_point<>{});
 
+                    //angular coefficient of the segment
                     m = (p2.y() - p1.y()) / (p2.x() - p1.x());
+                    //perpendicular to the segment
                     m = -1 / (m);
 
+                    //line passing through the extremes of the segment
                     l1.push_back(p1);
                     l1.push_back(p2);
 
+                    //line passing through the current point
                     l2.push_back(currentPosition);
                     x_2 = coord_max + currentPosition.x();
                     y_2 = m + currentPosition.y();
@@ -254,9 +259,9 @@ desired_target SafetyBoundaries::DistanceCheck(point_type const& currentPosition
                     y_2 = m + currentPosition.y();
                     l2.push_back(point_type(x_2, y_2));
 
-                    boost::geometry::intersection(l1, l2, output);
-                    nearest_p.set<0>((output.front()).x());
-                    nearest_p.set<1>((output.front()).y());
+                    boost::geometry::intersection(l1, l2, intersectionP);
+                    nearest_p.set<0>((intersectionP.front()).x());
+                    nearest_p.set<1>((intersectionP.front()).y());
                 }
 
                 min_d = d;
@@ -264,7 +269,9 @@ desired_target SafetyBoundaries::DistanceCheck(point_type const& currentPosition
                 count = 1.0;
             }
         }
-    } else {
+    }
+    //if the robot is inside the polygon
+    else {
         for (auto i : segments) {
             d = boost::geometry::distance(currentPosition, i);
 
@@ -316,21 +323,21 @@ desired_target SafetyBoundaries::DistanceCheck(point_type const& currentPosition
                     y_2 = m + currentPosition.y();
                     l2.push_back(point_type(x_2, y_2));
 
-                    boost::geometry::intersection(l1, l2, output);
-                    nearest_p.set<0>((output.front()).x());
-                    nearest_p.set<1>((output.front()).y());
+                    boost::geometry::intersection(l1, l2, intersectionP);
+                    nearest_p.set<0>((intersectionP.front()).x());
+                    nearest_p.set<1>((intersectionP.front()).y());
 
                     if (first) {
                         first = false;
                         double gain = (d < MAX_THRESHOLD ? 1.0 : (MIN_THRESHOLD - d) / (MIN_THRESHOLD - MAX_THRESHOLD));
-                        nearest_p.set<0>((gain * (output.front()).x()));
-                        nearest_p.set<1>((gain * (output.front()).y()));
+                        nearest_p.set<0>((gain * (intersectionP.front()).x()));
+                        nearest_p.set<1>((gain * (intersectionP.front()).y()));
                         count += gain;
 
                     } else {
                         double gain = (d < MAX_THRESHOLD ? 1.0 : (MIN_THRESHOLD - d) / (MIN_THRESHOLD - MAX_THRESHOLD));
-                        nearest_p.set<0>(nearest_p.x() + (gain * (output.front()).x()));
-                        nearest_p.set<1>(nearest_p.y() + (gain * (output.front()).y()));
+                        nearest_p.set<0>(nearest_p.x() + (gain * (intersectionP.front()).x()));
+                        nearest_p.set<1>(nearest_p.y() + (gain * (intersectionP.front()).y()));
                         count += gain;
                     }
                 }
