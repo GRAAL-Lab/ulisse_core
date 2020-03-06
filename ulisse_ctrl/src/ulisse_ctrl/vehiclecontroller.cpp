@@ -118,8 +118,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 
         std::string polygon = "polygon((";
 
-        std::string polygon2 = "polygon((";
-        LatLong currentPoint, LatLongM;
+        LatLong currentPoint;
 
         std::shared_ptr<double[]> p(new double[3]);
 
@@ -130,7 +129,6 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
                     first = false;
                 } else {
                     polygon = polygon + ", ";
-                    polygon2 = polygon2 + ", ";
                 }
                 reader.parse(c.toStyledString(), obj2);
 
@@ -140,7 +138,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
                 Map2EuclidianPoint(currentPoint, statusCxt_->vehiclePos, p);
 
                 polygon = polygon + boost::lexical_cast<std::string>(p[0]) + " " + boost::lexical_cast<std::string>(p[1]);
-                polygon2 = polygon2 + boost::lexical_cast<std::string>(currentPoint.latitude) + " " + boost::lexical_cast<std::string>(currentPoint.longitude);
+
             }
         } catch (Json::Exception& e) {
             // output exception information
@@ -150,9 +148,8 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         }
 
         polygon = polygon + "))";
-        polygon2 = polygon2 + "))";
 
-        if (asv_safety_boundaries->InitializePoly(statusCxt_->vehiclePos, polygon, polygon2)) {
+        if (asv_safety_boundaries->InitializePolygon(statusCxt_->vehiclePos, polygon)) {
             boundaries_set = true;
             boundaries_json = request->boundaries_json;
             response->res = "SetBound::ok";

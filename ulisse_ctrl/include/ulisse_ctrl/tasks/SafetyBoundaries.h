@@ -53,7 +53,7 @@ public:
 	 */
     void Update() throw(tpik::ExceptionWithHow) override;
 
-    bool InitializePoly(ctb::LatLong current_position, std::string polygon_to_string, std::string polygon_lat_long);
+    bool InitializePolygon(ctb::LatLong startingPosition, std::string polygonString);
 
     void SetBoundaries(double bound_min, double bound_max);
 
@@ -94,11 +94,9 @@ protected:
      */
     void UpdateReference() override;
 
-    template <typename Point>
-    void make_segments(Point const& p, Point const& next);
+    void MakeSegments(point_type const& p, point_type const& next, segment_type& seg);
 
-    template <typename Point>
-    desired_target distance_check(Point const& p);
+    desired_target DistanceCheck(point_type const& currentPosition);
 
     std::shared_ptr<rml::RobotModel> robotModel_; //!< The shared ptr to the robot model
     std::string frameID_; //!< The id of the frame to be controlled

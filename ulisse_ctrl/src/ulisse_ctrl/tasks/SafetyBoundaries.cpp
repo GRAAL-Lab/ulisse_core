@@ -68,7 +68,7 @@ void SafetyBoundaries::Update() throw(tpik::ExceptionWithHow)
 
     ctb::Map2EuclidianPoint(pose, centroid, p);
 
-    target = distance_check(point_type(p[0], p[1]));
+    target = DistanceCheck(point_type(p[0], p[1]));
 
     if (target.gain > 0) {
 
@@ -127,30 +127,32 @@ void SafetyBoundaries::UpdateReference()
     x_dot_ = taskParameter_.gain * target.gain * (desiredVelocity_);
 }
 
-bool SafetyBoundaries::InitializePoly(ctb::LatLong current_position, std::string polygon_to_string, std::string polygon_lat_long)
+bool SafetyBoundaries::InitializePolygon(ctb::LatLong startingPosition, std::string polygonString)
 {
     segments.clear();
-    centroid = current_position;
+    centroid = startingPosition;
 
-    polygon_type poly_lat_long;
     point_type p(centroid.latitude, centroid.longitude);
+    segment_type seg;
 
-    boost::geometry::read_wkt(polygon_to_string, poly);
-    boost::geometry::read_wkt(polygon_lat_long, poly_lat_long);
-    if (!boost::geometry::covered_by(p, poly_lat_long))
-        return false;
+    boost::geometry::read_wkt(polygonString, poly);
 
     //Generate a list with all the segments
     double x, y;
+
     for (auto it = boost::begin(boost::geometry::exterior_ring(poly)); (it + 1) != boost::end(boost::geometry::exterior_ring(poly)); ++it) {
-        x = boost::geometry::get<0>(*it);
+
+        x = (*it).x();
+
         if (x > coord_max) {
             coord_max = x;
         }
         if (x < coord_min) {
             coord_min = x;
         }
-        y = boost::geometry::get<1>(*it);
+
+        y = (*it).y();
+
         if (y > coord_max) {
             coord_max = y;
         }
@@ -160,21 +162,25 @@ bool SafetyBoundaries::InitializePoly(ctb::LatLong current_position, std::string
 
         point_type p(x, y);
 
-        x = boost::geometry::get<0>(*(it + 1));
-        y = boost::geometry::get<1>(*(it + 1));
+        x = (*(it + 1)).x();
+        y = (*(it + 1)).y();
         point_type next(x, y);
 
-        make_segments(p, next);
+        MakeSegments(p, next, seg);
+
+        segments.push_front(seg);
     }
 
     coord_max = coord_max + abs(coord_min);
+
     isBoundariesInitialized = true;
+
     return true;
 }
 
-template <typename Point>
-desired_target SafetyBoundaries::distance_check(Point const& p)
+desired_target SafetyBoundaries::DistanceCheck(point_type const& currentPosition)
 {
+
     desired_target target_value = { 0.0, 0.0, 0.0 };
     double d, d_p1, d_p2;
     double m, x_2, y_2, theta;
@@ -193,57 +199,64 @@ desired_target SafetyBoundaries::distance_check(Point const& p)
 
     double count = 0.0;
 
-    if (!boost::geometry::covered_by(p, poly)) {
+    //if the current robot position is not in the polygon
+    if (!boost::geometry::covered_by(currentPosition, poly)) {
         for (auto i : segments) {
-            d = boost::geometry::distance(p, i);
 
+            //distance from the current potion to the i-th segment
+            d = boost::geometry::distance(currentPosition, i);
+
+            //
             if (d < min_d) {
+
+                //starting point of the segment
                 point_type p1{ boost::geometry::get<0, 0>(i), boost::geometry::get<0, 1>(i) };
+                //ending point of the segment
                 point_type p2{ boost::geometry::get<1, 0>(i), boost::geometry::get<1, 1>(i) };
 
-                d_p1 = boost::geometry::distance(p, p1);
-                d_p2 = boost::geometry::distance(p, p2);
+                //distance between the current position and the starting point of the segment
+                d_p1 = boost::geometry::distance(currentPosition, p1);
+                //distance between the current position and the ending point of the segment
+                d_p2 = boost::geometry::distance(currentPosition, p2);
 
                 if (d_p1 <= d_p2) {
-                    nearest_p.set<0>(boost::geometry::get<0, 0>(i));
-                    nearest_p.set<1>(boost::geometry::get<0, 1>(i));
+                    //if
+                    nearest_p.set<0>(p1.x());
+                    nearest_p.set<1>(p1.y());
                     d = d_p1;
                 } else {
-                    nearest_p.set<0>(boost::geometry::get<1, 0>(i));
-                    nearest_p.set<1>(boost::geometry::get<1, 1>(i));
+                    nearest_p.set<0>(p2.x());
+                    nearest_p.set<1>(p2.y());
                     d = d_p2;
                 }
 
-                x_min = boost::geometry::get<0>(p1) < boost::geometry::get<0>(p2) ? boost::geometry::get<0>(p1)
-                                                                                  : boost::geometry::get<0>(p2);
-                x_max = boost::geometry::get<0>(p1) > boost::geometry::get<0>(p2) ? boost::geometry::get<0>(p1)
-                                                                                  : boost::geometry::get<0>(p2);
-                y_min = boost::geometry::get<1>(p1) < boost::geometry::get<1>(p2) ? boost::geometry::get<1>(p1)
-                                                                                  : boost::geometry::get<1>(p2);
-                y_max = boost::geometry::get<1>(p1) > boost::geometry::get<1>(p2) ? boost::geometry::get<1>(p1)
-                                                                                  : boost::geometry::get<1>(p2);
+                x_min = p1.x() < p2.x() ? p1.x() : p2.x();
+                x_max = p1.x() > p2.x() ? p1.x() : p2.x();
+                y_min = p1.y() < p2.y() ? p1.y() : p2.y();
+                y_max = p1.y() > p2.y() ? p1.y() : p2.y();
 
-                if ((boost::geometry::get<0>(p) < x_max && boost::geometry::get<0>(p) > x_min) || (boost::geometry::get<0>(p) < y_max && boost::geometry::get<0>(p) > y_min)) {
-                    d = boost::geometry::distance(p, i, boost::geometry::strategy::distance::projected_point<>{});
+                if ((currentPosition.x() < x_max && currentPosition.x() > x_min) || (currentPosition.y() < y_max && currentPosition.y() > y_min)) {
 
-                    m = (boost::geometry::get<1>(p2) - boost::geometry::get<1>(p1)) / (boost::geometry::get<0>(p2) - boost::geometry::get<0>(p1));
+                    d = boost::geometry::distance(currentPosition, i, boost::geometry::strategy::distance::projected_point<>{});
+
+                    m = (p2.y() - p1.y()) / (p2.x() - p1.x());
                     m = -1 / (m);
 
-                    l1.push_back(point_type(boost::geometry::get<0>(p1), boost::geometry::get<1>(p1)));
-                    l1.push_back(point_type(boost::geometry::get<0>(p2), boost::geometry::get<1>(p2)));
+                    l1.push_back(p1);
+                    l1.push_back(p2);
 
-                    l2.push_back(point_type(boost::geometry::get<0>(p), boost::geometry::get<1>(p)));
-                    x_2 = coord_max + boost::geometry::get<0>(p);
-                    y_2 = m + boost::geometry::get<1>(p);
+                    l2.push_back(currentPosition);
+                    x_2 = coord_max + currentPosition.x();
+                    y_2 = m + currentPosition.y();
                     l2.push_back(point_type(x_2, y_2));
 
-                    x_2 = -coord_max + boost::geometry::get<0>(p);
-                    y_2 = m + boost::geometry::get<1>(p);
+                    x_2 = -coord_max + currentPosition.x();
+                    y_2 = m + currentPosition.y();
                     l2.push_back(point_type(x_2, y_2));
 
                     boost::geometry::intersection(l1, l2, output);
-                    nearest_p.set<0>(boost::geometry::get<0>(output.front()));
-                    nearest_p.set<1>(boost::geometry::get<1>(output.front()));
+                    nearest_p.set<0>((output.front()).x());
+                    nearest_p.set<1>((output.front()).y());
                 }
 
                 min_d = d;
@@ -253,69 +266,71 @@ desired_target SafetyBoundaries::distance_check(Point const& p)
         }
     } else {
         for (auto i : segments) {
-            d = boost::geometry::distance(p, i);
+            d = boost::geometry::distance(currentPosition, i);
 
-            // Detect dangerous situation , remember to give back anyn time the nearest.
+            // Detect dangerous situation , remember to give back any time the nearest.
             if (d < MIN_THRESHOLD) {
 
+                //starting point of the segment
                 point_type p1{ boost::geometry::get<0, 0>(i), boost::geometry::get<0, 1>(i) };
+                //ending point of the segment
                 point_type p2{ boost::geometry::get<1, 0>(i), boost::geometry::get<1, 1>(i) };
 
-                d_p1 = boost::geometry::distance(p, p1);
-                d_p2 = boost::geometry::distance(p, p2);
+                //distance between the current position and the starting point of the segment
+                d_p1 = boost::geometry::distance(currentPosition, p1);
+                //distance between the current position and the ending point of the segment
+                d_p2 = boost::geometry::distance(currentPosition, p2);
 
                 if (d_p1 <= d_p2) {
-                    nearest_p.set<0>(boost::geometry::get<0, 0>(i));
-                    nearest_p.set<1>(boost::geometry::get<0, 1>(i));
+                    //if
+                    nearest_p.set<0>(p1.x());
+                    nearest_p.set<1>(p1.y());
                     d = d_p1;
                 } else {
-                    nearest_p.set<0>(boost::geometry::get<1, 0>(i));
-                    nearest_p.set<1>(boost::geometry::get<1, 1>(i));
+                    nearest_p.set<0>(p2.x());
+                    nearest_p.set<1>(p2.y());
                     d = d_p2;
                 }
 
-                x_min = boost::geometry::get<0>(p1) < boost::geometry::get<0>(p2) ? boost::geometry::get<0>(p1)
-                                                                                  : boost::geometry::get<0>(p2);
-                x_max = boost::geometry::get<0>(p1) > boost::geometry::get<0>(p2) ? boost::geometry::get<0>(p1)
-                                                                                  : boost::geometry::get<0>(p2);
-                y_min = boost::geometry::get<1>(p1) < boost::geometry::get<1>(p2) ? boost::geometry::get<1>(p1)
-                                                                                  : boost::geometry::get<1>(p2);
-                y_max = boost::geometry::get<1>(p1) > boost::geometry::get<1>(p2) ? boost::geometry::get<1>(p1)
-                                                                                  : boost::geometry::get<1>(p2);
+                x_min = p1.x() < p2.x() ? p1.x() : p2.x();
+                x_max = p1.x() > p2.x() ? p1.x() : p2.x();
+                y_min = p1.y() < p2.y() ? p1.y() : p2.y();
+                y_max = p1.y() > p2.y() ? p1.y() : p2.y();
 
-                if ((boost::geometry::get<0>(p) < x_max && boost::geometry::get<0>(p) > x_min) || (boost::geometry::get<0>(p) < y_max && boost::geometry::get<0>(p) > y_min)) {
-                    d = boost::geometry::distance(p, i, boost::geometry::strategy::distance::projected_point<>{});
+                if ((currentPosition.x() < x_max && currentPosition.x() > x_min) || (currentPosition.y() < y_max && currentPosition.y() > y_min)) {
 
-                    m = (boost::geometry::get<1>(p2) - boost::geometry::get<1>(p1)) / (boost::geometry::get<0>(p2) - boost::geometry::get<0>(p1));
+                    d = boost::geometry::distance(currentPosition, i, boost::geometry::strategy::distance::projected_point<>{});
+
+                    m = (p2.y() - p1.y()) / (p2.x() - p1.x());
                     m = -1 / (m);
 
-                    l1.push_back(point_type(boost::geometry::get<0>(p1), boost::geometry::get<1>(p1)));
-                    l1.push_back(point_type(boost::geometry::get<0>(p2), boost::geometry::get<1>(p2)));
+                    l1.push_back(p1);
+                    l1.push_back(p2);
 
-                    l2.push_back(point_type(boost::geometry::get<0>(p), boost::geometry::get<1>(p)));
-                    x_2 = coord_max + boost::geometry::get<0>(p);
-                    y_2 = m + boost::geometry::get<1>(p);
+                    l2.push_back(currentPosition);
+                    x_2 = coord_max + currentPosition.x();
+                    y_2 = m + currentPosition.y();
                     l2.push_back(point_type(x_2, y_2));
 
-                    x_2 = -coord_max + boost::geometry::get<0>(p);
-                    y_2 = m + boost::geometry::get<1>(p);
+                    x_2 = -coord_max + currentPosition.x();
+                    y_2 = m + currentPosition.y();
                     l2.push_back(point_type(x_2, y_2));
 
                     boost::geometry::intersection(l1, l2, output);
+                    nearest_p.set<0>((output.front()).x());
+                    nearest_p.set<1>((output.front()).y());
 
                     if (first) {
                         first = false;
                         double gain = (d < MAX_THRESHOLD ? 1.0 : (MIN_THRESHOLD - d) / (MIN_THRESHOLD - MAX_THRESHOLD));
-                        nearest_p.set<0>((gain * boost::geometry::get<0>(output.front())));
-                        nearest_p.set<1>((gain * boost::geometry::get<1>(output.front())));
+                        nearest_p.set<0>((gain * (output.front()).x()));
+                        nearest_p.set<1>((gain * (output.front()).y()));
                         count += gain;
 
                     } else {
                         double gain = (d < MAX_THRESHOLD ? 1.0 : (MIN_THRESHOLD - d) / (MIN_THRESHOLD - MAX_THRESHOLD));
-                        nearest_p.set<0>(
-                            boost::geometry::get<0>(nearest_p) + (gain * boost::geometry::get<0>(output.front())));
-                        nearest_p.set<1>(
-                            boost::geometry::get<1>(nearest_p) + (gain * boost::geometry::get<1>(output.front())));
+                        nearest_p.set<0>(nearest_p.x() + (gain * (output.front()).x()));
+                        nearest_p.set<1>(nearest_p.y() + (gain * (output.front()).y()));
                         count += gain;
                     }
                 }
@@ -330,33 +345,29 @@ desired_target SafetyBoundaries::distance_check(Point const& p)
 
     if (min_d < static_cast<double>(INFINITY)) {
         // return these values: target(x,y) and "gain"
-        theta = atan2(boost::geometry::get<1>(p) - (boost::geometry::get<1>(nearest_p) / count), boost::geometry::get<0>(p) - (boost::geometry::get<0>(nearest_p) / count));
+        theta = atan2(currentPosition.y() - (nearest_p.y() / count), currentPosition.x() - (nearest_p.x() / count));
 
-        if (!boost::geometry::covered_by(p, poly)) {
+        if (!boost::geometry::covered_by(currentPosition, poly)) {
             theta = theta + M_PI;
         } else {
 
             theta = theta + ulisse::MinimumAngleBetween((*pose_shared)(5), goalCxt_->goalHeading);
         }
 
-        target_value.x = boost::geometry::get<0>(p) + min_d * cos(theta);
-        target_value.y = boost::geometry::get<1>(p) + min_d * sin(theta);
+        target_value.x = currentPosition.x() + min_d * cos(theta);
+        target_value.y = currentPosition.y() + min_d * sin(theta);
     }
 
     std::cout << "DEBUG:: MIN_D:" << min_d << std::endl;
 
     return target_value;
 }
-template <typename Point>
-void SafetyBoundaries::make_segments(Point const& p, Point const& next)
+
+void SafetyBoundaries::MakeSegments(point_type const& p, point_type const& next, segment_type& seg)
 {
-    segment_type seg;
-
-    boost::geometry::set<0, 0>(seg, boost::geometry::get<0>(p));
-    boost::geometry::set<0, 1>(seg, boost::geometry::get<1>(p));
-    boost::geometry::set<1, 0>(seg, boost::geometry::get<0>(next));
-    boost::geometry::set<1, 1>(seg, boost::geometry::get<1>(next));
-
-    segments.push_front(seg);
+    boost::geometry::set<0, 0>(seg, p.x());
+    boost::geometry::set<0, 1>(seg, p.y());
+    boost::geometry::set<1, 0>(seg, next.x());
+    boost::geometry::set<1, 1>(seg, next.y());
 }
 }
