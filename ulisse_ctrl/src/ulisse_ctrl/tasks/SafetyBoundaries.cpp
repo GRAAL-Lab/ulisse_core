@@ -206,7 +206,7 @@ desired_target SafetyBoundaries::DistanceCheck(point_type const& currentPosition
             //distance from the current potion to the i-th segment
             d = boost::geometry::distance(currentPosition, i);
 
-            //
+            //check if d is the current shorter distance
             if (d < min_d) {
 
                 //starting point of the segment
@@ -219,8 +219,8 @@ desired_target SafetyBoundaries::DistanceCheck(point_type const& currentPosition
                 //distance between the current position and the ending point of the segment
                 d_p2 = boost::geometry::distance(currentPosition, p2);
 
+                //look for which side of the segment is at the minimum distance from the robot position
                 if (d_p1 <= d_p2) {
-                    //if
                     nearest_p.set<0>(p1.x());
                     nearest_p.set<1>(p1.y());
                     d = d_p1;
@@ -251,12 +251,14 @@ desired_target SafetyBoundaries::DistanceCheck(point_type const& currentPosition
 
                     //line passing through the current point
                     l2.push_back(currentPosition);
+
+                    //this point does not belong to the line perpendicular to l1
                     x_2 = coord_max + currentPosition.x();
-                    y_2 = m + currentPosition.y();
+                    y_2 = m * (x_2 - currentPosition.x()) + currentPosition.y();
                     l2.push_back(point_type(x_2, y_2));
 
                     x_2 = -coord_max + currentPosition.x();
-                    y_2 = m + currentPosition.y();
+                    y_2 = m * (x_2 - currentPosition.x()) + currentPosition.y();
                     l2.push_back(point_type(x_2, y_2));
 
                     boost::geometry::intersection(l1, l2, intersectionP);
@@ -273,9 +275,10 @@ desired_target SafetyBoundaries::DistanceCheck(point_type const& currentPosition
     //if the robot is inside the polygon
     else {
         for (auto i : segments) {
+            //compute the distance between the current Robot position and the i-th segment
             d = boost::geometry::distance(currentPosition, i);
 
-            // Detect dangerous situation , remember to give back any time the nearest.
+            //check if the distance is lower than MIN_THRESHOLD value
             if (d < MIN_THRESHOLD) {
 
                 //starting point of the segment
@@ -288,8 +291,8 @@ desired_target SafetyBoundaries::DistanceCheck(point_type const& currentPosition
                 //distance between the current position and the ending point of the segment
                 d_p2 = boost::geometry::distance(currentPosition, p2);
 
+                //look for which side of the segment is at the minimum distance from the robot position
                 if (d_p1 <= d_p2) {
-                    //if
                     nearest_p.set<0>(p1.x());
                     nearest_p.set<1>(p1.y());
                     d = d_p1;
@@ -316,11 +319,11 @@ desired_target SafetyBoundaries::DistanceCheck(point_type const& currentPosition
 
                     l2.push_back(currentPosition);
                     x_2 = coord_max + currentPosition.x();
-                    y_2 = m + currentPosition.y();
+                    y_2 = m * (x_2 - currentPosition.x()) + currentPosition.y();
                     l2.push_back(point_type(x_2, y_2));
 
                     x_2 = -coord_max + currentPosition.x();
-                    y_2 = m + currentPosition.y();
+                    y_2 = m * (x_2 - currentPosition.x()) + currentPosition.y();
                     l2.push_back(point_type(x_2, y_2));
 
                     boost::geometry::intersection(l1, l2, intersectionP);
