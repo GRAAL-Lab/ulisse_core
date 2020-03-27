@@ -67,7 +67,7 @@ public:
 
   void SetPose(std::shared_ptr<Eigen::Vector6d> pose);
 
-  void SetDesiredSpeedOnTurning(double des_speed);
+  void SetDesiredVelocity(Eigen::Vector3d desiredVelocity);
 
   const Eigen::Vector3d GetAlignVector();
 
@@ -119,10 +119,8 @@ protected:
   std::list<segment_type> segments_;
 
   ctb::LatLong centroid_;
-  Eigen::Vector6d desiredVelocity_;
+  Eigen::Vector3d desiredVelocity_;
   polygon_type poly_;
-
-  double desiredSpeed_;
 
   Eigen::Vector3d alignVector_;
 

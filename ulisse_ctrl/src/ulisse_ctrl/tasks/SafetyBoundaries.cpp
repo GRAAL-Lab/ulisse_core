@@ -7,16 +7,19 @@ namespace ikcl {
 SafetyBoundaries::SafetyBoundaries(std::string taskID,
                                    std::shared_ptr<rml::RobotModel> robotModel,
                                    std::string frameID)
-    : tpik::InequalityTask(taskID, 6, robotModel->GetTotalDOFs(),
+    : tpik::InequalityTask(taskID, 3, robotModel->GetTotalDOFs(),
                            tpik::InequalityTaskType::Decreasing),
       robotModel_(robotModel), frameID_(frameID)
 
 {
-  desiredSpeed_ = 2.5;
+  desiredVelocity_(0) = 1.0;
+  Ai_.setZero(taskSpace_, taskSpace_);
+  x_dot_.setZero(taskSpace_);
+  J_.setZero(taskSpace_, DoF_);
 }
 
-void SafetyBoundaries::SetDesiredSpeedOnTurning(double des_speed) {
-  desiredSpeed_ = des_speed;
+void SafetyBoundaries::SetDesiredVelocity(Eigen::Vector3d desiredVelocity) {
+  desiredVelocity_ = desiredVelocity;
 }
 
 void SafetyBoundaries::SetPose(std::shared_ptr<Eigen::Vector6d> pose) {
@@ -38,7 +41,6 @@ void SafetyBoundaries::Update() throw(tpik::ExceptionWithHow) {
     throw(jointsLimitException);
   }
 
-  double desired_speed;
   Eigen::Vector3d alignVector;
 
   std::shared_ptr<double[]> poseEuclidian(new double[3]);
@@ -48,11 +50,7 @@ void SafetyBoundaries::Update() throw(tpik::ExceptionWithHow) {
 
   ctb::Map2EuclidianPoint(pose, centroid_, poseEuclidian);
 
-  desired_speed = desiredSpeed_;
-
   DistanceCheck(point_type(poseEuclidian[0], poseEuclidian[1]), alignVector_);
-
-  desiredVelocity_(3) = desired_speed;
 
   UpdateInternalActivationFunction();
   UpdateJacobian();
@@ -62,20 +60,20 @@ void SafetyBoundaries::Update() throw(tpik::ExceptionWithHow) {
 }
 
 void SafetyBoundaries::UpdateJacobian() {
-  J_ = robotModel_->GetCartesianJacobian(frameID_).block(0, 0, 6, DoF_);
+  J_ = robotModel_->GetCartesianJacobian(frameID_).block(3, 0, 3, DoF_);
 }
 
 void SafetyBoundaries::UpdateReference() {
-  x_dot_ = taskParameter_.gain * (desiredVelocity_);
+  x_dot_ = taskParameter_.gain * desiredVelocity_;
 }
 
 void SafetyBoundaries::UpdateInternalActivationFunction() {
+  std::cout << "Debug Ai:" << std::endl;
   std::cout << Ai_ << std::endl;
 }
 
 bool SafetyBoundaries::InitializePolygon(std::string polygonString,
                                          LatLong inizialPosition) {
-  taskSpace_ = 1;
   segments_.clear();
   segment_type seg;
 
@@ -112,11 +110,7 @@ Eigen::Vector3d
 SafetyBoundaries::DistanceCheck(point_type const &currentPosition,
                                 Eigen::Vector3d alignVector) {
 
-  point_type uPerp{0.0, 0.0}, midP{0.0, 0.0};
-  double k = 0.0;
   Eigen::VectorXd Ai;
-  int j = 0;
-  std::list<point_type> listU;
   std::list<segment_type> segments, minDistsegments;
   bool isConvex = false;
 
@@ -172,26 +166,22 @@ void SafetyBoundaries::ComputeAlignVector(segment_type segment,
   double dp1 = boost::geometry::distance(currentPosition, p1);
   double dp2 = boost::geometry::distance(currentPosition, p2);
 
-  std::cout << "DEBUG:: d : " << d << std::endl;
-  std::cout << "DEBUG:: dp1 : " << dp1 << std::endl;
-  std::cout << "DEBUG:: dp2 : " << dp2 << std::endl;
-
   // find the end of the segment nearest to the current position
   // if the distance form the current position to the end of the segment is
   // ugual to d then i am in the middle zone
 
   if (dp1 < dp2 && dp1 == d) {
     std::cout << "DEBUG:: ZONE3 : " << d << std::endl;
-    alignVector(0) = p1.x() - currentPosition.x();
-    alignVector(1) = p1.y() - currentPosition.y();
+    alignVector(0) = currentPosition.x() - p1.x();
+    alignVector(1) = currentPosition.y() - p1.y();
 
   } else if (dp1 > dp2 && dp1 == d) {
     std::cout << "DEBUG:: ZONE3: " << d << std::endl;
-    alignVector(0) = p2.x() - currentPosition.x();
-    alignVector(1) = p2.y() - currentPosition.y();
+    alignVector(0) = currentPosition.x() - p2.x();
+    alignVector(1) = currentPosition.y() - p2.y();
 
   } else {
-    std::cout << "DEBUG:: ZONE3 : " << d << std::endl;
+    std::cout << "DEBUG:: ZONE1/2 : " << d << std::endl;
     // if is inside one of the two area defined by the two segment I will take
     // as alignVector the normal to the segment
     ComputeNormalVector2Segment(segment, alignVector);
@@ -202,15 +192,12 @@ void SafetyBoundaries::ComputeAlignVector(segment_type segment,
   // on the border
   if (boost::geometry::covered_by(currentPosition, poly_)) {
     std::cout << "DEBUG:: IAM INSIDE THE POLYGON" << std::endl;
-    alignVector(0) = -alignVector(0);
-    alignVector(1) = -alignVector(1);
+
   } else {
     std::cout << "DEBUG:: IAM outside THE POLYGON" << std::endl;
     d = -d;
   }
   std::cout << "DEBUG:: d : " << d << std::endl;
-  std::cout << "DEBUG:: dp1 : " << dp1 << std::endl;
-  std::cout << "DEBUG:: dp2 : " << dp2 << std::endl;
   // compute the activation function of the if is distance under threshold
   Ai_(0, 0) = rml::DecreasingBellShapedFunction(
       decreasingBellShape_.xmin(0), decreasingBellShape_.xmax(0), 0.0, 1.0, d);

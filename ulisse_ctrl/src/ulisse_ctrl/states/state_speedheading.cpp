@@ -24,10 +24,10 @@ void StateSpeedHeading::SetLinearVelocityTask(
   linearVelocityTask_ = linearVelocityTask;
 }
 
-//void StateSpeedHeading::SetSafetyBoundariesTask(
-//    std::shared_ptr<ikcl::SafetyBoundaries> safetyBoundariesTask) {
-//  safetyBoundariesTask_ = safetyBoundariesTask;
-//}
+void StateSpeedHeading::SetSafetyBoundariesTask(
+    std::shared_ptr<ikcl::SafetyBoundaries> safetyBoundariesTask) {
+  safetyBoundariesTask_ = safetyBoundariesTask;
+}
 
 fsm::retval StateSpeedHeading::OnEntry() {
   actionManager_->SetAction(ulisse::action::speed_heading, true);
@@ -56,17 +56,22 @@ fsm::retval StateSpeedHeading::Execute() {
     std::cout << "Speed Heading Timeout reached!" << std::endl;
     fsm_->ExecuteCommand(ulisse::commands::ID::halt);
   }
-//  // check if the task safetyB is activation function of safetyB i no null
-//  if (safetyBoundariesTask_->GetInternalActivationFunction().norm() > 0) {
-//    Eigen::VectorXd Aexternal;
-//    Aexternal =
-//        safetyBoundariesTask_->GetInternalActivationFunction().maxCoeff() *
-//        Aexternal.setOnes();
-////    angularPositionTask_->SetExternalActivationFunction(Aexternal);
-//    angularPositionTask_->SetAlignmentAxis(Eigen::Vector3d(1, 0, 0));
-//    angularPositionTask_->SetDistanceToTarget(
-//        safetyBoundariesTask_->GetAlignVector(), rml::FrameID::WorldFrame);
-//  } else {
+  // check if the activaction function of safetyB is no null
+  if (safetyBoundariesTask_->GetInternalActivationFunction().norm() > 0) {
+
+    // Use the activation function of SafetyB to activate the
+    // angluarPositionTask
+    Eigen::VectorXd Aexternal;
+
+    Aexternal =
+        safetyBoundariesTask_->GetInternalActivationFunction().maxCoeff() *
+        Aexternal.setOnes(angularPositionTask_->GetTaskSpace());
+
+    angularPositionTask_->SetExternalActivationFunction(Aexternal);
+    angularPositionTask_->SetAlignmentAxis(Eigen::Vector3d(1, 0, 0));
+    angularPositionTask_->SetDistanceToTarget(
+        safetyBoundariesTask_->GetAlignVector(), rml::FrameID::WorldFrame);
+  } else {
     angularPositionTask_->SetAlignmentAxis(Eigen::Vector3d(1, 0, 0));
     angularPositionTask_->SetDistanceToTarget(
         Eigen::Vector3d(cos(goalCxt_->goalHeading), sin(goalCxt_->goalHeading),
@@ -74,13 +79,13 @@ fsm::retval StateSpeedHeading::Execute() {
         rml::FrameID::WorldFrame);
     linearVelocityTask_->SetVelocity(
         Eigen::Vector3d(goalCxt_->goalSurge, 0, 0));
-//  }
+      }
 
-  std::cout << "STATE SPEED HEADING " << std::endl;
-  std::cout << "Goal Heading: " << goalCxt_->goalHeading << std::endl;
-  std::cout << "Goal Surge: " << goalCxt_->goalSurge << std::endl;
+    std::cout << "STATE SPEED HEADING " << std::endl;
+    std::cout << "Goal Heading: " << goalCxt_->goalHeading << std::endl;
+    std::cout << "Goal Surge: " << goalCxt_->goalSurge << std::endl;
 
-  return fsm::ok;
-}
+    return fsm::ok;
+  }
 } // namespace states
-} // namespace ulisse
+} // namespace states

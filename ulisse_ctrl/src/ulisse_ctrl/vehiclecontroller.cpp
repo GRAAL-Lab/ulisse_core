@@ -76,7 +76,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr &nh,
       std::make_pair(ulisse::task::asv_control_velocity_linear,
                      nh_->create_publisher<ulisse_msgs::msg::TaskStatus>(
                          "/ulisse/log/task/asv_control_velocity_linear", 10)));
-
+  std::cout << "Debug: PORCODIO" << std::endl;
   // AUV CONTROL ANGULAR POSITION
   asv_angular_position =
       std::make_shared<ikcl::AlignToTarget>(ikcl::AlignToTarget(
@@ -95,8 +95,6 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr &nh,
                      nh_->create_publisher<ulisse_msgs::msg::TaskStatus>(
                          "/ulisse/log/task/asv_angular_position", 10)));
 
-
-
   // ASV CONTROL DISTANCE
   asv_control_distance = std::make_shared<ikcl::ControlCartesianDistance>(
       ikcl::ControlCartesianDistance(ulisse::task::asv_control_distance,
@@ -114,9 +112,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr &nh,
                      nh_->create_publisher<ulisse_msgs::msg::TaskStatus>(
                          "/ulisse/log/task/asv_control_distance", 10)));
 
-
-
- // ASV SAFETY BOUNDARIES (INEQUALITY TASK)
+  // ASV SAFETY BOUNDARIES (INEQUALITY TASK)
   asv_safety_boundaries = std::make_shared<ikcl::SafetyBoundaries>(
       ikcl::SafetyBoundaries(ulisse::task::asv_safety_boundaries, robot_model,
                              ulisse::robotModelID::ASV));
@@ -129,8 +125,6 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr &nh,
       std::make_pair(ulisse::task::asv_safety_boundaries,
                      nh_->create_publisher<ulisse_msgs::msg::TaskStatus>(
                          "/ulisse/log/task/asv_safety_boundaries", 10)));
-
-   std::cout << "PORCODIODODODODO 2" << std::endl;
 
   // Initialize Solver and iCAT
   int dof = 6;
@@ -341,8 +335,6 @@ void VehicleController::LoadKCLConfiguration(std::string task,
 
   //    asv_safety_boundaries->SetBoundaries(confObj.lookup("task.ASV_safety_boundaries.BoundaryMinimumDistance"),
   //        confObj.lookup("task.ASV_safety_boundaries.BoundaryMaximumDistance"));
-  asv_safety_boundaries->SetDesiredSpeedOnTurning(
-      confObj.lookup("task.ASV_safety_boundaries.DesiredSpeed"));
 
   state_navigate_.SetMaxRangeAbscissa(
       confObj.lookup("task.PathFollowing.MaximumLookupAbscissa"));
@@ -462,7 +454,7 @@ void VehicleController::SetUpFSM() {
   state_speedheading_.SetRobotModel(robot_model);
   state_speedheading_.SetLinearVelocityTask(asv_control_velocity_linear);
   state_speedheading_.SetAngularPositionTask(asv_angular_position);
-//  state_speedheading_.SetSafetyBoundariesTask(asv_safety_boundaries);
+  state_speedheading_.SetSafetyBoundariesTask(asv_safety_boundaries);
 
   // Navigate
   state_navigate_.SetFSM(&u_fsm_);
