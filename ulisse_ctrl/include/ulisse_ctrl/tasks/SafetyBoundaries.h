@@ -28,103 +28,102 @@ typedef boost::geometry::model::linestring<point_type> linestring_type;
 
 class SafetyBoundaries : public tpik::InequalityTask {
 public:
-  /**
+    /**
    * @brief ControlLinearVelocity class constructor
    * @param taskID task id
    * @param robotModel shared ptr to the rml::RobotModel
    * @param frameID id of the frame to control
    */
-  SafetyBoundaries(std::string taskID,
-                   std::shared_ptr<rml::RobotModel> robotModel,
-                   std::string frameID);
+    SafetyBoundaries(std::string taskID,
+        std::shared_ptr<rml::RobotModel> robotModel,
+        std::string frameID);
 
-  /**
+    /**
    * @brief Method updating the task Jacobian, reference, internal activation
    * function. Implementation of the pure virtual method of the base class
    * tpik::InequalityTask.
    * @note An exception is throw if deltaJL has not been initialized yet.
    */
-  void Update() throw(tpik::ExceptionWithHow) override;
+    void Update() throw(tpik::ExceptionWithHow) override;
 
-  bool InitializePolygon(std::string polygonString, LatLong inizialPosition);
+    bool InitializePolygon(std::string polygonString, LatLong inizialPosition);
 
-  //  void SetBoundaries(double bound_min, double bound_max);
+    //  void SetBoundaries(double bound_min, double bound_max);
 
-  /**
+    /**
    * @brief Overloading of the cout operator
    */
-  friend std::ostream &operator<<(std::ostream &os,
-                                  SafetyBoundaries const &safetyBoundaries) {
-    os << "\033[1;37m"
-       << "SAFETY BOUNDARIES " << (tpik::InequalityTask &)safetyBoundaries
-       << std::setprecision(4);
-    os << "\033[1;37m"
-       << "\033[1;37m"
-       << "frameID \n"
-       << "\033[0m" << safetyBoundaries.frameID_ << "\n";
-    return os;
-  }
+    friend std::ostream& operator<<(std::ostream& os,
+        SafetyBoundaries const& safetyBoundaries)
+    {
+        os << "\033[1;37m"
+           << "SAFETY BOUNDARIES " << (tpik::InequalityTask&)safetyBoundaries
+           << std::setprecision(4);
+        os << "\033[1;37m"
+           << "\033[1;37m"
+           << "frameID \n"
+           << "\033[0m" << safetyBoundaries.frameID_ << "\n";
+        return os;
+    }
 
-  void SetPose(std::shared_ptr<Eigen::Vector6d> pose);
+    void SetPose(std::shared_ptr<Eigen::Vector6d> pose);
 
-  void SetDesiredVelocity(Eigen::Vector3d desiredVelocity);
+    void SetDesiredVelocity(Eigen::Vector3d desiredVelocity);
 
-  const Eigen::Vector3d GetAlignVector();
+    const Eigen::Vector3d GetAlignVector();
 
 protected:
-  /**
+    /**
    * @brief Method updating the internal activation function.
    * Implementation of the pure virtual method of the base class
    * tpik::InequalityTask.
    */
-  void UpdateInternalActivationFunction() override;
-  /**
+    void UpdateInternalActivationFunction() override;
+    /**
    * @brief Method updating the Jacobian.
    * Implementation of the pure virtual method of the base class
    * tpik::InequalityTask.
    */
-  void UpdateJacobian() override;
-  /**
+    void UpdateJacobian() override;
+    /**
    * @brief Method updating the reference.
    * Implementation of the pure virtual method of the base class
    * tpik::InequalityTask.
    */
-  void UpdateReference() override;
+    void UpdateReference() override;
 
-  void MakeSegments(point_type const &p, point_type const &next,
-                    segment_type &seg);
+    void MakeSegments(point_type const& p, point_type const& next, segment_type& seg);
 
-  void ExtractMinDistanceSegments(std::list<segment_type> segments,
-                                  point_type currentPosition,
-                                  std::list<segment_type> &segment);
+    void ExtractMinDistanceSegments(std::list<segment_type> segments, point_type currentPosition, std::list<segment_type>& segment);
 
-  Eigen::Vector3d DistanceCheck(point_type const &currentPosition,
-                                Eigen::Vector3d alignVector);
+    Eigen::Vector3d DistanceCheck(point_type const& currentPosition,
+        Eigen::Vector3d alignVector);
 
-  bool IsConvex(std::list<segment_type> segments);
+    bool IsConvex(std::list<segment_type> segments);
 
-  void ComputeAlignVector(segment_type segment, point_type currentPosition,
-                          Eigen::Vector3d &alignVector);
+    void ComputeAlignVector(segment_type segment, point_type currentPosition,
+        Eigen::Vector3d& alignVector);
 
-  void ComputeNormalVector2Segment(segment_type segment,
-                                   Eigen::Vector3d &alignVector);
+    void ComputeNormalVector2Segment(segment_type segment,
+        Eigen::Vector3d& alignVector);
 
-  std::shared_ptr<rml::RobotModel>
-      robotModel_;      //!< The shared ptr to the robot model
-  std::string frameID_; //!< The id of the frame to be controlled
-                        //  BellShapedParameter bellShapeParameter_;
+    std::shared_ptr<rml::RobotModel>
+        robotModel_; //!< The shared ptr to the robot model
+    std::string frameID_; //!< The id of the frame to be controlled
+        //  BellShapedParameter bellShapeParameter_;
 
-  bool isBoundariesInitialized_{
-      false}; //!< Boolean used to state whehther deltaJL has been setted
-  std::list<segment_type> segments_;
+    bool isBoundariesInitialized_{
+        false
+    }; //!< Boolean used to state whehther deltaJL has been setted
+    std::list<segment_type> segments_;
 
-  ctb::LatLong centroid_;
-  Eigen::Vector3d desiredVelocity_;
-  polygon_type poly_;
+    ctb::LatLong centroid_;
+    Eigen::Vector3d desiredVelocity_;
+    polygon_type poly_;
 
-  Eigen::Vector3d alignVector_;
+    Eigen::Vector3d alignVector_;
 
-  std::shared_ptr<Eigen::Vector6d> pose_;
+    std::shared_ptr<Eigen::Vector6d> pose_;
 };
 } // namespace ikcl
 #endif

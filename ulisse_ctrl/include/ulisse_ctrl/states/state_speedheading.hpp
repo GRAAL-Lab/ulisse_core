@@ -13,7 +13,7 @@ class StateSpeedHeading : public GenericState {
   std::chrono::seconds total_elapsed_;
 
 protected:
-  std::shared_ptr<ikcl::AlignToTarget> angularPositionTask_;
+  std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentTask_;
   std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask_;
    std::shared_ptr<ikcl::SafetyBoundaries> safetyBoundariesTask_;
 
@@ -29,7 +29,7 @@ public:
   void ResetTimer();
 
   void SetAngularPositionTask(
-      std::shared_ptr<ikcl::AlignToTarget> angularPositionTask);
+      std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentTask);
   void SetLinearVelocityTask(
       std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask);
   void SetSafetyBoundariesTask(

@@ -9,41 +9,43 @@ namespace states {
     StateLatLong::StateLatLong()
     {
         cruise_ = -1;
+        maxGainCartesianDistance_ = 0.1;
+        maxHeadingError_ = M_PI / 16;
+        minHeadingError_ = M_PI / 32;
     }
 
-    StateLatLong::~StateLatLong()
+    StateLatLong::~StateLatLong() {}
+
+    void StateLatLong::SetAlignToTargetTask(std::shared_ptr<ikcl::AlignToTarget> alignToTarget)
     {
+        alignToTarget_ = alignToTarget;
     }
 
-    void StateLatLong::SetAngularPositionTask(std::shared_ptr<ikcl::AlignToTarget> angularPositionTask)
+    void StateLatLong::SetCartesianDistanceTask(std::shared_ptr<ikcl::ControlCartesianDistance> cartesianDistance)
     {
-        angularPositionTask_ = angularPositionTask;
+        cartesianDistance_ = cartesianDistance;
     }
 
-    void StateLatLong::SetDistanceTask(std::shared_ptr<ikcl::ControlCartesianDistance> distanceTask)
-    {
-        distanceTask_ = distanceTask;
-    }
-
-    void StateLatLong::SetPointGoTo(double latitude, double longitude, double accept_radius)
+    void StateLatLong::SetPointGoTo(double latitude, double longitude, double acceptRadius)
     {
         actionManager_->SetAction(ulisse::action::goTo, true);
     }
-
-    void StateLatLong::SetCruiseControl(double cruise)
+    void StateLatLong::SetMaxGainCartesianDistaceTask(double maxGainCartesianDistance)
     {
-        cruise_ = cruise;
+        maxGainCartesianDistance_ = maxGainCartesianDistance;
     }
 
-    double StateLatLong::GetCruiseControl()
+    void StateLatLong::SetMinMaxHeadingError(double min, double max)
     {
-        return cruise_;
+        minHeadingError_ = min;
+        maxHeadingError_ = max;
     }
 
-    fsm::retval StateLatLong::OnEntry()
-    {
-        return fsm::ok;
-    }
+    void StateLatLong::SetCruiseControl(double cruise) { cruise_ = cruise; }
+
+    double StateLatLong::GetCruiseControl() { return cruise_; }
+
+    fsm::retval StateLatLong::OnEntry() { return fsm::ok; }
 
     fsm::retval StateLatLong::Execute()
     {
@@ -70,18 +72,39 @@ namespace states {
             }
         } else {
 
-            distanceTask_->SetDistance(Eigen::Vector3d(goalCxt_->goalDistance * cos(goalCxt_->goalHeading), goalCxt_->goalDistance * sin(goalCxt_->goalHeading), 0), rml::FrameID::WorldFrame);
+            //Set the distance vector to the target
+            cartesianDistance_->SetDistance(Eigen::Vector3d(goalCxt_->goalDistance * cos(goalCxt_->goalHeading),
+                                                goalCxt_->goalDistance * sin(goalCxt_->goalHeading), 0),
+                rml::FrameID::WorldFrame);
+            //Set the align vector to the target
+            alignToTarget_->SetDistanceToTarget(Eigen::Vector3d(goalCxt_->goalDistance * cos(goalCxt_->goalHeading),
+                                                    goalCxt_->goalDistance * sin(goalCxt_->goalHeading), 0),
+                rml::FrameID::WorldFrame);
 
-            angularPositionTask_->SetDistanceToTarget(Eigen::Vector3d(goalCxt_->goalDistance * cos(goalCxt_->goalHeading), goalCxt_->goalDistance * sin(goalCxt_->goalHeading), 0), rml::FrameID::WorldFrame);
-            angularPositionTask_->SetAlignmentAxis(Eigen::Vector3d(1, 0, 0));
+            //Set the vector that has to been align to the distance vector
+            alignToTarget_->SetAlignmentAxis(Eigen::Vector3d(1, 0, 0));
+
+            //To avoid the case in which the error between the goal heading and the current heading is too big
+            //we activate the the cartesian distance through the gain based on a bell-shaped function on the heading error
+
+            //compute the heading error
+            double headingError = std::abs(goalCxt_->goalHeading - statusCxt_->vehicleHeading);
+            std::cout << "Heading error: " << headingError << std::endl;
+
+            //compute the gain of the cartesian distance
+            double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, maxGainCartesianDistance_, headingError);
+
+            //Set the gain of the cartesian distance task
+            cartesianDistance_->SetTaskParameter(taskGain);
         }
 
         std::cout << "STATE LATLONG" << std::endl;
         std::cout << "Goal Heading: " << goalCxt_->goalHeading << std::endl;
         std::cout << "Goal Distance: " << goalCxt_->goalDistance << std::endl;
-        std::cout << "Acceptance radius:" << goalCxt_->currentGoal.acceptRadius << std::endl;
+        std::cout << "Acceptance radius:" << goalCxt_->currentGoal.acceptRadius
+                  << std::endl;
 
         return fsm::ok;
     }
-}
-}
+} // namespace states
+} // namespace ulisse

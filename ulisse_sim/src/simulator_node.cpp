@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
     std::string filename = "simparams.conf";
     ReadMappingParameters(myTMP, filename);
 
-    int rate = 10000;
+    int rate = 100;
     rclcpp::WallRate loop_rate(rate);
     double dt = 1.0 / rate;
     std::cout << "dt=" << dt << std::endl;

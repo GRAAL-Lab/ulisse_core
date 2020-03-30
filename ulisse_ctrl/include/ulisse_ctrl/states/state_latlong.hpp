@@ -11,10 +11,11 @@ namespace states {
     class StateLatLong : public GenericState {
 
     protected:
-        std::shared_ptr<ikcl::AlignToTarget> angularPositionTask_;
-        std::shared_ptr<ikcl::ControlCartesianDistance> distanceTask_;
+        std::shared_ptr<ikcl::AlignToTarget> alignToTarget_;
+        std::shared_ptr<ikcl::ControlCartesianDistance> cartesianDistance_;
 
-        double cruise_;
+        double cruise_, maxGainCartesianDistance_;
+        double minHeadingError_, maxHeadingError_;
 
     public:
         StateLatLong();
@@ -22,12 +23,14 @@ namespace states {
         virtual fsm::retval OnEntry();
         virtual fsm::retval Execute();
 
-        void SetAngularPositionTask(std::shared_ptr<ikcl::AlignToTarget> angularPositionTask);
-        void SetDistanceTask(std::shared_ptr<ikcl::ControlCartesianDistance> distanceTask);
+        void SetAlignToTargetTask(std::shared_ptr<ikcl::AlignToTarget> alignToTarget);
+        void SetCartesianDistanceTask(std::shared_ptr<ikcl::ControlCartesianDistance> distacartesianDistancenceTask);
+        void SetHoldState(std::shared_ptr<ulisse::states::StateHold> stateHold);
 
-        void SetHoldState(std::shared_ptr<ulisse::states::StateHold> state_hold);
+        void SetMaxGainCartesianDistaceTask(double maxGainCartesianDistance);
+        void SetMinMaxHeadingError(double min, double max);
 
-        void SetPointGoTo(double latitude, double longitude, double accept_radius);
+        void SetPointGoTo(double latitude, double longitude, double acceptRadius);
 
         void SetCruiseControl(double cruise);
         double GetCruiseControl();

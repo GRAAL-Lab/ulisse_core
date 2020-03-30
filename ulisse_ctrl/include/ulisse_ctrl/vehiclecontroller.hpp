@@ -90,6 +90,9 @@ class VehicleController {
     // ASV SAFETY BOUNDARIES
     std::shared_ptr<ikcl::SafetyBoundaries> asv_safety_boundaries;
 
+    // ASV ABSOLUTE AXIS ALIGNMENT
+    std::shared_ptr<ikcl::AbsoluteAxisAlignment> asv_absolute_axis_alignment;
+
     double timestamp_;
     double sampleTime_;
 
