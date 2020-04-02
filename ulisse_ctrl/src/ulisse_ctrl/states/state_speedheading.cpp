@@ -98,8 +98,6 @@ namespace states {
             if (goalHeading < 0.0)
                 goalHeading += 2 * M_PI;
 
-            std::cout << "DEBUG PORCOIDO " << goalHeading << std::endl;
-
             absoluteAxisAlignmentTask_->SetAxisAlignment(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
             absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(cos(goalHeading), sin(goalHeading), 0), rml::FrameID::WorldFrame);
 
@@ -109,7 +107,7 @@ namespace states {
             safetyBoundariesTask_->SetTaskParameter(taskGain);
 
             //set the new goal
-            goalCxt_->goalSurge = desiredVelocity_(0);
+            goalCxt_->goalSurge = desiredVelocitySafety(0);
 
             goalCxt_->goalHeading = goalHeading;
 
