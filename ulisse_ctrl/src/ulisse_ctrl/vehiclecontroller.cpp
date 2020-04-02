@@ -13,8 +13,7 @@ using std::placeholders::_1;
 
 namespace ulisse {
 
-VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh,
-    double sampleTime, std::string file_name)
+VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double sampleTime, std::string file_name)
     : nh_(nh)
     , sampleTime_(sampleTime)
     , boundaries_set(false)
@@ -27,23 +26,16 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh,
     cruise_ = 0;
 
     // Sensor Subscriptions
-    gps_sub_ = nh_->create_subscription<ulisse_msgs::msg::GPSData>(
-        ulisse_msgs::topicnames::sensor_gps_data, 10,
-        std::bind(&VehicleController::GPSSensorCB, this, _1));
+    gps_sub_ = nh_->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data, 10, std::bind(&VehicleController::GPSSensorCB, this, _1));
     //    compass_sub_ =
     //    nh_->create_subscription<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass,
     //    std::bind(&VehicleController::CompassSensorCB, this, _1));
-    nav_filter_sub_ = nh_->create_subscription<ulisse_msgs::msg::NavFilterData>(
-        ulisse_msgs::topicnames::nav_filter_data, 10,
-        std::bind(&VehicleController::NavFilterCB, this, _1));
+    nav_filter_sub_ = nh_->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 10, std::bind(&VehicleController::NavFilterCB, this, _1));
 
     // Control Publishers
-    ctrlcxt_pub_ = nh_->create_publisher<ulisse_msgs::msg::ControlContext>(
-        ulisse_msgs::topicnames::control_context, 10);
-    goalcxt_pub_ = nh_->create_publisher<ulisse_msgs::msg::GoalContext>(
-        ulisse_msgs::topicnames::goal_context, 10);
-    statuscxt_pub_ = nh_->create_publisher<ulisse_msgs::msg::StatusContext>(
-        ulisse_msgs::topicnames::status_context, 10);
+    ctrlcxt_pub_ = nh_->create_publisher<ulisse_msgs::msg::ControlContext>(ulisse_msgs::topicnames::control_context, 10);
+    goalcxt_pub_ = nh_->create_publisher<ulisse_msgs::msg::GoalContext>(ulisse_msgs::topicnames::goal_context, 10);
+    statuscxt_pub_ = nh_->create_publisher<ulisse_msgs::msg::StatusContext>(ulisse_msgs::topicnames::status_context, 10);
     generic_log_pub_ = nh_->create_publisher<std_msgs::msg::String>("/ulisse/log/generic", 10);
 
     /// TPIK Manager
@@ -65,18 +57,13 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh,
     // ***** SETUP TASKS *****
 
     // ASV CONTROL VELOCITY LINEAR
-    asv_control_velocity_linear = std::make_shared<ikcl::LinearVelocity>(
-        ikcl::LinearVelocity(ulisse::task::asv_control_velocity_linear,
-            robot_model, ulisse::robotModelID::ASV));
+    asv_control_velocity_linear = std::make_shared<ikcl::LinearVelocity>(ikcl::LinearVelocity(ulisse::task::asv_control_velocity_linear, robot_model, ulisse::robotModelID::ASV));
     asv_control_velocity_linear->SetVelocity(Eigen::VectorXd::Zero(3));
     equality_task.push_back(asv_control_velocity_linear);
     task_hierarchy.push_back(asv_control_velocity_linear);
     taskIDMap.insert(std::make_pair(ulisse::task::asv_control_velocity_linear,
         asv_control_velocity_linear));
-    taskLogPublisherMap.insert(
-        std::make_pair(ulisse::task::asv_control_velocity_linear,
-            nh_->create_publisher<ulisse_msgs::msg::TaskStatus>(
-                "/ulisse/log/task/asv_control_velocity_linear", 10)));
+    taskLogPublisherMap.insert(std::make_pair(ulisse::task::asv_control_velocity_linear, nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_control_velocity_linear", 10)));
 
     // AUV CONTROL ANGULAR POSITION
     asv_angular_position = std::make_shared<ikcl::AlignToTarget>(ikcl::AlignToTarget(
@@ -127,21 +114,24 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh,
                 "/ulisse/log/task/asv_safety_boundaries", 10)));
 
     // ASV absolute axis alignment task
-    asv_absolute_axis_alignment = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(
-        ulisse::task::asv_absolute_axis_alignment, robot_model,
+    asv_absolute_axis_alignment = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asv_absolute_axis_alignment, robot_model,
         tpik::CartesianTaskType::Equality, ulisse::robotModelID::ASV));
     cartesian_task.push_back(asv_absolute_axis_alignment);
     task_hierarchy.push_back(asv_absolute_axis_alignment);
-    taskIDMap.insert(std::make_pair(ulisse::task::asv_absolute_axis_alignment,
-        asv_absolute_axis_alignment));
-    taskLogPublisherMap.insert(
-        std::make_pair(ulisse::task::asv_absolute_axis_alignment,
-            nh_->create_publisher<ulisse_msgs::msg::TaskStatus>(
-                "/ulisse/log/task/asv_absolute_axis_alignment", 10)));
-    asv_absolute_axis_alignment->SetAxisAlignment(Eigen::VectorXd::Zero(3),
-        ulisse::robotModelID::ASV);
-    asv_absolute_axis_alignment->SetDirectionAlignment(Eigen::VectorXd::Zero(3),
-        rml::FrameID::WorldFrame);
+    taskIDMap.insert(std::make_pair(ulisse::task::asv_absolute_axis_alignment, asv_absolute_axis_alignment));
+    taskLogPublisherMap.insert(std::make_pair(ulisse::task::asv_absolute_axis_alignment, nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_absolute_axis_alignment", 10)));
+    asv_absolute_axis_alignment->SetAxisAlignment(Eigen::VectorXd::Zero(3), ulisse::robotModelID::ASV);
+    asv_absolute_axis_alignment->SetDirectionAlignment(Eigen::VectorXd::Zero(3), rml::FrameID::WorldFrame);
+
+    // ASV absolute axis alignment task
+    asv_absolute_axis_alignment_safety = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asv_absolute_axis_alignment_safety, robot_model,
+        tpik::CartesianTaskType::Equality, ulisse::robotModelID::ASV));
+    cartesian_task.push_back(asv_absolute_axis_alignment_safety);
+    task_hierarchy.push_back(asv_absolute_axis_alignment_safety);
+    taskIDMap.insert(std::make_pair(ulisse::task::asv_absolute_axis_alignment_safety, asv_absolute_axis_alignment_safety));
+    taskLogPublisherMap.insert(std::make_pair(ulisse::task::asv_absolute_axis_alignment_safety, nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_absolute_axis_alignment_safety", 10)));
+    asv_absolute_axis_alignment_safety->SetAxisAlignment(Eigen::VectorXd::Zero(3), ulisse::robotModelID::ASV);
+    asv_absolute_axis_alignment_safety->SetDirectionAlignment(Eigen::VectorXd::Zero(3), rml::FrameID::WorldFrame);
 
     // Initialize Solver and iCAT
     int dof = 6;
@@ -470,6 +460,7 @@ void VehicleController::SetUpFSM()
     state_speedheading_.SetLinearVelocityTask(asv_control_velocity_linear);
     state_speedheading_.SetAngularPositionTask(asv_absolute_axis_alignment);
     state_speedheading_.SetSafetyBoundariesTask(asv_safety_boundaries);
+    state_speedheading_.SetAngularPositionSafetyTask(asv_absolute_axis_alignment_safety);
 
     // Navigate
     state_navigate_.SetFSM(&u_fsm_);

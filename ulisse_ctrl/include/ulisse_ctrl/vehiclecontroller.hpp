@@ -93,6 +93,9 @@ class VehicleController {
     // ASV ABSOLUTE AXIS ALIGNMENT
     std::shared_ptr<ikcl::AbsoluteAxisAlignment> asv_absolute_axis_alignment;
 
+    // ASV ABSOLUTE AXIS ALIGNMENT SAFETY
+    std::shared_ptr<ikcl::AbsoluteAxisAlignment> asv_absolute_axis_alignment_safety;
+
     double timestamp_;
     double sampleTime_;
 

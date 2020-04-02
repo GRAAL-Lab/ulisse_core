@@ -12,9 +12,11 @@ namespace task {
     const std::string asv_absolute_axis_alignment = "ASV_absolute_axis_alignment";
     const std::string asv_control_distance = "ASV_control_distance";
     const std::string asv_safety_boundaries = "ASV_safety_boundaries";
+    const std::string asv_absolute_axis_alignment_safety = "ASV_absolute_axis_alignment_safety";
 
     const std::vector<std::string> unified_hierarchy = {
         asv_safety_boundaries,
+        asv_absolute_axis_alignment_safety,
         asv_angular_position,
         asv_absolute_axis_alignment,
         asv_control_distance,
@@ -42,8 +44,11 @@ namespace priorityLevelID {
     const std::string asv_control_position_angular = "ASV_control_position_angular_PL";
     const std::string asv_control_distance = "ASV_control_distance_PL";
     const std::string asv_absolute_axis_alignment = "ASV_absolute_axis_alignment_PL";
+    const std::string asv_absolute_axis_alignment_safety = "ASV_absolute_axis_alignment_safety_PL";
+
     const std::vector<std::string> unified_hierarchy = {
         asv_safety_boundaries,
+        asv_absolute_axis_alignment_safety,
         asv_control_position_angular,
         asv_absolute_axis_alignment,
         asv_control_distance,
@@ -72,18 +77,21 @@ namespace action {
     const std::string goTo = "goTo";
     const std::vector<std::string> goToPriorityLevels = {
         priorityLevelID::asv_safety_boundaries,
+        priorityLevelID::asv_absolute_axis_alignment_safety,
         priorityLevelID::asv_control_position_angular,
         priorityLevelID::asv_control_distance,
     };
 
     const std::string idle = "idle";
     const std::vector<std::string> idlePriorityLevels = {
-        priorityLevelID::asv_safety_boundaries
+        priorityLevelID::asv_safety_boundaries,
+        priorityLevelID::asv_absolute_axis_alignment_safety
     };
 
     const std::string hold = "hold";
     const std::vector<std::string> holdPriorityLevels = {
         priorityLevelID::asv_safety_boundaries,
+        priorityLevelID::asv_absolute_axis_alignment_safety,
         priorityLevelID::asv_control_position_angular,
         priorityLevelID::asv_control_velocity_linear
     };
@@ -91,6 +99,7 @@ namespace action {
     const std::string speed_heading = "speed_heading";
     const std::vector<std::string> speed_headingPriorityLevels = {
         priorityLevelID::asv_safety_boundaries,
+        priorityLevelID::asv_absolute_axis_alignment_safety,
         priorityLevelID::asv_absolute_axis_alignment,
         priorityLevelID::asv_control_velocity_linear
     };
@@ -98,6 +107,7 @@ namespace action {
     const std::string navigate = "navigate";
     const std::vector<std::string> navigatePriorityLevels = {
         priorityLevelID::asv_safety_boundaries,
+        priorityLevelID::asv_absolute_axis_alignment_safety,
         priorityLevelID::asv_control_position_angular,
         priorityLevelID::asv_control_distance
     };

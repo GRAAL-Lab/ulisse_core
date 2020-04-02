@@ -220,7 +220,7 @@ void SafetyBoundaries::ComputeNormalVector2Segment(segment_type segment, Eigen::
     double p2p1Mag = std::sqrt(std::pow(p2.y() - p1.y(), 2) + std::pow(p2.x() - p1.x(), 2));
 
     // Direction of the segment
-    u.set<0>(1 / p2p1Mag * (p1.x() - p2.x()));
+    u.set<0>(1 / p2p1Mag * (p2.x() - p1.x()));
     u.set<1>(1 / p2p1Mag * (p2.y() - p1.y()));
 
     std::cout << "Debug u prima prima: " << u.x() << " " << u.y() << std::endl;
@@ -243,11 +243,11 @@ void SafetyBoundaries::ComputeNormalVector2Segment(segment_type segment, Eigen::
 
     point_type direction2Centr;
     // find the magnitude of direction2Centr
-    double direction2CentrMag = std::sqrt(std::pow(centroid.y() - midP.y(), 2) + std::pow(centroid.x() - midP.x(), 2));
+    double direction2CentrMag = std::sqrt(std::pow(midP.y() - centroid.y(), 2) + std::pow(midP.x() - centroid.x(), 2));
 
     // Direction of the segment
     direction2Centr.set<0>(1 / direction2CentrMag * (centroid.x() - midP.x()));
-    direction2Centr.set<1>(1 / direction2CentrMag * (midP.y() - centroid.y()));
+    direction2Centr.set<1>(1 / direction2CentrMag * (centroid.y() - midP.y()));
 
     std::cout << "Debug direction centert: " << direction2Centr.x() << " " << direction2Centr.y() << std::endl;
 
@@ -315,12 +315,12 @@ bool SafetyBoundaries::IsConvex(std::list<segment_type> segments)
 {
     // function to detect if the current side of the polygon is convex or not
     bool isConvex = false;
-    /// direction vector of the line passing throught the two segments
+    // direction vector of the line passing throught the two segments
     point_type midP;
 
     // starting point of the first segment
     point_type p1{ boost::geometry::get<0, 0>(segments.front()), boost::geometry::get<0, 1>(segments.front()) };
-    //  // ending point of the segment
+    // ending point of the segment
     point_type p2{ boost::geometry::get<1, 0>(segments.front()), boost::geometry::get<1, 1>(segments.front()) };
 
     point_type s1{ boost::geometry::get<0, 0>(segments.back()), boost::geometry::get<0, 1>(segments.back()) };
@@ -344,8 +344,7 @@ bool SafetyBoundaries::IsConvex(std::list<segment_type> segments)
 
     return isConvex;
 }
-void SafetyBoundaries::MakeSegments(point_type const& p, point_type const& next,
-    segment_type& seg)
+void SafetyBoundaries::MakeSegments(point_type const& p, point_type const& next, segment_type& seg)
 {
     boost::geometry::set<0, 0>(seg, p.x());
     boost::geometry::set<0, 1>(seg, p.y());

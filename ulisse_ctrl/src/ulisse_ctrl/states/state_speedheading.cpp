@@ -36,6 +36,11 @@ namespace states {
         safetyBoundariesTask_ = safetyBoundariesTask;
     }
 
+    void StateSpeedHeading::SetAngularPositionSafetyTask(std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentSafetyTask)
+    {
+        absoluteAxisAlignmentSafetyTask_ = absoluteAxisAlignmentSafetyTask;
+    }
+
     void StateSpeedHeading::SetMinMaxHeadingError(double min, double max)
     {
         minHeadingError_ = min;
@@ -69,56 +74,49 @@ namespace states {
             std::cout << "Speed Heading Timeout reached!" << std::endl;
             fsm_->ExecuteCommand(ulisse::commands::ID::halt);
         }
+
+        // Use the activation function of SafetyB to activate the
+        // angluarPositionTask
+        Eigen::VectorXd Aexternal;
+        Eigen::Vector3d desiredVelocitySafety;
+        desiredVelocitySafety << 1.0, 0.0, 0.0;
+
+        Aexternal = safetyBoundariesTask_->GetInternalActivationFunction().maxCoeff() * Aexternal.setOnes(absoluteAxisAlignmentSafetyTask_->GetTaskSpace());
+
+        absoluteAxisAlignmentSafetyTask_->SetExternalActivationFunction(Aexternal);
+
+        absoluteAxisAlignmentSafetyTask_->SetAxisAlignment(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
+        absoluteAxisAlignmentSafetyTask_->SetDirectionAlignment(safetyBoundariesTask_->GetAlignVector(), rml::FrameID::WorldFrame);
+
         //To avoid the case in which the error between the goal heading and the current heading is too big
         //we activate the the cartesian distance through the gain based on a bell-shaped function on the heading error
 
         //compute the heading error
-        double headingError = std::abs(goalCxt_->goalHeading - statusCxt_->vehicleHeading);
-        std::cout << "Heading error: " << headingError << std::endl;
+        double headingErrorsafety = absoluteAxisAlignmentSafetyTask_->GetMisalignmentVector().norm();
+        std::cout << "headingErrorsafety: " << headingErrorsafety << std::endl;
+
+        //compute the gain of the cartesian distance
+        double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, maxGainLinearVelocity_, headingErrorsafety);
+
+        safetyBoundariesTask_->SetDesiredVelocity(desiredVelocitySafety);
+
+        // Set the gain of the cartesian distance task
+        safetyBoundariesTask_->SetTaskParameter(taskGainSafety);
+
+        //speedheading task
+        absoluteAxisAlignmentTask_->SetAxisAlignment(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
+        absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(cos(goalCxt_->goalHeading), sin(goalCxt_->goalHeading), 0), rml::FrameID::WorldFrame);
+        linearVelocityTask_->SetVelocity(Eigen::Vector3d(goalCxt_->goalSurge, 0, 0));
+
+        //compute the heading error
+        double headingError = absoluteAxisAlignmentTask_->GetMisalignmentVector().norm();
+        std::cout << "Heading error : " << headingError << std::endl;
 
         //compute the gain of the cartesian distance
         double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, maxGainLinearVelocity_, headingError);
 
-        // check if the activaction function of safetyB is no null
-        if (safetyBoundariesTask_->GetInternalActivationFunction().norm() > 0) {
-
-            // Use the activation function of SafetyB to activate the
-            // angluarPositionTask
-            Eigen::VectorXd Aexternal;
-            Eigen::Vector3d desiredVelocitySafety, alignVectorSafety;
-            desiredVelocitySafety << 1.0, 0.0, 0.0;
-            alignVectorSafety = safetyBoundariesTask_->GetAlignVector();
-
-            Aexternal = safetyBoundariesTask_->GetInternalActivationFunction().maxCoeff() * Aexternal.setOnes(absoluteAxisAlignmentTask_->GetTaskSpace());
-
-            absoluteAxisAlignmentTask_->SetExternalActivationFunction(Aexternal);
-
-            double goalHeading = std::atan2(alignVectorSafety(1), alignVectorSafety(0));
-
-            if (goalHeading < 0.0)
-                goalHeading += 2 * M_PI;
-
-            absoluteAxisAlignmentTask_->SetAxisAlignment(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
-            absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(cos(goalHeading), sin(goalHeading), 0), rml::FrameID::WorldFrame);
-
-            safetyBoundariesTask_->SetDesiredVelocity(desiredVelocitySafety);
-
-            // Set the gain of the cartesian distance task
-            safetyBoundariesTask_->SetTaskParameter(taskGain);
-
-            //set the new goal
-            goalCxt_->goalSurge = desiredVelocitySafety(0);
-
-            goalCxt_->goalHeading = goalHeading;
-
-        } else {
-            absoluteAxisAlignmentTask_->SetAxisAlignment(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
-            absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(cos(goalCxt_->goalHeading), sin(goalCxt_->goalHeading), 0), rml::FrameID::WorldFrame);
-            linearVelocityTask_->SetVelocity(Eigen::Vector3d(goalCxt_->goalSurge, 0, 0));
-
-            //Set the gain of the cartesian distance task
-            linearVelocityTask_->SetTaskParameter(taskGain);
-        }
+        //Set the gain of the cartesian distance task
+        linearVelocityTask_->SetTaskParameter(taskGain);
 
         std::cout << "STATE SPEED HEADING " << std::endl;
         std::cout << "Goal Heading: " << goalCxt_->goalHeading << std::endl;

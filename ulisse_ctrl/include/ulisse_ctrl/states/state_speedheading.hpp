@@ -13,7 +13,7 @@ namespace states {
         std::chrono::seconds totalElapsed_;
 
     protected:
-        std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentTask_;
+        std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentTask_, absoluteAxisAlignmentSafetyTask_;
         std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask_;
         std::shared_ptr<ikcl::SafetyBoundaries> safetyBoundariesTask_;
 
@@ -29,6 +29,7 @@ namespace states {
         void ResetTimer();
 
         void SetAngularPositionTask(std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentTask);
+        void SetAngularPositionSafetyTask(std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentSafetyTask);
         void SetLinearVelocityTask(std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask);
         void SetSafetyBoundariesTask(std::shared_ptr<ikcl::SafetyBoundaries> safetyBoundariesTask);
 
