@@ -8,33 +8,32 @@ namespace ulisse {
 
 namespace states {
 
-class StateSpeedHeading : public GenericState {
-  std::chrono::system_clock::time_point t_start_, t_now_;
-  std::chrono::seconds total_elapsed_;
+    class StateSpeedHeading : public GenericState {
+        std::chrono::system_clock::time_point tStart_, tNow_;
+        std::chrono::seconds totalElapsed_;
 
-protected:
-  std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentTask_;
-  std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask_;
-   std::shared_ptr<ikcl::SafetyBoundaries> safetyBoundariesTask_;
+    protected:
+        std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentTask_;
+        std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask_;
+        std::shared_ptr<ikcl::SafetyBoundaries> safetyBoundariesTask_;
 
+        double desiredVelocity_;
+        double maxGainLinearVelocity_;
+        double minHeadingError_, maxHeadingError_;
 
-  double surgeRef;
-  double headingError;
+    public:
+        StateSpeedHeading();
+        virtual ~StateSpeedHeading();
+        virtual fsm::retval OnEntry();
+        virtual fsm::retval Execute();
+        void ResetTimer();
 
-public:
-  StateSpeedHeading();
-  virtual ~StateSpeedHeading();
-  virtual fsm::retval OnEntry();
-  virtual fsm::retval Execute();
-  void ResetTimer();
+        void SetAngularPositionTask(std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentTask);
+        void SetLinearVelocityTask(std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask);
+        void SetSafetyBoundariesTask(std::shared_ptr<ikcl::SafetyBoundaries> safetyBoundariesTask);
 
-  void SetAngularPositionTask(
-      std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentTask);
-  void SetLinearVelocityTask(
-      std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask);
-  void SetSafetyBoundariesTask(
-      std::shared_ptr<ikcl::SafetyBoundaries> safetyBoundariesTask);
-};
+        void SetMinMaxHeadingError(double min, double max);
+    };
 } // namespace states
 } // namespace ulisse
 

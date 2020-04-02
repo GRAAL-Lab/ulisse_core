@@ -96,7 +96,7 @@ struct ControlContext {
 
 struct GoalContext {
     Waypoint currentGoal, nextGoal;
-    double goalDistance, goalHeading, goalSurge, goalHeadingWithSafety;
+    double goalDistance, goalHeading, goalSurge;
     uint cmdTimeout;
     GoalContext()
         : goalDistance(0.0)

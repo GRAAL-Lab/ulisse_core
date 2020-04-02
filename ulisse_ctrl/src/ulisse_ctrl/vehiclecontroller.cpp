@@ -210,8 +210,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh,
 
         polygon = polygon + "))";
 
-        if (asv_safety_boundaries->InitializePolygon(polygon,
-                statusCxt_->vehiclePos)) {
+        if (asv_safety_boundaries->InitializePolygon(polygon, statusCxt_->vehiclePos)) {
             boundaries_set = true;
             boundaries_json = request->boundaries_json;
             response->res = "SetBound::ok";
@@ -645,12 +644,8 @@ void VehicleController::SetupCommandServer()
             publishLog("Received Command Hold");
         } else if (request->command_type == ulisse::commands::ID::latlong) {
             std::cout << "Received Command LatLong" << std::endl;
-            command_latlong_.SetGoal(request->latlong_cmd.goal.latitude,
-                request->latlong_cmd.goal.longitude,
-                request->latlong_cmd.acceptance_radius);
-            state_latlong_.SetPointGoTo(request->latlong_cmd.goal.latitude,
-                request->latlong_cmd.goal.longitude,
-                request->latlong_cmd.acceptance_radius);
+            command_latlong_.SetGoal(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude, request->latlong_cmd.acceptance_radius);
+            state_latlong_.SetPointGoTo(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude, request->latlong_cmd.acceptance_radius);
 
             log << "Received Command GoTo (lat: "
                 << request->latlong_cmd.goal.latitude
@@ -720,8 +715,7 @@ void VehicleController::NavFilterCB(
     statusCxt_->seacurrent[1] = msg->current[1];
 
     // Linear position in world frame
-    Eigen::Vector3d w_position(statusCxt_->vehiclePos.latitude,
-        statusCxt_->vehiclePos.longitude, 0);
+    Eigen::Vector3d w_position(statusCxt_->vehiclePos.latitude, statusCxt_->vehiclePos.longitude, 0);
 
     // Angualr position in world frame
     rml::EulerRPY rpy;

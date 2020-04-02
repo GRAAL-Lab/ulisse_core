@@ -27,7 +27,6 @@ namespace states {
         void SetCartesianDistanceTask(std::shared_ptr<ikcl::ControlCartesianDistance> distacartesianDistancenceTask);
         void SetHoldState(std::shared_ptr<ulisse::states::StateHold> stateHold);
 
-        void SetMaxGainCartesianDistaceTask(double maxGainCartesianDistance);
         void SetMinMaxHeadingError(double min, double max);
 
         void SetPointGoTo(double latitude, double longitude, double acceptRadius);

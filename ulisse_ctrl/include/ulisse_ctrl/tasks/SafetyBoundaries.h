@@ -96,25 +96,19 @@ protected:
 
     void ExtractMinDistanceSegments(std::list<segment_type> segments, point_type currentPosition, std::list<segment_type>& segment);
 
-    Eigen::Vector3d DistanceCheck(point_type const& currentPosition,
-        Eigen::Vector3d alignVector);
+    void DistanceCheck(point_type const& currentPosition, Eigen::Vector3d& alignVector);
 
     bool IsConvex(std::list<segment_type> segments);
 
-    void ComputeAlignVector(segment_type segment, point_type currentPosition,
-        Eigen::Vector3d& alignVector);
+    void ComputeAlignVector(segment_type segment, point_type currentPosition, Eigen::Vector3d& alignVector);
 
-    void ComputeNormalVector2Segment(segment_type segment,
-        Eigen::Vector3d& alignVector);
+    void ComputeNormalVector2Segment(segment_type segment, Eigen::Vector3d& alignVector);
 
-    std::shared_ptr<rml::RobotModel>
-        robotModel_; //!< The shared ptr to the robot model
+    std::shared_ptr<rml::RobotModel> robotModel_; //!< The shared ptr to the robot model
     std::string frameID_; //!< The id of the frame to be controlled
         //  BellShapedParameter bellShapeParameter_;
 
-    bool isBoundariesInitialized_{
-        false
-    }; //!< Boolean used to state whehther deltaJL has been setted
+    bool isBoundariesInitialized_; //!< Boolean used to state whehther deltaJL has been setted
     std::list<segment_type> segments_;
 
     ctb::LatLong centroid_;

@@ -30,10 +30,6 @@ namespace states {
     {
         actionManager_->SetAction(ulisse::action::goTo, true);
     }
-    void StateLatLong::SetMaxGainCartesianDistaceTask(double maxGainCartesianDistance)
-    {
-        maxGainCartesianDistance_ = maxGainCartesianDistance;
-    }
 
     void StateLatLong::SetMinMaxHeadingError(double min, double max)
     {
@@ -45,7 +41,13 @@ namespace states {
 
     double StateLatLong::GetCruiseControl() { return cruise_; }
 
-    fsm::retval StateLatLong::OnEntry() { return fsm::ok; }
+    fsm::retval StateLatLong::OnEntry()
+    {
+        //get the max gain of the cartesian distance task
+        maxGainCartesianDistance_ = cartesianDistance_->GetTaskParameter().gain;
+        std::cout << "Debug gain on entry: " << cartesianDistance_->GetTaskParameter().gain << std::endl;
+        return fsm::ok;
+    }
 
     fsm::retval StateLatLong::Execute()
     {
@@ -106,5 +108,6 @@ namespace states {
 
         return fsm::ok;
     }
+
 } // namespace states
 } // namespace ulisse
