@@ -140,18 +140,21 @@ void SafetyBoundaries::DistanceCheck(point_type const& currentPosition, Eigen::V
 
     // check if the robot is near the two segment convex
     if (isConvex) {
-
+        // compute the direct of alignent to escape from the border in case of
+        // convex side of the polygon
+        ComputeAlignVectorConvex(minDistsegments, currentPosition, alignVector);
     }
-
     // check if the robot is near the two segment concav
     else {
         // compute the direct of alignent to escape from the border in case of
         // concave side of the polygon
-        ComputeAlignVector(minDistsegments.front(), currentPosition, alignVector);
+        ComputeAlignVectorConcave(minDistsegments.front(), currentPosition, alignVector);
     }
+
+    std::cout << "DEbug alignvector:" << alignVector << std::endl;
 }
 
-void SafetyBoundaries::ComputeAlignVector(segment_type segment, point_type currentPosition, Eigen::Vector3d& alignVector)
+void SafetyBoundaries::ComputeAlignVectorConcave(segment_type segment, point_type currentPosition, Eigen::Vector3d& alignVector)
 {
     // there are three situation in which the robot can be:
 
@@ -172,38 +175,155 @@ void SafetyBoundaries::ComputeAlignVector(segment_type segment, point_type curre
     // ugual to d then i am in the middle zone
 
     if (dp1 < dp2 && dp1 == d) {
-        std::cout << "DEBUG:: ZONE3 : " << d << std::endl;
-        alignVector(0) = currentPosition.x() - p1.x();
-        alignVector(1) = currentPosition.y() - p1.y();
 
-    } else if (dp1 > dp2 && dp1 == d) {
-        std::cout << "DEBUG:: ZONE3: " << d << std::endl;
-        alignVector(0) = currentPosition.x() - p2.x();
-        alignVector(1) = currentPosition.y() - p2.y();
+        double normAlignVector = std::sqrt(std::pow(currentPosition.y() - p1.y(), 2) + std::pow(currentPosition.x() - p1.x(), 2));
+
+        alignVector(0) = (currentPosition.x() - p1.x()) / normAlignVector;
+        alignVector(1) = (currentPosition.y() - p1.y()) / normAlignVector;
+
+    } else if (dp1 > dp2 && dp2 == d) {
+
+        double normAlignVector = std::sqrt(std::pow(currentPosition.y() - p2.y(), 2) + std::pow(currentPosition.x() - p2.x(), 2));
+
+        alignVector(0) = (currentPosition.x() - p2.x()) / normAlignVector;
+        alignVector(1) = (currentPosition.y() - p2.y()) / normAlignVector;
 
     } else {
-        std::cout << "DEBUG:: ZONE1/2 : " << d << std::endl;
+
         // if is inside one of the two area defined by the two segment I will take
         // as alignVector the normal to the segment
-        ComputeNormalVector2Segment(segment, alignVector);
+        point_type u;
+        ComputeNormalVector2Segment(segment, u);
+        alignVector(0) = u.x();
+        alignVector(1) = u.y();
     }
 
     // if the robot is inside the polygon, the align vector is in the opposite
     // direct of the one computed, which is from the current posiiton to a point
     // on the border
-    if (boost::geometry::covered_by(currentPosition, poly_)) {
-        std::cout << "DEBUG:: IAM INSIDE THE POLYGON" << std::endl;
-
-    } else {
-        std::cout << "DEBUG:: IAM outside THE POLYGON" << std::endl;
+    if (!boost::geometry::covered_by(currentPosition, poly_)) {
         d = -d;
     }
-    std::cout << "DEBUG:: d : " << d << std::endl;
+
+    std::cout << "DEBUG d: " << d << std::endl;
     // compute the activation function of the if is distance under threshold
     Ai_(0, 0) = rml::DecreasingBellShapedFunction(decreasingBellShape_.xmin(0), decreasingBellShape_.xmax(0), 0.0, 1.0, d);
 }
 
-void SafetyBoundaries::ComputeNormalVector2Segment(segment_type segment, Eigen::Vector3d& alignVector)
+void SafetyBoundaries::ComputeAlignVectorConvex(std::list<segment_type> segments, point_type currentPosition, Eigen::Vector3d& alignVector)
+{
+    //The variable that is continue in the convex case is the distance vector from the inner border of the safety zone
+    //As in the concave case we have basically theree situations in which the robot can be:
+    //- the robot is near of of the two nearest segments: only one activaction function is active
+    //- the robot is the middle zone of the two segments: two activation function are active
+    //- the robot is outside the segment
+
+    //Compute the distance from the nearest segment
+    double d = boost::geometry::distance(currentPosition, segments.front());
+
+    std::list<point_type> points;
+
+    ComputeIntersectionPointMiddleZone(segments, points);
+
+    point_type intersecP = points.front();
+    points.pop_front();
+
+    point_type pMin = points.front();
+    points.pop_front();
+
+    point_type pMax = points.front();
+
+    if (currentPosition.x() < pMax.x() && currentPosition.x() > pMin.x() && currentPosition.y() < pMax.y() && currentPosition.y() > pMin.y()) {
+        //Find the intersection point in wich the direction od the alignment must be direct in the middle zone of the two segments
+
+        //Compute the align vector if the robot is in the middle zone of two segments
+        //In this case the align vector is the direction vector from the current position to the inner point
+        alignVector(0) = (currentPosition.x() - intersecP.x());
+        alignVector(1) = (currentPosition.y() - intersecP.y());
+
+        alignVector = alignVector.norm() * alignVector;
+        std::cout << "DEBUG ZONE IN THE MIDDLE: " << std::endl;
+    } else {
+        //Compute the align vector if the robot is near one of the two nearest segments
+        //In this case the align vector is the normal to the segment
+        point_type u;
+        std::cout << "DEBUG I'm here: " << std::endl;
+
+        ComputeNormalVector2Segment(segments.front(), u);
+
+        alignVector(0) = u.x();
+        alignVector(1) = u.y();
+    }
+
+    if (!boost::geometry::covered_by(currentPosition, poly_)) {
+        d = -d;
+    }
+
+    std::cout << "DEBUG d: " << d << std::endl;
+
+    //Compute the align vector if the robot is out side the polygon
+    //In this case the align vector is the min direction vector that led to robot to comeback insede the poly
+
+    Ai_(0, 0) = rml::DecreasingBellShapedFunction(decreasingBellShape_.xmin(0), decreasingBellShape_.xmax(0), 0.0, 1.0, d);
+}
+
+bool SafetyBoundaries::ComputeIntersectionPointMiddleZone(std::list<segment_type> segments, std::list<point_type>& points)
+{
+    // starting point of the first segment
+    point_type p1{ boost::geometry::get<0, 0>(segments.front()), boost::geometry::get<0, 1>(segments.front()) };
+    // ending point of the segment
+    point_type p2{ boost::geometry::get<1, 0>(segments.front()), boost::geometry::get<1, 1>(segments.front()) };
+    //starting point of the second segment
+    point_type s1{ boost::geometry::get<0, 0>(segments.back()), boost::geometry::get<0, 1>(segments.back()) };
+    // ending point of the second segment
+    point_type s2{ boost::geometry::get<1, 0>(segments.back()), boost::geometry::get<1, 1>(segments.back()) };
+
+    point_type frontSegDirPerp, backSegDirPerp, frontSegDir, backSegDir;
+
+    ComputeNormalVector2Segment(segments.front(), frontSegDirPerp, frontSegDir);
+    ComputeNormalVector2Segment(segments.back(), backSegDirPerp, backSegDir);
+
+    point_type newP1 = { p1.x() + decreasingBellShape_.xmax(0) * frontSegDirPerp.x(), p1.y() + decreasingBellShape_.xmax(0) * frontSegDirPerp.y() };
+    point_type newP2 = { p2.x() + decreasingBellShape_.xmax(0) * frontSegDirPerp.x(), p2.y() + decreasingBellShape_.xmax(0) * frontSegDirPerp.y() };
+    point_type newS1 = { s1.x() + decreasingBellShape_.xmax(0) * backSegDirPerp.x(), s1.y() + decreasingBellShape_.xmax(0) * backSegDirPerp.y() };
+    point_type newS2 = { s2.x() + decreasingBellShape_.xmax(0) * backSegDirPerp.x(), s2.y() + decreasingBellShape_.xmax(0) * backSegDirPerp.y() };
+
+    std::list<segment_type> newSegments;
+    MakeSegments(newP1, newP2, newSegments.front());
+    MakeSegments(newS1, newS2, newSegments.back());
+    std::deque<point_type> out;
+    //find the intersection point
+    if (!boost::geometry::intersection(newSegments.front(), newSegments.back(), out))
+        return -1;
+
+    point_type intersecP;
+
+    intersecP.set<0>((out.front()).x());
+    intersecP.set<1>((out.front()).y());
+
+    points.push_back(intersecP);
+
+    //compute the area'plane in which the alignment must be direct to the intersection point
+    double k = 50.0; //m
+    point_type r1 = { intersecP.x() + k * frontSegDir.x(), intersecP.y() + k * frontSegDir.y() };
+    point_type r2 = { intersecP.x() + k * backSegDir.x(), intersecP.y() + k * backSegDir.y() };
+
+    //find the min/max x e y
+    double xMin = Eigen::Vector3d{ intersecP.x(), r1.x(), r2.x() }.minCoeff();
+    double xMax = Eigen::Vector3d{ intersecP.x(), r1.x(), r2.x() }.maxCoeff();
+    double yMin = Eigen::Vector3d{ intersecP.y(), r1.y(), r2.y() }.minCoeff();
+    double yMax = Eigen::Vector3d{ intersecP.y(), r1.y(), r2.y() }.maxCoeff();
+
+    point_type pMin = { xMin, yMin };
+    point_type pMax = { xMax, yMax };
+
+    points.push_back(pMin);
+    points.push_back(pMax);
+
+    return 0;
+}
+
+void SafetyBoundaries::ComputeNormalVector2Segment(segment_type segment, point_type& uPerp)
 {
     // function to compute the normale vector to a segment that
     // point towards the center of the polygon
@@ -214,7 +334,7 @@ void SafetyBoundaries::ComputeNormalVector2Segment(segment_type segment, Eigen::
     // ending point of the segment
     point_type p2{ boost::geometry::get<1, 0>(segment), boost::geometry::get<1, 1>(segment) };
 
-    point_type u, uPerp, midP;
+    point_type u, midP;
 
     // find the magnitude of the segment
     double p2p1Mag = std::sqrt(std::pow(p2.y() - p1.y(), 2) + std::pow(p2.x() - p1.x(), 2));
@@ -222,8 +342,6 @@ void SafetyBoundaries::ComputeNormalVector2Segment(segment_type segment, Eigen::
     // Direction of the segment
     u.set<0>(1 / p2p1Mag * (p2.x() - p1.x()));
     u.set<1>(1 / p2p1Mag * (p2.y() - p1.y()));
-
-    std::cout << "Debug u prima prima: " << u.x() << " " << u.y() << std::endl;
 
     // find the medium point of the segment
     midP.set<0>((p2.x() + p1.x()) / 2);
@@ -234,8 +352,6 @@ void SafetyBoundaries::ComputeNormalVector2Segment(segment_type segment, Eigen::
     // one that point towards the polygon
     uPerp.set<0>(-u.y());
     uPerp.set<1>(u.x());
-
-    std::cout << "Debug u prima: " << uPerp.x() << " " << uPerp.y() << std::endl;
 
     //compute the controid of the poly
     point_type centroid;
@@ -249,18 +365,60 @@ void SafetyBoundaries::ComputeNormalVector2Segment(segment_type segment, Eigen::
     direction2Centr.set<0>(1 / direction2CentrMag * (centroid.x() - midP.x()));
     direction2Centr.set<1>(1 / direction2CentrMag * (centroid.y() - midP.y()));
 
-    std::cout << "Debug direction centert: " << direction2Centr.x() << " " << direction2Centr.y() << std::endl;
+    // if not take the oder direction
+    if (boost::geometry::dot_product(direction2Centr, uPerp) < 0) {
+        uPerp.set<0>(u.y());
+        uPerp.set<1>(-u.x());
+    }
+}
+
+void SafetyBoundaries::ComputeNormalVector2Segment(segment_type segment, point_type& uPerp, point_type& u)
+{
+    // function to compute the normale vector to a segment that
+    // point towards the center of the polygon
+
+    // starting point of the first segment
+    point_type p1{ boost::geometry::get<0, 0>(segment), boost::geometry::get<0, 1>(segment) };
+
+    // ending point of the segment
+    point_type p2{ boost::geometry::get<1, 0>(segment), boost::geometry::get<1, 1>(segment) };
+
+    point_type midP;
+
+    // find the magnitude of the segment
+    double p2p1Mag = std::sqrt(std::pow(p2.y() - p1.y(), 2) + std::pow(p2.x() - p1.x(), 2));
+
+    // Direction of the segment
+    u.set<0>(1 / p2p1Mag * (p2.x() - p1.x()));
+    u.set<1>(1 / p2p1Mag * (p2.y() - p1.y()));
+
+    // find the medium point of the segment
+    midP.set<0>((p2.x() + p1.x()) / 2);
+    midP.set<1>((p2.y() + p1.y()) / 2);
+
+    // take the direction perpendicular to the segment
+    // there are two possible direction orthogonal to the segment. Take the
+    // one that point towards the polygon
+    uPerp.set<0>(-u.y());
+    uPerp.set<1>(u.x());
+
+    //compute the controid of the poly
+    point_type centroid;
+    boost::geometry::centroid(poly_, centroid);
+
+    point_type direction2Centr;
+    // find the magnitude of direction2Centr
+    double direction2CentrMag = std::sqrt(std::pow(midP.y() - centroid.y(), 2) + std::pow(midP.x() - centroid.x(), 2));
+
+    // Direction of the segment
+    direction2Centr.set<0>(1 / direction2CentrMag * (centroid.x() - midP.x()));
+    direction2Centr.set<1>(1 / direction2CentrMag * (centroid.y() - midP.y()));
 
     // if not take the oder direction
     if (boost::geometry::dot_product(direction2Centr, uPerp) < 0) {
         uPerp.set<0>(u.y());
         uPerp.set<1>(-u.x());
-
-        std::cout << "Debug u dopo: " << uPerp.x() << " " << uPerp.y() << std::endl;
     }
-
-    alignVector(0) = uPerp.x();
-    alignVector(1) = uPerp.y();
 }
 
 void SafetyBoundaries::ExtractMinDistanceSegments(std::list<segment_type> originalSegments, point_type currentPosition, std::list<segment_type>& segments)

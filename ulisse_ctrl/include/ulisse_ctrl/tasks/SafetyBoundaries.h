@@ -14,7 +14,6 @@ namespace ikcl {
 typedef boost::geometry::model::d2::point_xy<double> point_type;
 typedef boost::geometry::model::polygon<point_type> polygon_type;
 typedef boost::geometry::model::segment<point_type> segment_type;
-typedef boost::geometry::model::linestring<point_type> linestring_type;
 
 /**
  * @brief The LinearVelocity class implementing the linear velocity task.
@@ -22,8 +21,8 @@ typedef boost::geometry::model::linestring<point_type> linestring_type;
  * the constructor input frame. The class uses the rml::RobotModel in order to
  * compute the needed jacobians and parameters. The class derives from
  * tpik::EqualityTask and allows to control the linear velocity of the desired
- * frame in a task priority framework.\n \f$ \dot{x}= \gamma \cdot
- * DesiredVelocity \f$\n \f$ J=J_{f, lin} \f$\n
+ * frame in a task priority framework.\f$ \dot{x}= \gamma \cdot
+ * DesiredVelocity  J=J_{f, lin} \f$
  */
 
 class SafetyBoundaries : public tpik::InequalityTask {
@@ -100,9 +99,15 @@ protected:
 
     bool IsConvex(std::list<segment_type> segments);
 
-    void ComputeAlignVector(segment_type segment, point_type currentPosition, Eigen::Vector3d& alignVector);
+    void ComputeAlignVectorConcave(segment_type segment, point_type currentPosition, Eigen::Vector3d& alignVector);
 
-    void ComputeNormalVector2Segment(segment_type segment, Eigen::Vector3d& alignVector);
+    void ComputeAlignVectorConvex(std::list<segment_type> segment, point_type currentPosition, Eigen::Vector3d& alignVector);
+
+    void ComputeNormalVector2Segment(segment_type segment, point_type& alignVector);
+
+    void ComputeNormalVector2Segment(segment_type segment, point_type& alignVector, point_type& u);
+
+    bool ComputeIntersectionPointMiddleZone(std::list<segment_type> segments, std::list<point_type>& points);
 
     std::shared_ptr<rml::RobotModel> robotModel_; //!< The shared ptr to the robot model
     std::string frameID_; //!< The id of the frame to be controlled

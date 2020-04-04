@@ -18,7 +18,7 @@ namespace states {
         std::shared_ptr<ikcl::SafetyBoundaries> safetyBoundariesTask_;
 
         double desiredVelocity_;
-        double maxGainLinearVelocity_;
+        double maxGainLinearVelocity_, maxGainSafety_;
         double minHeadingError_, maxHeadingError_;
 
     public:

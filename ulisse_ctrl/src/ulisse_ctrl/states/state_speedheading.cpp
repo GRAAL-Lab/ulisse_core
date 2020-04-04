@@ -14,7 +14,6 @@ namespace states {
 
     StateSpeedHeading::StateSpeedHeading()
     {
-        maxGainLinearVelocity_ = 0.1;
         maxHeadingError_ = M_PI / 16;
         minHeadingError_ = M_PI / 32;
     }
@@ -51,6 +50,8 @@ namespace states {
     {
         actionManager_->SetAction(ulisse::action::speed_heading, true);
         maxGainLinearVelocity_ = linearVelocityTask_->GetTaskParameter().gain;
+        maxGainSafety_ = safetyBoundariesTask_->GetTaskParameter().gain;
+
         return fsm::ok;
     }
 
@@ -96,7 +97,7 @@ namespace states {
         std::cout << "headingErrorsafety: " << headingErrorsafety << std::endl;
 
         //compute the gain of the cartesian distance
-        double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, maxGainLinearVelocity_, headingErrorsafety);
+        double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, maxGainSafety_, headingErrorsafety);
 
         safetyBoundariesTask_->SetDesiredVelocity(desiredVelocitySafety);
 
