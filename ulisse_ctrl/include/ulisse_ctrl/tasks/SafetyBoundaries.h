@@ -109,6 +109,8 @@ protected:
 
     bool ComputeIntersectionPointMiddleZone(std::list<segment_type> segments, std::list<point_type>& points);
 
+    void SetControlVariable(Eigen::Vector3d x);
+
     std::shared_ptr<rml::RobotModel> robotModel_; //!< The shared ptr to the robot model
     std::string frameID_; //!< The id of the frame to be controlled
         //  BellShapedParameter bellShapeParameter_;
@@ -121,6 +123,8 @@ protected:
     polygon_type poly_;
 
     Eigen::Vector3d alignVector_;
+
+    Eigen::Vector3d x_; //control variable
 
     std::shared_ptr<Eigen::Vector6d> pose_;
 };

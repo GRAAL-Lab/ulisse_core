@@ -122,6 +122,9 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     taskLogPublisherMap.insert(std::make_pair(ulisse::task::asv_absolute_axis_alignment, nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_absolute_axis_alignment", 10)));
     asv_absolute_axis_alignment->SetAxisAlignment(Eigen::VectorXd::Zero(3), ulisse::robotModelID::ASV);
     asv_absolute_axis_alignment->SetDirectionAlignment(Eigen::VectorXd::Zero(3), rml::FrameID::WorldFrame);
+    minHeadingErrorSafety_ = M_PI / 64;
+    maxHeadingErrorSafety_ = M_PI / 16;
+    desiredVelocitySafety_ << 1.0, 0.0, 0.0;
 
     // ASV absolute axis alignment task
     asv_absolute_axis_alignment_safety = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asv_absolute_axis_alignment_safety, robot_model,
@@ -423,6 +426,11 @@ void VehicleController::SetUpFSM()
     state_halt_.SetActionManager(action_manager);
     state_halt_.SetUnifiedHierarchy(task_hierarchy);
     state_halt_.SetRobotModel(robot_model);
+    state_halt_.SetSafetyBoundariesTask(asv_safety_boundaries);
+    state_halt_.SetAngularPositionSafetyTask(asv_absolute_axis_alignment_safety);
+    state_halt_.SetMaxGainSafety(asv_safety_boundaries->GetTaskParameter().gain);
+    state_halt_.SetMinMaxHeadingErrorSafety(minHeadingErrorSafety_, maxHeadingErrorSafety_);
+    state_halt_.SetDesiredVelocitySafety(desiredVelocitySafety_);
 
     // Hold
     state_hold_.SetFSM(&u_fsm_);
@@ -433,8 +441,13 @@ void VehicleController::SetUpFSM()
     state_hold_.SetActionManager(action_manager);
     state_hold_.SetUnifiedHierarchy(task_hierarchy);
     state_hold_.SetRobotModel(robot_model);
+    state_hold_.SetSafetyBoundariesTask(asv_safety_boundaries);
+    state_hold_.SetAngularPositionSafetyTask(asv_absolute_axis_alignment_safety);
     state_hold_.SetLinearVelocityTask(asv_control_velocity_linear);
     state_hold_.SetAngularPositionTask(asv_angular_position);
+    state_hold_.SetMaxGainSafety(asv_safety_boundaries->GetTaskParameter().gain);
+    state_hold_.SetMinMaxHeadingErrorSafety(minHeadingErrorSafety_, maxHeadingErrorSafety_);
+    state_hold_.SetDesiredVelocitySafety(desiredVelocitySafety_);
 
     // LatLong
     state_latlong_.SetFSM(&u_fsm_);
@@ -445,8 +458,13 @@ void VehicleController::SetUpFSM()
     state_latlong_.SetActionManager(action_manager);
     state_latlong_.SetUnifiedHierarchy(task_hierarchy);
     state_latlong_.SetRobotModel(robot_model);
+    state_latlong_.SetSafetyBoundariesTask(asv_safety_boundaries);
+    state_latlong_.SetAngularPositionSafetyTask(asv_absolute_axis_alignment_safety);
     state_latlong_.SetCartesianDistanceTask(asv_control_distance);
     state_latlong_.SetAlignToTargetTask(asv_angular_position);
+    state_latlong_.SetMaxGainSafety(asv_safety_boundaries->GetTaskParameter().gain);
+    state_latlong_.SetMinMaxHeadingErrorSafety(minHeadingErrorSafety_, maxHeadingErrorSafety_);
+    state_latlong_.SetDesiredVelocitySafety(desiredVelocitySafety_);
 
     // SpeedHeading
     state_speedheading_.SetFSM(&u_fsm_);
@@ -461,6 +479,9 @@ void VehicleController::SetUpFSM()
     state_speedheading_.SetAngularPositionTask(asv_absolute_axis_alignment);
     state_speedheading_.SetSafetyBoundariesTask(asv_safety_boundaries);
     state_speedheading_.SetAngularPositionSafetyTask(asv_absolute_axis_alignment_safety);
+    state_speedheading_.SetMaxGainSafety(asv_safety_boundaries->GetTaskParameter().gain);
+    state_speedheading_.SetMinMaxHeadingErrorSafety(minHeadingErrorSafety_, maxHeadingErrorSafety_);
+    state_speedheading_.SetDesiredVelocitySafety(desiredVelocitySafety_);
 
     // Navigate
     state_navigate_.SetFSM(&u_fsm_);
@@ -471,8 +492,13 @@ void VehicleController::SetUpFSM()
     state_navigate_.SetActionManager(action_manager);
     state_navigate_.SetUnifiedHierarchy(task_hierarchy);
     state_navigate_.SetRobotModel(robot_model);
+    state_navigate_.SetSafetyBoundariesTask(asv_safety_boundaries);
+    state_navigate_.SetAngularPositionSafetyTask(asv_absolute_axis_alignment_safety);
     state_navigate_.SetAngularPositionTask(asv_angular_position);
     state_navigate_.SetDistanceTask(asv_control_distance);
+    state_navigate_.SetMaxGainSafety(asv_safety_boundaries->GetTaskParameter().gain);
+    state_navigate_.SetMinMaxHeadingErrorSafety(minHeadingErrorSafety_, maxHeadingErrorSafety_);
+    state_navigate_.SetDesiredVelocitySafety(desiredVelocitySafety_);
 
     // ***** EVENTS *****
     event_rc_enabled_.SetFSM(&u_fsm_);
@@ -767,14 +793,6 @@ void VehicleController::Run()
         y_tpik[3] = cruise_;
     }
 
-    //  double headingError;
-    //  if (conf_->enableSlowDownOnTurns) {
-    //    headingError = ctb::HeadingErrorRad(goalCxt_->goalHeadingWithSafety,
-    //                                        statusCxt_->vehicleHeading);
-    //    ctrlCxt_->desiredSurge =
-    //        SlowDownWhenTurning(headingError, y_tpik[3], *conf_);
-    //  } else {
-    //  }
     ctrlCxt_->desiredSurge = y_tpik[3];
     ctrlCxt_->desiredJog = y_tpik[2];
 

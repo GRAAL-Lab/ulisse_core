@@ -54,5 +54,30 @@ namespace states {
     {
         robotModel_ = robotModel;
     }
+
+    void GenericState::SetSafetyBoundariesTask(std::shared_ptr<ikcl::SafetyBoundaries> safetyBoundariesTask)
+    {
+        safetyBoundariesTask_ = safetyBoundariesTask;
+    }
+
+    void GenericState::SetAngularPositionSafetyTask(std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentSafetyTask)
+    {
+        absoluteAxisAlignmentSafetyTask_ = absoluteAxisAlignmentSafetyTask;
+    }
+    void GenericState::SetMinMaxHeadingErrorSafety(double min, double max)
+    {
+        minHeadingErrorSafety_ = min;
+        maxHeadingErrorSafety_ = max;
+    }
+
+    void GenericState::SetDesiredVelocitySafety(Eigen::Vector3d desiredVelocity)
+    {
+        desiredVelocitySafety_ = desiredVelocity;
+    }
+
+    void GenericState::SetMaxGainSafety(double maxGainSafety)
+    {
+        maxGainSafety_ = maxGainSafety;
+    }
 }
 }

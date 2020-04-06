@@ -15,7 +15,8 @@ namespace states {
     StateSpeedHeading::StateSpeedHeading()
     {
         maxHeadingError_ = M_PI / 16;
-        minHeadingError_ = M_PI / 32;
+        minHeadingError_ = M_PI / 64;
+        desiredVelocitySafety_ << 1.0, 0.0, 0.0;
     }
 
     StateSpeedHeading::~StateSpeedHeading() {}
@@ -30,28 +31,10 @@ namespace states {
         linearVelocityTask_ = linearVelocityTask;
     }
 
-    void StateSpeedHeading::SetSafetyBoundariesTask(std::shared_ptr<ikcl::SafetyBoundaries> safetyBoundariesTask)
-    {
-        safetyBoundariesTask_ = safetyBoundariesTask;
-    }
-
-    void StateSpeedHeading::SetAngularPositionSafetyTask(std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentSafetyTask)
-    {
-        absoluteAxisAlignmentSafetyTask_ = absoluteAxisAlignmentSafetyTask;
-    }
-
-    void StateSpeedHeading::SetMinMaxHeadingError(double min, double max)
-    {
-        minHeadingError_ = min;
-        maxHeadingError_ = max;
-    }
-
     fsm::retval StateSpeedHeading::OnEntry()
     {
         actionManager_->SetAction(ulisse::action::speed_heading, true);
         maxGainLinearVelocity_ = linearVelocityTask_->GetTaskParameter().gain;
-        maxGainSafety_ = safetyBoundariesTask_->GetTaskParameter().gain;
-
         return fsm::ok;
     }
 
@@ -76,11 +59,11 @@ namespace states {
             fsm_->ExecuteCommand(ulisse::commands::ID::halt);
         }
 
-        // Use the activation function of SafetyB to activate the
-        // angluarPositionTask
+        //SafetyBoundaries task: it's a velocity task base on the distance from the boundaries. The behaviour that has to achive is align to
+        //a desired escape directon and to generate a desired velocity. To do this we use the task AbsoluteAxisAlignment to cope with
+        //the align behavior activated in function of the internal actiovation function of the safety task.
+
         Eigen::VectorXd Aexternal;
-        Eigen::Vector3d desiredVelocitySafety;
-        desiredVelocitySafety << 1.0, 0.0, 0.0;
 
         Aexternal = safetyBoundariesTask_->GetInternalActivationFunction().maxCoeff() * Aexternal.setOnes(absoluteAxisAlignmentSafetyTask_->GetTaskSpace());
 
@@ -97,10 +80,9 @@ namespace states {
         std::cout << "headingErrorsafety: " << headingErrorsafety << std::endl;
 
         //compute the gain of the cartesian distance
-        double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, maxGainSafety_, headingErrorsafety);
+        double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingErrorSafety_, maxHeadingErrorSafety_, 0, maxGainSafety_, headingErrorsafety);
 
-        safetyBoundariesTask_->SetDesiredVelocity(desiredVelocitySafety);
-
+        safetyBoundariesTask_->SetDesiredVelocity(desiredVelocitySafety_);
         // Set the gain of the cartesian distance task
         safetyBoundariesTask_->SetTaskParameter(taskGainSafety);
 

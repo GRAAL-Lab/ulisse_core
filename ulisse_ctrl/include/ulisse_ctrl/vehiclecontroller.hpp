@@ -98,6 +98,8 @@ class VehicleController {
 
     double timestamp_;
     double sampleTime_;
+    double minHeadingErrorSafety_, maxHeadingErrorSafety_;
+    Eigen::Vector3d desiredVelocitySafety_;
 
     bool boundaries_set;
 

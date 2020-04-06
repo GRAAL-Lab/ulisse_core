@@ -32,7 +32,10 @@ const Eigen::Vector3d SafetyBoundaries::GetAlignVector()
 {
     return alignVector_;
 }
-
+void SafetyBoundaries::SetControlVariable(Eigen::Vector3d x)
+{
+    x_ = x;
+}
 void SafetyBoundaries::Update() throw(tpik::ExceptionWithHow)
 {
     CheckInitialization();
@@ -70,11 +73,12 @@ void SafetyBoundaries::UpdateJacobian()
 
 void SafetyBoundaries::UpdateReference()
 {
-    x_dot_ = taskParameter_.gain * desiredVelocity_;
+    x_dot_ = taskParameter_.gain * (decreasingBellShape_.xmax(0) - x_(0)) * desiredVelocity_;
 }
 
 void SafetyBoundaries::UpdateInternalActivationFunction()
 {
+    Ai_(0, 0) = rml::DecreasingBellShapedFunction(decreasingBellShape_.xmin(0), decreasingBellShape_.xmax(0), 0.0, 1.0, x_(0));
     std::cout << "Debug Ai:" << std::endl;
     std::cout << Ai_ << std::endl;
 }
@@ -181,12 +185,28 @@ void SafetyBoundaries::ComputeAlignVectorConcave(segment_type segment, point_typ
         alignVector(0) = (currentPosition.x() - p1.x()) / normAlignVector;
         alignVector(1) = (currentPosition.y() - p1.y()) / normAlignVector;
 
+        //if the robot is outside the polygon the directionis the opposite
+        if (!boost::geometry::covered_by(currentPosition, poly_)) {
+            d = -d;
+            alignVector(0) = -alignVector(0);
+            alignVector(1) = -alignVector(1);
+        }
+        std::cout << "DEBUG ZONE IN THE MIDDLE: " << std::endl;
     } else if (dp1 > dp2 && dp2 == d) {
 
         double normAlignVector = std::sqrt(std::pow(currentPosition.y() - p2.y(), 2) + std::pow(currentPosition.x() - p2.x(), 2));
 
         alignVector(0) = (currentPosition.x() - p2.x()) / normAlignVector;
         alignVector(1) = (currentPosition.y() - p2.y()) / normAlignVector;
+
+        //if the robot is outside the polygon the directionis the opposite
+        if (!boost::geometry::covered_by(currentPosition, poly_)) {
+            d = -d;
+            alignVector(0) = -alignVector(0);
+            alignVector(1) = -alignVector(1);
+        }
+
+        std::cout << "DEBUG ZONE IN THE MIDDLE: " << std::endl;
 
     } else {
 
@@ -196,18 +216,16 @@ void SafetyBoundaries::ComputeAlignVectorConcave(segment_type segment, point_typ
         ComputeNormalVector2Segment(segment, u);
         alignVector(0) = u.x();
         alignVector(1) = u.y();
+
+        if (!boost::geometry::covered_by(currentPosition, poly_)) {
+            d = -d;
+        }
+        std::cout << "DEBUG 1/3 ZONE: " << std::endl;
     }
 
-    // if the robot is inside the polygon, the align vector is in the opposite
-    // direct of the one computed, which is from the current posiiton to a point
-    // on the border
-    if (!boost::geometry::covered_by(currentPosition, poly_)) {
-        d = -d;
-    }
+    SetControlVariable(Eigen::Vector3d{ d, 0.0, 0.0 });
 
     std::cout << "DEBUG d: " << d << std::endl;
-    // compute the activation function of the if is distance under threshold
-    Ai_(0, 0) = rml::DecreasingBellShapedFunction(decreasingBellShape_.xmin(0), decreasingBellShape_.xmax(0), 0.0, 1.0, d);
 }
 
 void SafetyBoundaries::ComputeAlignVectorConvex(std::list<segment_type> segments, point_type currentPosition, Eigen::Vector3d& alignVector)
@@ -242,29 +260,34 @@ void SafetyBoundaries::ComputeAlignVectorConvex(std::list<segment_type> segments
         alignVector(1) = (currentPosition.y() - intersecP.y());
 
         alignVector = alignVector.norm() * alignVector;
+
+        //if the robot is outside the polygon the directionis the opposite
+        if (!boost::geometry::covered_by(currentPosition, poly_)) {
+            d = -d;
+            alignVector(0) = -alignVector(0);
+            alignVector(1) = -alignVector(1);
+        }
         std::cout << "DEBUG ZONE IN THE MIDDLE: " << std::endl;
     } else {
         //Compute the align vector if the robot is near one of the two nearest segments
         //In this case the align vector is the normal to the segment
         point_type u;
-        std::cout << "DEBUG I'm here: " << std::endl;
+        std::cout << "DEBUG 1/3 ZONE: " << std::endl;
 
         ComputeNormalVector2Segment(segments.front(), u);
 
         alignVector(0) = u.x();
         alignVector(1) = u.y();
+
+        //if the robot is outside the polygon the directionis the opposite
+        if (!boost::geometry::covered_by(currentPosition, poly_)) {
+            d = -d;
+        }
     }
 
-    if (!boost::geometry::covered_by(currentPosition, poly_)) {
-        d = -d;
-    }
+    SetControlVariable(Eigen::Vector3d{ d, 0.0, 0.0 });
 
     std::cout << "DEBUG d: " << d << std::endl;
-
-    //Compute the align vector if the robot is out side the polygon
-    //In this case the align vector is the min direction vector that led to robot to comeback insede the poly
-
-    Ai_(0, 0) = rml::DecreasingBellShapedFunction(decreasingBellShape_.xmin(0), decreasingBellShape_.xmax(0), 0.0, 1.0, d);
 }
 
 bool SafetyBoundaries::ComputeIntersectionPointMiddleZone(std::list<segment_type> segments, std::list<point_type>& points)

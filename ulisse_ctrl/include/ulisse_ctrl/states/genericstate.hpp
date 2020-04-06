@@ -5,6 +5,9 @@
 #include <fsm/fsm.h>
 #include <ikcl/ikcl.h>
 
+//to be delete once safetyB in ickc
+#include "ulisse_ctrl/tasks/SafetyBoundaries.h"
+
 namespace ulisse {
 
 namespace states {
@@ -20,6 +23,12 @@ namespace states {
         std::vector<std::shared_ptr<tpik::Task>> unifiedHierarchy_;
         std::shared_ptr<rml::RobotModel> robotModel_;
 
+        std::shared_ptr<ikcl::SafetyBoundaries> safetyBoundariesTask_;
+        std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentSafetyTask_;
+
+        double minHeadingErrorSafety_, maxHeadingErrorSafety_, maxGainSafety_;
+        Eigen::Vector3d desiredVelocitySafety_;
+
     public:
         GenericState(void);
         virtual ~GenericState(void);
@@ -33,6 +42,12 @@ namespace states {
         void SetActionManager(std::shared_ptr<tpik::ActionManager> actionManager);
         void SetUnifiedHierarchy(std::vector<std::shared_ptr<tpik::Task>> unifiedHierarchy);
         void SetRobotModel(std::shared_ptr<rml::RobotModel> robotModel);
+
+        void SetSafetyBoundariesTask(std::shared_ptr<ikcl::SafetyBoundaries> safetyBoundariesTask);
+        void SetAngularPositionSafetyTask(std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentSafetyTask);
+        void SetMinMaxHeadingErrorSafety(double min, double max);
+        void SetDesiredVelocitySafety(Eigen::Vector3d desiredVelocity);
+        void SetMaxGainSafety(double maxGainSafety);
     };
 }
 }
