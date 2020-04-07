@@ -54,7 +54,6 @@ set(ulisse_ctrl_lib_sources
     # Main Classes
     src/ulisse_ctrl/vehiclecontroller.cpp
     # Helpers
-    src/ulisse_ctrl/helper_functions.cpp
     src/ulisse_ctrl/configuration.cpp
     # States
     src/ulisse_ctrl/states/genericstate.cpp

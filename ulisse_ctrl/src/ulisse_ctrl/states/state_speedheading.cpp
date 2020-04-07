@@ -16,7 +16,6 @@ namespace states {
     {
         maxHeadingError_ = M_PI / 16;
         minHeadingError_ = M_PI / 64;
-        desiredVelocitySafety_ << 1.0, 0.0, 0.0;
     }
 
     StateSpeedHeading::~StateSpeedHeading() {}
@@ -82,7 +81,6 @@ namespace states {
         //compute the gain of the cartesian distance
         double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingErrorSafety_, maxHeadingErrorSafety_, 0, maxGainSafety_, headingErrorsafety);
 
-        safetyBoundariesTask_->SetDesiredVelocity(desiredVelocitySafety_);
         // Set the gain of the cartesian distance task
         safetyBoundariesTask_->SetTaskParameter(taskGainSafety);
 

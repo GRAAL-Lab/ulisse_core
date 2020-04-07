@@ -87,7 +87,6 @@ namespace states {
         //compute the gain of the cartesian distance
         double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingError_, minHeadingErrorSafety_, 0, maxHeadingErrorSafety_, headingErrorsafety);
 
-        safetyBoundariesTask_->SetDesiredVelocity(desiredVelocitySafety_);
         // Set the gain of the cartesian distance task
         safetyBoundariesTask_->SetTaskParameter(taskGainSafety);
 

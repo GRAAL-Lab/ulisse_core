@@ -27,7 +27,6 @@ namespace states {
         std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentSafetyTask_;
 
         double minHeadingErrorSafety_, maxHeadingErrorSafety_, maxGainSafety_;
-        Eigen::Vector3d desiredVelocitySafety_;
 
     public:
         GenericState(void);
@@ -46,7 +45,6 @@ namespace states {
         void SetSafetyBoundariesTask(std::shared_ptr<ikcl::SafetyBoundaries> safetyBoundariesTask);
         void SetAngularPositionSafetyTask(std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentSafetyTask);
         void SetMinMaxHeadingErrorSafety(double min, double max);
-        void SetDesiredVelocitySafety(Eigen::Vector3d desiredVelocity);
         void SetMaxGainSafety(double maxGainSafety);
     };
 }

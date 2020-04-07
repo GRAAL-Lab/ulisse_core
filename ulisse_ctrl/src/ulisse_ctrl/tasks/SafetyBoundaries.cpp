@@ -1,5 +1,4 @@
 #include "ulisse_ctrl/tasks/SafetyBoundaries.h"
-#include "ulisse_ctrl/helper_functions.hpp"
 
 using namespace ctb;
 namespace ikcl {
@@ -73,7 +72,7 @@ void SafetyBoundaries::UpdateJacobian()
 
 void SafetyBoundaries::UpdateReference()
 {
-    x_dot_ = taskParameter_.gain * (decreasingBellShape_.xmax(0) - x_(0)) * desiredVelocity_;
+    x_dot_(0) = taskParameter_.gain * (decreasingBellShape_.xmax(0) - x_(0));
 }
 
 void SafetyBoundaries::UpdateInternalActivationFunction()

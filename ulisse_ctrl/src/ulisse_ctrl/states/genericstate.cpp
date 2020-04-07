@@ -70,11 +70,6 @@ namespace states {
         maxHeadingErrorSafety_ = max;
     }
 
-    void GenericState::SetDesiredVelocitySafety(Eigen::Vector3d desiredVelocity)
-    {
-        desiredVelocitySafety_ = desiredVelocity;
-    }
-
     void GenericState::SetMaxGainSafety(double maxGainSafety)
     {
         maxGainSafety_ = maxGainSafety;

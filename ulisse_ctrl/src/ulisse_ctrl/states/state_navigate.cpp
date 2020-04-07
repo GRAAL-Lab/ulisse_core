@@ -1,6 +1,5 @@
 #include "ulisse_ctrl/states/state_navigate.hpp"
 #include "ulisse_ctrl/fsm_defines.hpp"
-#include "ulisse_ctrl/helper_functions.hpp"
 #include <jsoncpp/json/json.h>
 #include <ulisse_ctrl/geometry_defines.h>
 #include <ulisse_ctrl/ulisse_definitions.h>
@@ -307,7 +306,6 @@ namespace states {
         //compute the gain of the cartesian distance
         double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingErrorSafety_, maxHeadingErrorSafety_, 0, maxGainSafety_, headingErrorsafety);
 
-        safetyBoundariesTask_->SetDesiredVelocity(desiredVelocitySafety_);
         // Set the gain of the cartesian distance task
         safetyBoundariesTask_->SetTaskParameter(taskGainSafety);
 
