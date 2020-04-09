@@ -223,15 +223,7 @@ void ConfigureTaskFromFile(std::vector<std::shared_ptr<tpik::CartesianTask>> tas
             taskParameter.taskEnable = confObj.lookup(lookUpTaskEnable.c_str());
             task->SetTaskParameter(taskParameter);
 
-            if (task->GetType() == tpik::CartesianTaskType::Equality) {
-
-                std::string lookUpControlReference = taskID + "." + ulisse::taskParameter::controlReference;
-                Eigen::VectorXd controlReference;
-                if (FindVectorConfFile(lookUpControlReference, controlReference, confPath)) {
-
-                    task->SetControlVectorReference(controlReference);
-                }
-            } else if (task->GetType() == tpik::CartesianTaskType::InequalityIncreasing) {
+            if (task->GetType() == tpik::CartesianTaskType::InequalityIncreasing) {
                 tpik::BellShapedParameter bellShapeIncreasing;
                 std::string lookUpBellShapeIncreasingMin = taskID + "." + ulisse::bellShapeParameter::increasingBellShape
                     + "." + ulisse::bellShapeParameter::xmin;
@@ -303,35 +295,5 @@ void ConfigureTaskFromFile(std::vector<std::shared_ptr<tpik::CartesianTask>> tas
             std::cerr << "Config exception:" << std::endl;
             std::cerr << "what: " << e.what() << std::endl;
         }
-    }
-}
-
-bool GetVectorEigen(const std::string confPath, const std::string property, Eigen::VectorXd& out)
-{
-    libconfig::Config confObj;
-    try {
-        confObj.readFile(confPath.c_str());
-    } catch (libconfig::ParseException& e) {
-        std::cerr << "Parse exception when reading:" << confPath << std::endl;
-        std::cerr << "line: " << e.getLine() << " error: " << e.getError()
-                  << std::endl;
-        return false;
-    }
-    try {
-        const libconfig::Setting& vectorSetting = confObj.lookup(property.c_str());
-        out.resize(vectorSetting.getLength());
-        for (int i = 0; i < vectorSetting.getLength(); i++) {
-            out(i) = vectorSetting[i];
-        }
-        return true;
-
-    } catch (libconfig::SettingException& e) {
-        std::cerr << "Setting exception:" << std::endl;
-        std::cerr << "path: " << e.getPath() << " what: " << e.what() << std::endl;
-        return false;
-    } catch (libconfig::ConfigException& e) {
-        std::cerr << "Config exception:" << std::endl;
-        std::cerr << "what: " << e.what() << std::endl;
-        return false;
     }
 }

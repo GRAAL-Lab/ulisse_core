@@ -18,6 +18,4 @@ void ConfigureTaskFromFile(std::vector<std::shared_ptr<tpik::InequalityTask>> ta
 
 void ConfigureTaskFromFile(std::vector<std::shared_ptr<tpik::CartesianTask>> taskVector, const std::string confPath);
 
-bool GetVectorEigen(const std::string confPath, const std::string property, Eigen::VectorXd& out);
-
 #endif // ULISSE_CONFIGURATION_H

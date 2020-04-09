@@ -76,7 +76,6 @@ namespace states {
         std::cout << "STATE HOLD" << std::endl;
         std::cout << "Goal Distance: " << goalCxt_->goalDistance << std::endl;
         std::cout << "Acceptance radius: " << goalCxt_->currentGoal.acceptRadius << std::endl;
-        std::cout << "Hysteresis: " << conf_->holdData.hysteresis << std::endl;
 
         return fsm::ok;
     }

@@ -1,19 +1,18 @@
 #ifndef ULISSE_CTRL_COMMANDMOVE_HPP
 #define ULISSE_CTRL_COMMANDMOVE_HPP
 
-#include "ulisse_ctrl/commands/genericcommand.hpp"
+#include <fsm/fsm.h>
 
 namespace ulisse {
 
 namespace commands {
 
-    class CommandLatLong : public GenericCommand {
+    class CommandLatLong : public fsm::BaseCommand {
 
     public:
         CommandLatLong();
         virtual ~CommandLatLong();
         virtual fsm::retval Execute(void);
-        void SetGoal(double latitude, double longitude, double acceptanceRadius);
     };
 }
 }

@@ -27,15 +27,17 @@ namespace states {
         cartesianDistance_ = cartesianDistance;
     }
 
-    void StateLatLong::SetPointGoTo(double latitude, double longitude, double acceptRadius)
-    {
-        actionManager_->SetAction(ulisse::action::goTo, true);
-    }
-
     void StateLatLong::SetMinMaxHeadingError(double min, double max)
     {
         minHeadingError_ = min;
         maxHeadingError_ = max;
+    }
+
+    void StateLatLong::SetGoal(double latitude, double longitude, double acceptanceRadius)
+    {
+        goalCxt_->currentGoal.pos.latitude = latitude;
+        goalCxt_->currentGoal.pos.longitude = longitude;
+        goalCxt_->currentGoal.acceptRadius = acceptanceRadius;
     }
 
     void StateLatLong::SetCruiseControl(double cruise) { cruise_ = cruise; }
@@ -44,6 +46,7 @@ namespace states {
 
     fsm::retval StateLatLong::OnEntry()
     {
+        actionManager_->SetAction(ulisse::action::goTo, true);
         //get the max gain of the cartesian distance task
         maxGainCartesianDistance_ = cartesianDistance_->GetTaskParameter().gain;
         std::cout << "Debug gain on entry: " << cartesianDistance_->GetTaskParameter().gain << std::endl;

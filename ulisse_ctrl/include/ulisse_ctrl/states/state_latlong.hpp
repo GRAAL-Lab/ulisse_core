@@ -29,10 +29,9 @@ namespace states {
 
         void SetMinMaxHeadingError(double min, double max);
 
-        void SetPointGoTo(double latitude, double longitude, double acceptRadius);
-
         void SetCruiseControl(double cruise);
         double GetCruiseControl();
+        void SetGoal(double latitude, double longitude, double acceptanceRadius);
     };
 }
 }

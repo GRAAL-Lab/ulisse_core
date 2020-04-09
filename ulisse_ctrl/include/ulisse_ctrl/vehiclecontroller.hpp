@@ -35,6 +35,15 @@
 
 namespace ulisse {
 class VehicleController {
+
+    struct TasksInfo {
+
+        std::shared_ptr<tpik::Task> task;
+        rclcpp::Publisher<ulisse_msgs::msg::TaskStatus> taskPub;
+    };
+
+    std::unordered_map<std::string, std::shared_ptr<TasksInfo>> tasksMap;
+
     rclcpp::Node::SharedPtr nh_;
     std::string file_name_;
     rclcpp::Service<ulisse_msgs::srv::ControlCommand>::SharedPtr srv_;
@@ -133,8 +142,6 @@ class VehicleController {
 
     int LoadConfiguration();
     void LoadControllerConfiguration(std::shared_ptr<ControllerConfiguration> conf, std::string file_name);
-    double SlowDownWhenTurning(double headingError, double desiredSpeed, const ControllerConfiguration& conf);
-    double AvoidRotationCloseToTarget(double desiredHeading, double heading, double desiredSpeed, const ControllerConfiguration& conf);
     void LoadKCLConfiguration(std::string task, std::string priorityLevel);
     void SetUpFSM();
     void SetupCommandServer();

@@ -2,7 +2,10 @@
 #define ULISSE_CTRL_DATA_STRUCTS_HPP
 
 #include "ctrl_toolbox/DigitalPID.h"
+#include "ctrl_toolbox/HelperFunctions.h"
 #include "surface_vehicle_model/surfacevehiclemodel.hpp"
+#include <ament_index_cpp/get_package_share_directory.hpp>
+#include <libconfig.h++>
 
 namespace ulisse {
 
@@ -26,36 +29,6 @@ struct ThrusterControlData {
     double desiredSurge;
     double desiredJog;
     MotorReference mapOut, ctrlRef;
-};
-
-struct SlowDownOnTurnsData {
-    double headingErrorMin; //10.0
-    double headingErrorMax; //25.0
-    double alphaMin; //0.1
-    double alphaMax; // 1.0
-
-    SlowDownOnTurnsData()
-        : headingErrorMin(0.0)
-        , headingErrorMax(0.0)
-        , alphaMin(0.0)
-        , alphaMax(0.0)
-    {
-    }
-};
-
-struct AvoidRotationData {
-    double speedMin;
-    double speedMax;
-    double betaMin;
-    double betaMax;
-};
-
-struct HoldCurrentData {
-    double hysteresis;
-    double defaultRadius;
-    bool enableCurrentCompensation;
-    double currentMin;
-    double currentMax;
 };
 
 struct Waypoint {
@@ -109,37 +82,52 @@ struct ControllerConfiguration {
 
     bool goToHoldAfterMove;
     double posAcceptanceRadius;
-    bool enableSlowDownOnTurns;
-    SlowDownOnTurnsData slowOnTurns;
-    AvoidRotationData avoidRot;
-
-    ctb::PIDGains pidgains_position;
-    ctb::PIDGains pidgains_heading;
-
-    double pidsat_position;
-    double pidsat_heading;
-
-    //NavFilterConfigData navFilter;
-    HoldCurrentData holdData;
+    double controlLoopPeriod;
+    Eigen::VectorXd saturationMin, saturationMax;
 
     ControllerConfiguration()
         : goToHoldAfterMove(false)
-        , enableSlowDownOnTurns(false)
-        , pidsat_position(0.0)
-        , pidsat_heading(0.0)
     {
+    }
+
+    void ConfigureFromFile(std::string fileName)
+    {
+        libconfig::Config confObj;
+
+        // Inizialization
+        std::string package_share_directory = ament_index_cpp::get_package_share_directory("ulisse_ctrl");
+        std::string confPath = package_share_directory;
+        confPath.append("/conf/");
+        confPath.append(fileName);
+
+        std::cout << "PATH TO CONF FILE : " << confPath << std::endl;
+
+        // Read the file. If there is an error, report it and exit.
+        try {
+            confObj.readFile(confPath.c_str());
+        } catch (const libconfig::FileIOException& fioex) {
+            std::cerr << "I/O error while reading file: " << fioex.what() << std::endl;
+            return;
+        } catch (const libconfig::ParseException& pex) {
+            std::cerr << "Parse error at " << pex.getFile() << ":" << pex.getLine() << " - " << pex.getError() << std::endl;
+            return;
+        }
+
+        ctb::SetParam(confObj, goToHoldAfterMove, "goToHoldAfterMove");
+        ctb::SetParam(confObj, controlLoopPeriod, "controlLoopPeriod");
+        ctb::SetParam(confObj, posAcceptanceRadius, "posAcceptanceRadius");
+        ctb::SetParamVector(confObj, saturationMax, "saturationMax");
+        ctb::SetParamVector(confObj, saturationMin, "saturationMin");
     }
 
     friend std::ostream& operator<<(std::ostream& os, ControllerConfiguration const& a)
     {
         return os << "======= CONTROLLER CONF =======\n"
+                  << "ControlLoopPeriod: " << a.controlLoopPeriod << "\n"
                   << "PosAcceptanceRadius: " << a.posAcceptanceRadius << "\n"
                   << "GoToHoldAfterMove: " << a.goToHoldAfterMove << "\n"
-                  << "EnableSlowDownOnTurns: " << a.enableSlowDownOnTurns << "\n"
-                  << "\tHeadingErrorMin:" << a.slowOnTurns.headingErrorMin << "\n"
-                  << "\tHeadingErrorMax:" << a.slowOnTurns.headingErrorMax << "\n"
-                  << "\tAlphaMin:" << a.slowOnTurns.alphaMin << "\n"
-                  << "\tAlphaMax:" << a.slowOnTurns.alphaMax << "\n"
+                  << "SaturationMin: " << a.saturationMin.transpose() << "\n"
+                  << "SaturationMax: " << a.saturationMax.transpose() << "\n"
                   << "===============================\n";
     }
 };

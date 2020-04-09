@@ -60,61 +60,36 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     asv_control_velocity_linear->SetVelocity(Eigen::VectorXd::Zero(3));
     equality_task.push_back(asv_control_velocity_linear);
     task_hierarchy.push_back(asv_control_velocity_linear);
-    taskIDMap.insert(std::make_pair(ulisse::task::asv_control_velocity_linear,
-        asv_control_velocity_linear));
+    taskIDMap.insert(std::make_pair(ulisse::task::asv_control_velocity_linear, asv_control_velocity_linear));
     taskLogPublisherMap.insert(std::make_pair(ulisse::task::asv_control_velocity_linear, nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_control_velocity_linear", 10)));
 
     // AUV CONTROL ANGULAR POSITION
-    asv_angular_position = std::make_shared<ikcl::AlignToTarget>(ikcl::AlignToTarget(
-        ulisse::task::asv_angular_position, robot_model,
-        ulisse::robotModelID::ASV, tpik::CartesianTaskType::Equality,
-        tpik::ProjectorType::Default));
+    asv_angular_position = std::make_shared<ikcl::AlignToTarget>(ikcl::AlignToTarget(ulisse::task::asv_angular_position, robot_model, ulisse::robotModelID::ASV, tpik::CartesianTaskType::Equality, tpik::ProjectorType::Default));
     asv_angular_position->SetAlignmentAxis(Eigen::VectorXd::Zero(3));
-    asv_angular_position->SetDistanceToTarget(Eigen::VectorXd::Zero(3),
-        rml::FrameID::WorldFrame);
+    asv_angular_position->SetDistanceToTarget(Eigen::VectorXd::Zero(3), rml::FrameID::WorldFrame);
     cartesian_task.push_back(asv_angular_position);
     task_hierarchy.push_back(asv_angular_position);
-    taskIDMap.insert(
-        std::make_pair(ulisse::task::asv_angular_position, asv_angular_position));
-    taskLogPublisherMap.insert(
-        std::make_pair(ulisse::task::asv_angular_position,
-            nh_->create_publisher<ulisse_msgs::msg::TaskStatus>(
-                "/ulisse/log/task/asv_angular_position", 10)));
+    taskIDMap.insert(std::make_pair(ulisse::task::asv_angular_position, asv_angular_position));
+    taskLogPublisherMap.insert(std::make_pair(ulisse::task::asv_angular_position, nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_angular_position", 10)));
 
     // ASV CONTROL DISTANCE
-    asv_control_distance = std::make_shared<ikcl::ControlCartesianDistance>(
-        ikcl::ControlCartesianDistance(ulisse::task::asv_control_distance,
-            robot_model, ulisse::robotModelID::ASV,
-            tpik::CartesianTaskType::Equality,
-            tpik::ProjectorType::Default));
-    asv_control_distance->SetDistance(Eigen::VectorXd::Zero(3),
-        rml::FrameID::WorldFrame);
+    asv_control_distance = std::make_shared<ikcl::ControlCartesianDistance>(ikcl::ControlCartesianDistance(ulisse::task::asv_control_distance, robot_model, ulisse::robotModelID::ASV, tpik::CartesianTaskType::Equality, tpik::ProjectorType::Default));
+    asv_control_distance->SetDistance(Eigen::VectorXd::Zero(3), rml::FrameID::WorldFrame);
     cartesian_task.push_back(asv_control_distance);
     task_hierarchy.push_back(asv_control_distance);
-    taskIDMap.insert(
-        std::make_pair(ulisse::task::asv_control_distance, asv_control_distance));
-    taskLogPublisherMap.insert(
-        std::make_pair(ulisse::task::asv_control_distance,
-            nh_->create_publisher<ulisse_msgs::msg::TaskStatus>(
-                "/ulisse/log/task/asv_control_distance", 10)));
+    taskIDMap.insert(std::make_pair(ulisse::task::asv_control_distance, asv_control_distance));
+    taskLogPublisherMap.insert(std::make_pair(ulisse::task::asv_control_distance, nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_control_distance", 10)));
 
     // ASV SAFETY BOUNDARIES (INEQUALITY TASK)
-    asv_safety_boundaries = std::make_shared<ikcl::SafetyBoundaries>(
-        ikcl::SafetyBoundaries(ulisse::task::asv_safety_boundaries, robot_model,
-            ulisse::robotModelID::ASV));
+    asv_safety_boundaries = std::make_shared<ikcl::SafetyBoundaries>(ikcl::SafetyBoundaries(ulisse::task::asv_safety_boundaries, robot_model, ulisse::robotModelID::ASV));
     asv_safety_boundaries->SetPose(vehiclePose_);
     inequality_task.push_back(asv_safety_boundaries);
     task_hierarchy.push_back(asv_safety_boundaries);
-    taskIDMap.insert(std::make_pair(ulisse::task::asv_safety_boundaries,
-        asv_safety_boundaries));
-    taskLogPublisherMap.insert(
-        std::make_pair(ulisse::task::asv_safety_boundaries,
-            nh_->create_publisher<ulisse_msgs::msg::TaskStatus>(
-                "/ulisse/log/task/asv_safety_boundaries", 10)));
+    taskIDMap.insert(std::make_pair(ulisse::task::asv_safety_boundaries, asv_safety_boundaries));
+    taskLogPublisherMap.insert(std::make_pair(ulisse::task::asv_safety_boundaries, nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_safety_boundaries", 10)));
 
     // ASV absolute axis alignment task
-    asv_absolute_axis_alignment = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asv_absolute_axis_alignment, robot_model,
-        tpik::CartesianTaskType::Equality, ulisse::robotModelID::ASV));
+    asv_absolute_axis_alignment = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asv_absolute_axis_alignment, robot_model, tpik::CartesianTaskType::Equality, ulisse::robotModelID::ASV));
     cartesian_task.push_back(asv_absolute_axis_alignment);
     task_hierarchy.push_back(asv_absolute_axis_alignment);
     taskIDMap.insert(std::make_pair(ulisse::task::asv_absolute_axis_alignment, asv_absolute_axis_alignment));
@@ -125,8 +100,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     maxHeadingErrorSafety_ = M_PI / 16;
 
     // ASV absolute axis alignment task
-    asv_absolute_axis_alignment_safety = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asv_absolute_axis_alignment_safety, robot_model,
-        tpik::CartesianTaskType::Equality, ulisse::robotModelID::ASV));
+    asv_absolute_axis_alignment_safety = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asv_absolute_axis_alignment_safety, robot_model, tpik::CartesianTaskType::Equality, ulisse::robotModelID::ASV));
     cartesian_task.push_back(asv_absolute_axis_alignment_safety);
     task_hierarchy.push_back(asv_absolute_axis_alignment_safety);
     taskIDMap.insert(std::make_pair(ulisse::task::asv_absolute_axis_alignment_safety, asv_absolute_axis_alignment_safety));
@@ -252,13 +226,10 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 
     // Create a callback function for when service reset configuration requests
     // are received.
-    auto handle_reset_conf =
-        [this](
-            const std::shared_ptr<rmw_request_id_t> request_header,
-            const std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Request>
-                request,
-            std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Response>
-                response) -> void {
+    auto handle_reset_conf = [this](const std::shared_ptr<rmw_request_id_t> request_header,
+                                 const std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Request> request,
+                                 std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Response>
+                                     response) -> void {
         (void)request_header;
         RCLCPP_INFO(nh_->get_logger(), "Incoming request for reset conf");
 
@@ -302,12 +273,11 @@ std::shared_ptr<ControlContext> VehicleController::CtrlContext() const
 
 int VehicleController::LoadConfiguration()
 {
-    LoadControllerConfiguration(conf_, file_name_);
+    conf_->ConfigureFromFile(file_name_);
     std::cout << tc::grayD << *conf_ << tc::none << std::endl;
+
     std::string task = "Tasks.conf", priorityLevel = "PriorityLevel.conf";
     LoadKCLConfiguration(task, priorityLevel);
-
-    std::cout << tc::grayD << *conf_ << tc::none << std::endl;
 
     return true;
 }
@@ -319,8 +289,7 @@ void VehicleController::publishLog(std::string log)
     generic_log_pub_->publish(generic_log_pub_msg);
 }
 
-void VehicleController::LoadKCLConfiguration(std::string task,
-    std::string priorityLevel)
+void VehicleController::LoadKCLConfiguration(std::string task, std::string priorityLevel)
 {
 
     libconfig::Config confObj;
@@ -345,71 +314,38 @@ void VehicleController::LoadKCLConfiguration(std::string task,
     //    asv_safety_boundaries->SetBoundaries(confObj.lookup("task.ASV_safety_boundaries.BoundaryMinimumDistance"),
     //        confObj.lookup("task.ASV_safety_boundaries.BoundaryMaximumDistance"));
 
-    state_navigate_.SetMaxRangeAbscissa(
-        confObj.lookup("task.PathFollowing.MaximumLookupAbscissa"));
+    state_navigate_.SetMaxRangeAbscissa(confObj.lookup("task.PathFollowing.MaximumLookupAbscissa"));
     state_navigate_.SetDelta(confObj.lookup("task.PathFollowing.Delta"));
-    state_navigate_.SetTolleranceStartingPoint(
-        confObj.lookup("task.PathFollowing.TolleranceStartingPoint"));
-    state_navigate_.SetTolleranceEndingPoint(
-        confObj.lookup("task.PathFollowing.TolleranceEndingPoint"));
-    state_navigate_.SetTolleranceStartingAngle(
-        confObj.lookup("task.PathFollowing.TolleranceStartingAngle"));
-    state_navigate_.SetLineOfSightMethod(
-        confObj.lookup("task.PathFollowing.UseLineOfSight"));
+    state_navigate_.SetTolleranceStartingPoint(confObj.lookup("task.PathFollowing.TolleranceStartingPoint"));
+    state_navigate_.SetTolleranceEndingPoint(confObj.lookup("task.PathFollowing.TolleranceEndingPoint"));
+    state_navigate_.SetTolleranceStartingAngle(confObj.lookup("task.PathFollowing.TolleranceStartingAngle"));
+    state_navigate_.SetLineOfSightMethod(confObj.lookup("task.PathFollowing.UseLineOfSight"));
 
     // Action Manager initialization
     std::stringstream conf_path_priority_level;
-    conf_path_priority_level << package_share_directory << "/conf/"
-                             << priorityLevel;
-    InitializeUnifiedHierarchyAndActions(action_manager, taskIDMap,
-        conf_path_priority_level.str().c_str());
+    conf_path_priority_level << package_share_directory << "/conf/" << priorityLevel;
+    InitializeUnifiedHierarchyAndActions(action_manager, taskIDMap, conf_path_priority_level.str().c_str());
 
     // Configure all tasks, each with the correspondent parameters
     ConfigureTaskFromFile(equality_task, conf_path.str().c_str());
     ConfigureTaskFromFile(inequality_task, conf_path.str().c_str());
     ConfigureTaskFromFile(cartesian_task, conf_path.str().c_str());
 
-    std::cout << "Debug: "
-              << asv_safety_boundaries->GetDecreasingBellShapedParameter()
-              << std::endl;
-
     // Set Saturation values for the iCAT (read from conf file)
-    int dof = 6;
-    Eigen::VectorXd saturationMax(dof);
-    Eigen::VectorXd saturationMin(dof);
-    std::string saturationMaxProperty = ulisse::priorityLevelParameter::priorityLevel + "." + ulisse::priorityLevelParameter::saturationMax;
-    std::string saturationMinProperty = ulisse::priorityLevelParameter::priorityLevel + "." + ulisse::priorityLevelParameter::saturationMin;
-
-    GetVectorEigen(conf_path_priority_level.str().c_str(), saturationMaxProperty,
-        saturationMax);
-    GetVectorEigen(conf_path_priority_level.str().c_str(), saturationMinProperty,
-        saturationMin);
-    i_cat->SetSaturation(saturationMax, saturationMin);
+    i_cat->SetSaturation(conf_->saturationMax, conf_->saturationMin);
 }
 
 void VehicleController::SetUpFSM()
 {
     // ***** COMMANDS *****
-
     // Halt
     command_halt_.SetFSM(&u_fsm_);
-
     // Hold
     command_hold_.SetFSM(&u_fsm_);
-    command_hold_.SetGoalContext(goalCxt_);
-    command_hold_.SetControlContext(ctrlCxt_);
-    command_hold_.SetStatusContext(statusCxt_);
-
     // LatLong
     command_latlong_.SetFSM(&u_fsm_);
-    command_latlong_.SetGoalContext(goalCxt_);
-    command_latlong_.SetControlContext(ctrlCxt_);
-
     // SpeedHeading
     command_speedheading_.SetFSM(&u_fsm_);
-    command_speedheading_.SetGoalContext(goalCxt_);
-    command_speedheading_.SetControlContext(ctrlCxt_);
-
     // Navigate
     command_navigate_.SetFSM(&u_fsm_);
 
@@ -516,106 +452,61 @@ void VehicleController::SetUpFSM()
     u_fsm_.AddEvent(ulisse::events::names::rcenabled, &event_rc_enabled_);
 
     // ENABLE TRANSITIONS
-    u_fsm_.EnableTransition(ulisse::states::ID::halt, ulisse::states::ID::hold,
-        true);
-    u_fsm_.EnableTransition(ulisse::states::ID::halt, ulisse::states::ID::latlong,
-        true);
-    u_fsm_.EnableTransition(ulisse::states::ID::halt,
-        ulisse::states::ID::speedheading, true);
-    u_fsm_.EnableTransition(ulisse::states::ID::halt,
-        ulisse::states::ID::navigate, true);
+    u_fsm_.EnableTransition(ulisse::states::ID::halt, ulisse::states::ID::hold, true);
+    u_fsm_.EnableTransition(ulisse::states::ID::halt, ulisse::states::ID::latlong, true);
+    u_fsm_.EnableTransition(ulisse::states::ID::halt, ulisse::states::ID::speedheading, true);
+    u_fsm_.EnableTransition(ulisse::states::ID::halt, ulisse::states::ID::navigate, true);
 
-    u_fsm_.EnableTransition(ulisse::states::ID::hold, ulisse::states::ID::halt,
-        true);
-    u_fsm_.EnableTransition(ulisse::states::ID::hold, ulisse::states::ID::latlong,
-        true);
-    u_fsm_.EnableTransition(ulisse::states::ID::hold,
-        ulisse::states::ID::speedheading, true);
-    u_fsm_.EnableTransition(ulisse::states::ID::hold,
-        ulisse::states::ID::navigate, true);
+    u_fsm_.EnableTransition(ulisse::states::ID::hold, ulisse::states::ID::halt, true);
+    u_fsm_.EnableTransition(ulisse::states::ID::hold, ulisse::states::ID::latlong, true);
+    u_fsm_.EnableTransition(ulisse::states::ID::hold, ulisse::states::ID::speedheading, true);
+    u_fsm_.EnableTransition(ulisse::states::ID::hold, ulisse::states::ID::navigate, true);
 
-    u_fsm_.EnableTransition(ulisse::states::ID::latlong, ulisse::states::ID::hold,
-        true);
-    u_fsm_.EnableTransition(ulisse::states::ID::latlong, ulisse::states::ID::halt,
-        true);
-    u_fsm_.EnableTransition(ulisse::states::ID::latlong,
-        ulisse::states::ID::speedheading, true);
-    u_fsm_.EnableTransition(ulisse::states::ID::latlong,
-        ulisse::states::ID::navigate, true);
+    u_fsm_.EnableTransition(ulisse::states::ID::latlong, ulisse::states::ID::hold, true);
+    u_fsm_.EnableTransition(ulisse::states::ID::latlong, ulisse::states::ID::halt, true);
+    u_fsm_.EnableTransition(ulisse::states::ID::latlong, ulisse::states::ID::speedheading, true);
+    u_fsm_.EnableTransition(ulisse::states::ID::latlong, ulisse::states::ID::navigate, true);
 
-    u_fsm_.EnableTransition(ulisse::states::ID::speedheading,
-        ulisse::states::ID::hold, true);
-    u_fsm_.EnableTransition(ulisse::states::ID::speedheading,
-        ulisse::states::ID::halt, true);
-    u_fsm_.EnableTransition(ulisse::states::ID::speedheading,
-        ulisse::states::ID::latlong, true);
-    u_fsm_.EnableTransition(ulisse::states::ID::speedheading,
-        ulisse::states::ID::navigate, true);
+    u_fsm_.EnableTransition(ulisse::states::ID::speedheading, ulisse::states::ID::hold, true);
+    u_fsm_.EnableTransition(ulisse::states::ID::speedheading, ulisse::states::ID::halt, true);
+    u_fsm_.EnableTransition(ulisse::states::ID::speedheading, ulisse::states::ID::latlong, true);
+    u_fsm_.EnableTransition(ulisse::states::ID::speedheading, ulisse::states::ID::navigate, true);
 
-    u_fsm_.EnableTransition(ulisse::states::ID::navigate,
-        ulisse::states::ID::hold, true);
-    u_fsm_.EnableTransition(ulisse::states::ID::navigate,
-        ulisse::states::ID::halt, true);
-    u_fsm_.EnableTransition(ulisse::states::ID::navigate,
-        ulisse::states::ID::latlong, true);
-    u_fsm_.EnableTransition(ulisse::states::ID::navigate,
-        ulisse::states::ID::speedheading, true);
+    u_fsm_.EnableTransition(ulisse::states::ID::navigate, ulisse::states::ID::hold, true);
+    u_fsm_.EnableTransition(ulisse::states::ID::navigate, ulisse::states::ID::halt, true);
+    u_fsm_.EnableTransition(ulisse::states::ID::navigate, ulisse::states::ID::latlong, true);
+    u_fsm_.EnableTransition(ulisse::states::ID::navigate, ulisse::states::ID::speedheading, true);
 
     // ENABLE COMMANDS
-    u_fsm_.EnableCommandInState(ulisse::states::ID::halt,
-        ulisse::commands::ID::halt, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::hold,
-        ulisse::commands::ID::halt, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::latlong,
-        ulisse::commands::ID::halt, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::speedheading,
-        ulisse::commands::ID::halt, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::navigate,
-        ulisse::commands::ID::halt, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::halt, ulisse::commands::ID::halt, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::hold, ulisse::commands::ID::halt, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::latlong, ulisse::commands::ID::halt, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::speedheading, ulisse::commands::ID::halt, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::navigate, ulisse::commands::ID::halt, true);
 
-    u_fsm_.EnableCommandInState(ulisse::states::ID::halt,
-        ulisse::commands::ID::hold, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::hold,
-        ulisse::commands::ID::hold, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::latlong,
-        ulisse::commands::ID::hold, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::speedheading,
-        ulisse::commands::ID::hold, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::navigate,
-        ulisse::commands::ID::hold, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::halt, ulisse::commands::ID::hold, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::hold, ulisse::commands::ID::hold, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::latlong, ulisse::commands::ID::hold, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::speedheading, ulisse::commands::ID::hold, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::navigate, ulisse::commands::ID::hold, true);
 
-    u_fsm_.EnableCommandInState(ulisse::states::ID::halt,
-        ulisse::commands::ID::latlong, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::hold,
-        ulisse::commands::ID::latlong, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::latlong,
-        ulisse::commands::ID::latlong, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::speedheading,
-        ulisse::commands::ID::latlong, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::navigate,
-        ulisse::commands::ID::latlong, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::halt, ulisse::commands::ID::latlong, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::hold, ulisse::commands::ID::latlong, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::latlong, ulisse::commands::ID::latlong, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::speedheading, ulisse::commands::ID::latlong, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::navigate, ulisse::commands::ID::latlong, true);
 
-    u_fsm_.EnableCommandInState(ulisse::states::ID::halt,
-        ulisse::commands::ID::speedheading, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::hold,
-        ulisse::commands::ID::speedheading, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::latlong,
-        ulisse::commands::ID::speedheading, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::speedheading,
-        ulisse::commands::ID::speedheading, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::navigate,
-        ulisse::commands::ID::speedheading, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::halt, ulisse::commands::ID::speedheading, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::hold, ulisse::commands::ID::speedheading, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::latlong, ulisse::commands::ID::speedheading, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::speedheading, ulisse::commands::ID::speedheading, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::navigate, ulisse::commands::ID::speedheading, true);
 
-    u_fsm_.EnableCommandInState(ulisse::states::ID::halt,
-        ulisse::commands::ID::navigate, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::hold,
-        ulisse::commands::ID::navigate, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::latlong,
-        ulisse::commands::ID::navigate, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::speedheading,
-        ulisse::commands::ID::navigate, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::navigate,
-        ulisse::commands::ID::navigate, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::halt, ulisse::commands::ID::navigate, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::hold, ulisse::commands::ID::navigate, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::latlong, ulisse::commands::ID::navigate, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::speedheading, ulisse::commands::ID::navigate, true);
+    u_fsm_.EnableCommandInState(ulisse::states::ID::navigate, ulisse::commands::ID::navigate, true);
 
     u_fsm_.SetInitState(ulisse::states::ID::halt);
 }
@@ -654,8 +545,7 @@ void VehicleController::SetupCommandServer()
             publishLog("Received Command Hold");
         } else if (request->command_type == ulisse::commands::ID::latlong) {
             std::cout << "Received Command LatLong" << std::endl;
-            command_latlong_.SetGoal(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude, request->latlong_cmd.acceptance_radius);
-            state_latlong_.SetPointGoTo(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude, request->latlong_cmd.acceptance_radius);
+            state_latlong_.SetGoal(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude, request->latlong_cmd.acceptance_radius);
 
             log << "Received Command GoTo (lat: "
                 << request->latlong_cmd.goal.latitude
@@ -663,9 +553,7 @@ void VehicleController::SetupCommandServer()
             publishLog(log.str().c_str());
         } else if (request->command_type == ulisse::commands::ID::speedheading) {
             std::cout << "Received Command SpeedHeading" << std::endl;
-            command_speedheading_.SetGoal(request->sh_cmd.speed,
-                request->sh_cmd.heading,
-                request->sh_cmd.timeout.sec);
+            state_speedheading_.SetSpeedHeading(request->sh_cmd.speed, request->sh_cmd.heading, request->sh_cmd.timeout.sec);
             state_speedheading_.ResetTimer();
 
             log << "Received Command SpeedHeading (speed: " << request->sh_cmd.speed
@@ -698,24 +586,17 @@ void VehicleController::SetupCommandServer()
         }
     };
 
-    srv_ = nh_->create_service<ulisse_msgs::srv::ControlCommand>(
-        ulisse_msgs::topicnames::control_cmd_service, handle_control_commands);
+    srv_ = nh_->create_service<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service, handle_control_commands);
 }
 
-void VehicleController::GPSSensorCB(
-    const ulisse_msgs::msg::GPSData::SharedPtr msg)
+void VehicleController::GPSSensorCB(const ulisse_msgs::msg::GPSData::SharedPtr msg)
 {
     timestamp_ = msg->time;
     statusCxt_->gpsSpeed = msg->speed;
     statusCxt_->gpsTrack = msg->track * M_PI / 180.0;
-
-    // std::cout << "GPS (lat, long): " << msg->latitude << ", " << msg->longitude
-    // << std::endl; std::cout << "GPS speed: " << msg->speed << std::endl;
-    // std::cout << "GPS track: " << msg->track << std::endl;
 }
 
-void VehicleController::NavFilterCB(
-    const ulisse_msgs::msg::NavFilterData::SharedPtr msg)
+void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)
 {
     statusCxt_->vehiclePos.latitude = msg->latitude;
     statusCxt_->vehiclePos.longitude = msg->longitude;
@@ -813,10 +694,8 @@ void VehicleController::Run()
         try {
 
             std::vector<double> diagonal_activation_function;
-            for (unsigned int i = 0; i < task->GetInternalActivationFunction().rows();
-                 i++) {
-                diagonal_activation_function.push_back(
-                    task->GetInternalActivationFunction().at(i, i));
+            for (unsigned int i = 0; i < task->GetInternalActivationFunction().rows(); i++) {
+                diagonal_activation_function.push_back(task->GetInternalActivationFunction().at(i, i));
             }
             std::vector<double> reference;
             for (unsigned int i = 0; i < task->GetReference().size(); i++) {
@@ -826,9 +705,7 @@ void VehicleController::Run()
             ulisse_msgs::msg::TaskStatus taskstatus_msg;
 
             t_now_ = std::chrono::system_clock::now();
-            long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(
-                                     t_now_.time_since_epoch()))
-                                    .count();
+            long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
             auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
             auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
 
@@ -848,106 +725,9 @@ void VehicleController::Run()
     }
 }
 
-void VehicleController::LoadControllerConfiguration(
-    std::shared_ptr<ControllerConfiguration> conf, std::string file_name)
+void VehicleController::LoadControllerConfiguration(std::shared_ptr<ControllerConfiguration> conf, std::string file_name)
 {
-    libconfig::Config confObj;
-
-    // Inizialization
-    std::string package_share_directory = ament_index_cpp::get_package_share_directory("ulisse_ctrl");
-    std::stringstream conf_path;
-    conf_path << package_share_directory << "/conf/" << file_name;
-
-    std::string confPath = conf_path.str().c_str();
-
-    std::cout << "PATH TO CONF FILE : " << confPath << std::endl;
-
-    // read conf file
-    try {
-        confObj.readFile(confPath.c_str());
-    } catch (libconfig::ParseException& e) {
-        std::cerr << "Parse exception when reading:" << confPath << std::endl;
-        std::cerr << "line: " << e.getLine() << " error: " << e.getError()
-                  << std::endl;
-        return;
-    }
-
-    ctb::SetParam(confObj, conf->posAcceptanceRadius,
-        "kinematic_control_params.PosAcceptanceRadius");
-    ctb::SetParam(confObj, conf->goToHoldAfterMove,
-        "kinematic_control_params.GotoHoldAfterMove");
-
-    // Hold
-    ctb::SetParam(confObj, conf->holdData.hysteresis,
-        "kinematic_control_params.Hold.Hysteresis");
-    ctb::SetParam(confObj, conf->holdData.defaultRadius,
-        "kinematic_control_params.Hold.DefaultRadius");
-    ctb::SetParam(confObj, conf->holdData.enableCurrentCompensation,
-        "kinematic_control_params.Hold.enableCurrentCompensation");
-    ctb::SetParam(confObj, conf->holdData.currentMin,
-        "kinematic_control_params.Hold.CurrentMin");
-    ctb::SetParam(confObj, conf->holdData.currentMax,
-        "kinematic_control_params.Hold.CurrentMax");
-
-    // Slow Down on turns
-    ctb::SetParam(confObj, conf->enableSlowDownOnTurns,
-        "kinematic_control_params.SlowDownOnTurns.enable");
-    ctb::SetParam(confObj, conf->slowOnTurns.headingErrorMin,
-        "kinematic_control_params.SlowDownOnTurns.HeadingErrorMin");
-    ctb::SetParam(confObj, conf->slowOnTurns.headingErrorMax,
-        "kinematic_control_params.SlowDownOnTurns.HeadingErrorMax");
-    ctb::SetParam(confObj, conf->slowOnTurns.alphaMin,
-        "kinematic_control_params.SlowDownOnTurns.AlphaMin");
-    ctb::SetParam(confObj, conf->slowOnTurns.alphaMax,
-        "kinematic_control_params.SlowDownOnTurns.AlphaMax");
-}
-
-double
-VehicleController::SlowDownWhenTurning(double headingError, double desiredSpeed,
-    const ControllerConfiguration& conf)
-{
-    double herrMin = conf.slowOnTurns.headingErrorMin;
-    double herrMax = conf.slowOnTurns.headingErrorMax;
-    double alphaMin = conf.slowOnTurns.alphaMin;
-    double alphaMax = conf.slowOnTurns.alphaMax;
-    double herrabs = std::abs(headingError);
-    double factor = 1.0;
-    if (herrabs < herrMax && herrabs > herrMin) {
-        factor = (herrabs - herrMin) / (herrMax - herrMin) * (alphaMin - alphaMax) + alphaMax;
-    } else if (herrabs > herrMax) {
-        factor = alphaMin;
-    } else {
-        factor = alphaMax;
-    }
-
-    double newSpeed = desiredSpeed * factor;
-
-    return newSpeed;
-}
-
-double VehicleController::AvoidRotationCloseToTarget(
-    double desiredHeading, double heading, double desiredSpeed,
-    const ControllerConfiguration& conf)
-{
-    double sMin = conf.avoidRot.speedMin;
-    double sMax = conf.avoidRot.speedMax;
-    double betaMin = conf.avoidRot.betaMin;
-    double betaMax = conf.avoidRot.betaMax;
-
-    double beta;
-    if (desiredSpeed < sMax && desiredSpeed > sMin) {
-        beta = (desiredSpeed - sMin) / (sMax - sMin) * (betaMax - betaMin) + betaMin;
-    } else if (desiredSpeed > sMax) {
-        beta = 1;
-    } else {
-        beta = betaMin;
-    }
-
-    double newHeading = (1 - beta) * heading + beta * desiredHeading;
-    /*ortos::DebugConsole::Write(ortos::LogLevel::info,
-     "AvoidRotationWhenCloseToTarget", "Desired heading: %lf Factor: %lf Final
-     heading: %lf", desiredHeading, beta, newHeading);*/
-    return newHeading;
+    //
 }
 
 void VehicleController::PublishControl()

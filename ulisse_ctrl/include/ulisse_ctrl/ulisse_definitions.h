@@ -28,14 +28,6 @@ namespace taskParameter {
     const std::string gain = "gain";
     const std::string saturation = "saturation";
     const std::string taskEnable = "taskEnable";
-    const std::string controlReference = "controlReference";
-    const std::string virtualFrameGain = "virtualFrameGain";
-    const std::string onTrackThreshold = "onTrackThreshold";
-    const std::string crossTrackThrehsodl = "crossTrackThrehsold";
-    const std::string axis = "axis";
-    const std::string deltaJL = "deltaJL";
-    const std::string muReference = "muReferenceValue";
-    const std::string tollerance = "tollerance";
 }
 
 namespace priorityLevelID {

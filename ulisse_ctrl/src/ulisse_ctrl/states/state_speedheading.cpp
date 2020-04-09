@@ -30,6 +30,14 @@ namespace states {
         linearVelocityTask_ = linearVelocityTask;
     }
 
+    void StateSpeedHeading::SetSpeedHeading(double speed, double heading, uint timeout_sec)
+    {
+        goalCxt_->goalSurge = speed;
+        goalCxt_->goalHeading = heading;
+        goalCxt_->cmdTimeout = timeout_sec;
+        goalCxt_->goalDistance = 0.0;
+    }
+
     fsm::retval StateSpeedHeading::OnEntry()
     {
         actionManager_->SetAction(ulisse::action::speed_heading, true);
