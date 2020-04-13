@@ -33,7 +33,7 @@ bool FindVectorConfFile(std::string property, Eigen::VectorXd& vector, const std
     }
 }
 
-bool InitializeUnifiedHierarchyAndActions(std::shared_ptr<tpik::ActionManager> actionManager, std::unordered_map<std::string, std::shared_ptr<tpik::Task>> taskIDMap, std::string confPath)
+bool InitializeUnifiedHierarchyAndActions(std::shared_ptr<tpik::ActionManager> actionManager, std::unordered_map<std::string, ulisse::TasksInfo> tasksMap, std::string confPath)
 {
     // 1:1 mapping each priority level with the corresponing task
     for (size_t i = 0; i < ulisse::priorityLevelID::unified_hierarchy.size(); i++) {
@@ -45,7 +45,7 @@ bool InitializeUnifiedHierarchyAndActions(std::shared_ptr<tpik::ActionManager> a
             actionManager->AddPriorityLevelWithRegularization(PLID, regularization_data);
             std::cout << "ADD TASK " << ulisse::task::unified_hierarchy.at(i) << std::endl;
             //Add the task to the proper level
-            actionManager->AddTaskToPriorityLevel(taskIDMap.at(ulisse::task::unified_hierarchy.at(i)), PLID);
+            actionManager->AddTaskToPriorityLevel(tasksMap.at(ulisse::task::unified_hierarchy.at(i)).task, PLID);
         }
     }
 
@@ -295,5 +295,26 @@ void ConfigureTaskFromFile(std::vector<std::shared_ptr<tpik::CartesianTask>> tas
             std::cerr << "Config exception:" << std::endl;
             std::cerr << "what: " << e.what() << std::endl;
         }
+    }
+}
+
+void ConfigureTaskFromFile(std::unordered_map<std::string, ulisse::TasksInfo>& tasksMap, libconfig::Config& confObj)
+{
+    const libconfig::Setting& root = confObj.getRoot();
+    const libconfig::Setting& tasks = root["tasks"];
+
+    for (int i = 0; i < tasks.getLength(); ++i) {
+
+        auto& task = tasks[i];
+
+        tpik::TaskParameter taskParameter;
+        taskParameter.ConfigureFromFile(task);
+
+        std::string name;
+        ctb::SetParam(task, name, "name");
+
+        std::unordered_map<std::string, ulisse::TasksInfo>::const_iterator got = tasksMap.find(name);
+
+        got->second.task->SetTaskParameter(taskParameter);
     }
 }

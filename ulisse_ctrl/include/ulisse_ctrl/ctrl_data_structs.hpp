@@ -3,11 +3,20 @@
 
 #include "ctrl_toolbox/DigitalPID.h"
 #include "ctrl_toolbox/HelperFunctions.h"
+#include "rclcpp/rclcpp.hpp"
 #include "surface_vehicle_model/surfacevehiclemodel.hpp"
+#include "ulisse_msgs/msg/task_status.hpp"
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <libconfig.h++>
+#include <tpik/TPIK.h>
 
 namespace ulisse {
+
+struct TasksInfo {
+
+    std::shared_ptr<tpik::Task> task;
+    rclcpp::Publisher<ulisse_msgs::msg::TaskStatus>::SharedPtr taskPub;
+};
 
 enum class ControlMode : int {
     ThrusterMapping,
@@ -90,29 +99,8 @@ struct ControllerConfiguration {
     {
     }
 
-    void ConfigureFromFile(std::string fileName)
+    void ConfigureFromFile(libconfig::Config& confObj)
     {
-        libconfig::Config confObj;
-
-        // Inizialization
-        std::string package_share_directory = ament_index_cpp::get_package_share_directory("ulisse_ctrl");
-        std::string confPath = package_share_directory;
-        confPath.append("/conf/");
-        confPath.append(fileName);
-
-        std::cout << "PATH TO CONF FILE : " << confPath << std::endl;
-
-        // Read the file. If there is an error, report it and exit.
-        try {
-            confObj.readFile(confPath.c_str());
-        } catch (const libconfig::FileIOException& fioex) {
-            std::cerr << "I/O error while reading file: " << fioex.what() << std::endl;
-            return;
-        } catch (const libconfig::ParseException& pex) {
-            std::cerr << "Parse error at " << pex.getFile() << ":" << pex.getLine() << " - " << pex.getError() << std::endl;
-            return;
-        }
-
         ctb::SetParam(confObj, goToHoldAfterMove, "goToHoldAfterMove");
         ctb::SetParam(confObj, controlLoopPeriod, "controlLoopPeriod");
         ctb::SetParam(confObj, posAcceptanceRadius, "posAcceptanceRadius");

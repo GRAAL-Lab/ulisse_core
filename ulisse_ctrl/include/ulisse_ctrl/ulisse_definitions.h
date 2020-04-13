@@ -7,12 +7,19 @@
 namespace ulisse {
 namespace task {
     const std::string task = "task";
-    const std::string asv_control_velocity_linear = "ASV_control_velocity_linear";
-    const std::string asv_angular_position = "ASV_angular_position";
-    const std::string asv_absolute_axis_alignment = "ASV_absolute_axis_alignment";
-    const std::string asv_control_distance = "ASV_control_distance";
-    const std::string asv_safety_boundaries = "ASV_safety_boundaries";
-    const std::string asv_absolute_axis_alignment_safety = "ASV_absolute_axis_alignment_safety";
+    //    const std::string asv_control_velocity_linear = "ASV_control_velocity_linear";
+    //    const std::string asv_angular_position = "ASV_angular_position";
+    //    const std::string asv_absolute_axis_alignment = "ASV_absolute_axis_alignment";
+    //    const std::string asv_control_distance = "ASV_control_distance";
+    //    const std::string asv_safety_boundaries = "ASV_safety_boundaries";
+    //    const std::string asv_absolute_axis_alignment_safety = "ASV_absolute_axis_alignment_safety";
+
+    const std::string asv_control_velocity_linear = "ASV_Linear_Velocity";
+    const std::string asv_angular_position = "ASV_Angular_Position";
+    const std::string asv_absolute_axis_alignment = "ASV_Absolute_Axis_Alignment";
+    const std::string asv_control_distance = "ASV_Cartesian_Distance";
+    const std::string asv_safety_boundaries = "ASV_Safety_Boundaries";
+    const std::string asv_absolute_axis_alignment_safety = "ASV_Absolute_Axis_Alignment_Safety";
 
     const std::vector<std::string> unified_hierarchy = {
         asv_safety_boundaries,

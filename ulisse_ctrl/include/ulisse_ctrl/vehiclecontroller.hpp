@@ -36,13 +36,8 @@
 namespace ulisse {
 class VehicleController {
 
-    struct TasksInfo {
-
-        std::shared_ptr<tpik::Task> task;
-        rclcpp::Publisher<ulisse_msgs::msg::TaskStatus> taskPub;
-    };
-
-    std::unordered_map<std::string, std::shared_ptr<TasksInfo>> tasksMap;
+    TasksInfo taskInfo_;
+    std::unordered_map<std::string, TasksInfo> tasksMap_;
 
     rclcpp::Node::SharedPtr nh_;
     std::string file_name_;
@@ -61,8 +56,6 @@ class VehicleController {
     rclcpp::Publisher<ulisse_msgs::msg::ControlContext>::SharedPtr ctrlcxt_pub_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr vehiclestate_pub_;
 
-    std::unordered_map<std::string, rclcpp::Publisher<ulisse_msgs::msg::TaskStatus>::SharedPtr> taskLogPublisherMap;
-
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr generic_log_pub_;
     /// ROBOT MODEL
     std::shared_ptr<rml::RobotModel> robot_model;
@@ -76,7 +69,6 @@ class VehicleController {
     std::vector<std::shared_ptr<tpik::EqualityTask>> equality_task;
     std::vector<std::shared_ptr<tpik::InequalityTask>> inequality_task;
     std::vector<std::shared_ptr<tpik::CartesianTask>> cartesian_task;
-    std::unordered_map<std::string, std::shared_ptr<tpik::Task>> taskIDMap;
 
     std::shared_ptr<tpik::iCAT> i_cat;
 
@@ -140,8 +132,7 @@ class VehicleController {
 
     std::string boundaries_json;
 
-    int LoadConfiguration();
-    void LoadControllerConfiguration(std::shared_ptr<ControllerConfiguration> conf, std::string file_name);
+    bool LoadConfiguration();
     void LoadKCLConfiguration(std::string task, std::string priorityLevel);
     void SetUpFSM();
     void SetupCommandServer();
