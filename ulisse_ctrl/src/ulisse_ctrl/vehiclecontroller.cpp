@@ -58,23 +58,17 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     // ASV CONTROL VELOCITY LINEAR
     asv_control_velocity_linear = std::make_shared<ikcl::LinearVelocity>(ikcl::LinearVelocity(ulisse::task::asv_control_velocity_linear, robot_model, ulisse::robotModelID::ASV));
     asv_control_velocity_linear->SetVelocity(Eigen::VectorXd::Zero(3));
-
     taskInfo_.task = asv_control_velocity_linear;
     taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_control_velocity_linear", 10);
     tasksMap_.insert(std::make_pair(ulisse::task::asv_control_velocity_linear, taskInfo_));
-    equality_task.push_back(asv_control_velocity_linear);
-    task_hierarchy.push_back(asv_control_velocity_linear);
 
     // AUV CONTROL ANGULAR POSITION
     asv_angular_position = std::make_shared<ikcl::AlignToTarget>(ikcl::AlignToTarget(ulisse::task::asv_angular_position, robot_model, ulisse::robotModelID::ASV, tpik::CartesianTaskType::Equality, tpik::ProjectorType::Default));
     asv_angular_position->SetAlignmentAxis(Eigen::VectorXd::Zero(3));
     asv_angular_position->SetDistanceToTarget(Eigen::VectorXd::Zero(3), rml::FrameID::WorldFrame);
-
     taskInfo_.task = asv_angular_position;
     taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_angular_position", 10);
     tasksMap_.insert(std::make_pair(ulisse::task::asv_angular_position, taskInfo_));
-    cartesian_task.push_back(asv_angular_position);
-    task_hierarchy.push_back(asv_angular_position);
 
     // ASV CONTROL DISTANCE
     asv_control_distance = std::make_shared<ikcl::ControlCartesianDistance>(ikcl::ControlCartesianDistance(ulisse::task::asv_control_distance, robot_model, ulisse::robotModelID::ASV, tpik::CartesianTaskType::Equality, tpik::ProjectorType::Default));
@@ -82,8 +76,6 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     taskInfo_.task = asv_control_distance;
     taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_control_distance", 10);
     tasksMap_.insert(std::make_pair(ulisse::task::asv_control_distance, taskInfo_));
-    cartesian_task.push_back(asv_control_distance);
-    task_hierarchy.push_back(asv_control_distance);
 
     // ASV SAFETY BOUNDARIES (INEQUALITY TASK)
     asv_safety_boundaries = std::make_shared<ikcl::SafetyBoundaries>(ikcl::SafetyBoundaries(ulisse::task::asv_safety_boundaries, robot_model, ulisse::robotModelID::ASV));
@@ -91,13 +83,9 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     taskInfo_.task = asv_safety_boundaries;
     taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_safety_boundaries", 10);
     tasksMap_.insert(std::make_pair(ulisse::task::asv_safety_boundaries, taskInfo_));
-    inequality_task.push_back(asv_safety_boundaries);
-    task_hierarchy.push_back(asv_safety_boundaries);
 
     // ASV absolute axis alignment task
     asv_absolute_axis_alignment = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asv_absolute_axis_alignment, robot_model, tpik::CartesianTaskType::Equality, ulisse::robotModelID::ASV));
-    cartesian_task.push_back(asv_absolute_axis_alignment);
-    task_hierarchy.push_back(asv_absolute_axis_alignment);
     taskInfo_.task = asv_absolute_axis_alignment;
     taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_absolute_axis_alignment", 10);
     tasksMap_.insert(std::make_pair(ulisse::task::asv_absolute_axis_alignment, taskInfo_));
@@ -108,19 +96,11 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 
     // ASV absolute axis alignment task
     asv_absolute_axis_alignment_safety = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asv_absolute_axis_alignment_safety, robot_model, tpik::CartesianTaskType::Equality, ulisse::robotModelID::ASV));
-    cartesian_task.push_back(asv_absolute_axis_alignment_safety);
-    task_hierarchy.push_back(asv_absolute_axis_alignment_safety);
     asv_absolute_axis_alignment_safety->SetAxisAlignment(Eigen::VectorXd::Zero(3), ulisse::robotModelID::ASV);
     asv_absolute_axis_alignment_safety->SetDirectionAlignment(Eigen::VectorXd::Zero(3), rml::FrameID::WorldFrame);
-
     taskInfo_.task = asv_absolute_axis_alignment_safety;
     taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_absolute_axis_alignment_safety", 10);
     tasksMap_.insert(std::make_pair(ulisse::task::asv_absolute_axis_alignment_safety, taskInfo_));
-
-    std::cout << "DEBUG: " << std::endl;
-    for (auto& x : tasksMap_) {
-        std::cout << x.first << ": " << x.second.task << std::endl;
-    }
 
     // Initialize Solver and iCAT
     int dof = 6;
@@ -312,6 +292,11 @@ bool VehicleController::LoadConfiguration()
     std::cout << tc::grayD << *conf_ << tc::none << std::endl;
 
     ConfigureTaskFromFile(tasksMap_, confObj);
+    ConfigurePriorityLevelFromFile(action_manager, tasksMap_, confObj);
+    ConfigureActionFromFile(action_manager, confObj);
+
+    // Set Saturation values for the iCAT (read from conf file)
+    i_cat->SetSaturation(conf_->saturationMax, conf_->saturationMin);
 
     std::string task = "Tasks.conf", priorityLevel = "PriorityLevel.conf";
     LoadKCLConfiguration(task, priorityLevel);
@@ -348,46 +333,24 @@ void VehicleController::LoadKCLConfiguration(std::string task, std::string prior
         return;
     }
 
-    //    asv_safety_boundaries->SetBoundaries(confObj.lookup("task.ASV_safety_boundaries.BoundaryMinimumDistance"),
-    //        confObj.lookup("task.ASV_safety_boundaries.BoundaryMaximumDistance"));
-
     state_navigate_.SetMaxRangeAbscissa(confObj.lookup("task.PathFollowing.MaximumLookupAbscissa"));
     state_navigate_.SetDelta(confObj.lookup("task.PathFollowing.Delta"));
     state_navigate_.SetTolleranceStartingPoint(confObj.lookup("task.PathFollowing.TolleranceStartingPoint"));
     state_navigate_.SetTolleranceEndingPoint(confObj.lookup("task.PathFollowing.TolleranceEndingPoint"));
     state_navigate_.SetTolleranceStartingAngle(confObj.lookup("task.PathFollowing.TolleranceStartingAngle"));
     state_navigate_.SetLineOfSightMethod(confObj.lookup("task.PathFollowing.UseLineOfSight"));
-
-    // Action Manager initialization
-    std::stringstream conf_path_priority_level;
-    conf_path_priority_level << package_share_directory << "/conf/" << priorityLevel;
-    InitializeUnifiedHierarchyAndActions(action_manager, tasksMap_, conf_path_priority_level.str().c_str());
-
-    // Configure all tasks, each with the correspondent parameters
-    ConfigureTaskFromFile(equality_task, conf_path.str().c_str());
-    ConfigureTaskFromFile(inequality_task, conf_path.str().c_str());
-    ConfigureTaskFromFile(cartesian_task, conf_path.str().c_str());
-
-    // Set Saturation values for the iCAT (read from conf file)
-    i_cat->SetSaturation(conf_->saturationMax, conf_->saturationMin);
 }
 
 void VehicleController::SetUpFSM()
 {
     // ***** COMMANDS *****
-    // Halt
     command_halt_.SetFSM(&u_fsm_);
-    // Hold
     command_hold_.SetFSM(&u_fsm_);
-    // LatLong
     command_latlong_.SetFSM(&u_fsm_);
-    // SpeedHeading
     command_speedheading_.SetFSM(&u_fsm_);
-    // Navigate
     command_navigate_.SetFSM(&u_fsm_);
 
     // ***** STATES *****
-
     // Halt
     state_halt_.SetFSM(&u_fsm_);
     state_halt_.SetStatusContext(statusCxt_);
@@ -395,7 +358,7 @@ void VehicleController::SetUpFSM()
     state_halt_.SetCtrlContext(ctrlCxt_);
     state_halt_.SetConf(conf_);
     state_halt_.SetActionManager(action_manager);
-    state_halt_.SetUnifiedHierarchy(task_hierarchy);
+    state_halt_.SetTasksMap(tasksMap_);
     state_halt_.SetRobotModel(robot_model);
     state_halt_.SetSafetyBoundariesTask(asv_safety_boundaries);
     state_halt_.SetAngularPositionSafetyTask(asv_absolute_axis_alignment_safety);
@@ -409,7 +372,7 @@ void VehicleController::SetUpFSM()
     state_hold_.SetCtrlContext(ctrlCxt_);
     state_hold_.SetConf(conf_);
     state_hold_.SetActionManager(action_manager);
-    state_hold_.SetUnifiedHierarchy(task_hierarchy);
+    state_hold_.SetTasksMap(tasksMap_);
     state_hold_.SetRobotModel(robot_model);
     state_hold_.SetSafetyBoundariesTask(asv_safety_boundaries);
     state_hold_.SetAngularPositionSafetyTask(asv_absolute_axis_alignment_safety);
@@ -425,7 +388,7 @@ void VehicleController::SetUpFSM()
     state_latlong_.SetCtrlContext(ctrlCxt_);
     state_latlong_.SetConf(conf_);
     state_latlong_.SetActionManager(action_manager);
-    state_latlong_.SetUnifiedHierarchy(task_hierarchy);
+    state_latlong_.SetTasksMap(tasksMap_);
     state_latlong_.SetRobotModel(robot_model);
     state_latlong_.SetSafetyBoundariesTask(asv_safety_boundaries);
     state_latlong_.SetAngularPositionSafetyTask(asv_absolute_axis_alignment_safety);
@@ -441,7 +404,7 @@ void VehicleController::SetUpFSM()
     state_speedheading_.SetCtrlContext(ctrlCxt_);
     state_speedheading_.SetConf(conf_);
     state_speedheading_.SetActionManager(action_manager);
-    state_speedheading_.SetUnifiedHierarchy(task_hierarchy);
+    state_speedheading_.SetTasksMap(tasksMap_);
     state_speedheading_.SetRobotModel(robot_model);
     state_speedheading_.SetLinearVelocityTask(asv_control_velocity_linear);
     state_speedheading_.SetAngularPositionTask(asv_absolute_axis_alignment);
@@ -457,7 +420,7 @@ void VehicleController::SetUpFSM()
     state_navigate_.SetCtrlContext(ctrlCxt_);
     state_navigate_.SetConf(conf_);
     state_navigate_.SetActionManager(action_manager);
-    state_navigate_.SetUnifiedHierarchy(task_hierarchy);
+    state_navigate_.SetTasksMap(tasksMap_);
     state_navigate_.SetRobotModel(robot_model);
     state_navigate_.SetSafetyBoundariesTask(asv_safety_boundaries);
     state_navigate_.SetAngularPositionSafetyTask(asv_absolute_axis_alignment_safety);
@@ -682,8 +645,26 @@ void VehicleController::Run()
     u_fsm_.SwitchState();
     // Process Events
     u_fsm_.ProcessEventQueue();
+
+    for (auto& taskMap : tasksMap_) {
+        try {
+            taskMap.second.task->Update();
+        } catch (tpik::ExceptionWithHow& e) {
+            std::cerr << "UPDATE TASK EXCEPTION" << std::endl;
+            std::cerr << "who " << e.what() << " how: " << e.how() << std::endl;
+        }
+    }
     // Execute current state
     u_fsm_.ExecuteState();
+
+    for (auto& taskMap : tasksMap_) {
+        try {
+            taskMap.second.task->Update();
+        } catch (tpik::ExceptionWithHow& e) {
+            std::cerr << "UPDATE TASK EXCEPTION" << std::endl;
+            std::cerr << "who " << e.what() << " how: " << e.how() << std::endl;
+        }
+    }
 
     // Computing Kinematic Control via TPIK
     y_tpik = solver->ComputeVelocities();
@@ -692,6 +673,9 @@ void VehicleController::Run()
     std::cout << y_tpik << std::endl;
 
     std::vector<Eigen::VectorXd> tmp = solver->GetDeltaYs();
+
+    //    for (auto& delta : tmp)
+    //        std::cout << "SDEBUG DELTA" << delta << std::endl;
 
     for (int i = 0; i < y_tpik.size(); i++) {
         if (std::isnan(y_tpik(i))) {
@@ -727,16 +711,16 @@ void VehicleController::Run()
     std::cout << "Desired Jog: " << ctrlCxt_->desiredJog << std::endl;
     std::cout << "----------------------------------" << std::endl;
 
-    for (auto& task : task_hierarchy) {
+    for (auto& taskMap : tasksMap_) {
         try {
 
             std::vector<double> diagonal_activation_function;
-            for (unsigned int i = 0; i < task->GetInternalActivationFunction().rows(); i++) {
-                diagonal_activation_function.push_back(task->GetInternalActivationFunction().at(i, i));
+            for (unsigned int i = 0; i < taskMap.second.task->GetInternalActivationFunction().rows(); i++) {
+                diagonal_activation_function.push_back(taskMap.second.task->GetInternalActivationFunction().at(i, i));
             }
             std::vector<double> reference;
-            for (unsigned int i = 0; i < task->GetReference().size(); i++) {
-                reference.push_back(task->GetReference().at(i));
+            for (unsigned int i = 0; i < taskMap.second.task->GetReference().size(); i++) {
+                reference.push_back(taskMap.second.task->GetReference().at(i));
             }
 
             ulisse_msgs::msg::TaskStatus taskstatus_msg;
@@ -748,12 +732,12 @@ void VehicleController::Run()
 
             taskstatus_msg.stamp.sec = now_stamp_secs;
             taskstatus_msg.stamp.nanosec = now_stamp_nanosecs;
-            taskstatus_msg.id = task->GetID();
-            taskstatus_msg.is_active = task->GetIsActive();
+            taskstatus_msg.id = taskMap.second.task->GetID();
+            taskstatus_msg.is_active = taskMap.second.task->GetIsActive();
             taskstatus_msg.activation_function = diagonal_activation_function;
             taskstatus_msg.reference = reference;
 
-            tasksMap_[task->GetID()].taskPub->publish(taskstatus_msg);
+            tasksMap_[taskMap.second.task->GetID()].taskPub->publish(taskstatus_msg);
 
         } catch (tpik::ExceptionWithHow& e) {
             std::cerr << "LOG TASK EXCEPTION" << std::endl;

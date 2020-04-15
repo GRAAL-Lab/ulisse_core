@@ -30,15 +30,6 @@ namespace states {
 
     fsm::retval StateHold::Execute()
     {
-        for (auto& task : unifiedHierarchy_) {
-            try {
-                task->Update();
-            } catch (tpik::ExceptionWithHow& e) {
-                std::cerr << "UPDATE TASK EXCEPTION" << std::endl;
-                std::cerr << "who " << e.what() << " how: " << e.how() << std::endl;
-            }
-        }
-
         CheckRadioController();
 
         //SafetyBoundaries task: it's a velocity task base on the distance from the boundaries. The behaviour that has to achive is align to

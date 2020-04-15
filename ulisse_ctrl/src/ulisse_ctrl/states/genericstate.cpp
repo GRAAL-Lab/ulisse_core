@@ -46,9 +46,9 @@ namespace states {
     {
         actionManager_ = actionManager;
     }
-    void GenericState::SetUnifiedHierarchy(std::vector<std::shared_ptr<tpik::Task>> unifiedHierarchy)
+    void GenericState::SetTasksMap(std::unordered_map<std::string, ulisse::TasksInfo>& tasksMap)
     {
-        unifiedHierarchy_ = unifiedHierarchy;
+        tasksMap_ = tasksMap;
     }
     void GenericState::SetRobotModel(std::shared_ptr<rml::RobotModel> robotModel)
     {

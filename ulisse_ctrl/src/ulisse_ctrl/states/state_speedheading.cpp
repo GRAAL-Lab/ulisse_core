@@ -47,15 +47,6 @@ namespace states {
 
     fsm::retval StateSpeedHeading::Execute()
     {
-        for (auto& task : unifiedHierarchy_) {
-            try {
-                task->Update();
-            } catch (tpik::ExceptionWithHow& e) {
-                std::cerr << "UPDATE TASK EXCEPTION" << std::endl;
-                std::cerr << "who " << e.what() << " how: " << e.how() << std::endl;
-            }
-        }
-
         CheckRadioController();
 
         tNow_ = std::chrono::system_clock::now();

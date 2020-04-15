@@ -20,7 +20,7 @@ namespace states {
         std::shared_ptr<ControlContext> ctrlCxt_;
 
         std::shared_ptr<tpik::ActionManager> actionManager_;
-        std::vector<std::shared_ptr<tpik::Task>> unifiedHierarchy_;
+        std::unordered_map<std::string, ulisse::TasksInfo> tasksMap_;
         std::shared_ptr<rml::RobotModel> robotModel_;
 
         std::shared_ptr<ikcl::SafetyBoundaries> safetyBoundariesTask_;
@@ -39,7 +39,7 @@ namespace states {
         void SetCtrlContext(const std::shared_ptr<ControlContext>& ctrlCxt);
 
         void SetActionManager(std::shared_ptr<tpik::ActionManager> actionManager);
-        void SetUnifiedHierarchy(std::vector<std::shared_ptr<tpik::Task>> unifiedHierarchy);
+        void SetTasksMap(std::unordered_map<std::string, ulisse::TasksInfo>& tasksMap);
         void SetRobotModel(std::shared_ptr<rml::RobotModel> robotModel);
 
         void SetSafetyBoundariesTask(std::shared_ptr<ikcl::SafetyBoundaries> safetyBoundariesTask);

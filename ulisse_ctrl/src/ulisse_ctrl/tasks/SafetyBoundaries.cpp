@@ -15,6 +15,7 @@ SafetyBoundaries::SafetyBoundaries(std::string taskID, std::shared_ptr<rml::Robo
     J_.setZero(taskSpace_, DoF_);
     isBoundariesInitialized_ = false;
     alignVector_.setZero();
+    x_ = INFINITY * x_.setOnes();
 }
 
 void SafetyBoundaries::SetDesiredVelocity(Eigen::Vector3d desiredVelocity)
@@ -78,8 +79,6 @@ void SafetyBoundaries::UpdateReference()
 void SafetyBoundaries::UpdateInternalActivationFunction()
 {
     Ai_(0, 0) = rml::DecreasingBellShapedFunction(decreasingBellShape_.xmin(0), decreasingBellShape_.xmax(0), 0.0, 1.0, x_(0));
-    std::cout << "Debug Ai:" << std::endl;
-    std::cout << Ai_ << std::endl;
 }
 
 bool SafetyBoundaries::InitializePolygon(std::string polygonString, LatLong inizialPosition)
