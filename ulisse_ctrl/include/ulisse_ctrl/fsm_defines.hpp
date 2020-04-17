@@ -21,31 +21,18 @@ namespace states {
 
     namespace ID {
 
-        const std::string halt = "Halted";
-        const std::string latlong = "LatLong Move";
-        const std::string hold = "Hold Position";
-        const std::string speedheading = "Speed Heading";
-        const std::string navigate = "Navigate";
+        const std::string halt = "State_Halt";
+        const std::string latlong = "State_Go_To";
+        const std::string hold = "State_Hold";
+        const std::string speedheading = "State_Speed_Heading";
+        const std::string navigate = "State_Path_Following";
     }
 }
 
 namespace events {
 
     namespace names {
-        //const char* const toofar = "TOOFAR";
-        //const char* const nearposition = "NEARPOSITION";
-        //const char* const initdone = "INITDONE";
-        //const char* const wpreached = "WPREACHED";
-        //const char* const wpholdtimepassed = "WPHOLDPASSED";
-        //const char* const wplistend = "WPLISTEND";
-        //const char* const wplistpaused = "WPLISTPAUSED";
-        //const char* const wpchanged = "WPCHANGED";
-        //const char* const switchstate = "SWITCHSTATE";
-        //const char* const wpliststarted = "WPLISTSTARTED";
-        //const char* const wplistinterrupted = "WPLISTINTERRUPTED";
-        //const char* const discarded = "DISCARDED";
-        //const char* const speedjogtimeout = "SPEEDJOGTIMEOUT";
-        //const char* const speedheadingtimeout = "SPEEDHEADINGTIMEOUT";
+
         const std::string rcenabled = "RCENABLED";
     }
 

@@ -60,21 +60,32 @@ void ConfigureActionFromFile(std::shared_ptr<tpik::ActionManager> actionManager,
         std::string actionID;
         ctb::SetParam(action, actionID, "name");
 
+        std::vector<std::string> actionPL;
+
         const libconfig::Setting& priorityLevels = action["levels"];
         for (int i = 0; i < priorityLevels.getLength(); ++i) {
 
             libconfig::Setting& priorityLevel = priorityLevels[i];
 
             actionPL.push_back(priorityLevel.c_str());
-            std::cout << "Added: " << priorityLevel.c_str() << " to " << actionID << std::endl;
         }
 
         try {
             actionManager->AddAction(actionID, actionPL);
+            std::cout << "Added: " << actionID << "action with PLs:" << std::endl;
+            for (auto& pl : actionPL)
+                std::cout << pl << std::endl;
 
         } catch (tpik::ExceptionWithHow& e) {
             std::cerr << "Configuration Action Manager Exception:" << std::endl;
             std::cerr << "who " << e.what() << " how: " << e.how() << std::endl;
         }
+    }
+}
+
+void ConfigureSatesFromFile(std::unordered_map<std::string, ulisse::states::GenericState&> statesMap, libconfig::Config& confObj)
+{
+    for (auto& mapLine : statesMap) {
+        mapLine.second.ConfigureStateFromFile(confObj);
     }
 }

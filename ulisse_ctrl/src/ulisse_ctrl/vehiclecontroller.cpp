@@ -6,6 +6,7 @@
 #include <jsoncpp/json/json.h>
 #include <ulisse_ctrl/configuration.h>
 #include <ulisse_ctrl/geometry_defines.h>
+#include <ulisse_ctrl/states/genericstate.hpp>
 #include <ulisse_ctrl/ulisse_definitions.h>
 
 using std::placeholders::_1;
@@ -91,8 +92,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     tasksMap_.insert(std::make_pair(ulisse::task::asv_absolute_axis_alignment, taskInfo_));
     asv_absolute_axis_alignment->SetAxisAlignment(Eigen::VectorXd::Zero(3), ulisse::robotModelID::ASV);
     asv_absolute_axis_alignment->SetDirectionAlignment(Eigen::VectorXd::Zero(3), rml::FrameID::WorldFrame);
-    minHeadingErrorSafety_ = M_PI / 64;
-    maxHeadingErrorSafety_ = M_PI / 16;
+
 
     // ASV absolute axis alignment task
     asv_absolute_axis_alignment_safety = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asv_absolute_axis_alignment_safety, robot_model, tpik::CartesianTaskType::Equality, ulisse::robotModelID::ASV));
@@ -176,12 +176,6 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         } else {
             boundaries_set = false;
             response->res = "SetBound::error";
-        }
-
-        if (request->bound_min > 0 && request->bound_max > 0) {
-
-            //            asv_safety_boundaries->SetBoundaries(request->bound_min,
-            //            request->bound_max);
         }
 
         std::stringstream log;
@@ -293,13 +287,20 @@ bool VehicleController::LoadConfiguration()
 
     ConfigureTaskFromFile(tasksMap_, confObj);
     ConfigurePriorityLevelFromFile(action_manager, tasksMap_, confObj);
-    ConfigureActionFromFile(action_manager, confObj);
 
     // Set Saturation values for the iCAT (read from conf file)
     i_cat->SetSaturation(conf_->saturationMax, conf_->saturationMin);
 
-    std::string task = "Tasks.conf", priorityLevel = "PriorityLevel.conf";
-    LoadKCLConfiguration(task, priorityLevel);
+    ConfigureActionFromFile(action_manager, confObj);
+
+    //insert states in the map
+    statesMap_.insert({ ulisse::states::ID::halt, state_halt_ });
+    statesMap_.insert({ ulisse::states::ID::hold, state_hold_ });
+    statesMap_.insert({ ulisse::states::ID::latlong, state_latlong_ });
+    statesMap_.insert({ ulisse::states::ID::navigate, state_navigate_ });
+    statesMap_.insert({ ulisse::states::ID::speedheading, state_speedheading_ });
+
+    ConfigureSatesFromFile(statesMap_, confObj);
 
     return true;
 }
@@ -309,36 +310,6 @@ void VehicleController::publishLog(std::string log)
     std_msgs::msg::String generic_log_pub_msg;
     generic_log_pub_msg.data = log;
     generic_log_pub_->publish(generic_log_pub_msg);
-}
-
-void VehicleController::LoadKCLConfiguration(std::string task, std::string priorityLevel)
-{
-
-    libconfig::Config confObj;
-
-    // Inizialization
-    std::string package_share_directory = ament_index_cpp::get_package_share_directory("ulisse_ctrl");
-    std::stringstream conf_path;
-    conf_path << package_share_directory << "/conf/" << task;
-    std::string confPath = conf_path.str().c_str();
-
-    std::cout << "PATH TO CONF FILE : " << confPath << std::endl;
-
-    try {
-        confObj.readFile(confPath.c_str());
-    } catch (libconfig::ParseException& e) {
-        std::cerr << "Parse exception when reading:" << confPath << std::endl;
-        std::cerr << "line: " << e.getLine() << " error: " << e.getError()
-                  << std::endl;
-        return;
-    }
-
-    state_navigate_.SetMaxRangeAbscissa(confObj.lookup("task.PathFollowing.MaximumLookupAbscissa"));
-    state_navigate_.SetDelta(confObj.lookup("task.PathFollowing.Delta"));
-    state_navigate_.SetTolleranceStartingPoint(confObj.lookup("task.PathFollowing.TolleranceStartingPoint"));
-    state_navigate_.SetTolleranceEndingPoint(confObj.lookup("task.PathFollowing.TolleranceEndingPoint"));
-    state_navigate_.SetTolleranceStartingAngle(confObj.lookup("task.PathFollowing.TolleranceStartingAngle"));
-    state_navigate_.SetLineOfSightMethod(confObj.lookup("task.PathFollowing.UseLineOfSight"));
 }
 
 void VehicleController::SetUpFSM()
@@ -351,83 +322,62 @@ void VehicleController::SetUpFSM()
     command_navigate_.SetFSM(&u_fsm_);
 
     // ***** STATES *****
+    ulisse::states::GenericState::StateCtx stateCtx;
+    stateCtx.actionManager = action_manager;
+    stateCtx.robotModel = robot_model;
+    stateCtx.ctrlCxt = ctrlCxt_;
+    stateCtx.statusCxt = statusCxt_;
+    stateCtx.goalCxt = goalCxt_;
+
     // Halt
+    std::cout << "HEEEEERERERER before" << std::endl;
     state_halt_.SetFSM(&u_fsm_);
-    state_halt_.SetStatusContext(statusCxt_);
-    state_halt_.SetGoalContext(goalCxt_);
-    state_halt_.SetCtrlContext(ctrlCxt_);
-    state_halt_.SetConf(conf_);
-    state_halt_.SetActionManager(action_manager);
-    state_halt_.SetTasksMap(tasksMap_);
-    state_halt_.SetRobotModel(robot_model);
+    state_halt_.SetStateCtx(stateCtx);
     state_halt_.SetSafetyBoundariesTask(asv_safety_boundaries);
     state_halt_.SetAngularPositionSafetyTask(asv_absolute_axis_alignment_safety);
     state_halt_.SetMaxGainSafety(asv_safety_boundaries->GetTaskParameter().gain);
-    state_halt_.SetMinMaxHeadingErrorSafety(minHeadingErrorSafety_, maxHeadingErrorSafety_);
+    std::cout << "HEEEEERERERER after" << std::endl;
+    //    state_halt_.SetMinMaxHeadingErrorSafety(minHeadingErrorSafety_, maxHeadingErrorSafety_);
 
     // Hold
     state_hold_.SetFSM(&u_fsm_);
-    state_hold_.SetStatusContext(statusCxt_);
-    state_hold_.SetGoalContext(goalCxt_);
-    state_hold_.SetCtrlContext(ctrlCxt_);
-    state_hold_.SetConf(conf_);
-    state_hold_.SetActionManager(action_manager);
-    state_hold_.SetTasksMap(tasksMap_);
-    state_hold_.SetRobotModel(robot_model);
+    state_hold_.SetStateCtx(stateCtx);
     state_hold_.SetSafetyBoundariesTask(asv_safety_boundaries);
     state_hold_.SetAngularPositionSafetyTask(asv_absolute_axis_alignment_safety);
     state_hold_.SetLinearVelocityTask(asv_control_velocity_linear);
     state_hold_.SetAngularPositionTask(asv_angular_position);
     state_hold_.SetMaxGainSafety(asv_safety_boundaries->GetTaskParameter().gain);
-    state_hold_.SetMinMaxHeadingErrorSafety(minHeadingErrorSafety_, maxHeadingErrorSafety_);
+    //    state_hold_.SetMinMaxHeadingErrorSafety(minHeadingErrorSafety_, maxHeadingErrorSafety_);
 
     // LatLong
     state_latlong_.SetFSM(&u_fsm_);
-    state_latlong_.SetStatusContext(statusCxt_);
-    state_latlong_.SetGoalContext(goalCxt_);
-    state_latlong_.SetCtrlContext(ctrlCxt_);
-    state_latlong_.SetConf(conf_);
-    state_latlong_.SetActionManager(action_manager);
-    state_latlong_.SetTasksMap(tasksMap_);
-    state_latlong_.SetRobotModel(robot_model);
+    state_latlong_.SetStateCtx(stateCtx);
     state_latlong_.SetSafetyBoundariesTask(asv_safety_boundaries);
     state_latlong_.SetAngularPositionSafetyTask(asv_absolute_axis_alignment_safety);
     state_latlong_.SetCartesianDistanceTask(asv_control_distance);
     state_latlong_.SetAlignToTargetTask(asv_angular_position);
     state_latlong_.SetMaxGainSafety(asv_safety_boundaries->GetTaskParameter().gain);
-    state_latlong_.SetMinMaxHeadingErrorSafety(minHeadingErrorSafety_, maxHeadingErrorSafety_);
+    //    state_latlong_.SetMinMaxHeadingErrorSafety(minHeadingErrorSafety_, maxHeadingErrorSafety_);
 
     // SpeedHeading
     state_speedheading_.SetFSM(&u_fsm_);
-    state_speedheading_.SetStatusContext(statusCxt_);
-    state_speedheading_.SetGoalContext(goalCxt_);
-    state_speedheading_.SetCtrlContext(ctrlCxt_);
-    state_speedheading_.SetConf(conf_);
-    state_speedheading_.SetActionManager(action_manager);
-    state_speedheading_.SetTasksMap(tasksMap_);
-    state_speedheading_.SetRobotModel(robot_model);
+    state_speedheading_.SetStateCtx(stateCtx);
     state_speedheading_.SetLinearVelocityTask(asv_control_velocity_linear);
     state_speedheading_.SetAngularPositionTask(asv_absolute_axis_alignment);
     state_speedheading_.SetSafetyBoundariesTask(asv_safety_boundaries);
     state_speedheading_.SetAngularPositionSafetyTask(asv_absolute_axis_alignment_safety);
     state_speedheading_.SetMaxGainSafety(asv_safety_boundaries->GetTaskParameter().gain);
-    state_speedheading_.SetMinMaxHeadingErrorSafety(minHeadingErrorSafety_, maxHeadingErrorSafety_);
+    //    state_speedheading_.SetMinMaxHeadingErrorSafety(minHeadingErrorSafety_, maxHeadingErrorSafety_);
 
     // Navigate
     state_navigate_.SetFSM(&u_fsm_);
-    state_navigate_.SetStatusContext(statusCxt_);
-    state_navigate_.SetGoalContext(goalCxt_);
-    state_navigate_.SetCtrlContext(ctrlCxt_);
-    state_navigate_.SetConf(conf_);
-    state_navigate_.SetActionManager(action_manager);
-    state_navigate_.SetTasksMap(tasksMap_);
-    state_navigate_.SetRobotModel(robot_model);
+    state_navigate_.SetStateCtx(stateCtx);
     state_navigate_.SetSafetyBoundariesTask(asv_safety_boundaries);
     state_navigate_.SetAngularPositionSafetyTask(asv_absolute_axis_alignment_safety);
     state_navigate_.SetAngularPositionTask(asv_angular_position);
     state_navigate_.SetDistanceTask(asv_control_distance);
     state_navigate_.SetMaxGainSafety(asv_safety_boundaries->GetTaskParameter().gain);
-    state_navigate_.SetMinMaxHeadingErrorSafety(minHeadingErrorSafety_, maxHeadingErrorSafety_);
+    //    state_navigate_.SetMinMaxHeadingErrorSafety(minHeadingErrorSafety_, maxHeadingErrorSafety_);
 
     // ***** EVENTS *****
     event_rc_enabled_.SetFSM(&u_fsm_);

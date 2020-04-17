@@ -14,6 +14,8 @@ namespace states {
         virtual ~StateHalt();
         virtual fsm::retval OnEntry();
         virtual fsm::retval Execute();
+
+        void ConfigureStateFromFile(libconfig::Config& confObj) override;
     };
 }
 }

@@ -35,9 +35,27 @@ namespace states {
 
     void StateLatLong::SetGoal(double latitude, double longitude, double acceptanceRadius)
     {
-        goalCxt_->currentGoal.pos.latitude = latitude;
-        goalCxt_->currentGoal.pos.longitude = longitude;
-        goalCxt_->currentGoal.acceptRadius = acceptanceRadius;
+        stateCtx_.goalCxt->currentGoal.pos.latitude = latitude;
+        stateCtx_.goalCxt->currentGoal.pos.longitude = longitude;
+        stateCtx_.goalCxt->currentGoal.acceptRadius = acceptanceRadius;
+    }
+
+    void StateLatLong::ConfigureStateFromFile(libconfig::Config& confObj)
+    {
+        const libconfig::Setting& root = confObj.getRoot();
+        const libconfig::Setting& states = root["states"];
+
+        for (int i = 0; i < states.getLength(); ++i) {
+            const libconfig::Setting& state = states[i];
+
+            std::string stateID;
+            ctb::SetParam(state, stateID, "name");
+            if (stateID == ulisse::states::ID::latlong) {
+
+                ctb::SetParam(state, maxHeadingErrorSafety_, "maxHeadingErrorSafety");
+                ctb::SetParam(state, minHeadingErrorSafety_, "minHeadingErrorSafety");
+            }
+        }
     }
 
     void StateLatLong::SetCruiseControl(double cruise) { cruise_ = cruise; }
@@ -46,7 +64,7 @@ namespace states {
 
     fsm::retval StateLatLong::OnEntry()
     {
-        actionManager_->SetAction(ulisse::action::goTo, true);
+        stateCtx_.actionManager->SetAction(ulisse::action::goTo, true);
         //get the max gain of the cartesian distance task
         maxGainCartesianDistance_ = cartesianDistance_->GetTaskParameter().gain;
         std::cout << "Debug gain on entry: " << cartesianDistance_->GetTaskParameter().gain << std::endl;
@@ -79,17 +97,17 @@ namespace states {
         std::cout << "headingErrorsafety: " << headingErrorsafety << std::endl;
 
         //compute the gain of the cartesian distance
-        double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingError_, minHeadingErrorSafety_, 0, maxHeadingErrorSafety_, headingErrorsafety);
+        double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingErrorSafety_, maxHeadingErrorSafety_, 0, maxGainSafety_, headingErrorsafety);
 
         // Set the gain of the cartesian distance task
         safetyBoundariesTask_->SetTaskParameter(taskGainSafety);
 
         //goto task
-        ctb::DistanceAndAzimuthRad(statusCxt_->vehiclePos, goalCxt_->currentGoal.pos, goalCxt_->goalDistance, goalCxt_->goalHeading);
+        ctb::DistanceAndAzimuthRad(stateCtx_.statusCxt->vehiclePos, stateCtx_.goalCxt->currentGoal.pos, stateCtx_.goalCxt->goalDistance, stateCtx_.goalCxt->goalHeading);
 
-        if (goalCxt_->goalDistance < goalCxt_->currentGoal.acceptRadius) {
+        if (stateCtx_.goalCxt->goalDistance < stateCtx_.goalCxt->currentGoal.acceptRadius) {
             std::cout << "*** GOAL REACHED! ***" << std::endl;
-            if (conf_->goToHoldAfterMove) {
+            if (/*conf_->goToHoldAfterMove*/ /* DISABLES CODE */ (true)) {
                 fsm_->ExecuteCommand(ulisse::commands::ID::hold);
             } else {
                 fsm_->ExecuteCommand(ulisse::commands::ID::halt);
@@ -97,12 +115,12 @@ namespace states {
         } else {
 
             //Set the distance vector to the target
-            cartesianDistance_->SetDistance(Eigen::Vector3d(goalCxt_->goalDistance * cos(goalCxt_->goalHeading),
-                                                goalCxt_->goalDistance * sin(goalCxt_->goalHeading), 0),
+            cartesianDistance_->SetDistance(Eigen::Vector3d(stateCtx_.goalCxt->goalDistance * cos(stateCtx_.goalCxt->goalHeading),
+                                                stateCtx_.goalCxt->goalDistance * sin(stateCtx_.goalCxt->goalHeading), 0),
                 rml::FrameID::WorldFrame);
             //Set the align vector to the target
-            alignToTarget_->SetDistanceToTarget(Eigen::Vector3d(goalCxt_->goalDistance * cos(goalCxt_->goalHeading),
-                                                    goalCxt_->goalDistance * sin(goalCxt_->goalHeading), 0),
+            alignToTarget_->SetDistanceToTarget(Eigen::Vector3d(stateCtx_.goalCxt->goalDistance * cos(stateCtx_.goalCxt->goalHeading),
+                                                    stateCtx_.goalCxt->goalDistance * sin(stateCtx_.goalCxt->goalHeading), 0),
                 rml::FrameID::WorldFrame);
 
             //Set the vector that has to been align to the distance vector
@@ -112,7 +130,7 @@ namespace states {
             //we activate the the cartesian distance through the gain based on a bell-shaped function on the heading error
 
             //compute the heading error
-            double headingError = std::abs(goalCxt_->goalHeading - statusCxt_->vehicleHeading);
+            double headingError = std::abs(stateCtx_.goalCxt->goalHeading - stateCtx_.statusCxt->vehicleHeading);
             std::cout << "Heading error: " << headingError << std::endl;
 
             //compute the gain of the cartesian distance
@@ -123,9 +141,9 @@ namespace states {
         }
 
         std::cout << "STATE LATLONG" << std::endl;
-        std::cout << "Goal Heading: " << goalCxt_->goalHeading << std::endl;
-        std::cout << "Goal Distance: " << goalCxt_->goalDistance << std::endl;
-        std::cout << "Acceptance radius:" << goalCxt_->currentGoal.acceptRadius
+        std::cout << "Goal Heading: " << stateCtx_.goalCxt->goalHeading << std::endl;
+        std::cout << "Goal Distance: " << stateCtx_.goalCxt->goalDistance << std::endl;
+        std::cout << "Acceptance radius:" << stateCtx_.goalCxt->currentGoal.acceptRadius
                   << std::endl;
 
         return fsm::ok;

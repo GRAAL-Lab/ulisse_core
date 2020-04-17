@@ -1,4 +1,5 @@
 #include "ulisse_ctrl/states/state_hold.hpp"
+#include <ulisse_ctrl/fsm_defines.hpp>
 #include <ulisse_ctrl/geometry_defines.h>
 #include <ulisse_ctrl/ulisse_definitions.h>
 
@@ -23,9 +24,27 @@ namespace states {
     fsm::retval StateHold::OnEntry()
     {
 
-        actionManager_->SetAction(ulisse::action::hold, true);
+        stateCtx_.actionManager->SetAction(ulisse::action::hold, true);
 
         return fsm::ok;
+    }
+
+    void StateHold::ConfigureStateFromFile(libconfig::Config& confObj)
+    {
+        const libconfig::Setting& root = confObj.getRoot();
+        const libconfig::Setting& states = root["states"];
+
+        for (int i = 0; i < states.getLength(); ++i) {
+            const libconfig::Setting& state = states[i];
+
+            std::string stateID;
+            ctb::SetParam(state, stateID, "name");
+            if (stateID == ulisse::states::ID::hold) {
+
+                ctb::SetParam(state, maxHeadingErrorSafety_, "maxHeadingErrorSafety");
+                ctb::SetParam(state, minHeadingErrorSafety_, "minHeadingErrorSafety");
+            }
+        }
     }
 
     fsm::retval StateHold::Execute()
@@ -59,14 +78,14 @@ namespace states {
         safetyBoundariesTask_->SetTaskParameter(taskGainSafety);
 
         //hold task
-        angularPositionTask_->SetDistanceToTarget(Eigen::Vector3d(statusCxt_->seacurrent[0], statusCxt_->seacurrent[1], 0), rml::FrameID::WorldFrame);
+        angularPositionTask_->SetDistanceToTarget(Eigen::Vector3d(stateCtx_.statusCxt->seacurrent[0], stateCtx_.statusCxt->seacurrent[1], 0), rml::FrameID::WorldFrame);
         angularPositionTask_->SetAlignmentAxis(Eigen::Vector3d(1, 0, 0));
 
         linearVelocityTask_->SetVelocity(Eigen::VectorXd::Zero(3));
 
         std::cout << "STATE HOLD" << std::endl;
-        std::cout << "Goal Distance: " << goalCxt_->goalDistance << std::endl;
-        std::cout << "Acceptance radius: " << goalCxt_->currentGoal.acceptRadius << std::endl;
+        std::cout << "Goal Distance: " << stateCtx_.goalCxt->goalDistance << std::endl;
+        std::cout << "Acceptance radius: " << stateCtx_.goalCxt->currentGoal.acceptRadius << std::endl;
 
         return fsm::ok;
     }

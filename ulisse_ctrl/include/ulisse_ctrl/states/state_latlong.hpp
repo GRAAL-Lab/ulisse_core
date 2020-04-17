@@ -32,6 +32,7 @@ namespace states {
         void SetCruiseControl(double cruise);
         double GetCruiseControl();
         void SetGoal(double latitude, double longitude, double acceptanceRadius);
+        void ConfigureStateFromFile(libconfig::Config& confObj) override;
     };
 }
 }

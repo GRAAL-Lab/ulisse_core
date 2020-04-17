@@ -32,15 +32,33 @@ namespace states {
 
     void StateSpeedHeading::SetSpeedHeading(double speed, double heading, uint timeout_sec)
     {
-        goalCxt_->goalSurge = speed;
-        goalCxt_->goalHeading = heading;
-        goalCxt_->cmdTimeout = timeout_sec;
-        goalCxt_->goalDistance = 0.0;
+        stateCtx_.goalCxt->goalSurge = speed;
+        stateCtx_.goalCxt->goalHeading = heading;
+        stateCtx_.goalCxt->cmdTimeout = timeout_sec;
+        stateCtx_.goalCxt->goalDistance = 0.0;
+    }
+
+    void StateSpeedHeading::ConfigureStateFromFile(libconfig::Config& confObj)
+    {
+        const libconfig::Setting& root = confObj.getRoot();
+        const libconfig::Setting& states = root["states"];
+
+        for (int i = 0; i < states.getLength(); ++i) {
+            const libconfig::Setting& state = states[i];
+
+            std::string stateID;
+            ctb::SetParam(state, stateID, "name");
+            if (stateID == ulisse::states::ID::speedheading) {
+
+                ctb::SetParam(state, maxHeadingErrorSafety_, "maxHeadingErrorSafety");
+                ctb::SetParam(state, minHeadingErrorSafety_, "minHeadingErrorSafety");
+            }
+        }
     }
 
     fsm::retval StateSpeedHeading::OnEntry()
     {
-        actionManager_->SetAction(ulisse::action::speed_heading, true);
+        stateCtx_.actionManager->SetAction(ulisse::action::speed_heading, true);
         maxGainLinearVelocity_ = linearVelocityTask_->GetTaskParameter().gain;
         return fsm::ok;
     }
@@ -52,7 +70,7 @@ namespace states {
         tNow_ = std::chrono::system_clock::now();
         totalElapsed_ = std::chrono::duration_cast<std::chrono::seconds>(tNow_ - tStart_);
 
-        if (goalCxt_->cmdTimeout != 0 && totalElapsed_.count() > goalCxt_->cmdTimeout) {
+        if (stateCtx_.goalCxt->cmdTimeout != 0 && totalElapsed_.count() > stateCtx_.goalCxt->cmdTimeout) {
             std::cout << "Speed Heading Timeout reached!" << std::endl;
             fsm_->ExecuteCommand(ulisse::commands::ID::halt);
         }
@@ -78,15 +96,15 @@ namespace states {
         std::cout << "headingErrorsafety: " << headingErrorsafety << std::endl;
 
         //compute the gain of the cartesian distance
-        double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingErrorSafety_, maxHeadingErrorSafety_, 0, maxGainSafety_, headingErrorsafety);
+        double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, maxGainSafety_, headingErrorsafety);
 
         // Set the gain of the cartesian distance task
         safetyBoundariesTask_->SetTaskParameter(taskGainSafety);
 
         //speedheading task
         absoluteAxisAlignmentTask_->SetAxisAlignment(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
-        absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(cos(goalCxt_->goalHeading), sin(goalCxt_->goalHeading), 0), rml::FrameID::WorldFrame);
-        linearVelocityTask_->SetVelocity(Eigen::Vector3d(goalCxt_->goalSurge, 0, 0));
+        absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(cos(stateCtx_.goalCxt->goalHeading), sin(stateCtx_.goalCxt->goalHeading), 0), rml::FrameID::WorldFrame);
+        linearVelocityTask_->SetVelocity(Eigen::Vector3d(stateCtx_.goalCxt->goalSurge, 0, 0));
 
         //compute the heading error
         double headingError = absoluteAxisAlignmentTask_->GetMisalignmentVector().norm();
@@ -99,8 +117,8 @@ namespace states {
         linearVelocityTask_->SetTaskParameter(taskGain);
 
         std::cout << "STATE SPEED HEADING " << std::endl;
-        std::cout << "Goal Heading: " << goalCxt_->goalHeading << std::endl;
-        std::cout << "Goal Surge: " << goalCxt_->goalSurge << std::endl;
+        std::cout << "Goal Heading: " << stateCtx_.goalCxt->goalHeading << std::endl;
+        std::cout << "Goal Surge: " << stateCtx_.goalCxt->goalSurge << std::endl;
 
         return fsm::ok;
     }

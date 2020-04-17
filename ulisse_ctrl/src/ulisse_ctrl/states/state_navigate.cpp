@@ -10,18 +10,16 @@ namespace states {
 
     StateNavigate::StateNavigate()
     {
-        curvilinear_abscissa = 0;
-        number_of_curves_ = 0;
+        curvilinearAbscissa = 0;
+        numberCurves_ = 0;
         isCurveSet = false;
-
-        max_range_abscissa = 0.2;
+        maximumLookupAbscissa = 0.2;
         delta_ = 2.0;
         cruise = 1.0;
-        tollerance_start_point = 2.0;
-        tollerance_start_angle = 0.05;
-        tollerance_end_point = 1.0;
-
-        use_line_of_sight = true;
+        tolleranceStartingPoint = 2.0;
+        tolleranceStartingAngle = 0.05;
+        tolleranceEndingPoint = 1.0;
+        useLineOfSight = true;
     }
 
     StateNavigate::~StateNavigate() {}
@@ -36,74 +34,33 @@ namespace states {
         distanceTask_ = distanceTask;
     }
 
-    void StateNavigate::SetMaxRangeAbscissa(double max_range)
-    {
-        max_range_abscissa = max_range;
-    }
-
-    void StateNavigate::SetDelta(double delta)
-    {
-        delta_ = delta;
-    }
-
     void StateNavigate::SetCruiseControl(double cruise_control)
     {
         cruise = cruise_control;
     }
 
-    void StateNavigate::SetTolleranceStartingPoint(double toll_start_point)
+    void StateNavigate::ConfigureStateFromFile(libconfig::Config& confObj)
     {
-        tollerance_start_point = toll_start_point;
-    }
+        const libconfig::Setting& root = confObj.getRoot();
+        const libconfig::Setting& states = root["states"];
 
-    void StateNavigate::SetTolleranceEndingPoint(double toll_end_point)
-    {
-        tollerance_end_point = toll_end_point;
-    }
+        for (int i = 0; i < states.getLength(); ++i) {
+            const libconfig::Setting& state = states[i];
 
-    void StateNavigate::SetTolleranceStartingAngle(double toll_start_angle)
-    {
-        tollerance_start_angle = toll_start_angle;
-    }
+            std::string stateID;
+            ctb::SetParam(state, stateID, "name");
+            if (stateID == ulisse::states::ID::navigate) {
 
-    void StateNavigate::SetLineOfSightMethod(bool status)
-    {
-        use_line_of_sight = status;
-    }
-
-    bool StateNavigate::GetLineOfSightMethod()
-    {
-        return use_line_of_sight;
-    }
-
-    double StateNavigate::GetMaxRangeAbscissa()
-    {
-        return max_range_abscissa;
-    }
-
-    double StateNavigate::GetDelta()
-    {
-        return delta_;
-    }
-
-    double StateNavigate::GetCruiseControl()
-    {
-        return cruise;
-    }
-
-    double StateNavigate::GetTolleranceStartingPoint()
-    {
-        return tollerance_start_point;
-    }
-
-    double StateNavigate::GetTolleranceEndingPoint()
-    {
-        return tollerance_end_point;
-    }
-
-    double StateNavigate::GetTolleranceStartingAngle()
-    {
-        return tollerance_start_angle;
+                ctb::SetParam(state, maxHeadingErrorSafety_, "maxHeadingErrorSafety");
+                ctb::SetParam(state, minHeadingErrorSafety_, "minHeadingErrorSafety");
+                ctb::SetParam(state, useLineOfSight, "useLineOfSight");
+                ctb::SetParam(state, maximumLookupAbscissa, "maximumLookupAbscissa");
+                ctb::SetParam(state, delta_, "delta");
+                ctb::SetParam(state, tolleranceEndingPoint, "tolleranceEndPoint");
+                ctb::SetParam(state, tolleranceStartingAngle, "tolleranceStartingAngle");
+                ctb::SetParam(state, tolleranceStartingPoint, "tolleranceStartingPoint");
+            }
+        }
     }
 
     bool StateNavigate::LoadSpur(std::string json_nurbs)
@@ -125,7 +82,7 @@ namespace states {
             reverse = false;
         }
 
-        number_of_curves_ = 0;
+        numberCurves_ = 0;
 
         int dimension = 3;
         int degree = 0;
@@ -206,7 +163,7 @@ namespace states {
 
                 nurbs_.push_back(insert_curve);
 
-                number_of_curves_++;
+                numberCurves_++;
             }
         } catch (Json::Exception& e) {
             // output exception information
@@ -226,9 +183,9 @@ namespace states {
 
     fsm::retval StateNavigate::OnEntry()
     {
-        curvilinear_abscissa = 0.0;
-        current_curvilinear_abscissa = 0.0;
-        current_curve = 0;
+        curvilinearAbscissa = 0.0;
+        currentCurvilinearAbscissa = 0.0;
+        currentCurve = 0;
         start = false;
         oriented = false;
         count = 0;
@@ -236,40 +193,40 @@ namespace states {
         curve = nurbs_[0];
         std::shared_ptr<double[]> point_at(new double[3]);
         // Compute the point of the first curve at 0.0.
-        s1227(curve, 0, 0.0, &leftknot, point_at.get(), &stat);
+        s1227(curve, 0, 0.0, &leftKnot, point_at.get(), &stat);
 
-        ctb::Euclidian2MapPoint(point_at, centroid_, starting_point);
+        ctb::Euclidian2MapPoint(point_at, centroid_, startingPoint);
         //        starting_point = ToLatLong(point_at[0], point_at[1]);
 
-        curve = nurbs_[number_of_curves_ - 1];
+        curve = nurbs_[numberCurves_ - 1];
         // Compute the point of the last curve at 1.0.
-        s1227(curve, 0, 1.0, &leftknot, point_at.get(), &stat);
+        s1227(curve, 0, 1.0, &leftKnot, point_at.get(), &stat);
 
-        ctb::Euclidian2MapPoint(point_at, centroid_, end_point);
+        ctb::Euclidian2MapPoint(point_at, centroid_, endPoint);
 
         curve = nurbs_[0];
         // Compute the point of the first curve at 0.1.
-        s1227(curve, 0, 0.5, &leftknot, point_at.get(), &stat);
+        s1227(curve, 0, 0.5, &leftKnot, point_at.get(), &stat);
 
         ctb::LatLong next_point;
         ctb::Euclidian2MapPoint(point_at, centroid_, next_point);
 
         double dist;
-        ctb::DistanceAndAzimuthRad(starting_point, next_point, dist, starting_angle);
+        ctb::DistanceAndAzimuthRad(startingPoint, next_point, dist, startingAngle);
 
-        for (current_curve = 0; current_curve < nurbs_.size(); current_curve++) {
-            curve = nurbs_[current_curve];
+        for (currentCurve = 0; currentCurve < nurbs_.size(); currentCurve++) {
+            curve = nurbs_[currentCurve];
 
             // Estimate curve length
-            s1240(curve, aepsge, &cur_length, &stat);
+            s1240(curve, aepsge, &curLength, &stat);
 
-            if (cur_length < delta_) {
+            if (curLength < delta_) {
                 std::cout << "Delta too high!" << std::endl;
                 return fsm::fail;
             }
         }
 
-        actionManager_->SetAction(ulisse::action::navigate, true);
+        stateCtx_.actionManager->SetAction(ulisse::action::navigate, true);
         return fsm::ok;
     }
 
@@ -306,9 +263,9 @@ namespace states {
             //Going to the starting point
             if (!start) {
                 std::cout << "*** GOING TO INITIAL POINT! ***" << std::endl;
-                ctb::DistanceAndAzimuthRad(statusCxt_->vehiclePos, starting_point, goalCxt_->goalDistance, goalCxt_->goalHeading);
+                ctb::DistanceAndAzimuthRad(stateCtx_.statusCxt->vehiclePos, startingPoint, stateCtx_.goalCxt->goalDistance, stateCtx_.goalCxt->goalHeading);
 
-                if (goalCxt_->goalDistance < tollerance_start_point) {
+                if (stateCtx_.goalCxt->goalDistance < tolleranceStartingPoint) {
                     count++;
                     if (count > 50) {
                         count = 0;
@@ -316,14 +273,14 @@ namespace states {
                     }
                 } else {
                     angularPositionTask_->SetAlignmentAxis(Eigen::Vector3d(1, 0, 0));
-                    angularPositionTask_->SetDistanceToTarget(Eigen::Vector3d(goalCxt_->goalDistance * cos(goalCxt_->goalHeading), goalCxt_->goalDistance * sin(goalCxt_->goalHeading), 0), rml::FrameID::WorldFrame);
-                    distanceTask_->SetDistance(Eigen::Vector3d(goalCxt_->goalDistance * cos(goalCxt_->goalHeading), goalCxt_->goalDistance * sin(goalCxt_->goalHeading), 0), rml::FrameID::WorldFrame);
+                    angularPositionTask_->SetDistanceToTarget(Eigen::Vector3d(stateCtx_.goalCxt->goalDistance * cos(stateCtx_.goalCxt->goalHeading), stateCtx_.goalCxt->goalDistance * sin(stateCtx_.goalCxt->goalHeading), 0), rml::FrameID::WorldFrame);
+                    distanceTask_->SetDistance(Eigen::Vector3d(stateCtx_.goalCxt->goalDistance * cos(stateCtx_.goalCxt->goalHeading), stateCtx_.goalCxt->goalDistance * sin(stateCtx_.goalCxt->goalHeading), 0), rml::FrameID::WorldFrame);
                 }
             }
 
             /*            if (start && !oriented) {
                 std::cout << "*** ORIENTING! ***" << std::endl;
-                if (abs(statusCxt_->vehicleHeading - starting_angle) < tollerance_start_angle) {
+                if (abs(stateCtx_.statusCxt->vehicleHeading - starting_angle) < tollerance_start_angle) {
                     count++;
                     if (count > 50) {
                         count = 0;
@@ -333,33 +290,33 @@ namespace states {
                     angularPositionTask_->SetAlignmentAxis(Eigen::Vector3d(1, 0, 0));
                     angularPositionTask_->SetDistanceToTarget(Eigen::Vector3d(cos(starting_angle), sin(starting_angle), 0), rml::FrameID::WorldFrame);
 
-                    std::cout << "Starting angle " << abs(statusCxt_->vehicleHeading - starting_angle) << std::endl;
+                    std::cout << "Starting angle " << abs(stateCtx_.statusCxt->vehicleHeading - starting_angle) << std::endl;
                 }
             } else*/
             if (start /* && oriented*/) {
 
                 std::cout << "*** STARTING POINT! ***" << std::endl;
-                ctb::DistanceAndAzimuthRad(statusCxt_->vehiclePos, end_point, goalCxt_->goalDistance, goalCxt_->goalHeading);
+                ctb::DistanceAndAzimuthRad(stateCtx_.statusCxt->vehiclePos, endPoint, stateCtx_.goalCxt->goalDistance, stateCtx_.goalCxt->goalHeading);
 
-                curvilinear_abscissa = getCurvilinearAbscissa();
+                curvilinearAbscissa = getCurvilinearAbscissa();
 
-                if (curvilinear_abscissa >= number_of_curves_) {
+                if (curvilinearAbscissa >= numberCurves_) {
                     std::cout << "*** MISSION FINISHED! ***" << std::endl;
                     isCurveSet = false;
                     fsm_->ExecuteCommand(ulisse::commands::ID::hold);
                 } else {
-                    current_curve = static_cast<unsigned int>(floor(curvilinear_abscissa));
-                    curve = nurbs_[current_curve];
+                    currentCurve = static_cast<unsigned int>(floor(curvilinearAbscissa));
+                    curve = nurbs_[currentCurve];
 
-                    current_curvilinear_abscissa = curvilinear_abscissa;
-                    if (current_curvilinear_abscissa > 1) {
-                        current_curvilinear_abscissa -= current_curve;
+                    currentCurvilinearAbscissa = curvilinearAbscissa;
+                    if (currentCurvilinearAbscissa > 1) {
+                        currentCurvilinearAbscissa -= currentCurve;
                     }
 
-                    if (use_line_of_sight) {
+                    if (useLineOfSight) {
                         std::shared_ptr<double[]> point_at(new double[6]);
                         // Compute the point of the first curve at current_curvilinear_abscissa.
-                        s1227(curve, 1, current_curvilinear_abscissa, &leftknot, point_at.get(), &stat);
+                        s1227(curve, 1, currentCurvilinearAbscissa, &leftKnot, point_at.get(), &stat);
 
                         double tan_angle = atan2(point_at[4], point_at[3]);
 
@@ -370,16 +327,16 @@ namespace states {
 
                     } else {
                         // Estimate curve length
-                        s1240(curve, aepsge, &cur_length, &stat);
+                        s1240(curve, aepsge, &curLength, &stat);
 
-                        double delta_increment = (delta_ / cur_length);
-                        double next_curvilinear_abscissa = current_curvilinear_abscissa + delta_increment;
+                        double delta_increment = (delta_ / curLength);
+                        double next_curvilinear_abscissa = currentCurvilinearAbscissa + delta_increment;
 
-                        unsigned int next_curve_index = current_curve;
+                        unsigned int next_curve_index = currentCurve;
                         SISLCurve* next_curve;
 
                         if (next_curvilinear_abscissa > 1) {
-                            if (current_curve == number_of_curves_ - 1) {
+                            if (currentCurve == numberCurves_ - 1) {
                                 next_curvilinear_abscissa = 1;
                             } else {
                                 next_curvilinear_abscissa = next_curvilinear_abscissa - 1;
@@ -390,21 +347,21 @@ namespace states {
                         next_curve = nurbs_[next_curve_index];
                         std::shared_ptr<double[]> point_at(new double[6]);
                         // Compute the point of the first curve at current_curvilinear_abscissa.
-                        s1227(next_curve, 1, next_curvilinear_abscissa, &leftknot, point_at.get(),
+                        s1227(next_curve, 1, next_curvilinear_abscissa, &leftKnot, point_at.get(),
                             &stat);
 
                         Euclidian2MapPoint(point_at, centroid_, lookAheadPoint);
                     }
-                    ctb::DistanceAndAzimuthRad(statusCxt_->vehiclePos, lookAheadPoint, goalCxt_->goalDistance, goalCxt_->goalHeading);
+                    ctb::DistanceAndAzimuthRad(stateCtx_.statusCxt->vehiclePos, lookAheadPoint, stateCtx_.goalCxt->goalDistance, stateCtx_.goalCxt->goalHeading);
 
                     angularPositionTask_->SetAlignmentAxis(Eigen::Vector3d(1, 0, 0));
-                    angularPositionTask_->SetDistanceToTarget(Eigen::Vector3d(goalCxt_->goalDistance * cos(goalCxt_->goalHeading), goalCxt_->goalDistance * sin(goalCxt_->goalHeading), 0), rml::FrameID::WorldFrame);
-                    distanceTask_->SetDistance(Eigen::Vector3d(goalCxt_->goalDistance * cos(goalCxt_->goalHeading), goalCxt_->goalDistance * sin(goalCxt_->goalHeading), 0), rml::FrameID::WorldFrame);
+                    angularPositionTask_->SetDistanceToTarget(Eigen::Vector3d(stateCtx_.goalCxt->goalDistance * cos(stateCtx_.goalCxt->goalHeading), stateCtx_.goalCxt->goalDistance * sin(stateCtx_.goalCxt->goalHeading), 0), rml::FrameID::WorldFrame);
+                    distanceTask_->SetDistance(Eigen::Vector3d(stateCtx_.goalCxt->goalDistance * cos(stateCtx_.goalCxt->goalHeading), stateCtx_.goalCxt->goalDistance * sin(stateCtx_.goalCxt->goalHeading), 0), rml::FrameID::WorldFrame);
                 }
             }
         }
         std::cout << "STATE PATH FOLLOWING" << std::endl;
-        std::cout << "Curvilinear Abscissa: " << current_curvilinear_abscissa << std::endl;
+        std::cout << "Curvilinear Abscissa: " << currentCurvilinearAbscissa << std::endl;
         std::cout << "Delta: " << delta_ << std::endl;
         std::cout << "Cruise Control: " << cruise << std::endl;
 
@@ -413,29 +370,29 @@ namespace states {
 
     double StateNavigate::getCurvilinearAbscissa()
     {
-        double min_abscissa = curvilinear_abscissa;
-        double max_abscissa = curvilinear_abscissa + max_range_abscissa;
-        if (max_abscissa > number_of_curves_) {
-            max_abscissa = number_of_curves_;
+        double min_abscissa = curvilinearAbscissa;
+        double max_abscissa = numberCurves_ + maximumLookupAbscissa;
+        if (max_abscissa > numberCurves_) {
+            max_abscissa = numberCurves_;
         }
 
         std::shared_ptr<double[]> current_point(new double[3]);
 
-        current_curve = static_cast<unsigned int>(floor(curvilinear_abscissa));
+        currentCurve = static_cast<unsigned int>(floor(numberCurves_));
 
-        curve = nurbs_[current_curve];
+        curve = nurbs_[currentCurve];
 
-        ctb::Map2EuclidianPoint(statusCxt_->vehiclePos, centroid_, current_point);
+        ctb::Map2EuclidianPoint(stateCtx_.statusCxt->vehiclePos, centroid_, current_point);
 
-        if (floor(max_abscissa) == floor(min_abscissa) || (floor(max_abscissa) == number_of_curves_)) {
+        if (floor(max_abscissa) == floor(min_abscissa) || (floor(max_abscissa) == numberCurves_)) {
             // To select the window part of curv, from min_abscissa to max_abscissa
             double decMinAbscissa, decMaxAbscissa;
             std::modf(min_abscissa, &decMinAbscissa);
             std::modf(min_abscissa, &decMaxAbscissa);
-            s1713(curve, decMinAbscissa, (decMaxAbscissa), &newcurve, &stat);
+            s1713(curve, decMinAbscissa, (decMaxAbscissa), &newCurve_, &stat);
 
             // Find the closest point between a curve and a point
-            s1957(newcurve, current_point.get(), 3, aepsco, aepsge, &gpar, &dist, &stat);
+            s1957(newCurve_, current_point.get(), 3, aepsco, aepsge, &gpar, &dist, &stat);
 
             gpar = gpar + floor(min_abscissa);
 
@@ -444,12 +401,12 @@ namespace states {
             double decMinAbscissa, decMaxAbscissa;
             std::modf(min_abscissa, &decMinAbscissa);
             std::modf(min_abscissa, &decMaxAbscissa);
-            s1713(curve, decMinAbscissa, 1.0, &newcurve, &stat);
+            s1713(curve, decMinAbscissa, 1.0, &newCurve_, &stat);
 
             // Select the second curve
-            curve2 = nurbs_[current_curve + 1];
+            curve2 = nurbs_[currentCurve + 1];
             // To select the first part of the second curve, from 0.0 to max_abscissa
-            s1713(curve2, 0.0, decMaxAbscissa, &newcurve2, &stat);
+            s1713(curve2, 0.0, decMaxAbscissa, &newCurve2, &stat);
 
             // Find the closest point between the first curve and the point
             s1957(curve, current_point.get(), 3, aepsco, aepsge, &gpar, &dist, &stat);
@@ -469,8 +426,8 @@ namespace states {
 
     fsm::retval StateNavigate::OnExit()
     {
-        curvilinear_abscissa = 0.0;
-        current_curve = 0;
+        curvilinearAbscissa = 0.0;
+        currentCurve = 0;
         start = false;
         oriented = false;
         count = 0;

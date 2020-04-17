@@ -39,6 +39,8 @@ class VehicleController {
     TasksInfo taskInfo_;
     std::unordered_map<std::string, TasksInfo> tasksMap_;
 
+    std::unordered_map<std::string, states::GenericState&> statesMap_;
+
     rclcpp::Node::SharedPtr nh_;
     std::string file_name_;
     rclcpp::Service<ulisse_msgs::srv::ControlCommand>::SharedPtr srv_;
@@ -63,12 +65,6 @@ class VehicleController {
 
     /// Action Manager definition
     std::shared_ptr<tpik::ActionManager> action_manager;
-
-    /// Tasks vector for configuration
-    std::vector<std::shared_ptr<tpik::Task>> task_hierarchy;
-    std::vector<std::shared_ptr<tpik::EqualityTask>> equality_task;
-    std::vector<std::shared_ptr<tpik::InequalityTask>> inequality_task;
-    std::vector<std::shared_ptr<tpik::CartesianTask>> cartesian_task;
 
     std::shared_ptr<tpik::iCAT> i_cat;
 
@@ -133,7 +129,6 @@ class VehicleController {
     std::string boundaries_json;
 
     bool LoadConfiguration();
-    void LoadKCLConfiguration(std::string task, std::string priorityLevel);
     void SetUpFSM();
     void SetupCommandServer();
 

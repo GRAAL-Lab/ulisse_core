@@ -22,6 +22,8 @@ namespace states {
 
         void SetAngularPositionTask(std::shared_ptr<ikcl::AlignToTarget> angularPositionTask);
         void SetLinearVelocityTask(std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask);
+
+        void ConfigureStateFromFile(libconfig::Config& confObj) override;
     };
 }
 }

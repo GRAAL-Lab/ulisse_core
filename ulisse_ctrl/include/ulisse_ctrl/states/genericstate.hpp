@@ -4,6 +4,7 @@
 #include "ulisse_ctrl/ctrl_data_structs.hpp"
 #include <fsm/fsm.h>
 #include <ikcl/ikcl.h>
+#include <libconfig.h++>
 
 //to be delete once safetyB in ickc
 #include "ulisse_ctrl/tasks/SafetyBoundaries.h"
@@ -14,38 +15,30 @@ namespace states {
 
     class GenericState : public fsm::BaseState {
     protected:
-        std::shared_ptr<ControllerConfiguration> conf_;
-        std::shared_ptr<StatusContext> statusCxt_;
-        std::shared_ptr<GoalContext> goalCxt_;
-        std::shared_ptr<ControlContext> ctrlCxt_;
-
-        std::shared_ptr<tpik::ActionManager> actionManager_;
-        std::unordered_map<std::string, ulisse::TasksInfo> tasksMap_;
-        std::shared_ptr<rml::RobotModel> robotModel_;
-
         std::shared_ptr<ikcl::SafetyBoundaries> safetyBoundariesTask_;
         std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentSafetyTask_;
 
         double minHeadingErrorSafety_, maxHeadingErrorSafety_, maxGainSafety_;
 
     public:
-        GenericState(void);
+        struct StateCtx {
+            std::shared_ptr<StatusContext> statusCxt;
+            std::shared_ptr<GoalContext> goalCxt;
+            std::shared_ptr<ControlContext> ctrlCxt;
+            std::shared_ptr<tpik::ActionManager> actionManager;
+            std::shared_ptr<rml::RobotModel> robotModel;
+        } stateCtx_;
+
+        GenericState();
         virtual ~GenericState(void);
 
         void CheckRadioController();
-        void SetConf(const std::shared_ptr<ControllerConfiguration>& conf);
-        void SetStatusContext(const std::shared_ptr<StatusContext>& posCxt);
-        void SetGoalContext(const std::shared_ptr<GoalContext>& goalCxt);
-        void SetCtrlContext(const std::shared_ptr<ControlContext>& ctrlCxt);
-
-        void SetActionManager(std::shared_ptr<tpik::ActionManager> actionManager);
-        void SetTasksMap(std::unordered_map<std::string, ulisse::TasksInfo>& tasksMap);
-        void SetRobotModel(std::shared_ptr<rml::RobotModel> robotModel);
+        void SetStateCtx(StateCtx stateCtx);
 
         void SetSafetyBoundariesTask(std::shared_ptr<ikcl::SafetyBoundaries> safetyBoundariesTask);
         void SetAngularPositionSafetyTask(std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentSafetyTask);
-        void SetMinMaxHeadingErrorSafety(double min, double max);
         void SetMaxGainSafety(double maxGainSafety);
+        virtual void ConfigureStateFromFile(libconfig::Config& confObj) = 0;
     };
 }
 }

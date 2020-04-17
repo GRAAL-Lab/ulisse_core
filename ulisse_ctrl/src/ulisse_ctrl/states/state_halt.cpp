@@ -1,22 +1,37 @@
 #include "ulisse_ctrl/states/state_halt.hpp"
 #include "ulisse_ctrl/geometry_defines.h"
+#include <ulisse_ctrl/fsm_defines.hpp>
 #include <ulisse_ctrl/ulisse_definitions.h>
 
 namespace ulisse {
 
 namespace states {
 
-    StateHalt::StateHalt()
-    {
-    }
+    StateHalt::StateHalt() {}
 
-    StateHalt::~StateHalt()
+    StateHalt::~StateHalt() {}
+
+    void StateHalt::ConfigureStateFromFile(libconfig::Config& confObj)
     {
+        const libconfig::Setting& root = confObj.getRoot();
+        const libconfig::Setting& states = root["states"];
+
+        for (int i = 0; i < states.getLength(); ++i) {
+            const libconfig::Setting& state = states[i];
+
+            std::string stateID;
+            ctb::SetParam(state, stateID, "name");
+            if (stateID == ulisse::states::ID::halt) {
+
+                ctb::SetParam(state, maxHeadingErrorSafety_, "maxHeadingErrorSafety");
+                ctb::SetParam(state, minHeadingErrorSafety_, "minHeadingErrorSafety");
+            }
+        }
     }
 
     fsm::retval StateHalt::OnEntry()
     {
-        actionManager_->SetAction(ulisse::action::idle, true);
+        stateCtx_.actionManager->SetAction(ulisse::action::idle, true);
 
         return fsm::ok;
     }

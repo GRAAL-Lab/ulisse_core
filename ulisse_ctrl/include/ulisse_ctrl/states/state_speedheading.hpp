@@ -29,6 +29,8 @@ namespace states {
         void SetAngularPositionTask(std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentTask);
         void SetLinearVelocityTask(std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask);
         void SetSpeedHeading(double speed, double heading, uint timeout_sec);
+
+        void ConfigureStateFromFile(libconfig::Config& confObj) override;
     };
 } // namespace states
 } // namespace ulisse

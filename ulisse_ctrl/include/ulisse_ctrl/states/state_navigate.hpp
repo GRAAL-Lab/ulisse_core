@@ -16,13 +16,13 @@ namespace states {
 
         ctb::LatLong centroid_;
 
-        unsigned int number_of_curves_;
+        unsigned int numberCurves_;
 
-        double curvilinear_abscissa;
+        double curvilinearAbscissa;
 
-        double current_curvilinear_abscissa;
+        double currentCurvilinearAbscissa;
         double delta_;
-        unsigned int current_curve;
+        unsigned int currentCurve;
 
         bool isCurveSet;
         bool start;
@@ -30,34 +30,34 @@ namespace states {
 
         int count;
 
-        ctb::LatLong starting_point;
-        ctb::LatLong end_point;
-        double starting_angle;
+        ctb::LatLong startingPoint;
+        ctb::LatLong endPoint;
+        double startingAngle;
 
         std::vector<SISLCurve*> nurbs_;
 
         SISLCurve* curve;
         int stat;
-        int leftknot;
+        int leftKnot;
         double aepsco = 0.01;
         double aepsge = 0.01;
         double gpar = 0;
         double gpar2 = 0;
         double dist = 0;
         double dist2 = 0;
-        double max_range_abscissa;
+        double maximumLookupAbscissa;
         double cruise;
-        double tollerance_start_point;
-        double tollerance_start_angle;
-        double tollerance_end_point;
-        double cur_length;
+        double tolleranceEndingPoint;
+        double tolleranceStartingAngle;
+        double tolleranceStartingPoint;
+        double curLength;
 
-        bool use_line_of_sight;
+        bool useLineOfSight;
 
-        SISLCurve* newcurve;
+        SISLCurve* newCurve_;
         SISLCurve* curve2;
-        SISLCurve* newcurve2;
-        SISLCurve* result_curve;
+        SISLCurve* newCurve2;
+        SISLCurve* resultCurve;
 
         ctb::LatLong lookAheadPoint;
 
@@ -72,24 +72,8 @@ namespace states {
 
         void SetAngularPositionTask(std::shared_ptr<ikcl::AlignToTarget> angularPositionTask);
         void SetDistanceTask(std::shared_ptr<ikcl::ControlCartesianDistance> distanceTask);
-
-        void SetLineOfSightMethod(bool status);
-        bool GetLineOfSightMethod();
-
-        void SetMaxRangeAbscissa(double max_range);
-        void SetDelta(double delta);
-        void SetCruiseControl(double cruise_control);
-        void SetTolleranceStartingPoint(double toll_start_point);
-        void SetTolleranceEndingPoint(double toll_end_point);
-        void SetTolleranceStartingAngle(double toll_start_angle);
-
-        double GetMaxRangeAbscissa();
-        double GetDelta();
-        double GetCruiseControl();
-        double GetTolleranceStartingPoint();
-        double GetTolleranceEndingPoint();
-        double GetTolleranceStartingAngle();
-
+        void ConfigureStateFromFile(libconfig::Config& confObj) override;
+        void SetCruiseControl(double cruise);
         bool LoadSpur(std::string json_nurbs);
     };
 }
