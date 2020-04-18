@@ -63,6 +63,7 @@ set(ulisse_ctrl_lib_sources
     src/ulisse_ctrl/states/state_speedheading.cpp
     src/ulisse_ctrl/states/state_navigate.cpp
     # Commands
+    src/ulisse_ctrl/commands/genericCommand.cpp
     src/ulisse_ctrl/commands/command_halt.cpp
     src/ulisse_ctrl/commands/command_hold.cpp
     src/ulisse_ctrl/commands/command_latlong.cpp

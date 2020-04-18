@@ -1,18 +1,19 @@
 #ifndef ULISSE_CTRL_COMMANDSPEEDHEADING_HPP
 #define ULISSE_CTRL_COMMANDSPEEDHEADING_HPP
 
-#include <fsm/fsm.h>
+#include "ulisse_ctrl/commands/genericCommand.hpp"
 
 namespace ulisse {
 
 namespace commands {
 
-    class CommandSpeedHeading : public fsm::BaseCommand {
+    class CommandSpeedHeading : public GenericCommand {
 
     public:
         CommandSpeedHeading();
         virtual ~CommandSpeedHeading();
         virtual fsm::retval Execute(void);
+        void SetSpeedHeading(double speed, double heading, uint timeout_sec);
     };
 }
 }

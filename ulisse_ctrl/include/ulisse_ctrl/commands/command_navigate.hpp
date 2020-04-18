@@ -1,13 +1,13 @@
 #ifndef ULISSE_CTRL_COMMANDNAVIGATE_HPP
 #define ULISSE_CTRL_COMMANDNAVIGATE_HPP
 
-#include <fsm/fsm.h>
+#include "ulisse_ctrl/commands/genericCommand.hpp"
 
 namespace ulisse {
 
 namespace commands {
 
-    class CommandNavigate : public fsm::BaseCommand {
+    class CommandNavigate : public GenericCommand {
 
     public:
         CommandNavigate();

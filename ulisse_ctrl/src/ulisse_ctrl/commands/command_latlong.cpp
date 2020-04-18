@@ -13,5 +13,12 @@ namespace commands {
     {
         return fsm_->SetNextState(ulisse::states::ID::latlong);
     }
+
+    void CommandLatLong::SetGoTo(double latitude, double longitude, double acceptanceRadius)
+    {
+        goalCxt_->currentGoal.pos.latitude = latitude;
+        goalCxt_->currentGoal.pos.longitude = longitude;
+        goalCxt_->currentGoal.acceptRadius = acceptanceRadius;
+    }
 }
 }

@@ -46,7 +46,6 @@ namespace states {
         double dist = 0;
         double dist2 = 0;
         double maximumLookupAbscissa;
-        double cruise;
         double tolleranceEndingPoint;
         double tolleranceStartingAngle;
         double tolleranceStartingPoint;

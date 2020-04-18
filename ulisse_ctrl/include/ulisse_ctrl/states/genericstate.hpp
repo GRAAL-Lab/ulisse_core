@@ -18,7 +18,7 @@ namespace states {
         std::shared_ptr<ikcl::SafetyBoundaries> safetyBoundariesTask_;
         std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentSafetyTask_;
 
-        double minHeadingErrorSafety_, maxHeadingErrorSafety_, maxGainSafety_;
+        double minHeadingError_, maxHeadingError_, maxGainSafety_;
 
     public:
         struct StateCtx {

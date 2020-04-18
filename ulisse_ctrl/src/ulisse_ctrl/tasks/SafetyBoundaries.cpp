@@ -9,18 +9,12 @@ SafetyBoundaries::SafetyBoundaries(std::string taskID, std::shared_ptr<rml::Robo
     , frameID_(frameID)
 
 {
-    desiredVelocity_(0) = 1.0;
     Ai_.setZero(taskSpace_, taskSpace_);
     x_dot_.setZero(taskSpace_);
     J_.setZero(taskSpace_, DoF_);
     isBoundariesInitialized_ = false;
     alignVector_.setZero();
     x_ = INFINITY * x_.setOnes();
-}
-
-void SafetyBoundaries::SetDesiredVelocity(Eigen::Vector3d desiredVelocity)
-{
-    desiredVelocity_ = desiredVelocity;
 }
 
 void SafetyBoundaries::SetPose(std::shared_ptr<Eigen::Vector6d> pose)

@@ -1,13 +1,13 @@
 #ifndef ULISSE_CTRL_COMMANDHOLD_HPP
 #define ULISSE_CTRL_COMMANDHOLD_HPP
 
-#include <fsm/fsm.h>
+#include "ulisse_ctrl/commands/genericCommand.hpp"
 
 namespace ulisse {
 
 namespace commands {
 
-    class CommandHold : public fsm::BaseCommand {
+    class CommandHold : public GenericCommand {
 
     public:
         CommandHold();

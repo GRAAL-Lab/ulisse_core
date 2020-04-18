@@ -23,7 +23,6 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     statusCxt_ = std::make_shared<StatusContext>();
     conf_ = std::make_shared<ControllerConfiguration>();
     file_name_ = file_name;
-    cruise_ = 0;
 
     // Sensor Subscriptions
     gps_sub_ = nh_->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data, 10, std::bind(&VehicleController::GPSSensorCB, this, _1));
@@ -93,7 +92,6 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     asv_absolute_axis_alignment->SetAxisAlignment(Eigen::VectorXd::Zero(3), ulisse::robotModelID::ASV);
     asv_absolute_axis_alignment->SetDirectionAlignment(Eigen::VectorXd::Zero(3), rml::FrameID::WorldFrame);
 
-
     // ASV absolute axis alignment task
     asv_absolute_axis_alignment_safety = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asv_absolute_axis_alignment_safety, robot_model, tpik::CartesianTaskType::Equality, ulisse::robotModelID::ASV));
     asv_absolute_axis_alignment_safety->SetAxisAlignment(Eigen::VectorXd::Zero(3), ulisse::robotModelID::ASV);
@@ -122,12 +120,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 
     // Create a callback function for when service set boundaries requests are
     // received.
-    auto handle_set_boundaries =
-        [this](
-            const std::shared_ptr<rmw_request_id_t> request_header,
-            const std::shared_ptr<ulisse_msgs::srv::SetBoundaries::Request>
-                request,
-            std::shared_ptr<ulisse_msgs::srv::SetBoundaries::Response> response)
+    auto handle_set_boundaries = [this](const std::shared_ptr<rmw_request_id_t> request_header, const std::shared_ptr<ulisse_msgs::srv::SetBoundaries::Request> request, std::shared_ptr<ulisse_msgs::srv::SetBoundaries::Response> response)
         -> void {
         (void)request_header;
         RCLCPP_INFO(nh_->get_logger(), "Incoming request for set boundaries");
@@ -183,16 +176,10 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         publishLog(log.str().c_str());
     };
 
-    srv_boundaries = nh_->create_service<ulisse_msgs::srv::SetBoundaries>(
-        ulisse_msgs::topicnames::set_boundaries_service, handle_set_boundaries);
+    srv_boundaries = nh_->create_service<ulisse_msgs::srv::SetBoundaries>(ulisse_msgs::topicnames::set_boundaries_service, handle_set_boundaries);
 
     // Create a callback function for when service requests are received.
-    auto handle_set_cruise_control =
-        [this](const std::shared_ptr<rmw_request_id_t> request_header,
-            const std::shared_ptr<ulisse_msgs::srv::SetCruiseControl::Request>
-                request,
-            std::shared_ptr<ulisse_msgs::srv::SetCruiseControl::Response>
-                response) -> void {
+    auto handle_set_cruise_control = [this](const std::shared_ptr<rmw_request_id_t> request_header, const std::shared_ptr<ulisse_msgs::srv::SetCruiseControl::Request> request, std::shared_ptr<ulisse_msgs::srv::SetCruiseControl::Response> response) -> void {
         (void)request_header;
         RCLCPP_INFO(nh_->get_logger(), "Incoming request for set cruise control");
 
@@ -200,24 +187,24 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         log << "Cruise Control set to: " << request->cruise_control;
         publishLog(log.str().c_str());
 
-        state_navigate_.SetCruiseControl(request->cruise_control);
-        state_latlong_.SetCruiseControl(request->cruise_control);
         goalCxt_->goalSurge = request->cruise_control;
 
-        cruise_ = request->cruise_control;
+        Eigen::VectorXd satMin, satMax;
+        i_cat->GetSaturation(satMax, satMin);
+
+        satMax.at(3) = request->cruise_control;
+
+        // Set Saturation values for the iCAT (read from conf file)
+        i_cat->SetSaturation(satMax, satMin);
+
         response->res = "SetCruiseControl::ok";
     };
 
-    srv_cruise = nh_->create_service<ulisse_msgs::srv::SetCruiseControl>(
-        ulisse_msgs::topicnames::set_cruise_control_service,
-        handle_set_cruise_control);
+    srv_cruise = nh_->create_service<ulisse_msgs::srv::SetCruiseControl>(ulisse_msgs::topicnames::set_cruise_control_service, handle_set_cruise_control);
 
     // Create a callback function for when service reset configuration requests
     // are received.
-    auto handle_reset_conf = [this](const std::shared_ptr<rmw_request_id_t> request_header,
-                                 const std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Request> request,
-                                 std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Response>
-                                     response) -> void {
+    auto handle_reset_conf = [this](const std::shared_ptr<rmw_request_id_t> request_header, const std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Request> request, std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Response> response) -> void {
         (void)request_header;
         RCLCPP_INFO(nh_->get_logger(), "Incoming request for reset conf");
 
@@ -227,17 +214,10 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         response->res = "ResetConfiguration::ok";
     };
 
-    srv_reset_conf = nh_->create_service<ulisse_msgs::srv::ResetConfiguration>(
-        ulisse_msgs::topicnames::reset_configuration_service, handle_reset_conf);
+    srv_reset_conf = nh_->create_service<ulisse_msgs::srv::ResetConfiguration>(ulisse_msgs::topicnames::reset_configuration_service, handle_reset_conf);
 
     // Create a callback function for when service requests are received.
-    auto handle_get_bounds =
-        [this](
-            const std::shared_ptr<rmw_request_id_t> request_header,
-            const std::shared_ptr<ulisse_msgs::srv::GetBoundaries::Request>
-                request,
-            std::shared_ptr<ulisse_msgs::srv::GetBoundaries::Response> response)
-        -> void {
+    auto handle_get_bounds = [this](const std::shared_ptr<rmw_request_id_t> request_header, const std::shared_ptr<ulisse_msgs::srv::GetBoundaries::Request> request, std::shared_ptr<ulisse_msgs::srv::GetBoundaries::Response> response) -> void {
         (void)request_header;
         RCLCPP_INFO(nh_->get_logger(), "Incoming request for get boundaries");
 
@@ -248,8 +228,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         }
     };
 
-    srv_get_boundaries = nh_->create_service<ulisse_msgs::srv::GetBoundaries>(
-        ulisse_msgs::topicnames::get_boundaries_service, handle_get_bounds);
+    srv_get_boundaries = nh_->create_service<ulisse_msgs::srv::GetBoundaries>(ulisse_msgs::topicnames::get_boundaries_service, handle_get_bounds);
 }
 
 VehicleController::~VehicleController() {}
@@ -302,6 +281,13 @@ bool VehicleController::LoadConfiguration()
 
     ConfigureSatesFromFile(statesMap_, confObj);
 
+    //insert command in the map
+    commandsMap_.insert({ ulisse::commands::ID::halt, command_halt_ });
+    commandsMap_.insert({ ulisse::commands::ID::hold, command_hold_ });
+    commandsMap_.insert({ ulisse::commands::ID::latlong, command_latlong_ });
+    commandsMap_.insert({ ulisse::commands::ID::navigate, command_navigate_ });
+    commandsMap_.insert({ ulisse::commands::ID::speedheading, command_speedheading_ });
+
     return true;
 }
 
@@ -316,9 +302,15 @@ void VehicleController::SetUpFSM()
 {
     // ***** COMMANDS *****
     command_halt_.SetFSM(&u_fsm_);
+
     command_hold_.SetFSM(&u_fsm_);
+
     command_latlong_.SetFSM(&u_fsm_);
+    command_latlong_.SetGoalCtx(goalCxt_);
+
     command_speedheading_.SetFSM(&u_fsm_);
+    command_speedheading_.SetGoalCtx(goalCxt_);
+
     command_navigate_.SetFSM(&u_fsm_);
 
     // ***** STATES *****
@@ -330,14 +322,11 @@ void VehicleController::SetUpFSM()
     stateCtx.goalCxt = goalCxt_;
 
     // Halt
-    std::cout << "HEEEEERERERER before" << std::endl;
     state_halt_.SetFSM(&u_fsm_);
     state_halt_.SetStateCtx(stateCtx);
     state_halt_.SetSafetyBoundariesTask(asv_safety_boundaries);
     state_halt_.SetAngularPositionSafetyTask(asv_absolute_axis_alignment_safety);
     state_halt_.SetMaxGainSafety(asv_safety_boundaries->GetTaskParameter().gain);
-    std::cout << "HEEEEERERERER after" << std::endl;
-    //    state_halt_.SetMinMaxHeadingErrorSafety(minHeadingErrorSafety_, maxHeadingErrorSafety_);
 
     // Hold
     state_hold_.SetFSM(&u_fsm_);
@@ -347,7 +336,6 @@ void VehicleController::SetUpFSM()
     state_hold_.SetLinearVelocityTask(asv_control_velocity_linear);
     state_hold_.SetAngularPositionTask(asv_angular_position);
     state_hold_.SetMaxGainSafety(asv_safety_boundaries->GetTaskParameter().gain);
-    //    state_hold_.SetMinMaxHeadingErrorSafety(minHeadingErrorSafety_, maxHeadingErrorSafety_);
 
     // LatLong
     state_latlong_.SetFSM(&u_fsm_);
@@ -357,7 +345,6 @@ void VehicleController::SetUpFSM()
     state_latlong_.SetCartesianDistanceTask(asv_control_distance);
     state_latlong_.SetAlignToTargetTask(asv_angular_position);
     state_latlong_.SetMaxGainSafety(asv_safety_boundaries->GetTaskParameter().gain);
-    //    state_latlong_.SetMinMaxHeadingErrorSafety(minHeadingErrorSafety_, maxHeadingErrorSafety_);
 
     // SpeedHeading
     state_speedheading_.SetFSM(&u_fsm_);
@@ -367,7 +354,6 @@ void VehicleController::SetUpFSM()
     state_speedheading_.SetSafetyBoundariesTask(asv_safety_boundaries);
     state_speedheading_.SetAngularPositionSafetyTask(asv_absolute_axis_alignment_safety);
     state_speedheading_.SetMaxGainSafety(asv_safety_boundaries->GetTaskParameter().gain);
-    //    state_speedheading_.SetMinMaxHeadingErrorSafety(minHeadingErrorSafety_, maxHeadingErrorSafety_);
 
     // Navigate
     state_navigate_.SetFSM(&u_fsm_);
@@ -377,7 +363,6 @@ void VehicleController::SetUpFSM()
     state_navigate_.SetAngularPositionTask(asv_angular_position);
     state_navigate_.SetDistanceTask(asv_control_distance);
     state_navigate_.SetMaxGainSafety(asv_safety_boundaries->GetTaskParameter().gain);
-    //    state_navigate_.SetMinMaxHeadingErrorSafety(minHeadingErrorSafety_, maxHeadingErrorSafety_);
 
     // ***** EVENTS *****
     event_rc_enabled_.SetFSM(&u_fsm_);
@@ -385,78 +370,35 @@ void VehicleController::SetUpFSM()
 
     // ***** CONFIGURE FSM *****
     // ADD COMMANDS
-    u_fsm_.AddCommand(ulisse::commands::ID::halt, &command_halt_);
-    u_fsm_.AddCommand(ulisse::commands::ID::hold, &command_hold_);
-    u_fsm_.AddCommand(ulisse::commands::ID::latlong, &command_latlong_);
-    u_fsm_.AddCommand(ulisse::commands::ID::speedheading, &command_speedheading_);
-    u_fsm_.AddCommand(ulisse::commands::ID::navigate, &command_navigate_);
+    for (auto& command : commandsMap_) {
+        u_fsm_.AddCommand(command.first, &command.second);
+    }
 
     // ADD STATES
-    u_fsm_.AddState(ulisse::states::ID::halt, &state_halt_);
-    u_fsm_.AddState(ulisse::states::ID::hold, &state_hold_);
-    u_fsm_.AddState(ulisse::states::ID::latlong, &state_latlong_);
-    u_fsm_.AddState(ulisse::states::ID::speedheading, &state_speedheading_);
-    u_fsm_.AddState(ulisse::states::ID::navigate, &state_navigate_);
+    for (auto& state : statesMap_) {
+        u_fsm_.AddState(state.first, &state.second);
+    }
 
     // ADD EVENTS
     u_fsm_.AddEvent(ulisse::events::names::rcenabled, &event_rc_enabled_);
 
     // ENABLE TRANSITIONS
-    u_fsm_.EnableTransition(ulisse::states::ID::halt, ulisse::states::ID::hold, true);
-    u_fsm_.EnableTransition(ulisse::states::ID::halt, ulisse::states::ID::latlong, true);
-    u_fsm_.EnableTransition(ulisse::states::ID::halt, ulisse::states::ID::speedheading, true);
-    u_fsm_.EnableTransition(ulisse::states::ID::halt, ulisse::states::ID::navigate, true);
+    for (auto& currentState : statesMap_) {
 
-    u_fsm_.EnableTransition(ulisse::states::ID::hold, ulisse::states::ID::halt, true);
-    u_fsm_.EnableTransition(ulisse::states::ID::hold, ulisse::states::ID::latlong, true);
-    u_fsm_.EnableTransition(ulisse::states::ID::hold, ulisse::states::ID::speedheading, true);
-    u_fsm_.EnableTransition(ulisse::states::ID::hold, ulisse::states::ID::navigate, true);
+        for (auto& nextState : statesMap_) {
 
-    u_fsm_.EnableTransition(ulisse::states::ID::latlong, ulisse::states::ID::hold, true);
-    u_fsm_.EnableTransition(ulisse::states::ID::latlong, ulisse::states::ID::halt, true);
-    u_fsm_.EnableTransition(ulisse::states::ID::latlong, ulisse::states::ID::speedheading, true);
-    u_fsm_.EnableTransition(ulisse::states::ID::latlong, ulisse::states::ID::navigate, true);
-
-    u_fsm_.EnableTransition(ulisse::states::ID::speedheading, ulisse::states::ID::hold, true);
-    u_fsm_.EnableTransition(ulisse::states::ID::speedheading, ulisse::states::ID::halt, true);
-    u_fsm_.EnableTransition(ulisse::states::ID::speedheading, ulisse::states::ID::latlong, true);
-    u_fsm_.EnableTransition(ulisse::states::ID::speedheading, ulisse::states::ID::navigate, true);
-
-    u_fsm_.EnableTransition(ulisse::states::ID::navigate, ulisse::states::ID::hold, true);
-    u_fsm_.EnableTransition(ulisse::states::ID::navigate, ulisse::states::ID::halt, true);
-    u_fsm_.EnableTransition(ulisse::states::ID::navigate, ulisse::states::ID::latlong, true);
-    u_fsm_.EnableTransition(ulisse::states::ID::navigate, ulisse::states::ID::speedheading, true);
+            if (nextState.first != currentState.first)
+                u_fsm_.EnableTransition(currentState.first, nextState.first, true);
+        }
+    }
 
     // ENABLE COMMANDS
-    u_fsm_.EnableCommandInState(ulisse::states::ID::halt, ulisse::commands::ID::halt, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::hold, ulisse::commands::ID::halt, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::latlong, ulisse::commands::ID::halt, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::speedheading, ulisse::commands::ID::halt, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::navigate, ulisse::commands::ID::halt, true);
+    for (auto& state : statesMap_) {
+        for (auto& command : commandsMap_) {
 
-    u_fsm_.EnableCommandInState(ulisse::states::ID::halt, ulisse::commands::ID::hold, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::hold, ulisse::commands::ID::hold, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::latlong, ulisse::commands::ID::hold, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::speedheading, ulisse::commands::ID::hold, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::navigate, ulisse::commands::ID::hold, true);
-
-    u_fsm_.EnableCommandInState(ulisse::states::ID::halt, ulisse::commands::ID::latlong, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::hold, ulisse::commands::ID::latlong, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::latlong, ulisse::commands::ID::latlong, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::speedheading, ulisse::commands::ID::latlong, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::navigate, ulisse::commands::ID::latlong, true);
-
-    u_fsm_.EnableCommandInState(ulisse::states::ID::halt, ulisse::commands::ID::speedheading, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::hold, ulisse::commands::ID::speedheading, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::latlong, ulisse::commands::ID::speedheading, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::speedheading, ulisse::commands::ID::speedheading, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::navigate, ulisse::commands::ID::speedheading, true);
-
-    u_fsm_.EnableCommandInState(ulisse::states::ID::halt, ulisse::commands::ID::navigate, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::hold, ulisse::commands::ID::navigate, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::latlong, ulisse::commands::ID::navigate, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::speedheading, ulisse::commands::ID::navigate, true);
-    u_fsm_.EnableCommandInState(ulisse::states::ID::navigate, ulisse::commands::ID::navigate, true);
+            u_fsm_.EnableCommandInState(state.first, command.first, true);
+        }
+    }
 
     u_fsm_.SetInitState(ulisse::states::ID::halt);
 }
@@ -464,16 +406,9 @@ void VehicleController::SetUpFSM()
 void VehicleController::SetupCommandServer()
 {
     // Create a callback function for when service requests are received.
-    auto handle_control_commands =
-        [this](
-            const std::shared_ptr<rmw_request_id_t> request_header,
-            const std::shared_ptr<ulisse_msgs::srv::ControlCommand::Request>
-                request,
-            std::shared_ptr<ulisse_msgs::srv::ControlCommand::Response> response)
-        -> void {
+    auto handle_control_commands = [this](const std::shared_ptr<rmw_request_id_t> request_header, const std::shared_ptr<ulisse_msgs::srv::ControlCommand::Request> request, std::shared_ptr<ulisse_msgs::srv::ControlCommand::Response> response) -> void {
         (void)request_header;
-        RCLCPP_INFO(nh_->get_logger(), "Incoming request: %s",
-            request->command_type.c_str());
+        RCLCPP_INFO(nh_->get_logger(), "Incoming request: %s", request->command_type.c_str());
 
         std::stringstream logg;
         logg << "Incoming request: " << request->command_type.c_str();
@@ -487,50 +422,62 @@ void VehicleController::SetupCommandServer()
 
         std::stringstream log;
         if (request->command_type == ulisse::commands::ID::halt) {
+
             std::cout << "Received Command Halt" << std::endl;
             publishLog("Received Command Halt");
+
         } else if (request->command_type == ulisse::commands::ID::hold) {
+
             std::cout << "Received Command Hold" << std::endl;
-
             publishLog("Received Command Hold");
+
         } else if (request->command_type == ulisse::commands::ID::latlong) {
+
             std::cout << "Received Command LatLong" << std::endl;
-            state_latlong_.SetGoal(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude, request->latlong_cmd.acceptance_radius);
+            command_latlong_.SetGoTo(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude, request->latlong_cmd.acceptance_radius);
 
-            log << "Received Command GoTo (lat: "
-                << request->latlong_cmd.goal.latitude
-                << " , long: " << request->latlong_cmd.goal.longitude << " )";
+            log << "Received Command GoTo (lat: " << request->latlong_cmd.goal.latitude << " , long: " << request->latlong_cmd.goal.longitude << " )";
             publishLog(log.str().c_str());
+
         } else if (request->command_type == ulisse::commands::ID::speedheading) {
-            std::cout << "Received Command SpeedHeading" << std::endl;
-            state_speedheading_.SetSpeedHeading(request->sh_cmd.speed, request->sh_cmd.heading, request->sh_cmd.timeout.sec);
-            state_speedheading_.ResetTimer();
 
-            log << "Received Command SpeedHeading (speed: " << request->sh_cmd.speed
-                << " , heading: " << request->sh_cmd.heading << " )";
+            std::cout << "Received Command SpeedHeading" << std::endl;
+            command_speedheading_.SetSpeedHeading(request->sh_cmd.speed, request->sh_cmd.heading, request->sh_cmd.timeout.sec);
+            state_speedheading_.ResetTimer();
+            log << "Received Command SpeedHeading (speed: " << request->sh_cmd.speed << " , heading: " << request->sh_cmd.heading << " )";
             publishLog(log.str().c_str());
+
         } else if (request->command_type == ulisse::commands::ID::navigate) {
+
             std::cout << "Received Command Path Following" << std::endl;
 
             if (!state_navigate_.LoadSpur(request->nav_cmd.nurbs_json)) {
                 ret = fsm::retval::fail;
             }
 
-            log << "Received Command PathFollowing (nurbs: "
-                << request->nav_cmd.nurbs_json << " )";
+            log << "Received Command PathFollowing (nurbs: " << request->nav_cmd.nurbs_json << " )";
             publishLog(log.str().c_str());
 
         } else {
-            RCLCPP_INFO(nh_->get_logger(), "Unsupported command: %s",
-                request->command_type.c_str());
+            RCLCPP_INFO(nh_->get_logger(), "Unsupported command: %s", request->command_type.c_str());
             ret = fsm::retval::fail;
         }
 
         if (ret != fsm::retval::ok) {
+
             response->res = "CommandAnswer::fail";
-            RCLCPP_INFO(nh_->get_logger(), "SendAnswer returned %s",
-                response->res.c_str());
+            RCLCPP_INFO(nh_->get_logger(), "SendAnswer returned %s", response->res.c_str());
         } else {
+            //task update
+            for (auto& taskMap : tasksMap_) {
+                try {
+                    taskMap.second.task->Update();
+                } catch (tpik::ExceptionWithHow& e) {
+                    std::cerr << "UPDATE TASK EXCEPTION" << std::endl;
+                    std::cerr << "who " << e.what() << " how: " << e.how() << std::endl;
+                }
+            }
+
             u_fsm_.ExecuteCommand(request->command_type);
             response->res = "CommandAnswer::ok";
         }
@@ -578,8 +525,7 @@ void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::Share
     robot_model->SetVelocityVector(ulisse::robotModelID::ASV, velocity_fbk);
 }
 
-void VehicleController::LLCStatusCB(
-    const ulisse_msgs::msg::LLCStatus::SharedPtr msg)
+void VehicleController::LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg)
 {
     statusCxt_->llcStatus = msg->status;
 }
@@ -595,15 +541,6 @@ void VehicleController::Run()
     u_fsm_.SwitchState();
     // Process Events
     u_fsm_.ProcessEventQueue();
-
-    for (auto& taskMap : tasksMap_) {
-        try {
-            taskMap.second.task->Update();
-        } catch (tpik::ExceptionWithHow& e) {
-            std::cerr << "UPDATE TASK EXCEPTION" << std::endl;
-            std::cerr << "who " << e.what() << " how: " << e.how() << std::endl;
-        }
-    }
     // Execute current state
     u_fsm_.ExecuteState();
 
@@ -622,11 +559,6 @@ void VehicleController::Run()
     std::cout << "y_tpik: " << std::endl;
     std::cout << y_tpik << std::endl;
 
-    std::vector<Eigen::VectorXd> tmp = solver->GetDeltaYs();
-
-    //    for (auto& delta : tmp)
-    //        std::cout << "SDEBUG DELTA" << delta << std::endl;
-
     for (int i = 0; i < y_tpik.size(); i++) {
         if (std::isnan(y_tpik(i))) {
             y_tpik(i) = 0.0;
@@ -634,9 +566,9 @@ void VehicleController::Run()
         }
     }
 
-    if (cruise_ > 0 && y_tpik[3] > cruise_) {
-        y_tpik[3] = cruise_;
-    }
+    //    if (cruise_ > 0 && y_tpik[3] > cruise_) {
+    //        y_tpik[3] = cruise_;
+    //    }
 
     ctrlCxt_->desiredSurge = y_tpik[3];
     ctrlCxt_->desiredJog = y_tpik[2];
@@ -647,10 +579,8 @@ void VehicleController::Run()
     (*vehiclePose_)(5) = statusCxt_->vehicleHeading;
 
     // Verbose Status to Video
-    std::cout << "Current Latitude: " << statusCxt_->vehiclePos.latitude
-              << std::endl;
-    std::cout << "Current Longitude: " << statusCxt_->vehiclePos.longitude
-              << std::endl;
+    std::cout << "Current Latitude: " << statusCxt_->vehiclePos.latitude << std::endl;
+    std::cout << "Current Longitude: " << statusCxt_->vehiclePos.longitude << std::endl;
     std::cout << "Current Heading: " << statusCxt_->vehicleHeading << std::endl;
     std::cout << "Current Surge: " << statusCxt_->gpsSpeed << std::endl;
     std::cout << "Goal Heading: " << goalCxt_->goalHeading << std::endl;
@@ -701,9 +631,7 @@ void VehicleController::PublishControl()
     ulisse_msgs::msg::StatusContext statuscxt_msg;
 
     t_now_ = std::chrono::system_clock::now();
-    long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(
-                             t_now_.time_since_epoch()))
-                            .count();
+    long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
     auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
     auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
 

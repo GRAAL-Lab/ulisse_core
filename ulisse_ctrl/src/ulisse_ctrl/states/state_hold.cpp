@@ -41,8 +41,8 @@ namespace states {
             ctb::SetParam(state, stateID, "name");
             if (stateID == ulisse::states::ID::hold) {
 
-                ctb::SetParam(state, maxHeadingErrorSafety_, "maxHeadingErrorSafety");
-                ctb::SetParam(state, minHeadingErrorSafety_, "minHeadingErrorSafety");
+                ctb::SetParam(state, maxHeadingError_, "maxHeadingError");
+                ctb::SetParam(state, minHeadingError_, "minHeadingError");
             }
         }
     }
@@ -72,7 +72,7 @@ namespace states {
         std::cout << "headingErrorsafety: " << headingErrorsafety << std::endl;
 
         //compute the gain of the cartesian distance
-        double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingErrorSafety_, maxHeadingErrorSafety_, 0, maxGainSafety_, headingErrorsafety);
+        double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, maxGainSafety_, headingErrorsafety);
 
         // Set the gain of the cartesian distance task
         safetyBoundariesTask_->SetTaskParameter(taskGainSafety);

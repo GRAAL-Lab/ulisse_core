@@ -15,7 +15,6 @@ namespace states {
         isCurveSet = false;
         maximumLookupAbscissa = 0.2;
         delta_ = 2.0;
-        cruise = 1.0;
         tolleranceStartingPoint = 2.0;
         tolleranceStartingAngle = 0.05;
         tolleranceEndingPoint = 1.0;
@@ -34,11 +33,6 @@ namespace states {
         distanceTask_ = distanceTask;
     }
 
-    void StateNavigate::SetCruiseControl(double cruise_control)
-    {
-        cruise = cruise_control;
-    }
-
     void StateNavigate::ConfigureStateFromFile(libconfig::Config& confObj)
     {
         const libconfig::Setting& root = confObj.getRoot();
@@ -51,8 +45,8 @@ namespace states {
             ctb::SetParam(state, stateID, "name");
             if (stateID == ulisse::states::ID::navigate) {
 
-                ctb::SetParam(state, maxHeadingErrorSafety_, "maxHeadingErrorSafety");
-                ctb::SetParam(state, minHeadingErrorSafety_, "minHeadingErrorSafety");
+                ctb::SetParam(state, maxHeadingError_, "maxHeadingError");
+                ctb::SetParam(state, minHeadingError_, "minHeadingError");
                 ctb::SetParam(state, useLineOfSight, "useLineOfSight");
                 ctb::SetParam(state, maximumLookupAbscissa, "maximumLookupAbscissa");
                 ctb::SetParam(state, delta_, "delta");
@@ -253,7 +247,7 @@ namespace states {
         std::cout << "headingErrorsafety: " << headingErrorsafety << std::endl;
 
         //compute the gain of the cartesian distance
-        double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingErrorSafety_, maxHeadingErrorSafety_, 0, maxGainSafety_, headingErrorsafety);
+        double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, maxGainSafety_, headingErrorsafety);
 
         // Set the gain of the cartesian distance task
         safetyBoundariesTask_->SetTaskParameter(taskGainSafety);
@@ -363,7 +357,6 @@ namespace states {
         std::cout << "STATE PATH FOLLOWING" << std::endl;
         std::cout << "Curvilinear Abscissa: " << currentCurvilinearAbscissa << std::endl;
         std::cout << "Delta: " << delta_ << std::endl;
-        std::cout << "Cruise Control: " << cruise << std::endl;
 
         return fsm::ok;
     }

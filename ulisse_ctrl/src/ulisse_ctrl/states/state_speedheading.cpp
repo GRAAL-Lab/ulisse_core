@@ -30,14 +30,6 @@ namespace states {
         linearVelocityTask_ = linearVelocityTask;
     }
 
-    void StateSpeedHeading::SetSpeedHeading(double speed, double heading, uint timeout_sec)
-    {
-        stateCtx_.goalCxt->goalSurge = speed;
-        stateCtx_.goalCxt->goalHeading = heading;
-        stateCtx_.goalCxt->cmdTimeout = timeout_sec;
-        stateCtx_.goalCxt->goalDistance = 0.0;
-    }
-
     void StateSpeedHeading::ConfigureStateFromFile(libconfig::Config& confObj)
     {
         const libconfig::Setting& root = confObj.getRoot();
@@ -50,8 +42,8 @@ namespace states {
             ctb::SetParam(state, stateID, "name");
             if (stateID == ulisse::states::ID::speedheading) {
 
-                ctb::SetParam(state, maxHeadingErrorSafety_, "maxHeadingErrorSafety");
-                ctb::SetParam(state, minHeadingErrorSafety_, "minHeadingErrorSafety");
+                ctb::SetParam(state, maxHeadingError_, "maxHeadingError");
+                ctb::SetParam(state, minHeadingError_, "minHeadingError");
             }
         }
     }

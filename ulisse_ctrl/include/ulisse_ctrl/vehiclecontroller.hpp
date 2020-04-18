@@ -38,8 +38,8 @@ class VehicleController {
 
     TasksInfo taskInfo_;
     std::unordered_map<std::string, TasksInfo> tasksMap_;
-
     std::unordered_map<std::string, states::GenericState&> statesMap_;
+    std::unordered_map<std::string, commands::GenericCommand&> commandsMap_;
 
     rclcpp::Node::SharedPtr nh_;
     std::string file_name_;
@@ -95,11 +95,7 @@ class VehicleController {
 
     double timestamp_;
     double sampleTime_;
-    double minHeadingErrorSafety_, maxHeadingErrorSafety_;
-    Eigen::Vector3d desiredVelocitySafety_;
-
     bool boundaries_set;
-
     std::shared_ptr<Eigen::VectorXd> pose_;
 
     // FSM

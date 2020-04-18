@@ -119,7 +119,6 @@ protected:
     std::list<segment_type> segments_;
 
     ctb::LatLong centroid_;
-    Eigen::Vector3d desiredVelocity_;
     polygon_type poly_;
 
     Eigen::Vector3d alignVector_;

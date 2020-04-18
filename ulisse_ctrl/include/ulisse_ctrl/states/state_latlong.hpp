@@ -14,8 +14,7 @@ namespace states {
         std::shared_ptr<ikcl::AlignToTarget> alignToTarget_;
         std::shared_ptr<ikcl::ControlCartesianDistance> cartesianDistance_;
 
-        double cruise_, maxGainCartesianDistance_;
-        double minHeadingError_, maxHeadingError_;
+        double maxGainCartesianDistance_;
 
     public:
         StateLatLong();
@@ -26,12 +25,6 @@ namespace states {
         void SetAlignToTargetTask(std::shared_ptr<ikcl::AlignToTarget> alignToTarget);
         void SetCartesianDistanceTask(std::shared_ptr<ikcl::ControlCartesianDistance> distacartesianDistancenceTask);
         void SetHoldState(std::shared_ptr<ulisse::states::StateHold> stateHold);
-
-        void SetMinMaxHeadingError(double min, double max);
-
-        void SetCruiseControl(double cruise);
-        double GetCruiseControl();
-        void SetGoal(double latitude, double longitude, double acceptanceRadius);
         void ConfigureStateFromFile(libconfig::Config& confObj) override;
     };
 }
