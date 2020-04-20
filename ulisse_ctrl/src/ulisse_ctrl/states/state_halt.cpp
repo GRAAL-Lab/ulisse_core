@@ -59,6 +59,7 @@ namespace states {
         //we activate the the cartesian distance through the gain based on a bell-shaped function on the heading error
 
         //compute the heading error
+//        safetyBoundariesTask_->SetVehiclePose(stateCtx_.statusCxt->vehiclePos);
         double headingErrorsafety = absoluteAxisAlignmentSafetyTask_->GetMisalignmentVector().norm();
         std::cout << "headingErrorsafety: " << headingErrorsafety << std::endl;
 

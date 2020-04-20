@@ -42,87 +42,75 @@ class VehicleController {
     std::unordered_map<std::string, commands::GenericCommand&> commandsMap_;
 
     rclcpp::Node::SharedPtr nh_;
-    std::string file_name_;
+    std::string fileName_;
     rclcpp::Service<ulisse_msgs::srv::ControlCommand>::SharedPtr srv_;
-    rclcpp::Service<ulisse_msgs::srv::SetBoundaries>::SharedPtr srv_boundaries;
-    rclcpp::Service<ulisse_msgs::srv::GetBoundaries>::SharedPtr srv_get_boundaries;
-    rclcpp::Service<ulisse_msgs::srv::ResetConfiguration>::SharedPtr srv_reset_conf;
-    rclcpp::Service<ulisse_msgs::srv::SetCruiseControl>::SharedPtr srv_cruise;
+    rclcpp::Service<ulisse_msgs::srv::SetBoundaries>::SharedPtr srvBoundaries_;
+    rclcpp::Service<ulisse_msgs::srv::GetBoundaries>::SharedPtr srvGetBoundaries_;
+    rclcpp::Service<ulisse_msgs::srv::ResetConfiguration>::SharedPtr srvResetConf_;
+    rclcpp::Service<ulisse_msgs::srv::SetCruiseControl>::SharedPtr srvCruise_;
 
-    rclcpp::Subscription<ulisse_msgs::msg::GPSData>::SharedPtr gps_sub_;
-    rclcpp::Subscription<ulisse_msgs::msg::LLCStatus>::SharedPtr llc_status_sub_;
-    rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr nav_filter_sub_;
+    rclcpp::Subscription<ulisse_msgs::msg::GPSData>::SharedPtr gpsSub_;
+    rclcpp::Subscription<ulisse_msgs::msg::LLCStatus>::SharedPtr llcStatusSub_;
+    rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr navFilterSub_;
 
-    rclcpp::Publisher<ulisse_msgs::msg::StatusContext>::SharedPtr statuscxt_pub_;
-    rclcpp::Publisher<ulisse_msgs::msg::GoalContext>::SharedPtr goalcxt_pub_;
-    rclcpp::Publisher<ulisse_msgs::msg::ControlContext>::SharedPtr ctrlcxt_pub_;
-    rclcpp::Publisher<std_msgs::msg::String>::SharedPtr vehiclestate_pub_;
+    rclcpp::Publisher<ulisse_msgs::msg::StatusContext>::SharedPtr statuscxtPub_;
+    rclcpp::Publisher<ulisse_msgs::msg::GoalContext>::SharedPtr goalcxtPub_;
+    rclcpp::Publisher<ulisse_msgs::msg::ControlContext>::SharedPtr ctrlcxtPub_;
+    rclcpp::Publisher<std_msgs::msg::String>::SharedPtr vehiclestatePub_;
 
-    rclcpp::Publisher<std_msgs::msg::String>::SharedPtr generic_log_pub_;
+    rclcpp::Publisher<std_msgs::msg::String>::SharedPtr genericLogPub_;
     /// ROBOT MODEL
-    std::shared_ptr<rml::RobotModel> robot_model;
+    std::shared_ptr<rml::RobotModel> robotModel_;
     std::shared_ptr<Eigen::Vector6d> vehiclePose_;
 
     /// Action Manager definition
-    std::shared_ptr<tpik::ActionManager> action_manager;
+    std::shared_ptr<tpik::ActionManager> actionManager_;
 
-    std::shared_ptr<tpik::iCAT> i_cat;
+    std::shared_ptr<tpik::iCAT> iCat_;
 
     double cruise_;
-    std::shared_ptr<tpik::Solver> solver;
+    std::shared_ptr<tpik::Solver> solver_;
 
     // Solution of TPIK
-    Eigen::VectorXd y_tpik;
+    Eigen::VectorXd yTpik_;
 
     ///TASKS
-    // ASV CONTROL VELOCITY LINEAR
-    std::shared_ptr<ikcl::LinearVelocity> asv_control_velocity_linear;
-
-    // ASV ANGULAR POSITION
-    std::shared_ptr<ikcl::AlignToTarget> asv_angular_position;
-
-    // ASV CONTROL DISTANCE
-    std::shared_ptr<ikcl::ControlCartesianDistance> asv_control_distance;
-
-    // ASV SAFETY BOUNDARIES
-    std::shared_ptr<ikcl::SafetyBoundaries> asv_safety_boundaries;
-
-    // ASV ABSOLUTE AXIS ALIGNMENT
-    std::shared_ptr<ikcl::AbsoluteAxisAlignment> asv_absolute_axis_alignment;
-
-    // ASV ABSOLUTE AXIS ALIGNMENT SAFETY
-    std::shared_ptr<ikcl::AbsoluteAxisAlignment> asv_absolute_axis_alignment_safety;
+    std::shared_ptr<ikcl::LinearVelocity> asvLinearVelocity_;
+    std::shared_ptr<ikcl::AlignToTarget> asvAngularPosition_;
+    std::shared_ptr<ikcl::ControlCartesianDistance> asvCartesianDistance_;
+    std::shared_ptr<ikcl::SafetyBoundaries> asvSafetyBoundaries_;
+    std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignment_;
+    std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentSafety_;
 
     double timestamp_;
     double sampleTime_;
-    bool boundaries_set;
-    std::shared_ptr<Eigen::VectorXd> pose_;
+    bool boundariesSet_;
 
     // FSM
-    fsm::FSM u_fsm_;
+    fsm::FSM uFsm_;
 
-    states::StateHalt state_halt_;
-    states::StateHold state_hold_;
-    states::StateLatLong state_latlong_;
-    states::StateSpeedHeading state_speedheading_;
-    states::StateNavigate state_navigate_;
+    states::StateHalt stateHalt_;
+    states::StateHold stateHold_;
+    states::StateLatLong stateLatLong_;
+    states::StateSpeedHeading stateSpeedHeading_;
+    states::StateNavigate statePathFollowing_;
 
-    commands::CommandHalt command_halt_;
-    commands::CommandHold command_hold_;
-    commands::CommandLatLong command_latlong_;
-    commands::CommandSpeedHeading command_speedheading_;
-    commands::CommandNavigate command_navigate_;
+    commands::CommandHalt commandHalt_;
+    commands::CommandHold commandHold_;
+    commands::CommandLatLong commandLatLong_;
+    commands::CommandSpeedHeading commandSpeedHeading_;
+    commands::CommandNavigate commandPathFollowing_;
 
-    events::EventRCEnabled event_rc_enabled_;
+    events::EventRCEnabled eventRcEnabled_;
 
     std::shared_ptr<ControllerConfiguration> conf_;
     std::shared_ptr<StatusContext> statusCxt_;
     std::shared_ptr<GoalContext> goalCxt_;
     std::shared_ptr<ControlContext> ctrlCxt_;
 
-    std::chrono::system_clock::time_point t_now_;
+    std::chrono::system_clock::time_point tNow_;
 
-    std::string boundaries_json;
+    std::string boundariesJson_;
 
     bool LoadConfiguration();
     void SetUpFSM();

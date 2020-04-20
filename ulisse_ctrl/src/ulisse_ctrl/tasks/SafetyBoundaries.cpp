@@ -35,9 +35,7 @@ void SafetyBoundaries::Update() throw(tpik::ExceptionWithHow)
     CheckInitialization();
     if (!isBoundariesInitialized_) {
         tpik::NotInitialziedTaskParameterException jointsLimitException;
-        std::string how = "[SafetyBoundaries] The boundaries have not been set, "
-                          "use SetBoundaries() for task "
-            + ID_;
+        std::string how = "[SafetyBoundaries] The boundaries have not been set, use SetBoundaries() for task " + ID_;
         jointsLimitException.SetHow(how);
         throw(jointsLimitException);
     }
