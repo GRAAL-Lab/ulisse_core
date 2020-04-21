@@ -32,6 +32,10 @@ namespace states {
 
     fsm::retval StateHalt::OnEntry()
     {
+        //set tasks
+        safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(stateCtx_.tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
+        absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(stateCtx_.tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
+
         stateCtx_.actionManager->SetAction(ulisse::action::idle, true);
 
         return fsm::ok;
@@ -59,7 +63,8 @@ namespace states {
         //we activate the the cartesian distance through the gain based on a bell-shaped function on the heading error
 
         //compute the heading error
-//        safetyBoundariesTask_->SetVehiclePose(stateCtx_.statusCxt->vehiclePos);
+        safetyBoundariesTask_->SetVehiclePose(stateCtx_.statusCxt->vehiclePos);
+
         double headingErrorsafety = absoluteAxisAlignmentSafetyTask_->GetMisalignmentVector().norm();
         std::cout << "headingErrorsafety: " << headingErrorsafety << std::endl;
 

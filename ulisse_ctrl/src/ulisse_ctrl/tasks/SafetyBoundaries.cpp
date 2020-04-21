@@ -17,9 +17,9 @@ SafetyBoundaries::SafetyBoundaries(std::string taskID, std::shared_ptr<rml::Robo
     x_ = INFINITY * x_.setOnes();
 }
 
-void SafetyBoundaries::SetPose(std::shared_ptr<Eigen::Vector6d> pose)
+void SafetyBoundaries::SetVehiclePose(LatLong pose)
 {
-    pose_ = pose;
+    vehiclePose_ = pose;
 }
 
 const Eigen::Vector3d SafetyBoundaries::GetAlignVector()
@@ -43,11 +43,8 @@ void SafetyBoundaries::Update() throw(tpik::ExceptionWithHow)
     Eigen::Vector3d alignVector;
 
     std::shared_ptr<double[]> poseEuclidian(new double[3]);
-    LatLong pose;
-    pose.latitude = (*pose_)(0);
-    pose.longitude = (*pose_)(1);
 
-    ctb::Map2EuclidianPoint(pose, centroid_, poseEuclidian);
+    ctb::Map2EuclidianPoint(vehiclePose_, centroid_, poseEuclidian);
 
     DistanceCheck(point_type(poseEuclidian[0], poseEuclidian[1]), alignVector_);
 

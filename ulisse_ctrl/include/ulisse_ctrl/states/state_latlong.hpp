@@ -11,8 +11,8 @@ namespace states {
     class StateLatLong : public GenericState {
 
     protected:
-        std::shared_ptr<ikcl::AlignToTarget> alignToTarget_;
-        std::shared_ptr<ikcl::ControlCartesianDistance> cartesianDistance_;
+        std::shared_ptr<ikcl::AlignToTarget> alignToTargetTask_;
+        std::shared_ptr<ikcl::ControlCartesianDistance> cartesianDistanceTask_;
 
         double maxGainCartesianDistance_;
 
@@ -22,9 +22,6 @@ namespace states {
         virtual fsm::retval OnEntry();
         virtual fsm::retval Execute();
 
-        void SetAlignToTargetTask(std::shared_ptr<ikcl::AlignToTarget> alignToTarget);
-        void SetCartesianDistanceTask(std::shared_ptr<ikcl::ControlCartesianDistance> distacartesianDistancenceTask);
-        void SetHoldState(std::shared_ptr<ulisse::states::StateHold> stateHold);
         void ConfigureStateFromFile(libconfig::Config& confObj) override;
     };
 }

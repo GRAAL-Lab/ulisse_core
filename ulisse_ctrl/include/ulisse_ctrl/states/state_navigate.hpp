@@ -11,8 +11,8 @@ namespace states {
     class StateNavigate : public GenericState {
 
     protected:
-        std::shared_ptr<ikcl::AlignToTarget> angularPositionTask_;
-        std::shared_ptr<ikcl::ControlCartesianDistance> distanceTask_;
+        std::shared_ptr<ikcl::AlignToTarget> alignToTargetTask_;
+        std::shared_ptr<ikcl::ControlCartesianDistance> cartesianDistanceTask_;
 
         ctb::LatLong centroid_;
 
@@ -69,10 +69,8 @@ namespace states {
         virtual fsm::retval Execute();
         virtual fsm::retval OnExit();
 
-        void SetAngularPositionTask(std::shared_ptr<ikcl::AlignToTarget> angularPositionTask);
-        void SetDistanceTask(std::shared_ptr<ikcl::ControlCartesianDistance> distanceTask);
         void ConfigureStateFromFile(libconfig::Config& confObj) override;
-        void SetCruiseControl(double cruise);
+
         bool LoadSpur(std::string json_nurbs);
     };
 }

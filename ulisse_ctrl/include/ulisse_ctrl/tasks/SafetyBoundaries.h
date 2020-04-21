@@ -33,9 +33,7 @@ public:
    * @param robotModel shared ptr to the rml::RobotModel
    * @param frameID id of the frame to control
    */
-    SafetyBoundaries(std::string taskID,
-        std::shared_ptr<rml::RobotModel> robotModel,
-        std::string frameID);
+    SafetyBoundaries(std::string taskID, std::shared_ptr<rml::RobotModel> robotModel, std::string frameID);
 
     /**
    * @brief Method updating the task Jacobian, reference, internal activation
@@ -52,8 +50,7 @@ public:
     /**
    * @brief Overloading of the cout operator
    */
-    friend std::ostream& operator<<(std::ostream& os,
-        SafetyBoundaries const& safetyBoundaries)
+    friend std::ostream& operator<<(std::ostream& os, SafetyBoundaries const& safetyBoundaries)
     {
         os << "\033[1;37m"
            << "SAFETY BOUNDARIES " << (tpik::InequalityTask&)safetyBoundaries
@@ -65,7 +62,7 @@ public:
         return os;
     }
 
-    void SetPose(std::shared_ptr<Eigen::Vector6d> pose);
+    void SetVehiclePose(LatLong pose);
 
     void SetDesiredVelocity(Eigen::Vector3d desiredVelocity);
 
@@ -125,7 +122,7 @@ protected:
 
     Eigen::Vector3d x_; //control variable
 
-    std::shared_ptr<Eigen::Vector6d> pose_;
+    LatLong vehiclePose_;
 };
 } // namespace ikcl
 #endif

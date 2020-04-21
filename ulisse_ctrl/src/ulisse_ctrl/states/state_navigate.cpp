@@ -23,16 +23,6 @@ namespace states {
 
     StateNavigate::~StateNavigate() {}
 
-    void StateNavigate::SetAngularPositionTask(std::shared_ptr<ikcl::AlignToTarget> angularPositionTask)
-    {
-        angularPositionTask_ = angularPositionTask;
-    }
-
-    void StateNavigate::SetDistanceTask(std::shared_ptr<ikcl::ControlCartesianDistance> distanceTask)
-    {
-        distanceTask_ = distanceTask;
-    }
-
     void StateNavigate::ConfigureStateFromFile(libconfig::Config& confObj)
     {
         const libconfig::Setting& root = confObj.getRoot();
@@ -220,6 +210,12 @@ namespace states {
             }
         }
 
+        //set tasks
+        safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(stateCtx_.tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
+        absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(stateCtx_.tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
+        cartesianDistanceTask_ = std::dynamic_pointer_cast<ikcl::ControlCartesianDistance>(stateCtx_.tasksMap.find(ulisse::task::asvCartesianDistance)->second.task);
+        alignToTargetTask_ = std::dynamic_pointer_cast<ikcl::AlignToTarget>(stateCtx_.tasksMap.find(ulisse::task::asvAngularPosition)->second.task);
+
         stateCtx_.actionManager->SetAction(ulisse::action::navigate, true);
         return fsm::ok;
     }
@@ -238,6 +234,8 @@ namespace states {
 
         absoluteAxisAlignmentSafetyTask_->SetAxisAlignment(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
         absoluteAxisAlignmentSafetyTask_->SetDirectionAlignment(safetyBoundariesTask_->GetAlignVector(), rml::FrameID::WorldFrame);
+
+        safetyBoundariesTask_->SetVehiclePose(stateCtx_.statusCxt->vehiclePos);
 
         //To avoid the case in which the error between the goal heading and the current heading is too big
         //we activate the the cartesian distance through the gain based on a bell-shaped function on the heading error
@@ -266,9 +264,9 @@ namespace states {
                         start = true;
                     }
                 } else {
-                    angularPositionTask_->SetAlignmentAxis(Eigen::Vector3d(1, 0, 0));
-                    angularPositionTask_->SetDistanceToTarget(Eigen::Vector3d(stateCtx_.goalCxt->goalDistance * cos(stateCtx_.goalCxt->goalHeading), stateCtx_.goalCxt->goalDistance * sin(stateCtx_.goalCxt->goalHeading), 0), rml::FrameID::WorldFrame);
-                    distanceTask_->SetDistance(Eigen::Vector3d(stateCtx_.goalCxt->goalDistance * cos(stateCtx_.goalCxt->goalHeading), stateCtx_.goalCxt->goalDistance * sin(stateCtx_.goalCxt->goalHeading), 0), rml::FrameID::WorldFrame);
+                    alignToTargetTask_->SetAlignmentAxis(Eigen::Vector3d(1, 0, 0));
+                    alignToTargetTask_->SetDistanceToTarget(Eigen::Vector3d(stateCtx_.goalCxt->goalDistance * cos(stateCtx_.goalCxt->goalHeading), stateCtx_.goalCxt->goalDistance * sin(stateCtx_.goalCxt->goalHeading), 0), rml::FrameID::WorldFrame);
+                    cartesianDistanceTask_->SetDistance(Eigen::Vector3d(stateCtx_.goalCxt->goalDistance * cos(stateCtx_.goalCxt->goalHeading), stateCtx_.goalCxt->goalDistance * sin(stateCtx_.goalCxt->goalHeading), 0), rml::FrameID::WorldFrame);
                 }
             }
 
@@ -348,9 +346,9 @@ namespace states {
                     }
                     ctb::DistanceAndAzimuthRad(stateCtx_.statusCxt->vehiclePos, lookAheadPoint, stateCtx_.goalCxt->goalDistance, stateCtx_.goalCxt->goalHeading);
 
-                    angularPositionTask_->SetAlignmentAxis(Eigen::Vector3d(1, 0, 0));
-                    angularPositionTask_->SetDistanceToTarget(Eigen::Vector3d(stateCtx_.goalCxt->goalDistance * cos(stateCtx_.goalCxt->goalHeading), stateCtx_.goalCxt->goalDistance * sin(stateCtx_.goalCxt->goalHeading), 0), rml::FrameID::WorldFrame);
-                    distanceTask_->SetDistance(Eigen::Vector3d(stateCtx_.goalCxt->goalDistance * cos(stateCtx_.goalCxt->goalHeading), stateCtx_.goalCxt->goalDistance * sin(stateCtx_.goalCxt->goalHeading), 0), rml::FrameID::WorldFrame);
+                    alignToTargetTask_->SetAlignmentAxis(Eigen::Vector3d(1, 0, 0));
+                    alignToTargetTask_->SetDistanceToTarget(Eigen::Vector3d(stateCtx_.goalCxt->goalDistance * cos(stateCtx_.goalCxt->goalHeading), stateCtx_.goalCxt->goalDistance * sin(stateCtx_.goalCxt->goalHeading), 0), rml::FrameID::WorldFrame);
+                    cartesianDistanceTask_->SetDistance(Eigen::Vector3d(stateCtx_.goalCxt->goalDistance * cos(stateCtx_.goalCxt->goalHeading), stateCtx_.goalCxt->goalDistance * sin(stateCtx_.goalCxt->goalHeading), 0), rml::FrameID::WorldFrame);
                 }
             }
         }

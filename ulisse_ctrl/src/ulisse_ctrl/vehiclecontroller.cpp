@@ -26,9 +26,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 
     // Sensor Subscriptions
     gpsSub_ = nh_->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data, 10, std::bind(&VehicleController::GPSSensorCB, this, _1));
-    //    compass_sub_ =
-    //    nh_->create_subscription<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass,
-    //    std::bind(&VehicleController::CompassSensorCB, this, _1));
+    //compass_sub_ = nh_->create_subscription<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass, std::bind(&VehicleController::CompassSensorCB, this, _1));
     navFilterSub_ = nh_->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 10, std::bind(&VehicleController::NavFilterCB, this, _1));
 
     // Control Publishers
@@ -50,55 +48,52 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     // Robot Model
     robotModel_ = std::make_shared<rml::RobotModel>(wTv, ulisse::robotModelID::ASV, J_ASV);
 
-    // Vehicle Angles wrt world (x, y, z)
-    vehiclePose_ = std::make_shared<Eigen::Vector6d>();
-
     // ***** SETUP TASKS *****
 
     // ASV CONTROL VELOCITY LINEAR
-    asvLinearVelocity_ = std::make_shared<ikcl::LinearVelocity>(ikcl::LinearVelocity(ulisse::task::asv_control_velocity_linear, robotModel_, ulisse::robotModelID::ASV));
+    asvLinearVelocity_ = std::make_shared<ikcl::LinearVelocity>(ikcl::LinearVelocity(ulisse::task::asvLinearVelocity, robotModel_, ulisse::robotModelID::ASV));
     asvLinearVelocity_->SetVelocity(Eigen::VectorXd::Zero(3));
     taskInfo_.task = asvLinearVelocity_;
-    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_control_velocity_linear", 10);
-    tasksMap_.insert(std::make_pair(ulisse::task::asv_control_velocity_linear, taskInfo_));
+    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Linear_Velocity", 10);
+    tasksMap_.insert(std::make_pair(ulisse::task::asvLinearVelocity, taskInfo_));
 
     // AUV CONTROL ANGULAR POSITION
-    asvAngularPosition_ = std::make_shared<ikcl::AlignToTarget>(ikcl::AlignToTarget(ulisse::task::asv_angular_position, robotModel_, ulisse::robotModelID::ASV, tpik::CartesianTaskType::Equality, tpik::ProjectorType::Default));
+    asvAngularPosition_ = std::make_shared<ikcl::AlignToTarget>(ikcl::AlignToTarget(ulisse::task::asvAngularPosition, robotModel_, ulisse::robotModelID::ASV, tpik::CartesianTaskType::Equality, tpik::ProjectorType::Default));
     asvAngularPosition_->SetAlignmentAxis(Eigen::VectorXd::Zero(3));
     asvAngularPosition_->SetDistanceToTarget(Eigen::VectorXd::Zero(3), rml::FrameID::WorldFrame);
     taskInfo_.task = asvAngularPosition_;
-    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_angular_position", 10);
-    tasksMap_.insert(std::make_pair(ulisse::task::asv_angular_position, taskInfo_));
+    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Angular_Position", 10);
+    tasksMap_.insert(std::make_pair(ulisse::task::asvAngularPosition, taskInfo_));
 
     // ASV CONTROL DISTANCE
-    asvCartesianDistance_ = std::make_shared<ikcl::ControlCartesianDistance>(ikcl::ControlCartesianDistance(ulisse::task::asv_control_distance, robotModel_, ulisse::robotModelID::ASV, tpik::CartesianTaskType::Equality, tpik::ProjectorType::Default));
+    asvCartesianDistance_ = std::make_shared<ikcl::ControlCartesianDistance>(ikcl::ControlCartesianDistance(ulisse::task::asvCartesianDistance, robotModel_, ulisse::robotModelID::ASV, tpik::CartesianTaskType::Equality, tpik::ProjectorType::Default));
     asvCartesianDistance_->SetDistance(Eigen::VectorXd::Zero(3), rml::FrameID::WorldFrame);
     taskInfo_.task = asvCartesianDistance_;
-    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_control_distance", 10);
-    tasksMap_.insert(std::make_pair(ulisse::task::asv_control_distance, taskInfo_));
+    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Cartesian_Distance", 10);
+    tasksMap_.insert(std::make_pair(ulisse::task::asvCartesianDistance, taskInfo_));
 
     // ASV SAFETY BOUNDARIES (INEQUALITY TASK)
-    asvSafetyBoundaries_ = std::make_shared<ikcl::SafetyBoundaries>(ikcl::SafetyBoundaries(ulisse::task::asv_safety_boundaries, robotModel_, ulisse::robotModelID::ASV));
-    asvSafetyBoundaries_->SetPose(vehiclePose_);
+    asvSafetyBoundaries_ = std::make_shared<ikcl::SafetyBoundaries>(ikcl::SafetyBoundaries(ulisse::task::asvSafetyBoundaries, robotModel_, ulisse::robotModelID::ASV));
+    asvSafetyBoundaries_->SetVehiclePose(statusCxt_->vehiclePos);
     taskInfo_.task = asvSafetyBoundaries_;
-    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_safety_boundaries", 10);
-    tasksMap_.insert(std::make_pair(ulisse::task::asv_safety_boundaries, taskInfo_));
+    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Safety_Boundaries", 10);
+    tasksMap_.insert(std::make_pair(ulisse::task::asvSafetyBoundaries, taskInfo_));
 
     // ASV absolute axis alignment task
-    asvAbsoluteAxisAlignment_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asv_absolute_axis_alignment, robotModel_, tpik::CartesianTaskType::Equality, ulisse::robotModelID::ASV));
+    asvAbsoluteAxisAlignment_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asvAbsoluteAxisAlignment, robotModel_, tpik::CartesianTaskType::Equality, ulisse::robotModelID::ASV));
     taskInfo_.task = asvAbsoluteAxisAlignment_;
-    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_absolute_axis_alignment", 10);
-    tasksMap_.insert(std::make_pair(ulisse::task::asv_absolute_axis_alignment, taskInfo_));
+    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Absolute_Axis_Alignment", 10);
+    tasksMap_.insert(std::make_pair(ulisse::task::asvAbsoluteAxisAlignment, taskInfo_));
     asvAbsoluteAxisAlignment_->SetAxisAlignment(Eigen::VectorXd::Zero(3), ulisse::robotModelID::ASV);
     asvAbsoluteAxisAlignment_->SetDirectionAlignment(Eigen::VectorXd::Zero(3), rml::FrameID::WorldFrame);
 
     // ASV absolute axis alignment task
-    asvAbsoluteAxisAlignmentSafety_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asv_absolute_axis_alignment_safety, robotModel_, tpik::CartesianTaskType::Equality, ulisse::robotModelID::ASV));
+    asvAbsoluteAxisAlignmentSafety_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asvAbsoluteAxisAlignmentSafety, robotModel_, tpik::CartesianTaskType::Equality, ulisse::robotModelID::ASV));
     asvAbsoluteAxisAlignmentSafety_->SetAxisAlignment(Eigen::VectorXd::Zero(3), ulisse::robotModelID::ASV);
     asvAbsoluteAxisAlignmentSafety_->SetDirectionAlignment(Eigen::VectorXd::Zero(3), rml::FrameID::WorldFrame);
     taskInfo_.task = asvAbsoluteAxisAlignmentSafety_;
-    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/asv_absolute_axis_alignment_safety", 10);
-    tasksMap_.insert(std::make_pair(ulisse::task::asv_absolute_axis_alignment_safety, taskInfo_));
+    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Absolute_Axis_Alignment_Safety", 10);
+    tasksMap_.insert(std::make_pair(ulisse::task::asvAbsoluteAxisAlignmentSafety, taskInfo_));
 
     // Initialize solver_ and iCAT
     int dof = 6;
@@ -320,48 +315,31 @@ void VehicleController::SetUpFSM()
     stateCtx.ctrlCxt = ctrlCxt_;
     stateCtx.statusCxt = statusCxt_;
     stateCtx.goalCxt = goalCxt_;
+    stateCtx.tasksMap = tasksMap_;
 
     // Halt
     stateHalt_.SetFSM(&uFsm_);
     stateHalt_.SetStateCtx(stateCtx);
-    stateHalt_.SetSafetyBoundariesTask(asvSafetyBoundaries_);
-    stateHalt_.SetAngularPositionSafetyTask(asvAbsoluteAxisAlignmentSafety_);
     stateHalt_.SetMaxGainSafety(asvSafetyBoundaries_->GetTaskParameter().gain);
 
     // Hold
     stateHold_.SetFSM(&uFsm_);
     stateHold_.SetStateCtx(stateCtx);
-    stateHold_.SetSafetyBoundariesTask(asvSafetyBoundaries_);
-    stateHold_.SetAngularPositionSafetyTask(asvAbsoluteAxisAlignmentSafety_);
-    stateHold_.SetLinearVelocityTask(asvLinearVelocity_);
-    stateHold_.SetAngularPositionTask(asvAngularPosition_);
     stateHold_.SetMaxGainSafety(asvSafetyBoundaries_->GetTaskParameter().gain);
 
     // LatLong
     stateLatLong_.SetFSM(&uFsm_);
     stateLatLong_.SetStateCtx(stateCtx);
-    stateLatLong_.SetSafetyBoundariesTask(asvSafetyBoundaries_);
-    stateLatLong_.SetAngularPositionSafetyTask(asvAbsoluteAxisAlignmentSafety_);
-    stateLatLong_.SetCartesianDistanceTask(asvCartesianDistance_);
-    stateLatLong_.SetAlignToTargetTask(asvAngularPosition_);
     stateLatLong_.SetMaxGainSafety(asvSafetyBoundaries_->GetTaskParameter().gain);
 
     // SpeedHeading
     stateSpeedHeading_.SetFSM(&uFsm_);
     stateSpeedHeading_.SetStateCtx(stateCtx);
-    stateSpeedHeading_.SetLinearVelocityTask(asvLinearVelocity_);
-    stateSpeedHeading_.SetAngularPositionTask(asvAbsoluteAxisAlignment_);
-    stateSpeedHeading_.SetSafetyBoundariesTask(asvSafetyBoundaries_);
-    stateSpeedHeading_.SetAngularPositionSafetyTask(asvAbsoluteAxisAlignmentSafety_);
     stateSpeedHeading_.SetMaxGainSafety(asvSafetyBoundaries_->GetTaskParameter().gain);
 
     // Navigate
     statePathFollowing_.SetFSM(&uFsm_);
     statePathFollowing_.SetStateCtx(stateCtx);
-    statePathFollowing_.SetSafetyBoundariesTask(asvSafetyBoundaries_);
-    statePathFollowing_.SetAngularPositionSafetyTask(asvAbsoluteAxisAlignmentSafety_);
-    statePathFollowing_.SetAngularPositionTask(asvAngularPosition_);
-    statePathFollowing_.SetDistanceTask(asvCartesianDistance_);
     statePathFollowing_.SetMaxGainSafety(asvSafetyBoundaries_->GetTaskParameter().gain);
 
     // ***** EVENTS *****
@@ -566,17 +544,8 @@ void VehicleController::Run()
         }
     }
 
-    //    if (cruise_ > 0 && yTpik_[3] > cruise_) {
-    //        yTpik_[3] = cruise_;
-    //    }
-
     ctrlCxt_->desiredSurge = yTpik_[3];
     ctrlCxt_->desiredJog = yTpik_[2];
-
-    // Update references for the tasks => x, y, angle on theta
-    (*vehiclePose_)(0) = statusCxt_->vehiclePos.latitude;
-    (*vehiclePose_)(1) = statusCxt_->vehiclePos.longitude;
-    (*vehiclePose_)(5) = statusCxt_->vehicleHeading;
 
     // Verbose Status to Video
     std::cout << "Current Latitude: " << statusCxt_->vehiclePos.latitude << std::endl;

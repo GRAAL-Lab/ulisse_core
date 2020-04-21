@@ -10,7 +10,7 @@ namespace states {
     class StateHold : public GenericState {
 
     protected:
-        std::shared_ptr<ikcl::AlignToTarget> angularPositionTask_;
+        std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentTask_;
         std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask_;
 
     public:
@@ -19,9 +19,6 @@ namespace states {
         virtual fsm::retval OnEntry();
         virtual fsm::retval Execute();
         virtual fsm::retval OnExit();
-
-        void SetAngularPositionTask(std::shared_ptr<ikcl::AlignToTarget> angularPositionTask);
-        void SetLinearVelocityTask(std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask);
 
         void ConfigureStateFromFile(libconfig::Config& confObj) override;
     };

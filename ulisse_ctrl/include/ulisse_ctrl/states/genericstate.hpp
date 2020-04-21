@@ -27,6 +27,7 @@ namespace states {
             std::shared_ptr<ControlContext> ctrlCxt;
             std::shared_ptr<tpik::ActionManager> actionManager;
             std::shared_ptr<rml::RobotModel> robotModel;
+            std::unordered_map<std::string, TasksInfo> tasksMap;
         } stateCtx_;
 
         GenericState();
@@ -34,9 +35,6 @@ namespace states {
 
         void CheckRadioController();
         void SetStateCtx(StateCtx stateCtx);
-
-        void SetSafetyBoundariesTask(std::shared_ptr<ikcl::SafetyBoundaries> safetyBoundariesTask);
-        void SetAngularPositionSafetyTask(std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentSafetyTask);
         void SetMaxGainSafety(double maxGainSafety);
         virtual void ConfigureStateFromFile(libconfig::Config& confObj) = 0;
     };

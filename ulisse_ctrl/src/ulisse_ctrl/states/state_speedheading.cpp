@@ -20,16 +20,6 @@ namespace states {
 
     StateSpeedHeading::~StateSpeedHeading() {}
 
-    void StateSpeedHeading::SetAngularPositionTask(std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentTask)
-    {
-        absoluteAxisAlignmentTask_ = absoluteAxisAlignmentTask;
-    }
-
-    void StateSpeedHeading::SetLinearVelocityTask(std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask)
-    {
-        linearVelocityTask_ = linearVelocityTask;
-    }
-
     void StateSpeedHeading::ConfigureStateFromFile(libconfig::Config& confObj)
     {
         const libconfig::Setting& root = confObj.getRoot();
@@ -50,6 +40,12 @@ namespace states {
 
     fsm::retval StateSpeedHeading::OnEntry()
     {
+        //set tasks
+        safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(stateCtx_.tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
+        absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(stateCtx_.tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
+        linearVelocityTask_ = std::dynamic_pointer_cast<ikcl::LinearVelocity>(stateCtx_.tasksMap.find(ulisse::task::asvLinearVelocity)->second.task);
+        absoluteAxisAlignmentTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(stateCtx_.tasksMap.find(ulisse::task::asvAbsoluteAxisAlignment)->second.task);
+
         stateCtx_.actionManager->SetAction(ulisse::action::speed_heading, true);
         maxGainLinearVelocity_ = linearVelocityTask_->GetTaskParameter().gain;
         return fsm::ok;
@@ -79,6 +75,8 @@ namespace states {
 
         absoluteAxisAlignmentSafetyTask_->SetAxisAlignment(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
         absoluteAxisAlignmentSafetyTask_->SetDirectionAlignment(safetyBoundariesTask_->GetAlignVector(), rml::FrameID::WorldFrame);
+
+        safetyBoundariesTask_->SetVehiclePose(stateCtx_.statusCxt->vehiclePos);
 
         //To avoid the case in which the error between the goal heading and the current heading is too big
         //we activate the the cartesian distance through the gain based on a bell-shaped function on the heading error

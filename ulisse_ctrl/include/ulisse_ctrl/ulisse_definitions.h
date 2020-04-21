@@ -7,12 +7,12 @@
 namespace ulisse {
 namespace task {
 
-    const std::string asv_control_velocity_linear = "ASV_Linear_Velocity";
-    const std::string asv_angular_position = "ASV_Angular_Position";
-    const std::string asv_absolute_axis_alignment = "ASV_Absolute_Axis_Alignment";
-    const std::string asv_control_distance = "ASV_Cartesian_Distance";
-    const std::string asv_safety_boundaries = "ASV_Safety_Boundaries";
-    const std::string asv_absolute_axis_alignment_safety = "ASV_Absolute_Axis_Alignment_Safety";
+    const std::string asvLinearVelocity = "ASV_Linear_Velocity";
+    const std::string asvAngularPosition = "ASV_Angular_Position";
+    const std::string asvAbsoluteAxisAlignment = "ASV_Absolute_Axis_Alignment";
+    const std::string asvCartesianDistance = "ASV_Cartesian_Distance";
+    const std::string asvSafetyBoundaries = "ASV_Safety_Boundaries";
+    const std::string asvAbsoluteAxisAlignmentSafety = "ASV_Absolute_Axis_Alignment_Safety";
 }
 
 namespace action {

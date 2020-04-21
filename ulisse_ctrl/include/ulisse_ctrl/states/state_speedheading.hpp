@@ -25,9 +25,6 @@ namespace states {
         virtual fsm::retval Execute();
         void ResetTimer();
 
-        void SetAngularPositionTask(std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentTask);
-        void SetLinearVelocityTask(std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask);
-
         void ConfigureStateFromFile(libconfig::Config& confObj) override;
     };
 } // namespace states

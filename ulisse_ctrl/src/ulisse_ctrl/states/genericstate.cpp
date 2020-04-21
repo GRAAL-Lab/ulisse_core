@@ -29,16 +29,7 @@ namespace states {
         stateCtx_.ctrlCxt = stateCtx.ctrlCxt;
         stateCtx_.actionManager = stateCtx.actionManager;
         stateCtx_.robotModel = stateCtx.robotModel;
-    }
-
-    void GenericState::SetSafetyBoundariesTask(std::shared_ptr<ikcl::SafetyBoundaries> safetyBoundariesTask)
-    {
-        safetyBoundariesTask_ = safetyBoundariesTask;
-    }
-
-    void GenericState::SetAngularPositionSafetyTask(std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentSafetyTask)
-    {
-        absoluteAxisAlignmentSafetyTask_ = absoluteAxisAlignmentSafetyTask;
+        stateCtx_.tasksMap = stateCtx.tasksMap;
     }
 
     void GenericState::SetMaxGainSafety(double maxGainSafety)

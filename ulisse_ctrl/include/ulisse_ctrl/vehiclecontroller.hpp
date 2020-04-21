@@ -61,7 +61,6 @@ class VehicleController {
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr genericLogPub_;
     /// ROBOT MODEL
     std::shared_ptr<rml::RobotModel> robotModel_;
-    std::shared_ptr<Eigen::Vector6d> vehiclePose_;
 
     /// Action Manager definition
     std::shared_ptr<tpik::ActionManager> actionManager_;

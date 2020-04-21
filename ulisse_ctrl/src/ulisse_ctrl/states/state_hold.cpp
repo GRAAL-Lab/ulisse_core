@@ -11,19 +11,15 @@ namespace states {
 
     StateHold::~StateHold() {}
 
-    void StateHold::SetAngularPositionTask(std::shared_ptr<ikcl::AlignToTarget> angularPositionTask)
-    {
-        angularPositionTask_ = angularPositionTask;
-    }
-
-    void StateHold::SetLinearVelocityTask(std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask)
-    {
-        linearVelocityTask_ = linearVelocityTask;
-    }
-
     fsm::retval StateHold::OnEntry()
     {
+        //set tasks
+        safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(stateCtx_.tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
+        absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(stateCtx_.tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
+        linearVelocityTask_ = std::dynamic_pointer_cast<ikcl::LinearVelocity>(stateCtx_.tasksMap.find(ulisse::task::asvLinearVelocity)->second.task);
+        absoluteAxisAlignmentTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(stateCtx_.tasksMap.find(ulisse::task::asvAbsoluteAxisAlignment)->second.task);
 
+        //set action
         stateCtx_.actionManager->SetAction(ulisse::action::hold, true);
 
         return fsm::ok;
@@ -64,6 +60,8 @@ namespace states {
         absoluteAxisAlignmentSafetyTask_->SetAxisAlignment(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
         absoluteAxisAlignmentSafetyTask_->SetDirectionAlignment(safetyBoundariesTask_->GetAlignVector(), rml::FrameID::WorldFrame);
 
+        safetyBoundariesTask_->SetVehiclePose(stateCtx_.statusCxt->vehiclePos);
+
         //To avoid the case in which the error between the goal heading and the current heading is too big
         //we activate the the cartesian distance through the gain based on a bell-shaped function on the heading error
 
@@ -78,10 +76,8 @@ namespace states {
         safetyBoundariesTask_->SetTaskParameter(taskGainSafety);
 
         //hold task
-        angularPositionTask_->SetDistanceToTarget(Eigen::Vector3d(stateCtx_.statusCxt->seacurrent[0], stateCtx_.statusCxt->seacurrent[1], 0), rml::FrameID::WorldFrame);
-        angularPositionTask_->SetAlignmentAxis(Eigen::Vector3d(1, 0, 0));
-
-        linearVelocityTask_->SetVelocity(Eigen::VectorXd::Zero(3));
+        absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(stateCtx_.statusCxt->seacurrent[0], stateCtx_.statusCxt->seacurrent[1], 0), rml::FrameID::WorldFrame);
+        absoluteAxisAlignmentTask_->SetAxisAlignment(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
 
         std::cout << "STATE HOLD" << std::endl;
         std::cout << "Goal Distance: " << stateCtx_.goalCxt->goalDistance << std::endl;
