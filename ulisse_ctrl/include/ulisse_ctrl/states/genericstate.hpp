@@ -35,7 +35,6 @@ namespace states {
 
         void CheckRadioController();
         void SetStateCtx(StateCtx stateCtx);
-        void SetMaxGainSafety(double maxGainSafety);
         virtual void ConfigureStateFromFile(libconfig::Config& confObj) = 0;
     };
 }

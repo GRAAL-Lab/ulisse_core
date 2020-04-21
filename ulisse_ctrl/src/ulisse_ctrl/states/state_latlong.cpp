@@ -32,6 +32,23 @@ namespace states {
                 ctb::SetParam(state, minHeadingError_, "minHeadingError");
             }
         }
+
+        //find the max gain for control CartesianDistance task e for the safty task.
+
+        const libconfig::Setting& tasks = root["tasks"];
+
+        for (int i = 0; i < tasks.getLength(); ++i) {
+            const libconfig::Setting& task = tasks[i];
+
+            std::string taskID;
+            ctb::SetParam(task, taskID, "name");
+            if (taskID == task::asvCartesianDistance) {
+                ctb::SetParam(task, maxGainCartesianDistance_, "gain");
+            }
+            if (taskID == task::asvSafetyBoundaries) {
+                ctb::SetParam(task, maxGainSafety_, "gain");
+            }
+        }
     }
 
     fsm::retval StateLatLong::OnEntry()
@@ -43,8 +60,6 @@ namespace states {
         alignToTargetTask_ = std::dynamic_pointer_cast<ikcl::AlignToTarget>(stateCtx_.tasksMap.find(ulisse::task::asvAngularPosition)->second.task);
 
         stateCtx_.actionManager->SetAction(ulisse::action::goTo, true);
-        //get the max gain of the cartesian distance task
-        maxGainCartesianDistance_ = cartesianDistanceTask_->GetTaskParameter().gain;
 
         return fsm::ok;
     }
@@ -73,7 +88,7 @@ namespace states {
         //we activate the the cartesian distance through the gain based on a bell-shaped function on the heading error
 
         //compute the heading error
-        double headingErrorsafety = absoluteAxisAlignmentSafetyTask_->GetMisalignmentVector().norm();
+        double headingErrorsafety = absoluteAxisAlignmentSafetyTask_->GetControlVariable().norm();
         std::cout << "headingErrorsafety: " << headingErrorsafety << std::endl;
 
         //compute the gain of the cartesian distance

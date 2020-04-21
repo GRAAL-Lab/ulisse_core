@@ -28,6 +28,20 @@ namespace states {
                 ctb::SetParam(state, minHeadingError_, "minHeadingError");
             }
         }
+
+        //find the max gain for safty task.
+        const libconfig::Setting& tasks = root["tasks"];
+
+        for (int i = 0; i < tasks.getLength(); ++i) {
+            const libconfig::Setting& task = tasks[i];
+
+            std::string taskID;
+            ctb::SetParam(task, taskID, "name");
+
+            if (taskID == task::asvSafetyBoundaries) {
+                ctb::SetParam(task, maxGainSafety_, "gain");
+            }
+        }
     }
 
     fsm::retval StateHalt::OnEntry()
@@ -65,7 +79,7 @@ namespace states {
         //compute the heading error
         safetyBoundariesTask_->SetVehiclePose(stateCtx_.statusCxt->vehiclePos);
 
-        double headingErrorsafety = absoluteAxisAlignmentSafetyTask_->GetMisalignmentVector().norm();
+        double headingErrorsafety = absoluteAxisAlignmentSafetyTask_->GetControlVariable().norm();
         std::cout << "headingErrorsafety: " << headingErrorsafety << std::endl;
 
         //compute the gain of the cartesian distance

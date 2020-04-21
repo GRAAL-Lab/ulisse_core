@@ -45,6 +45,22 @@ namespace states {
                 ctb::SetParam(state, tolleranceStartingPoint, "tolleranceStartingPoint");
             }
         }
+
+        //find the max gain for linear velocity task e for the safty task.
+        const libconfig::Setting& tasks = root["tasks"];
+
+        for (int i = 0; i < tasks.getLength(); ++i) {
+            const libconfig::Setting& task = tasks[i];
+
+            std::string taskID;
+            ctb::SetParam(task, taskID, "name");
+            //            if (taskID == task::asvLinearVelocity) {
+            //                ctb::SetParam(task, maxGainLinearVelocity_, "gain");
+            //            }
+            if (taskID == task::asvSafetyBoundaries) {
+                ctb::SetParam(task, maxGainSafety_, "gain");
+            }
+        }
     }
 
     bool StateNavigate::LoadSpur(std::string json_nurbs)
@@ -241,7 +257,7 @@ namespace states {
         //we activate the the cartesian distance through the gain based on a bell-shaped function on the heading error
 
         //compute the heading error
-        double headingErrorsafety = absoluteAxisAlignmentSafetyTask_->GetMisalignmentVector().norm();
+        double headingErrorsafety = absoluteAxisAlignmentSafetyTask_->GetControlVariable().norm();
         std::cout << "headingErrorsafety: " << headingErrorsafety << std::endl;
 
         //compute the gain of the cartesian distance

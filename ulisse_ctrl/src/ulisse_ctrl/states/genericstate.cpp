@@ -32,9 +32,5 @@ namespace states {
         stateCtx_.tasksMap = stateCtx.tasksMap;
     }
 
-    void GenericState::SetMaxGainSafety(double maxGainSafety)
-    {
-        maxGainSafety_ = maxGainSafety;
-    }
 }
 }

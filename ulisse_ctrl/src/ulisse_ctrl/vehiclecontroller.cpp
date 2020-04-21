@@ -317,30 +317,11 @@ void VehicleController::SetUpFSM()
     stateCtx.goalCxt = goalCxt_;
     stateCtx.tasksMap = tasksMap_;
 
-    // Halt
-    stateHalt_.SetFSM(&uFsm_);
-    stateHalt_.SetStateCtx(stateCtx);
-    stateHalt_.SetMaxGainSafety(asvSafetyBoundaries_->GetTaskParameter().gain);
-
-    // Hold
-    stateHold_.SetFSM(&uFsm_);
-    stateHold_.SetStateCtx(stateCtx);
-    stateHold_.SetMaxGainSafety(asvSafetyBoundaries_->GetTaskParameter().gain);
-
-    // LatLong
-    stateLatLong_.SetFSM(&uFsm_);
-    stateLatLong_.SetStateCtx(stateCtx);
-    stateLatLong_.SetMaxGainSafety(asvSafetyBoundaries_->GetTaskParameter().gain);
-
-    // SpeedHeading
-    stateSpeedHeading_.SetFSM(&uFsm_);
-    stateSpeedHeading_.SetStateCtx(stateCtx);
-    stateSpeedHeading_.SetMaxGainSafety(asvSafetyBoundaries_->GetTaskParameter().gain);
-
-    // Navigate
-    statePathFollowing_.SetFSM(&uFsm_);
-    statePathFollowing_.SetStateCtx(stateCtx);
-    statePathFollowing_.SetMaxGainSafety(asvSafetyBoundaries_->GetTaskParameter().gain);
+    //Set the fms and the structure that the states need.
+    for (auto& state : statesMap_) {
+        state.second.SetStateCtx(stateCtx);
+        state.second.SetFSM(&uFsm_);
+    }
 
     // ***** EVENTS *****
     eventRcEnabled_.SetFSM(&uFsm_);
