@@ -25,7 +25,7 @@ typedef boost::geometry::model::segment<point_type> segment_type;
  * DesiredVelocity  J=J_{f, lin} \f$
  */
 
-class SafetyBoundaries : public tpik::InequalityTask {
+class SafetyBoundaries : public tpik::ReactiveTask {
 public:
     /**
    * @brief ControlLinearVelocity class constructor
@@ -41,7 +41,7 @@ public:
    * tpik::InequalityTask.
    * @note An exception is throw if deltaJL has not been initialized yet.
    */
-    void Update() throw(tpik::ExceptionWithHow) override;
+    void Update() noexcept(false) override;
 
     bool InitializePolygon(std::string polygonString, LatLong inizialPosition);
 
@@ -53,7 +53,7 @@ public:
     friend std::ostream& operator<<(std::ostream& os, SafetyBoundaries const& safetyBoundaries)
     {
         os << "\033[1;37m"
-           << "SAFETY BOUNDARIES " << (tpik::InequalityTask&)safetyBoundaries
+           << "SAFETY BOUNDARIES " << (tpik::ReactiveTask&)safetyBoundaries
            << std::setprecision(4);
         os << "\033[1;37m"
            << "\033[1;37m"
@@ -62,11 +62,9 @@ public:
         return os;
     }
 
-    void SetVehiclePose(LatLong pose);
+    auto VehiclePosition() -> LatLong& { return vehiclePositionLatLong_; }
 
-    void SetDesiredVelocity(Eigen::Vector3d desiredVelocity);
-
-    const Eigen::Vector3d GetAlignVector();
+    auto AlignVector() const -> const Eigen::Vector3d& { return alignVector_; }
 
 protected:
     /**
@@ -81,24 +79,18 @@ protected:
    * tpik::InequalityTask.
    */
     void UpdateJacobian() override;
-    /**
-   * @brief Method updating the reference.
-   * Implementation of the pure virtual method of the base class
-   * tpik::InequalityTask.
-   */
-    void UpdateReference() override;
 
     void MakeSegments(point_type const& p, point_type const& next, segment_type& seg);
 
     void ExtractMinDistanceSegments(std::list<segment_type> segments, point_type currentPosition, std::list<segment_type>& segment);
 
-    void DistanceCheck(point_type const& currentPosition, Eigen::Vector3d& alignVector);
+    void DistanceCheck(point_type const& currentPositionr);
 
     bool IsConvex(std::list<segment_type> segments);
 
-    void ComputeAlignVectorConcave(segment_type segment, point_type currentPosition, Eigen::Vector3d& alignVector);
+    void ComputeAlignVectorConcave(segment_type segment, point_type currentPosition);
 
-    void ComputeAlignVectorConvex(std::list<segment_type> segment, point_type currentPosition, Eigen::Vector3d& alignVector);
+    void ComputeAlignVectorConvex(std::list<segment_type> segment, point_type currentPosition);
 
     void ComputeNormalVector2Segment(segment_type segment, point_type& alignVector);
 
@@ -106,23 +98,16 @@ protected:
 
     bool ComputeIntersectionPointMiddleZone(std::list<segment_type> segments, std::list<point_type>& points);
 
-    void SetControlVariable(Eigen::Vector3d x);
-
     std::shared_ptr<rml::RobotModel> robotModel_; //!< The shared ptr to the robot model
     std::string frameID_; //!< The id of the frame to be controlled
-        //  BellShapedParameter bellShapeParameter_;
-
     bool isBoundariesInitialized_; //!< Boolean used to state whehther deltaJL has been setted
     std::list<segment_type> segments_;
-
     ctb::LatLong centroid_;
     polygon_type poly_;
-
     Eigen::Vector3d alignVector_;
-
-    Eigen::Vector3d x_; //control variable
-
-    LatLong vehiclePose_;
+    Eigen::Vector3d vehiclePosition_;
+    LatLong vehiclePositionLatLong_;
+    double d_;
 };
 } // namespace ikcl
 #endif

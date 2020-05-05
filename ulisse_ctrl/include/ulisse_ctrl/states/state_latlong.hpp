@@ -12,7 +12,7 @@ namespace states {
 
     protected:
         std::shared_ptr<ikcl::AlignToTarget> alignToTargetTask_;
-        std::shared_ptr<ikcl::ControlCartesianDistance> cartesianDistanceTask_;
+        std::shared_ptr<ikcl::CartesianDistance> cartesianDistanceTask_;
 
         double maxGainCartesianDistance_;
 

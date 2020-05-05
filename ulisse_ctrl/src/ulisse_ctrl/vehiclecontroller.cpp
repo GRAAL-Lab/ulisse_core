@@ -39,58 +39,49 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     actionManager_ = std::make_shared<tpik::ActionManager>(tpik::ActionManager());
 
     /// ROBOT MODEL
-    Eigen::TransfMatrix wTv;
+    Eigen::TransfMatrix world_T_vehicle;
 
     /// Jacobian
     Eigen::Matrix6d J_ASV;
     J_ASV.setIdentity();
 
     // Robot Model
-    robotModel_ = std::make_shared<rml::RobotModel>(wTv, ulisse::robotModelID::ASV, J_ASV);
+    robotModel_ = std::make_shared<rml::RobotModel>(world_T_vehicle, ulisse::robotModelID::ASV, J_ASV);
 
     // ***** SETUP TASKS *****
 
     // ASV CONTROL VELOCITY LINEAR
     asvLinearVelocity_ = std::make_shared<ikcl::LinearVelocity>(ikcl::LinearVelocity(ulisse::task::asvLinearVelocity, robotModel_, ulisse::robotModelID::ASV));
-    asvLinearVelocity_->SetVelocity(Eigen::VectorXd::Zero(3));
     taskInfo_.task = asvLinearVelocity_;
     taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Linear_Velocity", 10);
     tasksMap_.insert(std::make_pair(ulisse::task::asvLinearVelocity, taskInfo_));
 
     // AUV CONTROL ANGULAR POSITION
-    asvAngularPosition_ = std::make_shared<ikcl::AlignToTarget>(ikcl::AlignToTarget(ulisse::task::asvAngularPosition, robotModel_, ulisse::robotModelID::ASV, tpik::CartesianTaskType::Equality, tpik::ProjectorType::Default));
-    asvAngularPosition_->SetAlignmentAxis(Eigen::VectorXd::Zero(3));
-    asvAngularPosition_->SetDistanceToTarget(Eigen::VectorXd::Zero(3), rml::FrameID::WorldFrame);
+    asvAngularPosition_ = std::make_shared<ikcl::AlignToTarget>(ikcl::AlignToTarget(ulisse::task::asvAngularPosition, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvAngularPosition_;
     taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Angular_Position", 10);
     tasksMap_.insert(std::make_pair(ulisse::task::asvAngularPosition, taskInfo_));
 
     // ASV CONTROL DISTANCE
-    asvCartesianDistance_ = std::make_shared<ikcl::ControlCartesianDistance>(ikcl::ControlCartesianDistance(ulisse::task::asvCartesianDistance, robotModel_, ulisse::robotModelID::ASV, tpik::CartesianTaskType::Equality, tpik::ProjectorType::Default));
-    asvCartesianDistance_->SetDistance(Eigen::VectorXd::Zero(3), rml::FrameID::WorldFrame);
+    asvCartesianDistance_ = std::make_shared<ikcl::CartesianDistance>(ikcl::CartesianDistance(ulisse::task::asvCartesianDistance, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvCartesianDistance_;
     taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Cartesian_Distance", 10);
     tasksMap_.insert(std::make_pair(ulisse::task::asvCartesianDistance, taskInfo_));
 
     // ASV SAFETY BOUNDARIES (INEQUALITY TASK)
     asvSafetyBoundaries_ = std::make_shared<ikcl::SafetyBoundaries>(ikcl::SafetyBoundaries(ulisse::task::asvSafetyBoundaries, robotModel_, ulisse::robotModelID::ASV));
-    asvSafetyBoundaries_->SetVehiclePose(statusCxt_->vehiclePos);
     taskInfo_.task = asvSafetyBoundaries_;
     taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Safety_Boundaries", 10);
     tasksMap_.insert(std::make_pair(ulisse::task::asvSafetyBoundaries, taskInfo_));
 
     // ASV absolute axis alignment task
-    asvAbsoluteAxisAlignment_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asvAbsoluteAxisAlignment, robotModel_, tpik::CartesianTaskType::Equality, ulisse::robotModelID::ASV));
+    asvAbsoluteAxisAlignment_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asvAbsoluteAxisAlignment, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvAbsoluteAxisAlignment_;
     taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Absolute_Axis_Alignment", 10);
     tasksMap_.insert(std::make_pair(ulisse::task::asvAbsoluteAxisAlignment, taskInfo_));
-    asvAbsoluteAxisAlignment_->SetAxisAlignment(Eigen::VectorXd::Zero(3), ulisse::robotModelID::ASV);
-    asvAbsoluteAxisAlignment_->SetDirectionAlignment(Eigen::VectorXd::Zero(3), rml::FrameID::WorldFrame);
 
     // ASV absolute axis alignment task
-    asvAbsoluteAxisAlignmentSafety_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asvAbsoluteAxisAlignmentSafety, robotModel_, tpik::CartesianTaskType::Equality, ulisse::robotModelID::ASV));
-    asvAbsoluteAxisAlignmentSafety_->SetAxisAlignment(Eigen::VectorXd::Zero(3), ulisse::robotModelID::ASV);
-    asvAbsoluteAxisAlignmentSafety_->SetDirectionAlignment(Eigen::VectorXd::Zero(3), rml::FrameID::WorldFrame);
+    asvAbsoluteAxisAlignmentSafety_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asvAbsoluteAxisAlignmentSafety, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvAbsoluteAxisAlignmentSafety_;
     taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Absolute_Axis_Alignment_Safety", 10);
     tasksMap_.insert(std::make_pair(ulisse::task::asvAbsoluteAxisAlignmentSafety, taskInfo_));
@@ -545,12 +536,12 @@ void VehicleController::Run()
         try {
 
             std::vector<double> diagonal_activation_function;
-            for (unsigned int i = 0; i < taskMap.second.task->GetInternalActivationFunction().rows(); i++) {
-                diagonal_activation_function.push_back(taskMap.second.task->GetInternalActivationFunction().at(i, i));
+            for (unsigned int i = 0; i < taskMap.second.task->InternalActivationFunction().rows(); i++) {
+                diagonal_activation_function.push_back(taskMap.second.task->InternalActivationFunction().at(i, i));
             }
-            std::vector<double> reference;
-            for (unsigned int i = 0; i < taskMap.second.task->GetReference().size(); i++) {
-                reference.push_back(taskMap.second.task->GetReference().at(i));
+            std::vector<double> referenceRate;
+            for (unsigned int i = 0; i < taskMap.second.task->ReferenceRate().size(); i++) {
+                referenceRate.push_back(taskMap.second.task->ReferenceRate().at(i));
             }
 
             ulisse_msgs::msg::TaskStatus taskstatus_msg;
@@ -562,12 +553,12 @@ void VehicleController::Run()
 
             taskstatus_msg.stamp.sec = now_stamp_secs;
             taskstatus_msg.stamp.nanosec = now_stamp_nanosecs;
-            taskstatus_msg.id = taskMap.second.task->GetID();
-            taskstatus_msg.is_active = taskMap.second.task->GetIsActive();
+            taskstatus_msg.id = taskMap.second.task->ID();
+            taskstatus_msg.is_active = taskMap.second.task->IsActive();
             taskstatus_msg.activation_function = diagonal_activation_function;
-            taskstatus_msg.reference = reference;
+            taskstatus_msg.reference = referenceRate;
 
-            tasksMap_[taskMap.second.task->GetID()].taskPub->publish(taskstatus_msg);
+            tasksMap_[taskMap.second.task->ID()].taskPub->publish(taskstatus_msg);
 
         } catch (tpik::ExceptionWithHow& e) {
             std::cerr << "LOG TASK EXCEPTION" << std::endl;

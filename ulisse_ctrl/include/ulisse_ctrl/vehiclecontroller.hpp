@@ -76,7 +76,7 @@ class VehicleController {
     ///TASKS
     std::shared_ptr<ikcl::LinearVelocity> asvLinearVelocity_;
     std::shared_ptr<ikcl::AlignToTarget> asvAngularPosition_;
-    std::shared_ptr<ikcl::ControlCartesianDistance> asvCartesianDistance_;
+    std::shared_ptr<ikcl::CartesianDistance> asvCartesianDistance_;
     std::shared_ptr<ikcl::SafetyBoundaries> asvSafetyBoundaries_;
     std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignment_;
     std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentSafety_;

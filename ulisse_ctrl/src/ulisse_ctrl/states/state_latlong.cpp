@@ -21,34 +21,17 @@ namespace states {
         const libconfig::Setting& root = confObj.getRoot();
         const libconfig::Setting& states = root["states"];
 
-        for (int i = 0; i < states.getLength(); ++i) {
-            const libconfig::Setting& state = states[i];
+        const libconfig::Setting& state = states.lookup(ulisse::states::ID::latlong);
+        ctb::SetParam(state, maxHeadingError_, "maxHeadingError");
+        ctb::SetParam(state, minHeadingError_, "minHeadingError");
 
-            std::string stateID;
-            ctb::SetParam(state, stateID, "name");
-            if (stateID == ulisse::states::ID::latlong) {
-
-                ctb::SetParam(state, maxHeadingError_, "maxHeadingError");
-                ctb::SetParam(state, minHeadingError_, "minHeadingError");
-            }
-        }
-
-        //find the max gain for control CartesianDistance task e for the safty task.
-
+        //find the max gain for safty task.
         const libconfig::Setting& tasks = root["tasks"];
+        const libconfig::Setting& task = tasks.lookup(task::asvSafetyBoundaries);
+        ctb::SetParam(task, maxGainSafety_, "gain");
 
-        for (int i = 0; i < tasks.getLength(); ++i) {
-            const libconfig::Setting& task = tasks[i];
-
-            std::string taskID;
-            ctb::SetParam(task, taskID, "name");
-            if (taskID == task::asvCartesianDistance) {
-                ctb::SetParam(task, maxGainCartesianDistance_, "gain");
-            }
-            if (taskID == task::asvSafetyBoundaries) {
-                ctb::SetParam(task, maxGainSafety_, "gain");
-            }
-        }
+        const libconfig::Setting& task1 = tasks.lookup(task::asvCartesianDistance);
+        ctb::SetParam(task1, maxGainCartesianDistance_, "gain");
     }
 
     fsm::retval StateLatLong::OnEntry()
@@ -56,7 +39,7 @@ namespace states {
         //set tasks
         safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(stateCtx_.tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
         absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(stateCtx_.tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
-        cartesianDistanceTask_ = std::dynamic_pointer_cast<ikcl::ControlCartesianDistance>(stateCtx_.tasksMap.find(ulisse::task::asvCartesianDistance)->second.task);
+        cartesianDistanceTask_ = std::dynamic_pointer_cast<ikcl::CartesianDistance>(stateCtx_.tasksMap.find(ulisse::task::asvCartesianDistance)->second.task);
         alignToTargetTask_ = std::dynamic_pointer_cast<ikcl::AlignToTarget>(stateCtx_.tasksMap.find(ulisse::task::asvAngularPosition)->second.task);
 
         stateCtx_.actionManager->SetAction(ulisse::action::goTo, true);
@@ -73,29 +56,29 @@ namespace states {
         //a desired escape directon and to generate a desired velocity. To do this we use the task AbsoluteAxisAlignment to cope with
         //the align behavior activated in function of the internal actiovation function of the safety task.
 
-        Eigen::VectorXd Aexternal;
+        safetyBoundariesTask_->VehiclePosition() = stateCtx_.statusCxt->vehiclePos;
 
-        Aexternal = safetyBoundariesTask_->GetInternalActivationFunction().maxCoeff() * Aexternal.setOnes(absoluteAxisAlignmentSafetyTask_->GetTaskSpace());
+        Eigen::MatrixXd Aexternal;
 
-        absoluteAxisAlignmentSafetyTask_->SetExternalActivationFunction(Aexternal);
+        Aexternal = safetyBoundariesTask_->InternalActivationFunction().maxCoeff() * Aexternal.setIdentity(absoluteAxisAlignmentSafetyTask_->TaskSpace(), absoluteAxisAlignmentSafetyTask_->TaskSpace());
 
-        absoluteAxisAlignmentSafetyTask_->SetAxisAlignment(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
-        absoluteAxisAlignmentSafetyTask_->SetDirectionAlignment(safetyBoundariesTask_->GetAlignVector(), rml::FrameID::WorldFrame);
+        absoluteAxisAlignmentSafetyTask_->ExternalActivationFunction() = Aexternal;
 
-        safetyBoundariesTask_->SetVehiclePose(stateCtx_.statusCxt->vehiclePos);
+        absoluteAxisAlignmentSafetyTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
+        absoluteAxisAlignmentSafetyTask_->SetDirectionAlignment(safetyBoundariesTask_->AlignVector(), rml::FrameID::WorldFrame);
 
         //To avoid the case in which the error between the goal heading and the current heading is too big
         //we activate the the cartesian distance through the gain based on a bell-shaped function on the heading error
 
         //compute the heading error
-        double headingErrorsafety = absoluteAxisAlignmentSafetyTask_->GetControlVariable().norm();
+        double headingErrorsafety = absoluteAxisAlignmentSafetyTask_->ControlVariable().norm();
         std::cout << "headingErrorsafety: " << headingErrorsafety << std::endl;
 
         //compute the gain of the cartesian distance
         double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, maxGainSafety_, headingErrorsafety);
 
         // Set the gain of the cartesian distance task
-        safetyBoundariesTask_->SetTaskParameter(taskGainSafety);
+        safetyBoundariesTask_->TaskParameterGain(taskGainSafety);
 
         //goto task
         ctb::DistanceAndAzimuthRad(stateCtx_.statusCxt->vehiclePos, stateCtx_.goalCxt->currentGoal.pos, stateCtx_.goalCxt->goalDistance, stateCtx_.goalCxt->goalHeading);
@@ -110,12 +93,12 @@ namespace states {
         } else {
 
             //Set the distance vector to the target
-            cartesianDistanceTask_->SetDistance(Eigen::Vector3d(stateCtx_.goalCxt->goalDistance * cos(stateCtx_.goalCxt->goalHeading), stateCtx_.goalCxt->goalDistance * sin(stateCtx_.goalCxt->goalHeading), 0), rml::FrameID::WorldFrame);
+            cartesianDistanceTask_->SetTargetDistance(Eigen::Vector3d(stateCtx_.goalCxt->goalDistance * cos(stateCtx_.goalCxt->goalHeading), stateCtx_.goalCxt->goalDistance * sin(stateCtx_.goalCxt->goalHeading), 0), rml::FrameID::WorldFrame);
             //Set the align vector to the target
-            alignToTargetTask_->SetDistanceToTarget(Eigen::Vector3d(stateCtx_.goalCxt->goalDistance * cos(stateCtx_.goalCxt->goalHeading), stateCtx_.goalCxt->goalDistance * sin(stateCtx_.goalCxt->goalHeading), 0), rml::FrameID::WorldFrame);
+            alignToTargetTask_->SetTargetDistance(Eigen::Vector3d(stateCtx_.goalCxt->goalDistance * cos(stateCtx_.goalCxt->goalHeading), stateCtx_.goalCxt->goalDistance * sin(stateCtx_.goalCxt->goalHeading), 0), rml::FrameID::WorldFrame);
 
             //Set the vector that has to been align to the distance vector
-            alignToTargetTask_->SetAlignmentAxis(Eigen::Vector3d(1, 0, 0));
+            alignToTargetTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
 
             //To avoid the case in which the error between the goal heading and the current heading is too big
             //we activate the the cartesian distance through the gain based on a bell-shaped function on the heading error
@@ -127,8 +110,10 @@ namespace states {
             //compute the gain of the cartesian distance
             double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, maxGainCartesianDistance_, headingError);
 
+            std::cout << "Distance in the body frame: " << cartesianDistanceTask_->ControlVariable() << std::endl;
+
             //Set the gain of the cartesian distance task
-            cartesianDistanceTask_->SetTaskParameter(taskGain);
+            cartesianDistanceTask_->TaskParameterGain(taskGain);
         }
 
         std::cout << "STATE LATLONG" << std::endl;
