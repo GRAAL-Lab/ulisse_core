@@ -9,7 +9,6 @@ namespace states {
 
     StateLatLong::StateLatLong()
     {
-        maxGainCartesianDistance_ = 0.1;
         maxHeadingError_ = M_PI / 16;
         minHeadingError_ = M_PI / 32;
     }
@@ -24,14 +23,6 @@ namespace states {
         const libconfig::Setting& state = states.lookup(ulisse::states::ID::latlong);
         ctb::SetParam(state, maxHeadingError_, "maxHeadingError");
         ctb::SetParam(state, minHeadingError_, "minHeadingError");
-
-        //find the max gain for safty task.
-        const libconfig::Setting& tasks = root["tasks"];
-        const libconfig::Setting& task = tasks.lookup(task::asvSafetyBoundaries);
-        ctb::SetParam(task, maxGainSafety_, "gain");
-
-        const libconfig::Setting& task1 = tasks.lookup(task::asvCartesianDistance);
-        ctb::SetParam(task1, maxGainCartesianDistance_, "gain");
     }
 
     fsm::retval StateLatLong::OnEntry()
@@ -75,10 +66,10 @@ namespace states {
         std::cout << "headingErrorsafety: " << headingErrorsafety << std::endl;
 
         //compute the gain of the cartesian distance
-        double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, maxGainSafety_, headingErrorsafety);
+        double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingErrorsafety);
 
         // Set the gain of the cartesian distance task
-        safetyBoundariesTask_->TaskParameterGain(taskGainSafety);
+        safetyBoundariesTask_->ExternalActivationFunction() = taskGainSafety * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
 
         //goto task
         ctb::DistanceAndAzimuthRad(stateCtx_.statusCxt->vehiclePos, stateCtx_.goalCxt->currentGoal.pos, stateCtx_.goalCxt->goalDistance, stateCtx_.goalCxt->goalHeading);
@@ -108,12 +99,12 @@ namespace states {
             std::cout << "Heading error: " << headingError << std::endl;
 
             //compute the gain of the cartesian distance
-            double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, maxGainCartesianDistance_, headingError);
+            double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingError);
 
             std::cout << "Distance in the body frame: " << cartesianDistanceTask_->ControlVariable() << std::endl;
 
             //Set the gain of the cartesian distance task
-            cartesianDistanceTask_->TaskParameterGain(taskGain);
+            cartesianDistanceTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
         }
 
         std::cout << "STATE LATLONG" << std::endl;

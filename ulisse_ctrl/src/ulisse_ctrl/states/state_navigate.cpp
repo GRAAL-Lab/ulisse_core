@@ -38,11 +38,6 @@ namespace states {
         ctb::SetParam(state, tolleranceEndingPoint, "tolleranceEndPoint");
         ctb::SetParam(state, tolleranceStartingAngle, "tolleranceStartingAngle");
         ctb::SetParam(state, tolleranceStartingPoint, "tolleranceStartingPoint");
-
-        //find the max gain for safty task.
-        const libconfig::Setting& tasks = root["tasks"];
-        const libconfig::Setting& task = tasks.lookup(task::asvSafetyBoundaries);
-        ctb::SetParam(task, maxGainSafety_, "gain");
     }
 
     bool StateNavigate::LoadSpur(std::string json_nurbs)
@@ -243,10 +238,10 @@ namespace states {
         std::cout << "headingErrorsafety: " << headingErrorsafety << std::endl;
 
         //compute the gain of the cartesian distance
-        double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, maxGainSafety_, headingErrorsafety);
+        double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingErrorsafety);
 
         // Set the gain of the cartesian distance task
-        safetyBoundariesTask_->TaskParameterGain(taskGainSafety);
+        safetyBoundariesTask_->ExternalActivationFunction() = taskGainSafety * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
 
         //navigate action
         if (isCurveSet) {

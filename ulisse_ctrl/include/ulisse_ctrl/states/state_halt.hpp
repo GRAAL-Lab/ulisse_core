@@ -11,9 +11,9 @@ namespace states {
 
     public:
         StateHalt();
-        virtual ~StateHalt();
-        virtual fsm::retval OnEntry();
-        virtual fsm::retval Execute();
+         ~StateHalt() override;
+         fsm::retval OnEntry() override;
+         fsm::retval Execute() override;
 
         void ConfigureStateFromFile(libconfig::Config& confObj) override;
     };

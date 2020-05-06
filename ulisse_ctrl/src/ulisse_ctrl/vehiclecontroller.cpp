@@ -176,12 +176,12 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         goalCxt_->goalSurge = request->cruise_control;
 
         Eigen::VectorXd satMin, satMax;
-        iCat_->GetSaturation(satMax, satMin);
+        iCat_->GetSaturation(satMin, satMax);
 
         satMax.at(3) = request->cruise_control;
 
         // Set Saturation values for the iCAT (read from conf file)
-        iCat_->SetSaturation(satMax, satMin);
+        iCat_->SetSaturation(satMin, satMax);
 
         response->res = "SetCruiseControl::ok";
     };
@@ -254,7 +254,7 @@ bool VehicleController::LoadConfiguration()
     ConfigurePriorityLevelFromFile(actionManager_, tasksMap_, confObj);
 
     // Set Saturation values for the iCAT (read from conf file)
-    iCat_->SetSaturation(conf_->saturationMax, conf_->saturationMin);
+    iCat_->SetSaturation(conf_->saturationMin, conf_->saturationMax);
 
     ConfigureActionFromFile(actionManager_, confObj);
 

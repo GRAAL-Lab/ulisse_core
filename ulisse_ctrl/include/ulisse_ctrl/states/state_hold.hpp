@@ -15,10 +15,10 @@ namespace states {
 
     public:
         StateHold();
-        virtual ~StateHold();
-        virtual fsm::retval OnEntry();
-        virtual fsm::retval Execute();
-        virtual fsm::retval OnExit();
+        ~StateHold() override;
+        fsm::retval OnEntry() override;
+        fsm::retval Execute() override;
+        fsm::retval OnExit() override;
 
         void ConfigureStateFromFile(libconfig::Config& confObj) override;
     };

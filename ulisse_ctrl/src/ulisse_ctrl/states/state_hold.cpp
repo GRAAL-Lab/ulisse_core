@@ -33,11 +33,6 @@ namespace states {
         const libconfig::Setting& state = states.lookup(ulisse::states::ID::hold);
         ctb::SetParam(state, maxHeadingError_, "maxHeadingError");
         ctb::SetParam(state, minHeadingError_, "minHeadingError");
-
-        //find the max gain for safty task.
-        const libconfig::Setting& tasks = root["tasks"];
-        const libconfig::Setting& task = tasks.lookup(task::asvSafetyBoundaries);
-        ctb::SetParam(task, maxGainSafety_, "gain");
     }
 
     fsm::retval StateHold::Execute()
@@ -67,16 +62,25 @@ namespace states {
         std::cout << "headingErrorsafety: " << headingErrorsafety << std::endl;
 
         //compute the gain of the cartesian distance
-        double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, maxGainSafety_, headingErrorsafety);
+        double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingErrorsafety);
 
         // Set the gain of the cartesian distance task
-        safetyBoundariesTask_->TaskParameterGain(taskGainSafety);
+        safetyBoundariesTask_->ExternalActivationFunction() = taskGainSafety * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
 
         //hold task
-        linearVelocityTask_->Reference() = Eigen::Vector3d::Zero(linearVelocityTask_->TaskSpace());
 
         absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(stateCtx_.statusCxt->seacurrent[0], stateCtx_.statusCxt->seacurrent[1], 0), rml::FrameID::WorldFrame);
         absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
+
+        //compute the heading error
+        double headingError = absoluteAxisAlignmentTask_->ControlVariable().norm();
+        std::cout << "Heading error : " << headingError << std::endl;
+
+        //compute the gain of the cartesian distance
+        double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1, headingError);
+
+        //Set the gain of the cartesian distance task
+        linearVelocityTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(linearVelocityTask_->TaskSpace(), linearVelocityTask_->TaskSpace());
 
         std::cout << "STATE HOLD" << std::endl;
         std::cout << "Goal Distance: " << stateCtx_.goalCxt->goalDistance << std::endl;

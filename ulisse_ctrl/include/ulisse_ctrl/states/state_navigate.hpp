@@ -64,10 +64,10 @@ namespace states {
 
     public:
         StateNavigate();
-        virtual ~StateNavigate();
+         ~StateNavigate()override;
         fsm::retval OnEntry() override;
-        virtual fsm::retval Execute();
-        virtual fsm::retval OnExit();
+        fsm::retval Execute() override;
+         fsm::retval OnExit() override;
 
         void ConfigureStateFromFile(libconfig::Config& confObj) override;
 

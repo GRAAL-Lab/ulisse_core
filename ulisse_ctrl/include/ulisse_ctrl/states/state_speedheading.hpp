@@ -16,13 +16,11 @@ namespace states {
         std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentTask_;
         std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask_;
 
-        double maxGainLinearVelocity_;
-
     public:
         StateSpeedHeading();
-        virtual ~StateSpeedHeading();
-        virtual fsm::retval OnEntry();
-        virtual fsm::retval Execute();
+        ~StateSpeedHeading() override;
+        fsm::retval OnEntry() override;
+        fsm::retval Execute() override;
         void ResetTimer();
 
         void ConfigureStateFromFile(libconfig::Config& confObj) override;

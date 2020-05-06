@@ -19,11 +19,6 @@ namespace states {
         const libconfig::Setting& state = states.lookup(ulisse::states::ID::halt);
         ctb::SetParam(state, maxHeadingError_, "maxHeadingError");
         ctb::SetParam(state, minHeadingError_, "minHeadingError");
-
-        //find the max gain for safty task.
-        const libconfig::Setting& tasks = root["tasks"];
-        const libconfig::Setting& task = tasks.lookup(task::asvSafetyBoundaries);
-        ctb::SetParam(task, maxGainSafety_, "gain");
     }
 
     fsm::retval StateHalt::OnEntry()
@@ -63,10 +58,10 @@ namespace states {
         std::cout << "headingErrorsafety: " << headingErrorsafety << std::endl;
 
         //compute the gain of the cartesian distance
-        double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, maxGainSafety_, headingErrorsafety);
+        double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingErrorsafety);
 
         // Set the gain of the cartesian distance task
-        safetyBoundariesTask_->TaskParameterGain(taskGainSafety);
+        safetyBoundariesTask_->ExternalActivationFunction() = taskGainSafety * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
 
         std::cout << "STATE HALT" << std::endl;
         return fsm::ok;

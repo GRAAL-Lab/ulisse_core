@@ -14,13 +14,11 @@ namespace states {
         std::shared_ptr<ikcl::AlignToTarget> alignToTargetTask_;
         std::shared_ptr<ikcl::CartesianDistance> cartesianDistanceTask_;
 
-        double maxGainCartesianDistance_;
-
     public:
         StateLatLong();
-        virtual ~StateLatLong();
-        virtual fsm::retval OnEntry();
-        virtual fsm::retval Execute();
+        ~StateLatLong() override;
+        fsm::retval OnEntry() override;
+        fsm::retval Execute() override;
 
         void ConfigureStateFromFile(libconfig::Config& confObj) override;
     };
