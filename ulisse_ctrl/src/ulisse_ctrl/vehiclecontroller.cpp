@@ -135,7 +135,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
                 currentPoint.latitude = obj2["latitude"].asDouble();
                 currentPoint.longitude = obj2["longitude"].asDouble();
 
-                Map2EuclidianPoint(currentPoint, statusCxt_->vehiclePos, p);
+                Map2CartesianPoint(currentPoint, centroidLocation_, p);
 
                 polygon = polygon + boost::lexical_cast<std::string>(p[0]) + " " + boost::lexical_cast<std::string>(p[1]);
             }
@@ -148,7 +148,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 
         polygon = polygon + "))";
 
-        if (asvSafetyBoundaries_->InitializePolygon(polygon, statusCxt_->vehiclePos)) {
+        if (asvSafetyBoundaries_->InitializePolygon(polygon)) {
             boundariesSet_ = true;
             boundariesJson_ = request->boundaries_json;
             response->res = "SetBound::ok";
@@ -249,6 +249,12 @@ bool VehicleController::LoadConfiguration()
 
     conf_->ConfigureFromFile(confObj);
     std::cout << tc::grayD << *conf_ << tc::none << std::endl;
+
+    //acquired the centroid location
+    Eigen::VectorXd centroidLocationTmp;
+    ctb::SetParamVector(confObj, centroidLocationTmp, "centroidLocation");
+    centroidLocation_.latitude = centroidLocationTmp[0];
+    centroidLocation_.longitude = centroidLocationTmp[1];
 
     ConfigureTaskFromFile(tasksMap_, confObj);
     ConfigurePriorityLevelFromFile(actionManager_, tasksMap_, confObj);

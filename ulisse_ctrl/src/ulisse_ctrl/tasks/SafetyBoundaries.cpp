@@ -25,7 +25,7 @@ void SafetyBoundaries::Update() noexcept(false)
     }
 
     //form lat long to euclidian
-    ctb::Map2EuclidianPoint(vehiclePositionLatLong_, centroid_, vehiclePosition_);
+    ctb::Map2CartesianPoint(vehiclePositionLatLong_, centroid_, vehiclePosition_);
 
     DistanceCheck(point_type(vehiclePosition_[0], vehiclePosition_[1]));
 
@@ -33,12 +33,9 @@ void SafetyBoundaries::Update() noexcept(false)
         x_ = Eigen::Vector3d{ d_ * alignVector_(0), d_ * alignVector_(1), 0.0 };
     } else {
         x_ = Eigen::Vector3d{ -d_ * alignVector_(0), -d_ * alignVector_(1), 0.0 };
-        std::cout << "DEBUUUUG x_: " << x_.transpose() << std::endl;
     }
 
-    std::cout << "DEBUUUUG VehiclePose: " << vehiclePosition_.transpose() << std::endl;
-    std::cout << "DEBUUUUG XNORM: " << x_.norm() << std::endl;
-    std::cout << "DEBUUUUG D: " << d_ << std::endl;
+    std::cout << " VehiclePose: " << vehiclePosition_.transpose() << std::endl;
 
     ReactiveTask::Update();
 }
@@ -58,12 +55,10 @@ void SafetyBoundaries::UpdateInternalActivationFunction()
     }
 }
 
-bool SafetyBoundaries::InitializePolygon(std::string polygonString, LatLong inizialPosition)
+bool SafetyBoundaries::InitializePolygon(std::string polygonString)
 {
     segments_.clear();
     segment_type seg;
-
-    centroid_ = inizialPosition;
     boost::geometry::read_wkt(polygonString, poly_);
 
     // Generate a list with all the segments
@@ -496,5 +491,16 @@ void SafetyBoundaries::MakeSegments(point_type const& p, point_type const& next,
     boost::geometry::set<0, 1>(seg, p.y());
     boost::geometry::set<1, 0>(seg, next.x());
     boost::geometry::set<1, 1>(seg, next.y());
+}
+
+void SafetyBoundaries::ConfigFromFile(libconfig::Config& confObj)
+{
+    ReactiveTask::ConfigFromFile(confObj);
+
+    //read the centroid to transform a latlong point to a local cartesian one
+    Eigen::VectorXd centroidTmp;
+    ctb::SetParamVector(confObj, centroidTmp, "centroidLocation");
+    centroid_.latitude = centroidTmp[0];
+    centroid_.longitude = centroidTmp[1];
 }
 } // namespace ikcl

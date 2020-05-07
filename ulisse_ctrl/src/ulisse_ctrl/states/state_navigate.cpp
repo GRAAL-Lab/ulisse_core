@@ -38,6 +38,11 @@ namespace states {
         ctb::SetParam(state, tolleranceEndingPoint, "tolleranceEndPoint");
         ctb::SetParam(state, tolleranceStartingAngle, "tolleranceStartingAngle");
         ctb::SetParam(state, tolleranceStartingPoint, "tolleranceStartingPoint");
+
+        Eigen::VectorXd centroidTmp;
+        ctb::SetParamVector(confObj, centroidTmp, "centroidLocation");
+        centroid_.latitude = centroidTmp[0];
+        centroid_.longitude = centroidTmp[1];
     }
 
     bool StateNavigate::LoadSpur(std::string json_nurbs)
@@ -50,8 +55,6 @@ namespace states {
         bool reverse = false;
 
         reader.parse(json_nurbs, obj_master);
-        centroid_.latitude = obj_master["centroid"][0].asDouble();
-        centroid_.longitude = obj_master["centroid"][1].asDouble();
 
         if (obj_master["direction"].asInt()) {
             reverse = true;
@@ -172,21 +175,20 @@ namespace states {
         // Compute the point of the first curve at 0.0.
         s1227(curve, 0, 0.0, &leftKnot, point_at.get(), &stat);
 
-        ctb::Euclidian2MapPoint(point_at, centroid_, startingPoint);
-        //        starting_point = ToLatLong(point_at[0], point_at[1]);
+        ctb::Cartesian2MapPoint(point_at, centroid_, startingPoint);
 
         curve = nurbs_[numberCurves_ - 1];
         // Compute the point of the last curve at 1.0.
         s1227(curve, 0, 1.0, &leftKnot, point_at.get(), &stat);
 
-        ctb::Euclidian2MapPoint(point_at, centroid_, endPoint);
+        ctb::Cartesian2MapPoint(point_at, centroid_, endPoint);
 
         curve = nurbs_[0];
         // Compute the point of the first curve at 0.1.
         s1227(curve, 0, 0.5, &leftKnot, point_at.get(), &stat);
 
         ctb::LatLong next_point;
-        ctb::Euclidian2MapPoint(point_at, centroid_, next_point);
+        ctb::Cartesian2MapPoint(point_at, centroid_, next_point);
 
         double dist;
         ctb::DistanceAndAzimuthRad(startingPoint, next_point, dist, startingAngle);
@@ -297,54 +299,39 @@ namespace states {
                     if (currentCurvilinearAbscissa > 1) {
                         currentCurvilinearAbscissa -= currentCurve;
                     }
+                    // Estimate curve length
+                    s1240(curve, aepsge, &curLength, &stat);
 
-                    if (useLineOfSight) {
-                        std::shared_ptr<double[]> point_at(new double[6]);
-                        // Compute the point of the first curve at current_curvilinear_abscissa.
-                        s1227(curve, 1, currentCurvilinearAbscissa, &leftKnot, point_at.get(), &stat);
+                    double delta_increment = (delta_ / curLength);
+                    double next_curvilinear_abscissa = currentCurvilinearAbscissa + delta_increment;
 
-                        double tan_angle = atan2(point_at[4], point_at[3]);
+                    unsigned int next_curve_index = currentCurve;
+                    SISLCurve* next_curve;
 
-                        point_at[0] = point_at[0] + delta_ * cos(tan_angle);
-                        point_at[1] = point_at[1] + delta_ * sin(tan_angle);
-
-                        ctb::Euclidian2MapPoint(point_at, centroid_, lookAheadPoint);
-
-                    } else {
-                        // Estimate curve length
-                        s1240(curve, aepsge, &curLength, &stat);
-
-                        double delta_increment = (delta_ / curLength);
-                        double next_curvilinear_abscissa = currentCurvilinearAbscissa + delta_increment;
-
-                        unsigned int next_curve_index = currentCurve;
-                        SISLCurve* next_curve;
-
-                        if (next_curvilinear_abscissa > 1) {
-                            if (currentCurve == numberCurves_ - 1) {
-                                next_curvilinear_abscissa = 1;
-                            } else {
-                                next_curvilinear_abscissa = next_curvilinear_abscissa - 1;
-                                next_curve_index++;
-                            }
+                    if (next_curvilinear_abscissa > 1) {
+                        if (currentCurve == numberCurves_ - 1) {
+                            next_curvilinear_abscissa = 1;
+                        } else {
+                            next_curvilinear_abscissa = next_curvilinear_abscissa - 1;
+                            next_curve_index++;
                         }
-
-                        next_curve = nurbs_[next_curve_index];
-                        std::shared_ptr<double[]> point_at(new double[6]);
-                        // Compute the point of the first curve at current_curvilinear_abscissa.
-                        s1227(next_curve, 1, next_curvilinear_abscissa, &leftKnot, point_at.get(),
-                            &stat);
-
-                        Euclidian2MapPoint(point_at, centroid_, lookAheadPoint);
                     }
-                    ctb::DistanceAndAzimuthRad(stateCtx_.statusCxt->vehiclePos, lookAheadPoint, stateCtx_.goalCxt->goalDistance, stateCtx_.goalCxt->goalHeading);
 
-                    alignToTargetTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
-                    alignToTargetTask_->SetTargetDistance(Eigen::Vector3d(stateCtx_.goalCxt->goalDistance * cos(stateCtx_.goalCxt->goalHeading), stateCtx_.goalCxt->goalDistance * sin(stateCtx_.goalCxt->goalHeading), 0), rml::FrameID::WorldFrame);
-                    cartesianDistanceTask_->SetTargetDistance(Eigen::Vector3d(stateCtx_.goalCxt->goalDistance * cos(stateCtx_.goalCxt->goalHeading), stateCtx_.goalCxt->goalDistance * sin(stateCtx_.goalCxt->goalHeading), 0), rml::FrameID::WorldFrame);
+                    next_curve = nurbs_[next_curve_index];
+                    std::shared_ptr<double[]> point_at(new double[6]);
+                    // Compute the point of the first curve at current_curvilinear_abscissa.
+                    s1227(next_curve, 1, next_curvilinear_abscissa, &leftKnot, point_at.get(), &stat);
+
+                    Cartesian2MapPoint(point_at, centroid_, lookAheadPoint);
                 }
+                ctb::DistanceAndAzimuthRad(stateCtx_.statusCxt->vehiclePos, lookAheadPoint, stateCtx_.goalCxt->goalDistance, stateCtx_.goalCxt->goalHeading);
+
+                alignToTargetTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
+                alignToTargetTask_->SetTargetDistance(Eigen::Vector3d(stateCtx_.goalCxt->goalDistance * cos(stateCtx_.goalCxt->goalHeading), stateCtx_.goalCxt->goalDistance * sin(stateCtx_.goalCxt->goalHeading), 0), rml::FrameID::WorldFrame);
+                cartesianDistanceTask_->SetTargetDistance(Eigen::Vector3d(stateCtx_.goalCxt->goalDistance * cos(stateCtx_.goalCxt->goalHeading), stateCtx_.goalCxt->goalDistance * sin(stateCtx_.goalCxt->goalHeading), 0), rml::FrameID::WorldFrame);
             }
         }
+
         std::cout << "STATE PATH FOLLOWING" << std::endl;
         std::cout << "Curvilinear Abscissa: " << currentCurvilinearAbscissa << std::endl;
         std::cout << "Delta: " << delta_ << std::endl;
@@ -366,7 +353,7 @@ namespace states {
 
         curve = nurbs_[currentCurve];
 
-        ctb::Map2EuclidianPoint(stateCtx_.statusCxt->vehiclePos, centroid_, current_point);
+        ctb::Map2CartesianPoint(stateCtx_.statusCxt->vehiclePos, centroid_, current_point);
 
         if (floor(max_abscissa) == floor(min_abscissa) || (floor(max_abscissa) == numberCurves_)) {
             // To select the window part of curv, from min_abscissa to max_abscissa

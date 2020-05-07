@@ -9,7 +9,7 @@ void ConfigureTaskFromFile(std::unordered_map<std::string, ulisse::TasksInfo>& t
     }
 }
 
-void ConfigurePriorityLevelFromFile(std::shared_ptr<tpik::ActionManager> actionManager, std::unordered_map<std::string, ulisse::TasksInfo>& tasksMap, libconfig::Config& confObj)
+void ConfigurePriorityLevelsFromFile(std::shared_ptr<tpik::ActionManager> actionManager, std::unordered_map<std::string, ulisse::TasksInfo>& tasksMap, libconfig::Config& confObj)
 {
     const libconfig::Setting& root = confObj.getRoot();
     const libconfig::Setting& priorityLevels = root["priorityLevels"];
@@ -47,7 +47,7 @@ void ConfigurePriorityLevelFromFile(std::shared_ptr<tpik::ActionManager> actionM
     actionManager->SetUnifiedHierarchy(hierarchy);
 }
 
-void ConfigureActionFromFile(std::shared_ptr<tpik::ActionManager> actionManager, libconfig::Config& confObj)
+void ConfigureActionsFromFile(std::shared_ptr<tpik::ActionManager> actionManager, libconfig::Config& confObj)
 {
     const libconfig::Setting& root = confObj.getRoot();
     const libconfig::Setting& actions = root["actions"];

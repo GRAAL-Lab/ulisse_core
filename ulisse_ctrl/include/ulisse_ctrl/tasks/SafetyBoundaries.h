@@ -43,7 +43,7 @@ public:
    */
     void Update() noexcept(false) override;
 
-    bool InitializePolygon(std::string polygonString, LatLong inizialPosition);
+    bool InitializePolygon(std::string polygonString);
 
     //  void SetBoundaries(double bound_min, double bound_max);
 
@@ -65,6 +65,8 @@ public:
     auto VehiclePosition() -> LatLong& { return vehiclePositionLatLong_; }
 
     auto AlignVector() const -> const Eigen::Vector3d& { return alignVector_; }
+
+    void ConfigFromFile(libconfig::Config& confObj) override;
 
 protected:
     /**

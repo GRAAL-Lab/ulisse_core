@@ -111,6 +111,8 @@ class VehicleController {
 
     std::string boundariesJson_;
 
+    ctb::LatLong centroidLocation_;
+
     bool LoadConfiguration();
     void SetUpFSM();
     void SetupCommandServer();
