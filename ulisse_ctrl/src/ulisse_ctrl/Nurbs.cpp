@@ -10,6 +10,9 @@ Nurbs::Nurbs(int dim)
     aepsge_ = 0.001;
     aepsco_ = 0.000001;
     maxLookupParvalue_ = 0.5;
+    startP_ = Eigen::VectorXd::Zero(dim_);
+    endP_ = Eigen::VectorXd::Zero(dim_);
+    startingD_ = Eigen::VectorXd::Zero(dim_);
 }
 
 Nurbs::~Nurbs() { nurbs_.clear(); }
@@ -44,50 +47,40 @@ bool Nurbs::Initialization(const std::string& jasonNurbs)
 
             reader.parse(c.toStyledString(), obj);
 
-            unsigned int numberVertices = 0; // # of vertices in the curve.
-            for (Json::ArrayIndex i = 0; i < obj["points"].size(); i++) {
-                numberVertices++;
-            }
-
             int order; //Order of curve.
-            order = obj["order"].asInt();
+            order = obj["degree"].asInt();
+            std::cout << order << std::endl;
 
-            std::shared_ptr<double[]> knots(new double[obj["knots"].size()]); //Knot vector of curve
-            std::shared_ptr<double[]> coef(new double[numberVertices * 4]); //Vertices of curve
-            std::shared_ptr<double[]> weights(new double[numberVertices]); //whight vector of curve.
-
+            std::shared_ptr<double[]> weights(new double[obj["weigths"].size()]); //whight vector of curve.
             //Acquired the weights
-            count = 0;
             for (Json::ArrayIndex i = 0; i < obj["weigths"].size(); i++) {
                 weights[count] = obj["weigths"][i].asDouble();
-                count++;
             }
 
+            std::shared_ptr<double[]> coef(new double[obj["points"].size() * 4]); //Vertices of curve
             // //Acquired the vertices
             count = 0;
-            int weightIndex = 0;
             double x = 0.0, y = 0.0;
             for (Json::ArrayIndex i = 0; i < obj["points"].size(); i++) {
                 x = obj["points"][i][0].asDouble();
                 y = obj["points"][i][1].asDouble();
 
-                coef[count] = x * weights[weightIndex];
-                coef[count + 1] = y * weights[weightIndex];
+                coef[count] = x * weights[i];
+                coef[count + 1] = y * weights[i];
                 coef[count + 2] = 0;
-                coef[count + 3] = weights[weightIndex];
+                coef[count + 3] = weights[i];
 
                 count += 4;
-                weightIndex++;
             }
 
+            std::shared_ptr<double[]> knots(new double[obj["knots"].size()]); //Knot vector of curve
             //Acquired the knots
             for (Json::ArrayIndex i = 0; i < obj["knots"].size(); i++) {
                 knots[i] = obj["knots"][i].asDouble();
-                count++;
             }
 
             //create the curve
-            SISLCurve* insert_curve = newCurve(static_cast<int>(numberVertices), order + 1, knots.get(), coef.get(), kind, dim_, copy);
+            SISLCurve* insert_curve = newCurve(static_cast<int>(obj["points"].size()), order + 1, knots.get(), coef.get(), kind, dim_, copy);
 
             if (!insert_curve) {
                 std::cout << "Something Goes Wrong in NURBS Parsing" << std::endl;
@@ -119,11 +112,11 @@ bool Nurbs::Initialization(const std::string& jasonNurbs)
     Eigen::VectorXd deriveStart;
     SISLCurve* initialCurve = nurbs_[0];
     double parvalueS = 0.0; // The parameter value at which to compute position and derivatives.
-    if (!ComputeDerive(initialCurve, 0, parvalueS, deriveStart))
+    if (!ComputeDerive(initialCurve, 1, parvalueS, deriveStart))
         return false;
 
     //first dim components of derive are the components of the position vector, then the dim components of the tangent vector
-    for (int i = 0; i < dim_ - 1; i++) {
+    for (int i = 0; i < dim_; i++) {
         startP_[i] = deriveStart[i];
         startingD_[i] = deriveStart[i + 3];
     }
@@ -136,7 +129,7 @@ bool Nurbs::Initialization(const std::string& jasonNurbs)
         return false;
 
     //first dim components of derive are the components of the position vector, then the dim components of the tangent vector
-    for (int i = 0; i < dim_ - 1; i++) {
+    for (int i = 0; i < dim_; i++) {
         endP_[i] = deriveEnd[i];
     }
 
@@ -202,6 +195,10 @@ bool Nurbs::ComputeNextPoint(const Eigen::VectorXd& currentP, Eigen::VectorXd& n
 bool Nurbs::ComputeDerive(SISLCurve* curve, const int der, const double parvalue, Eigen::VectorXd& derive)
 {
     int deriveDim = dim_ * (der + 1);
+    std::cout << "DEBUG  dim " << dim_ << std::endl;
+    std::cout << "DEBUG " << deriveDim << std::endl;
+    derive.setZero(deriveDim);
+
     auto deriveTmp = std::unique_ptr<double[]>(new double[static_cast<unsigned int>(deriveDim)]);
 
     // S1227 is a method for computing the position and the first derivatives of the curve at  a given parameter value Evaluation from the left hand side
@@ -218,9 +215,8 @@ bool Nurbs::ComputeDerive(SISLCurve* curve, const int der, const double parvalue
         std::cerr << "Compute inizial derive fails" << std::endl;
         return -1;
     } else {
-        for (int i = 0; i < deriveDim - 1; i++) {
-            std::cout << "DEBUG " << deriveTmp[i] << std::endl;
-            derive[i] = deriveTmp[static_cast<unsigned long>(i)];
+        for (int i = 0; i < deriveDim; i++) {
+            derive[i] = deriveTmp[i];
         }
 
         std::cout << "DEBUG after" << std::endl;

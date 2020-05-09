@@ -8,7 +8,7 @@ namespace ulisse {
 namespace states {
 
     StateNavigate::StateNavigate()
-        : nurbsObj_{ 2 }
+        : nurbsObj_{ 3 }
     {
     }
 
