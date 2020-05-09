@@ -3,6 +3,7 @@
 
 #include "sisl.h"
 #include "ulisse_ctrl/states/genericstate.hpp"
+#include <ulisse_ctrl/Nurbs.h>
 
 namespace ulisse {
 
@@ -16,62 +17,26 @@ namespace states {
 
         ctb::LatLong centroid_;
 
-        unsigned int numberCurves_;
-
-        double curvilinearAbscissa;
-
-        double currentCurvilinearAbscissa;
-        double delta_;
-        unsigned int currentCurve;
-
         bool isCurveSet;
         bool start;
-        bool oriented;
 
-        int count;
+        ctb::LatLong startP, endP;
 
-        ctb::LatLong startingPoint;
-        ctb::LatLong endPoint;
-        double startingAngle;
-
-        std::vector<SISLCurve*> nurbs_;
-
-        SISLCurve* curve;
-        int stat;
-        int leftKnot;
-        double aepsco = 0.01;
-        double aepsge = 0.01;
-        double gpar = 0;
-        double gpar2 = 0;
-        double dist = 0;
-        double dist2 = 0;
-        double maximumLookupAbscissa;
-        double tolleranceEndingPoint;
-        double tolleranceStartingAngle;
         double tolleranceStartingPoint;
-        double curLength;
-
-        bool useLineOfSight;
-
-        SISLCurve* newCurve_;
-        SISLCurve* curve2;
-        SISLCurve* newCurve2;
-        SISLCurve* resultCurve;
 
         ctb::LatLong lookAheadPoint;
 
-        double getCurvilinearAbscissa();
+        Nurbs nurbsObj_;
 
     public:
         StateNavigate();
-         ~StateNavigate()override;
+        ~StateNavigate() override;
         fsm::retval OnEntry() override;
         fsm::retval Execute() override;
-         fsm::retval OnExit() override;
 
         void ConfigureStateFromFile(libconfig::Config& confObj) override;
 
-        bool LoadSpur(std::string json_nurbs);
+        bool LoadNurbs(const std::string& nurbs);
     };
 }
 }

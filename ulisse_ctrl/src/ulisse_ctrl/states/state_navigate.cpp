@@ -1,6 +1,5 @@
 #include "ulisse_ctrl/states/state_navigate.hpp"
 #include "ulisse_ctrl/fsm_defines.hpp"
-#include <jsoncpp/json/json.h>
 #include <ulisse_ctrl/geometry_defines.h>
 #include <ulisse_ctrl/ulisse_definitions.h>
 
@@ -9,19 +8,21 @@ namespace ulisse {
 namespace states {
 
     StateNavigate::StateNavigate()
+        : nurbsObj_{ 2 }
     {
-        curvilinearAbscissa = 0;
-        numberCurves_ = 0;
-        isCurveSet = false;
-        maximumLookupAbscissa = 0.2;
-        delta_ = 2.0;
-        tolleranceStartingPoint = 2.0;
-        tolleranceStartingAngle = 0.05;
-        tolleranceEndingPoint = 1.0;
-        useLineOfSight = true;
     }
 
     StateNavigate::~StateNavigate() {}
+
+    bool StateNavigate::LoadNurbs(const std::string& nurbs)
+    {
+
+        if (!nurbsObj_.Initialization(nurbs))
+            return false;
+
+        isCurveSet = true;
+        return isCurveSet;
+    }
 
     void StateNavigate::ConfigureStateFromFile(libconfig::Config& confObj)
     {
@@ -32,12 +33,8 @@ namespace states {
         const libconfig::Setting& state = states.lookup(ulisse::states::ID::navigate);
         ctb::SetParam(state, maxHeadingError_, "maxHeadingError");
         ctb::SetParam(state, minHeadingError_, "minHeadingError");
-        ctb::SetParam(state, useLineOfSight, "useLineOfSight");
-        ctb::SetParam(state, maximumLookupAbscissa, "maximumLookupAbscissa");
-        ctb::SetParam(state, delta_, "delta");
-        ctb::SetParam(state, tolleranceEndingPoint, "tolleranceEndPoint");
-        ctb::SetParam(state, tolleranceStartingAngle, "tolleranceStartingAngle");
-        ctb::SetParam(state, tolleranceStartingPoint, "tolleranceStartingPoint");
+        ctb::SetParam(state, nurbsObj_.MaxLookUpRange(), "maximumLookupAbscissa");
+        ctb::SetParam(state, nurbsObj_.Delta(), "delta");
 
         Eigen::VectorXd centroidTmp;
         ctb::SetParamVector(confObj, centroidTmp, "centroidLocation");
@@ -45,165 +42,11 @@ namespace states {
         centroid_.longitude = centroidTmp[1];
     }
 
-    bool StateNavigate::LoadSpur(std::string json_nurbs)
-    {
-        nurbs_.clear();
-
-        Json::Reader reader;
-        Json::Value obj, obj_master;
-
-        bool reverse = false;
-
-        reader.parse(json_nurbs, obj_master);
-
-        if (obj_master["direction"].asInt()) {
-            reverse = true;
-        } else {
-            reverse = false;
-        }
-
-        numberCurves_ = 0;
-
-        int dimension = 3;
-        int degree = 0;
-        unsigned int cv_count = 0;
-        unsigned int knot_count = 0;
-
-        double x, y;
-        int count = 0;
-
-        try {
-            for (Json::Value c : obj_master["curves"]) {
-
-                reader.parse(c.toStyledString(), obj);
-
-                degree = obj["degree"].asInt();
-
-                cv_count = 0;
-                for (Json::ArrayIndex i = 0; i < obj["points"].size(); i++) {
-                    cv_count++;
-                }
-
-                knot_count = 0;
-                for (Json::ArrayIndex i = 0; i < obj["knots"].size(); i++) {
-                    knot_count++;
-                }
-
-                std::shared_ptr<double[]> weights(new double[cv_count]);
-
-                count = 0;
-                for (Json::ArrayIndex i = 0; i < obj["weigths"].size(); i++) {
-                    weights[count] = obj["weigths"][i].asDouble();
-                    count++;
-                }
-
-                std::shared_ptr<double[]> control_points(new double[cv_count * 4]);
-
-                count = 0;
-                int weight_index = 0;
-                for (Json::ArrayIndex i = 0; i < obj["points"].size(); i++) {
-                    x = obj["points"][i][0].asDouble();
-                    y = obj["points"][i][1].asDouble();
-
-                    control_points[count] = x * weights[weight_index];
-                    control_points[count + 1] = y * weights[weight_index];
-                    control_points[count + 2] = 0;
-                    control_points[count + 3] = weights[weight_index];
-
-                    count += 4;
-                    weight_index++;
-                }
-
-                std::shared_ptr<double[]> knots(new double[obj["knots"].size()]);
-
-                for (Json::ArrayIndex i = 0; i < obj["knots"].size(); i++) {
-                    knots[i] = obj["knots"][i].asDouble();
-                    count++;
-                }
-
-                SISLCurve* insert_curve = newCurve(
-                    static_cast<int>(cv_count), // number of control points
-                    degree + 1, // order of spline curve (degree + 1)
-                    knots.get(), // pointer to knot vector (parametrization)
-                    control_points.get(), // pointer to coefficient vector (control points)
-                    2, // kind => 2 : NURBS curve
-                    dimension, // dimension
-                    1); // no copying of information, 'borrow' array
-
-                if (!insert_curve) {
-                    std::cout << "Something Goes Wrong in NURBS Parsing" << std::endl;
-                    return false;
-                }
-
-                if (reverse) {
-                    // Turn the direction of a curve by reversing the ordering of the
-                    // coefficients
-                    s1706(insert_curve);
-                }
-
-                nurbs_.push_back(insert_curve);
-
-                numberCurves_++;
-            }
-        } catch (Json::Exception& e) {
-            // output exception information
-            std::cout << "NURBS Descriptor Error";
-            isCurveSet = false;
-            return false;
-        }
-
-        if (reverse) {
-            // Revert the nurbs_ curve
-            std::reverse(nurbs_.begin(), nurbs_.end());
-        }
-
-        isCurveSet = true;
-        return true;
-    }
-
     fsm::retval StateNavigate::OnEntry()
     {
-        curvilinearAbscissa = 0.0;
-        currentCurvilinearAbscissa = 0.0;
-        currentCurve = 0;
-        start = false;
-        oriented = false;
-        count = 0;
-
-        curve = nurbs_[0];
-        std::shared_ptr<double[]> point_at(new double[3]);
-        // Compute the point of the first curve at 0.0.
-        s1227(curve, 0, 0.0, &leftKnot, point_at.get(), &stat);
-
-        ctb::Cartesian2MapPoint(point_at, centroid_, startingPoint);
-
-        curve = nurbs_[numberCurves_ - 1];
-        // Compute the point of the last curve at 1.0.
-        s1227(curve, 0, 1.0, &leftKnot, point_at.get(), &stat);
-
-        ctb::Cartesian2MapPoint(point_at, centroid_, endPoint);
-
-        curve = nurbs_[0];
-        // Compute the point of the first curve at 0.1.
-        s1227(curve, 0, 0.5, &leftKnot, point_at.get(), &stat);
-
-        ctb::LatLong next_point;
-        ctb::Cartesian2MapPoint(point_at, centroid_, next_point);
-
-        double dist;
-        ctb::DistanceAndAzimuthRad(startingPoint, next_point, dist, startingAngle);
-
-        for (currentCurve = 0; currentCurve < nurbs_.size(); currentCurve++) {
-            curve = nurbs_[currentCurve];
-
-            // Estimate curve length
-            s1240(curve, aepsge, &curLength, &stat);
-
-            if (curLength < delta_) {
-                std::cout << "Delta too high!" << std::endl;
-                return fsm::fail;
-            }
-        }
+        //Get the staring and ending point of the path
+        ctb::Cartesian2MapPoint(nurbsObj_.StartingPoint(), centroid_, startP);
+        ctb::Cartesian2MapPoint(nurbsObj_.EndingPoint(), centroid_, endP);
 
         //set tasks
         safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(stateCtx_.tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
@@ -250,14 +93,10 @@ namespace states {
             //Going to the starting point
             if (!start) {
                 std::cout << "*** GOING TO INITIAL POINT! ***" << std::endl;
-                ctb::DistanceAndAzimuthRad(stateCtx_.statusCxt->vehiclePos, startingPoint, stateCtx_.goalCxt->goalDistance, stateCtx_.goalCxt->goalHeading);
+                ctb::DistanceAndAzimuthRad(stateCtx_.statusCxt->vehiclePos, startP, stateCtx_.goalCxt->goalDistance, stateCtx_.goalCxt->goalHeading);
 
                 if (stateCtx_.goalCxt->goalDistance < tolleranceStartingPoint) {
-                    count++;
-                    if (count > 50) {
-                        count = 0;
-                        start = true;
-                    }
+                    start = true;
                 } else {
                     alignToTargetTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
                     alignToTargetTask_->SetTargetDistance(Eigen::Vector3d(stateCtx_.goalCxt->goalDistance * cos(stateCtx_.goalCxt->goalHeading), stateCtx_.goalCxt->goalDistance * sin(stateCtx_.goalCxt->goalHeading), 0), rml::FrameID::WorldFrame);
@@ -265,65 +104,15 @@ namespace states {
                 }
             }
 
-            /*            if (start && !oriented) {
-                std::cout << "*** ORIENTING! ***" << std::endl;
-                if (abs(stateCtx_.statusCxt->vehicleHeading - starting_angle) < tollerance_start_angle) {
-                    count++;
-                    if (count > 50) {
-                        count = 0;
-                        oriented = true;
-                    }
-                } else {
-                    angularPositionTask_->SetAlignmentAxis(Eigen::Vector3d(1, 0, 0));
-                    angularPositionTask_->SetDistanceToTarget(Eigen::Vector3d(cos(starting_angle), sin(starting_angle), 0), rml::FrameID::WorldFrame);
-
-                    std::cout << "Starting angle " << abs(stateCtx_.statusCxt->vehicleHeading - starting_angle) << std::endl;
-                }
-            } else*/
-            if (start /* && oriented*/) {
+            if (start) {
 
                 std::cout << "*** STARTING POINT! ***" << std::endl;
-                ctb::DistanceAndAzimuthRad(stateCtx_.statusCxt->vehiclePos, endPoint, stateCtx_.goalCxt->goalDistance, stateCtx_.goalCxt->goalHeading);
+                Eigen::VectorXd vehiclePoseCartesian, lookAheadPointCartesian;
+                Map2CartesianPoint(stateCtx_.statusCxt->vehiclePos, centroid_, vehiclePoseCartesian);
+                nurbsObj_.ComputeNextPoint(vehiclePoseCartesian, lookAheadPointCartesian);
 
-                curvilinearAbscissa = getCurvilinearAbscissa();
+                Cartesian2MapPoint(lookAheadPointCartesian, centroid_, lookAheadPoint);
 
-                if (curvilinearAbscissa >= numberCurves_) {
-                    std::cout << "*** MISSION FINISHED! ***" << std::endl;
-                    isCurveSet = false;
-                    fsm_->ExecuteCommand(ulisse::commands::ID::hold);
-                } else {
-                    currentCurve = static_cast<unsigned int>(floor(curvilinearAbscissa));
-                    curve = nurbs_[currentCurve];
-
-                    currentCurvilinearAbscissa = curvilinearAbscissa;
-                    if (currentCurvilinearAbscissa > 1) {
-                        currentCurvilinearAbscissa -= currentCurve;
-                    }
-                    // Estimate curve length
-                    s1240(curve, aepsge, &curLength, &stat);
-
-                    double delta_increment = (delta_ / curLength);
-                    double next_curvilinear_abscissa = currentCurvilinearAbscissa + delta_increment;
-
-                    unsigned int next_curve_index = currentCurve;
-                    SISLCurve* next_curve;
-
-                    if (next_curvilinear_abscissa > 1) {
-                        if (currentCurve == numberCurves_ - 1) {
-                            next_curvilinear_abscissa = 1;
-                        } else {
-                            next_curvilinear_abscissa = next_curvilinear_abscissa - 1;
-                            next_curve_index++;
-                        }
-                    }
-
-                    next_curve = nurbs_[next_curve_index];
-                    std::shared_ptr<double[]> point_at(new double[6]);
-                    // Compute the point of the first curve at current_curvilinear_abscissa.
-                    s1227(next_curve, 1, next_curvilinear_abscissa, &leftKnot, point_at.get(), &stat);
-
-                    Cartesian2MapPoint(point_at, centroid_, lookAheadPoint);
-                }
                 ctb::DistanceAndAzimuthRad(stateCtx_.statusCxt->vehiclePos, lookAheadPoint, stateCtx_.goalCxt->goalDistance, stateCtx_.goalCxt->goalHeading);
 
                 alignToTargetTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
@@ -333,76 +122,7 @@ namespace states {
         }
 
         std::cout << "STATE PATH FOLLOWING" << std::endl;
-        std::cout << "Curvilinear Abscissa: " << currentCurvilinearAbscissa << std::endl;
-        std::cout << "Delta: " << delta_ << std::endl;
 
-        return fsm::ok;
-    }
-
-    double StateNavigate::getCurvilinearAbscissa()
-    {
-        double min_abscissa = curvilinearAbscissa;
-        double max_abscissa = numberCurves_ + maximumLookupAbscissa;
-        if (max_abscissa > numberCurves_) {
-            max_abscissa = numberCurves_;
-        }
-
-        std::shared_ptr<double[]> current_point(new double[3]);
-
-        currentCurve = static_cast<unsigned int>(floor(numberCurves_));
-
-        curve = nurbs_[currentCurve];
-
-        ctb::Map2CartesianPoint(stateCtx_.statusCxt->vehiclePos, centroid_, current_point);
-
-        if (floor(max_abscissa) == floor(min_abscissa) || (floor(max_abscissa) == numberCurves_)) {
-            // To select the window part of curv, from min_abscissa to max_abscissa
-            double decMinAbscissa, decMaxAbscissa;
-            std::modf(min_abscissa, &decMinAbscissa);
-            std::modf(min_abscissa, &decMaxAbscissa);
-            s1713(curve, decMinAbscissa, (decMaxAbscissa), &newCurve_, &stat);
-
-            // Find the closest point between a curve and a point
-            s1957(newCurve_, current_point.get(), 3, aepsco, aepsge, &gpar, &dist, &stat);
-
-            gpar = gpar + floor(min_abscissa);
-
-        } else {
-            // To select the last part of first curve, from min_abscissa to 1.
-            double decMinAbscissa, decMaxAbscissa;
-            std::modf(min_abscissa, &decMinAbscissa);
-            std::modf(min_abscissa, &decMaxAbscissa);
-            s1713(curve, decMinAbscissa, 1.0, &newCurve_, &stat);
-
-            // Select the second curve
-            curve2 = nurbs_[currentCurve + 1];
-            // To select the first part of the second curve, from 0.0 to max_abscissa
-            s1713(curve2, 0.0, decMaxAbscissa, &newCurve2, &stat);
-
-            // Find the closest point between the first curve and the point
-            s1957(curve, current_point.get(), 3, aepsco, aepsge, &gpar, &dist, &stat);
-
-            // Find the closest point between the second curve and the point
-            s1957(curve2, current_point.get(), 3, aepsco, aepsge, &gpar2, &dist2, &stat);
-
-            if (dist < dist2) {
-                gpar = gpar + floor(min_abscissa);
-            } else {
-                gpar = gpar2 + floor(max_abscissa);
-            }
-        }
-
-        return gpar;
-    }
-
-    fsm::retval StateNavigate::OnExit()
-    {
-        curvilinearAbscissa = 0.0;
-        currentCurve = 0;
-        start = false;
-        oriented = false;
-        count = 0;
-        isCurveSet = false;
         return fsm::ok;
     }
 

@@ -257,12 +257,12 @@ bool VehicleController::LoadConfiguration()
     centroidLocation_.longitude = centroidLocationTmp[1];
 
     ConfigureTaskFromFile(tasksMap_, confObj);
-    ConfigurePriorityLevelFromFile(actionManager_, tasksMap_, confObj);
+    ConfigurePriorityLevelsFromFile(actionManager_, tasksMap_, confObj);
 
     // Set Saturation values for the iCAT (read from conf file)
     iCat_->SetSaturation(conf_->saturationMin, conf_->saturationMax);
 
-    ConfigureActionFromFile(actionManager_, confObj);
+    ConfigureActionsFromFile(actionManager_, confObj);
 
     //insert states in the map
     statesMap_.insert({ ulisse::states::ID::halt, stateHalt_ });
@@ -407,7 +407,7 @@ void VehicleController::SetupCommandServer()
 
             std::cout << "Received Command Path Following" << std::endl;
 
-            if (!statePathFollowing_.LoadSpur(request->nav_cmd.nurbs_json)) {
+            if (!statePathFollowing_.LoadNurbs(request->nav_cmd.nurbs_json)) {
                 ret = fsm::retval::fail;
             }
 
