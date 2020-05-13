@@ -403,7 +403,7 @@ function generate_nurb_circle(p0, p3, dir) {
 function generate_nurb_line(p0, p1) {
     return {
         degree: 1,
-        points: [[p0.x, p0.y], [p1.x, p1.y]],
+        points: [[p0.latitude, p0.longitude], [p1.latitude, p1.longitude]],
         weigths: [1, 1],
         knots: [0, 0, 1, 1]
     }

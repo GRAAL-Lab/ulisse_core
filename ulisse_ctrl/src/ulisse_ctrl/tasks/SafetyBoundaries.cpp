@@ -35,8 +35,6 @@ void SafetyBoundaries::Update() noexcept(false)
         x_ = Eigen::Vector3d{ -d_ * alignVector_(0), -d_ * alignVector_(1), 0.0 };
     }
 
-    std::cout << " VehiclePose: " << vehiclePosition_.transpose() << std::endl;
-
     ReactiveTask::Update();
 }
 

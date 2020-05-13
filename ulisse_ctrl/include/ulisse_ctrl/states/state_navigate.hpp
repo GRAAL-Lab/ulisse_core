@@ -16,17 +16,13 @@ namespace states {
         std::shared_ptr<ikcl::CartesianDistance> cartesianDistanceTask_;
 
         ctb::LatLong centroid_;
-
         bool isCurveSet;
         bool start;
-
         ctb::LatLong startP, endP;
-
         double tolleranceStartingPoint;
-
         ctb::LatLong lookAheadPoint;
-
         Nurbs nurbsObj_;
+        int count;
 
     public:
         StateNavigate();

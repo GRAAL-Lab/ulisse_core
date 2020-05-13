@@ -73,6 +73,8 @@ namespace states {
 
         //goto task
         ctb::DistanceAndAzimuthRad(stateCtx_.statusCxt->vehiclePos, stateCtx_.goalCxt->currentGoal.pos, stateCtx_.goalCxt->goalDistance, stateCtx_.goalCxt->goalHeading);
+        std::cout << "startP execute: " << stateCtx_.goalCxt->currentGoal.pos.latitude << ", " << stateCtx_.goalCxt->currentGoal.pos.longitude << std::endl;
+        std::cout << "vehicle pose : " << stateCtx_.statusCxt->vehiclePos.latitude << ", " << stateCtx_.statusCxt->vehiclePos.longitude << std::endl;
 
         if (stateCtx_.goalCxt->goalDistance < stateCtx_.goalCxt->currentGoal.acceptRadius) {
             std::cout << "*** GOAL REACHED! ***" << std::endl;
