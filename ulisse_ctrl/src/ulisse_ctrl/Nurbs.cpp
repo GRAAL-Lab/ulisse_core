@@ -3,18 +3,21 @@
 
 Nurbs::Nurbs(int dim)
     : dim_{ dim }
-    , Parvalue_{ 0.0 }
-    , currentParvalue_{ 0.0 }
-    , nextParvalue_{ 0.0 }
-    , isEndPath_{ false }
+    , startP_{ 0.0, 0.0 }
+    , endP_{ 0.0, 0.0 }
+    , parvalue_{ 0.0 }
+    , centroid_{ 0.0, 0.0 }
 {
-    k_ = dim + 1;
-    aepsge_ = 0.001;
-    aepsco_ = 0.000001;
-    maxLookupParvalue_ = 0.5;
-    startingD_ = Eigen::VectorXd::Zero(dim_);
-    delta_ = 2.0;
-    maxLookupParvalue_ = 0.5;
+    //default initialization of Nurbs.cpp param
+    nurbsParam.aepsge = 0.001;
+    nurbsParam.aepsco = 0.000001;
+    nurbsParam.maxLookupParvalue = 0.5;
+    nurbsParam.deltaMin = 2.0;
+    nurbsParam.deltaMax = 5.0;
+    nurbsParam.directionError = 0.436; //25 gradi
+
+    //Default initialization of the currentDelta
+    currentDelta_ = nurbsParam.deltaMax;
 }
 
 Nurbs::~Nurbs() { nurbs_.clear(); }
@@ -154,72 +157,164 @@ bool Nurbs::Initialization(const std::string& jasonNurbs)
 bool Nurbs::ComputeNextPoint(const ctb::LatLong& currentP, ctb::LatLong& nextP)
 {
     Eigen::VectorXd currentPCartesian = Eigen::VectorXd::Zero(dim_);
-
     ctb::Map2CartesianPoint(currentP, centroid_, currentPCartesian);
+
     //Get the current Parvalue
     if (!ComputeParameterValue(currentPCartesian)) {
         std::cerr << "ComputeNextPoint: ComputeParameterValue fails" << std::endl;
         return false;
     }
 
-    std::cout << "currentParvalue: " << Parvalue_ << std::endl;
+    //get the index of the current curve as the floor of the current parvalue
+    unsigned int indexCurrentCurve = static_cast<unsigned int>(floor(parvalue_));
 
-    unsigned int indexCurrentCurve = static_cast<unsigned int>(floor(Parvalue_));
-
+    // get the current curve
     SISLCurve* currentCurve = nurbs_[indexCurrentCurve];
 
-    currentParvalue_ = Parvalue_;
-
-    if (currentParvalue_ > 1) {
-        currentParvalue_ -= indexCurrentCurve;
-    }
-
+    //Compute the position and the first derivative of the current paramenter value
+    Eigen::VectorXd derive, currenDirection = Eigen::VectorXd::Zero(dim_);
     int der = 1; //compute the position and the first derivative
-    //    Eigen::VectorXd currentDerive;
-    //    ComputeDerive(currentCurve, der, currentParvalue, currentDerive);
-
-    // Estimate curve length
-    int stat;
-    double curveLenght;
-    s1240(currentCurve, aepsge_, &curveLenght, &stat);
-
-    std::cout << "Current curve lunght " << curveLenght << std::endl;
-    std::cout << "delta " << delta_ << std::endl;
-
-    if (stat < 0) {
-        std::cerr << "ComputeNextPoint: s1240 fails" << std::endl;
-        return false;
-    }
-
-    double delta = delta_ / curveLenght;
-
-    nextParvalue_ = currentParvalue_ + delta;
-
-    std::cout << "nextParvalue: " << nextParvalue_ << std::endl;
-
-    unsigned int indexNextCurve = indexCurrentCurve;
-    SISLCurve* nextCurve = nullptr;
-
-    if (nextParvalue_ > 1) {
-        if (indexCurrentCurve == nurbs_.size() - 1) {
-            nextParvalue_ = 1;
-        } else {
-            nextParvalue_ += -1;
-            indexNextCurve++;
-        }
-    }
-
-    nextCurve = nurbs_[indexNextCurve];
-    Eigen::VectorXd derive;
-    if (!ComputeDerive(nextCurve, der, nextParvalue_, derive)) {
+    if (!ComputeDerive(currentCurve, der, parvalue_, derive)) {
         std::cerr << "ComputeNextPoint: ComputeDerive fails" << std::endl;
         return false;
     }
 
-    ctb::Cartesian2MapPoint(derive, centroid_, nextP);
+    //the first derivative of the current paramenter value is the direction of the curve
+    currenDirection = derive.bottomRows(dim_) / derive.bottomRows(dim_).norm();
+    std::cout << "tangent of the current parvalue: " << currenDirection.transpose() << std::endl;
 
-    std::cout << "next point on curve: " << nextP.latitude << nextP.longitude << std::endl;
+    Eigen::VectorXd nextDir;
+    Eigen::VectorXd possibleNextP;
 
+    //To compute the next point on the curve, by addind a delta increment on the current parvalue
+    //To avoiding reaching a point with a direction too different from the actual one, it has been defined
+    //two threshold deltaMin and delta max. The current delta increment is
+    //inizialize with deltaMax and then compute the next point and the next direction. Then,
+    //the difference between the current and the next direction is evalueted. In this case, the delta is decremented
+    //and a new point is compute with the new delta. This process is repeated until either a point with
+    //a direction not to different form the cerrent one is found or the current delta reaches the deltaMin threshold
+
+    //Try to compute the next point on the curve and the next direction
+    if (!ComputePossibleNextPoint(nextDir, possibleNextP)) {
+        std::cerr << "ComputeNextPossiblePoint fails" << std::endl;
+        return false;
+    }
+
+    //Evaluete the diference between the current direction and the next direction
+    Eigen::VectorXd diff = rml::ReducedVersorLemma(currenDirection, nextDir);
+
+    //While the differece is over the threshold compute a new point with different delta
+    while (diff.norm() > nurbsParam.directionError) {
+        if (currentDelta_ <= nurbsParam.deltaMin) {
+            //if the delta reaches the min value, set the current delta to the min value
+            currentDelta_ = nurbsParam.deltaMin;
+            // and compute the parvalue at this delta increment
+            if (!ComputePossibleNextPoint(nextDir, possibleNextP)) {
+                std::cerr << "ComputeNextPossiblePoint fails" << std::endl;
+                return false;
+            }
+            break;
+        } else {
+            //otherwise decrease the delta by a 0.5 meter factor
+            currentDelta_ -= 0.5;
+            //compute the next parvalue with this delta increment
+            if (!ComputePossibleNextPoint(nextDir, possibleNextP)) {
+                std::cerr << "ComputeNextPossiblePoint fails" << std::endl;
+                return false;
+            }
+        }
+    }
+
+    //Detect if the difference is under threshold and restore the max delta
+    if (diff.norm() < nurbsParam.directionError) {
+        currentDelta_ = nurbsParam.deltaMax;
+    }
+
+    //Convert the next point in latlong coordinates
+    ctb::Cartesian2MapPoint(possibleNextP, centroid_, nextP);
+    std::cout << "tangent of the current parvalue: " << currenDirection.transpose() << std::endl;
+    std::cout << "current delta: " << currentDelta_ << std::endl;
+    return true;
+}
+
+bool Nurbs::ComputePossibleNextPoint(Eigen::VectorXd& nextDirection, Eigen::VectorXd& nextP)
+{
+    nextP = Eigen::VectorXd::Zero(dim_);
+
+    //get the index of the current curve as the floor of the current parvalue
+    unsigned int indexCurrentCurve = static_cast<unsigned int>(floor(parvalue_));
+    // get the current curve
+    SISLCurve* currentCurve = nurbs_[indexCurrentCurve];
+
+    //take the decimal part
+    double intPart;
+    double currentParvalue = std::modf(parvalue_, &intPart);
+
+    // Estimate curve length
+    double curveLenght;
+    if (ComputeCurveLength(currentCurve, curveLenght)) {
+        std::cerr << "ComputeNextPossiblePoint: ComputeCurveLength fails" << std::endl;
+        return false;
+    }
+
+    double delta = currentDelta_ / curveLenght;
+
+    double nextParvalue = currentParvalue + delta;
+
+    unsigned int indexNextCurve = indexCurrentCurve;
+    SISLCurve* nextCurve = nullptr;
+
+    //Check if adding a delta increment the next parvalue is on the next curve
+    if (nextParvalue > 1) {
+        if (indexCurrentCurve == nurbs_.size() - 1) {
+            nextParvalue = 1.0;
+        } else {
+            //compute the delta remaining of the last curve
+            double deltaRemaining = (1 - currentParvalue) * curveLenght;
+
+            indexNextCurve++;
+            SISLCurve* nextCurve = nurbs_[indexNextCurve];
+
+            // Estimate the new curve length
+            double curveLenght;
+            if (ComputeCurveLength(nextCurve, curveLenght)) {
+                std::cerr << "ComputeNextPossiblePoint: ComputeCurveLength fails" << std::endl;
+                return false;
+            }
+
+            //compute the new delta
+            delta = (currentDelta_ - deltaRemaining) / curveLenght;
+
+            nextParvalue = delta;
+        }
+    }
+
+    nextCurve = nurbs_[indexNextCurve];
+
+    int der = 1;
+    Eigen::VectorXd derive;
+    if (!ComputeDerive(nextCurve, der, nextParvalue, derive)) {
+        std::cerr << "ComputeNextPossiblePoint: ComputeDerive fails" << std::endl;
+        return false;
+    }
+
+    nextDirection = Eigen::VectorXd::Zero(dim_);
+    nextDirection = derive.bottomRows(dim_) / derive.bottomRows(dim_).norm();
+    std::cout << "tangent of the next parvalue: " << nextDirection.transpose() << std::endl;
+
+    nextP = derive.topRows(dim_);
+    return true;
+}
+
+bool Nurbs::ComputeCurveLength(SISLCurve* curve, double& length)
+{
+    //SISL call to campute the curve length
+    int stat = 0;
+    s1240(curve, nurbsParam.aepsge, &length, &stat);
+    if (stat < 0) {
+        std::cerr << "ComputeCurveLength fails" << std::endl;
+        return false;
+    }
     return true;
 }
 
@@ -259,20 +354,20 @@ bool Nurbs::ComputeParameterValue(const Eigen::VectorXd& epoint)
         epointTmp[static_cast<unsigned long>(i)] = epoint[i];
 
     unsigned long numberCurves = nurbs_.size();
-    double minParvalue = Parvalue_;
-    double maxParvalue = Parvalue_ + maxLookupParvalue_;
+    double minParvalue = parvalue_;
+    double maxParvalue = parvalue_ + nurbsParam.maxLookupParvalue;
 
     //to avoid in the last curve to find the parvalue outside the curve
     if (maxParvalue > numberCurves) {
         maxParvalue = numberCurves;
     }
 
-    unsigned long indexCurrentCurve = static_cast<unsigned long>(floor(Parvalue_));
+    unsigned long indexCurrentCurve = static_cast<unsigned long>(floor(parvalue_));
 
     //get the curve at the current parvalue
     SISLCurve* curve = nurbs_[indexCurrentCurve];
 
-    if (floor(maxParvalue) == floor(minParvalue) || (floor(maxParvalue) == numberCurves)) {
+    if (floor(maxParvalue) == floor(minParvalue) || maxParvalue >= numberCurves) {
         double decMinParvalue, decMaxParvalue;
         double intPart;
         decMinParvalue = std::modf(minParvalue, &intPart);
@@ -290,13 +385,14 @@ bool Nurbs::ComputeParameterValue(const Eigen::VectorXd& epoint)
         }
 
         // Find the closest point between a curve and a point
-        s1957(newCurve, epointTmp.get(), 3, aepsco_, aepsge_, &Parvalue_, &dist, &stat);
+        s1957(newCurve, epointTmp.get(), 3, nurbsParam.aepsco, nurbsParam.aepsge, &parvalue_, &dist, &stat);
         if (stat < 0) {
             std::cerr << "ComputesParameterValue: s1957 fails" << std::endl;
             return false;
         }
 
-        Parvalue_ = Parvalue_ + floor(minParvalue);
+        //The parameter value of the closest point in the parameter interval of the curve
+        parvalue_ = parvalue_ + floor(minParvalue);
 
     } else {
         // To select the last part of first curve, from currentParvalue to 1.
@@ -332,14 +428,14 @@ bool Nurbs::ComputeParameterValue(const Eigen::VectorXd& epoint)
         }
 
         // Find the closest point between the first curve and the point
-        s1957(curve, epointTmp.get(), dim_, aepsco_, aepsge_, &parvalueTmp, &dist, &stat);
+        s1957(curve, epointTmp.get(), dim_, nurbsParam.aepsco, nurbsParam.aepsge, &parvalueTmp, &dist, &stat);
         if (stat < 0) {
             std::cerr << "ComputesParameterValue: s1957 fails" << std::endl;
             return false;
         }
 
         // Find the closest point between the second curve and the point
-        s1957(curve2, epointTmp.get(), dim_, aepsco_, aepsge_, &parvalueTmp2, &dist2, &stat);
+        s1957(curve2, epointTmp.get(), dim_, nurbsParam.aepsco, nurbsParam.aepsge, &parvalueTmp2, &dist2, &stat);
         if (stat < 0) {
             std::cerr << "ComputesParameterValue: s1957 fails" << std::endl;
             return false;
@@ -347,9 +443,9 @@ bool Nurbs::ComputeParameterValue(const Eigen::VectorXd& epoint)
 
         //The parameter value at of the closest point
         if (dist < dist2) {
-            Parvalue_ = parvalueTmp + floor(minParvalue);
+            parvalue_ = parvalueTmp + floor(minParvalue);
         } else {
-            Parvalue_ = parvalueTmp2 + floor(maxParvalue);
+            parvalue_ = parvalueTmp2 + floor(maxParvalue);
         }
     }
 

@@ -5,6 +5,7 @@
 #include "eigen3/Eigen/Eigen"
 #include "iostream"
 #include "sisl.h"
+#include <libconfig.h++>
 #include <memory>
 
 //Class to handle the nurbs curves based on the SISL library.
@@ -28,29 +29,13 @@ public:
     */
     auto EndingPoint() const -> const ctb::LatLong& { return endP_; }
     /*
-     * Method that get the starting direction of the path
-    */
-    auto StartingDirection() const -> const Eigen::VectorXd& { return startingD_; }
-    /*
-     * Method that set the geometric tollerance
-    */
-    auto GeometricTollerance() -> double { return aepsge_; }
-    /*
-     * Method that set the computational tollerance
-    */
-    auto ComputationalTollerance() -> double { return aepsco_; }
-    /*
      * Method that set the delta incrementation
     */
-    auto Delta(const double& delta) -> void { delta_ = delta; }
+    auto Delta() const -> double { return currentDelta_; }
     /*
-     * Method that set the range for finding the parvalue
+     * Method that get the centroid for convertion from/to cartesian form/to lat long
     */
-    auto MaxLookUpRange(const double& maxLookupRange) -> void { maxLookupParvalue_ = maxLookupRange; }
-    /*
-     * Method that set the centroid for map2cartesian convertion
-    */
-    auto Centroid() -> ctb::LatLong& { return centroid_; }
+    auto Centroid() const -> const ctb::LatLong& { return centroid_; }
     /*
      * Method that allow the load of the nurbs path (for now in jason) and to compute the starting/ending point and the starting direction
     */
@@ -62,13 +47,43 @@ public:
     /*
      * Method that get the current parameter value on the path
     */
-    auto CurrentParameterValue() const -> double { return Parvalue_; }
+    auto CurrentParameterValue() const -> double { return parvalue_; }
     /*
      * Method for computing the next point on the path
-     * @param currentP - The current position
+     * @param currentP - The current robot position
      * @param nextP - The next position on the path
     */
     bool ComputeNextPoint(const ctb::LatLong& currentP, ctb::LatLong& nextP);
+    /*
+     * Method for computing the curve lenght
+     * @param curve - The sisl curve to evaluete the length
+     * @param nextP - The returning curve length
+    */
+    bool ComputeCurveLength(SISLCurve* curve, double& length);
+
+    //Nurbs parameters
+    struct NurbsParam {
+        double deltaMin; //the min delta increment for moving on the curves (in meters)
+        double deltaMax; //the max delta increment for moving on the curves (in meters)
+        double aepsge; // geometric tollerance
+        double aepsco; // computational tollerance
+        double maxLookupParvalue; //max delta increment for select a part of a curve for computing the current parvalue
+        double directionError; // threshold for the difference between the current and the next tangent direction of the path
+
+        void configureFromFile(const libconfig::Config& confObj, const std::string& stateName)
+        {
+            const libconfig::Setting& root = confObj.getRoot();
+            const libconfig::Setting& states = root["states"];
+
+            const libconfig::Setting& state = states.lookup(stateName);
+            ctb::SetParam(state, deltaMin, "deltaMin");
+            ctb::SetParam(state, deltaMax, "deltaMax");
+            ctb::SetParam(state, aepsge, "geometricTollerance");
+            ctb::SetParam(state, aepsco, "computationalTollerance");
+            ctb::SetParam(state, maxLookupParvalue, "maxLookupCurvilinearAbscissa");
+            ctb::SetParam(state, directionError, "tangentDirectionError");
+        }
+    } nurbsParam;
 
 private:
     /*
@@ -88,20 +103,20 @@ private:
      * @param derive - Double array of dimension (der + 1) × dim containing the position and derivative vectors
      */
     bool ComputeDerive(SISLCurve* curve, const int der, const double parvalue, Eigen::VectorXd& derive);
+    /*
+     * Method for computing a possible next point on the curve
+     * @param nextDirection - The returning next direction
+     * @param nextP - The possible returning next point on curve
+    */
+    bool ComputePossibleNextPoint(Eigen::VectorXd& nextDirection, Eigen::VectorXd& nextP);
 
     int dim_; //dimention of the controlled points
-    int k_; //order of the knot vector
     ctb::LatLong startP_; //starting point of the nurbs path
     ctb::LatLong endP_; // ending point of the nurbs path
-    Eigen::VectorXd startingD_; // the starting direction of the path
-    double delta_; //the delta increment for moving on the curves (in meters)
     std::vector<SISLCurve*> nurbs_; //the nurbs
-    double aepsge_; // geometric tolerance
-    double aepsco_; // computational tolerance
-    double maxLookupParvalue_;
-    double Parvalue_, currentParvalue_, nextParvalue_;
-    bool isEndPath_;
-    ctb::LatLong centroid_;
+    double parvalue_; // the current parameter value on the path
+    ctb::LatLong centroid_; //the centroid for the convertion from/to cartesian/latlong
+    double currentDelta_; //the current delta increment
 };
 
 #endif // ULISSE_CONFIGURATION_H

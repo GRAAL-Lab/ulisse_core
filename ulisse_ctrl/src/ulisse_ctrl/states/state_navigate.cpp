@@ -8,10 +8,9 @@ namespace ulisse {
 namespace states {
 
     StateNavigate::StateNavigate()
-        : isCurveSet{ false }
-        , start{ false }
+        : isCurveSet_{ false }
+        , isInStart_{ false }
         , nurbsObj_{ 3 }
-        , count{ 0 }
     {
     }
 
@@ -19,14 +18,13 @@ namespace states {
 
     bool StateNavigate::LoadNurbs(const std::string& nurbs)
     {
-
         if (!nurbsObj_.Initialization(nurbs)) {
             std::cerr << "LoadNurbs: fails" << std::endl;
             return false;
         }
 
-        isCurveSet = true;
-        return isCurveSet;
+        isCurveSet_ = true;
+        return isCurveSet_;
     }
 
     void StateNavigate::ConfigureStateFromFile(libconfig::Config& confObj)
@@ -37,25 +35,36 @@ namespace states {
         const libconfig::Setting& state = states.lookup(ulisse::states::ID::navigate);
         ctb::SetParam(state, maxHeadingError_, "maxHeadingError");
         ctb::SetParam(state, minHeadingError_, "minHeadingError");
-        double maximumLookupAbscissa;
-        ctb::SetParam(state, maximumLookupAbscissa, "maximumLookupAbscissa");
-        //        nurbsObj_.MaxLookUpRange(maximumLookupAbscissa);
-        double delta;
-        ctb::SetParam(state, delta, "delta");
-        //        nurbsObj_.Delta(delta);
-        ctb::SetParam(state, tolleranceStartingPoint, "tolleranceStartingPoint");
+        ctb::SetParam(state, tolleranceStartingPoint_, "tolleranceStartingPoint");
+        ctb::SetParam(state, tolleranceEndingPoint_, "tolleranceEndingPoint");
 
-        Eigen::VectorXd centroidTmp;
-        ctb::SetParamVector(confObj, centroidTmp, "centroidLocation");
-        centroid_.latitude = centroidTmp[0];
-        centroid_.longitude = centroidTmp[1];
+        //configure the nurbs param
+        nurbsObj_.nurbsParam.configureFromFile(confObj, ulisse::states::ID::navigate);
     }
 
     fsm::retval StateNavigate::OnEntry()
     {
         //Get the staring and ending point of the path
-        startP = nurbsObj_.StartingPoint();
-        endP = nurbsObj_.EndingPoint();
+        startP_ = nurbsObj_.StartingPoint();
+
+        //evaluete the end curve length
+        double length;
+        nurbsObj_.ComputeCurveLength(nurbsObj_.Path()[nurbsObj_.Path().size() - 1], length);
+        //compute the prametric tollerance of the end curve
+        tolleranceEndingPoint_ = nurbsObj_.Path().size() - tolleranceEndingPoint_ / length;
+
+        //check if the curves are greater than the delta max
+        for (auto curve : nurbsObj_.Path()) {
+            if (!nurbsObj_.ComputeCurveLength(curve, length)) {
+                std::cerr << "State Navigate: ComputeCurveLength fails" << std::endl;
+                return fsm::fail;
+            }
+
+            if (length < nurbsObj_.nurbsParam.deltaMax) {
+                std::cerr << "State Navigate: Delta is too high" << std::endl;
+                return fsm::fail;
+            }
+        }
 
         //set tasks
         safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(stateCtx_.tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
@@ -98,18 +107,15 @@ namespace states {
         safetyBoundariesTask_->ExternalActivationFunction() = taskGainSafety * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
 
         //navigate action
-        if (isCurveSet) {
+        if (isCurveSet_) {
             //Going to the starting point
-            if (!start) {
+            if (!isInStart_) {
                 std::cout << "*** GOING TO INITIAL POINT! ***" << std::endl;
-                ctb::DistanceAndAzimuthRad(stateCtx_.statusCxt->vehiclePos, startP, stateCtx_.goalCxt->goalDistance, stateCtx_.goalCxt->goalHeading);
+                ctb::DistanceAndAzimuthRad(stateCtx_.statusCxt->vehiclePos, startP_, stateCtx_.goalCxt->goalDistance, stateCtx_.goalCxt->goalHeading);
 
-                if (stateCtx_.goalCxt->goalDistance < tolleranceStartingPoint) {
-
-                    start = true;
-
+                if (stateCtx_.goalCxt->goalDistance < tolleranceStartingPoint_) {
+                    isInStart_ = true;
                 } else {
-
                     //Set the distance vector to the target
                     cartesianDistanceTask_->SetTargetDistance(Eigen::Vector3d(stateCtx_.goalCxt->goalDistance * cos(stateCtx_.goalCxt->goalHeading), stateCtx_.goalCxt->goalDistance * sin(stateCtx_.goalCxt->goalHeading), 0), rml::FrameID::WorldFrame);
                     //Set the align vector to the target
@@ -134,19 +140,19 @@ namespace states {
                     cartesianDistanceTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
                 }
             } else {
-                ctb::DistanceAndAzimuthRad(stateCtx_.statusCxt->vehiclePos, endP, stateCtx_.goalCxt->goalDistance, stateCtx_.goalCxt->goalHeading);
-
-                if (nurbsObj_.CurrentParameterValue() >= nurbsObj_.Path().size()) {
+                if (nurbsObj_.CurrentParameterValue() >= tolleranceEndingPoint_) {
                     std::cout << "*** MISSION FINISHED! ***" << std::endl;
                     fsm_->ExecuteCommand(ulisse::commands::ID::hold);
                 }
 
                 std::cout << "*** STARTING POINT! ***" << std::endl;
-                if (!nurbsObj_.ComputeNextPoint(stateCtx_.statusCxt->vehiclePos, lookAheadPoint)) {
+                if (!nurbsObj_.ComputeNextPoint(stateCtx_.statusCxt->vehiclePos, nextP_)) {
                     return fsm::fail;
                 }
 
-                ctb::DistanceAndAzimuthRad(stateCtx_.statusCxt->vehiclePos, lookAheadPoint, stateCtx_.goalCxt->goalDistance, stateCtx_.goalCxt->goalHeading);
+                std::cout << "currentParvalue: " << nurbsObj_.CurrentParameterValue() << std::endl;
+
+                ctb::DistanceAndAzimuthRad(stateCtx_.statusCxt->vehiclePos, nextP_, stateCtx_.goalCxt->goalDistance, stateCtx_.goalCxt->goalHeading);
 
                 //Set the distance vector to the target
                 cartesianDistanceTask_->SetTargetDistance(Eigen::Vector3d(stateCtx_.goalCxt->goalDistance * cos(stateCtx_.goalCxt->goalHeading), stateCtx_.goalCxt->goalDistance * sin(stateCtx_.goalCxt->goalHeading), 0), rml::FrameID::WorldFrame);

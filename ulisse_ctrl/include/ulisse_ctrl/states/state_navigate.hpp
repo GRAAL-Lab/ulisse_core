@@ -12,17 +12,19 @@ namespace states {
     class StateNavigate : public GenericState {
 
     protected:
+        //tasks of the state
         std::shared_ptr<ikcl::AlignToTarget> alignToTargetTask_;
         std::shared_ptr<ikcl::CartesianDistance> cartesianDistanceTask_;
 
-        ctb::LatLong centroid_;
-        bool isCurveSet;
-        bool start;
-        ctb::LatLong startP, endP;
-        double tolleranceStartingPoint;
-        ctb::LatLong lookAheadPoint;
-        Nurbs nurbsObj_;
-        int count;
+        bool isCurveSet_; // flag for checking if a curve has been loaded
+        bool isInStart_; // flag for checking is the robot at the path start
+        ctb::LatLong startP_, endP_; // starting and ending point
+        ctb::LatLong nextP_; // next point of the path
+        double tolleranceStartingPoint_; // tollerance on the starting point
+        double tolleranceEndingPoint_; //tollerance on the ending point
+
+        Nurbs nurbsObj_; //objet to handle the path
+        //Parameter used
 
     public:
         StateNavigate();
