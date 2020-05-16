@@ -3,7 +3,7 @@
 
 #include "sisl.h"
 #include "ulisse_ctrl/states/genericstate.hpp"
-#include <ulisse_ctrl/Nurbs.h>
+#include <ulisse_ctrl/nurbs.h>
 
 namespace ulisse {
 

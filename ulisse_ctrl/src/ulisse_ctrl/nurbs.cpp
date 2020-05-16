@@ -1,4 +1,4 @@
-#include "ulisse_ctrl/Nurbs.h"
+#include "ulisse_ctrl/nurbs.h"
 #include <jsoncpp/json/json.h>
 
 Nurbs::Nurbs(int dim)
@@ -252,7 +252,7 @@ bool Nurbs::ComputePossibleNextPoint(Eigen::VectorXd& nextDirection, Eigen::Vect
 
     // Estimate curve length
     double curveLenght;
-    if (ComputeCurveLength(currentCurve, curveLenght)) {
+    if (!ComputeCurveLength(currentCurve, curveLenght)) {
         std::cerr << "ComputeNextPossiblePoint: ComputeCurveLength fails" << std::endl;
         return false;
     }

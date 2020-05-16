@@ -831,22 +831,25 @@ MapPolyline {
     ////////////////////////////////////////////////////////
     // Serialization/deserialization, rasterization
     function generate_nurbs() {
+        var lam = Helper.lat_to_m_coeff(centroid.latitude)
+        var lom = Helper.lon_to_m_coeff(centroid.longitude)
+
         var nurb_l = []
         var nurb_c = []
         for (var i = 0; i < intersections_cartesian.length; i++) {
-            var p0 = intersections_cartesian[i][i % 2]
-            var p1 = intersections_cartesian[i][(i + 1) % 2]
+            var p0 = Helper.point_euclidean2map(intersections_cartesian[i][i % 2].x, intersections_cartesian[i][i % 2].y, centroid, lam, lom)
+            var p1 = Helper.point_euclidean2map(intersections_cartesian[i][(i + 1) % 2].x, intersections_cartesian[i][(i + 1) % 2].y, centroid, lam, lom)
             nurb_l.push(Helper.generate_nurb_line(p0, p1))
         }
 
         for (var i = 0; i < intersections_cartesian.length - 1; i++) {
             var dir = (i + 1) % 2
-            var p0 = intersections_cartesian[i][dir]
-            var p3 = intersections_cartesian[i + 1][dir]
+            var p2 = Helper.point_euclidean2map(intersections_cartesian[i][dir].x, intersections_cartesian[i][dir].y, centroid, lam, lom)
+            var p3 = Helper.point_euclidean2map(intersections_cartesian[i + 1][dir].x, intersections_cartesian[i + 1][dir].y, centroid, lam, lom)
             if (_method === "simple")
-                nurb_c.push(Helper.generate_nurb_line(p0, p3))
+                nurb_c.push(Helper.generate_nurb_line(p2, p3))
             else if (_method === "single_winding")
-                nurb_c.push(Helper.generate_nurb_circle(p0, p3, dir))
+                nurb_c.push(Helper.generate_nurb_circle(p2, p3, dir))
         }
 
         var curves = [nurb_l[0]]

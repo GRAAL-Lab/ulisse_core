@@ -55,7 +55,7 @@ set(ulisse_ctrl_lib_sources
     src/ulisse_ctrl/vehiclecontroller.cpp
     # Helpers
     src/ulisse_ctrl/configuration.cpp
-    src/ulisse_ctrl/Nurbs.cpp
+    src/ulisse_ctrl/nurbs.cpp
     # States
     src/ulisse_ctrl/states/genericstate.cpp
     src/ulisse_ctrl/states/state_halt.cpp
