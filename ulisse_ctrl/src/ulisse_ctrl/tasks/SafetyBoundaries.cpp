@@ -53,11 +53,39 @@ void SafetyBoundaries::UpdateInternalActivationFunction()
     }
 }
 
-bool SafetyBoundaries::InitializePolygon(std::string polygonString)
+bool SafetyBoundaries::InitializePolygon(const ulisse_msgs::msg::Boundaries& boundaries)
 {
     segments_.clear();
     segment_type seg;
-    boost::geometry::read_wkt(polygonString, poly_);
+    std::string polygon = "polygon((";
+
+    LatLong latlongVertex;
+
+    std::shared_ptr<double[]> cartesianVertex(new double[3]);
+
+    try {
+        bool first = true;
+        for (auto vertex : boundaries.vertices) {
+            if (first) {
+                first = false;
+            } else {
+                polygon = polygon.append(", ");
+            }
+
+            latlongVertex.latitude = vertex.latitude;
+            latlongVertex.longitude = vertex.longitude;
+
+            Map2CartesianPoint(latlongVertex, centroid_, cartesianVertex);
+
+            polygon = polygon + boost::lexical_cast<std::string>(cartesianVertex[0]) + " " + boost::lexical_cast<std::string>(cartesianVertex[1]);
+        }
+    } catch (std::exception& e) {
+        // output exception information
+        std::cout << "Initializate Polygon fails: " << e.what() << std::endl;
+    }
+
+    polygon = polygon.append("))");
+    boost::geometry::read_wkt(polygon, poly_);
 
     // Generate a list with all the segments
     double x, y;

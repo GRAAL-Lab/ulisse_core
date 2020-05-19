@@ -1,5 +1,4 @@
 #include "ulisse_ctrl/nurbs.h"
-#include <jsoncpp/json/json.h>
 
 Nurbs::Nurbs(int dim)
     : dim_{ dim }
@@ -22,21 +21,15 @@ Nurbs::Nurbs(int dim)
 
 Nurbs::~Nurbs() { nurbs_.clear(); }
 
-bool Nurbs::Initialization(const std::string& jasonNurbs)
+bool Nurbs::Initialization(const ulisse_msgs::msg::Path &path)
 {
-    Json::Reader reader;
-    Json::Value obj, objMaster;
     bool reverse = false;
-    int count = 0;
-
-    //parse the jason
-    reader.parse(jasonNurbs, objMaster);
 
     // check whatever the path has beeen reverse
-    reverse = objMaster["direction"].asInt() ? true : false;
+    reverse = path.direction ? true : false;
 
-    centroid_.latitude = /*44.414165*/ objMaster["centroid"][0].asDouble();
-    centroid_.longitude = /* 8.942184*/ objMaster["centroid"][1].asDouble();
+    centroid_.latitude = path.centroid.latitude;
+    centroid_.longitude = path.centroid.longitude;
 
     //some param needs to create a new curve
     int kind = 2; /* Type of curve.
@@ -51,28 +44,29 @@ bool Nurbs::Initialization(const std::string& jasonNurbs)
                      = 2 : Set pointer and remember to free arrays. */
 
     try {
-        for (Json::Value c : objMaster["curves"]) {
+        for (auto curves : path.nurbs) {
 
-            reader.parse(c.toStyledString(), obj);
+            //Order of curve.
+            int order = static_cast<int>(curves.degree);
+            std::cout << "order: " << order << std::endl;
 
-            int order; //Order of curve.
-            order = obj["degree"].asInt();
-
-            std::shared_ptr<double[]> weights(new double[obj["weigths"].size()]); //whight vector of curve.
+            std::shared_ptr<double[]> weights(new double[curves.weigths.size()]); //whight vector of curve.
             //Acquired the weights
-            for (Json::ArrayIndex i = 0; i < obj["weigths"].size(); i++) {
-                weights[i] = obj["weigths"][i].asDouble();
+            for (unsigned int i = 0; i < curves.weigths.size(); i++) {
+                weights[i] = curves.weigths[i];
+                std::cout << "weights: " << weights[i] << std::endl;
             }
 
-            std::shared_ptr<double[]> coef(new double[obj["points"].size() * 4]); //Vertices of curve
+            std::shared_ptr<double[]> coef(new double[curves.points.size() * 4]); //Vertices of curve
             // //Acquired the vertices
-            count = 0;
+            int count = 0;
             ctb::LatLong point;
             Eigen::Vector3d pointC;
-            for (Json::ArrayIndex i = 0; i < obj["points"].size(); i++) {
-                point.latitude = obj["points"][i][0].asDouble();
-                point.longitude = obj["points"][i][1].asDouble();
-
+            for (unsigned int i = 0; i < curves.points.size(); i++) {
+                point.latitude = curves.points.at(i).latitude;
+                point.longitude = curves.points.at(i).longitude;
+                std::cout << "point.latitude : " << point.latitude << std::endl;
+                std::cout << "point.latiude : " << point.longitude << std::endl;
                 ctb::Map2CartesianPoint(point, centroid_, pointC);
 
                 coef[count] = pointC[0] * weights[i];
@@ -83,14 +77,15 @@ bool Nurbs::Initialization(const std::string& jasonNurbs)
                 count += 4;
             }
 
-            std::shared_ptr<double[]> knots(new double[obj["knots"].size()]); //Knot vector of curve
+            std::shared_ptr<double[]> knots(new double[curves.knots.size()]); //Knot vector of curve
             //Acquired the knots
-            for (Json::ArrayIndex i = 0; i < obj["knots"].size(); i++) {
-                knots[i] = obj["knots"][i].asDouble();
+            for (unsigned int i = 0; i < curves.knots.size(); i++) {
+                knots[i] = curves.knots[i];
+                std::cout << "knots: " << knots[i] << std::endl;
             }
 
             //create the curve
-            SISLCurve* curve = newCurve(static_cast<int>(obj["points"].size()), order + 1, knots.get(), coef.get(), kind, dim_, copy);
+            SISLCurve* curve = newCurve(2, order + 1, knots.get(), coef.get(), kind, dim_, copy);
 
             if (curve == nullptr) {
                 std::cout << "Something Goes Wrong in NURBS Parsing" << std::endl;
@@ -105,7 +100,7 @@ bool Nurbs::Initialization(const std::string& jasonNurbs)
             nurbs_.push_back(curve);
         }
 
-    } catch (Json::Exception& e) {
+    } catch (std::exception& e) {
         // output exception information
         std::cout << "NURBS Descriptor Error: " << e.what();
         return false;
@@ -117,7 +112,6 @@ bool Nurbs::Initialization(const std::string& jasonNurbs)
     }
 
     //Once acquired the nurbs vector we want to compute the starting/ending point of the path and the starting direction
-
     //compute the starting point and the starting direction
     Eigen::VectorXd deriveStart;
     SISLCurve* initialCurve = nurbs_[0];
@@ -131,7 +125,6 @@ bool Nurbs::Initialization(const std::string& jasonNurbs)
     //first dim components of derive are the components of the position vector, then the dim components of the tangent vector
     for (int i = 0; i < dim_; i++) {
         startP[i] = deriveStart[i];
-        //        startingD_[i] = deriveStart[i + 3];
     }
     ctb::Cartesian2MapPoint(startP, centroid_, startP_);
 
@@ -193,6 +186,7 @@ bool Nurbs::ComputeNextPoint(const ctb::LatLong& currentP, ctb::LatLong& nextP)
     //the difference between the current and the next direction is evalueted. In this case, the delta is decremented
     //and a new point is compute with the new delta. This process is repeated until either a point with
     //a direction not to different form the cerrent one is found or the current delta reaches the deltaMin threshold
+    currentDelta_ = nurbsParam.deltaMax;
 
     //Try to compute the next point on the curve and the next direction
     if (!ComputePossibleNextPoint(nextDir, possibleNextP)) {
@@ -223,11 +217,6 @@ bool Nurbs::ComputeNextPoint(const ctb::LatLong& currentP, ctb::LatLong& nextP)
                 return false;
             }
         }
-    }
-
-    //Detect if the difference is under threshold and restore the max delta
-    if (diff.norm() < nurbsParam.directionError) {
-        currentDelta_ = nurbsParam.deltaMax;
     }
 
     //Convert the next point in latlong coordinates

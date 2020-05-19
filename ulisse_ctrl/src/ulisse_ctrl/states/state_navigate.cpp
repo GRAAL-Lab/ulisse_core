@@ -16,9 +16,9 @@ namespace states {
 
     StateNavigate::~StateNavigate() {}
 
-    bool StateNavigate::LoadNurbs(const std::string& nurbs)
+    bool StateNavigate::LoadNurbs(const ulisse_msgs::msg::Path &path)
     {
-        if (!nurbsObj_.Initialization(nurbs)) {
+        if (!nurbsObj_.Initialization(path)) {
             std::cerr << "LoadNurbs: fails" << std::endl;
             return false;
         }
@@ -66,6 +66,8 @@ namespace states {
             }
         }
 
+        std::cout << "debug here" << std::endl;
+
         //set tasks
         safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(stateCtx_.tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
         absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(stateCtx_.tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
@@ -111,6 +113,7 @@ namespace states {
             //Going to the starting point
             if (!isInStart_) {
                 std::cout << "*** GOING TO INITIAL POINT! ***" << std::endl;
+                std::cout << "debug here" << std::endl;
                 ctb::DistanceAndAzimuthRad(stateCtx_.statusCxt->vehiclePos, startP_, stateCtx_.goalCxt->goalDistance, stateCtx_.goalCxt->goalHeading);
 
                 if (stateCtx_.goalCxt->goalDistance < tolleranceStartingPoint_) {

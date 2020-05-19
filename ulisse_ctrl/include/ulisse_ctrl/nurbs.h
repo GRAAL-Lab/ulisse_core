@@ -5,6 +5,7 @@
 #include "eigen3/Eigen/Eigen"
 #include "iostream"
 #include "sisl.h"
+#include "ulisse_msgs/msg/path.hpp"
 #include <libconfig.h++>
 #include <memory>
 
@@ -39,7 +40,7 @@ public:
     /*
      * Method that allow the load of the nurbs path (for now in jason) and to compute the starting/ending point and the starting direction
     */
-    bool Initialization(const std::string& jasonNurbs);
+    bool Initialization(const ulisse_msgs::msg::Path& path);
     /*
      * Method that get the path
     */

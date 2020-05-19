@@ -104,61 +104,22 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     // Command Server Setup
     SetupCommandServer();
 
-    // Create a callback function for when service set boundaries requests are
-    // received.
+    // Create a callback function for when service set boundaries requests are  received.
     auto handle_set_boundaries = [this](const std::shared_ptr<rmw_request_id_t> request_header, const std::shared_ptr<ulisse_msgs::srv::SetBoundaries::Request> request, std::shared_ptr<ulisse_msgs::srv::SetBoundaries::Response> response)
         -> void {
         (void)request_header;
         RCLCPP_INFO(nh_->get_logger(), "Incoming request for set boundaries");
 
-        Json::Reader reader;
-        Json::Value obj, obj2;
-
-        reader.parse(request->boundaries_json, obj);
-
-        std::string polygon = "polygon((";
-
-        LatLong currentPoint;
-
-        std::shared_ptr<double[]> p(new double[3]);
-
-        try {
-            bool first = true;
-            for (Json::Value c : obj["values"]) {
-                if (first) {
-                    first = false;
-                } else {
-                    polygon = polygon + ", ";
-                }
-                reader.parse(c.toStyledString(), obj2);
-
-                currentPoint.latitude = obj2["latitude"].asDouble();
-                currentPoint.longitude = obj2["longitude"].asDouble();
-
-                Map2CartesianPoint(currentPoint, centroidLocation_, p);
-
-                polygon = polygon + boost::lexical_cast<std::string>(p[0]) + " " + boost::lexical_cast<std::string>(p[1]);
-            }
-        } catch (Json::Exception& e) {
-            // output exception information
-            boundariesSet_ = false;
-            response->res = "SetBound::error";
-            std::cout << "Set Bound Error";
-        }
-
-        polygon = polygon + "))";
-
-        if (asvSafetyBoundaries_->InitializePolygon(polygon)) {
-            boundariesSet_ = true;
-            boundariesJson_ = request->boundaries_json;
+        if (asvSafetyBoundaries_->InitializePolygon(request->boundaries)) {
+            boundariesJson_ = request->boundaries.boundaries_string;
             response->res = "SetBound::ok";
+            boundariesSet_ = true;
         } else {
-            boundariesSet_ = false;
             response->res = "SetBound::error";
         }
 
         std::stringstream log;
-        log << "Setting Bounding Box: " << request->boundaries_json;
+        log << "Setting Bounding Box: " << request->boundaries.boundaries_string;
         publishLog(log.str().c_str());
     };
 
@@ -407,11 +368,11 @@ void VehicleController::SetupCommandServer()
 
             std::cout << "Received Command Path Following" << std::endl;
 
-            if (!statePathFollowing_.LoadNurbs(request->nav_cmd.nurbs_json)) {
+            if (!statePathFollowing_.LoadNurbs(request->nav_cmd.path)) {
                 ret = fsm::retval::fail;
             }
 
-            log << "Received Command PathFollowing (nurbs: " << request->nav_cmd.nurbs_json << " )";
+            log << "Received Command PathFollowing (nurbs: " << request->nav_cmd.path.nurbs_string << " )";
             publishLog(log.str().c_str());
 
         } else {

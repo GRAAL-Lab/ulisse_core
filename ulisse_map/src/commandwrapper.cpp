@@ -6,6 +6,7 @@
 
 #include "ulisse_ctrl/fsm_defines.hpp"
 #include "ulisse_driver/LLCHelperDataStructs.h"
+#include <jsoncpp/json/json.h>
 
 using namespace std::chrono_literals;
 using std::placeholders::_1;
@@ -14,8 +15,6 @@ using namespace std;
 CommandWrapper::CommandWrapper(QObject* parent)
     : QObject(parent)
 {
-    //std::cerr << tc::brwn << Q_FUNC_INFO << ": If you use this constructor remember to call Init(*engine) after"
-    //          << tc::none << "\n";
 }
 
 CommandWrapper::CommandWrapper(QQmlApplicationEngine* engine, QObject* parent)
@@ -35,8 +34,6 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
 
     errorCheckInterval_ = 500;
 
-    // FIXME: use new SIGNAL/SLOT semantic
-    /* connect(my_timer_, &QTimer::timeout, this, &COmmandWrapper::check_error_slot()); */
     QObject::connect(myTimer_, SIGNAL(timeout()), this, SLOT(check_error_slot()));
 
     toastMgrObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("toastManager");
@@ -71,11 +68,10 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
 
     rmw_qos_profile_t custom_qos_profile = rmw_qos_profile_sensor_data;
 
-    goal_cxt_sub_ = np_->create_subscription<ulisse_msgs::msg::GoalContext>(
-        ulisse_msgs::topicnames::goal_context, std::bind(&CommandWrapper::GoalContextCB, this, _1), custom_qos_profile);
+    goal_cxt_sub_ = np_->create_subscription<ulisse_msgs::msg::GoalContext>(ulisse_msgs::topicnames::goal_context, std::bind(&CommandWrapper::GoalContextCB, this, _1), custom_qos_profile);
 
-    connect(this, &CommandWrapper::connected, [](){std::cout << "service connected" << std::endl;});
-    notificator = std::async([&]{
+    connect(this, &CommandWrapper::connected, []() { std::cout << "service connected" << std::endl; });
+    notificator = std::async([&] {
         command_srv_->wait_for_service();
         emit connected();
         setCruiseSpeedCommand(cruiseSpeedObj_->property("value").toUInt());
@@ -100,29 +96,93 @@ void CommandWrapper::ShowToast(const QVariant message, const QVariant duration)
         Q_ARG(QVariant, message), Q_ARG(QVariant, duration));
 }
 
-
-
-
 bool CommandWrapper::sendPath(const QString path)
 {
     auto serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
     serviceReq->command_type = ulisse::commands::ID::navigate;
-    serviceReq->nav_cmd.nurbs_json = path.toStdString();
+    serviceReq->nav_cmd.path.nurbs_string = path.toStdString();
+
+    std::string pathJason = path.toStdString();
+    Json::Reader reader;
+    Json::Value obj, objMaster;
+
+    //parse the jason
+    reader.parse(pathJason, objMaster);
+
+    // check whatever the path has beeen reverse
+    serviceReq->nav_cmd.path.direction = objMaster["direction"].asInt64();
+
+    serviceReq->nav_cmd.path.centroid.latitude = objMaster["centroid"][0].asDouble();
+    serviceReq->nav_cmd.path.centroid.longitude = objMaster["centroid"][1].asDouble();
+
+    unsigned int count = 0;
+    serviceReq->nav_cmd.path.nurbs.resize(objMaster["curves"].size());
+    try {
+        for (Json::Value c : objMaster["curves"]) {
+
+            reader.parse(c.toStyledString(), obj);
+
+            serviceReq->nav_cmd.path.nurbs.at(count).degree = obj["degree"].asInt();
+
+            serviceReq->nav_cmd.path.nurbs.at(count).weigths.resize(obj["weigths"].size());
+            //Acquired the weights
+            for (Json::ArrayIndex i = 0; i < obj["weigths"].size(); i++) {
+                serviceReq->nav_cmd.path.nurbs.at(count).weigths.at(i) = obj["weigths"][i].asDouble();
+            }
+
+            serviceReq->nav_cmd.path.nurbs.at(count).points.resize(obj["points"].size());
+            // //Acquired the vertices
+            for (Json::ArrayIndex i = 0; i < obj["points"].size(); i++) {
+                serviceReq->nav_cmd.path.nurbs.at(count).points.at(i).latitude = obj["points"][i][0].asDouble();
+                serviceReq->nav_cmd.path.nurbs.at(count).points.at(i).longitude = obj["points"][i][1].asDouble();
+            }
+
+            serviceReq->nav_cmd.path.nurbs.at(count).knots.resize(obj["knots"].size());
+            //Acquired the knots
+            for (Json::ArrayIndex i = 0; i < obj["knots"].size(); i++) {
+                serviceReq->nav_cmd.path.nurbs.at(count).knots.at(i) = obj["knots"][i].asDouble();
+            }
+            count++;
+        }
+
+    } catch (Json::Exception& e) {
+        // output exception information
+        std::cout << "NURBS Descriptor Error: " << e.what();
+        return false;
+    }
 
     return SendCommandRequest(serviceReq);
 }
 
-
 bool CommandWrapper::sendBoundaries(const QString boundary)
 {
     auto serviceReq = std::make_shared<ulisse_msgs::srv::SetBoundaries::Request>();
-    serviceReq->bound_min = -1;
-    serviceReq->bound_max = -1;
-    serviceReq->boundaries_json = ""+boundary.toStdString();
+    serviceReq->boundaries.boundaries_string = "" + boundary.toStdString();
+
+    Json::Reader reader;
+    Json::Value obj, obj2;
+
+    reader.parse(serviceReq->boundaries.boundaries_string , obj);
+
+    serviceReq->boundaries.vertices.resize(obj["values"].size());
+    unsigned int count = 0;
+    try {
+        for (Json::Value c : obj["values"]) {
+
+            reader.parse(c.toStyledString(), obj2);
+
+            serviceReq->boundaries.vertices.at(count).latitude = obj2["latitude"].asDouble();
+            serviceReq->boundaries.vertices.at(count).longitude = obj2["longitude"].asDouble();
+
+            count++;
+        }
+    } catch (Json::Exception& e) {
+        // output exception information
+        std::cout << "Error parsing Jason" << e.what() << std::endl;
+    }
 
     return SendBoundariesRequest(serviceReq);
 }
-
 
 bool CommandWrapper::SendBoundariesRequest(ulisse_msgs::srv::SetBoundaries::Request::SharedPtr req)
 {
@@ -149,7 +209,6 @@ bool CommandWrapper::SendBoundariesRequest(ulisse_msgs::srv::SetBoundaries::Requ
     ShowToast(result_msg.c_str(), 2000);
     return serviceAvailable;
 }
-
 
 bool CommandWrapper::SendCommandRequest(ulisse_msgs::srv::ControlCommand::Request::SharedPtr req)
 {
@@ -331,10 +390,10 @@ void CommandWrapper::savePathToFile(const QString fileName, const QString& data)
     }
 
     QFile file(fileName);
-    if (!file.open(QFile::WriteOnly | QFile::Truncate)){
+    if (!file.open(QFile::WriteOnly | QFile::Truncate)) {
         std::cout << "Cannot save the file" << std::endl;
         ShowToast(std::string("Cannot save the file").c_str(), 3000);
-        return ;
+        return;
     }
 
     QTextStream out(&file);
@@ -344,7 +403,6 @@ void CommandWrapper::savePathToFile(const QString fileName, const QString& data)
     ShowToast(std::string("Saved to file: " + filename).c_str(), 3000);
 
     file.close();
-
 }
 
 QString CommandWrapper::loadPathFromFile(const QString fileName)
@@ -353,17 +411,17 @@ QString CommandWrapper::loadPathFromFile(const QString fileName)
 
     QFile file(fileName);
     QString fileContent;
-    if ( file.open(QIODevice::ReadOnly) ) {
+    if (file.open(QIODevice::ReadOnly)) {
         QString line;
-        QTextStream t( &file );
+        QTextStream t(&file);
         do {
             line = t.readLine();
             fileContent += line;
-         } while (!line.isNull());
+        } while (!line.isNull());
 
         file.close();
     } else {
-        std::cout <<"Error: Unable to open the file" << std::endl;
+        std::cout << "Error: Unable to open the file" << std::endl;
         return QString();
     }
     return fileContent;
@@ -405,7 +463,8 @@ bool CommandWrapper::goToNextWaypoint()
 
 bool CommandWrapper::goToPreviousWaypoint()
 {
-    bool ret = false;    wpCurrentIndex_--;
+    bool ret = false;
+    wpCurrentIndex_--;
 
     if (wpCurrentIndex_ >= 0) {
         ret = sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), 0);

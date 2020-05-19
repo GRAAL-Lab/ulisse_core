@@ -3,6 +3,7 @@
 
 #include "sisl.h"
 #include "ulisse_ctrl/states/genericstate.hpp"
+#include "ulisse_msgs/msg/path.hpp"
 #include <ulisse_ctrl/nurbs.h>
 
 namespace ulisse {
@@ -34,7 +35,7 @@ namespace states {
 
         void ConfigureStateFromFile(libconfig::Config& confObj) override;
 
-        bool LoadNurbs(const std::string& nurbs);
+        bool LoadNurbs(const ulisse_msgs::msg::Path& path);
     };
 }
 }

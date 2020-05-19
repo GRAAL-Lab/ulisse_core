@@ -70,10 +70,10 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
     q_gps_pos_ = q_goal_pos_ = q_ulisse_pos_;
     q_gps_time_ = "undefined";
 
-    current_data_n= 0;
-    current_data_e= 0;
-    current_data_deg= 0;
-    current_data_norm= 0;
+    current_data_n = 0;
+    current_data_e = 0;
+    current_data_deg = 0;
+    current_data_norm = 0;
 
     goalFlagObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("goalFlag");
     if (!goalFlagObj_) {
@@ -114,13 +114,12 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
         ulisse_msgs::topicnames::nav_filter_data, std::bind(&FeedbackUpdater::NavFilterData, this, _1), custom_qos_profile);
 }
 
-
 void FeedbackUpdater::NavFilterData(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)
 {
-    current_data_n= msg->current[0];
-    current_data_e= msg->current[1];
-    current_data_deg= atan2(current_data_n,current_data_e)*(180.0/M_PI);
-    current_data_norm= (sqrt(pow(current_data_n,2)+pow(current_data_e,2)));
+    current_data_n = msg->current[0];
+    current_data_e = msg->current[1];
+    current_data_deg = atan2(current_data_n, current_data_e) * (180.0 / M_PI);
+    current_data_norm = (sqrt(pow(current_data_n, 2) + pow(current_data_e, 2)));
 }
 
 void FeedbackUpdater::SetNodeHandle(const rclcpp::Node::SharedPtr& np)
@@ -135,7 +134,7 @@ void FeedbackUpdater::GPSDataCB(const ulisse_msgs::msg::GPSData::SharedPtr msg)
 
     long now_secs = static_cast<long>(gps_data_msg_.time);
     std::time_t current = now_secs;
-    if (std::ctime(&current) != nullptr){
+    if (std::ctime(&current) != nullptr) {
         std::string timedate = std::ctime(&current);
         timedate.erase(std::remove(timedate.begin(), timedate.end(), '\n'), timedate.end());
         q_gps_time_ = QString::fromStdString(timedate);
@@ -206,7 +205,7 @@ void FeedbackUpdater::StatusContextCB(const ulisse_msgs::msg::StatusContext::Sha
     //qDebug() << "State: " << q_vehicle_state_ << ", " << status_cxt_msg_.vehicle_state.c_str();
 
     if (q_vehicle_state_.toStdString() == ulisse::states::ID::latlong
-    or  q_vehicle_state_.toStdString() == ulisse::states::ID::hold) {
+        or q_vehicle_state_.toStdString() == ulisse::states::ID::hold) {
         goalFlagObj_->setProperty("opacity", 1.0);
     } else {
         goalFlagObj_->setProperty("opacity", 0.3);

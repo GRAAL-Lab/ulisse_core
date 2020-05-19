@@ -1,5 +1,3 @@
-float64 bound_min
-float64 bound_max
-string boundaries_json
+Boundaries boundaries
 ---
 string res
