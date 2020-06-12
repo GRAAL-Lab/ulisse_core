@@ -1,5 +1,4 @@
 #include "ulisse_ctrl/commands/command_halt.hpp"
-#include "ulisse_ctrl/fsm_defines.hpp"
 
 namespace ulisse {
 
@@ -12,6 +11,11 @@ namespace commands {
     fsm::retval CommandHalt::Execute()
     {
         return fsm_->SetNextState(ulisse::states::ID::halt);
+    }
+
+    void CommandHalt::SetState(std::shared_ptr<states::GenericState> state)
+    {
+        stateHalt_ = std::dynamic_pointer_cast<states::StateHalt>(state);
     }
 }
 }

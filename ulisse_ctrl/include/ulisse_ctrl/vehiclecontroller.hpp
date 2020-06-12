@@ -3,17 +3,8 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
-#include "ulisse_msgs/msg/ambient_sensors.hpp"
-#include "ulisse_msgs/msg/compass.hpp"
-#include "ulisse_msgs/msg/control_context.hpp"
-#include "ulisse_msgs/msg/goal_context.hpp"
-#include "ulisse_msgs/msg/gps_data.hpp"
-#include "ulisse_msgs/msg/imu_data.hpp"
 #include "ulisse_msgs/msg/llc_status.hpp"
-#include "ulisse_msgs/msg/magnetometer.hpp"
-#include "ulisse_msgs/msg/micro_loop_count.hpp"
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
-#include "ulisse_msgs/msg/status_context.hpp"
 #include "ulisse_msgs/msg/task_status.hpp"
 #include "ulisse_msgs/srv/control_command.hpp"
 #include "ulisse_msgs/srv/get_boundaries.hpp"
@@ -32,13 +23,16 @@
 #include <ulisse_ctrl/states/state_navigate.hpp>
 #include <ulisse_ctrl/states/state_speedheading.hpp>
 #include <ulisse_ctrl/tasks/SafetyBoundaries.h>
+#include <ulisse_msgs/msg/feedback_gui.hpp>
+#include <ulisse_msgs/msg/reference_velocities.hpp>
+#include <ulisse_msgs/msg/vehicle_status.hpp>
 
 namespace ulisse {
 class VehicleController {
 
     TasksInfo taskInfo_;
     std::unordered_map<std::string, TasksInfo> tasksMap_;
-    std::unordered_map<std::string, states::GenericState&> statesMap_;
+    std::unordered_map<std::string, std::shared_ptr<states::GenericState>> statesMap_;
     std::unordered_map<std::string, commands::GenericCommand&> commandsMap_;
 
     rclcpp::Node::SharedPtr nh_;
@@ -49,16 +43,13 @@ class VehicleController {
     rclcpp::Service<ulisse_msgs::srv::ResetConfiguration>::SharedPtr srvResetConf_;
     rclcpp::Service<ulisse_msgs::srv::SetCruiseControl>::SharedPtr srvCruise_;
 
-    rclcpp::Subscription<ulisse_msgs::msg::GPSData>::SharedPtr gpsSub_;
-    rclcpp::Subscription<ulisse_msgs::msg::LLCStatus>::SharedPtr llcStatusSub_;
     rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr navFilterSub_;
 
-    rclcpp::Publisher<ulisse_msgs::msg::StatusContext>::SharedPtr statuscxtPub_;
-    rclcpp::Publisher<ulisse_msgs::msg::GoalContext>::SharedPtr goalcxtPub_;
-    rclcpp::Publisher<ulisse_msgs::msg::ControlContext>::SharedPtr ctrlcxtPub_;
-    rclcpp::Publisher<std_msgs::msg::String>::SharedPtr vehiclestatePub_;
-
+    rclcpp::Publisher<ulisse_msgs::msg::ReferenceVelocities>::SharedPtr referenceVelocitiesPub_;
+    rclcpp::Publisher<ulisse_msgs::msg::VehicleStatus>::SharedPtr vehicleStatusPub_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr genericLogPub_;
+    rclcpp::Publisher<ulisse_msgs::msg::FeedbackGui>::SharedPtr feedbackGuiPub_;
+
     /// ROBOT MODEL
     std::shared_ptr<rml::RobotModel> robotModel_;
 
@@ -88,11 +79,11 @@ class VehicleController {
     // FSM
     fsm::FSM uFsm_;
 
-    states::StateHalt stateHalt_;
-    states::StateHold stateHold_;
-    states::StateLatLong stateLatLong_;
-    states::StateSpeedHeading stateSpeedHeading_;
-    states::StateNavigate statePathFollowing_;
+    std::shared_ptr<states::StateHalt> stateHalt_;
+    std::shared_ptr<states::StateHold> stateHold_;
+    std::shared_ptr<states::StateLatLong> stateLatLong_;
+    std::shared_ptr<states::StateSpeedHeading> stateSpeedHeading_;
+    std::shared_ptr<states::StateNavigate> statePathFollowing_;
 
     commands::CommandHalt commandHalt_;
     commands::CommandHold commandHold_;
@@ -103,9 +94,6 @@ class VehicleController {
     events::EventRCEnabled eventRcEnabled_;
 
     std::shared_ptr<ControllerConfiguration> conf_;
-    std::shared_ptr<StatusContext> statusCxt_;
-    std::shared_ptr<GoalContext> goalCxt_;
-    std::shared_ptr<ControlContext> ctrlCxt_;
 
     std::chrono::system_clock::time_point tNow_;
 
@@ -113,11 +101,12 @@ class VehicleController {
 
     ctb::LatLong centroidLocation_;
 
+    std::shared_ptr<ctb::LatLong> vehiclePosition_;
+
     bool LoadConfiguration();
     void SetUpFSM();
     void SetupCommandServer();
 
-    void GPSSensorCB(const ulisse_msgs::msg::GPSData::SharedPtr msg);
     void NavFilterCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
     void LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg);
 
@@ -128,7 +117,6 @@ public:
     virtual ~VehicleController();
     void Run();
     void PublishControl();
-    std::shared_ptr<ControlContext> CtrlContext() const;
 };
 }
 #endif // ULISSE_CTRL_VEHICLECONTROLLER_HPP

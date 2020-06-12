@@ -27,10 +27,13 @@ namespace topicnames {
 
     const std::string nav_filter_data = "/ulisse/nav_filter/data";
 
-    const std::string control_context = "/ulisse/ctrl/ctrl_context";
-    const std::string status_context = "/ulisse/ctrl/status_context";
-    const std::string goal_context = "/ulisse/ctrl/pos_context";
-    const std::string thrusters_data = "/ulisse/ctrl/thruster_ref";
+    const std::string vehicle_status = "/ulisse/ctrl/vehicle_status";
+    const std::string thrusters_data = "/ulisse/ctrl/thrusters_percentage";	
+    const std::string thruster_mapping_control = "/ulisse/ctrl/thruster_mapping_info";
+    const std::string sliding_mode_control = "/ulisse/ctrl/sliding_mode_info";
+    const std::string reference_velocities = "/ulisse/ctrl/reference_velocities";
+    const std::string simulated_velocity_sensor = "/ulisse/ctrl/water_relative_surge";
+    const std::string feedback_gui = "/ulisse/ctrl/feedback_gui";
 
     const std::string rosbag_service = "/record_bag";
     const std::string llc_cmd_service = "/ulisse/service/llc_cmd";

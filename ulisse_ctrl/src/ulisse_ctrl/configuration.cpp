@@ -83,9 +83,9 @@ void ConfigureActionsFromFile(std::shared_ptr<tpik::ActionManager> actionManager
     }
 }
 
-void ConfigureSatesFromFile(std::unordered_map<std::string, ulisse::states::GenericState&> statesMap, libconfig::Config& confObj)
+void ConfigureSatesFromFile(std::unordered_map<std::string, std::shared_ptr<ulisse::states::GenericState>> statesMap, libconfig::Config& confObj)
 {
     for (auto& mapLine : statesMap) {
-        mapLine.second.ConfigureStateFromFile(confObj);
+        mapLine.second->ConfigureStateFromFile(confObj);
     }
 }

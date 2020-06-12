@@ -18,28 +18,31 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     , sampleTime_(sampleTime)
     , boundariesSet_(false)
 {
-    ctrlCxt_ = std::make_shared<ControlContext>();
-    goalCxt_ = std::make_shared<GoalContext>();
-    statusCxt_ = std::make_shared<StatusContext>();
     conf_ = std::make_shared<ControllerConfiguration>();
+    vehiclePosition_ = std::make_shared<LatLong>();
+
     fileName_ = file_name;
 
+    stateHalt_ = std::make_shared<states::StateHalt>();
+    stateHold_ = std::make_shared<states::StateHold>();
+    statePathFollowing_ = std::make_shared<states::StateNavigate>();
+    stateLatLong_ = std::make_shared<states::StateLatLong>();
+    stateSpeedHeading_ = std::make_shared<states::StateSpeedHeading>();
+
     // Sensor Subscriptions
-    gpsSub_ = nh_->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data, 10, std::bind(&VehicleController::GPSSensorCB, this, _1));
-    //compass_sub_ = nh_->create_subscription<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass, std::bind(&VehicleController::CompassSensorCB, this, _1));
     navFilterSub_ = nh_->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 10, std::bind(&VehicleController::NavFilterCB, this, _1));
 
     // Control Publishers
-    ctrlcxtPub_ = nh_->create_publisher<ulisse_msgs::msg::ControlContext>(ulisse_msgs::topicnames::control_context, 10);
-    goalcxtPub_ = nh_->create_publisher<ulisse_msgs::msg::GoalContext>(ulisse_msgs::topicnames::goal_context, 10);
-    statuscxtPub_ = nh_->create_publisher<ulisse_msgs::msg::StatusContext>(ulisse_msgs::topicnames::status_context, 10);
     genericLogPub_ = nh_->create_publisher<std_msgs::msg::String>("/ulisse/log/generic", 10);
+    vehicleStatusPub_ = nh_->create_publisher<ulisse_msgs::msg::VehicleStatus>(ulisse_msgs::topicnames::vehicle_status, 10);
+    referenceVelocitiesPub_ = nh_->create_publisher<ulisse_msgs::msg::ReferenceVelocities>(ulisse_msgs::topicnames::reference_velocities, 10);
+    feedbackGuiPub_ = nh_->create_publisher<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10);
 
     /// TPIK Manager
     actionManager_ = std::make_shared<tpik::ActionManager>(tpik::ActionManager());
 
     /// ROBOT MODEL
-    Eigen::TransfMatrix world_T_vehicle;
+    Eigen::TransformationMatrix world_T_vehicle;
 
     /// Jacobian
     Eigen::Matrix6d J_ASV;
@@ -89,10 +92,10 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     // Initialize solver_ and iCAT
     int dof = 6;
     iCat_ = std::make_shared<tpik::iCAT>(tpik::iCAT(dof));
+    yTpik_ = Eigen::VectorXd::Zero(dof);
 
     // load config file
     // Setup Params for Tasks and iCAT
-
     LoadConfiguration();
 
     // solver_ definition
@@ -134,12 +137,10 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         log << "Cruise Control set to: " << request->cruise_control;
         publishLog(log.str().c_str());
 
-        goalCxt_->goalSurge = request->cruise_control;
-
         Eigen::VectorXd satMin, satMax;
         iCat_->GetSaturation(satMin, satMax);
 
-        satMax.at(3) = request->cruise_control;
+        satMax.at(0) = request->cruise_control;
 
         // Set Saturation values for the iCAT (read from conf file)
         iCat_->SetSaturation(satMin, satMax);
@@ -179,11 +180,6 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 }
 
 VehicleController::~VehicleController() {}
-
-std::shared_ptr<ControlContext> VehicleController::CtrlContext() const
-{
-    return ctrlCxt_;
-}
 
 bool VehicleController::LoadConfiguration()
 {
@@ -255,35 +251,32 @@ void VehicleController::SetUpFSM()
 {
     // ***** COMMANDS *****
     commandHalt_.SetFSM(&uFsm_);
+    commandHalt_.SetState(stateHalt_);
 
     commandHold_.SetFSM(&uFsm_);
+    commandHold_.SetState(stateHold_);
 
     commandLatLong_.SetFSM(&uFsm_);
-    commandLatLong_.SetGoalCtx(goalCxt_);
+    commandLatLong_.SetState(stateLatLong_);
 
     commandSpeedHeading_.SetFSM(&uFsm_);
-    commandSpeedHeading_.SetGoalCtx(goalCxt_);
+    commandSpeedHeading_.SetState(stateSpeedHeading_);
 
     commandPathFollowing_.SetFSM(&uFsm_);
+    commandPathFollowing_.SetState(statePathFollowing_);
 
     // ***** STATES *****
-    ulisse::states::GenericState::StateCtx stateCtx;
-    stateCtx.actionManager = actionManager_;
-    stateCtx.robotModel = robotModel_;
-    stateCtx.ctrlCxt = ctrlCxt_;
-    stateCtx.statusCxt = statusCxt_;
-    stateCtx.goalCxt = goalCxt_;
-    stateCtx.tasksMap = tasksMap_;
-
     //Set the fms and the structure that the states need.
     for (auto& state : statesMap_) {
-        state.second.SetStateCtx(stateCtx);
-        state.second.SetFSM(&uFsm_);
+        state.second->actionManager = actionManager_;
+        state.second->robotModel = robotModel_;
+        state.second->tasksMap = tasksMap_;
+        state.second->vehiclePosition = vehiclePosition_;
+        state.second->SetFSM(&uFsm_);
     }
 
     // ***** EVENTS *****
     eventRcEnabled_.SetFSM(&uFsm_);
-    eventRcEnabled_.SetCtrlContext(ctrlCxt_);
 
     // ***** CONFIGURE FSM *****
     // ADD COMMANDS
@@ -293,7 +286,7 @@ void VehicleController::SetUpFSM()
 
     // ADD STATES
     for (auto& state : statesMap_) {
-        uFsm_.AddState(state.first, &state.second);
+        uFsm_.AddState(state.first, state.second.get());
     }
 
     // ADD EVENTS
@@ -351,7 +344,7 @@ void VehicleController::SetupCommandServer()
         } else if (request->command_type == ulisse::commands::ID::latlong) {
 
             std::cout << "Received Command LatLong" << std::endl;
-            commandLatLong_.SetGoTo(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude, request->latlong_cmd.acceptance_radius);
+            commandLatLong_.SetGoTo(LatLong(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude), request->latlong_cmd.acceptance_radius);
 
             log << "Received Command GoTo (lat: " << request->latlong_cmd.goal.latitude << " , long: " << request->latlong_cmd.goal.longitude << " )";
             publishLog(log.str().c_str());
@@ -360,7 +353,7 @@ void VehicleController::SetupCommandServer()
 
             std::cout << "Received Command SpeedHeading" << std::endl;
             commandSpeedHeading_.SetSpeedHeading(request->sh_cmd.speed, request->sh_cmd.heading, request->sh_cmd.timeout.sec);
-            stateSpeedHeading_.ResetTimer();
+            stateSpeedHeading_->ResetTimer();
             log << "Received Command SpeedHeading (speed: " << request->sh_cmd.speed << " , heading: " << request->sh_cmd.heading << " )";
             publishLog(log.str().c_str());
 
@@ -368,7 +361,7 @@ void VehicleController::SetupCommandServer()
 
             std::cout << "Received Command Path Following" << std::endl;
 
-            if (!statePathFollowing_.LoadNurbs(request->nav_cmd.path)) {
+            if (!statePathFollowing_->LoadNurbs(request->nav_cmd.path)) {
                 ret = fsm::retval::fail;
             }
 
@@ -403,48 +396,27 @@ void VehicleController::SetupCommandServer()
     srv_ = nh_->create_service<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service, handle_control_commands);
 }
 
-void VehicleController::GPSSensorCB(const ulisse_msgs::msg::GPSData::SharedPtr msg)
-{
-    timestamp_ = msg->time;
-    statusCxt_->gpsSpeed = msg->speed;
-    statusCxt_->gpsTrack = msg->track * M_PI / 180.0;
-}
-
 void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)
 {
-    statusCxt_->vehiclePos.latitude = msg->latitude;
-    statusCxt_->vehiclePos.longitude = msg->longitude;
-    statusCxt_->vehicleHeading = msg->orientation.yaw;
-
-    statusCxt_->seacurrent[0] = msg->current[0];
-    statusCxt_->seacurrent[1] = msg->current[1];
-
+    vehiclePosition_->latitude = msg->inertialframe_linear_position.latlong.latitude;
+    vehiclePosition_->longitude = msg->inertialframe_linear_position.latlong.longitude;
     // Linear position in world frame
-    Eigen::Vector3d w_position(statusCxt_->vehiclePos.latitude, statusCxt_->vehiclePos.longitude, 0);
+    Eigen::Vector3d worldF_vehicleLinearPosition(vehiclePosition_->latitude, vehiclePosition_->longitude, 0.0);
 
     // Angualr position in world frame
-    rml::EulerRPY rpy;
-    rpy.SetRoll(0);
-    rpy.SetPitch(0);
-    rpy.SetYaw(msg->orientation.yaw);
+    rml::EulerRPY rpy{ 0.0, 0.0, msg->bodyframe_angular_position.yaw };
 
-    Eigen::Vector6d velocity_fbk;
-    velocity_fbk.setZero();
-    velocity_fbk(0) = msg->speed[0];
-    velocity_fbk(1) = msg->speed[1];
-    velocity_fbk(5) = msg->speed[5];
+    Eigen::Vector6d velocity_fbk = Eigen::Vector6d::Zero();
+    velocity_fbk(0) = msg->bodyframe_linear_velocity.surge;
+    velocity_fbk(1) = msg->bodyframe_linear_velocity.sway;
 
     // Updating the robot model
-    Eigen::TransfMatrix auv_position_transf;
-    auv_position_transf.SetTransl(w_position);
-    auv_position_transf.SetRotMatrix(rpy.ToRotMatrix());
-    robotModel_->SetBodyFramePosition(auv_position_transf);
-    robotModel_->SetVelocityVector(ulisse::robotModelID::ASV, velocity_fbk);
-}
+    Eigen::TransformationMatrix worldF_T_vehicleF;
+    worldF_T_vehicleF.TranslationVector(worldF_vehicleLinearPosition);
+    worldF_T_vehicleF.RotationMatrix(rpy.ToRotationMatrix());
 
-void VehicleController::LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg)
-{
-    statusCxt_->llcStatus = msg->status;
+    robotModel_->PositionOnInertialFrame(worldF_T_vehicleF);
+    robotModel_->VelocityVector(ulisse::robotModelID::ASV, velocity_fbk);
 }
 
 void VehicleController::Run()
@@ -469,7 +441,6 @@ void VehicleController::Run()
             std::cerr << "who " << e.what() << " how: " << e.how() << std::endl;
         }
     }
-
     // Computing Kinematic Control via TPIK
     yTpik_ = solver_->ComputeVelocities();
 
@@ -482,30 +453,54 @@ void VehicleController::Run()
             RCLCPP_INFO(nh_->get_logger(), "NaN requested velocity");
         }
     }
+}
 
-    ctrlCxt_->desiredSurge = yTpik_[3];
-    ctrlCxt_->desiredJog = yTpik_[2];
+void VehicleController::PublishControl()
+{
+    tNow_ = std::chrono::system_clock::now();
+    long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(tNow_.time_since_epoch())).count();
+    auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
+    auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
 
-    // Verbose Status to Video
-    std::cout << "Current Latitude: " << statusCxt_->vehiclePos.latitude << std::endl;
-    std::cout << "Current Longitude: " << statusCxt_->vehiclePos.longitude << std::endl;
-    std::cout << "Current Heading: " << statusCxt_->vehicleHeading << std::endl;
-    std::cout << "Current Surge: " << statusCxt_->gpsSpeed << std::endl;
-    std::cout << "Goal Heading: " << goalCxt_->goalHeading << std::endl;
-    std::cout << "Goal Surge: " << goalCxt_->goalSurge << std::endl;
-    std::cout << "----------------------------------" << std::endl;
-    std::cout << "INTERFACE TO DCL" << std::endl;
-    std::cout << "Desired Surge: " << ctrlCxt_->desiredSurge << std::endl;
-    std::cout << "Desired Jog: " << ctrlCxt_->desiredJog << std::endl;
-    std::cout << "----------------------------------" << std::endl;
+    ulisse_msgs::msg::ReferenceVelocities referenceVelocities;
+    referenceVelocities.stamp.sec = now_stamp_secs;
+    referenceVelocities.stamp.nanosec = now_stamp_nanosecs;
+    referenceVelocities.desired_surge = yTpik_[0];
+    referenceVelocities.desired_yaw_rate = yTpik_[5];
+
+    referenceVelocitiesPub_->publish(referenceVelocities);
+
+    ulisse_msgs::msg::FeedbackGui feedbackGuiMsg;
+    feedbackGuiMsg.stamp.sec = now_stamp_secs;
+    feedbackGuiMsg.stamp.nanosec = now_stamp_nanosecs;
+    feedbackGuiMsg.goal_position.latitude = stateLatLong_->goalPosition.latitude;
+    feedbackGuiMsg.goal_position.longitude = stateLatLong_->goalPosition.longitude;
+    feedbackGuiMsg.goal_heading = stateLatLong_->goalHeading;
+    feedbackGuiMsg.acceptance_radius = stateLatLong_->acceptanceRadius;
+    feedbackGuiMsg.goal_distance = stateLatLong_->goalDistance;
+
+    feedbackGuiPub_->publish(feedbackGuiMsg);
+
+    ulisse_msgs::msg::VehicleStatus vehicleStatusMsg;
+    vehicleStatusMsg.stamp.sec = now_stamp_secs;
+    vehicleStatusMsg.stamp.nanosec = now_stamp_nanosecs;
+    vehicleStatusMsg.vehicle_state = uFsm_.GetCurrentStateName();
+
+    vehicleStatusPub_->publish(vehicleStatusMsg);
 
     for (auto& taskMap : tasksMap_) {
         try {
 
-            std::vector<double> diagonal_activation_function;
+            std::vector<double> diagonal_internal_activation_function;
             for (unsigned int i = 0; i < taskMap.second.task->InternalActivationFunction().rows(); i++) {
-                diagonal_activation_function.push_back(taskMap.second.task->InternalActivationFunction().at(i, i));
+                diagonal_internal_activation_function.push_back(taskMap.second.task->InternalActivationFunction().at(i, i));
             }
+
+            std::vector<double> diagonal_external_activation_function;
+            for (unsigned int i = 0; i < taskMap.second.task->InternalActivationFunction().rows(); i++) {
+                diagonal_external_activation_function.push_back(taskMap.second.task->InternalActivationFunction().at(i, i));
+            }
+
             std::vector<double> referenceRate;
             for (unsigned int i = 0; i < taskMap.second.task->ReferenceRate().size(); i++) {
                 referenceRate.push_back(taskMap.second.task->ReferenceRate().at(i));
@@ -513,17 +508,13 @@ void VehicleController::Run()
 
             ulisse_msgs::msg::TaskStatus taskstatus_msg;
 
-            tNow_ = std::chrono::system_clock::now();
-            long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(tNow_.time_since_epoch())).count();
-            auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
-            auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
-
             taskstatus_msg.stamp.sec = now_stamp_secs;
             taskstatus_msg.stamp.nanosec = now_stamp_nanosecs;
             taskstatus_msg.id = taskMap.second.task->ID();
             taskstatus_msg.is_active = taskMap.second.task->IsActive();
-            taskstatus_msg.activation_function = diagonal_activation_function;
-            taskstatus_msg.reference = referenceRate;
+            taskstatus_msg.external_activation_function = diagonal_external_activation_function;
+            taskstatus_msg.internal_activation_function = diagonal_internal_activation_function;
+            taskstatus_msg.reference_rate = referenceRate;
 
             tasksMap_[taskMap.second.task->ID()].taskPub->publish(taskstatus_msg);
 
@@ -532,45 +523,5 @@ void VehicleController::Run()
             std::cerr << "who " << e.what() << " how: " << e.how() << std::endl;
         }
     }
-}
-
-void VehicleController::PublishControl()
-{
-    ulisse_msgs::msg::StatusContext statuscxt_msg;
-
-    tNow_ = std::chrono::system_clock::now();
-    long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(tNow_.time_since_epoch())).count();
-    auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
-    auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
-
-    statuscxt_msg.stamp.sec = now_stamp_secs;
-    statuscxt_msg.stamp.nanosec = now_stamp_nanosecs;
-    statuscxt_msg.vehicle_pos.latitude = statusCxt_->vehiclePos.latitude;
-    statuscxt_msg.vehicle_pos.longitude = statusCxt_->vehiclePos.longitude;
-    statuscxt_msg.vehicle_heading = statusCxt_->vehicleHeading;
-    statuscxt_msg.vehicle_speed = statusCxt_->gpsSpeed;
-    statuscxt_msg.vehicle_track = statusCxt_->gpsTrack;
-    statuscxt_msg.vehicle_state = uFsm_.GetCurrentStateName();
-    statuscxtPub_->publish(statuscxt_msg);
-
-    ulisse_msgs::msg::GoalContext goalcxt_msg;
-    goalcxt_msg.stamp.sec = now_stamp_secs;
-    goalcxt_msg.stamp.nanosec = now_stamp_nanosecs;
-    goalcxt_msg.current_goal.latitude = goalCxt_->currentGoal.pos.latitude;
-    goalcxt_msg.current_goal.longitude = goalCxt_->currentGoal.pos.longitude;
-    goalcxt_msg.accept_radius = goalCxt_->currentGoal.acceptRadius;
-    goalcxt_msg.goal_distance = goalCxt_->goalDistance;
-    goalcxt_msg.goal_heading = goalCxt_->goalHeading;
-    goalcxt_msg.goal_speed = goalCxt_->goalSurge;
-    goalcxtPub_->publish(goalcxt_msg);
-
-    ulisse_msgs::msg::ControlContext ctrlcxt_msg;
-    ctrlcxt_msg.stamp.sec = now_stamp_secs;
-    ctrlcxt_msg.stamp.nanosec = now_stamp_nanosecs;
-
-    ctrlcxt_msg.desired_speed = ctrlCxt_->desiredSurge;
-    ctrlcxt_msg.desired_jog = ctrlCxt_->desiredJog;
-
-    ctrlcxtPub_->publish(ctrlcxt_msg);
 }
 } // namespace ulisse

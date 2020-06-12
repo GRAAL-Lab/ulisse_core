@@ -13,5 +13,10 @@ namespace commands {
     {
         return fsm_->SetNextState(ulisse::states::ID::navigate);
     }
+
+    void CommandNavigate::SetState(std::shared_ptr<states::GenericState> state)
+    {
+        statePathFollowing_ = std::dynamic_pointer_cast<states::StateNavigate>(state);
+    }
 }
 }

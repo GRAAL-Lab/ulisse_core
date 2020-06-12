@@ -7,32 +7,39 @@ namespace ulisse {
 
 namespace nav {
 
-void PosVelObserver::Update(double v, double theta, double x, double y) {
-    nanoseconds now = duration_cast<nanoseconds>(system_clock::now().time_since_epoch());
-	if (!initialized_) {
-		xhat_ = x;
-		yhat_ = y;
-		Cxhat_ = 0;
-		Cyhat_ = 0;
-		initialized_ = true;
-		prevTime_ = now;
-	}
-    xhatdot_ = v * cos(theta) + Cxhat_ + k_[0] * (x - xhat_);
-    yhatdot_ = v * sin(theta) + Cyhat_ + k_[1] * (y - yhat_);
-	Cxhatdot_ = k_[2] * (x - xhat_);
-	Cyhatdot_ = k_[3] * (y - yhat_);
+    PosVelObserver::PosVelObserver()
+    {
+        k = Eigen::Vector4d{ 2, 2, 0.2, 0.2 };
 
+        estimateState_ = Eigen::VectorXd::Zero(8);
+        prevTime_ = duration_cast<nanoseconds>(system_clock::now().time_since_epoch());
+        initialized_ = false;
+    }
 
-    double dt = (now - prevTime_).count() / 1E9;
+    void PosVelObserver::Update(Eigen::VectorXd measurements)
+    {
+        nanoseconds now = duration_cast<nanoseconds>(system_clock::now().time_since_epoch());
+        if (!initialized_) {
+            estimateState_.segment(0, 2) = measurements.segment(0, 2);
 
-	xhat_ +=  xhatdot_*dt;
-	yhat_ +=  yhatdot_*dt;
-	Cxhat_ +=  Cxhatdot_*dt;
-	Cyhat_ +=  Cyhatdot_*dt;
+            initialized_ = true;
+            prevTime_ = now;
+        }
 
-	prevTime_ = now;
+        estimateState_.segment(4, 2) = measurements[3] * Eigen::Vector2d{ cos(measurements[2]), sin(measurements[2]) }.asDiagonal() * estimateState_.segment(2, 2) + k.segment(0, 2).asDiagonal() * (measurements.segment(0, 2) - estimateState_.segment(0, 2));
+        estimateState_.segment(6, 2) = k.segment(2, 2).asDiagonal() * (measurements.segment(0, 2) - estimateState_.segment(0, 2));
 
-}
+        double dt = (now - prevTime_).count() / 1E9;
 
+        estimateState_.segment(0, 4) += dt * Eigen::Matrix4d::Identity() * estimateState_.segment(4, 4);
+
+        prevTime_ = now;
+    }
+
+    void PosVelObserver::Reset()
+    {
+        initialized_ = false;
+        estimateState_.setZero();
+    }
 }
 }

@@ -1,9 +1,9 @@
 Time stamp
-float64 latitude
-float64 longitude
-float64 altitude
-RPY orientation
-float64[3] accelerometer #[m/s^2]
-float64[3] gyro
-float64[2] speed
-float64[2] current
+LatLongAlt inertialframe_linear_position
+RPY bodyframe_angular_position
+SSH bodyframe_linear_velocity
+RPYRate bodyframe_angular_velocity
+float64[2] inertialframe_water_current
+float64[2] inertialframe_water_current_acceleration
+float64[3] gyro_bias
+

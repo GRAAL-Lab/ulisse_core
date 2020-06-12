@@ -21,7 +21,7 @@ Nurbs::Nurbs(int dim)
 
 Nurbs::~Nurbs() { nurbs_.clear(); }
 
-bool Nurbs::Initialization(const ulisse_msgs::msg::Path &path)
+bool Nurbs::Initialization(const ulisse_msgs::msg::Path& path)
 {
     bool reverse = false;
 
@@ -259,20 +259,20 @@ bool Nurbs::ComputePossibleNextPoint(Eigen::VectorXd& nextDirection, Eigen::Vect
             nextParvalue = 1.0;
         } else {
             //compute the delta remaining of the last curve
-            double deltaRemaining = (1 - currentParvalue) * curveLenght;
+            double deltaTraveled = (1 - currentParvalue) * curveLenght;
 
             indexNextCurve++;
             SISLCurve* nextCurve = nurbs_[indexNextCurve];
 
             // Estimate the new curve length
-            double curveLenght;
-            if (ComputeCurveLength(nextCurve, curveLenght)) {
+            double newCurveLenght;
+            if (ComputeCurveLength(nextCurve, newCurveLenght)) {
                 std::cerr << "ComputeNextPossiblePoint: ComputeCurveLength fails" << std::endl;
                 return false;
             }
 
             //compute the new delta
-            delta = (currentDelta_ - deltaRemaining) / curveLenght;
+            delta = (currentDelta_ - deltaTraveled) / newCurveLenght;
 
             nextParvalue = delta;
         }
@@ -356,8 +356,9 @@ bool Nurbs::ComputeParameterValue(const Eigen::VectorXd& epoint)
     //get the curve at the current parvalue
     SISLCurve* curve = nurbs_[indexCurrentCurve];
 
+    double decMinParvalue, decMaxParvalue;
+
     if (floor(maxParvalue) == floor(minParvalue) || maxParvalue >= numberCurves) {
-        double decMinParvalue, decMaxParvalue;
         double intPart;
         decMinParvalue = std::modf(minParvalue, &intPart);
         decMaxParvalue = std::modf(maxParvalue, &intPart);
@@ -385,7 +386,6 @@ bool Nurbs::ComputeParameterValue(const Eigen::VectorXd& epoint)
 
     } else {
         // To select the last part of first curve, from currentParvalue to 1.
-        double decMinParvalue, decMaxParvalue;
         double parvalueTmp, parvalueTmp2;
         double intPart;
 

@@ -9,14 +9,14 @@
 
 #include "rclcpp/rclcpp.hpp"
 
-#include "ulisse_msgs/msg/control_context.hpp"
-#include "ulisse_msgs/msg/goal_context.hpp"
+#include "ulisse_msgs/msg/feedback_gui.hpp"
 #include "ulisse_msgs/msg/gps_data.hpp"
 #include "ulisse_msgs/msg/llc_battery.hpp"
 #include "ulisse_msgs/msg/llc_sw485_status.hpp"
-#include "ulisse_msgs/msg/status_context.hpp"
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
+#include "ulisse_msgs/msg/reference_velocities.hpp"
 #include "ulisse_msgs/msg/thrusters_data.hpp"
+#include "ulisse_msgs/msg/vehicle_status.hpp"
 
 class FeedbackUpdater : public QObject {
     Q_OBJECT
@@ -77,28 +77,21 @@ class FeedbackUpdater : public QObject {
     int left_satellite_sent_;
     int right_satellite_received_;
     int right_satellite_sent_;
-    float current_data_deg;
-    float current_data_norm;
-    float current_data_n;
-    float current_data_e;
+    double current_data_deg;
+    double current_data_norm;
+    double current_data_n;
+    double current_data_e;
 
     rclcpp::Node::SharedPtr np_;
-    rclcpp::Subscription<ulisse_msgs::msg::StatusContext>::SharedPtr status_cxt_sub_;
-    rclcpp::Subscription<ulisse_msgs::msg::GoalContext>::SharedPtr goal_cxt_sub_;
-    rclcpp::Subscription<ulisse_msgs::msg::ControlContext>::SharedPtr control_cxt_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::GPSData>::SharedPtr gps_data_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::LLCBattery>::SharedPtr battery_left_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::LLCBattery>::SharedPtr battery_right_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::ThrustersData>::SharedPtr thruster_data_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::LLCSw485Status>::SharedPtr sw485_status_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr current_status_sub_;
-
-    ulisse_msgs::msg::StatusContext status_cxt_msg_;
-    ulisse_msgs::msg::GoalContext goal_cxt_msg_;
-    ulisse_msgs::msg::ControlContext control_cxt_msg_;
-    ulisse_msgs::msg::GPSData gps_data_msg_;
-    ulisse_msgs::msg::LLCBattery llc_batt_left_msg_, llc_batt_right_msg_;
-    ulisse_msgs::msg::LLCSw485Status sw485_status_msg_;
+    rclcpp::Subscription<ulisse_msgs::msg::ReferenceVelocities>::SharedPtr referenceVelocitieSub_;
+    rclcpp::Subscription<ulisse_msgs::msg::VehicleStatus>::SharedPtr vehicleStatusSub_;
+    rclcpp::Subscription<ulisse_msgs::msg::FeedbackGui>::SharedPtr feedbackGuiSub_;
 
     QVector<double> GenerateRandFloatVector(int size);
 
@@ -114,10 +107,10 @@ public:
     void LLCBatteryRightCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg);
     void ThrusterDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg);
     void LLCSw485StatusCB(const ulisse_msgs::msg::LLCSw485Status::SharedPtr msg);
-    void GoalContextCB(const ulisse_msgs::msg::GoalContext::SharedPtr msg);
-    void ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg);
-    void StatusContextCB(const ulisse_msgs::msg::StatusContext::SharedPtr msg);
+    void ReferenceVelocitiesCB(const ulisse_msgs::msg::ReferenceVelocities::SharedPtr msg);
+    void VehicleStatusCB(const ulisse_msgs::msg::VehicleStatus::SharedPtr msg);
     void NavFilterData(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
+    void FeedbackGuiCB(const ulisse_msgs::msg::FeedbackGui::SharedPtr msg);
 
     Q_INVOKABLE void copyToClipboard(QString value);
 
@@ -149,8 +142,8 @@ public:
     int get_left_satellite_sent();
     int get_right_satellite_received();
     int get_right_satellite_sent();
-    float get_current_data_norm();
-    float get_current_data_deg();
+    double get_current_data_norm();
+    double get_current_data_deg();
 
 signals:
     void callbacks_processed();

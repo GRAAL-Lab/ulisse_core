@@ -20,6 +20,8 @@ namespace states {
         fsm::retval Execute() override;
         fsm::retval OnExit() override;
 
+        Eigen::Vector2d intertialF_waterCurrent;
+
         void ConfigureStateFromFile(libconfig::Config& confObj) override;
     };
 }

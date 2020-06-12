@@ -16,23 +16,13 @@ namespace ulisse {
 namespace events {
 
     class GenericEvent : public fsm::BaseEvent {
-    protected:
-        std::shared_ptr<ControlContext> ctrlCxt_;
-        /*context_t* context_;
 
-        static uint16_t count_;
-        EventInfoContainer eventInfo_;*/
     public:
         GenericEvent(void);
         virtual ~GenericEvent(void);
 
         virtual fsm::retval Execute(void) { return fsm::retval::ok; }
         virtual fsm::retval Propagate(void);
-        void SetCtrlContext(const std::shared_ptr<ControlContext>& ctrlCxt);
-
-        /*virtual int32_t SetContext(context_t* context);
-
-        int32_t Init(Event eventNumber);*/
     };
 
 } // namespace events

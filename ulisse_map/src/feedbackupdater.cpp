@@ -19,8 +19,6 @@ FeedbackUpdater::FeedbackUpdater(QObject* parent)
     : QObject(parent)
     , feedbackUpdateInterval_(200)
 {
-    //std::cerr << tc::brwn << Q_FUNC_INFO << ": If you use this constructor remember to call Init(*engine) after"
-    //          << tc::none << "\n";
 }
 
 FeedbackUpdater::FeedbackUpdater(QQmlApplicationEngine* engine, QObject* parent)
@@ -91,35 +89,32 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
     // set the depth to the QoS profile
     //custom_qos_profile.depth = 7;
 
-    status_cxt_sub_ = np_->create_subscription<ulisse_msgs::msg::StatusContext>(
-        ulisse_msgs::topicnames::status_context, std::bind(&FeedbackUpdater::StatusContextCB, this, _1), custom_qos_profile);
-    goal_cxt_sub_ = np_->create_subscription<ulisse_msgs::msg::GoalContext>(
-        ulisse_msgs::topicnames::goal_context, std::bind(&FeedbackUpdater::GoalContextCB, this, _1), custom_qos_profile);
-    control_cxt_sub_ = np_->create_subscription<ulisse_msgs::msg::ControlContext>(
-        ulisse_msgs::topicnames::control_context, std::bind(&FeedbackUpdater::ControlContextCB, this, _1), custom_qos_profile);
-
-    gps_data_sub_ = np_->create_subscription<ulisse_msgs::msg::GPSData>(
-        ulisse_msgs::topicnames::sensor_gps_data, std::bind(&FeedbackUpdater::GPSDataCB, this, _1), custom_qos_profile);
-    battery_left_sub_ = np_->create_subscription<ulisse_msgs::msg::LLCBattery>(
-        ulisse_msgs::topicnames::llc_battery_left, std::bind(&FeedbackUpdater::LLCBatteryLeftCB, this, _1), custom_qos_profile);
-    battery_right_sub_ = np_->create_subscription<ulisse_msgs::msg::LLCBattery>(
-        ulisse_msgs::topicnames::llc_battery_right, std::bind(&FeedbackUpdater::LLCBatteryRightCB, this, _1), custom_qos_profile);
-    thruster_data_sub_ = np_->create_subscription<ulisse_msgs::msg::ThrustersData>(
-        ulisse_msgs::topicnames::thrusters_data, std::bind(&FeedbackUpdater::ThrusterDataCB, this, _1), custom_qos_profile);
-
-    sw485_status_sub_ = np_->create_subscription<ulisse_msgs::msg::LLCSw485Status>(
-        ulisse_msgs::topicnames::llc_sw485status, std::bind(&FeedbackUpdater::LLCSw485StatusCB, this, _1));
-
-    current_status_sub_ = np_->create_subscription<ulisse_msgs::msg::NavFilterData>(
-        ulisse_msgs::topicnames::nav_filter_data, std::bind(&FeedbackUpdater::NavFilterData, this, _1), custom_qos_profile);
+    vehicleStatusSub_ = np_->create_subscription<ulisse_msgs::msg::VehicleStatus>(ulisse_msgs::topicnames::vehicle_status, std::bind(&FeedbackUpdater::VehicleStatusCB, this, _1), custom_qos_profile);
+    referenceVelocitieSub_ = np_->create_subscription<ulisse_msgs::msg::ReferenceVelocities>(ulisse_msgs::topicnames::reference_velocities, std::bind(&FeedbackUpdater::ReferenceVelocitiesCB, this, _1), custom_qos_profile);
+    gps_data_sub_ = np_->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data, std::bind(&FeedbackUpdater::GPSDataCB, this, _1), custom_qos_profile);
+    battery_left_sub_ = np_->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_left, std::bind(&FeedbackUpdater::LLCBatteryLeftCB, this, _1), custom_qos_profile);
+    battery_right_sub_ = np_->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_right, std::bind(&FeedbackUpdater::LLCBatteryRightCB, this, _1), custom_qos_profile);
+    thruster_data_sub_ = np_->create_subscription<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data, std::bind(&FeedbackUpdater::ThrusterDataCB, this, _1), custom_qos_profile);
+    sw485_status_sub_ = np_->create_subscription<ulisse_msgs::msg::LLCSw485Status>(ulisse_msgs::topicnames::llc_sw485status, std::bind(&FeedbackUpdater::LLCSw485StatusCB, this, _1));
+    current_status_sub_ = np_->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, std::bind(&FeedbackUpdater::NavFilterData, this, _1), custom_qos_profile);
+    feedbackGuiSub_ = np_->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, std::bind(&FeedbackUpdater::FeedbackGuiCB, this, _1), custom_qos_profile);
 }
 
 void FeedbackUpdater::NavFilterData(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)
 {
-    current_data_n = msg->current[0];
-    current_data_e = msg->current[1];
+    current_data_n = msg->inertialframe_water_current[0];
+    current_data_e = msg->inertialframe_water_current[1];
     current_data_deg = atan2(current_data_n, current_data_e) * (180.0 / M_PI);
     current_data_norm = (sqrt(pow(current_data_n, 2) + pow(current_data_e, 2)));
+
+    q_ulisse_pos_.setLatitude(msg->inertialframe_linear_position.latlong.latitude);
+    q_ulisse_pos_.setLongitude(msg->inertialframe_linear_position.latlong.longitude);
+    q_ulisse_yaw_deg_ = msg->bodyframe_angular_position.yaw * 180 / M_PI;
+    q_ulisse_surge_ = msg->bodyframe_linear_velocity.surge;
+
+    // Rounding surge and heading to 2 decimal places
+    q_ulisse_yaw_deg_ = int(q_ulisse_yaw_deg_ * 1E2) / 1E2;
+    q_ulisse_surge_ = int(q_ulisse_surge_ * 1E2) / 1E2;
 }
 
 void FeedbackUpdater::SetNodeHandle(const rclcpp::Node::SharedPtr& np)
@@ -129,10 +124,7 @@ void FeedbackUpdater::SetNodeHandle(const rclcpp::Node::SharedPtr& np)
 
 void FeedbackUpdater::GPSDataCB(const ulisse_msgs::msg::GPSData::SharedPtr msg)
 {
-    //FIXME: it is really necessary to copy the message if we extract the data?
-    gps_data_msg_ = *msg;
-
-    long now_secs = static_cast<long>(gps_data_msg_.time);
+    long now_secs = static_cast<long>(msg->time);
     std::time_t current = now_secs;
     if (std::ctime(&current) != nullptr) {
         std::string timedate = std::ctime(&current);
@@ -142,8 +134,8 @@ void FeedbackUpdater::GPSDataCB(const ulisse_msgs::msg::GPSData::SharedPtr msg)
         q_gps_time_ = "not avaiable";
     }
 
-    q_gps_pos_.setLatitude(gps_data_msg_.latitude);
-    q_gps_pos_.setLongitude(gps_data_msg_.longitude);
+    q_gps_pos_.setLatitude(msg->latitude);
+    q_gps_pos_.setLongitude(msg->longitude);
 }
 
 void FeedbackUpdater::LLCBatteryLeftCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg)
@@ -157,52 +149,25 @@ void FeedbackUpdater::LLCBatteryRightCB(const ulisse_msgs::msg::LLCBattery::Shar
 
 void FeedbackUpdater::ThrusterDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg)
 {
-    q_thrust_ref_left_ = msg->motor_ctrlref.left;
-    q_thrust_ref_right_ = msg->motor_ctrlref.right;
+    q_thrust_ref_left_ = msg->motor_percentage.left;
+    q_thrust_ref_right_ = msg->motor_percentage.right;
 }
 
 void FeedbackUpdater::LLCSw485StatusCB(const ulisse_msgs::msg::LLCSw485Status::SharedPtr msg)
 {
-    //sw485_status_msg_ = *msg;
     missed_deadlines_ = msg->missed_deadlines;
     right_satellite_received_ = int(msg->right_satellite.received);
-
-    //std::cout << "right motor received: " << right_motor_received_ << std::endl;
 }
 
-void FeedbackUpdater::GoalContextCB(const ulisse_msgs::msg::GoalContext::SharedPtr msg)
+void FeedbackUpdater::ReferenceVelocitiesCB(const ulisse_msgs::msg::ReferenceVelocities::SharedPtr msg)
 {
-    //FIXME: it is really necessary to copy the message if we extract the data?
-    goal_cxt_msg_ = *msg;
-
-    q_goal_pos_.setLatitude(goal_cxt_msg_.current_goal.latitude);
-    q_goal_pos_.setLongitude(goal_cxt_msg_.current_goal.longitude);
-    q_goal_distance_ = goal_cxt_msg_.goal_distance;
-    q_accept_radius_ = goal_cxt_msg_.accept_radius;
-    q_goal_heading_deg_ = goal_cxt_msg_.goal_heading * 180 / M_PI;
+    q_desired_surge_ = int(msg->desired_surge * 1E3) / 1E3;
+    q_desired_jog_ = int(msg->desired_yaw_rate * 1E3) / 1E3;
 }
 
-void FeedbackUpdater::ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg)
+void FeedbackUpdater::VehicleStatusCB(const ulisse_msgs::msg::VehicleStatus::SharedPtr msg)
 {
-    //FIXME: it is really necessary to copy the message if we extract the data?
-    //TODO: define a macro for rounding?
-    control_cxt_msg_ = *msg;
-    q_desired_surge_ = int(control_cxt_msg_.desired_speed * 1E3) / 1E3;
-    q_desired_jog_ = int(control_cxt_msg_.desired_jog * 1E3) / 1E3;
-}
-
-void FeedbackUpdater::StatusContextCB(const ulisse_msgs::msg::StatusContext::SharedPtr msg)
-{
-    //FIXME: it is really necessary to copy the message if we extract the data?
-    status_cxt_msg_ = *msg;
-
-    q_vehicle_state_ = status_cxt_msg_.vehicle_state.c_str();
-    q_ulisse_pos_.setLatitude(status_cxt_msg_.vehicle_pos.latitude);
-    q_ulisse_pos_.setLongitude(status_cxt_msg_.vehicle_pos.longitude);
-    q_ulisse_yaw_deg_ = status_cxt_msg_.vehicle_heading * 180 / M_PI;
-    q_ulisse_surge_ = status_cxt_msg_.vehicle_speed;
-
-    //qDebug() << "State: " << q_vehicle_state_ << ", " << status_cxt_msg_.vehicle_state.c_str();
+    q_vehicle_state_ = msg->vehicle_state.c_str();
 
     if (q_vehicle_state_.toStdString() == ulisse::states::ID::latlong
         or q_vehicle_state_.toStdString() == ulisse::states::ID::hold) {
@@ -210,10 +175,15 @@ void FeedbackUpdater::StatusContextCB(const ulisse_msgs::msg::StatusContext::Sha
     } else {
         goalFlagObj_->setProperty("opacity", 0.3);
     }
+}
 
-    // Rounding surge and heading to 2 decimal places
-    q_ulisse_yaw_deg_ = int(q_ulisse_yaw_deg_ * 1E2) / 1E2;
-    q_ulisse_surge_ = int(q_ulisse_surge_ * 1E2) / 1E2;
+void FeedbackUpdater::FeedbackGuiCB(const ulisse_msgs::msg::FeedbackGui::SharedPtr msg)
+{
+    q_goal_pos_.setLatitude(msg->goal_position.latitude);
+    q_goal_pos_.setLongitude(msg->goal_position.longitude);
+    q_goal_distance_ = msg->goal_distance;
+    q_accept_radius_ = msg->acceptance_radius;
+    q_goal_heading_deg_ = msg->goal_heading * 180 / M_PI;
 }
 
 void FeedbackUpdater::copyToClipboard(QString newText)
@@ -365,12 +335,12 @@ QVector<double> FeedbackUpdater::GenerateRandFloatVector(int size)
     return randVect;
 }
 
-float FeedbackUpdater::get_current_data_deg()
+double FeedbackUpdater::get_current_data_deg()
 {
     return current_data_deg;
 }
 
-float FeedbackUpdater::get_current_data_norm()
+double FeedbackUpdater::get_current_data_norm()
 {
     return current_data_norm;
 }

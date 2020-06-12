@@ -14,13 +14,13 @@ namespace states {
     fsm::retval StateHold::OnEntry()
     {
         //set tasks
-        safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(stateCtx_.tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
-        absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(stateCtx_.tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
-        linearVelocityTask_ = std::dynamic_pointer_cast<ikcl::LinearVelocity>(stateCtx_.tasksMap.find(ulisse::task::asvLinearVelocity)->second.task);
-        absoluteAxisAlignmentTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(stateCtx_.tasksMap.find(ulisse::task::asvAbsoluteAxisAlignment)->second.task);
+        safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
+        absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
+        linearVelocityTask_ = std::dynamic_pointer_cast<ikcl::LinearVelocity>(tasksMap.find(ulisse::task::asvLinearVelocity)->second.task);
+        absoluteAxisAlignmentTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignment)->second.task);
 
         //set action
-        stateCtx_.actionManager->SetAction(ulisse::action::hold, true);
+        actionManager->SetAction(ulisse::action::hold, true);
 
         return fsm::ok;
     }
@@ -43,7 +43,7 @@ namespace states {
         //a desired escape directon and to generate a desired velocity. To do this we use the task AbsoluteAxisAlignment to cope with
         //the align behavior activated in function of the internal actiovation function of the safety task.
 
-        safetyBoundariesTask_->VehiclePosition() = stateCtx_.statusCxt->vehiclePos;
+        safetyBoundariesTask_->VehiclePosition() = *vehiclePosition.get();
 
         Eigen::MatrixXd Aexternal;
 
@@ -69,7 +69,7 @@ namespace states {
 
         //hold task
 
-        absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(stateCtx_.statusCxt->seacurrent[0], stateCtx_.statusCxt->seacurrent[1], 0), rml::FrameID::WorldFrame);
+        absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(intertialF_waterCurrent.x(), intertialF_waterCurrent.y(), 0), rml::FrameID::WorldFrame);
         absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
 
         //compute the heading error
@@ -83,8 +83,6 @@ namespace states {
         linearVelocityTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(linearVelocityTask_->TaskSpace(), linearVelocityTask_->TaskSpace());
 
         std::cout << "STATE HOLD" << std::endl;
-        std::cout << "Goal Distance: " << stateCtx_.goalCxt->goalDistance << std::endl;
-        std::cout << "Acceptance radius: " << stateCtx_.goalCxt->currentGoal.acceptRadius << std::endl;
 
         return fsm::ok;
     }

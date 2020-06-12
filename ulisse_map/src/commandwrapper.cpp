@@ -68,7 +68,7 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
 
     rmw_qos_profile_t custom_qos_profile = rmw_qos_profile_sensor_data;
 
-    goal_cxt_sub_ = np_->create_subscription<ulisse_msgs::msg::GoalContext>(ulisse_msgs::topicnames::goal_context, std::bind(&CommandWrapper::GoalContextCB, this, _1), custom_qos_profile);
+    feedbackGuiSub_ = np_->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, std::bind(&CommandWrapper::FeedbackGuiCB, this, _1), custom_qos_profile);
 
     connect(this, &CommandWrapper::connected, []() { std::cout << "service connected" << std::endl; });
     notificator = std::async([&] {
@@ -84,16 +84,15 @@ void CommandWrapper::SetNodeHandle(const rclcpp::Node::SharedPtr& np)
     goalCtxRead_ = false;
 }
 
-void CommandWrapper::GoalContextCB(const ulisse_msgs::msg::GoalContext::SharedPtr msg)
+void CommandWrapper::FeedbackGuiCB(const ulisse_msgs::msg::FeedbackGui::SharedPtr msg)
 {
-    goal_cxt_msg_ = std::move(*msg);
+    feedbackGuiMsg = std::move(*msg);
     goalCtxRead_ = true;
 }
 
 void CommandWrapper::ShowToast(const QVariant message, const QVariant duration)
 {
-    QMetaObject::invokeMethod(toastMgrObj_, "show", Qt::QueuedConnection,
-        Q_ARG(QVariant, message), Q_ARG(QVariant, duration));
+    QMetaObject::invokeMethod(toastMgrObj_, "show", Qt::QueuedConnection, Q_ARG(QVariant, message), Q_ARG(QVariant, duration));
 }
 
 bool CommandWrapper::sendPath(const QString path)
@@ -162,7 +161,7 @@ bool CommandWrapper::sendBoundaries(const QString boundary)
     Json::Reader reader;
     Json::Value obj, obj2;
 
-    reader.parse(serviceReq->boundaries.boundaries_string , obj);
+    reader.parse(serviceReq->boundaries.boundaries_string, obj);
 
     serviceReq->boundaries.vertices.resize(obj["values"].size());
     unsigned int count = 0;
@@ -432,7 +431,7 @@ void CommandWrapper::check_error_slot()
     rclcpp::spin_some(np_);
 
     if (goalCtxRead_) {
-        if (goal_cxt_msg_.goal_distance < wpRadius_) {
+        if (feedbackGuiMsg.goal_distance < wpRadius_) {
             goToNextWaypoint();
         }
         //TODO: how is the client notified of the end of the path? It is necessary?

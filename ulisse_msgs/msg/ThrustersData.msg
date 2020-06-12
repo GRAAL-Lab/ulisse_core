@@ -1,2 +1,1 @@
-MotorReference motor_mapout
-MotorReference motor_ctrlref
+MotorReference motor_percentage

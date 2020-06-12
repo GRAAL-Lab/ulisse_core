@@ -21,20 +21,15 @@ namespace states {
         double minHeadingError_, maxHeadingError_;
 
     public:
-        struct StateCtx {
-            std::shared_ptr<StatusContext> statusCxt;
-            std::shared_ptr<GoalContext> goalCxt;
-            std::shared_ptr<ControlContext> ctrlCxt;
-            std::shared_ptr<tpik::ActionManager> actionManager;
-            std::shared_ptr<rml::RobotModel> robotModel;
-            std::unordered_map<std::string, TasksInfo> tasksMap;
-        } stateCtx_;
+        std::shared_ptr<LatLong> vehiclePosition; // [x y]
+        std::shared_ptr<tpik::ActionManager> actionManager;
+        std::shared_ptr<rml::RobotModel> robotModel;
+        std::unordered_map<std::string, TasksInfo> tasksMap;
 
         GenericState();
         virtual ~GenericState(void);
 
         void CheckRadioController();
-        void SetStateCtx(StateCtx stateCtx);
         virtual void ConfigureStateFromFile(libconfig::Config& confObj) = 0;
     };
 }

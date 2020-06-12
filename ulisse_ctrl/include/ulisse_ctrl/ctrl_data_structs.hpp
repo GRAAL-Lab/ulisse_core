@@ -24,69 +24,6 @@ enum class ControlMode : int {
     SlidingMode
 };
 
-struct MotorReference {
-    double left;
-    double right;
-    MotorReference()
-        : left(0.0)
-        , right(0.0)
-    {
-    }
-};
-
-struct ThrusterControlData {
-    double desiredSurge;
-    double desiredJog;
-    MotorReference mapOut, ctrlRef;
-};
-
-struct Waypoint {
-    ctb::LatLong pos;
-    double acceptRadius;
-    Waypoint()
-        : acceptRadius(1.0)
-    {
-    }
-};
-
-struct StatusContext {
-    ctb::LatLong vehiclePos;
-    double gpsTrack, gpsSpeed;
-    double vehicleHeading;
-
-    double seacurrent[2];
-
-    uint16_t llcStatus;
-    uint16_t sw485Status;
-
-    std::string vehicleState;
-
-    StatusContext()
-        : vehicleHeading(0.0)
-        , llcStatus(0)
-    {
-    }
-};
-
-struct ControlContext {
-    ctb::DigitalPID pidSurge;
-    ctb::DigitalPID pidPosition;
-    ctb::DigitalPID pidHeading;
-    double desiredSurge;
-    double desiredJog;
-};
-
-struct GoalContext {
-    Waypoint currentGoal, nextGoal;
-    double goalDistance, goalHeading, goalSurge;
-    uint cmdTimeout;
-    GoalContext()
-        : goalDistance(0.0)
-        , goalHeading(0.0)
-    {
-    }
-};
-
 struct ControllerConfiguration {
 
     bool goToHoldAfterMove;
@@ -162,8 +99,6 @@ struct DCLConfiguration {
     ThrusterMapping thrusterMapping;
     ClassicPidControl classicPidControl;
     SlidingMode slidingMode;
-
-    Eigen::Vector2d filterParameter;
 
     friend std::ostream& operator<<(std::ostream& os, DCLConfiguration const& a)
     {

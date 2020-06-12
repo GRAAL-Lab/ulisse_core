@@ -115,8 +115,8 @@ void VehicleSimulator::SimulateActuation(double h_p, double h_s)
     vehRelVel_body_ = vehRelVel_body_ + vehRelAcc_body_ * Ts_;
 
     // Projecting the acceleration and velocity on the world frame
-    vehRelAcc_world_ = vehAtt_now_.ToRotMatrix().GetCartesianRotationMatrix() * vehRelAcc_body_;
-    vehRelVel_world_ = vehAtt_now_.ToRotMatrix().GetCartesianRotationMatrix() * vehRelVel_body_;
+    vehRelAcc_world_ = vehAtt_now_.ToRotationMatrix().CartesianRotationMatrix() * vehRelAcc_body_;
+    vehRelVel_world_ = vehAtt_now_.ToRotationMatrix().CartesianRotationMatrix() * vehRelVel_body_;
 
     // Get the vehicle absolute velocity by adding the water current velocity
 
@@ -127,11 +127,11 @@ void VehicleSimulator::SimulateActuation(double h_p, double h_s)
 
     // Passing from angular vehicle acceleration to Euler rates
     Eigen::Matrix3d S;
-    S << cos(vehAtt_now_.GetYaw()) * cos(vehAtt_now_.GetPitch()), -sin(vehAtt_now_.GetYaw()), 0,
-        sin(vehAtt_now_.GetYaw()) * cos(vehAtt_now_.GetPitch()), cos(vehAtt_now_.GetYaw()), 0,
-        -sin(vehAtt_now_.GetPitch()), 0, 1;
+    S << cos(vehAtt_now_.Yaw()) * cos(vehAtt_now_.Pitch()), -sin(vehAtt_now_.Yaw()), 0,
+        sin(vehAtt_now_.Yaw()) * cos(vehAtt_now_.Pitch()), cos(vehAtt_now_.Yaw()), 0,
+        -sin(vehAtt_now_.Pitch()), 0, 1;
     rml::RegularizationData mySvd;
-    Eigen::Vector3d rpyEulerRates = rml::RegularizedPseudoInverse(S, mySvd) * vehVel_world_.GetSecondVect3();
+    Eigen::Vector3d rpyEulerRates = rml::RegularizedPseudoInverse(S, mySvd) * vehVel_world_.AngularVector();
 
     // Integrating the linear velocity to get the new position
     vehTrack_ = std::atan2(vehVel_world_(1), vehVel_world_(0));
@@ -149,9 +149,9 @@ void VehicleSimulator::SimulateActuation(double h_p, double h_s)
     geod_.Direct(lat_last_, long_last_, vehTrack_ * 180.0 / M_PI, distance_, lat_now_, long_now_);
 
     // Integrating the Euler rates to get the new Euler angles and wrapping around PI
-    vehAtt_now_.SetRoll(std::fmod((vehAtt_last_.GetRoll() + rpyEulerRates(0) * Ts_) + 2 * M_PI, 2 * M_PI));
-    vehAtt_now_.SetPitch(std::fmod((vehAtt_last_.GetPitch() + rpyEulerRates(1) * Ts_) + 2 * M_PI, 2 * M_PI));
-    vehAtt_now_.SetYaw(std::fmod((vehAtt_last_.GetYaw() + rpyEulerRates(2) * Ts_) + 2 * M_PI, 2 * M_PI));
+    vehAtt_now_.Roll(std::fmod((vehAtt_last_.Roll() + rpyEulerRates(0) * Ts_) + 2 * M_PI, 2 * M_PI));
+    vehAtt_now_.Pitch(std::fmod((vehAtt_last_.Pitch() + rpyEulerRates(1) * Ts_) + 2 * M_PI, 2 * M_PI));
+    vehAtt_now_.Yaw(std::fmod((vehAtt_last_.Yaw() + rpyEulerRates(2) * Ts_) + 2 * M_PI, 2 * M_PI));
 }
 
 double VehicleSimulator::GetCurrentTimestamp() const
@@ -175,7 +175,7 @@ void VehicleSimulator::SimulateSensors(double h_p, double h_s)
     micro_loop_count_msg_.stepssincepps = stepssincepps_count_;
 
     gpsdata_msg_.time = static_cast<double>(now_nanosecs / 1E9);
-    gpsdata_msg_.track = vehTrack_ * 180.0 / M_PI;
+    gpsdata_msg_.track = vehTrack_;
     gpsdata_msg_.speed = vehSpeed_;
     gpsdata_msg_.latitude = lat_now_;
     gpsdata_msg_.longitude = long_now_;
@@ -185,7 +185,7 @@ void VehicleSimulator::SimulateSensors(double h_p, double h_s)
     compassdata_msg_.stamp.nanosec = now_stamp_nanosecs;
     compassdata_msg_.orientation.roll = 0.0;
     compassdata_msg_.orientation.pitch = 0.0;
-    compassdata_msg_.orientation.yaw = vehAtt_now_.GetYaw(); // * M_PI / 180.0 ;
+    compassdata_msg_.orientation.yaw = vehAtt_now_.Yaw(); // * M_PI / 180.0 ;
 
     imudata_msg_.stamp.sec = now_stamp_secs;
     imudata_msg_.stamp.nanosec = now_stamp_nanosecs;

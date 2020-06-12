@@ -14,12 +14,15 @@ namespace commands {
         return fsm_->SetNextState(ulisse::states::ID::speedheading);
     }
 
-    void CommandSpeedHeading::SetSpeedHeading(double speed, double heading, uint timeout_sec)
+    void CommandSpeedHeading::SetState(std::shared_ptr<states::GenericState> state)
     {
-        goalCxt_->goalSurge = speed;
-        goalCxt_->goalHeading = heading;
-        goalCxt_->cmdTimeout = timeout_sec;
-        goalCxt_->goalDistance = 0.0;
+        stateSpeedHeading_ = std::dynamic_pointer_cast<states::StateSpeedHeading>(state);
+    }
+    void CommandSpeedHeading::SetSpeedHeading(double surge, double heading, uint timeout_sec)
+    {
+        stateSpeedHeading_->goalSurge = surge;
+        stateSpeedHeading_->goalHeading = heading;
+        stateSpeedHeading_->timeout = timeout_sec;
     }
 }
 }

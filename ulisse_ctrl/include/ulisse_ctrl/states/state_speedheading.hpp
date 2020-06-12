@@ -2,7 +2,6 @@
 #define ULISSE_CTRL_STATESPEEDHEADING_HPP
 
 #include "ulisse_ctrl/states/genericstate.hpp"
-#include "ulisse_ctrl/tasks/SafetyBoundaries.h"
 
 namespace ulisse {
 
@@ -17,6 +16,8 @@ namespace states {
         std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask_;
 
     public:
+        double goalSurge, goalHeading, timeout;
+
         StateSpeedHeading();
         ~StateSpeedHeading() override;
         fsm::retval OnEntry() override;

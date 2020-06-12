@@ -13,5 +13,15 @@ namespace commands {
     {
         return fsm_->SetNextState(ulisse::states::ID::hold);
     }
+
+    void CommandHold::SetState(std::shared_ptr<states::GenericState> state)
+    {
+        stateHold_ = std::dynamic_pointer_cast<states::StateHold>(state);
+    }
+
+    void CommandHold::SetWaterCurrent(const std::shared_ptr<Eigen::Vector2d>& inertialF_waterCurrent)
+    {
+        stateHold_->intertialF_waterCurrent = *inertialF_waterCurrent.get();
+    }
 }
 }

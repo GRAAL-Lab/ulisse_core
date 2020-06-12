@@ -33,12 +33,12 @@ namespace states {
     fsm::retval StateSpeedHeading::OnEntry()
     {
         //set tasks
-        safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(stateCtx_.tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
-        absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(stateCtx_.tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
-        linearVelocityTask_ = std::dynamic_pointer_cast<ikcl::LinearVelocity>(stateCtx_.tasksMap.find(ulisse::task::asvLinearVelocity)->second.task);
-        absoluteAxisAlignmentTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(stateCtx_.tasksMap.find(ulisse::task::asvAbsoluteAxisAlignment)->second.task);
+        safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
+        absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
+        linearVelocityTask_ = std::dynamic_pointer_cast<ikcl::LinearVelocity>(tasksMap.find(ulisse::task::asvLinearVelocity)->second.task);
+        absoluteAxisAlignmentTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignment)->second.task);
 
-        stateCtx_.actionManager->SetAction(ulisse::action::speed_heading, true);
+        actionManager->SetAction(ulisse::action::speed_heading, true);
 
         return fsm::ok;
     }
@@ -50,7 +50,7 @@ namespace states {
         tNow_ = std::chrono::system_clock::now();
         totalElapsed_ = std::chrono::duration_cast<std::chrono::seconds>(tNow_ - tStart_);
 
-        if (stateCtx_.goalCxt->cmdTimeout != 0 && totalElapsed_.count() > stateCtx_.goalCxt->cmdTimeout) {
+        if (timeout != 0 && totalElapsed_.count() > timeout) {
             std::cout << "Speed Heading Timeout reached!" << std::endl;
             fsm_->ExecuteCommand(ulisse::commands::ID::halt);
         }
@@ -59,7 +59,7 @@ namespace states {
         //a desired escape directon and to generate a desired velocity. To do this we use the task AbsoluteAxisAlignment to cope with
         //the align behavior activated in function of the internal actiovation function of the safety task.
 
-        safetyBoundariesTask_->VehiclePosition() = stateCtx_.statusCxt->vehiclePos;
+        safetyBoundariesTask_->VehiclePosition() = *vehiclePosition.get();
 
         Eigen::MatrixXd Aexternal;
 
@@ -84,9 +84,9 @@ namespace states {
 
         //speedheading task
         absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
-        absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(cos(stateCtx_.goalCxt->goalHeading), sin(stateCtx_.goalCxt->goalHeading), 0), rml::FrameID::WorldFrame);
+        absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(cos(goalHeading), sin(goalHeading), 0), rml::FrameID::WorldFrame);
 
-        linearVelocityTask_->Reference() = Eigen::Vector3d(stateCtx_.goalCxt->goalSurge, 0, 0);
+        linearVelocityTask_->Reference() = Eigen::Vector3d(goalSurge, 0, 0);
 
         //compute the heading error
         double headingError = absoluteAxisAlignmentTask_->ControlVariable().norm();
@@ -99,8 +99,6 @@ namespace states {
         linearVelocityTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(linearVelocityTask_->TaskSpace(), linearVelocityTask_->TaskSpace());
 
         std::cout << "STATE SPEED HEADING " << std::endl;
-        std::cout << "Goal Heading: " << stateCtx_.goalCxt->goalHeading << std::endl;
-        std::cout << "Goal Surge: " << stateCtx_.goalCxt->goalSurge << std::endl;
 
         return fsm::ok;
     }

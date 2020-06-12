@@ -69,9 +69,9 @@ int main(int argc, char* argv[])
             send = false;
             ulisse_msgs::msg::ThrustersData thruster_data_msg;
             std::cout << "left thruster (%): ";
-            std::cin >> thruster_data_msg.motor_ctrlref.left;
+            std::cin >> thruster_data_msg.motor_percentage.left;
             std::cout << "right thruster (%): ";
-            std::cin >> thruster_data_msg.motor_ctrlref.right;
+            std::cin >> thruster_data_msg.motor_percentage.right;
 
             std::cout << "repeat? (1 yes, 0 no): ";
             std::cin >> repeat;

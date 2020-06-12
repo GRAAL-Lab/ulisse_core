@@ -4,7 +4,7 @@ using namespace ctb;
 namespace ikcl {
 
 SafetyBoundaries::SafetyBoundaries(std::string taskID, std::shared_ptr<rml::RobotModel> robotModel, std::string frameID)
-    : tpik::ReactiveTask(taskID, 3, robotModel->GetTotalDOFs(), tpik::TaskOption::UseErrorNorm)
+    : tpik::ReactiveTask(taskID, 3, robotModel->Dof(), tpik::TaskOption::UseErrorNorm)
     , robotModel_(robotModel)
     , frameID_(frameID)
 
@@ -30,9 +30,9 @@ void SafetyBoundaries::Update() noexcept(false)
     DistanceCheck(point_type(vehiclePosition_[0], vehiclePosition_[1]));
 
     if (d_ < 0) {
-        x_ = Eigen::Vector3d{ d_ * alignVector_(0), d_ * alignVector_(1), 0.0 };
+        x_ = robotModel_->TransformationMatrix(robotModel_->BodyFrameID()).RotationMatrix().transpose() * Eigen::Vector3d{ d_ * alignVector_(0), d_ * alignVector_(1), 0.0 };
     } else {
-        x_ = Eigen::Vector3d{ -d_ * alignVector_(0), -d_ * alignVector_(1), 0.0 };
+        x_ = robotModel_->TransformationMatrix(robotModel_->BodyFrameID()).RotationMatrix().transpose() * Eigen::Vector3d{ -d_ * alignVector_(0), -d_ * alignVector_(1), 0.0 };
     }
 
     ReactiveTask::Update();
@@ -40,7 +40,7 @@ void SafetyBoundaries::Update() noexcept(false)
 
 void SafetyBoundaries::UpdateJacobian()
 {
-    J_ = robotModel_->GetCartesianJacobian(frameID_).block(3, 0, 3, dof_);
+    J_ = robotModel_->CartesianJacobian(frameID_).block(0, 0, 3, dof_);
     ReactiveTask::UpdateJacobian();
 }
 
@@ -144,8 +144,6 @@ void SafetyBoundaries::DistanceCheck(point_type const& currentPosition)
         // concave side of the polygon
         ComputeAlignVectorConcave(minDistsegments.front(), currentPosition);
     }
-
-    std::cout << "DEbug alignvector:" << alignVector_ << std::endl;
 }
 
 void SafetyBoundaries::ComputeAlignVectorConcave(segment_type segment, point_type currentPosition)

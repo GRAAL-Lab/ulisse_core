@@ -2,6 +2,7 @@
 #define ULISSE_CTRL_COMMANDSPEEDHEADING_HPP
 
 #include "ulisse_ctrl/commands/genericCommand.hpp"
+#include "ulisse_ctrl/states/state_speedheading.hpp"
 
 namespace ulisse {
 
@@ -9,11 +10,15 @@ namespace commands {
 
     class CommandSpeedHeading : public GenericCommand {
 
+        std::shared_ptr<states::StateSpeedHeading> stateSpeedHeading_;
+
     public:
         CommandSpeedHeading();
-        virtual ~CommandSpeedHeading();
-        virtual fsm::retval Execute(void);
-        void SetSpeedHeading(double speed, double heading, uint timeout_sec);
+        virtual ~CommandSpeedHeading() override;
+        virtual fsm::retval Execute(void) override;
+        void SetSpeedHeading(double surge, double heading, uint timeout_sec);
+
+        void SetState(std::shared_ptr<states::GenericState> state) override;
     };
 }
 }

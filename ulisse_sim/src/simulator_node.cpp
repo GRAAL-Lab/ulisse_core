@@ -28,8 +28,8 @@ void ReadMappingParameters(UlisseModelParameters& tmp, std::string file_name);
 
 void ThrusterDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg)
 {
-    test_h_p = msg->motor_ctrlref.left;
-    test_h_s = msg->motor_ctrlref.right;
+    test_h_p = msg->motor_percentage.left;
+    test_h_s = msg->motor_percentage.right;
     motor_timeout.Start();
 }
 
@@ -117,7 +117,7 @@ int main(int argc, char* argv[])
         /* LOGGING */
         logss.str(std::string());
         logss << std::setprecision(8) << myVehSim.VehLatitude() << " " << myVehSim.VehLongitude() << ", ";
-        logss << myVehSim.VehAtt().GetYaw() << ", ";
+        logss << myVehSim.VehAtt().Yaw() << ", ";
         logss << myVehSim.VehVel_world().transpose().format(CommaInitFmt) << "\n";
         logfile << logss.str();
         /***********/
@@ -131,7 +131,7 @@ int main(int argc, char* argv[])
             std::cout << "time: " << std::setprecision(1) << myVehSim.GetCurrentTimestamp() << std::endl;
             std::cout << "lat, long: " << std::setprecision(8) << myVehSim.VehLatitude() << ", " << myVehSim.VehLongitude()
                       << std::endl;
-            std::cout << "compass (deg): " << myVehSim.VehAtt().GetYaw() * 180.0 / M_PI << std::endl;
+            std::cout << "compass (deg): " << myVehSim.VehAtt().Yaw() * 180.0 / M_PI << std::endl;
             std::cout << "velocity: " << myVehSim.VehVel_world().transpose() << std::endl;
             std::cout << "motorref: " << test_h_p << ", " << test_h_s << std::endl;
         }

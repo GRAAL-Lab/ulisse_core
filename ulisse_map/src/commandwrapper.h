@@ -10,13 +10,12 @@
 #include "rclcpp/rclcpp.hpp"
 
 #include "ulisse_msgs/msg/control_context.hpp"
-#include "ulisse_msgs/msg/goal_context.hpp"
+#include "ulisse_msgs/msg/feedback_gui.hpp"
 #include "ulisse_msgs/msg/status_context.hpp"
 #include "ulisse_msgs/srv/control_command.hpp"
+#include "ulisse_msgs/srv/llc_command.hpp"
 #include "ulisse_msgs/srv/set_boundaries.hpp"
 #include "ulisse_msgs/srv/set_cruise_control.hpp"
-#include "ulisse_msgs/srv/llc_command.hpp"
-
 
 #include "ulisse_msgs/topicnames.hpp"
 
@@ -33,9 +32,9 @@ class CommandWrapper : public QObject {
     rclcpp::Client<ulisse_msgs::srv::SetBoundaries>::SharedPtr boundary_srv_;
     rclcpp::Client<ulisse_msgs::srv::LLCCommand>::SharedPtr llc_srv_;
 
-    rclcpp::Subscription<ulisse_msgs::msg::GoalContext>::SharedPtr goal_cxt_sub_;
+    rclcpp::Subscription<ulisse_msgs::msg::FeedbackGui>::SharedPtr feedbackGuiSub_;
 
-    ulisse_msgs::msg::GoalContext goal_cxt_msg_;
+    ulisse_msgs::msg::FeedbackGui feedbackGuiMsg;
 
     QVariantList waypoint_path_;
     int wpCurrentIndex_;
@@ -43,7 +42,7 @@ class CommandWrapper : public QObject {
     int errorCheckInterval_;
     bool goalCtxRead_;
 
-    void GoalContextCB(const ulisse_msgs::msg::GoalContext::SharedPtr msg);
+    void FeedbackGuiCB(const ulisse_msgs::msg::FeedbackGui::SharedPtr msg);
     void ShowToast(const QVariant message, const QVariant duration);
     bool SendBoundariesRequest(ulisse_msgs::srv::SetBoundaries::Request::SharedPtr req);
     bool SendPathRequest(ulisse_msgs::srv::ControlCommand::Request::SharedPtr req);

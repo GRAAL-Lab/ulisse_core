@@ -43,10 +43,10 @@ int main(int argc, char* argv[])
     int rate = 10;
     rclcpp::WallRate loop_rate(rate);
 
-    auto gps_sub = nh->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data, 10, GpsCB);
-    auto poscxt_sub = nh->create_subscription<ulisse_msgs::msg::GoalContext>(ulisse_msgs::topicnames::goal_context, 10, GoalContextCB);
-    auto ctrlcxt_sub = nh->create_subscription<ulisse_msgs::msg::ControlContext>(ulisse_msgs::topicnames::control_context, 10, ControlContextCB);
-    auto statuscxt_sub = nh->create_subscription<ulisse_msgs::msg::StatusContext>(ulisse_msgs::topicnames::status_context, 10, StatusContextCB);
+//    auto gps_sub = nh->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data, 10, GpsCB);
+//    auto poscxt_sub = nh->create_subscription<ulisse_msgs::msg::GoalContext>(ulisse_msgs::topicnames::goal_context, 10, GoalContextCB);
+//    auto ctrlcxt_sub = nh->create_subscription<ulisse_msgs::msg::ControlContext>(ulisse_msgs::topicnames::control_context, 10, ControlContextCB);
+//    auto statuscxt_sub = nh->create_subscription<ulisse_msgs::msg::StatusContext>(ulisse_msgs::topicnames::status_context, 10, StatusContextCB);
     auto thrusterdata_sub = nh->create_subscription<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data, 10, ThrustersDataCB);
     auto batteryleft_sub = nh->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_left, 10, BatteryLeftCB);
     auto batteryright_sub = nh->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_right, 10, BatteryRightCB);
@@ -68,8 +68,8 @@ int main(int argc, char* argv[])
         std::cout << tc::blu << "Desired Speed:\t" << tc::none << control_cxt.desired_speed << std::endl;
         std::cout << tc::blu << "Desired Jog:\t" << tc::none << control_cxt.desired_jog << std::endl;
 
-        std::cout << tc::blu << "Motor Map Out:\t" << tc::none << thrusters_data.motor_mapout.left << ", " << thrusters_data.motor_mapout.right << std::endl;
-        std::cout << tc::blu << "Motor Ctrl Ref:\t" << tc::none << thrusters_data.motor_ctrlref.left << ", " << thrusters_data.motor_ctrlref.right << std::endl;
+//        std::cout << tc::blu << "Motor Map Out:\t" << tc::none << thrusters_data.motor_mapout.left << ", " << thrusters_data.motor_mapout.right << std::endl;
+//        std::cout << tc::blu << "Motor Ctrl Ref:\t" << tc::none << thrusters_data.motor_ctrlref.left << ", " << thrusters_data.motor_ctrlref.right << std::endl;
 
         std::cout << tc::mag << "Battery Level (L,R): " << tc::none << battery_left.charge_percent << "%, " << battery_right.charge_percent << "%" << std::endl;
 

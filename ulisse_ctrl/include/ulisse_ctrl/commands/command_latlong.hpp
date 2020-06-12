@@ -2,6 +2,7 @@
 #define ULISSE_CTRL_COMMANDMOVE_HPP
 
 #include "ulisse_ctrl/commands/genericCommand.hpp"
+#include "ulisse_ctrl/states/state_latlong.hpp"
 
 namespace ulisse {
 
@@ -9,11 +10,16 @@ namespace commands {
 
     class CommandLatLong : public GenericCommand {
 
+    protected:
+        std::shared_ptr<states::StateLatLong> stateLatLong_;
+
     public:
         CommandLatLong();
-        virtual ~CommandLatLong();
-        virtual fsm::retval Execute(void);
-        void SetGoTo(double latitude, double longitude, double acceptanceRadius);
+        virtual ~CommandLatLong() override;
+        virtual fsm::retval Execute(void) override;
+        void SetGoTo(LatLong goalPosition, double acceptanceRadius);
+
+        void SetState(std::shared_ptr<states::GenericState> state) override;
     };
 }
 }

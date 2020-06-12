@@ -25,7 +25,6 @@ namespace states {
         double tolleranceEndingPoint_; //tollerance on the ending point
 
         Nurbs nurbsObj_; //objet to handle the path
-        //Parameter used
 
     public:
         StateNavigate();

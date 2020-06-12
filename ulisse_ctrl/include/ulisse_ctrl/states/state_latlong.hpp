@@ -20,6 +20,11 @@ namespace states {
         fsm::retval OnEntry() override;
         fsm::retval Execute() override;
 
+        LatLong goalPosition;
+        double goalHeading;
+        double goalDistance;
+        double acceptanceRadius;
+
         void ConfigureStateFromFile(libconfig::Config& confObj) override;
     };
 }

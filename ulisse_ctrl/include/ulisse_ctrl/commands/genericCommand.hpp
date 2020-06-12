@@ -2,6 +2,8 @@
 #define ULISSE_CTRL_GENERICCOMMAND_HPP
 
 #include "ulisse_ctrl/ctrl_data_structs.hpp"
+#include "ulisse_ctrl/fsm_defines.hpp"
+#include "ulisse_ctrl/states/genericstate.hpp"
 #include <fsm/fsm.h>
 
 namespace ulisse {
@@ -10,14 +12,11 @@ namespace commands {
 
     class GenericCommand : public fsm::BaseCommand {
 
-    protected:
-        std::shared_ptr<GoalContext> goalCxt_;
-
     public:
         GenericCommand();
         virtual ~GenericCommand();
 
-        void SetGoalCtx(const std::shared_ptr<GoalContext>& goalCtx);
+        virtual void SetState(std::shared_ptr<states::GenericState> state) = 0;
     };
 }
 }
