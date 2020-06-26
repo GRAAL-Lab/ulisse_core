@@ -41,8 +41,7 @@ void LoadDclConfiguration(std::shared_ptr<DCLConfiguration> conf, std::string fi
 
 void ThrusterMappingInizialization(std::shared_ptr<DCLConfiguration> conf, double sampleTime, ctb::DigitalPID& pid);
 
-void SlidingModeInizialization(std::shared_ptr<DCLConfiguration> conf, SlidingSurface& ss, ctb::DigitalSlidingMode<SlidingSurface>& slideSurge,
-    ctb::DigitalSecOrdSlidingMode<SlidingSurface>& slideHeading, double sampleTime);
+void SlidingModeInizialization(std::shared_ptr<DCLConfiguration> conf, SlidingSurface& ss, ctb::DigitalSlidingMode<SlidingSurface>& slideSurge, ctb::DigitalSecOrdSlidingMode<SlidingSurface>& slideHeading, double sampleTime);
 void SetSlidingSurface(SlidingSurface& ss, std::shared_ptr<DCLConfiguration> conf);
 
 std::vector<double> alpha_beta_u(const std::vector<double> state, SlidingSurface param);
@@ -89,7 +88,7 @@ int main(int argc, char* argv[])
 
     std::cout << tc::grayD << *conf << tc::none << std::endl;
 
-    ulisseModel.SetUlisseParams(conf->ulisseConfig);
+    ulisseModel.params = conf->ulisseConfig;
 
     //local variables
     ulisse_msgs::msg::ThrusterMappingControl thrusterMappingMsg;
@@ -130,7 +129,7 @@ int main(int argc, char* argv[])
 
         //Ulisse params configuration
         LoadDclConfiguration(conf, filename);
-        ulisseModel.SetUlisseParams(conf->ulisseConfig);
+        ulisseModel.params = conf->ulisseConfig;
 
         //Controller inizialization
         if (conf->ctrlMode == ControlMode::ThrusterMapping) {

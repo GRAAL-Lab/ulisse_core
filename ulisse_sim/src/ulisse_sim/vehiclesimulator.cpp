@@ -65,7 +65,7 @@ double VehicleSimulator::VehLongitude() const
 void VehicleSimulator::SetParameters(double Ts, const UlisseModelParameters& thmapparams)
 {
     Ts_fixed_ = Ts;
-    ulisseModel_.SetUlisseParams(thmapparams);
+    ulisseModel_.params = thmapparams;
 
     std::cout << "=====  THRUSTER MAPPING   =====" << std::endl;
     std::cout << thmapparams << std::endl;
@@ -183,9 +183,9 @@ void VehicleSimulator::SimulateSensors(double h_p, double h_s)
 
     compassdata_msg_.stamp.sec = now_stamp_secs;
     compassdata_msg_.stamp.nanosec = now_stamp_nanosecs;
-    compassdata_msg_.orientation.roll = 0.0;
-    compassdata_msg_.orientation.pitch = 0.0;
-    compassdata_msg_.orientation.yaw = vehAtt_now_.Yaw(); // * M_PI / 180.0 ;
+    compassdata_msg_.orientation.roll = vehAtt_now_.Roll();
+    compassdata_msg_.orientation.pitch = vehAtt_now_.Pitch();
+    compassdata_msg_.orientation.yaw = vehAtt_now_.Yaw();
 
     imudata_msg_.stamp.sec = now_stamp_secs;
     imudata_msg_.stamp.nanosec = now_stamp_nanosecs;

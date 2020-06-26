@@ -4,6 +4,5 @@ RPY bodyframe_angular_position
 SSH bodyframe_linear_velocity
 RPYRate bodyframe_angular_velocity
 float64[2] inertialframe_water_current
-float64[2] inertialframe_water_current_acceleration
 float64[3] gyro_bias
 

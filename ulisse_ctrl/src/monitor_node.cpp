@@ -2,11 +2,8 @@
 
 #include "rclcpp/rclcpp.hpp"
 
-#include "ulisse_msgs/msg/control_context.hpp"
-#include "ulisse_msgs/msg/goal_context.hpp"
 #include "ulisse_msgs/msg/gps_data.hpp"
 #include "ulisse_msgs/msg/llc_battery.hpp"
-#include "ulisse_msgs/msg/status_context.hpp"
 #include "ulisse_msgs/msg/thrusters_data.hpp"
 
 #include "ulisse_msgs/terminal_utils.hpp"
@@ -19,17 +16,11 @@
 using namespace ulisse;
 
 static ulisse_msgs::msg::GPSData gps_data;
-static ulisse_msgs::msg::GoalContext goal_cxt;
-static ulisse_msgs::msg::ControlContext control_cxt;
-static ulisse_msgs::msg::StatusContext status_cxt;
 static ulisse_msgs::msg::ThrustersData thrusters_data;
 static ulisse_msgs::msg::LLCBattery battery_left;
 static ulisse_msgs::msg::LLCBattery battery_right;
 
 void GpsCB(const ulisse_msgs::msg::GPSData::SharedPtr msg);
-void GoalContextCB(const ulisse_msgs::msg::GoalContext::SharedPtr msg);
-void ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg);
-void StatusContextCB(const ulisse_msgs::msg::StatusContext::SharedPtr msg);
 void ThrustersDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg);
 
 void BatteryLeftCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg);
@@ -53,20 +44,20 @@ int main(int argc, char* argv[])
 
     while (rclcpp::ok()) {
 
-        std::cout << tc::white << "GPS time:\t" << tc::none << std::setprecision(10) << gps_data.time << std::endl;
-        std::cout << tc::white << "Vehicle State:\t" << tc::none << status_cxt.vehicle_state << std::endl;
+//        std::cout << tc::white << "GPS time:\t" << tc::none << std::setprecision(10) << gps_data.time << std::endl;
+//        std::cout << tc::white << "Vehicle State:\t" << tc::none << status_cxt.vehicle_state << std::endl;
 
-        std::cout << tc::green << "GPS Pos:\t" << tc::none << gps_data.latitude << ", " << gps_data.longitude << std::endl;
-        std::cout << tc::green << "Filtered Pos:\t" << tc::none << status_cxt.vehicle_pos.latitude << ", " << status_cxt.vehicle_pos.longitude << std::endl;
-        std::cout << tc::green << "Heading:\t" << tc::none << status_cxt.vehicle_heading * 180 / M_PI << std::endl;
-        std::cout << tc::green << "Surge:\t\t" << tc::none << status_cxt.vehicle_speed << std::endl;
+//        std::cout << tc::green << "GPS Pos:\t" << tc::none << gps_data.latitude << ", " << gps_data.longitude << std::endl;
+//        std::cout << tc::green << "Filtered Pos:\t" << tc::none << status_cxt.vehicle_pos.latitude << ", " << status_cxt.vehicle_pos.longitude << std::endl;
+//        std::cout << tc::green << "Heading:\t" << tc::none << status_cxt.vehicle_heading * 180 / M_PI << std::endl;
+//        std::cout << tc::green << "Surge:\t\t" << tc::none << status_cxt.vehicle_speed << std::endl;
 
-        std::cout << tc::green << "Goal Pos:\t" << tc::none << goal_cxt.current_goal.latitude << ", " << goal_cxt.current_goal.longitude << std::endl;
-        std::cout << tc::green << "Goal Distance:\t" << tc::none << std::setprecision(10) << goal_cxt.goal_distance << std::endl;
-        std::cout << tc::green << "Goal Heading:\t" << tc::none << std::setprecision(10) << goal_cxt.goal_heading << std::endl;
+//        std::cout << tc::green << "Goal Pos:\t" << tc::none << goal_cxt.current_goal.latitude << ", " << goal_cxt.current_goal.longitude << std::endl;
+//        std::cout << tc::green << "Goal Distance:\t" << tc::none << std::setprecision(10) << goal_cxt.goal_distance << std::endl;
+//        std::cout << tc::green << "Goal Heading:\t" << tc::none << std::setprecision(10) << goal_cxt.goal_heading << std::endl;
 
-        std::cout << tc::blu << "Desired Speed:\t" << tc::none << control_cxt.desired_speed << std::endl;
-        std::cout << tc::blu << "Desired Jog:\t" << tc::none << control_cxt.desired_jog << std::endl;
+//        std::cout << tc::blu << "Desired Speed:\t" << tc::none << control_cxt.desired_speed << std::endl;
+//        std::cout << tc::blu << "Desired Jog:\t" << tc::none << control_cxt.desired_jog << std::endl;
 
 //        std::cout << tc::blu << "Motor Map Out:\t" << tc::none << thrusters_data.motor_mapout.left << ", " << thrusters_data.motor_mapout.right << std::endl;
 //        std::cout << tc::blu << "Motor Ctrl Ref:\t" << tc::none << thrusters_data.motor_ctrlref.left << ", " << thrusters_data.motor_ctrlref.right << std::endl;
@@ -86,11 +77,11 @@ int main(int argc, char* argv[])
 
 void GpsCB(const ulisse_msgs::msg::GPSData::SharedPtr msg) { gps_data = *msg; }
 
-void GoalContextCB(const ulisse_msgs::msg::GoalContext::SharedPtr msg) { goal_cxt = *msg; }
+//void GoalContextCB(const ulisse_msgs::msg::GoalContext::SharedPtr msg) { goal_cxt = *msg; }
 
-void ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg) { control_cxt = *msg; }
+//void ControlContextCB(const ulisse_msgs::msg::ControlContext::SharedPtr msg) { control_cxt = *msg; }
 
-void StatusContextCB(const ulisse_msgs::msg::StatusContext::SharedPtr msg) { status_cxt = *msg; }
+//void StatusContextCB(const ulisse_msgs::msg::StatusContext::SharedPtr msg) { status_cxt = *msg; }
 
 void ThrustersDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg) { thrusters_data = *msg; }
 

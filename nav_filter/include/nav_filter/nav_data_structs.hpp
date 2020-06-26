@@ -10,28 +10,29 @@ namespace ulisse {
 
 namespace nav {
 
-    struct NavFilterData {
-        float64_t latitude;
-        float64_t longitude;
-        float64_t speed[2];
-        float64_t current[2];
+    enum class FilterMode : int {
+        LuenbergerObserver,
+        KalmanFilter
     };
 
     struct NavigationFilterParams {
         int rate;
-        Eigen::VectorXd gains;
+        FilterMode mode;
 
         void ConfigureFromFile(libconfig::Config& confObj) noexcept(false)
         {
             ctb::SetParam(confObj, rate, "rate");
-            ctb::SetParamVector(confObj, gains, "observerGains");
+            //Read the type of filter to use
+            int tmp;
+            ctb::SetParam(confObj, tmp, "filterMode");
+            mode = static_cast<FilterMode>(tmp);
         }
 
         friend std::ostream& operator<<(std::ostream& os, NavigationFilterParams const& a)
         {
             return os << "======= NAVIGATION FILTER CONF =======\n"
                       << "Rate: " << a.rate << "\n"
-                      << "Gains: " << a.gains.transpose() << "\n"
+                      //                      << "Gains: " << a.mode << "\n"
                       << "===============================\n";
         }
     };

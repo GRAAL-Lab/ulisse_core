@@ -1,7 +1,7 @@
 #include <cmath>
 #include <rml/RML.h>
 
-#include "nav_filter/pos_vel_observer.hpp"
+#include "nav_filter/luenberger_observer/pos_vel_observer.hpp"
 
 namespace ulisse {
 

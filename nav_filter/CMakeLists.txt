@@ -48,11 +48,17 @@ include_directories(
 ## Libraries ##
 set(nav_filter_lib_sources
     # Main Classes
-    src/${PROJECT_NAME}/pos_vel_observer.cpp
+    src/${PROJECT_NAME}/luenberger_observer/pos_vel_observer.cpp
     # Helpers
     src/${PROJECT_NAME}/nav_data_structs.cpp
-    src/${PROJECT_NAME}/kalman_filter.cpp
-    src/${PROJECT_NAME}/angle_filter.cpp
+#    src/${PROJECT_NAME}/kalman_filter.cpp
+#    src/${PROJECT_NAME}/angle_filter.cpp
+    src/${PROJECT_NAME}/kalman_filter/measurements/gps.cpp
+    src/${PROJECT_NAME}/kalman_filter/measurements/compass.cpp
+    src/${PROJECT_NAME}/kalman_filter/measurements/magnetometer.cpp
+    src/${PROJECT_NAME}/kalman_filter/measurements/accelerometer.cpp
+    src/${PROJECT_NAME}/kalman_filter/measurements/gyro.cpp
+    src/${PROJECT_NAME}/kalman_filter/ulisse_vehicle_model.cpp
 )
 
 ## Libraries

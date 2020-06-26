@@ -20,15 +20,13 @@ bool SolveSecondOrderEquation(double a, double b, double c, std::pair<double, do
 
 SurfaceVehicleModel::SurfaceVehicleModel() {}
 
-void SurfaceVehicleModel::SetUlisseParams(const UlisseModelParameters& params) { params_ = params; }
-
 double SurfaceVehicleModel::GetThrusterForce(double n, double linXVel)
 {
     double force;
     if (n > 0.0) {
-        force = params_.b1_pos * n * n - params_.b2_pos * n * linXVel;
+        force = params.b1_pos * n * n - params.b2_pos * n * linXVel;
     } else {
-        force = -params_.b1_neg * n * n + params_.b2_neg * n * linXVel;
+        force = -params.b1_neg * n * n + params.b2_neg * n * linXVel;
     }
     return force;
 }
@@ -37,9 +35,9 @@ double SurfaceVehicleModel::PercentageToRPM(double h)
 {
     double rpm;
     if (h > 0.0) {
-        rpm = h * params_.lambda_pos;
+        rpm = h * params.lambda_pos;
     } else {
-        rpm = h * params_.lambda_neg;
+        rpm = h * params.lambda_neg;
     }
     return rpm;
 }
@@ -48,9 +46,9 @@ double SurfaceVehicleModel::RPMToPercentage(double rpm)
 {
     double h;
     if (rpm > 0.0) {
-        h = rpm / params_.lambda_pos;
+        h = rpm / params.lambda_pos;
     } else {
-        h = rpm / params_.lambda_neg;
+        h = rpm / params.lambda_neg;
     }
     return h;
 }
@@ -67,8 +65,8 @@ void SurfaceVehicleModel::DirectDynamics(double h_p, double h_s, const Eigen::Ve
     tauStar(1) = 0.0;
     tauStar(2) = tau[1];
 
-    double motorlinearXVel_p = linAngVel(0) + linAngVel(5) * params_.d;
-    double motorlinearXVel_s = linAngVel(0) - linAngVel(5) * params_.d;
+    double motorlinearXVel_p = linAngVel(0) + linAngVel(5) * params.d;
+    double motorlinearXVel_s = linAngVel(0) - linAngVel(5) * params.d;
 
     double n_p = PercentageToRPM(h_p);
     double n_s = PercentageToRPM(h_s);
@@ -79,12 +77,12 @@ void SurfaceVehicleModel::DirectDynamics(double h_p, double h_s, const Eigen::Ve
     Eigen::Vector3d tauC;
     tauC(0) = thrust_force_p + thrust_force_s;
     tauC(1) = 0.0;
-    tauC(2) = (thrust_force_p - thrust_force_s) * params_.d;
+    tauC(2) = (thrust_force_p - thrust_force_s) * params.d;
 
     rml::RegularizationData regData;
     regData.params.lambda = 0.001;
     regData.params.threshold = 0.00001;
-    Eigen::Matrix3d I_pinv = rml::RegularizedPseudoInverse(params_.Inertia, regData);
+    Eigen::Matrix3d I_pinv = rml::RegularizedPseudoInverse(params.Inertia, regData);
     nir = I_pinv * (tauC - tauStar);
 
     linAngAcc(0) = nir(0);
@@ -98,7 +96,7 @@ void SurfaceVehicleModel::DirectDynamics(double h_p, double h_s, const Eigen::Ve
     std::cout << "tauX_: " << tauX_ << std::endl;
     std::cout << "tauN_: " << tauN_ << std::endl;std::cout << "tauC: " << tauC.transpose() << std::endl;
     std::cout << "tauStar: " << tauStar_.transpose() << std::endl;
-    std::cout << "I_:\n" << params_.Inertia << std::endl;
+    std::cout << "I_:\n" << params.Inertia << std::endl;
     std::cout << "I_pinv:\n" << I_pinv << std::endl;
     std::cout << "nir: " << nir_.transpose() << std::endl;
     std::cout << "linAngAcc: " << linAngAcc.transpose() << std::endl;
@@ -117,7 +115,7 @@ Eigen::Vector2d SurfaceVehicleModel::ComputeCoriolisAndDragForces(Eigen::Vector6
     tempN(1) = vehvel(5);
     tempN(2) = vehvel(5) * std::fabs(vehvel(5));
 
-    return { tempX * params_.cX, tempN * params_.cN };
+    return { tempX * params.cX, tempN * params.cN };
 }
 
 Eigen::Vector2d SurfaceVehicleModel::ThusterAllocation(Eigen::Vector2d& tau)
@@ -125,8 +123,8 @@ Eigen::Vector2d SurfaceVehicleModel::ThusterAllocation(Eigen::Vector2d& tau)
     double forceP;
     double forceS;
 
-    forceP = 0.5 * (tau[0] + tau[1] / params_.d);
-    forceS = 0.5 * (tau[0] - tau[1] / params_.d);
+    forceP = 0.5 * (tau[0] + tau[1] / params.d);
+    forceS = 0.5 * (tau[0] - tau[1] / params.d);
 
     return { forceP, forceS };
 }
@@ -156,19 +154,19 @@ void SurfaceVehicleModel::InverseMotorsEquations(const Eigen::Vector6d& linAngVe
 
 void SurfaceVehicleModel::InverseMotorEquation(const Eigen::Vector6d& linAngVel, double thrust_force, double& thruster_perc)
 {
-    double motorlinearXVel = linAngVel(0) + linAngVel(5) * params_.d;
+    double motorlinearXVel = linAngVel(0) + linAngVel(5) * params.d;
     double rpmsolution;
 
     std::pair<double, double> solutions;
     if (thrust_force > 0.0) {
-        SolveSecondOrderEquation(params_.b1_pos, -params_.b2_pos * motorlinearXVel, -thrust_force, solutions);
+        SolveSecondOrderEquation(params.b1_pos, -params.b2_pos * motorlinearXVel, -thrust_force, solutions);
         if (solutions.first > 0.0) {
             rpmsolution = solutions.first;
         } else {
             rpmsolution = solutions.second;
         }
     } else {
-        SolveSecondOrderEquation(-params_.b1_neg, params_.b2_neg * motorlinearXVel, -thrust_force, solutions);
+        SolveSecondOrderEquation(-params.b1_neg, params.b2_neg * motorlinearXVel, -thrust_force, solutions);
         if (solutions.first < 0.0) {
             rpmsolution = solutions.first;
         } else {
