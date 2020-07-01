@@ -17,6 +17,7 @@ namespace nav {
 
         H(1, 3) = g_ * cos(state(4)) * cos(state(3));
         H(2, 3) = -g_ * cos(state(4)) * sin(state(3));
+
         H(0, 4) = -g_ * cos(state(4));
         H(1, 4) = -g_ * sin(state(4)) * sin(state(3));
         H(2, 4) = -g_ * sin(state(4)) * cos(state(3));

@@ -4,6 +4,8 @@
 #include "GeographicLib/UTMUPS.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 #include "ulisse_sim/vehiclesimulator.hpp"
+#include <chrono>
+#include <random>
 
 namespace ulisse {
 
@@ -174,27 +176,38 @@ void VehicleSimulator::SimulateSensors(double h_p, double h_s)
     micro_loop_count_msg_.timestamp = timestamp_count_;
     micro_loop_count_msg_.stepssincepps = stepssincepps_count_;
 
+    // construct a trivial random generator engine from a time-based seed:
+    auto seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine generator(seed);
+
+    std::normal_distribution<double> gpsNoise(0.0, 0.7);
+
     gpsdata_msg_.time = static_cast<double>(now_nanosecs / 1E9);
     gpsdata_msg_.track = vehTrack_;
     gpsdata_msg_.speed = vehSpeed_;
-    gpsdata_msg_.latitude = lat_now_;
-    gpsdata_msg_.longitude = long_now_;
+    gpsdata_msg_.latitude = lat_now_ /*+ gpsNoise(generator)*/;
+    gpsdata_msg_.longitude = long_now_ /*+ gpsNoise(generator)*/;
     gpsdata_msg_.gpsfixmode = 3u; //ulisse_msgs::msg::GPSData::MODE_3D;
+
+    std::normal_distribution<double> compassNoiseRP(0.0, 0.017453501);
+    std::normal_distribution<double> compassNoiseY(0.0, 0.011038433);
 
     compassdata_msg_.stamp.sec = now_stamp_secs;
     compassdata_msg_.stamp.nanosec = now_stamp_nanosecs;
-    compassdata_msg_.orientation.roll = vehAtt_now_.Roll();
-    compassdata_msg_.orientation.pitch = vehAtt_now_.Pitch();
-    compassdata_msg_.orientation.yaw = vehAtt_now_.Yaw();
+    compassdata_msg_.orientation.roll = vehAtt_now_.Roll() + compassNoiseRP(generator);
+    compassdata_msg_.orientation.pitch = vehAtt_now_.Pitch() + compassNoiseRP(generator);
+    compassdata_msg_.orientation.yaw = vehAtt_now_.Yaw() + compassNoiseY(generator);
 
+    std::normal_distribution<double> accelerometerNoise(0.0, 0.0980663043);
+    std::normal_distribution<double> gyroNoise(0.0, 0.017448782);
     imudata_msg_.stamp.sec = now_stamp_secs;
     imudata_msg_.stamp.nanosec = now_stamp_nanosecs;
-    imudata_msg_.accelerometer[0] = vehRelAcc_body_(0);
-    imudata_msg_.accelerometer[1] = vehRelAcc_body_(1);
-    imudata_msg_.accelerometer[2] = 9.81;
-    imudata_msg_.gyro[0] = vehRelVel_body_(3);
-    imudata_msg_.gyro[1] = vehRelVel_body_(4);
-    imudata_msg_.gyro[2] = vehRelVel_body_(5);
+    imudata_msg_.accelerometer[0] = vehRelAcc_body_(0) + accelerometerNoise(generator);
+    imudata_msg_.accelerometer[1] = vehRelAcc_body_(1) + accelerometerNoise(generator);
+    imudata_msg_.accelerometer[2] = 9.81 + accelerometerNoise(generator);
+    imudata_msg_.gyro[0] = vehRelVel_body_(3) + gyroNoise(generator);
+    imudata_msg_.gyro[1] = vehRelVel_body_(4) + gyroNoise(generator);
+    imudata_msg_.gyro[2] = vehRelVel_body_(5) + gyroNoise(generator);
 
     ambsens_msg_.stamp.sec = now_stamp_secs;
     ambsens_msg_.stamp.nanosec = now_stamp_nanosecs;

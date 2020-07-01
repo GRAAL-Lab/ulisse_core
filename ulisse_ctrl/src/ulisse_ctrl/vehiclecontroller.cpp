@@ -338,6 +338,7 @@ void VehicleController::SetupCommandServer()
 
         } else if (request->command_type == ulisse::commands::ID::hold) {
 
+            commandHold_.SetWaterCurrent(inertialF_waterCurrent_);
             std::cout << "Received Command Hold" << std::endl;
             publishLog("Received Command Hold");
 
@@ -400,6 +401,10 @@ void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::Share
 {
     vehiclePosition_->latitude = msg->inertialframe_linear_position.latlong.latitude;
     vehiclePosition_->longitude = msg->inertialframe_linear_position.latlong.longitude;
+
+    //Get the water current for hold state
+    inertialF_waterCurrent_ = { msg->inertialframe_water_current[0], msg->inertialframe_water_current[0] };
+
     // Linear position in world frame
     Eigen::Vector3d worldF_vehicleLinearPosition(vehiclePosition_->latitude, vehiclePosition_->longitude, 0.0);
 

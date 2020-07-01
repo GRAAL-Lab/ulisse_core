@@ -31,6 +31,8 @@ namespace nav {
 
         double dt = (now - prevTime_).count() / 1E9;
 
+        std::cout << "delta T:" << dt << std::endl;
+
         estimateState_.segment(0, 4) += dt * Eigen::Matrix4d::Identity() * estimateState_.segment(4, 4);
 
         prevTime_ = now;

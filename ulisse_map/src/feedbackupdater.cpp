@@ -105,7 +105,7 @@ void FeedbackUpdater::NavFilterData(const ulisse_msgs::msg::NavFilterData::Share
     current_data_n = msg->inertialframe_water_current[0];
     current_data_e = msg->inertialframe_water_current[1];
     current_data_deg = atan2(current_data_n, current_data_e) * (180.0 / M_PI);
-    current_data_norm = (sqrt(pow(current_data_n, 2) + pow(current_data_e, 2)));
+    current_data_norm = sqrt(pow(current_data_n, 2) + pow(current_data_e, 2));
 
     q_ulisse_pos_.setLatitude(msg->inertialframe_linear_position.latlong.latitude);
     q_ulisse_pos_.setLongitude(msg->inertialframe_linear_position.latlong.longitude);

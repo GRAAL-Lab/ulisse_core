@@ -53,6 +53,7 @@ struct UlisseModelParameters {
         ctb::SetParam(ulisseModel, b1_pos, "b1Pos");
         ctb::SetParam(ulisseModel, b2_neg, "b2Neg");
         ctb::SetParam(ulisseModel, b2_pos, "b2Pos");
+        ctb::SetParam(ulisseModel, d, "motorsDistance");
 
         Eigen::Vector3d tmp_Inerzia;
         tmp_Inerzia.setZero();

@@ -103,6 +103,8 @@ class VehicleController {
 
     std::shared_ptr<ctb::LatLong> vehiclePosition_;
 
+    Eigen::Vector2d inertialF_waterCurrent_;
+
     bool LoadConfiguration();
     void SetUpFSM();
     void SetupCommandServer();

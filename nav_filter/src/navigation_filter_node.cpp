@@ -146,8 +146,6 @@ int main(int argc, char* argv[])
     bool filterEnable(true);
 
     while (rclcpp::ok()) {
-
-        std::cout << "filterParams.mode: " << static_cast<int>(filterParams.mode) << std::endl;
         if (filterParams.mode == FilterMode::LuenbergerObserver) {
             if (gpsData.time > lastValidGPSTime) {
                 if (gpsData.gpsfixmode >= static_cast<int>(ulisse::gpsd::GpsFixMode::mode_2d)) {
@@ -229,7 +227,7 @@ int main(int argc, char* argv[])
                 }
             }
 
-            if (measuresActive.find("gps")->second) {
+            if (measuresActive.find("gyro")->second) {
                 gyroMeasurement->MeasureVector() = Eigen::Vector3d{ imuData.gyro[0], imuData.gyro[1], imuData.gyro[2] };
                 extendedKalmanFilter->AddMeasurement(gyroMeasurement);
 
@@ -262,20 +260,24 @@ int main(int argc, char* argv[])
                 std::cout << magnetometerMeasurement->MeasureVector().transpose() << std::endl;
             }
 
-            if ((std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now()) - timeStart).count() > 500) {
-                thrustersFbk.motor_percentage.left = 0.0;
-                thrustersFbk.motor_percentage.right = 0.0;
-            }
+            std::cout << "ThrustersFbk.motor_percentage.left: " << thrustersFbk.motor_percentage.left << std::endl;
+            std::cout << "ThrustersFbk.motor_percentage.right: " << thrustersFbk.motor_percentage.right << std::endl;
 
             extendedKalmanFilter->Prediction(Eigen::Vector2d{ thrustersFbk.motor_percentage.left, thrustersFbk.motor_percentage.right });
             extendedKalmanFilter->Update();
 
             Eigen::VectorXd state = extendedKalmanFilter->StateVector();
-            std::cout << "State: " << std::endl;
-            std::cout << extendedKalmanFilter->StateVector() << std::endl;
 
             ctb::LatLong map_p;
             ctb::Cartesian2MapPoint(Eigen::Vector3d{ state.x(), state.y(), state.z() }, centroidLocation, map_p);
+
+            auto tNow = std::chrono::system_clock::now();
+            long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(tNow.time_since_epoch())).count();
+            auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
+            auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
+
+            filterData.stamp.sec = now_stamp_secs;
+            filterData.stamp.nanosec = now_stamp_nanosecs;
 
             filterData.inertialframe_linear_position.latlong.latitude = map_p.latitude;
             filterData.inertialframe_linear_position.latlong.longitude = map_p.longitude;
@@ -352,6 +354,8 @@ void KalmanFilterConfiguration(libconfig::Config& confObj) noexcept(false)
     UlisseModelParameters ulisseModelParams;
     ulisseModelParams.ConfigureFormFile(ulisseModel);
 
+    std::cout << ulisseModelParams << std::endl;
+
     ulisseModelEKF->ModelParameters() = ulisseModelParams;
 
     //Load the measures covariance
@@ -422,8 +426,12 @@ void LuenbergerObserverConfiguration(libconfig::Config& confObj) noexcept(false)
     ctb::SetParamVector(luenbergerObs, gain, "gain");
     obs.k = gain;
 
+    std::cout << "gain: " << gain << std::endl;
+
     //yaw rate digital filter gains. This is not used by the filter but is needed to filter the yaw rate
     ctb::SetParamVector(luenbergerObs, yawRateFilterGains, "yawRateFilterGains");
+
+    std::cout << "yawRateFilterGains: " << yawRateFilterGains << std::endl;
 }
 
 void CommandHandler(const std::shared_ptr<rmw_request_id_t> request_header, const std::shared_ptr<ulisse_msgs::srv::NavFilterCommand::Request> request, std::shared_ptr<ulisse_msgs::srv::NavFilterCommand::Response> response)

@@ -19,7 +19,7 @@ namespace commands {
 
         void SetState(std::shared_ptr<states::GenericState> state) override;
 
-        void SetWaterCurrent(const std::shared_ptr<Eigen::Vector2d>& inertialF_waterCurrent);
+        void SetWaterCurrent(const Eigen::Vector2d& inertialF_waterCurrent);
     };
 }
 }
