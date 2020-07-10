@@ -12,6 +12,7 @@
 #include "ulisse_msgs/msg/magnetometer.hpp"
 #include "ulisse_msgs/msg/micro_loop_count.hpp"
 #include "ulisse_msgs/msg/motor_reference.hpp"
+#include "ulisse_msgs/msg/real_system.hpp"
 
 #include "GeographicLib/Geodesic.hpp"
 #include "eigen3/Eigen/Dense"
@@ -47,6 +48,7 @@ class VehicleSimulator {
     ulisse_msgs::msg::AmbientSensors ambsens_msg_;
     ulisse_msgs::msg::Magnetometer magneto_msg_;
     ulisse_msgs::msg::MotorReference applied_motorref_msg_;
+    ulisse_msgs::msg::RealSystem ground_truth_msg_;
 
     rclcpp::Publisher<ulisse_msgs::msg::MicroLoopCount>::SharedPtr micro_loop_count_pub_;
     rclcpp::Publisher<ulisse_msgs::msg::GPSData>::SharedPtr gpsdata_pub_;
@@ -55,6 +57,7 @@ class VehicleSimulator {
     rclcpp::Publisher<ulisse_msgs::msg::AmbientSensors>::SharedPtr ambsens_pub_;
     rclcpp::Publisher<ulisse_msgs::msg::Magnetometer>::SharedPtr magneto_pub_;
     rclcpp::Publisher<ulisse_msgs::msg::MotorReference>::SharedPtr applied_motorref_pub_;
+    rclcpp::Publisher<ulisse_msgs::msg::RealSystem>::SharedPtr ground_truth_pub_;
 
     int gpspubcounter_, sensorpubcounter_;
 

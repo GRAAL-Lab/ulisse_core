@@ -39,6 +39,7 @@ VehicleSimulator::VehicleSimulator(const rclcpp::Node::SharedPtr& nh)
     ambsens_pub_ = nh_->create_publisher<ulisse_msgs::msg::AmbientSensors>(ulisse_msgs::topicnames::sensor_ambient, 10);
     magneto_pub_ = nh_->create_publisher<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer, 10);
     applied_motorref_pub_ = nh_->create_publisher<ulisse_msgs::msg::MotorReference>(ulisse_msgs::topicnames::motor_applied_ref, 10);
+    ground_truth_pub_ = nh_->create_publisher<ulisse_msgs::msg::RealSystem>(ulisse_msgs::topicnames::real_system, 10);
 
     waterVel_world_(0) = 0.0;
     waterVel_world_(1) = 0.0;
@@ -122,10 +123,7 @@ void VehicleSimulator::SimulateActuation(double h_p, double h_s)
 
     // Get the vehicle absolute velocity by adding the water current velocity
 
-    std::cout << "vehRelVel_world_: " << vehRelVel_world_ << std::endl;
-    std::cout << "waterVel_world_: " << waterVel_world_ << std::endl;
     vehVel_world_ = vehRelVel_world_ + waterVel_world_;
-    std::cout << "vehVel_world_: " << vehVel_world_ << std::endl;
 
     // Passing from angular vehicle acceleration to Euler rates
     Eigen::Matrix3d S;
@@ -137,16 +135,11 @@ void VehicleSimulator::SimulateActuation(double h_p, double h_s)
 
     // Integrating the linear velocity to get the new position
     vehTrack_ = std::atan2(vehVel_world_(1), vehVel_world_(0));
-    //std::cout << "Track (not wrapped): " << vehTrack_ << std::endl;
-    // Wrapping track around 2*PI
+
     vehTrack_ = std::fmod(vehTrack_ + 2 * M_PI, 2 * M_PI);
 
     vehSpeed_ = std::sqrt(vehVel_world_(0) * vehVel_world_(0) + vehVel_world_(1) * vehVel_world_(1));
     double distance_ = vehSpeed_ * Ts_;
-
-    //std::cout << "Track (deg): " << vehTrack_ * 180.0 / M_PI << std::endl;
-    //std::cout << "Yaw (deg): " << vehAtt_last_.GetYaw() * 180.0 / M_PI << std::endl;
-    //std::cout << "Distance: " << distance_ << std::endl;
 
     geod_.Direct(lat_last_, long_last_, vehTrack_ * 180.0 / M_PI, distance_, lat_now_, long_now_);
 
@@ -160,7 +153,6 @@ double VehicleSimulator::GetCurrentTimestamp() const
 {
     long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
     return static_cast<double>(now_nanosecs / 1E9);
-    ;
 }
 
 void VehicleSimulator::SimulateSensors(double h_p, double h_s)
@@ -187,6 +179,7 @@ void VehicleSimulator::SimulateSensors(double h_p, double h_s)
     gpsdata_msg_.speed = vehSpeed_;
     gpsdata_msg_.latitude = lat_now_ /*+ gpsNoise(generator)*/;
     gpsdata_msg_.longitude = long_now_ /*+ gpsNoise(generator)*/;
+    gpsdata_msg_.altitude = 0.0;
     gpsdata_msg_.gpsfixmode = 3u; //ulisse_msgs::msg::GPSData::MODE_3D;
 
     std::normal_distribution<double> compassNoiseRP(0.0, 0.017453501);
@@ -200,6 +193,7 @@ void VehicleSimulator::SimulateSensors(double h_p, double h_s)
 
     std::normal_distribution<double> accelerometerNoise(0.0, 0.0980663043);
     std::normal_distribution<double> gyroNoise(0.0, 0.017448782);
+    double bx = 0.0, by = 0.0, bz = 0.0;
     imudata_msg_.stamp.sec = now_stamp_secs;
     imudata_msg_.stamp.nanosec = now_stamp_nanosecs;
     imudata_msg_.accelerometer[0] = vehRelAcc_body_(0) + accelerometerNoise(generator);
@@ -220,6 +214,26 @@ void VehicleSimulator::SimulateSensors(double h_p, double h_s)
     magneto_msg_.orthogonalstrength[1] = -1.051 / 1E-9;
     magneto_msg_.orthogonalstrength[2] = 39.746 / 1E-9;
 
+    ground_truth_msg_.stamp.sec = now_stamp_secs;
+    ground_truth_msg_.stamp.nanosec = now_stamp_nanosecs;
+    ground_truth_msg_.inertialframe_linear_position.latlong.latitude = gpsdata_msg_.latitude;
+    ground_truth_msg_.inertialframe_linear_position.latlong.longitude = gpsdata_msg_.longitude;
+    ground_truth_msg_.inertialframe_linear_position.altitude = gpsdata_msg_.altitude;
+    ground_truth_msg_.bodyframe_angular_position.roll = vehAtt_now_.Roll();
+    ground_truth_msg_.bodyframe_angular_position.pitch = vehAtt_now_.Pitch();
+    ground_truth_msg_.bodyframe_angular_position.yaw = vehAtt_now_.Yaw();
+    ground_truth_msg_.bodyframe_linear_velocity.surge = vehRelVel_body_(0);
+    ground_truth_msg_.bodyframe_linear_velocity.sway = vehRelVel_body_(1);
+    ground_truth_msg_.bodyframe_linear_velocity.heave = vehRelVel_body_(2);
+    ground_truth_msg_.bodyframe_angular_velocity.roll_rate = vehRelVel_body_(3);
+    ground_truth_msg_.bodyframe_angular_velocity.pitch_rate = vehRelVel_body_(4);
+    ground_truth_msg_.bodyframe_angular_velocity.yaw_rate = vehRelVel_body_(5);
+    ground_truth_msg_.inertialframe_water_current[0] = waterVel_world_[0];
+    ground_truth_msg_.inertialframe_water_current[1] = waterVel_world_[1];
+    ground_truth_msg_.gyro_bias[0] = bx;
+    ground_truth_msg_.gyro_bias[1] = by;
+    ground_truth_msg_.gyro_bias[2] = bz;
+
     applied_motorref_msg_.left = h_p;
     applied_motorref_msg_.right = h_s;
 }
@@ -234,16 +248,14 @@ void VehicleSimulator::PublishSensors()
         gpsdata_pub_->publish(gpsdata_msg_);
     }
 
-    //std::cout << "(int)(timestamp_count_ % 20):" << (int)(timestamp_count_ % 20) << std::endl;
-    //std::cout << "sensorpubcounter: " << sensorpubcounter_ << std::endl;
     if (static_cast<int>(timestamp_count_ / 20) > sensorpubcounter_) {
 
         sensorpubcounter_ = static_cast<int>(timestamp_count_ / 20);
-        //std::cout << "Ma ci passiamo di qua?" << std::endl;
         compass_pub_->publish(compassdata_msg_);
         imudata_pub_->publish(imudata_msg_);
         ambsens_pub_->publish(ambsens_msg_);
         magneto_pub_->publish(magneto_msg_);
+        ground_truth_pub_->publish(ground_truth_msg_);
     }
 
     applied_motorref_pub_->publish(applied_motorref_msg_);

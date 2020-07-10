@@ -31,7 +31,7 @@ namespace nav {
         Eigen::VectorXd ComputePrediction(const Eigen::VectorXd& state, const Eigen::VectorXd& input) override;
 
     private:
-        const double g_ = 9.8;
+        const double g_ = 9.80665;
     };
 }
 }

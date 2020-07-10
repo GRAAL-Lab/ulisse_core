@@ -20,8 +20,8 @@
 #include "ulisse_msgs/srv/reset_configuration.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 
-#include "ctrl_toolbox/DigitalSlidingMode.h"
 #include "ctrl_toolbox/HelperFunctions.h"
+#include "ctrl_toolbox/sliding_mode/DigitalSlidingMode.h"
 
 #include "ulisse_ctrl/ctrl_data_structs.hpp"
 #include "ulisse_ctrl/fsm_defines.hpp"
@@ -103,6 +103,10 @@ int main(int argc, char* argv[])
     //Surge pid for thrusterMapping control
     ctb::DigitalPID pidSurge;
 
+    //Pid for dynamic control
+    ctb::DigitalPID pidYawRateDynamic;
+    ctb::DigitalPID pidSurgeDynamic;
+
     //Variable for sliding mode control
     std::vector<double> state;
     ctb::DigitalSlidingMode<SlidingSurface> slideSurge;
@@ -117,6 +121,10 @@ int main(int argc, char* argv[])
     } else if (conf->ctrlMode == ControlMode::SlidingMode) {
 
         SlidingModeInizialization(conf, ss, slideSurge, slideHeading, sampleTime);
+    } else {
+
+        pidSurgeDynamic.Initialize(conf->classicPidControl.pidGainsSurge, sampleTime, conf->classicPidControl.pidSatSurge);
+        pidYawRateDynamic.Initialize(conf->classicPidControl.pidGainsYawRate, sampleTime, conf->classicPidControl.pidSatYawRate);
     }
 
     // Create a callback function for when service reset configuration requests are received.
@@ -229,20 +237,64 @@ int main(int argc, char* argv[])
                 simulatedVelocitySensorPub->publish(simulatedVelocitySensor);
 
             } else if (conf->ctrlMode == ControlMode::ClassicPIDControl) {
-                // Dyamic Code Here
+                //Dynamic Pid
+                Eigen::Vector6d feedbackVel = Eigen::Vector6d::Zero();
+
+                tau = { pidSurgeDynamic.Compute(referenceVelocities.desired_surge, surgeFbk), pidYawRateDynamic.Compute(referenceVelocities.desired_yaw_rate, yawRateFbk) };
+
+                feedbackVel(0) = surgeFbk;
+                feedbackVel(5) = yawRateFbk;
+                double outleft, outrigh;
+
+                Eigen::Vector2d forces = ulisseModel.ThusterAllocation(tau);
+                ulisseModel.InverseMotorsEquations(feedbackVel, forces, outleft, outrigh);
+                ulisseModel.ThrustersSaturation(outleft, outrigh, -conf->thrusterPercLimit, conf->thrusterPercLimit, thrustersData.motor_percentage.left, thrustersData.motor_percentage.right);
+
+                //                //Fill the classic dynamic pid contol msg
+                //                auto t_now_ = std::chrono::system_clock::now();
+                //                long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
+                //                slidingModeMsg.stamp.sec = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
+                //                slidingModeMsg.stamp.nanosec = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
+
+                //                slidingModeMsg.desired_surge = referenceVelocities.desired_surge;
+                //                slidingModeMsg.desired_yaw_rate = referenceVelocities.desired_yaw_rate;
+                //                slidingModeMsg.forces = { forces[0], forces[1] };
+                //                slidingModeMsg.tau = { tau[0], tau[1] };
+
+                //                slidingModePub->publish(slidingModeMsg);
+
+                //                //fill the feedback for the nav filter
+                //                simulatedVelocitySensor.water_relative_surge = referenceVelocities.desired_surge;
+                //                simulatedVelocitySensorPub->publish(simulatedVelocitySensor);
             }
 
+            auto tNow = std::chrono::system_clock::now();
+            long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(tNow.time_since_epoch())).count();
+            auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
+            auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
+            thrustersData.stamp.sec = now_stamp_secs;
+            thrustersData.stamp.nanosec = now_stamp_nanosecs;
             thrusterDataPub->publish(thrustersData);
 
         } else {
+            auto tNow = std::chrono::system_clock::now();
+            long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(tNow.time_since_epoch())).count();
+            auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
+            auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
+            thrustersData.stamp.sec = now_stamp_secs;
+            thrustersData.stamp.nanosec = now_stamp_nanosecs;
             thrustersData.motor_percentage.left = 0.0;
             thrustersData.motor_percentage.right = 0.0;
+            thrusterDataPub->publish(thrustersData);
 
             if (conf->ctrlMode == ControlMode::ThrusterMapping) {
                 pidSurge.Reset();
                 //                pidYawRate.Reset();
             } else if (conf->ctrlMode == ControlMode::SlidingMode) {
                 slideHeading.setState(state, true);
+            } else {
+                pidSurgeDynamic.Reset();
+                pidYawRateDynamic.Reset();
             }
         }
 
@@ -383,7 +435,7 @@ std::vector<double> alpha_beta_u(const std::vector<double> state, struct Sliding
 
 std::vector<double> alpha_beta_r(const std::vector<double> state, struct SlidingSurface param)
 {
-    auto alpha = state[1] / 0.1 + param.cN[0] * state[0] * state[1] - param.cN[1] * state[1] - param.cN[2] * std::abs(state[1]) * state[1];
+    auto alpha = state[1] / 0.1 - param.cN[0] * state[0] * state[1] - param.cN[1] * state[1] - param.cN[2] * std::abs(state[1]) * state[1];
     alpha = -1 / param.inertia[2] * param.k1 * alpha;
     auto beta = -1 / param.inertia[2] * param.k1;
     std::vector<double> alphaBeta = { alpha, beta };
@@ -397,8 +449,7 @@ void ThrusterMappingInizialization(std::shared_ptr<DCLConfiguration> conf, doubl
     //        pidYawRate.SetErrorFunction(ctb::HeadingErrorRadFunctor());
 }
 
-void SlidingModeInizialization(std::shared_ptr<DCLConfiguration> conf, SlidingSurface& ss, ctb::DigitalSlidingMode<SlidingSurface>& slideSurge,
-    ctb::DigitalSecOrdSlidingMode<SlidingSurface>& slideHeading, double sampleTime)
+void SlidingModeInizialization(std::shared_ptr<DCLConfiguration> conf, SlidingSurface& ss, ctb::DigitalSlidingMode<SlidingSurface>& slideSurge, ctb::DigitalSecOrdSlidingMode<SlidingSurface>& slideHeading, double sampleTime)
 {
     //Initialize Sliding Surfaces
     SetSlidingSurface(ss, conf);

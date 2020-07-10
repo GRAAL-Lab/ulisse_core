@@ -9,9 +9,8 @@
 
 #include "rclcpp/rclcpp.hpp"
 
-#include "ulisse_msgs/msg/control_context.hpp"
+
 #include "ulisse_msgs/msg/feedback_gui.hpp"
-#include "ulisse_msgs/msg/status_context.hpp"
 #include "ulisse_msgs/srv/control_command.hpp"
 #include "ulisse_msgs/srv/llc_command.hpp"
 #include "ulisse_msgs/srv/set_boundaries.hpp"

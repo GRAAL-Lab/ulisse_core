@@ -61,26 +61,26 @@ namespace nav {
         F(3, 3) = (cos(state[4]) - dt * state[11] * sin(state[4]) * sin(state[3]) + dt * state[10] * cos(state[3]) * sin(state[4])) / cos(state[4]);
         F(4, 3) = -dt * (state[11] * cos(state[3]) + state[10] * sin(state[3]));
         F(5, 3) = (dt * (state[10] * cos(state[3]) - state[11] * sin(state[3]))) / cos(state[4]);
-        F(7, 3) = -(dt * cos(state[4]) * cos(state[3]) * sin(state[4]) * (params_.cX[1] * state[6] + params_.cX[0] * std::pow(state[11], 2) + b2_p * state[6] * abs(np) + b2_s * state[6] * abs(ns) + params_.cX[2] * state[6] * abs(state[6]) - b1_p * np * abs(np) - b1_s * ns * abs(ns) + b2_p * params_.d * state[11] * abs(np) - b2_s * params_.d * state[11] * abs(ns))) / params_.Inertia.diagonal()[0];
-        F(8, 3) = (dt * cos(state[4]) * sin(state[4]) * sin(state[3]) * (params_.cX[1] * state[6] + params_.cX[0] * std::pow(state[11], 2) + b2_p * state[6] * abs(np) + b2_s * state[6] * abs(ns) + params_.cX[2] * state[6] * abs(state[6]) - b1_p * np * abs(np) - b1_s * ns * abs(ns) + b2_p * params_.d * state[11] * abs(np) - b2_s * params_.d * state[11] * abs(ns))) / params_.Inertia.diagonal()[0];
+        F(7, 3) = -(dt * cos(state[4]) * cos(state[3]) * sin(state[4]) * (params_.cX[1] * state[6] + params_.cX[0] * std::pow(state[11], 2) + b2_p * state[6] * fabs(np) + b2_s * state[6] * fabs(ns) + params_.cX[2] * state[6] * fabs(state[6]) - b1_p * np * fabs(np) - b1_s * ns * fabs(ns) + b2_p * params_.d * state[11] * fabs(np) - b2_s * params_.d * state[11] * fabs(ns))) / params_.Inertia.diagonal()[0];
+        F(8, 3) = (dt * cos(state[4]) * sin(state[4]) * sin(state[3]) * (params_.cX[1] * state[6] + params_.cX[0] * std::pow(state[11], 2) + b2_p * state[6] * fabs(np) + b2_s * state[6] * fabs(ns) + params_.cX[2] * state[6] * fabs(state[6]) - b1_p * np * fabs(np) - b1_s * ns * fabs(ns) + b2_p * params_.d * state[11] * fabs(np) - b2_s * params_.d * state[11] * fabs(ns))) / params_.Inertia.diagonal()[0];
 
         F(0, 4) = dt * cos(state[5]) * (state[8] * cos(state[4]) * cos(state[3]) - state[6] * sin(state[4]) + state[7] * cos(state[4]) * sin(state[3]));
         F(1, 4) = dt * sin(state[5]) * (state[8] * cos(state[4]) * cos(state[3]) - state[6] * sin(state[4]) + state[7] * cos(state[4]) * sin(state[3]));
         F(3, 4) = (dt * (state[11] * cos(state[3]) + state[10] * sin(state[3]))) / std::pow(cos(state[4]), 2);
         F(5, 4) = (dt * sin(state[4]) * (state[11] * cos(state[3]) + state[10] * sin(state[3]))) / std::pow(cos(state[4]), 2);
-        F(6, 4) = (dt * sin(2 * state[4]) * (params_.cX[1] * state[6] + params_.cX[0] * std::pow(state[11], 2) + b2_p * state[6] * abs(np) + b2_s * state[6] * abs(ns) + params_.cX[2] * state[6] * abs(state[6]) - b1_p * np * abs(np) - b1_s * ns * abs(ns) + b2_p * params_.d * state[11] * abs(np) - b2_s * params_.d * state[11] * abs(ns))) / params_.Inertia.diagonal()[0];
-        F(7, 4) = -(dt * cos(2 * state[4]) * sin(state[3]) * (params_.cX[1] * state[6] + params_.cX[0] * std::pow(state[11], 2) + b2_p * state[6] * abs(np) + b2_s * state[6] * abs(ns) + params_.cX[2] * state[6] * abs(state[6]) - b1_p * np * abs(np) - b1_s * ns * abs(ns) + b2_p * params_.d * state[11] * abs(np) - b2_s * params_.d * state[11] * abs(ns))) / params_.Inertia.diagonal()[0];
-        F(8, 4) = -(dt * cos(2 * state[4]) * cos(state[3]) * (params_.cX[1] * state[6] + params_.cX[0] * std::pow(state[11], 2) + b2_p * state[6] * abs(np) + b2_s * state[6] * abs(ns) + params_.cX[2] * state[6] * abs(state[6]) - b1_p * np * abs(np) - b1_s * ns * abs(ns) + b2_p * params_.d * state[11] * abs(np) - b2_s * params_.d * state[11] * abs(ns))) / params_.Inertia.diagonal()[0];
+        F(6, 4) = (dt * sin(2 * state[4]) * (params_.cX[1] * state[6] + params_.cX[0] * std::pow(state[11], 2) + b2_p * state[6] * fabs(np) + b2_s * state[6] * fabs(ns) + params_.cX[2] * state[6] * fabs(state[6]) - b1_p * np * fabs(np) - b1_s * ns * fabs(ns) + b2_p * params_.d * state[11] * fabs(np) - b2_s * params_.d * state[11] * fabs(ns))) / params_.Inertia.diagonal()[0];
+        F(7, 4) = -(dt * cos(2 * state[4]) * sin(state[3]) * (params_.cX[1] * state[6] + params_.cX[0] * std::pow(state[11], 2) + b2_p * state[6] * fabs(np) + b2_s * state[6] * fabs(ns) + params_.cX[2] * state[6] * fabs(state[6]) - b1_p * np * fabs(np) - b1_s * ns * fabs(ns) + b2_p * params_.d * state[11] * fabs(np) - b2_s * params_.d * state[11] * fabs(ns))) / params_.Inertia.diagonal()[0];
+        F(8, 4) = -(dt * cos(2 * state[4]) * cos(state[3]) * (params_.cX[1] * state[6] + params_.cX[0] * std::pow(state[11], 2) + b2_p * state[6] * fabs(np) + b2_s * state[6] * fabs(ns) + params_.cX[2] * state[6] * fabs(state[6]) - b1_p * np * fabs(np) - b1_s * ns * fabs(ns) + b2_p * params_.d * state[11] * fabs(np) - b2_s * params_.d * state[11] * fabs(ns))) / params_.Inertia.diagonal()[0];
 
         F(0, 5) = -dt * (state[7] * cos(state[3]) * cos(state[5]) + state[6] * cos(state[4]) * sin(state[5]) - state[8] * cos(state[5]) * sin(state[3]) + state[8] * cos(state[3]) * sin(state[4]) * sin(state[5]) + state[7] * sin(state[4]) * sin(state[3]) * sin(state[5]));
         F(1, 5) = dt * (state[6] * cos(state[4]) * cos(state[5]) - state[7] * cos(state[3]) * sin(state[5]) + state[8] * sin(state[3]) * sin(state[5]) + state[8] * cos(state[3]) * cos(state[5]) * sin(state[4]) + state[7] * cos(state[5]) * sin(state[4]) * sin(state[3]));
 
         F(0, 6) = dt * cos(state[4]) * cos(state[5]);
         F(1, 6) = dt * cos(state[4]) * sin(state[5]);
-        F(6, 6) = (dt * (std::pow(sin(state[4]), 2) - 1) * (params_.cX[1] + b2_p * abs(np) + b2_s * abs(ns) + 2 * params_.cX[2] * abs(state[6]))) / params_.Inertia.diagonal()[0] + 1;
-        F(7, 6) = -(dt * cos(state[4]) * sin(state[4]) * sin(state[3]) * (params_.cX[1] + b2_p * abs(np) + b2_s * abs(ns) + 2 * params_.cX[2] * abs(state[6]))) / params_.Inertia.diagonal()[0];
-        F(8, 6) = -(dt * cos(state[4]) * cos(state[3]) * sin(state[4]) * (params_.cX[1] + b2_p * abs(np) + b2_s * abs(ns) + 2 * params_.cX[2] * abs(state[6]))) / params_.Inertia.diagonal()[0];
-        F(11, 6) = -(dt * (params_.cN[0] * state[11] + b2_p * params_.d * abs(np) - b2_s * params_.d * abs(ns))) / params_.Inertia.diagonal()[2];
+        F(6, 6) = (dt * (std::pow(sin(state[4]), 2) - 1) * (params_.cX[1] + b2_p * fabs(np) + b2_s * fabs(ns) + 2 * params_.cX[2] * fabs(state[6]))) / params_.Inertia.diagonal()[0] + 1;
+        F(7, 6) = -(dt * cos(state[4]) * sin(state[4]) * sin(state[3]) * (params_.cX[1] + b2_p * fabs(np) + b2_s * fabs(ns) + 2 * params_.cX[2] * fabs(state[6]))) / params_.Inertia.diagonal()[0];
+        F(8, 6) = -(dt * cos(state[4]) * cos(state[3]) * sin(state[4]) * (params_.cX[1] + b2_p * fabs(np) + b2_s * fabs(ns) + 2 * params_.cX[2] * fabs(state[6]))) / params_.Inertia.diagonal()[0];
+        F(11, 6) = -(dt * (params_.cN[0] * state[11] + b2_p * params_.d * fabs(np) - b2_s * params_.d * fabs(ns))) / params_.Inertia.diagonal()[2];
 
         F(0, 7) = dt * cos(state[5]) * sin(state[4]) * sin(state[3]) - dt * cos(state[3]) * sin(state[5]);
         F(1, 7) = dt * (cos(state[3]) * cos(state[5]) + sin(state[4]) * sin(state[3]) * sin(state[5]));
@@ -89,7 +89,6 @@ namespace nav {
         F(1, 8) = dt * cos(state[3]) * sin(state[4]) * sin(state[5]) - dt * cos(state[5]) * sin(state[3]);
 
         F(3, 9) = dt;
-        F(3, 9) = -(params_.cN[2] * dt * abs(state[11])) / params_.Inertia.diagonal()[2];
 
         F(3, 10) = (dt * sin(state[4]) * sin(state[3])) / cos(state[4]);
         F(4, 10) = dt * cos(state[3]);
@@ -98,10 +97,10 @@ namespace nav {
         F(3, 11) = (dt * cos(state[3]) * sin(state[4])) / cos(state[4]);
         F(4, 11) = -dt * sin(state[3]);
         F(5, 11) = (dt * cos(state[3])) / cos(state[4]);
-        F(6, 11) = (dt * (std::pow(sin(state[4]), 2) - 1) * (2 * params_.cX[0] * state[11] + b2_p * params_.d * abs(np) - b2_s * params_.d * abs(ns))) / params_.Inertia.diagonal()[0];
-        F(7, 11) = -(dt * cos(state[4]) * sin(state[4]) * sin(state[3]) * (2 * params_.cX[0] * state[11] + b2_p * params_.d * abs(np) - b2_s * params_.d * abs(ns))) / params_.Inertia.diagonal()[0];
-        F(8, 11) = -(dt * cos(state[4]) * cos(state[3]) * sin(state[4]) * (2 * params_.cX[0] * state[11] + b2_p * params_.d * abs(np) - b2_s * params_.d * abs(ns))) / params_.Inertia.diagonal()[0];
-        F(11, 11) = 1 - (dt * (params_.cN[1] + params_.cN[0] * state[6] + 2 * params_.cN[2] * state[11] * abs(state[11]) + b2_p * std::pow(params_.d, 2) * abs(np) + b2_s * std::pow(params_.d, 2) * abs(ns))) / params_.Inertia.diagonal()[2];
+        F(6, 11) = (dt * (std::pow(sin(state[4]), 2) - 1) * (2 * params_.cX[0] * state[11] + b2_p * params_.d * fabs(np) - b2_s * params_.d * fabs(ns))) / params_.Inertia.diagonal()[0];
+        F(7, 11) = -(dt * cos(state[4]) * sin(state[4]) * sin(state[3]) * (2 * params_.cX[0] * state[11] + b2_p * params_.d * fabs(np) - b2_s * params_.d * fabs(ns))) / params_.Inertia.diagonal()[0];
+        F(8, 11) = -(dt * cos(state[4]) * cos(state[3]) * sin(state[4]) * (2 * params_.cX[0] * state[11] + b2_p * params_.d * fabs(np) - b2_s * params_.d * fabs(ns))) / params_.Inertia.diagonal()[0];
+        F(11, 11) = 1 - (dt * (params_.cN[1] + params_.cN[0] * state[6] + 2 * params_.cN[2] * state[11] * fabs(state[11]) + b2_p * std::pow(params_.d, 2) * fabs(np) + b2_s * std::pow(params_.d, 2) * fabs(ns))) / params_.Inertia.diagonal()[2];
 
         F(0, 12) = dt;
 
@@ -135,11 +134,11 @@ namespace nav {
         x(3) = state[3] + dt * (state[9] + (state[11] * cos(state[3]) * sin(state[4])) / cos(state[4]) + (state[10] * sin(state[4]) * sin(state[3])) / cos(state[4]));
         x(4) = state[4] + dt * (state[10] * cos(state[3]) - state[11] * sin(state[3]));
         x(5) = state[5] + dt * ((state[11] * (cos(state[3]) * std::pow(cos(state[4]), 2) + cos(state[3]) * std::pow(sin(state[4]), 2))) / cos(state[4]) + (state[10] * (sin(state[3]) * std::pow(cos(state[4]), 2) + sin(state[3]) * std::pow(sin(state[4]), 2))) / cos(state[4]));
-        x(6) = state[6] + (dt * (std::pow(sin(state[4]), 2) - 1) * (params_.cX[1] * state[6] + params_.cX[0] * std::pow(state[11], 2) + b2_p * state[6] * abs(np) + b2_s * state[6] * abs(ns) + params_.cX[2] * state[6] * abs(state[6]) - b1_p * np * abs(np) - b1_s * ns * abs(ns) + b2_p * params_.d * state[11] * abs(np) - b2_s * params_.d * state[11] * abs(ns))) / params_.Inertia.diagonal()[0];
-        x(7) = state[7] - (dt * cos(state[4]) * sin(state[4]) * sin(state[3]) * (params_.cX[1] * state[6] + params_.cX[0] * std::pow(state[11], 2) + b2_p * state[6] * abs(np) + b2_s * state[6] * abs(ns) + params_.cX[2] * state[6] * abs(state[6]) - b1_p * np * abs(np) - b1_s * ns * abs(ns) + b2_p * params_.d * state[11] * abs(np) - b2_s * params_.d * state[11] * abs(ns))) / params_.Inertia.diagonal()[0];
-        x(8) = state[8] - (dt * cos(state[4]) * cos(state[3]) * sin(state[4]) * (params_.cX[1] * state[6] + params_.cX[0] * std::pow(state[11], 2) + b2_p * state[6] * abs(np) + b2_s * state[6] * abs(ns) + params_.cX[2] * state[6] * abs(state[6]) - b1_p * np * abs(np) - b1_s * ns * abs(ns) + b2_p * params_.d * state[11] * abs(np) - b2_s * params_.d * state[11] * abs(ns))) / params_.Inertia.diagonal()[0];
+        x(6) = state[6] + (dt * (std::pow(sin(state[4]), 2) - 1) * (params_.cX[1] * state[6] + params_.cX[0] * std::pow(state[11], 2) + b2_p * state[6] * fabs(np) + b2_s * state[6] * fabs(ns) + params_.cX[2] * state[6] * fabs(state[6]) - b1_p * np * fabs(np) - b1_s * ns * fabs(ns) + b2_p * params_.d * state[11] * fabs(np) - b2_s * params_.d * state[11] * fabs(ns))) / params_.Inertia.diagonal()[0];
+        x(7) = state[7] - (dt * cos(state[4]) * sin(state[4]) * sin(state[3]) * (params_.cX[1] * state[6] + params_.cX[0] * std::pow(state[11], 2) + b2_p * state[6] * fabs(np) + b2_s * state[6] * fabs(ns) + params_.cX[2] * state[6] * fabs(state[6]) - b1_p * np * fabs(np) - b1_s * ns * fabs(ns) + b2_p * params_.d * state[11] * fabs(np) - b2_s * params_.d * state[11] * fabs(ns))) / params_.Inertia.diagonal()[0];
+        x(8) = state[8] - (dt * cos(state[4]) * cos(state[3]) * sin(state[4]) * (params_.cX[1] * state[6] + params_.cX[0] * std::pow(state[11], 2) + b2_p * state[6] * fabs(np) + b2_s * state[6] * fabs(ns) + params_.cX[2] * state[6] * fabs(state[6]) - b1_p * np * fabs(np) - b1_s * ns * fabs(ns) + b2_p * params_.d * state[11] * fabs(np) - b2_s * params_.d * state[11] * fabs(ns))) / params_.Inertia.diagonal()[0];
         x.segment(9, 2) = state.segment(9, 2);
-        x(11) = state[11] - (dt * (params_.cN[1] * state[11] + params_.cN[2] * state[11] * abs(state[11]) + params_.cN[0] * state[11] * state[6] - b1_p * params_.d * np * abs(np) + b1_s * params_.d * ns * abs(ns) + b2_p * params_.d * state[6] * abs(np) - b2_s * params_.d * state[6] * abs(ns) + b2_p * std::pow(params_.d, 2) * state[11] * abs(np) + b2_s * std::pow(params_.d, 2) * state[11] * abs(ns))) / params_.Inertia.diagonal()[2];
+        x(11) = state[11] - (dt * (params_.cN[1] * state[11] + params_.cN[2] * state[11] * fabs(state[11]) + params_.cN[0] * state[11] * state[6] - b1_p * params_.d * np * fabs(np) + b1_s * params_.d * ns * fabs(ns) + b2_p * params_.d * state[6] * fabs(np) - b2_s * params_.d * state[6] * fabs(ns) + b2_p * std::pow(params_.d, 2) * state[11] * fabs(np) + b2_s * std::pow(params_.d, 2) * state[11] * fabs(ns))) / params_.Inertia.diagonal()[2];
         x.segment(12, 5) = state.segment(12, 5);
 
         return x;

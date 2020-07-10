@@ -50,6 +50,8 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/SlidingModeControl.msg"
   "msg/SimulatedVelocitySensor.msg"
   "msg/FeedbackGui.msg"
+  "msg/RealSystem.msg"
+
   # Commands
   "msg/CommandHold.msg"
   "msg/CommandLatLong.msg"

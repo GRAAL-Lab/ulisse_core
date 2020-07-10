@@ -14,6 +14,7 @@ namespace topicnames {
     const std::string sensor_imu = "/ulisse/llc/sensor/imu";
     const std::string sensor_ambient = "/ulisse/llc/sensor/ambient";
     const std::string sensor_magnetometer = "/ulisse/llc/sensor/magnetometer";
+    const std::string real_system = "/ulisse/ground_truth";
 
     const std::string motor_applied_ref = "/ulisse/llc/motor_applied_ref";
     const std::string llc_status = "/ulisse/llc/status";
@@ -24,7 +25,6 @@ namespace topicnames {
     const std::string llc_battery_left = "/ulisse/llc/battery_left";
     const std::string llc_battery_right = "/ulisse/llc/battery_right";
     const std::string llc_sw485status = "/ulisse/llc/sw485status";
-
     const std::string nav_filter_data = "/ulisse/nav_filter/data";
 
     const std::string vehicle_status = "/ulisse/ctrl/vehicle_status";

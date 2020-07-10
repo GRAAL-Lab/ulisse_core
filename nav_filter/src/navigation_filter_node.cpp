@@ -13,6 +13,7 @@
 #include "ulisse_msgs/msg/imu_data.hpp"
 #include "ulisse_msgs/msg/magnetometer.hpp"
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
+#include "ulisse_msgs/msg/real_system.hpp"
 #include "ulisse_msgs/msg/simulated_velocity_sensor.hpp"
 #include "ulisse_msgs/msg/thrusters_data.hpp"
 #include "ulisse_msgs/srv/nav_filter_command.hpp"
@@ -31,7 +32,6 @@
 #include "surface_vehicle_model/surfacevehiclemodel.hpp"
 
 #include "nav_filter/nav_data_structs.hpp"
-#include "ulisse_msgs/msg/control_data.hpp"
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <cstdlib>
@@ -48,6 +48,7 @@ static ulisse_msgs::msg::IMUData imuData;
 static ulisse_msgs::msg::SimulatedVelocitySensor simulatedVelocitySensor;
 static ulisse_msgs::msg::ThrustersData thrustersFbk;
 static ulisse_msgs::msg::Magnetometer magnetometerData;
+static ulisse_msgs::msg::RealSystem groundTruthData;
 
 static NavigationFilterParams filterParams;
 static Eigen::Vector2d yawRateFilterGains;
@@ -66,8 +67,6 @@ static std::shared_ptr<ctb::ExtendedKalmanFilter> extendedKalmanFilter;
 
 static std::unordered_map<std::string, bool> measuresActive;
 
-static std::chrono::system_clock::time_point timeStart;
-
 static int stateDim;
 
 static ctb::LatLong centroidLocation(44.414165, 8.942184);
@@ -85,6 +84,8 @@ void MagnetometerDataCB(const ulisse_msgs::msg::Magnetometer::SharedPtr msg);
 void SimulatedVelocitySensorCB(const ulisse_msgs::msg::SimulatedVelocitySensor::SharedPtr msg);
 
 void ThrustersDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg);
+
+void GroundTruthDataCB(const ulisse_msgs::msg::RealSystem::SharedPtr msg);
 
 bool LoadConfiguration() noexcept(false);
 
@@ -121,7 +122,7 @@ int main(int argc, char* argv[])
     auto gpsdataSub = node->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data, 10, GPSDataCB);
     auto imudataSub = node->create_subscription<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu, 10, IMUDataCB);
     auto magnetometerSub = node->create_subscription<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer, 10, MagnetometerDataCB);
-
+    auto groundTruthSub = node->create_subscription<ulisse_msgs::msg::RealSystem>(ulisse_msgs::topicnames::real_system, 10, GroundTruthDataCB);
     auto thrustersFkbSub = node->create_subscription<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data, 10, ThrustersDataCB);
     auto simulatedVelocitySub = node->create_subscription<ulisse_msgs::msg::SimulatedVelocitySensor>(ulisse_msgs::topicnames::simulated_velocity_sensor, 10, SimulatedVelocitySensorCB);
 
@@ -216,11 +217,8 @@ int main(int argc, char* argv[])
                         Eigen::Vector3d cartesian_p;
                         //The filter use the cartesian coordinates
                         ctb::Map2CartesianPoint(ctb::LatLong(gpsData.latitude, gpsData.longitude), centroidLocation, cartesian_p);
-                        gpsMeasurement->MeasureVector() = Eigen::Vector3d{ cartesian_p.x(), cartesian_p.y(), cartesian_p.z() };
+                        gpsMeasurement->MeasureVector() = Eigen::Vector3d{ cartesian_p.y(), cartesian_p.x(), cartesian_p.z() };
                         extendedKalmanFilter->AddMeasurement(gpsMeasurement);
-
-                        std::cout << " gpsMeasurement->MeasureVector(): " << std::endl;
-                        std::cout << gpsMeasurement->MeasureVector().transpose() << std::endl;
 
                         lastValidGPSTime = gpsData.time;
                     }
@@ -230,46 +228,32 @@ int main(int argc, char* argv[])
             if (measuresActive.find("gyro")->second) {
                 gyroMeasurement->MeasureVector() = Eigen::Vector3d{ imuData.gyro[0], imuData.gyro[1], imuData.gyro[2] };
                 extendedKalmanFilter->AddMeasurement(gyroMeasurement);
-
-                std::cout << " gyroMeasurement->MeasureVector(): " << std::endl;
-                std::cout << gyroMeasurement->MeasureVector().transpose() << std::endl;
             }
 
             if (measuresActive.find("accelerometer")->second) {
                 accelerometerMeasurement->MeasureVector() = Eigen::Vector3d{ imuData.accelerometer[0], imuData.accelerometer[1], imuData.accelerometer[2] };
                 extendedKalmanFilter->AddMeasurement(accelerometerMeasurement);
-
-                std::cout << " accelerometerMeasurement->MeasureVector(): " << std::endl;
-                std::cout << accelerometerMeasurement->MeasureVector().transpose() << std::endl;
             }
 
             if (measuresActive.find("compass")->second) {
                 compassMeasurement->MeasureVector() = Eigen::Vector3d{ compassData.orientation.roll, compassData.orientation.pitch, compassData.orientation.yaw };
                 extendedKalmanFilter->AddMeasurement(compassMeasurement);
-
-                std::cout << " compassMeasurement->MeasureVector(): " << std::endl;
-                std::cout << compassMeasurement->MeasureVector().transpose() << std::endl;
             }
 
             if (measuresActive.find("magnetometer")->second) {
                 //preprocessing: I compensate for the roll and the pitch and then I pretend to have a sensor that measures the yaw
                 magnetometerMeasurement->MeasureVector() << atan2(magnetometerData.orthogonalstrength[1] * cos(compassData.orientation.roll) - magnetometerData.orthogonalstrength[2] * sin(compassData.orientation.roll), magnetometerData.orthogonalstrength[0] * cos(compassData.orientation.pitch) + magnetometerData.orthogonalstrength[2] * cos(compassData.orientation.roll) * sin(compassData.orientation.pitch) + magnetometerData.orthogonalstrength[1] * sin(compassData.orientation.pitch) * sin(compassData.orientation.roll));
                 extendedKalmanFilter->AddMeasurement(magnetometerMeasurement);
-
-                std::cout << " magnetometerMeasurement->MeasureVector(): " << std::endl;
-                std::cout << magnetometerMeasurement->MeasureVector().transpose() << std::endl;
             }
 
-            std::cout << "ThrustersFbk.motor_percentage.left: " << thrustersFbk.motor_percentage.left << std::endl;
-            std::cout << "ThrustersFbk.motor_percentage.right: " << thrustersFbk.motor_percentage.right << std::endl;
-
+            //Filter Update
             extendedKalmanFilter->Prediction(Eigen::Vector2d{ thrustersFbk.motor_percentage.left, thrustersFbk.motor_percentage.right });
             extendedKalmanFilter->Update();
 
             Eigen::VectorXd state = extendedKalmanFilter->StateVector();
 
             ctb::LatLong map_p;
-            ctb::Cartesian2MapPoint(Eigen::Vector3d{ state.x(), state.y(), state.z() }, centroidLocation, map_p);
+            ctb::Cartesian2MapPoint(Eigen::Vector3d{ state.y(), state.x(), state.z() }, centroidLocation, map_p);
 
             auto tNow = std::chrono::system_clock::now();
             long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(tNow.time_since_epoch())).count();
@@ -279,24 +263,50 @@ int main(int argc, char* argv[])
             filterData.stamp.sec = now_stamp_secs;
             filterData.stamp.nanosec = now_stamp_nanosecs;
 
+            //            filterData.inertialframe_linear_position.latlong.latitude = map_p.latitude;
+            //            filterData.inertialframe_linear_position.latlong.longitude = map_p.longitude;
+            //            filterData.inertialframe_linear_position.altitude = state[2];
+            //            filterData.bodyframe_angular_position.roll = state[3];
+            //            filterData.bodyframe_angular_position.pitch = state[4];
+            //            filterData.bodyframe_angular_position.yaw = state[5];
+            //            filterData.bodyframe_linear_velocity.surge = state[6];
+            //            filterData.bodyframe_linear_velocity.sway = state[7];
+            //            filterData.bodyframe_linear_velocity.heave = state[8];
+
+            //            filterData.bodyframe_angular_velocity.roll_rate = state[9];
+            //            filterData.bodyframe_angular_velocity.pitch_rate = state[10];
+            //            filterData.bodyframe_angular_velocity.yaw_rate = state[11];
+            //            filterData.inertialframe_water_current[0] = state[12];
+            //            filterData.inertialframe_water_current[1] = state[13];
+            //            filterData.gyro_bias[0] = state[14];
+            //            filterData.gyro_bias[1] = state[15];
+            //            filterData.gyro_bias[2] = state[16];
+
             filterData.inertialframe_linear_position.latlong.latitude = map_p.latitude;
             filterData.inertialframe_linear_position.latlong.longitude = map_p.longitude;
             filterData.inertialframe_linear_position.altitude = state[2];
-            filterData.bodyframe_angular_position.roll = state[3];
-            filterData.bodyframe_angular_position.pitch = state[4];
-            filterData.bodyframe_angular_position.yaw = state[5];
-            filterData.bodyframe_linear_velocity.surge = state[6];
-            filterData.bodyframe_linear_velocity.sway = state[7];
-            filterData.bodyframe_linear_velocity.heave = state[8];
+            filterData.bodyframe_angular_position.roll = groundTruthData.bodyframe_angular_position.roll;
+            filterData.bodyframe_angular_position.pitch = groundTruthData.bodyframe_angular_position.pitch;
+            filterData.bodyframe_angular_position.yaw = groundTruthData.bodyframe_angular_position.yaw;
+            filterData.bodyframe_linear_velocity.surge = groundTruthData.bodyframe_linear_velocity.surge;
+            filterData.bodyframe_linear_velocity.sway = groundTruthData.bodyframe_linear_velocity.sway;
+            filterData.bodyframe_linear_velocity.heave = groundTruthData.bodyframe_linear_velocity.heave;
 
-            filterData.bodyframe_angular_velocity.roll_rate = state[9];
-            filterData.bodyframe_angular_velocity.pitch_rate = state[10];
-            filterData.bodyframe_angular_velocity.yaw_rate = state[11];
-            filterData.inertialframe_water_current[0] = state[12];
-            filterData.inertialframe_water_current[1] = state[13];
-            filterData.gyro_bias[0] = state[14];
-            filterData.gyro_bias[1] = state[15];
-            filterData.gyro_bias[2] = state[16];
+            filterData.bodyframe_angular_velocity.roll_rate = groundTruthData.bodyframe_angular_velocity.roll_rate;
+            filterData.bodyframe_angular_velocity.pitch_rate = groundTruthData.bodyframe_angular_velocity.pitch_rate;
+            filterData.bodyframe_angular_velocity.yaw_rate = groundTruthData.bodyframe_angular_velocity.yaw_rate;
+            filterData.inertialframe_water_current[0] = 0.0;
+            filterData.inertialframe_water_current[1] = 0.0;
+            filterData.gyro_bias[0] = 0.0;
+            filterData.gyro_bias[1] = 0.0;
+            filterData.gyro_bias[2] = 0.0;
+
+            std::vector<double> P;
+            for (unsigned int i = 0; i < extendedKalmanFilter->PropagationError().rows(); i++) {
+                P.push_back(extendedKalmanFilter->PropagationError().at(i, i));
+            }
+
+            filterData.propagation_error = P;
 
             navDataPub->publish(filterData);
         }
@@ -426,12 +436,8 @@ void LuenbergerObserverConfiguration(libconfig::Config& confObj) noexcept(false)
     ctb::SetParamVector(luenbergerObs, gain, "gain");
     obs.k = gain;
 
-    std::cout << "gain: " << gain << std::endl;
-
     //yaw rate digital filter gains. This is not used by the filter but is needed to filter the yaw rate
     ctb::SetParamVector(luenbergerObs, yawRateFilterGains, "yawRateFilterGains");
-
-    std::cout << "yawRateFilterGains: " << yawRateFilterGains << std::endl;
 }
 
 void CommandHandler(const std::shared_ptr<rmw_request_id_t> request_header, const std::shared_ptr<ulisse_msgs::srv::NavFilterCommand::Request> request, std::shared_ptr<ulisse_msgs::srv::NavFilterCommand::Response> response)
@@ -479,8 +485,6 @@ void MagnetometerDataCB(const ulisse_msgs::msg::Magnetometer::SharedPtr msg) { m
 
 void SimulatedVelocitySensorCB(const ulisse_msgs::msg::SimulatedVelocitySensor::SharedPtr msg) { simulatedVelocitySensor = *msg; }
 
-void ThrustersDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg)
-{
-    thrustersFbk = *msg;
-    timeStart = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
-}
+void ThrustersDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg) { thrustersFbk = *msg; }
+
+void GroundTruthDataCB(const ulisse_msgs::msg::RealSystem::SharedPtr msg) { groundTruthData = *msg; }
