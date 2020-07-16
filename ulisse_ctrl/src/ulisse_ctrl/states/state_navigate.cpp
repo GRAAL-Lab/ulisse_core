@@ -146,7 +146,7 @@ namespace states {
             } else {
                 if (nurbsObj_.CurrentParameterValue() >= tolleranceEndingPoint_) {
                     std::cout << "*** MISSION FINISHED! ***" << std::endl;
-                    fsm_->ExecuteCommand(ulisse::commands::ID::hold);
+                    fsm_->EmitEvent(ulisse::events::names::neargoalposition, ulisse::events::priority::medium);
                 }
 
                 std::cout << "*** STARTING POINT! ***" << std::endl;

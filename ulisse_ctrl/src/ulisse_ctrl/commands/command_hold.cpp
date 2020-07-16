@@ -19,9 +19,14 @@ namespace commands {
         stateHold_ = std::dynamic_pointer_cast<states::StateHold>(state);
     }
 
-    void CommandHold::SetWaterCurrent(const Eigen::Vector2d& inertialF_waterCurrent)
+    void CommandHold::SetWaterCurrent(const std::shared_ptr<Eigen::Vector2d>& inertialF_waterCurrent)
     {
         stateHold_->intertialF_waterCurrent = inertialF_waterCurrent;
+    }
+
+    void CommandHold::SetPositionToHold(const std::shared_ptr<LatLong>& p)
+    {
+        stateHold_->positionToHold = *p;
     }
 }
 }

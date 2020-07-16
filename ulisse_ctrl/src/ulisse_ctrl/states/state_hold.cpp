@@ -7,12 +7,15 @@ namespace ulisse {
 
 namespace states {
 
-    StateHold::StateHold() {}
+    StateHold::StateHold()
+        : goalDistance_{ 0.0 } {};
 
     StateHold::~StateHold() {}
 
     fsm::retval StateHold::OnEntry()
     {
+        intertialF_waterCurrent = std::make_shared<Eigen::Vector2d>();
+
         //set tasks
         safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
         absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
@@ -33,6 +36,8 @@ namespace states {
         const libconfig::Setting& state = states.lookup(ulisse::states::ID::hold);
         ctb::SetParam(state, maxHeadingError_, "maxHeadingError");
         ctb::SetParam(state, minHeadingError_, "minHeadingError");
+        ctb::SetParam(state, maxAcceptanceRadius, "maxAcceptanceRadius");
+        ctb::SetParam(state, minAcceptanceRadius, "minAcceptanceRadius");
     }
 
     fsm::retval StateHold::Execute()
@@ -68,18 +73,16 @@ namespace states {
         safetyBoundariesTask_->ExternalActivationFunction() = taskGainSafety * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
 
         //hold task
-
-        absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(intertialF_waterCurrent.x(), intertialF_waterCurrent.y(), 0), rml::FrameID::WorldFrame);
+        std::cout << "water current: " << intertialF_waterCurrent->normalized().x() << ", " << intertialF_waterCurrent->normalized().y() << std::endl;
+        absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(-intertialF_waterCurrent->normalized().x(), -intertialF_waterCurrent->normalized().y(), 0), rml::FrameID::WorldFrame);
         absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
 
-        //compute the heading error
-        double headingError = absoluteAxisAlignmentTask_->ControlVariable().norm();
-        std::cout << "Heading error : " << headingError << std::endl;
+        linearVelocityTask_->Reference() = Eigen::Vector3d{ 1.0, 0.0, 0.0 };
+        ctb::DistanceAndAzimuthRad(*vehiclePosition.get(), positionToHold, goalDistance_, goalHeading_);
+        std::cout << "goalDistance: " << goalDistance_ << std::endl;
 
-        //compute the gain of the cartesian distance
-        double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1, headingError);
+        double taskGain = rml::IncreasingBellShapedFunction(minAcceptanceRadius, maxAcceptanceRadius, 0, 1, goalDistance_);
 
-        //Set the gain of the cartesian distance task
         linearVelocityTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(linearVelocityTask_->TaskSpace(), linearVelocityTask_->TaskSpace());
 
         std::cout << "STATE HOLD" << std::endl;

@@ -114,6 +114,9 @@ void VehicleSimulator::SimulateActuation(double h_p, double h_s)
     // Computing vehicle acceleration
     ulisseModel_.DirectDynamics(h_p, h_s, vehRelVel_body_, vehRelAcc_body_);
 
+    waterVel_world_(0) = 0.1;
+    waterVel_world_(1) = 0.1;
+
     // Integrating the acceleration to get the vehicle velocity
     vehRelVel_body_ = vehRelVel_body_ + vehRelAcc_body_ * Ts_;
 
@@ -174,11 +177,22 @@ void VehicleSimulator::SimulateSensors(double h_p, double h_s)
 
     std::normal_distribution<double> gpsNoise(0.0, 0.7);
 
+    //add noise to gps. Transform to cartesian, add noise and come back to map coordinates
+    static ctb::LatLong centroidLocation(44.414165, 8.942184);
+    Eigen::Vector3d cartesian_p;
+    ctb::Map2CartesianPoint(ctb::LatLong(lat_now_, long_now_), centroidLocation, cartesian_p);
+
+    cartesian_p.x() = cartesian_p.x() + gpsNoise(generator);
+    cartesian_p.y() = cartesian_p.y() + gpsNoise(generator);
+
+    ctb::LatLong map_p;
+    ctb::Cartesian2MapPoint(cartesian_p, centroidLocation, map_p);
+
     gpsdata_msg_.time = static_cast<double>(now_nanosecs / 1E9);
     gpsdata_msg_.track = vehTrack_;
     gpsdata_msg_.speed = vehSpeed_;
-    gpsdata_msg_.latitude = lat_now_ /*+ gpsNoise(generator)*/;
-    gpsdata_msg_.longitude = long_now_ /*+ gpsNoise(generator)*/;
+    gpsdata_msg_.latitude = map_p.latitude;
+    gpsdata_msg_.longitude = map_p.longitude;
     gpsdata_msg_.altitude = 0.0;
     gpsdata_msg_.gpsfixmode = 3u; //ulisse_msgs::msg::GPSData::MODE_3D;
 
@@ -192,33 +206,59 @@ void VehicleSimulator::SimulateSensors(double h_p, double h_s)
     compassdata_msg_.orientation.yaw = vehAtt_now_.Yaw() + compassNoiseY(generator);
 
     std::normal_distribution<double> accelerometerNoise(0.0, 0.0980663043);
-    std::normal_distribution<double> gyroNoise(0.0, 0.017448782);
-    double bx = 0.0, by = 0.0, bz = 0.0;
     imudata_msg_.stamp.sec = now_stamp_secs;
     imudata_msg_.stamp.nanosec = now_stamp_nanosecs;
     imudata_msg_.accelerometer[0] = vehRelAcc_body_(0) + accelerometerNoise(generator);
     imudata_msg_.accelerometer[1] = vehRelAcc_body_(1) + accelerometerNoise(generator);
     imudata_msg_.accelerometer[2] = 9.81 + accelerometerNoise(generator);
-    imudata_msg_.gyro[0] = vehRelVel_body_(3) + gyroNoise(generator);
-    imudata_msg_.gyro[1] = vehRelVel_body_(4) + gyroNoise(generator);
-    imudata_msg_.gyro[2] = vehRelVel_body_(5) + gyroNoise(generator);
+
+    //gyro noise
+    std::normal_distribution<double> gyroNoise(0.0, 0.017448782);
+    //gyro bias model as a very low frequence sin + const
+    double C = 0.08, f = 0.001, A = 0.001;
+    double t = now_stamp_secs + (now_stamp_nanosecs * 1e-9);
+    double bx = C + A * sin(2 * M_PI * f * t);
+    double by = C + A * sin(2 * M_PI * f * t);
+    double bz = C + A * sin(2 * M_PI * f * t);
+    imudata_msg_.gyro[0] = vehRelVel_body_(3) + gyroNoise(generator) + bx;
+    imudata_msg_.gyro[1] = vehRelVel_body_(4) + gyroNoise(generator) + by;
+    imudata_msg_.gyro[2] = vehRelVel_body_(5) + gyroNoise(generator) + bz;
 
     ambsens_msg_.stamp.sec = now_stamp_secs;
     ambsens_msg_.stamp.nanosec = now_stamp_nanosecs;
     ambsens_msg_.temperaturectrlbox = 23.0 + (rand() / static_cast<double>(RAND_MAX)) * 2.0;
     ambsens_msg_.humidityctrlbox = 50.0 + (rand() / static_cast<double>(RAND_MAX)) * 2.0;
 
+    Eigen::Vector3d m = { 23186.6 * 1E-9, 0.0 * 1E-9, 41122.0 * 1E-9 }; // Example of magnetic field at lat long: 44.4056° N, 8.9463° E
+
+    Eigen::RotationMatrix Rz, Ry, Rx;
+    Rz << cos(vehAtt_now_.Yaw()), -sin(vehAtt_now_.Yaw()), 0,
+        sin(vehAtt_now_.Yaw()), cos(vehAtt_now_.Yaw()), 0,
+        0, 0, 1;
+
+    Ry << cos(vehAtt_now_.Pitch()), 0, sin(vehAtt_now_.Pitch()),
+        0, 1, 0,
+        -sin(vehAtt_now_.Pitch()), 0, cos(vehAtt_now_.Pitch());
+
+    Rx << 1, 0, 0,
+        0, cos(vehAtt_now_.Roll()), -sin(vehAtt_now_.Roll()),
+        0, sin(vehAtt_now_.Roll()), cos(vehAtt_now_.Roll());
+
+    Eigen::Vector3d ned_m = (Rz * Ry * Rx).transpose() * m;
+
+    std::normal_distribution<double> magnetometerNoise(0.0, 0.1 * 1E-6);
+
     magneto_msg_.stamp.sec = now_stamp_secs;
     magneto_msg_.stamp.nanosec = now_stamp_nanosecs;
-    magneto_msg_.orthogonalstrength[0] = 23.464 / 1E-9; // Example of magnetic field at lat long: 44.4056° N, 8.9463° E
-    magneto_msg_.orthogonalstrength[1] = -1.051 / 1E-9;
-    magneto_msg_.orthogonalstrength[2] = 39.746 / 1E-9;
+    magneto_msg_.orthogonalstrength[0] = ned_m.x() + magnetometerNoise(generator);
+    magneto_msg_.orthogonalstrength[1] = ned_m.y() + magnetometerNoise(generator);
+    magneto_msg_.orthogonalstrength[2] = ned_m.z() + magnetometerNoise(generator);
 
     ground_truth_msg_.stamp.sec = now_stamp_secs;
     ground_truth_msg_.stamp.nanosec = now_stamp_nanosecs;
-    ground_truth_msg_.inertialframe_linear_position.latlong.latitude = gpsdata_msg_.latitude;
-    ground_truth_msg_.inertialframe_linear_position.latlong.longitude = gpsdata_msg_.longitude;
-    ground_truth_msg_.inertialframe_linear_position.altitude = gpsdata_msg_.altitude;
+    ground_truth_msg_.inertialframe_linear_position.latlong.latitude = lat_now_;
+    ground_truth_msg_.inertialframe_linear_position.latlong.longitude = long_now_;
+    ground_truth_msg_.inertialframe_linear_position.altitude = 0.0;
     ground_truth_msg_.bodyframe_angular_position.roll = vehAtt_now_.Roll();
     ground_truth_msg_.bodyframe_angular_position.pitch = vehAtt_now_.Pitch();
     ground_truth_msg_.bodyframe_angular_position.yaw = vehAtt_now_.Yaw();

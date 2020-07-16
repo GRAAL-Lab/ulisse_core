@@ -20,6 +20,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 {
     conf_ = std::make_shared<ControllerConfiguration>();
     vehiclePosition_ = std::make_shared<LatLong>();
+    inertialF_waterCurrent_ = std::make_shared<Eigen::Vector2d>();
 
     fileName_ = file_name;
 
@@ -277,6 +278,10 @@ void VehicleController::SetUpFSM()
 
     // ***** EVENTS *****
     eventRcEnabled_.SetFSM(&uFsm_);
+    eventNearGoalPosition_.SetFSM(&uFsm_);
+    eventNearGoalPosition_.CurrentPosition() = vehiclePosition_;
+    eventNearGoalPosition_.GoToHoldAfterMove(conf_->goToHoldAfterMove);
+    eventNearGoalPosition_.StateHold() = std::dynamic_pointer_cast<ulisse::states::StateHold>(statesMap_.find(ulisse::states::ID::hold)->second);
 
     // ***** CONFIGURE FSM *****
     // ADD COMMANDS
@@ -291,6 +296,7 @@ void VehicleController::SetUpFSM()
 
     // ADD EVENTS
     uFsm_.AddEvent(ulisse::events::names::rcenabled, &eventRcEnabled_);
+    uFsm_.AddEvent(ulisse::events::names::neargoalposition, &eventNearGoalPosition_);
 
     // ENABLE TRANSITIONS
     for (auto& currentState : statesMap_) {
@@ -337,8 +343,7 @@ void VehicleController::SetupCommandServer()
             publishLog("Received Command Halt");
 
         } else if (request->command_type == ulisse::commands::ID::hold) {
-
-            commandHold_.SetWaterCurrent(inertialF_waterCurrent_);
+            commandHold_.SetPositionToHold(vehiclePosition_);
             std::cout << "Received Command Hold" << std::endl;
             publishLog("Received Command Hold");
 
@@ -403,7 +408,9 @@ void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::Share
     vehiclePosition_->longitude = msg->inertialframe_linear_position.latlong.longitude;
 
     //Get the water current for hold state
-    inertialF_waterCurrent_ = { msg->inertialframe_water_current[0], msg->inertialframe_water_current[0] };
+    *inertialF_waterCurrent_ = { msg->inertialframe_water_current[0], msg->inertialframe_water_current[1] };
+
+    commandHold_.SetWaterCurrent(inertialF_waterCurrent_);
 
     // Linear position in world frame
     Eigen::Vector3d worldF_vehicleLinearPosition(vehiclePosition_->latitude, vehiclePosition_->longitude, 0.0);

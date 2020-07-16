@@ -73,6 +73,8 @@ set(ulisse_ctrl_lib_sources
     # Events
     src/ulisse_ctrl/events/generic_event.cpp
     src/ulisse_ctrl/events/event_rc_enabled.cpp
+    src/ulisse_ctrl/events/event_near_goal_position.cpp
+
     # TASKS
     src/ulisse_ctrl/tasks/SafetyBoundaries.cpp
 

@@ -76,11 +76,7 @@ namespace states {
 
         if (goalDistance < acceptanceRadius) {
             std::cout << "*** GOAL REACHED! ***" << std::endl;
-            if (/*conf_->goToHoldAfterMove*/ /* DISABLES CODE */ (true)) {
-                fsm_->ExecuteCommand(ulisse::commands::ID::hold);
-            } else {
-                fsm_->ExecuteCommand(ulisse::commands::ID::halt);
-            }
+            fsm_->EmitEvent(ulisse::events::names::neargoalposition, ulisse::events::priority::medium);
         } else {
 
             //Set the distance vector to the target

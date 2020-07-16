@@ -16,6 +16,7 @@
 #include <ulisse_ctrl/commands/command_latlong.hpp>
 #include <ulisse_ctrl/commands/command_navigate.hpp>
 #include <ulisse_ctrl/commands/command_speedheading.hpp>
+#include <ulisse_ctrl/events/event_near_goal_position.hpp>
 #include <ulisse_ctrl/events/event_rc_enabled.hpp>
 #include <ulisse_ctrl/states/state_halt.hpp>
 #include <ulisse_ctrl/states/state_hold.hpp>
@@ -93,6 +94,8 @@ class VehicleController {
 
     events::EventRCEnabled eventRcEnabled_;
 
+    events::EventNearGoalPosition eventNearGoalPosition_;
+
     std::shared_ptr<ControllerConfiguration> conf_;
 
     std::chrono::system_clock::time_point tNow_;
@@ -103,7 +106,7 @@ class VehicleController {
 
     std::shared_ptr<ctb::LatLong> vehiclePosition_;
 
-    Eigen::Vector2d inertialF_waterCurrent_;
+    std::shared_ptr<Eigen::Vector2d> inertialF_waterCurrent_;
 
     bool LoadConfiguration();
     void SetUpFSM();

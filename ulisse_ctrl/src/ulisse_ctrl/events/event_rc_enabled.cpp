@@ -7,7 +7,6 @@ namespace events {
 
     fsm::retval EventRCEnabled::Execute()
     {
-
         std::cout << "RC Controller Detected: Halting!" << std::endl;
 
         fsm_->SetNextState(ulisse::states::ID::halt);

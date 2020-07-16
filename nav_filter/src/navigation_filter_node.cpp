@@ -145,6 +145,7 @@ int main(int argc, char* argv[])
     }
 
     bool filterEnable(true);
+    Eigen::VectorXd state = Eigen::VectorXd::Zero(stateDim);
 
     while (rclcpp::ok()) {
         if (filterParams.mode == FilterMode::LuenbergerObserver) {
@@ -242,7 +243,7 @@ int main(int argc, char* argv[])
 
             if (measuresActive.find("magnetometer")->second) {
                 //preprocessing: I compensate for the roll and the pitch and then I pretend to have a sensor that measures the yaw
-                magnetometerMeasurement->MeasureVector() << atan2(magnetometerData.orthogonalstrength[1] * cos(compassData.orientation.roll) - magnetometerData.orthogonalstrength[2] * sin(compassData.orientation.roll), magnetometerData.orthogonalstrength[0] * cos(compassData.orientation.pitch) + magnetometerData.orthogonalstrength[2] * cos(compassData.orientation.roll) * sin(compassData.orientation.pitch) + magnetometerData.orthogonalstrength[1] * sin(compassData.orientation.pitch) * sin(compassData.orientation.roll));
+                magnetometerMeasurement->MeasureVector() << -atan2(magnetometerData.orthogonalstrength[1] * cos(state[3]) - magnetometerData.orthogonalstrength[2] * sin(state[3]), magnetometerData.orthogonalstrength[0] * cos(state[4]) + magnetometerData.orthogonalstrength[2] * cos(state[3]) * sin(state[4]) + magnetometerData.orthogonalstrength[1] * sin(state[4]) * sin(state[3]));
                 extendedKalmanFilter->AddMeasurement(magnetometerMeasurement);
             }
 
@@ -250,7 +251,7 @@ int main(int argc, char* argv[])
             extendedKalmanFilter->Prediction(Eigen::Vector2d{ thrustersFbk.motor_percentage.left, thrustersFbk.motor_percentage.right });
             extendedKalmanFilter->Update();
 
-            Eigen::VectorXd state = extendedKalmanFilter->StateVector();
+            state = extendedKalmanFilter->StateVector();
 
             ctb::LatLong map_p;
             ctb::Cartesian2MapPoint(Eigen::Vector3d{ state.y(), state.x(), state.z() }, centroidLocation, map_p);
@@ -263,43 +264,43 @@ int main(int argc, char* argv[])
             filterData.stamp.sec = now_stamp_secs;
             filterData.stamp.nanosec = now_stamp_nanosecs;
 
-            //            filterData.inertialframe_linear_position.latlong.latitude = map_p.latitude;
-            //            filterData.inertialframe_linear_position.latlong.longitude = map_p.longitude;
-            //            filterData.inertialframe_linear_position.altitude = state[2];
-            //            filterData.bodyframe_angular_position.roll = state[3];
-            //            filterData.bodyframe_angular_position.pitch = state[4];
-            //            filterData.bodyframe_angular_position.yaw = state[5];
-            //            filterData.bodyframe_linear_velocity.surge = state[6];
-            //            filterData.bodyframe_linear_velocity.sway = state[7];
-            //            filterData.bodyframe_linear_velocity.heave = state[8];
-
-            //            filterData.bodyframe_angular_velocity.roll_rate = state[9];
-            //            filterData.bodyframe_angular_velocity.pitch_rate = state[10];
-            //            filterData.bodyframe_angular_velocity.yaw_rate = state[11];
-            //            filterData.inertialframe_water_current[0] = state[12];
-            //            filterData.inertialframe_water_current[1] = state[13];
-            //            filterData.gyro_bias[0] = state[14];
-            //            filterData.gyro_bias[1] = state[15];
-            //            filterData.gyro_bias[2] = state[16];
-
             filterData.inertialframe_linear_position.latlong.latitude = map_p.latitude;
             filterData.inertialframe_linear_position.latlong.longitude = map_p.longitude;
             filterData.inertialframe_linear_position.altitude = state[2];
-            filterData.bodyframe_angular_position.roll = groundTruthData.bodyframe_angular_position.roll;
-            filterData.bodyframe_angular_position.pitch = groundTruthData.bodyframe_angular_position.pitch;
-            filterData.bodyframe_angular_position.yaw = groundTruthData.bodyframe_angular_position.yaw;
-            filterData.bodyframe_linear_velocity.surge = groundTruthData.bodyframe_linear_velocity.surge;
-            filterData.bodyframe_linear_velocity.sway = groundTruthData.bodyframe_linear_velocity.sway;
-            filterData.bodyframe_linear_velocity.heave = groundTruthData.bodyframe_linear_velocity.heave;
+            filterData.bodyframe_angular_position.roll = state[3];
+            filterData.bodyframe_angular_position.pitch = state[4];
+            filterData.bodyframe_angular_position.yaw = state[5];
+            filterData.bodyframe_linear_velocity.surge = state[6];
+            filterData.bodyframe_linear_velocity.sway = state[7];
+            filterData.bodyframe_linear_velocity.heave = state[8];
 
-            filterData.bodyframe_angular_velocity.roll_rate = groundTruthData.bodyframe_angular_velocity.roll_rate;
-            filterData.bodyframe_angular_velocity.pitch_rate = groundTruthData.bodyframe_angular_velocity.pitch_rate;
-            filterData.bodyframe_angular_velocity.yaw_rate = groundTruthData.bodyframe_angular_velocity.yaw_rate;
-            filterData.inertialframe_water_current[0] = 0.0;
-            filterData.inertialframe_water_current[1] = 0.0;
-            filterData.gyro_bias[0] = 0.0;
-            filterData.gyro_bias[1] = 0.0;
-            filterData.gyro_bias[2] = 0.0;
+            filterData.bodyframe_angular_velocity.roll_rate = state[9];
+            filterData.bodyframe_angular_velocity.pitch_rate = state[10];
+            filterData.bodyframe_angular_velocity.yaw_rate = state[11];
+            filterData.inertialframe_water_current[0] = state[12];
+            filterData.inertialframe_water_current[1] = state[13];
+            filterData.gyro_bias[0] = state[14];
+            filterData.gyro_bias[1] = state[15];
+            filterData.gyro_bias[2] = state[16];
+
+            //            filterData.inertialframe_linear_position.latlong.latitude = map_p.latitude;
+            //            filterData.inertialframe_linear_position.latlong.longitude = map_p.longitude;
+            //            filterData.inertialframe_linear_position.altitude = state[2];
+            //            filterData.bodyframe_angular_position.roll = groundTruthData.bodyframe_angular_position.roll;
+            //            filterData.bodyframe_angular_position.pitch = groundTruthData.bodyframe_angular_position.pitch;
+            //            filterData.bodyframe_angular_position.yaw = groundTruthData.bodyframe_angular_position.yaw;
+            //            filterData.bodyframe_linear_velocity.surge = groundTruthData.bodyframe_linear_velocity.surge;
+            //            filterData.bodyframe_linear_velocity.sway = groundTruthData.bodyframe_linear_velocity.sway;
+            //            filterData.bodyframe_linear_velocity.heave = groundTruthData.bodyframe_linear_velocity.heave;
+
+            //            filterData.bodyframe_angular_velocity.roll_rate = groundTruthData.bodyframe_angular_velocity.roll_rate;
+            //            filterData.bodyframe_angular_velocity.pitch_rate = groundTruthData.bodyframe_angular_velocity.pitch_rate;
+            //            filterData.bodyframe_angular_velocity.yaw_rate = groundTruthData.bodyframe_angular_velocity.yaw_rate;
+            //            filterData.inertialframe_water_current[0] = 0.0;
+            //            filterData.inertialframe_water_current[1] = 0.0;
+            //            filterData.gyro_bias[0] = 0.0;
+            //            filterData.gyro_bias[1] = 0.0;
+            //            filterData.gyro_bias[2] = 0.0;
 
             std::vector<double> P;
             for (unsigned int i = 0; i < extendedKalmanFilter->PropagationError().rows(); i++) {

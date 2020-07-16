@@ -64,7 +64,7 @@ int main(int argc, char* argv[])
     auto compassSub = node->create_subscription<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass, 10, CompassDataCB);
     auto gpsSub = node->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data, 10, GpsDataCB);
     auto imuSub = node->create_subscription<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu, 10, ImuDataCB);
-    auto magSub = node->create_subscription<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer, 10, ImuDataCB);
+    auto magSub = node->create_subscription<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer, 10, MagnetometerDataCB);
     auto refVelocitiesSub = node->create_subscription<ulisse_msgs::msg::ReferenceVelocities>(ulisse_msgs::topicnames::reference_velocities, 10, RefVelocitiesCb);
 
     auto now = std::chrono::system_clock::now();
@@ -82,7 +82,7 @@ int main(int argc, char* argv[])
     myfile.open(filename);
 
     //First row the header
-    myfile << "t_start_file ,t_filter, x, y, z, r, p, y, u, v, h, rRate, pRate, yRate, cx, cx, bx, by, bz, t_real, x_real, y_real, z_real, r_real, p_real, y_real, u_real, v_real, h_real, rRate_real, pRate_real, yRate_real, cx, cy, bx, by, bz, t_motor,hp, hs, t_desired_vel, desired_surge, desired_yaw_rate, t_gps, lat, long, alt, t_compass, r, p , y, t_acc, ax, ay, az, t_gyro, gx, gy, gz, t_magn, mx, my, mz"
+    myfile << "t_start_file ,t_filter, x, y, z, r, p, y, u, v, h, rRate, pRate, yRate, cx, cy, bx, by, bz, t_real, x_real, y_real, z_real, r_real, p_real, y_real, u_real, v_real, h_real, rRate_real, pRate_real, yRate_real, cx, cy, bx, by, bz, t_motor,hp, hs, t_desired_vel, desired_surge, desired_yaw_rate, t_gps, lat, long, alt, t_compass, r, p , y, t_acc, ax, ay, az, t_gyro, gx, gy, gz, t_magn, mx, my, mz"
            << "\n";
 
     while (rclcpp::ok()) {

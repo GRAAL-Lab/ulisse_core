@@ -3,6 +3,7 @@
 
 #include "ulisse_ctrl/commands/genericCommand.hpp"
 #include "ulisse_ctrl/states/state_hold.hpp"
+#include "ulisse_ctrl/states/state_latlong.hpp"
 
 namespace ulisse {
 
@@ -19,7 +20,9 @@ namespace commands {
 
         void SetState(std::shared_ptr<states::GenericState> state) override;
 
-        void SetWaterCurrent(const Eigen::Vector2d& inertialF_waterCurrent);
+        void SetWaterCurrent(const std::shared_ptr<Eigen::Vector2d>& inertialF_waterCurrent);
+
+        void SetPositionToHold(const std::shared_ptr<LatLong>& p);
     };
 }
 }
