@@ -70,9 +70,7 @@ void VehicleSimulator::SetParameters(double Ts, const UlisseModelParameters& thm
     Ts_fixed_ = Ts;
     ulisseModel_.params = thmapparams;
 
-    std::cout << "=====  THRUSTER MAPPING   =====" << std::endl;
     std::cout << thmapparams << std::endl;
-    std::cout << "===============================" << std::endl;
 }
 
 void VehicleSimulator::SetRealtime(bool realtime)
@@ -282,7 +280,6 @@ void VehicleSimulator::PublishSensors()
 {
     micro_loop_count_pub_->publish(micro_loop_count_msg_);
 
-    //std::cout << "timestamp_count_ % 200: " << timestamp_count_ % 200 << std::endl;
     if (static_cast<int>(timestamp_count_ / 20) > gpspubcounter_) {
         gpspubcounter_ = static_cast<int>(timestamp_count_ / 20);
         gpsdata_pub_->publish(gpsdata_msg_);

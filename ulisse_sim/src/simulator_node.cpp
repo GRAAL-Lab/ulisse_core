@@ -23,8 +23,9 @@ using namespace std::chrono_literals;
 
 static double test_h_p(0.0), test_h_s(0.0);
 static futils::Timer motor_timeout;
+static int rate;
 
-void ReadMappingParameters(UlisseModelParameters& tmp, std::string file_name);
+bool ReadMappingParameters(UlisseModelParameters& modelParams, std::string file_name);
 
 void ThrusterDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg)
 {
@@ -39,17 +40,14 @@ int main(int argc, char* argv[])
     auto node = rclcpp::Node::make_shared("simulator_node");
     auto thrusters_sub = node->create_subscription<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data, 10, ThrusterDataCB);
 
-    UlisseModelParameters myTMP;
+    UlisseModelParameters modelParams;
     std::string filename = "simparams.conf";
-    ReadMappingParameters(myTMP, filename);
+    ReadMappingParameters(modelParams, filename);
 
-    int rate = 100;
     rclcpp::WallRate loop_rate(rate);
-    double dt = 1.0 / rate;
-    std::cout << "dt=" << dt << std::endl;
 
     ulisse::VehicleSimulator myVehSim(node);
-    myVehSim.SetParameters(dt, myTMP);
+    myVehSim.SetParameters(1.0 / rate, modelParams);
 
     while (rclcpp::ok()) {
 
@@ -69,42 +67,46 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-void ReadMappingParameters(UlisseModelParameters& tmp, std::string file_name)
+bool ReadMappingParameters(UlisseModelParameters& modelParams, std::string file_name)
 {
+    //read conf file
     libconfig::Config confObj;
 
     //Inizialization
-    std::string package_share_directory = ament_index_cpp::get_package_share_directory("ulisse_sim");
-    std::stringstream conf_path;
-    conf_path << package_share_directory << "/conf/" << file_name;
-
-    std::string confPath = conf_path.str().c_str();
+    std::string confPath = ament_index_cpp::get_package_share_directory("ulisse_sim").append("/conf/").append(file_name);
 
     std::cout << "PATH TO CONF FILE : " << confPath << std::endl;
 
-    //read conf file
     try {
         confObj.readFile(confPath.c_str());
+    } catch (const libconfig::FileIOException& fioex) {
+        std::cerr << "I/O error while reading file: " << fioex.what() << std::endl;
+        return -1;
     } catch (libconfig::ParseException& e) {
         std::cerr << "Parse exception when reading:" << confPath << std::endl;
         std::cerr << "line: " << e.getLine() << " error: " << e.getError() << std::endl;
-        return;
+        return -1;
     }
 
-    ctb::SetParam(confObj, tmp.d, "sim.thruster_mapping.motors_distance");
-    ctb::SetParam(confObj, tmp.lambda_pos, "sim.thruster_mapping.lambda_pos");
-    ctb::SetParam(confObj, tmp.lambda_neg, "sim.thruster_mapping.lambda_neg");
-    ctb::SetParam(confObj, tmp.b1_pos, "sim.thruster_mapping.b1_pos");
-    ctb::SetParam(confObj, tmp.b2_pos, "sim.thruster_mapping.b2_pos");
-    ctb::SetParam(confObj, tmp.b1_neg, "sim.thruster_mapping.b1_neg");
-    ctb::SetParam(confObj, tmp.b2_neg, "sim.thruster_mapping.b2_neg");
-    ctb::SetParamVector(confObj, tmp.cN, "sim.thruster_mapping.cN");
-    ctb::SetParamVector(confObj, tmp.cX, "sim.thruster_mapping.cX");
+    //rate
+    ctb::SetParam(confObj, rate, "rate");
 
-    Eigen::Vector3d tmp_Inerzia;
-    tmp_Inerzia.setZero();
-    ctb::SetParamVector(confObj, tmp_Inerzia, "sim.thruster_mapping.Inertia");
-    tmp.Inertia.diagonal() = Eigen::Map<Eigen::Matrix<double, 3, 1>>(tmp_Inerzia.data());
+    //ulisse param
+    const libconfig::Setting& root = confObj.getRoot();
+    const libconfig::Setting& ulisseModel = root["ulisseModel"];
+    modelParams.ConfigureFormFile(ulisseModel);
 
-    std::cout << "Parameters read!" << std::endl;
+    //add noise on params
+    double modelErrorFactor;
+    ctb::SetParam(confObj, modelErrorFactor, "modelErrorFactor");
+
+    modelParams.Inertia *= modelErrorFactor;
+    modelParams.cN *= modelErrorFactor;
+    modelParams.cX *= modelErrorFactor;
+    modelParams.b1_pos *= modelErrorFactor;
+    modelParams.b2_pos *= modelErrorFactor;
+    modelParams.b1_neg *= modelErrorFactor;
+    modelParams.b1_neg *= modelErrorFactor;
+
+    return 0;
 }

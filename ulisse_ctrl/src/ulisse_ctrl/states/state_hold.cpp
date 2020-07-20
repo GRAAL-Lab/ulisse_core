@@ -38,6 +38,8 @@ namespace states {
         ctb::SetParam(state, minHeadingError_, "minHeadingError");
         ctb::SetParam(state, maxAcceptanceRadius, "maxAcceptanceRadius");
         ctb::SetParam(state, minAcceptanceRadius, "minAcceptanceRadius");
+        ctb::SetParam(state, minWaterCurrent_, "minWaterCurrent");
+        ctb::SetParam(state, maxWaterCurrent_, "maxWaterCurrent");
     }
 
     fsm::retval StateHold::Execute()
@@ -73,13 +75,15 @@ namespace states {
         safetyBoundariesTask_->ExternalActivationFunction() = taskGainSafety * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
 
         //hold task
-        std::cout << "water current: " << intertialF_waterCurrent->normalized().x() << ", " << intertialF_waterCurrent->normalized().y() << std::endl;
         absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(-intertialF_waterCurrent->normalized().x(), -intertialF_waterCurrent->normalized().y(), 0), rml::FrameID::WorldFrame);
         absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
 
+        //Avoid that the roboto try to align with very low intensity of water current
+        double absoluteAxisAlignmentGain = rml::IncreasingBellShapedFunction(minWaterCurrent_, maxWaterCurrent_, 0, 1, intertialF_waterCurrent->norm());
+        absoluteAxisAlignmentTask_->ExternalActivationFunction() = absoluteAxisAlignmentGain * Eigen::MatrixXd::Identity(absoluteAxisAlignmentTask_->TaskSpace(), absoluteAxisAlignmentTask_->TaskSpace());
+
         linearVelocityTask_->Reference() = Eigen::Vector3d{ 1.0, 0.0, 0.0 };
         ctb::DistanceAndAzimuthRad(*vehiclePosition.get(), positionToHold, goalDistance_, goalHeading_);
-        std::cout << "goalDistance: " << goalDistance_ << std::endl;
 
         double taskGain = rml::IncreasingBellShapedFunction(minAcceptanceRadius, maxAcceptanceRadius, 0, 1, goalDistance_);
 

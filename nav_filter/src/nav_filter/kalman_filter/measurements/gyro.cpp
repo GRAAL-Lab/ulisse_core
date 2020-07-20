@@ -11,7 +11,7 @@ namespace nav {
 
     GyroMeasurement::~GyroMeasurement() {}
 
-    Eigen::MatrixXd GyroMeasurement::ComputeJacobian(const Eigen::VectorXd& state, const Eigen::VectorXd& input)
+    Eigen::MatrixXd GyroMeasurement::ComputeJacobian(const Eigen::VectorXd& state)
     {
         Eigen::MatrixXd H = Eigen::MatrixXd::Zero(3, state.size());
 
@@ -21,7 +21,7 @@ namespace nav {
         return H;
     }
 
-    Eigen::VectorXd GyroMeasurement::ComputePrediction(const Eigen::VectorXd& state, const Eigen::VectorXd& input)
+    Eigen::VectorXd GyroMeasurement::ComputePrediction(const Eigen::VectorXd& state)
     {
         Eigen::Vector3d angularVelocity;
 

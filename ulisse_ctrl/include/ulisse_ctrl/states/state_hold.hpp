@@ -14,6 +14,7 @@ namespace states {
         std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentTask_;
         std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask_;
         double goalDistance_, goalHeading_;
+        double minWaterCurrent_, maxWaterCurrent_;
 
     public:
         StateHold();

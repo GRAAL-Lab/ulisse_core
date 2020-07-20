@@ -60,6 +60,24 @@ struct UlisseModelParameters {
         ctb::SetParamVector(ulisseModel, tmp_Inerzia, "inertia");
         Inertia.diagonal() = Eigen::Map<Eigen::Matrix<double, 3, 1>>(tmp_Inerzia.data());
     }
+
+    void ConfigureFormFile(const libconfig::Config& ulisseModel) noexcept(false)
+    {
+        ctb::SetParamVector(ulisseModel, cN, "cN");
+        ctb::SetParamVector(ulisseModel, cX, "cX");
+        ctb::SetParam(ulisseModel, lambda_neg, "lambdaNeg");
+        ctb::SetParam(ulisseModel, lambda_pos, "lambdaPos");
+        ctb::SetParam(ulisseModel, b1_neg, "b1Neg");
+        ctb::SetParam(ulisseModel, b1_pos, "b1Pos");
+        ctb::SetParam(ulisseModel, b2_neg, "b2Neg");
+        ctb::SetParam(ulisseModel, b2_pos, "b2Pos");
+        ctb::SetParam(ulisseModel, d, "motorsDistance");
+
+        Eigen::Vector3d tmp_Inerzia;
+        tmp_Inerzia.setZero();
+        ctb::SetParamVector(ulisseModel, tmp_Inerzia, "inertia");
+        Inertia.diagonal() = Eigen::Map<Eigen::Matrix<double, 3, 1>>(tmp_Inerzia.data());
+    }
 };
 
 /**

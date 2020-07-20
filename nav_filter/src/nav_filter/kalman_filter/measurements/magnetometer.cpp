@@ -11,7 +11,7 @@ namespace nav {
 
     MagnetometerMeasurement::~MagnetometerMeasurement() {}
 
-    Eigen::MatrixXd MagnetometerMeasurement::ComputeJacobian(const Eigen::VectorXd& state, const Eigen::VectorXd& input)
+    Eigen::MatrixXd MagnetometerMeasurement::ComputeJacobian(const Eigen::VectorXd& state)
     {
         Eigen::MatrixXd H = Eigen::MatrixXd::Zero(1, state.size());
 
@@ -20,7 +20,7 @@ namespace nav {
         return H;
     }
 
-    Eigen::VectorXd MagnetometerMeasurement::ComputePrediction(const Eigen::VectorXd& state, const Eigen::VectorXd& input)
+    Eigen::VectorXd MagnetometerMeasurement::ComputePrediction(const Eigen::VectorXd& state)
     {
         Eigen::VectorXd yaw = Eigen::VectorXd::Zero(1);
 

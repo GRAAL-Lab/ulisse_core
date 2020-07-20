@@ -1,7 +1,7 @@
 #ifndef ULISSE_CTRL_DATA_STRUCTS_HPP
 #define ULISSE_CTRL_DATA_STRUCTS_HPP
 
-#include "ctrl_toolbox/DigitalPID.h"
+#include "ctrl_toolbox/pid/DigitalPID.h"
 #include "ctrl_toolbox/HelperFunctions.h"
 #include "rclcpp/rclcpp.hpp"
 #include "surface_vehicle_model/surfacevehiclemodel.hpp"

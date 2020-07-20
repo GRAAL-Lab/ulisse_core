@@ -11,7 +11,7 @@ namespace nav {
 
     AccelerometerMeasurement::~AccelerometerMeasurement() {}
 
-    Eigen::MatrixXd AccelerometerMeasurement::ComputeJacobian(const Eigen::VectorXd& state, const Eigen::VectorXd& input)
+    Eigen::MatrixXd AccelerometerMeasurement::ComputeJacobian(const Eigen::VectorXd& state)
     {
         Eigen::MatrixXd H = Eigen::MatrixXd::Zero(3, state.size());
 
@@ -25,7 +25,7 @@ namespace nav {
         return H;
     }
 
-    Eigen::VectorXd AccelerometerMeasurement::ComputePrediction(const Eigen::VectorXd& state, const Eigen::VectorXd& input)
+    Eigen::VectorXd AccelerometerMeasurement::ComputePrediction(const Eigen::VectorXd& state)
     {
         Eigen::Vector3d linearAcceleration;
         linearAcceleration.x() = -g_ * sin(state(4));
