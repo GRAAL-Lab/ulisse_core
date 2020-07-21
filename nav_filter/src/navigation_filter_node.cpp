@@ -93,6 +93,8 @@ void KalmanFilterConfiguration(libconfig::Config& confObj) noexcept(false);
 
 void LuenbergerObserverConfiguration(libconfig::Config& confObj) noexcept(false);
 
+std::chrono::system_clock::time_point last_comp_time_;
+
 int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
@@ -129,7 +131,11 @@ int main(int argc, char* argv[])
     //service
     auto navFilterCmdService = node->create_service<ulisse_msgs::srv::NavFilterCommand>(ulisse_msgs::topicnames::navfilter_cmd_service, CommandHandler);
 
-    double lastValidGPSTime = 0;
+    double lastValidGPSTime = 0.0;
+    double lastValidImuTime = 0.0;
+    double lastValidCompassTime = 0.0;
+    double lastValidMagnetomerTime = 0.0;
+
     ulisse_msgs::msg::NavFilterData filterData;
 
     //luenberger variables
@@ -146,6 +152,8 @@ int main(int argc, char* argv[])
 
     bool filterEnable(true);
     Eigen::VectorXd state = Eigen::VectorXd::Zero(stateDim);
+
+    last_comp_time_ = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
 
     while (rclcpp::ok()) {
         if (filterParams.mode == FilterMode::LuenbergerObserver) {
@@ -227,32 +235,42 @@ int main(int argc, char* argv[])
             }
 
             if (measuresActive.find("gyro")->second) {
-                gyroMeasurement->MeasureVector() = Eigen::Vector3d{ imuData.gyro[0], imuData.gyro[1], imuData.gyro[2] };
-                extendedKalmanFilter->AddMeasurement(gyroMeasurement);
+                if (imuData.stamp.sec + (imuData.stamp.nanosec * 1e-9) > lastValidImuTime) {
+                    gyroMeasurement->MeasureVector() = Eigen::Vector3d{ imuData.gyro[0], imuData.gyro[1], imuData.gyro[2] };
+                    extendedKalmanFilter->AddMeasurement(gyroMeasurement);
+
+                    if (measuresActive.find("accelerometer")->second) {
+                        accelerometerMeasurement->MeasureVector() = Eigen::Vector3d{ imuData.accelerometer[0], imuData.accelerometer[1], imuData.accelerometer[2] };
+                        extendedKalmanFilter->AddMeasurement(accelerometerMeasurement);
+                    }
+
+                    lastValidImuTime = imuData.stamp.sec + (imuData.stamp.nanosec * 1e-9);
+                }
             }
 
-            if (measuresActive.find("accelerometer")->second) {
-                accelerometerMeasurement->MeasureVector() = Eigen::Vector3d{ imuData.accelerometer[0], imuData.accelerometer[1], imuData.accelerometer[2] };
-                extendedKalmanFilter->AddMeasurement(accelerometerMeasurement);
+            if (compassData.stamp.sec + (compassData.stamp.nanosec * 1e-9) > lastValidCompassTime) {
+                if (measuresActive.find("compass")->second) {
+                    compassMeasurement->MeasureVector() = Eigen::Vector3d{ compassData.orientation.roll, compassData.orientation.pitch, compassData.orientation.yaw };
+                    extendedKalmanFilter->AddMeasurement(compassMeasurement);
+
+                    lastValidCompassTime = compassData.stamp.sec + (compassData.stamp.nanosec * 1e-9);
+                }
             }
 
-            if (measuresActive.find("compass")->second) {
-                compassMeasurement->MeasureVector() = Eigen::Vector3d{ compassData.orientation.roll, compassData.orientation.pitch, compassData.orientation.yaw };
-                extendedKalmanFilter->AddMeasurement(compassMeasurement);
-            }
+            if (magnetometerData.stamp.sec + (magnetometerData.stamp.nanosec * 1e-9) > lastValidMagnetomerTime) {
+                if (measuresActive.find("magnetometer")->second) {
+                    //preprocessing: I compensate for the roll and the pitch and then I pretend to have a sensor that measures the yaw
+                    magnetometerMeasurement->MeasureVector() << -atan2(magnetometerData.orthogonalstrength[1] * cos(state[3]) - magnetometerData.orthogonalstrength[2] * sin(state[3]), magnetometerData.orthogonalstrength[0] * cos(state[4]) + magnetometerData.orthogonalstrength[2] * cos(state[3]) * sin(state[4]) + magnetometerData.orthogonalstrength[1] * sin(state[4]) * sin(state[3]));
+                    extendedKalmanFilter->AddMeasurement(magnetometerMeasurement);
 
-            if (measuresActive.find("magnetometer")->second) {
-                //preprocessing: I compensate for the roll and the pitch and then I pretend to have a sensor that measures the yaw
-                magnetometerMeasurement->MeasureVector() << -atan2(magnetometerData.orthogonalstrength[1] * cos(state[3]) - magnetometerData.orthogonalstrength[2] * sin(state[3]), magnetometerData.orthogonalstrength[0] * cos(state[4]) + magnetometerData.orthogonalstrength[2] * cos(state[3]) * sin(state[4]) + magnetometerData.orthogonalstrength[1] * sin(state[4]) * sin(state[3]));
-                extendedKalmanFilter->AddMeasurement(magnetometerMeasurement);
+                    lastValidMagnetomerTime = magnetometerData.stamp.sec + (magnetometerData.stamp.nanosec * 1e-9);
+                }
             }
 
             //Filter Update
-            extendedKalmanFilter->Prediction(Eigen::Vector2d{ thrustersFbk.motor_percentage.left, thrustersFbk.motor_percentage.right });
-            extendedKalmanFilter->Update();
+            extendedKalmanFilter->Update(Eigen::Vector2d{ thrustersFbk.motor_percentage.left, thrustersFbk.motor_percentage.right });
 
             state = extendedKalmanFilter->StateVector();
-
             ctb::LatLong map_p;
             ctb::Cartesian2MapPoint(Eigen::Vector3d{ state.y(), state.x(), state.z() }, centroidLocation, map_p);
 
@@ -282,25 +300,6 @@ int main(int argc, char* argv[])
             filterData.gyro_bias[0] = state[14];
             filterData.gyro_bias[1] = state[15];
             filterData.gyro_bias[2] = state[16];
-
-            //            filterData.inertialframe_linear_position.latlong.latitude = map_p.latitude;
-            //            filterData.inertialframe_linear_position.latlong.longitude = map_p.longitude;
-            //            filterData.inertialframe_linear_position.altitude = state[2];
-            //            filterData.bodyframe_angular_position.roll = groundTruthData.bodyframe_angular_position.roll;
-            //            filterData.bodyframe_angular_position.pitch = groundTruthData.bodyframe_angular_position.pitch;
-            //            filterData.bodyframe_angular_position.yaw = groundTruthData.bodyframe_angular_position.yaw;
-            //            filterData.bodyframe_linear_velocity.surge = groundTruthData.bodyframe_linear_velocity.surge;
-            //            filterData.bodyframe_linear_velocity.sway = groundTruthData.bodyframe_linear_velocity.sway;
-            //            filterData.bodyframe_linear_velocity.heave = groundTruthData.bodyframe_linear_velocity.heave;
-
-            //            filterData.bodyframe_angular_velocity.roll_rate = groundTruthData.bodyframe_angular_velocity.roll_rate;
-            //            filterData.bodyframe_angular_velocity.pitch_rate = groundTruthData.bodyframe_angular_velocity.pitch_rate;
-            //            filterData.bodyframe_angular_velocity.yaw_rate = groundTruthData.bodyframe_angular_velocity.yaw_rate;
-            //            filterData.inertialframe_water_current[0] = 0.0;
-            //            filterData.inertialframe_water_current[1] = 0.0;
-            //            filterData.gyro_bias[0] = 0.0;
-            //            filterData.gyro_bias[1] = 0.0;
-            //            filterData.gyro_bias[2] = 0.0;
 
             std::vector<double> P;
             for (unsigned int i = 0; i < extendedKalmanFilter->PropagationError().rows(); i++) {
