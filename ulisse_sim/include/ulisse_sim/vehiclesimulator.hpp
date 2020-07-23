@@ -1,10 +1,13 @@
 #ifndef VEHICLESIMULATOR_H
 #define VEHICLESIMULATOR_H
 
-#include <chrono>
-
 #include "rclcpp/rclcpp.hpp"
+#include <chrono>
+#include <functional>
+#include <memory>
+
 #include "surface_vehicle_model/surfacevehiclemodel.hpp"
+
 #include "ulisse_msgs/msg/ambient_sensors.hpp"
 #include "ulisse_msgs/msg/compass.hpp"
 #include "ulisse_msgs/msg/gps_data.hpp"
@@ -13,6 +16,8 @@
 #include "ulisse_msgs/msg/micro_loop_count.hpp"
 #include "ulisse_msgs/msg/motor_reference.hpp"
 #include "ulisse_msgs/msg/real_system.hpp"
+#include "ulisse_msgs/msg/thrusters_data.hpp"
+#include "ulisse_sim/futils.h"
 
 #include "GeographicLib/Geodesic.hpp"
 #include "eigen3/Eigen/Dense"
@@ -20,10 +25,79 @@
 
 namespace ulisse {
 
+struct GyroBias {
+    double A, C, f;
+
+    void ConfigureFromFile(const libconfig::Setting& confObj) noexcept(false)
+    {
+        ctb::SetParam(confObj, A, "A");
+        ctb::SetParam(confObj, C, "C");
+        ctb::SetParam(confObj, f, "f");
+    }
+};
+
+struct SensorsNoise {
+    Eigen::Vector3d gps_stdd;
+    Eigen::Vector3d compass_stdd;
+    Eigen::Vector3d magnetometer_stdd;
+    Eigen::Vector3d gyro_stdd;
+    Eigen::Vector3d accelerometer_stdd;
+    GyroBias bx, by, bz;
+
+    void ConfigureFromFile(const libconfig::Setting& confObj) noexcept(false)
+    {
+        ctb::SetParamVector(confObj, gps_stdd, "gps_stdd");
+        ctb::SetParamVector(confObj, compass_stdd, "compass_stdd");
+        ctb::SetParamVector(confObj, magnetometer_stdd, "magnetometer_stdd");
+        ctb::SetParamVector(confObj, gyro_stdd, "gyro_stdd");
+        ctb::SetParamVector(confObj, accelerometer_stdd, "accelerometer_stdd");
+
+        const libconfig::Setting& gyro_bias = confObj["gyro_bias"];
+
+        const libconfig::Setting& b_x = gyro_bias["bx"];
+        bx.ConfigureFromFile(b_x);
+        const libconfig::Setting& b_y = gyro_bias["by"];
+        by.ConfigureFromFile(b_y);
+        const libconfig::Setting& b_z = gyro_bias["bz"];
+        bz.ConfigureFromFile(b_z);
+    }
+};
+
+struct SimulatorConfiguration {
+    SensorsNoise sensorsNoise;
+    int rate;
+    double modelErrorFactor;
+    UlisseModelParameters modelParams;
+    Eigen::Vector2d inertialF_waterCurrent;
+
+    void ConfigureFromFile(libconfig::Config& confObj) noexcept(false)
+    {
+        ctb::SetParam(confObj, rate, "rate");
+        ctb::SetParam(confObj, modelErrorFactor, "modelErrorFactor");
+        ctb::SetParamVector(confObj, inertialF_waterCurrent, "inertialF_waterCurrent");
+
+        //ulisse param
+        const libconfig::Setting& root = confObj.getRoot();
+        const libconfig::Setting& ulisseModel = root["ulisseModel"];
+        modelParams.ConfigureFormFile(ulisseModel);
+
+        //Add model error on
+        modelParams.Inertia *= modelErrorFactor;
+        modelParams.cN *= modelErrorFactor;
+        modelParams.cX *= modelErrorFactor;
+        modelParams.b1_pos *= modelErrorFactor;
+        modelParams.b2_pos *= modelErrorFactor;
+        modelParams.b1_neg *= modelErrorFactor;
+        modelParams.b1_neg *= modelErrorFactor;
+
+        const libconfig::Setting& sensorsnoise = root["sensorsNoise"];
+        sensorsNoise.ConfigureFromFile(sensorsnoise);
+    }
+};
+
 class VehicleSimulator {
 
     rclcpp::Node::SharedPtr nh_;
-    SurfaceVehicleModel ulisseModel_;
 
     GeographicLib::Geodesic geod_;
 
@@ -31,54 +105,59 @@ class VehicleSimulator {
     std::chrono::system_clock::time_point t_start_, t_now_, t_last_;
     std::chrono::nanoseconds iter_elapsed_, total_elapsed_;
 
-    rml::EulerRPY vehAtt_now_, vehAtt_last_;
-    Eigen::Vector6d vehRelVel_body_, vehRelVel_world_, vehVel_world_, waterVel_world_;
-    Eigen::Vector6d vehRelAcc_body_, vehRelAcc_world_;
+    rml::EulerRPY bodyF_orientation_, previuos_bodyF_orientation_;
+    Eigen::Vector6d bodyF_relativeVelocity_, worldF_relativeVelocity_, worldF_velocity_, worldF_waterVelocity_;
+    Eigen::Vector6d bodyF_relativeAcceleration_, worldF_relativeAcceleration_;
 
-    double lat_now_, long_now_, lat_last_, long_last_;
-    double vehTrack_, vehSpeed_;
+    double latitude_, longitude_, previousLatitude_, previousLongitude_;
+    double vehicleTrack_, vehicleSpeed_;
 
     uint32_t timestamp_count_; // [200Hz counter]
     uint32_t stepssincepps_count_;
 
-    ulisse_msgs::msg::MicroLoopCount micro_loop_count_msg_;
-    ulisse_msgs::msg::GPSData gpsdata_msg_;
-    ulisse_msgs::msg::Compass compassdata_msg_;
-    ulisse_msgs::msg::IMUData imudata_msg_;
-    ulisse_msgs::msg::AmbientSensors ambsens_msg_;
-    ulisse_msgs::msg::Magnetometer magneto_msg_;
-    ulisse_msgs::msg::MotorReference applied_motorref_msg_;
-    ulisse_msgs::msg::RealSystem ground_truth_msg_;
+    ulisse_msgs::msg::MicroLoopCount microLoopCountMsg_;
+    ulisse_msgs::msg::GPSData gpsMsg_;
+    ulisse_msgs::msg::Compass compassMsg_;
+    ulisse_msgs::msg::IMUData imuMsg_;
+    ulisse_msgs::msg::AmbientSensors ambsensMsg_;
+    ulisse_msgs::msg::Magnetometer magnetometerMsg_;
+    ulisse_msgs::msg::MotorReference appliedMotorRefMsg_;
+    ulisse_msgs::msg::RealSystem groundTruthMsg_;
 
-    rclcpp::Publisher<ulisse_msgs::msg::MicroLoopCount>::SharedPtr micro_loop_count_pub_;
-    rclcpp::Publisher<ulisse_msgs::msg::GPSData>::SharedPtr gpsdata_pub_;
-    rclcpp::Publisher<ulisse_msgs::msg::Compass>::SharedPtr compass_pub_;
-    rclcpp::Publisher<ulisse_msgs::msg::IMUData>::SharedPtr imudata_pub_;
-    rclcpp::Publisher<ulisse_msgs::msg::AmbientSensors>::SharedPtr ambsens_pub_;
-    rclcpp::Publisher<ulisse_msgs::msg::Magnetometer>::SharedPtr magneto_pub_;
-    rclcpp::Publisher<ulisse_msgs::msg::MotorReference>::SharedPtr applied_motorref_pub_;
-    rclcpp::Publisher<ulisse_msgs::msg::RealSystem>::SharedPtr ground_truth_pub_;
+    rclcpp::Publisher<ulisse_msgs::msg::MicroLoopCount>::SharedPtr microLoopCountPub_;
+    rclcpp::Publisher<ulisse_msgs::msg::GPSData>::SharedPtr gpsPub_;
+    rclcpp::Publisher<ulisse_msgs::msg::Compass>::SharedPtr compassPub_;
+    rclcpp::Publisher<ulisse_msgs::msg::IMUData>::SharedPtr imuPub_;
+    rclcpp::Publisher<ulisse_msgs::msg::AmbientSensors>::SharedPtr ambsensPub_;
+    rclcpp::Publisher<ulisse_msgs::msg::Magnetometer>::SharedPtr magnetometerPub_;
+    rclcpp::Publisher<ulisse_msgs::msg::MotorReference>::SharedPtr appliedMotorRefPub_;
+    rclcpp::Publisher<ulisse_msgs::msg::RealSystem>::SharedPtr groundTruthPub_;
+    rclcpp::Subscription<ulisse_msgs::msg::ThrustersData>::SharedPtr thrustersSub_;
 
-    int gpspubcounter_, sensorpubcounter_;
+    int gpsPubCounter_, compassPubCounter_, imuPubCounter_, magnetometerPubCounter_, ambientPubCounter_;
 
-    rclcpp::TimerBase::SharedPtr timer_;
+    futils::Timer motorTimeout_;
+    double hp_, hs_;
 
-    bool realtime_;
+    bool realTime_;
 
-    void SimulateSensors(double h_p, double h_s);
-    void SimulateActuation(double h_p, double h_s);
+    void SimulateActuation();
 
 public:
     VehicleSimulator(const rclcpp::Node::SharedPtr& nh);
 
-    void SetParameters(double dt, const UlisseModelParameters& thmapparams);
-    void ExecuteStep(double h_p, double h_s);
+    void SetSampleTime(double ts);
+    void ExecuteStep();
+    void SimulateSensors();
     void PublishSensors();
 
-    Eigen::Vector6d VehVel_world() const;
-    rml::EulerRPY VehAtt() const;
-    double VehLatitude() const;
-    double VehLongitude() const;
+    auto WorldF_Velocity() const -> const Eigen::Vector6d& { return worldF_velocity_; }
+    auto Altitude() const -> const rml::EulerRPY& { return bodyF_orientation_; }
+    auto Latitude() const -> double { return latitude_; }
+    auto Longitude() const -> double { return longitude_; }
+
+    std::shared_ptr<SimulatorConfiguration> config;
+    SurfaceVehicleModel ulisseModel;
 
     /**
      * @brief Set if simulation should run in Realtime or not
@@ -91,7 +170,9 @@ public:
      * @param[in] realtime
      */
     void SetRealtime(bool realtime);
-    double GetCurrentTimestamp() const;
+    double GetCurrentTimeStamp() const;
+
+    void ThrusterDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg);
 };
 }
 
