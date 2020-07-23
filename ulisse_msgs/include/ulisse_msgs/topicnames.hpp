@@ -30,6 +30,7 @@ namespace topicnames {
     const std::string vehicle_status = "/ulisse/ctrl/vehicle_status";
     const std::string thrusters_data = "/ulisse/ctrl/thrusters_percentage";	
     const std::string thruster_mapping_control = "/ulisse/ctrl/thruster_mapping_info";
+    const std::string classic_pid_control = "/ulisse/ctrl/classic_pid_control_info";
     const std::string sliding_mode_control = "/ulisse/ctrl/sliding_mode_info";
     const std::string reference_velocities = "/ulisse/ctrl/reference_velocities";
     const std::string simulated_velocity_sensor = "/ulisse/ctrl/water_relative_surge";

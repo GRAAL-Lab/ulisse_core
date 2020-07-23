@@ -2,9 +2,8 @@
 #define VEHICLESIMULATOR_H
 
 #include "rclcpp/rclcpp.hpp"
-#include <chrono>
-#include <functional>
 #include <memory>
+#include <random>
 
 #include "surface_vehicle_model/surfacevehiclemodel.hpp"
 
@@ -66,14 +65,14 @@ struct SensorsNoise {
 struct SimulatorConfiguration {
     SensorsNoise sensorsNoise;
     int rate;
-    double modelErrorFactor;
+    double modelErrorPercentage;
     UlisseModelParameters modelParams;
     Eigen::Vector2d inertialF_waterCurrent;
 
     void ConfigureFromFile(libconfig::Config& confObj) noexcept(false)
     {
         ctb::SetParam(confObj, rate, "rate");
-        ctb::SetParam(confObj, modelErrorFactor, "modelErrorFactor");
+        ctb::SetParam(confObj, modelErrorPercentage, "modelErrorPercentage");
         ctb::SetParamVector(confObj, inertialF_waterCurrent, "inertialF_waterCurrent");
 
         //ulisse param
@@ -81,14 +80,19 @@ struct SimulatorConfiguration {
         const libconfig::Setting& ulisseModel = root["ulisseModel"];
         modelParams.ConfigureFormFile(ulisseModel);
 
-        //Add model error on
-        modelParams.Inertia *= modelErrorFactor;
-        modelParams.cN *= modelErrorFactor;
-        modelParams.cX *= modelErrorFactor;
-        modelParams.b1_pos *= modelErrorFactor;
-        modelParams.b2_pos *= modelErrorFactor;
-        modelParams.b1_neg *= modelErrorFactor;
-        modelParams.b1_neg *= modelErrorFactor;
+        //Add model error
+        // construct a trivial random generator engine from a time-based seed:
+        auto seed = std::chrono::system_clock::now().time_since_epoch().count();
+        std::default_random_engine generator(seed);
+        std::uniform_real_distribution<double> distribution(1.0 - modelErrorPercentage / 100, 1 + modelErrorPercentage / 100);
+
+        modelParams.Inertia *= distribution(generator);
+        modelParams.cN *= distribution(generator);
+        modelParams.cX *= distribution(generator);
+        modelParams.b1_pos *= distribution(generator);
+        modelParams.b2_pos *= distribution(generator);
+        modelParams.b1_neg *= distribution(generator);
+        modelParams.b1_neg *= distribution(generator);
 
         const libconfig::Setting& sensorsnoise = root["sensorsNoise"];
         sensorsNoise.ConfigureFromFile(sensorsnoise);
@@ -105,7 +109,7 @@ class VehicleSimulator {
     std::chrono::system_clock::time_point t_start_, t_now_, t_last_;
     std::chrono::nanoseconds iter_elapsed_, total_elapsed_;
 
-    rml::EulerRPY bodyF_orientation_, previuos_bodyF_orientation_;
+    rml::EulerRPY bodyF_orientation_, previous_bodyF_orientation_;
     Eigen::Vector6d bodyF_relativeVelocity_, worldF_relativeVelocity_, worldF_velocity_, worldF_waterVelocity_;
     Eigen::Vector6d bodyF_relativeAcceleration_, worldF_relativeAcceleration_;
 

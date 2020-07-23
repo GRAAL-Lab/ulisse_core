@@ -1,15 +1,7 @@
 #include "rclcpp/rclcpp.hpp"
-
-#include "ctrl_toolbox/HelperFunctions.h"
-
 #include "ulisse_sim/vehiclesimulator.hpp"
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <libconfig.h++>
-
-#include <chrono>
-#include <cmath>
-#include <ctime> // localtime
-#include <iostream>
 
 using namespace std::chrono_literals;
 
@@ -22,7 +14,7 @@ int main(int argc, char* argv[])
 
     ulisse::VehicleSimulator simulatedVehicle(node);
 
-    std::string filename = "simparams.conf";
+    std::string filename = "simulator_ulisse.conf";
     simulatedVehicle.config = std::make_shared<ulisse::SimulatorConfiguration>();
 
     LoadConfiguration(filename, simulatedVehicle.config);

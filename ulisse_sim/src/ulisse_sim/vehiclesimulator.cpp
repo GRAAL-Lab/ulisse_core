@@ -4,7 +4,7 @@
 #include "GeographicLib/UTMUPS.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 #include "ulisse_sim/vehiclesimulator.hpp"
-#include <random>
+
 
 namespace ulisse {
 using namespace std::chrono_literals;
@@ -90,7 +90,7 @@ void VehicleSimulator::ExecuteStep()
     SimulateActuation();
 
     t_last_ = t_now_;
-    previuos_bodyF_orientation_ = bodyF_orientation_;
+    previous_bodyF_orientation_ = bodyF_orientation_;
     previousLatitude_ = latitude_;
     previousLongitude_ = longitude_;
 }
@@ -133,9 +133,9 @@ void VehicleSimulator::SimulateActuation()
     geod_.Direct(previousLatitude_, previousLongitude_, vehicleTrack_ * 180.0 / M_PI, distance_, latitude_, longitude_);
 
     // Integrating the Euler rates to get the new Euler angles and wrapping around PI
-    bodyF_orientation_.Roll(std::fmod((previuos_bodyF_orientation_.Roll() + rpyEulerRates(0) * Ts_) + 2 * M_PI, 2 * M_PI));
-    bodyF_orientation_.Pitch(std::fmod((previuos_bodyF_orientation_.Pitch() + rpyEulerRates(1) * Ts_) + 2 * M_PI, 2 * M_PI));
-    bodyF_orientation_.Yaw(std::fmod((previuos_bodyF_orientation_.Yaw() + rpyEulerRates(2) * Ts_) + 2 * M_PI, 2 * M_PI));
+    bodyF_orientation_.Roll(std::fmod((previous_bodyF_orientation_.Roll() + rpyEulerRates(0) * Ts_) + 2 * M_PI, 2 * M_PI));
+    bodyF_orientation_.Pitch(std::fmod((previous_bodyF_orientation_.Pitch() + rpyEulerRates(1) * Ts_) + 2 * M_PI, 2 * M_PI));
+    bodyF_orientation_.Yaw(std::fmod((previous_bodyF_orientation_.Yaw() + rpyEulerRates(2) * Ts_) + 2 * M_PI, 2 * M_PI));
 }
 
 void VehicleSimulator::SimulateSensors()

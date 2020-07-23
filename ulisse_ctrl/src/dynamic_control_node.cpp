@@ -9,6 +9,7 @@
 
 #include "rclcpp/rclcpp.hpp"
 
+#include "ulisse_msgs/msg/classic_pid_control.hpp"
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
 #include "ulisse_msgs/msg/reference_velocities.hpp"
 #include "ulisse_msgs/msg/simulated_velocity_sensor.hpp"
@@ -75,10 +76,11 @@ int main(int argc, char* argv[])
     auto referenceVelocitiesSub = nh->create_subscription<ulisse_msgs::msg::ReferenceVelocities>(ulisse_msgs::topicnames::reference_velocities, 10, ReferenceVelocitiesCB);
 
     //Publishers
-    auto thrusterDataPub = nh->create_publisher<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data, 10);
-    auto slidingModePub = nh->create_publisher<ulisse_msgs::msg::SlidingModeControl>(ulisse_msgs::topicnames::sliding_mode_control, 10);
-    auto thrusterMappigPub = nh->create_publisher<ulisse_msgs::msg::ThrusterMappingControl>(ulisse_msgs::topicnames::thruster_mapping_control, 10);
-    auto simulatedVelocitySensorPub = nh->create_publisher<ulisse_msgs::msg::SimulatedVelocitySensor>(ulisse_msgs::topicnames::simulated_velocity_sensor, 10);
+    auto thrusterDataPub = nh->create_publisher<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data, 1);
+    auto slidingModePub = nh->create_publisher<ulisse_msgs::msg::SlidingModeControl>(ulisse_msgs::topicnames::sliding_mode_control, 1);
+    auto thrusterMappigPub = nh->create_publisher<ulisse_msgs::msg::ThrusterMappingControl>(ulisse_msgs::topicnames::thruster_mapping_control, 1);
+    auto simulatedVelocitySensorPub = nh->create_publisher<ulisse_msgs::msg::SimulatedVelocitySensor>(ulisse_msgs::topicnames::simulated_velocity_sensor, 1);
+    auto classicPidControlPub = nh->create_publisher<ulisse_msgs::msg::ClassicPidControl>(ulisse_msgs::topicnames::classic_pid_control, 1);
 
     //name of conf file
     std::string filename = "dcl_ulisse.conf";
@@ -94,11 +96,14 @@ int main(int argc, char* argv[])
     ulisse_msgs::msg::ThrusterMappingControl thrusterMappingMsg;
     ulisse_msgs::msg::SlidingModeControl slidingModeMsg;
     ulisse_msgs::msg::ThrustersData thrustersData;
+    ulisse_msgs::msg::ClassicPidControl classicPidControlMsg;
     ulisse_msgs::msg::SimulatedVelocitySensor simulatedVelocitySensor;
 
     //feedback from nav filter
     double surgeFbk = 0.0;
     double yawRateFbk = 0.0;
+
+    double motorLeft = 0.0, motorRight = 0.0;
 
     //Surge pid for thrusterMapping control
     ctb::DigitalPID pidSurge;
@@ -176,9 +181,9 @@ int main(int argc, char* argv[])
                 requestedVel(0) = ctb::clamp(requestedVel(0), conf->surgeMin, conf->surgeMax);
                 requestedVel(5) = ctb::clamp(requestedVel(5), conf->yawRateMin, conf->yawRateMax);
 
-                ulisseModel.InverseMotorsEquations(requestedVel, forces, thrusterMappingMsg.output_map.left, thrusterMappingMsg.output_map.right);
+                ulisseModel.InverseMotorsEquations(requestedVel, forces, motorLeft, motorRight);
 
-                ulisseModel.ThrustersSaturation(thrusterMappingMsg.output_map.left, thrusterMappingMsg.output_map.right, -conf->thrusterPercLimit, conf->thrusterPercLimit, thrustersData.motor_percentage.left, thrustersData.motor_percentage.right);
+                ulisseModel.ThrustersSaturation(motorLeft, motorRight, -conf->thrusterPercLimit, conf->thrusterPercLimit, thrustersData.motor_percentage.left, thrustersData.motor_percentage.right);
 
                 //Fill the Thruster Mapping msg
                 auto t_now_ = std::chrono::system_clock::now();
@@ -191,6 +196,8 @@ int main(int argc, char* argv[])
                 thrusterMappingMsg.out_pid_surge = pidSurge.GetOutput();
                 thrusterMappingMsg.desired_yaw_rate = referenceVelocities.desired_yaw_rate;
                 thrusterMappingMsg.feedback_yaw_rate = yawRateFbk;
+                thrusterMappingMsg.motor_percentage.left = motorLeft;
+                thrusterMappingMsg.motor_percentage.right = motorRight;
 
                 thrusterMappigPub->publish(thrusterMappingMsg);
 
@@ -216,8 +223,8 @@ int main(int argc, char* argv[])
 
                 Eigen::Vector2d forces = ulisseModel.ThusterAllocation(tau);
 
-                ulisseModel.InverseMotorsEquations(feedbackVel, forces, slidingModeMsg.output_map.left, slidingModeMsg.output_map.right);
-                ulisseModel.ThrustersSaturation(slidingModeMsg.output_map.left, slidingModeMsg.output_map.right, -conf->thrusterPercLimit, conf->thrusterPercLimit, thrustersData.motor_percentage.left, thrustersData.motor_percentage.right);
+                ulisseModel.InverseMotorsEquations(feedbackVel, forces, motorLeft, motorRight);
+                ulisseModel.ThrustersSaturation(motorLeft, motorRight, -conf->thrusterPercLimit, conf->thrusterPercLimit, thrustersData.motor_percentage.left, thrustersData.motor_percentage.right);
 
                 //Fill the sliding mode msg
                 auto t_now_ = std::chrono::system_clock::now();
@@ -227,8 +234,12 @@ int main(int argc, char* argv[])
 
                 slidingModeMsg.desired_surge = referenceVelocities.desired_surge;
                 slidingModeMsg.desired_yaw_rate = referenceVelocities.desired_yaw_rate;
+                slidingModeMsg.feedback_surge = surgeFbk;
+                slidingModeMsg.feedback_yaw_rate = yawRateFbk;
                 slidingModeMsg.forces = { forces[0], forces[1] };
                 slidingModeMsg.tau = { tau[0], tau[1] };
+                slidingModeMsg.motor_percentage.left = motorLeft;
+                slidingModeMsg.motor_percentage.right = motorRight;
 
                 slidingModePub->publish(slidingModeMsg);
 
@@ -250,42 +261,30 @@ int main(int argc, char* argv[])
                 ulisseModel.InverseMotorsEquations(feedbackVel, forces, outleft, outrigh);
                 ulisseModel.ThrustersSaturation(outleft, outrigh, -conf->thrusterPercLimit, conf->thrusterPercLimit, thrustersData.motor_percentage.left, thrustersData.motor_percentage.right);
 
-                //                //Fill the classic dynamic pid contol msg
-                //                auto t_now_ = std::chrono::system_clock::now();
-                //                long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
-                //                slidingModeMsg.stamp.sec = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
-                //                slidingModeMsg.stamp.nanosec = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
+                //Fill the classic dynamic pid contol msg
+                auto t_now_ = std::chrono::system_clock::now();
+                long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
+                classicPidControlMsg.stamp.sec = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
+                classicPidControlMsg.stamp.nanosec = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
+                classicPidControlMsg.desired_surge = referenceVelocities.desired_surge;
+                classicPidControlMsg.feedback_surge = surgeFbk;
+                classicPidControlMsg.out_pid_surge = pidSurgeDynamic.GetOutput();
+                classicPidControlMsg.desired_yaw_rate = referenceVelocities.desired_yaw_rate;
+                classicPidControlMsg.feedback_yaw_rate = yawRateFbk;
+                classicPidControlMsg.out_pid_yaw_rate = pidYawRateDynamic.GetOutput();
+                classicPidControlMsg.forces = { forces[0], forces[1] };
+                classicPidControlMsg.tau = { tau[0], tau[1] };
+                classicPidControlMsg.motor_percentage.left = outleft;
+                classicPidControlMsg.motor_percentage.right = outrigh;
 
-                //                slidingModeMsg.desired_surge = referenceVelocities.desired_surge;
-                //                slidingModeMsg.desired_yaw_rate = referenceVelocities.desired_yaw_rate;
-                //                slidingModeMsg.forces = { forces[0], forces[1] };
-                //                slidingModeMsg.tau = { tau[0], tau[1] };
+                classicPidControlPub->publish(classicPidControlMsg);
 
-                //                slidingModePub->publish(slidingModeMsg);
-
-                //                //fill the feedback for the nav filter
-                //                simulatedVelocitySensor.water_relative_surge = referenceVelocities.desired_surge;
-                //                simulatedVelocitySensorPub->publish(simulatedVelocitySensor);
+                //fill the feedback for the nav filter
+                simulatedVelocitySensor.water_relative_surge = referenceVelocities.desired_surge;
+                simulatedVelocitySensorPub->publish(simulatedVelocitySensor);
             }
 
-            auto tNow = std::chrono::system_clock::now();
-            long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(tNow.time_since_epoch())).count();
-            auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
-            auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
-            thrustersData.stamp.sec = now_stamp_secs;
-            thrustersData.stamp.nanosec = now_stamp_nanosecs;
-            thrusterDataPub->publish(thrustersData);
-
         } else {
-            auto tNow = std::chrono::system_clock::now();
-            long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(tNow.time_since_epoch())).count();
-            auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
-            auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
-            thrustersData.stamp.sec = now_stamp_secs;
-            thrustersData.stamp.nanosec = now_stamp_nanosecs;
-            thrustersData.motor_percentage.left = 0.0;
-            thrustersData.motor_percentage.right = 0.0;
-            thrusterDataPub->publish(thrustersData);
 
             if (conf->ctrlMode == ControlMode::ThrusterMapping) {
                 pidSurge.Reset();
@@ -297,6 +296,14 @@ int main(int argc, char* argv[])
                 pidYawRateDynamic.Reset();
             }
         }
+
+        auto tNow = std::chrono::system_clock::now();
+        long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(tNow.time_since_epoch())).count();
+        auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
+        auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
+        thrustersData.stamp.sec = now_stamp_secs;
+        thrustersData.stamp.nanosec = now_stamp_nanosecs;
+        thrusterDataPub->publish(thrustersData);
 
         rclcpp::spin_some(nh);
         loop_rate.sleep();
@@ -460,17 +467,8 @@ void SlidingModeInizialization(std::shared_ptr<DCLConfiguration> conf, SlidingSu
     slideSurge.Initialize(conf->slidingMode.sp.surgeGain, sampleTime, 2, conf->slidingMode.sp.forceLimiter);
 }
 
-void ReferenceVelocitiesCB(const ulisse_msgs::msg::ReferenceVelocities::SharedPtr msg)
-{
-    referenceVelocities = *msg;
-}
+void ReferenceVelocitiesCB(const ulisse_msgs::msg::ReferenceVelocities::SharedPtr msg) { referenceVelocities = *msg; }
 
-void VehicleStatusCB(const ulisse_msgs::msg::VehicleStatus::SharedPtr msg)
-{
-    vehicleStatus = *msg;
-}
+void VehicleStatusCB(const ulisse_msgs::msg::VehicleStatus::SharedPtr msg) { vehicleStatus = *msg; }
 
-void FilterDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)
-{
-    filterData = *msg;
-}
+void FilterDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg) { filterData = *msg; }

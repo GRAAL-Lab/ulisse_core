@@ -4,4 +4,4 @@ float64 feedback_surge
 float64 out_pid_surge
 float64 desired_yaw_rate
 float64 feedback_yaw_rate
-MotorReference output_map
+MotorReference motor_percentage
