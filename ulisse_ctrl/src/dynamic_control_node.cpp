@@ -13,7 +13,6 @@
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
 #include "ulisse_msgs/msg/reference_velocities.hpp"
 #include "ulisse_msgs/msg/simulated_velocity_sensor.hpp"
-#include "ulisse_msgs/msg/sliding_mode_control.hpp"
 #include "ulisse_msgs/msg/thruster_mapping_control.hpp"
 #include "ulisse_msgs/msg/thrusters_data.hpp"
 #include "ulisse_msgs/msg/vehicle_status.hpp"
@@ -22,7 +21,6 @@
 #include "ulisse_msgs/topicnames.hpp"
 
 #include "ctrl_toolbox/HelperFunctions.h"
-#include "ctrl_toolbox/sliding_mode/DigitalSlidingMode.h"
 
 #include "ulisse_ctrl/ctrl_data_structs.hpp"
 #include "ulisse_ctrl/fsm_defines.hpp"
@@ -41,14 +39,7 @@ static ulisse_msgs::msg::VehicleStatus vehicleStatus;
 void LoadDclConfiguration(std::shared_ptr<DCLConfiguration> conf, std::string filename);
 
 void ThrusterMappingInizialization(std::shared_ptr<DCLConfiguration> conf, double sampleTime, ctb::DigitalPID& pid);
-
-void SlidingModeInizialization(std::shared_ptr<DCLConfiguration> conf, SlidingSurface& ss, ctb::DigitalSlidingMode<SlidingSurface>& slideSurge, ctb::DigitalSecOrdSlidingMode<SlidingSurface>& slideHeading, double sampleTime);
-void SetSlidingSurface(SlidingSurface& ss, std::shared_ptr<DCLConfiguration> conf);
-
-std::vector<double> alpha_beta_u(const std::vector<double> state, SlidingSurface param);
-std::vector<double> alpha_beta_r(const std::vector<double> state, SlidingSurface param);
-double s1(const double ref, const double fb, SlidingSurface param);
-double s2(const double ref, const double fb, SlidingSurface param);
+void ClassicPidControlInizialization(std::shared_ptr<DCLConfiguration> conf, double sampleTime, ctb::DigitalPID& pidSurge, ctb::DigitalPID& pidYawRate);
 
 void FilterDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
 void ReferenceVelocitiesCB(const ulisse_msgs::msg::ReferenceVelocities::SharedPtr msg);
@@ -65,8 +56,6 @@ int main(int argc, char* argv[])
     auto conf = std::make_shared<DCLConfiguration>();
     // ulisse model
     SurfaceVehicleModel ulisseModel;
-    //Variable for sliding mode control
-    SlidingSurface ss;
 
     rclcpp::WallRate loop_rate(rate);
 
@@ -77,7 +66,6 @@ int main(int argc, char* argv[])
 
     //Publishers
     auto thrusterDataPub = nh->create_publisher<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data, 1);
-    auto slidingModePub = nh->create_publisher<ulisse_msgs::msg::SlidingModeControl>(ulisse_msgs::topicnames::sliding_mode_control, 1);
     auto thrusterMappigPub = nh->create_publisher<ulisse_msgs::msg::ThrusterMappingControl>(ulisse_msgs::topicnames::thruster_mapping_control, 1);
     auto simulatedVelocitySensorPub = nh->create_publisher<ulisse_msgs::msg::SimulatedVelocitySensor>(ulisse_msgs::topicnames::simulated_velocity_sensor, 1);
     auto classicPidControlPub = nh->create_publisher<ulisse_msgs::msg::ClassicPidControl>(ulisse_msgs::topicnames::classic_pid_control, 1);
@@ -90,11 +78,10 @@ int main(int argc, char* argv[])
 
     std::cout << tc::grayD << *conf << tc::none << std::endl;
 
-    ulisseModel.params = conf->ulisseConfig;
+    ulisseModel.params = conf->ulisseModel;
 
     //local variables
     ulisse_msgs::msg::ThrusterMappingControl thrusterMappingMsg;
-    ulisse_msgs::msg::SlidingModeControl slidingModeMsg;
     ulisse_msgs::msg::ThrustersData thrustersData;
     ulisse_msgs::msg::ClassicPidControl classicPidControlMsg;
     ulisse_msgs::msg::SimulatedVelocitySensor simulatedVelocitySensor;
@@ -112,28 +99,17 @@ int main(int argc, char* argv[])
     ctb::DigitalPID pidYawRateDynamic;
     ctb::DigitalPID pidSurgeDynamic;
 
-    //Variable for sliding mode control
-    std::vector<double> state;
-    ctb::DigitalSlidingMode<SlidingSurface> slideSurge;
-    ctb::DigitalSecOrdSlidingMode<SlidingSurface> slideHeading;
     Eigen::Vector2d tau = Eigen::Vector2d::Zero();
 
     //Controller inizialization
     if (conf->ctrlMode == ControlMode::ThrusterMapping) {
-
         ThrusterMappingInizialization(conf, sampleTime, pidSurge);
-
-    } else if (conf->ctrlMode == ControlMode::SlidingMode) {
-
-        SlidingModeInizialization(conf, ss, slideSurge, slideHeading, sampleTime);
-    } else {
-
-        pidSurgeDynamic.Initialize(conf->classicPidControl.pidGainsSurge, sampleTime, conf->classicPidControl.pidSatSurge);
-        pidYawRateDynamic.Initialize(conf->classicPidControl.pidGainsYawRate, sampleTime, conf->classicPidControl.pidSatYawRate);
+    } else if (conf->ctrlMode == ControlMode::ClassicPIDControl) {
+        ClassicPidControlInizialization(conf, sampleTime, pidSurgeDynamic, pidYawRateDynamic);
     }
 
     // Create a callback function for when service reset configuration requests are received.
-    auto handle_reset_conf = [nh, conf, &ulisseModel, filename, &ss, &pidSurge, &slideSurge, &slideHeading](
+    auto handle_reset_conf = [nh, conf, &ulisseModel, filename, &pidSurge, &pidSurgeDynamic, &pidYawRateDynamic](
                                  const std::shared_ptr<rmw_request_id_t> request_header,
                                  const std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Request> request,
                                  std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Response> response) -> void {
@@ -142,17 +118,15 @@ int main(int argc, char* argv[])
 
         //Ulisse params configuration
         LoadDclConfiguration(conf, filename);
-        ulisseModel.params = conf->ulisseConfig;
+        ulisseModel.params = conf->ulisseModel;
 
         //Controller inizialization
         if (conf->ctrlMode == ControlMode::ThrusterMapping) {
-
             ThrusterMappingInizialization(conf, sampleTime, pidSurge);
-
-        } else if (conf->ctrlMode == ControlMode::SlidingMode) {
-
-            SlidingModeInizialization(conf, ss, slideSurge, slideHeading, sampleTime);
+        } else if (conf->ctrlMode == ControlMode::ClassicPIDControl) {
+            ClassicPidControlInizialization(conf, sampleTime, pidSurgeDynamic, pidYawRateDynamic);
         }
+
         response->res = "ResetConfiguration::ok";
     };
 
@@ -205,50 +179,8 @@ int main(int argc, char* argv[])
                 simulatedVelocitySensor.water_relative_surge = pidSurge.GetOutput();
                 simulatedVelocitySensorPub->publish(simulatedVelocitySensor);
 
-            } else if (conf->ctrlMode == ControlMode::SlidingMode) {
-                //Sliding mode
-                state.clear();
-                state.push_back(surgeFbk);
-                state.push_back(yawRateFbk);
-
-                slideSurge.setState(state);
-                slideHeading.setState(state);
-
-                Eigen::Vector6d feedbackVel;
-                feedbackVel.setZero();
-
-                tau = { slideSurge.compute(referenceVelocities.desired_surge, surgeFbk), slideHeading.compute(referenceVelocities.desired_yaw_rate, yawRateFbk) };
-                feedbackVel(0) = surgeFbk;
-                feedbackVel(5) = yawRateFbk;
-
-                Eigen::Vector2d forces = ulisseModel.ThusterAllocation(tau);
-
-                ulisseModel.InverseMotorsEquations(feedbackVel, forces, motorLeft, motorRight);
-                ulisseModel.ThrustersSaturation(motorLeft, motorRight, -conf->thrusterPercLimit, conf->thrusterPercLimit, thrustersData.motor_percentage.left, thrustersData.motor_percentage.right);
-
-                //Fill the sliding mode msg
-                auto t_now_ = std::chrono::system_clock::now();
-                long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
-                slidingModeMsg.stamp.sec = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
-                slidingModeMsg.stamp.nanosec = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
-
-                slidingModeMsg.desired_surge = referenceVelocities.desired_surge;
-                slidingModeMsg.desired_yaw_rate = referenceVelocities.desired_yaw_rate;
-                slidingModeMsg.feedback_surge = surgeFbk;
-                slidingModeMsg.feedback_yaw_rate = yawRateFbk;
-                slidingModeMsg.forces = { forces[0], forces[1] };
-                slidingModeMsg.tau = { tau[0], tau[1] };
-                slidingModeMsg.motor_percentage.left = motorLeft;
-                slidingModeMsg.motor_percentage.right = motorRight;
-
-                slidingModePub->publish(slidingModeMsg);
-
-                //fill the feedback for the nav filter
-                simulatedVelocitySensor.water_relative_surge = referenceVelocities.desired_surge;
-                simulatedVelocitySensorPub->publish(simulatedVelocitySensor);
-
             } else if (conf->ctrlMode == ControlMode::ClassicPIDControl) {
-                //Dynamic Pid
+                //Dynamic Pids
                 Eigen::Vector6d feedbackVel = Eigen::Vector6d::Zero();
 
                 tau = { pidSurgeDynamic.Compute(referenceVelocities.desired_surge, surgeFbk), pidYawRateDynamic.Compute(referenceVelocities.desired_yaw_rate, yawRateFbk) };
@@ -288,9 +220,6 @@ int main(int argc, char* argv[])
 
             if (conf->ctrlMode == ControlMode::ThrusterMapping) {
                 pidSurge.Reset();
-                //                pidYawRate.Reset();
-            } else if (conf->ctrlMode == ControlMode::SlidingMode) {
-                slideHeading.setState(state, true);
             } else {
                 pidSurgeDynamic.Reset();
                 pidYawRateDynamic.Reset();
@@ -336,135 +265,18 @@ void LoadDclConfiguration(std::shared_ptr<DCLConfiguration> conf, std::string fi
         return;
     }
 
-    // Load DCL Config
-    int tmpCtrlMode;
-    ctb::SetParam(confObj, tmpCtrlMode, "dcl_ulisse.ctrlMode");
-    conf->ctrlMode = static_cast<ControlMode>(tmpCtrlMode);
-    ctb::SetParam(confObj, conf->enableThrusters, "dcl_ulisse.enableThrusters");
-    ctb::SetParam(confObj, conf->thrusterPercLimit, "dcl_ulisse.thrusterPercLimit");
-    ctb::SetParam(confObj, conf->surgeMin, "dcl_ulisse.surgeMin");
-    ctb::SetParam(confObj, conf->surgeMax, "dcl_ulisse.surgeMax");
-    ctb::SetParam(confObj, conf->yawRateMin, "dcl_ulisse.yawRateMin");
-    ctb::SetParam(confObj, conf->yawRateMax, "dcl_ulisse.yawRateMax");
-
-    //Load Ulisse Params
-    ctb::SetParam(confObj, conf->ulisseConfig.d, "dcl_ulisse.ulisseModel.motorsDistance");
-    ctb::SetParam(confObj, conf->ulisseConfig.lambda_pos, "dcl_ulisse.ulisseModel.lambdaPos");
-    ctb::SetParam(confObj, conf->ulisseConfig.lambda_neg, "dcl_ulisse.ulisseModel.lambdaNeg");
-    ctb::SetParamVector(confObj, conf->ulisseConfig.cX, "dcl_ulisse.ulisseModel.cX");
-    ctb::SetParamVector(confObj, conf->ulisseConfig.cN, "dcl_ulisse.ulisseModel.cN");
-    ctb::SetParam(confObj, conf->ulisseConfig.b1_pos, "dcl_ulisse.ulisseModel.b1Pos");
-    ctb::SetParam(confObj, conf->ulisseConfig.b1_neg, "dcl_ulisse.ulisseModel.b1Neg");
-    ctb::SetParam(confObj, conf->ulisseConfig.b2_pos, "dcl_ulisse.ulisseModel.b2Pos");
-    ctb::SetParam(confObj, conf->ulisseConfig.b2_neg, "dcl_ulisse.ulisseModel.b2Neg");
-
-    Eigen::Vector3d tmp_Inerzia;
-    tmp_Inerzia.setZero();
-    ctb::SetParamVector(confObj, tmp_Inerzia, "dcl_ulisse.ulisseModel.inertia");
-    conf->ulisseConfig.Inertia.diagonal() = Eigen::Map<Eigen::Matrix<double, 3, 1>>(tmp_Inerzia.data());
-
-    //if CtrlMdoe is Thruster Mapping
-    if (conf->ctrlMode == ControlMode::ThrusterMapping) {
-        ctb::SetParam(confObj, conf->thrusterMapping.pidGainsSurge.Kp, "dcl_ulisse.thrusterMapping.pidSurge.kp");
-        ctb::SetParam(confObj, conf->thrusterMapping.pidGainsSurge.Ki, "dcl_ulisse.thrusterMapping.pidSurge.ki");
-        ctb::SetParam(confObj, conf->thrusterMapping.pidGainsSurge.Kd, "dcl_ulisse.thrusterMapping.pidSurge.kd");
-        ctb::SetParam(confObj, conf->thrusterMapping.pidGainsSurge.Kff, "dcl_ulisse.thrusterMapping.pidSurge.kff");
-        ctb::SetParam(confObj, conf->thrusterMapping.pidGainsSurge.N, "dcl_ulisse.thrusterMapping.pidSurge.n");
-        ctb::SetParam(confObj, conf->thrusterMapping.pidGainsSurge.Tr, "dcl_ulisse.thrusterMapping.pidSurge.tr");
-        ctb::SetParam(confObj, conf->thrusterMapping.pidSatSurge, "dcl_ulisse.thrusterMapping.pidSurge.sat");
-
-    }
-    //if CtrlMdoe is Sliding Mode
-    else if (conf->ctrlMode == ControlMode::SlidingMode) {
-        ctb::SetParam(confObj, conf->slidingMode.sp.gain1, "dcl_ulisse.slidingMode.gain1");
-        ctb::SetParam(confObj, conf->slidingMode.sp.surgeGain, "dcl_ulisse.slidingMode.surgeGain");
-        ctb::SetParam(confObj, conf->slidingMode.sp.forceLimiter, "dcl_ulisse.slidingMode.forceLimiter");
-        ctb::SetParam(confObj, conf->slidingMode.sp.gain2, "dcl_ulisse.slidingMode.gain2");
-        ctb::SetParam(confObj, conf->slidingMode.sp.headingGain, "dcl_ulisse.slidingMode.headingGain");
-        ctb::SetParam(confObj, conf->slidingMode.sp.torqueLimiter, "dcl_ulisse.slidingMode.torqueLimiter");
-
-    }
-    //if CtrlMdoe is Classic PID
-    else if (conf->ctrlMode == ControlMode::ClassicPIDControl) {
-        //Initialize pidSurge
-        ctb::SetParam(confObj, conf->classicPidControl.pidGainsSurge.Kp, "dcl_ulisse.classicPidControl.pidSurge.kp");
-        ctb::SetParam(confObj, conf->classicPidControl.pidGainsSurge.Ki, "dcl_ulisse.classicPidControl.pidSurge.ki");
-        ctb::SetParam(confObj, conf->classicPidControl.pidGainsSurge.Kd, "dcl_ulisse.classicPidControl.pidSurge.kd");
-        ctb::SetParam(confObj, conf->classicPidControl.pidGainsSurge.Kff, "dcl_ulisse.classicPidControl.pidSurge.kff");
-        ctb::SetParam(confObj, conf->classicPidControl.pidGainsSurge.N, "dcl_ulisse.classicPidControl.pidSurge.n");
-        ctb::SetParam(confObj, conf->classicPidControl.pidGainsSurge.Tr, "dcl_ulisse.classicPidControl.pidSurge.tr");
-        ctb::SetParam(confObj, conf->classicPidControl.pidSatSurge, "dcl_ulisse.classicPidControl.pidSurge.sat");
-
-        //Initialize pidYawRate
-        ctb::SetParam(confObj, conf->classicPidControl.pidGainsYawRate.Kp, "dcl_ulisse.classicPidControl.pidYawRate.kp");
-        ctb::SetParam(confObj, conf->classicPidControl.pidGainsYawRate.Ki, "dcl_ulisse.classicPidControl.pidYawRate.ki");
-        ctb::SetParam(confObj, conf->classicPidControl.pidGainsYawRate.Kd, "dcl_ulisse.classicPidControl.pidYawRate.kd");
-        ctb::SetParam(confObj, conf->classicPidControl.pidGainsYawRate.Kff, "dcl_ulisse.classicPidControl.pidYawRate.kff");
-        ctb::SetParam(confObj, conf->classicPidControl.pidGainsYawRate.N, "dcl_ulisse.classicPidControl.pidYawRate.n");
-        ctb::SetParam(confObj, conf->classicPidControl.pidGainsYawRate.Tr, "dcl_ulisse.classicPidControl.pidYawRate.tr");
-        ctb::SetParam(confObj, conf->classicPidControl.pidSatYawRate, "dcl_ulisse.classicPidControl.pidYawRate.sat");
-    }
+    conf->ConfigureFromFile(confObj);
 }
 
-void SetSlidingSurface(SlidingSurface& ss, std::shared_ptr<DCLConfiguration> conf)
-{
-    ss.inertia.resize(3);
-    ss.inertia[0] = conf->ulisseConfig.Inertia.diagonal()[0];
-    ss.inertia[1] = conf->ulisseConfig.Inertia.diagonal()[1];
-    ss.inertia[2] = conf->ulisseConfig.Inertia.diagonal()[2];
-
-    ss.cX.resize(3);
-    ss.cX[0] = conf->ulisseConfig.cX[0];
-    ss.cX[1] = conf->ulisseConfig.cX[1];
-    ss.cX[2] = conf->ulisseConfig.cX[2];
-
-    ss.cN.resize(3);
-    ss.cN[0] = conf->ulisseConfig.cN[0];
-    ss.cN[1] = conf->ulisseConfig.cN[1];
-    ss.cN[2] = conf->ulisseConfig.cN[2];
-
-    ss.k = conf->slidingMode.sp.gain1;
-    ss.k1 = conf->slidingMode.sp.gain2;
-}
-
-double s1(const double ref, const double fb, struct SlidingSurface param) { return param.k * (ref - fb); }
-
-double s2(const double ref, const double fb, struct SlidingSurface param) { return param.k1 * (ref - fb); }
-
-std::vector<double> alpha_beta_u(const std::vector<double> state, struct SlidingSurface param)
-{
-    auto alpha = state[0] / 0.1 - param.cX[0] * std::pow(state[1], 2) - param.cX[1] * state[0] - param.cX[2] * std::abs(state[0]) * state[0];
-    alpha = -1 / param.inertia[0] * param.k * alpha;
-    auto beta = -1 / param.inertia[0] * param.k;
-    std::vector<double> alphaBeta = { alpha, beta };
-    return alphaBeta;
-}
-
-std::vector<double> alpha_beta_r(const std::vector<double> state, struct SlidingSurface param)
-{
-    auto alpha = state[1] / 0.1 - param.cN[0] * state[0] * state[1] - param.cN[1] * state[1] - param.cN[2] * std::abs(state[1]) * state[1];
-    alpha = -1 / param.inertia[2] * param.k1 * alpha;
-    auto beta = -1 / param.inertia[2] * param.k1;
-    std::vector<double> alphaBeta = { alpha, beta };
-    return alphaBeta;
-}
 void ThrusterMappingInizialization(std::shared_ptr<DCLConfiguration> conf, double sampleTime, ctb::DigitalPID& pid)
 {
-
     pid.Initialize(conf->thrusterMapping.pidGainsSurge, sampleTime, conf->thrusterMapping.pidSatSurge);
-    //        pidYawRate.Initialize(conf->dynamic_pidgains_yawrate, sampleTime, conf->jogLimiter);
-    //        pidYawRate.SetErrorFunction(ctb::HeadingErrorRadFunctor());
 }
 
-void SlidingModeInizialization(std::shared_ptr<DCLConfiguration> conf, SlidingSurface& ss, ctb::DigitalSlidingMode<SlidingSurface>& slideSurge, ctb::DigitalSecOrdSlidingMode<SlidingSurface>& slideHeading, double sampleTime)
+void ClassicPidControlInizialization(std::shared_ptr<DCLConfiguration> conf, double sampleTime, ctb::DigitalPID& pidSurge, ctb::DigitalPID& pidYawRate)
 {
-    //Initialize Sliding Surfaces
-    SetSlidingSurface(ss, conf);
-    slideHeading = ctb::DigitalSecOrdSlidingMode<SlidingSurface>(alpha_beta_r, s2, ss);
-    slideHeading.Initialize(conf->slidingMode.sp.headingGain, sampleTime, 2, conf->slidingMode.sp.torqueLimiter);
-
-    slideSurge = ctb::DigitalSlidingMode<SlidingSurface>(alpha_beta_u, s1, ss);
-    slideSurge.Initialize(conf->slidingMode.sp.surgeGain, sampleTime, 2, conf->slidingMode.sp.forceLimiter);
+    pidSurge.Initialize(conf->classicPidControl.pidGainsSurge, sampleTime, conf->classicPidControl.pidSatSurge);
+    pidYawRate.Initialize(conf->classicPidControl.pidGainsYawRate, sampleTime, conf->classicPidControl.pidSatYawRate);
 }
 
 void ReferenceVelocitiesCB(const ulisse_msgs::msg::ReferenceVelocities::SharedPtr msg) { referenceVelocities = *msg; }

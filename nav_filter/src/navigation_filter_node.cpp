@@ -93,7 +93,7 @@ void KalmanFilterConfiguration(libconfig::Config& confObj) noexcept(false);
 
 void LuenbergerObserverConfiguration(libconfig::Config& confObj) noexcept(false);
 
-std::chrono::system_clock::time_point last_comp_time_;
+static std::chrono::system_clock::time_point last_comp_time_;
 
 int main(int argc, char* argv[])
 {
