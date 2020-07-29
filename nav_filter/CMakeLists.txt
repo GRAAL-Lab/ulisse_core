@@ -17,10 +17,6 @@ find_package(surface_vehicle_model REQUIRED)
 find_package(ulisse_msgs REQUIRED)
 find_package(ulisse_driver REQUIRED)
 find_package(rml REQUIRED)
-find_package(fsm REQUIRED)
-find_package(ctrl_toolbox REQUIRED)
-find_package(tpik REQUIRED)
-find_package(ikcl REQUIRED)
 find_package(ctrl_toolbox REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 
@@ -51,8 +47,6 @@ set(nav_filter_lib_sources
     src/${PROJECT_NAME}/luenberger_observer/pos_vel_observer.cpp
     # Helpers
     src/${PROJECT_NAME}/nav_data_structs.cpp
-#    src/${PROJECT_NAME}/kalman_filter.cpp
-#    src/${PROJECT_NAME}/angle_filter.cpp
     src/${PROJECT_NAME}/kalman_filter/measurements/gps.cpp
     src/${PROJECT_NAME}/kalman_filter/measurements/compass.cpp
     src/${PROJECT_NAME}/kalman_filter/measurements/magnetometer.cpp

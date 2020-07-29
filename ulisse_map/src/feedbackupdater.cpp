@@ -82,22 +82,20 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
     // Set the QoS. ROS 2 will provide QoS profiles based on the following use cases:
     // Default QoS settings for publishers and subscriptions (rmw_qos_profile_default).
     // Services (rmw_qos_profile_services_default).
-    // Sensor data (rmw_qos_profile_sensor_data).
-    rmw_qos_profile_t custom_qos_profile = rmw_qos_profile_sensor_data;
 
     //custom_qos_profile.durability = RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL;
     // set the depth to the QoS profile
     //custom_qos_profile.depth = 7;
 
-    vehicleStatusSub_ = np_->create_subscription<ulisse_msgs::msg::VehicleStatus>(ulisse_msgs::topicnames::vehicle_status, std::bind(&FeedbackUpdater::VehicleStatusCB, this, _1), custom_qos_profile);
-    referenceVelocitieSub_ = np_->create_subscription<ulisse_msgs::msg::ReferenceVelocities>(ulisse_msgs::topicnames::reference_velocities, std::bind(&FeedbackUpdater::ReferenceVelocitiesCB, this, _1), custom_qos_profile);
-    gps_data_sub_ = np_->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data, std::bind(&FeedbackUpdater::GPSDataCB, this, _1), custom_qos_profile);
-    battery_left_sub_ = np_->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_left, std::bind(&FeedbackUpdater::LLCBatteryLeftCB, this, _1), custom_qos_profile);
-    battery_right_sub_ = np_->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_right, std::bind(&FeedbackUpdater::LLCBatteryRightCB, this, _1), custom_qos_profile);
-    thruster_data_sub_ = np_->create_subscription<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data, std::bind(&FeedbackUpdater::ThrusterDataCB, this, _1), custom_qos_profile);
-    sw485_status_sub_ = np_->create_subscription<ulisse_msgs::msg::LLCSw485Status>(ulisse_msgs::topicnames::llc_sw485status, std::bind(&FeedbackUpdater::LLCSw485StatusCB, this, _1));
-    current_status_sub_ = np_->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, std::bind(&FeedbackUpdater::NavFilterData, this, _1), custom_qos_profile);
-    feedbackGuiSub_ = np_->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, std::bind(&FeedbackUpdater::FeedbackGuiCB, this, _1), custom_qos_profile);
+    vehicleStatusSub_ = np_->create_subscription<ulisse_msgs::msg::VehicleStatus>(ulisse_msgs::topicnames::vehicle_status, 10, std::bind(&FeedbackUpdater::VehicleStatusCB, this, _1) /*, custom_qos_profile*/);
+    referenceVelocitieSub_ = np_->create_subscription<ulisse_msgs::msg::ReferenceVelocities>(ulisse_msgs::topicnames::reference_velocities, 10, std::bind(&FeedbackUpdater::ReferenceVelocitiesCB, this, _1) /*custom_qos_profile*/);
+    gps_data_sub_ = np_->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data, 10, std::bind(&FeedbackUpdater::GPSDataCB, this, _1) /*custom_qos_profile*/);
+    battery_left_sub_ = np_->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_left, 10, std::bind(&FeedbackUpdater::LLCBatteryLeftCB, this, _1) /*custom_qos_profile*/);
+    battery_right_sub_ = np_->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_right, 10, std::bind(&FeedbackUpdater::LLCBatteryRightCB, this, _1) /*custom_qos_profile*/);
+    thruster_data_sub_ = np_->create_subscription<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data, 10, std::bind(&FeedbackUpdater::ThrusterDataCB, this, _1) /*custom_qos_profile*/);
+    sw485_status_sub_ = np_->create_subscription<ulisse_msgs::msg::LLCSw485Status>(ulisse_msgs::topicnames::llc_sw485status, 10, std::bind(&FeedbackUpdater::LLCSw485StatusCB, this, _1));
+    current_status_sub_ = np_->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 10, std::bind(&FeedbackUpdater::NavFilterData, this, _1) /*custom_qos_profile*/);
+    feedbackGuiSub_ = np_->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10, std::bind(&FeedbackUpdater::FeedbackGuiCB, this, _1) /*custom_qos_profile*/);
 }
 
 void FeedbackUpdater::NavFilterData(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)

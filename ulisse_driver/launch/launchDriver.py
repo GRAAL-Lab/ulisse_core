@@ -9,11 +9,11 @@ def generate_launch_description():
     print("Config file: ", configfile)
     # Node arguments must be comma separated strings
     llc_driver_node = launch_ros.actions.Node(
-            package='ulisse_driver', node_executable='llc_driver_node', output='screen', arguments=[configfile])
+            package='ulisse_driver', executable='llc_driver_node', output='screen', arguments=[configfile])
     gps_setup_node = launch_ros.actions.Node(
-            package='ulisse_driver', node_executable='gps_setup_node', output='screen', arguments=[configfile])
+            package='ulisse_driver', executable='gps_setup_node', output='screen', arguments=[configfile])
     gps_publisher_node = launch_ros.actions.Node(
-            package='ulisse_driver', node_executable='gps_publisher_node', output='screen', arguments=[configfile])
+            package='ulisse_driver', executable='gps_publisher_node', output='screen', arguments=[configfile])
 
     return LaunchDescription([
         llc_driver_node,

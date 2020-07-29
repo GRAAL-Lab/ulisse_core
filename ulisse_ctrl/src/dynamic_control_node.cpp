@@ -40,6 +40,7 @@ void LoadDclConfiguration(std::shared_ptr<DCLConfiguration> conf, std::string fi
 
 void ThrusterMappingInizialization(std::shared_ptr<DCLConfiguration> conf, double sampleTime, ctb::DigitalPID& pid);
 void ClassicPidControlInizialization(std::shared_ptr<DCLConfiguration> conf, double sampleTime, ctb::DigitalPID& pidSurge, ctb::DigitalPID& pidYawRate);
+void ComputedTorqueControlInizialization(std::shared_ptr<DCLConfiguration> conf, double sampleTime, ctb::DigitalPID& pidSurge, ctb::DigitalPID& pidYawRate);
 
 void FilterDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
 void ReferenceVelocitiesCB(const ulisse_msgs::msg::ReferenceVelocities::SharedPtr msg);
@@ -69,6 +70,7 @@ int main(int argc, char* argv[])
     auto thrusterMappigPub = nh->create_publisher<ulisse_msgs::msg::ThrusterMappingControl>(ulisse_msgs::topicnames::thruster_mapping_control, 1);
     auto simulatedVelocitySensorPub = nh->create_publisher<ulisse_msgs::msg::SimulatedVelocitySensor>(ulisse_msgs::topicnames::simulated_velocity_sensor, 1);
     auto classicPidControlPub = nh->create_publisher<ulisse_msgs::msg::ClassicPidControl>(ulisse_msgs::topicnames::classic_pid_control, 1);
+    auto computedTorqueControlPub = nh->create_publisher<ulisse_msgs::msg::ClassicPidControl>(ulisse_msgs::topicnames::classic_pid_control, 1);
 
     //name of conf file
     std::string filename = "dcl_ulisse.conf";
@@ -83,7 +85,7 @@ int main(int argc, char* argv[])
     //local variables
     ulisse_msgs::msg::ThrusterMappingControl thrusterMappingMsg;
     ulisse_msgs::msg::ThrustersData thrustersData;
-    ulisse_msgs::msg::ClassicPidControl classicPidControlMsg;
+    ulisse_msgs::msg::ClassicPidControl classicPidControlMsg, computedTorqueMsg;
     ulisse_msgs::msg::SimulatedVelocitySensor simulatedVelocitySensor;
 
     //feedback from nav filter
@@ -92,24 +94,30 @@ int main(int argc, char* argv[])
 
     double motorLeft = 0.0, motorRight = 0.0;
 
-    //Surge pid for thrusterMapping control
-    ctb::DigitalPID pidSurge;
+    //Surge pid for thrusterMapping control (TM)
+    ctb::DigitalPID pidSurgeTM;
 
-    //Pid for dynamic control
-    ctb::DigitalPID pidYawRateDynamic;
-    ctb::DigitalPID pidSurgeDynamic;
+    //Pid for classic pid control (CP)
+    ctb::DigitalPID pidYawRateCP;
+    ctb::DigitalPID pidSurgeCP;
+
+    //Pid for computed torque control (CT)
+    ctb::DigitalPID pidYawRateCT;
+    ctb::DigitalPID pidSurgeCT;
 
     Eigen::Vector2d tau = Eigen::Vector2d::Zero();
 
     //Controller inizialization
     if (conf->ctrlMode == ControlMode::ThrusterMapping) {
-        ThrusterMappingInizialization(conf, sampleTime, pidSurge);
+        ThrusterMappingInizialization(conf, sampleTime, pidSurgeTM);
     } else if (conf->ctrlMode == ControlMode::ClassicPIDControl) {
-        ClassicPidControlInizialization(conf, sampleTime, pidSurgeDynamic, pidYawRateDynamic);
+        ClassicPidControlInizialization(conf, sampleTime, pidSurgeCP, pidYawRateCP);
+    } else {
+        ComputedTorqueControlInizialization(conf, sampleTime, pidSurgeCT, pidYawRateCT);
     }
 
     // Create a callback function for when service reset configuration requests are received.
-    auto handle_reset_conf = [nh, conf, &ulisseModel, filename, &pidSurge, &pidSurgeDynamic, &pidYawRateDynamic](
+    auto handle_reset_conf = [nh, conf, &ulisseModel, filename, &pidSurgeTM, &pidSurgeCP, &pidYawRateCP, &pidSurgeCT, &pidYawRateCT](
                                  const std::shared_ptr<rmw_request_id_t> request_header,
                                  const std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Request> request,
                                  std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Response> response) -> void {
@@ -121,10 +129,13 @@ int main(int argc, char* argv[])
         ulisseModel.params = conf->ulisseModel;
 
         //Controller inizialization
+        //Controller inizialization
         if (conf->ctrlMode == ControlMode::ThrusterMapping) {
-            ThrusterMappingInizialization(conf, sampleTime, pidSurge);
+            ThrusterMappingInizialization(conf, sampleTime, pidSurgeTM);
         } else if (conf->ctrlMode == ControlMode::ClassicPIDControl) {
-            ClassicPidControlInizialization(conf, sampleTime, pidSurgeDynamic, pidYawRateDynamic);
+            ClassicPidControlInizialization(conf, sampleTime, pidSurgeCP, pidYawRateCP);
+        } else {
+            ComputedTorqueControlInizialization(conf, sampleTime, pidSurgeCT, pidYawRateCT);
         }
 
         response->res = "ResetConfiguration::ok";
@@ -145,7 +156,7 @@ int main(int argc, char* argv[])
                 Eigen::Vector6d requestedVel;
                 requestedVel.setZero();
 
-                requestedVel(0) = pidSurge.Compute(referenceVelocities.desired_surge, surgeFbk);
+                requestedVel(0) = pidSurgeTM.Compute(referenceVelocities.desired_surge, surgeFbk);
                 requestedVel(5) = referenceVelocities.desired_yaw_rate;
 
                 tau = ulisseModel.ComputeCoriolisAndDragForces(requestedVel);
@@ -167,7 +178,7 @@ int main(int argc, char* argv[])
 
                 thrusterMappingMsg.desired_surge = referenceVelocities.desired_surge;
                 thrusterMappingMsg.feedback_surge = surgeFbk;
-                thrusterMappingMsg.out_pid_surge = pidSurge.GetOutput();
+                thrusterMappingMsg.out_pid_surge = pidSurgeTM.GetOutput();
                 thrusterMappingMsg.desired_yaw_rate = referenceVelocities.desired_yaw_rate;
                 thrusterMappingMsg.feedback_yaw_rate = yawRateFbk;
                 thrusterMappingMsg.motor_percentage.left = motorLeft;
@@ -176,14 +187,14 @@ int main(int argc, char* argv[])
                 thrusterMappigPub->publish(thrusterMappingMsg);
 
                 //fill the feedback for the nav filter
-                simulatedVelocitySensor.water_relative_surge = pidSurge.GetOutput();
+                simulatedVelocitySensor.water_relative_surge = pidSurgeTM.GetOutput();
                 simulatedVelocitySensorPub->publish(simulatedVelocitySensor);
 
             } else if (conf->ctrlMode == ControlMode::ClassicPIDControl) {
                 //Dynamic Pids
                 Eigen::Vector6d feedbackVel = Eigen::Vector6d::Zero();
 
-                tau = { pidSurgeDynamic.Compute(referenceVelocities.desired_surge, surgeFbk), pidYawRateDynamic.Compute(referenceVelocities.desired_yaw_rate, yawRateFbk) };
+                tau = { pidSurgeCP.Compute(referenceVelocities.desired_surge, surgeFbk), pidYawRateCP.Compute(referenceVelocities.desired_yaw_rate, yawRateFbk) };
 
                 feedbackVel(0) = surgeFbk;
                 feedbackVel(5) = yawRateFbk;
@@ -200,10 +211,10 @@ int main(int argc, char* argv[])
                 classicPidControlMsg.stamp.nanosec = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
                 classicPidControlMsg.desired_surge = referenceVelocities.desired_surge;
                 classicPidControlMsg.feedback_surge = surgeFbk;
-                classicPidControlMsg.out_pid_surge = pidSurgeDynamic.GetOutput();
+                classicPidControlMsg.out_pid_surge = pidSurgeCP.GetOutput();
                 classicPidControlMsg.desired_yaw_rate = referenceVelocities.desired_yaw_rate;
                 classicPidControlMsg.feedback_yaw_rate = yawRateFbk;
-                classicPidControlMsg.out_pid_yaw_rate = pidYawRateDynamic.GetOutput();
+                classicPidControlMsg.out_pid_yaw_rate = pidYawRateCP.GetOutput();
                 classicPidControlMsg.forces = { forces[0], forces[1] };
                 classicPidControlMsg.tau = { tau[0], tau[1] };
                 classicPidControlMsg.motor_percentage.left = outleft;
@@ -214,15 +225,54 @@ int main(int argc, char* argv[])
                 //fill the feedback for the nav filter
                 simulatedVelocitySensor.water_relative_surge = referenceVelocities.desired_surge;
                 simulatedVelocitySensorPub->publish(simulatedVelocitySensor);
+            } else if (conf->ctrlMode == ControlMode::ComputedTorque) {
+                //Dynamic Pids
+                Eigen::Vector6d feedbackVel = Eigen::Vector6d::Zero();
+                feedbackVel(0) = surgeFbk;
+                feedbackVel(5) = yawRateFbk;
+
+                tau = { pidSurgeCT.Compute(referenceVelocities.desired_surge, surgeFbk), pidYawRateCT.Compute(referenceVelocities.desired_yaw_rate, yawRateFbk) };
+
+                Eigen::Vector2d tauDrag = ulisseModel.ComputeCoriolisAndDragForces(feedbackVel);
+
+                tau += tauDrag;
+                double outleft, outrigh;
+
+                Eigen::Vector2d forces = ulisseModel.ThusterAllocation(tau);
+                ulisseModel.InverseMotorsEquations(feedbackVel, forces, outleft, outrigh);
+                ulisseModel.ThrustersSaturation(outleft, outrigh, -conf->thrusterPercLimit, conf->thrusterPercLimit, thrustersData.motor_percentage.left, thrustersData.motor_percentage.right);
+
+                //Fill the classic dynamic pid contol msg
+                auto t_now_ = std::chrono::system_clock::now();
+                long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
+                computedTorqueMsg.stamp.sec = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
+                computedTorqueMsg.stamp.nanosec = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
+                computedTorqueMsg.desired_surge = referenceVelocities.desired_surge;
+                computedTorqueMsg.feedback_surge = surgeFbk;
+                computedTorqueMsg.out_pid_surge = pidSurgeCP.GetOutput();
+                computedTorqueMsg.desired_yaw_rate = referenceVelocities.desired_yaw_rate;
+                computedTorqueMsg.feedback_yaw_rate = yawRateFbk;
+                computedTorqueMsg.out_pid_yaw_rate = pidYawRateCP.GetOutput();
+                computedTorqueMsg.forces = { forces[0], forces[1] };
+                computedTorqueMsg.tau = { tau[0], tau[1] };
+                computedTorqueMsg.motor_percentage.left = outleft;
+                computedTorqueMsg.motor_percentage.right = outrigh;
+
+                computedTorqueControlPub->publish(computedTorqueMsg);
+
+                //fill the feedback for the nav filter
+                simulatedVelocitySensor.water_relative_surge = referenceVelocities.desired_surge;
+                simulatedVelocitySensorPub->publish(simulatedVelocitySensor);
             }
-
         } else {
-
             if (conf->ctrlMode == ControlMode::ThrusterMapping) {
-                pidSurge.Reset();
+                pidSurgeTM.Reset();
+            } else if (conf->ctrlMode == ControlMode::ClassicPIDControl) {
+                pidSurgeCP.Reset();
+                pidYawRateCP.Reset();
             } else {
-                pidSurgeDynamic.Reset();
-                pidYawRateDynamic.Reset();
+                pidSurgeCT.Reset();
+                pidYawRateCT.Reset();
             }
         }
 
@@ -277,6 +327,12 @@ void ClassicPidControlInizialization(std::shared_ptr<DCLConfiguration> conf, dou
 {
     pidSurge.Initialize(conf->classicPidControl.pidGainsSurge, sampleTime, conf->classicPidControl.pidSatSurge);
     pidYawRate.Initialize(conf->classicPidControl.pidGainsYawRate, sampleTime, conf->classicPidControl.pidSatYawRate);
+}
+
+void ComputedTorqueControlInizialization(std::shared_ptr<DCLConfiguration> conf, double sampleTime, ctb::DigitalPID& pidSurge, ctb::DigitalPID& pidYawRate)
+{
+    pidSurge.Initialize(conf->computedTorqueControl.pidGainsSurge, sampleTime, conf->computedTorqueControl.pidSatSurge);
+    pidYawRate.Initialize(conf->computedTorqueControl.pidGainsYawRate, sampleTime, conf->computedTorqueControl.pidSatYawRate);
 }
 
 void ReferenceVelocitiesCB(const ulisse_msgs::msg::ReferenceVelocities::SharedPtr msg) { referenceVelocities = *msg; }

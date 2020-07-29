@@ -66,9 +66,7 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
     boundary_srv_ = np_->create_client<ulisse_msgs::srv::SetBoundaries>(ulisse_msgs::topicnames::set_boundaries_service);
     llc_srv_ = np_->create_client<ulisse_msgs::srv::LLCCommand>(ulisse_msgs::topicnames::llc_cmd_service);
 
-    rmw_qos_profile_t custom_qos_profile = rmw_qos_profile_sensor_data;
-
-    feedbackGuiSub_ = np_->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, std::bind(&CommandWrapper::FeedbackGuiCB, this, _1), custom_qos_profile);
+    feedbackGuiSub_ = np_->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10, std::bind(&CommandWrapper::FeedbackGuiCB, this, _1) /*, custom_qos_profile*/);
 
     connect(this, &CommandWrapper::connected, []() { std::cout << "service connected" << std::endl; });
     notificator = std::async([&] {

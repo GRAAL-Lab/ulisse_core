@@ -9,7 +9,7 @@ namespace nav {
         covariance_ = Eigen::MatrixXd::Zero(17, 17);
     }
 
-    UlisseVehicleModel::~UlisseVehicleModel() {}
+    UlisseVehicleModel::~UlisseVehicleModel() { }
 
     Eigen::MatrixXd UlisseVehicleModel::ComputeJacobian(const Eigen::VectorXd& state, const Eigen::VectorXd& input)
     {
@@ -52,6 +52,21 @@ namespace nav {
         double b1_s = (ns < 0) ? params_.b1_neg : params_.b1_pos;
         double b2_s = (ns < 0) ? params_.b2_neg : params_.b2_pos;
 
+        //Compute alpha
+        double alpha;
+        if (state[6] + state[11] * (params_.d + params_.hullWidth / 2) < 0 && state[6] + state[11] * (params_.d - params_.hullWidth / 2) < 0)
+            alpha = 0;
+        else if (state[6] - state[11] * (params_.d + params_.hullWidth / 2) < 0 && state[6] - state[11] * (params_.d - params_.hullWidth / 2) < 0)
+            alpha = 0;
+        else if (state[6] + state[11] * (params_.d + params_.hullWidth / 2) < 0 || state[6] + state[11] * (params_.d - params_.hullWidth / 2) < 0)
+            alpha = (-state[6] / state[11] - (params_.d - params_.hullWidth / 2)) / 0.4;
+        else if (state[6] - state[11] * (params_.d + params_.hullWidth / 2) < 0 || state[6] - state[11] * (params_.d - params_.hullWidth / 2) < 0)
+            alpha = (state[6] / state[11] - (params_.d - params_.hullWidth / 2)) / params_.hullWidth;
+        else
+            alpha = 1;
+
+        Eigen::Vector3d cN = alpha * params_.cN + (1 - alpha) * params_.cNneg;
+
         Eigen::MatrixXd F = Eigen::MatrixXd::Zero(state.size(), state.size());
 
         F.diagonal() = Eigen::VectorXd::Ones(state.size());
@@ -80,7 +95,7 @@ namespace nav {
         F(6, 6) = (dt * (std::pow(sin(state[4]), 2) - 1) * (params_.cX[1] + b2_p * fabs(np) + b2_s * fabs(ns) + 2 * params_.cX[2] * fabs(state[6]))) / params_.Inertia.diagonal()[0] + 1;
         F(7, 6) = -(dt * cos(state[4]) * sin(state[4]) * sin(state[3]) * (params_.cX[1] + b2_p * fabs(np) + b2_s * fabs(ns) + 2 * params_.cX[2] * fabs(state[6]))) / params_.Inertia.diagonal()[0];
         F(8, 6) = -(dt * cos(state[4]) * cos(state[3]) * sin(state[4]) * (params_.cX[1] + b2_p * fabs(np) + b2_s * fabs(ns) + 2 * params_.cX[2] * fabs(state[6]))) / params_.Inertia.diagonal()[0];
-        F(11, 6) = -(dt * (params_.cN[0] * state[11] + b2_p * params_.d * fabs(np) - b2_s * params_.d * fabs(ns))) / params_.Inertia.diagonal()[2];
+        F(11, 6) = -(dt * (cN[0] * state[11] + b2_p * params_.d * fabs(np) - b2_s * params_.d * fabs(ns))) / params_.Inertia.diagonal()[2];
 
         F(0, 7) = dt * cos(state[5]) * sin(state[4]) * sin(state[3]) - dt * cos(state[3]) * sin(state[5]);
         F(1, 7) = dt * (cos(state[3]) * cos(state[5]) + sin(state[4]) * sin(state[3]) * sin(state[5]));
@@ -100,7 +115,7 @@ namespace nav {
         F(6, 11) = (dt * (std::pow(sin(state[4]), 2) - 1) * (2 * params_.cX[0] * state[11] + b2_p * params_.d * fabs(np) - b2_s * params_.d * fabs(ns))) / params_.Inertia.diagonal()[0];
         F(7, 11) = -(dt * cos(state[4]) * sin(state[4]) * sin(state[3]) * (2 * params_.cX[0] * state[11] + b2_p * params_.d * fabs(np) - b2_s * params_.d * fabs(ns))) / params_.Inertia.diagonal()[0];
         F(8, 11) = -(dt * cos(state[4]) * cos(state[3]) * sin(state[4]) * (2 * params_.cX[0] * state[11] + b2_p * params_.d * fabs(np) - b2_s * params_.d * fabs(ns))) / params_.Inertia.diagonal()[0];
-        F(11, 11) = 1 - (dt * (params_.cN[1] + params_.cN[0] * state[6] + 2 * params_.cN[2] * state[11] * fabs(state[11]) + b2_p * std::pow(params_.d, 2) * fabs(np) + b2_s * std::pow(params_.d, 2) * fabs(ns))) / params_.Inertia.diagonal()[2];
+        F(11, 11) = 1 - (dt * (cN[1] + cN[0] * state[6] + 2 * cN[2] * state[11] * fabs(state[11]) + b2_p * std::pow(params_.d, 2) * fabs(np) + b2_s * std::pow(params_.d, 2) * fabs(ns))) / params_.Inertia.diagonal()[2];
 
         F(0, 12) = dt;
 
@@ -124,6 +139,21 @@ namespace nav {
         double b1_s = (ns < 0) ? params_.b1_neg : params_.b1_pos;
         double b2_s = (ns < 0) ? params_.b2_neg : params_.b2_pos;
 
+        //Compute alpha
+        double alpha;
+        if (state[6] + state[11] * (params_.d + params_.hullWidth / 2) < 0 && state[6] + state[11] * (params_.d - params_.hullWidth / 2) < 0)
+            alpha = 0;
+        else if (state[6] - state[11] * (params_.d + params_.hullWidth / 2) < 0 && state[6] - state[11] * (params_.d - params_.hullWidth / 2) < 0)
+            alpha = 0;
+        else if (state[6] + state[11] * (params_.d + params_.hullWidth / 2) < 0 || state[6] + state[11] * (params_.d - params_.hullWidth / 2) < 0)
+            alpha = (-state[6] / state[11] - (params_.d - params_.hullWidth / 2)) / 0.4;
+        else if (state[6] - state[11] * (params_.d + params_.hullWidth / 2) < 0 || state[6] - state[11] * (params_.d - params_.hullWidth / 2) < 0)
+            alpha = (state[6] / state[11] - (params_.d - params_.hullWidth / 2)) / params_.hullWidth;
+        else
+            alpha = 1;
+
+        Eigen::Vector3d cN = alpha * params_.cN + (1 - alpha) * params_.cNneg;
+
         auto newComputationTime = std::chrono::system_clock::now();
         double dt = (std::chrono::duration_cast<std::chrono::microseconds>(newComputationTime - last_comp_time_).count()) / 1000000.0; //in s
         last_comp_time_ = newComputationTime;
@@ -138,7 +168,7 @@ namespace nav {
         x(7) = state[7] - (dt * cos(state[4]) * sin(state[4]) * sin(state[3]) * (params_.cX[1] * state[6] + params_.cX[0] * std::pow(state[11], 2) + b2_p * state[6] * fabs(np) + b2_s * state[6] * fabs(ns) + params_.cX[2] * state[6] * fabs(state[6]) - b1_p * np * fabs(np) - b1_s * ns * fabs(ns) + b2_p * params_.d * state[11] * fabs(np) - b2_s * params_.d * state[11] * fabs(ns))) / params_.Inertia.diagonal()[0];
         x(8) = state[8] - (dt * cos(state[4]) * cos(state[3]) * sin(state[4]) * (params_.cX[1] * state[6] + params_.cX[0] * std::pow(state[11], 2) + b2_p * state[6] * fabs(np) + b2_s * state[6] * fabs(ns) + params_.cX[2] * state[6] * fabs(state[6]) - b1_p * np * fabs(np) - b1_s * ns * fabs(ns) + b2_p * params_.d * state[11] * fabs(np) - b2_s * params_.d * state[11] * fabs(ns))) / params_.Inertia.diagonal()[0];
         x.segment(9, 2) = state.segment(9, 2);
-        x(11) = state[11] - (dt * (params_.cN[1] * state[11] + params_.cN[2] * state[11] * fabs(state[11]) + params_.cN[0] * state[11] * state[6] - b1_p * params_.d * np * fabs(np) + b1_s * params_.d * ns * fabs(ns) + b2_p * params_.d * state[6] * fabs(np) - b2_s * params_.d * state[6] * fabs(ns) + b2_p * std::pow(params_.d, 2) * state[11] * fabs(np) + b2_s * std::pow(params_.d, 2) * state[11] * fabs(ns))) / params_.Inertia.diagonal()[2];
+        x(11) = state[11] - (dt * (cN[1] * state[11] + cN[2] * state[11] * fabs(state[11]) + cN[0] * state[11] * state[6] - b1_p * params_.d * np * fabs(np) + b1_s * params_.d * ns * fabs(ns) + b2_p * params_.d * state[6] * fabs(np) - b2_s * params_.d * state[6] * fabs(ns) + b2_p * std::pow(params_.d, 2) * state[11] * fabs(np) + b2_s * std::pow(params_.d, 2) * state[11] * fabs(ns))) / params_.Inertia.diagonal()[2];
         x.segment(12, 5) = state.segment(12, 5);
 
         return x;

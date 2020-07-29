@@ -11,6 +11,7 @@ namespace ulisse {
 namespace nav {
 
     enum class FilterMode : int {
+        GroundTruth,
         LuenbergerObserver,
         KalmanFilter
     };

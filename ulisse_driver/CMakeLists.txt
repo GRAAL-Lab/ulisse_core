@@ -15,6 +15,7 @@ find_package(rclcpp REQUIRED)
 find_package(class_loader REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(ulisse_msgs REQUIRED)
+find_package(rml REQUIRED)
 
 # Add files in directory tree to "Projects" view in QtCreator
 file(GLOB_RECURSE SOURCE_FILES
@@ -25,8 +26,7 @@ file(GLOB_RECURSE SOURCE_FILES
 )
 add_custom_target(.Files. SOURCES ${SOURCE_FILES})
 
-include_directories(
-  include
+include_directories(include
   ${ulisse_msgs_INCLUDE_DIRS}
 )
 

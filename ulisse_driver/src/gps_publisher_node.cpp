@@ -69,8 +69,8 @@ int main(int argc, char* argv[])
     ulisse_msgs::msg::GPSData gps_data_msg;
     ulisse_msgs::msg::GPSStatus gps_status_msg;
 
-    auto gps_data_pub = nh->create_publisher<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data);
-    auto gps_status_pub = nh->create_publisher<ulisse_msgs::msg::GPSStatus>(ulisse_msgs::topicnames::sensor_gps_status);
+    auto gps_data_pub = nh->create_publisher<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data, 1);
+    auto gps_status_pub = nh->create_publisher<ulisse_msgs::msg::GPSStatus>(ulisse_msgs::topicnames::sensor_gps_status, 1);
 
     auto t_now = std::chrono::system_clock::now();
     long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now.time_since_epoch())).count();
@@ -104,11 +104,11 @@ void process_data(GpsData& my_gps_data, struct gps_data_t* p)
         return;
     }
 
-    if (!p->online) {
+    if (!p->online.tv_sec) {
         return;
     }
 
-    my_gps_data.time = p->fix.time;
+    my_gps_data.time = (p->fix.time.tv_sec) + p->fix.time.tv_nsec *  1E-9;
     my_gps_data.mode = (GpsFixMode)p->fix.mode;
     my_gps_data.flags = p->set;
 
@@ -133,7 +133,7 @@ void process_data(GpsData& my_gps_data, struct gps_data_t* p)
         my_gps_data.climb = p->fix.climb;
     }
 
-    my_gps_data.err = p->epe;
+    my_gps_data.err = p->fix.eph;
     my_gps_data.err_time = p->fix.ept;
     my_gps_data.err_latitude = p->fix.epy;
     my_gps_data.err_longitude = p->fix.epx;
@@ -157,7 +157,7 @@ void process_status(GpsStatusData& my_gps_status, struct gps_data_t* p)
         return;
     }
 
-    if (!p->online) {
+    if (!p->online.tv_sec) {
         return;
     }
 

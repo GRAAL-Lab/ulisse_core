@@ -12,7 +12,9 @@ struct UlisseModelParameters {
     double d;
     Eigen::Vector3d cX;
     Eigen::Vector3d cN;
+    Eigen::Vector3d cNneg;
     double b1_pos, b2_pos, b1_neg, b2_neg;
+    double hullWidth;
     Eigen::Matrix3d Inertia;
 
     UlisseModelParameters()
@@ -23,9 +25,11 @@ struct UlisseModelParameters {
         , b2_pos(0.0)
         , b1_neg(0.0)
         , b2_neg(0.0)
+        , hullWidth(0.0)
     {
         cX.setZero();
         cN.setZero();
+        cNneg.setZero();
         Inertia.setZero();
     }
 
@@ -33,19 +37,22 @@ struct UlisseModelParameters {
     {
         Eigen::IOFormat TabbedCleanFmt(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", " ", "\t", "\n", "", "");
         return os << "Ulisse Model Params:\n"
-                  << "\tlambda_pos: " << static_cast<int>(a.lambda_pos) << "\n"
-                  << "\tlambda_neg: " << a.lambda_neg << "\n"
-                  << "\tmotors distance: " << a.d << "\n"
-                  << "\tcX: " << a.cX.transpose() << "\n"
-                  << "\tcN: " << a.cN.transpose() << "\n"
-                  << "\tcB: " << a.b1_pos << " " << a.b2_pos << " " << a.b1_neg << " " << a.b2_neg << "\n"
-                  << "\tInertia:\n"
+                  << "tlambda_pos: " << static_cast<int>(a.lambda_pos) << "\n"
+                  << "tlambda_neg: " << a.lambda_neg << "\n"
+                  << "tmotors distance: " << a.d << "\n"
+                  << "hull width: " << a.hullWidth << "\n"
+                  << "tcX: " << a.cX.transpose() << "\n"
+                  << "tcN: " << a.cN.transpose() << "\n"
+                  << "tcN negative: " << a.cNneg.transpose() << "\n"
+                  << "tcB: " << a.b1_pos << " " << a.b2_pos << " " << a.b1_neg << " " << a.b2_neg << "\n"
+                  << "tInertia:\n"
                   << a.Inertia.format(TabbedCleanFmt);
     }
 
     void ConfigureFormFile(const libconfig::Setting& ulisseModel) noexcept(false)
     {
         ctb::SetParamVector(ulisseModel, cN, "cN");
+        ctb::SetParamVector(ulisseModel, cNneg, "cNneg");
         ctb::SetParamVector(ulisseModel, cX, "cX");
         ctb::SetParam(ulisseModel, lambda_neg, "lambdaNeg");
         ctb::SetParam(ulisseModel, lambda_pos, "lambdaPos");
@@ -54,6 +61,7 @@ struct UlisseModelParameters {
         ctb::SetParam(ulisseModel, b2_neg, "b2Neg");
         ctb::SetParam(ulisseModel, b2_pos, "b2Pos");
         ctb::SetParam(ulisseModel, d, "motorsDistance");
+        ctb::SetParam(ulisseModel, hullWidth, "hullWidth");
 
         Eigen::Vector3d tmp_Inerzia;
         tmp_Inerzia.setZero();
@@ -65,6 +73,7 @@ struct UlisseModelParameters {
     {
         ctb::SetParamVector(ulisseModel, cN, "cN");
         ctb::SetParamVector(ulisseModel, cX, "cX");
+        ctb::SetParamVector(ulisseModel, cNneg, "cNneg");
         ctb::SetParam(ulisseModel, lambda_neg, "lambdaNeg");
         ctb::SetParam(ulisseModel, lambda_pos, "lambdaPos");
         ctb::SetParam(ulisseModel, b1_neg, "b1Neg");
@@ -72,6 +81,7 @@ struct UlisseModelParameters {
         ctb::SetParam(ulisseModel, b2_neg, "b2Neg");
         ctb::SetParam(ulisseModel, b2_pos, "b2Pos");
         ctb::SetParam(ulisseModel, d, "motorsDistance");
+        ctb::SetParam(ulisseModel, hullWidth, "hullWidth");
 
         Eigen::Vector3d tmp_Inerzia;
         tmp_Inerzia.setZero();

@@ -18,7 +18,7 @@ bool SolveSecondOrderEquation(double a, double b, double c, std::pair<double, do
     }
 }
 
-SurfaceVehicleModel::SurfaceVehicleModel() {}
+SurfaceVehicleModel::SurfaceVehicleModel() { }
 
 double SurfaceVehicleModel::GetThrusterForce(double n, double linXVel)
 {
@@ -105,17 +105,23 @@ void SurfaceVehicleModel::DirectDynamics(double h_p, double h_s, const Eigen::Ve
 
 Eigen::Vector2d SurfaceVehicleModel::ComputeCoriolisAndDragForces(Eigen::Vector6d vehvel)
 {
-    Eigen::RowVector3d tempX;
-    tempX(0) = vehvel(5) * vehvel(5);
-    tempX(1) = vehvel(0);
-    tempX(2) = vehvel(0) * std::fabs(vehvel(0));
+    double alpha;
 
-    Eigen::RowVector3d tempN;
-    tempN(0) = vehvel(0) * vehvel(5);
-    tempN(1) = vehvel(5);
-    tempN(2) = vehvel(5) * std::fabs(vehvel(5));
+    if (vehvel[0] + vehvel[5] * (params.d + params.hullWidth / 2) < 0 && vehvel[0] + vehvel[5] * (params.d - params.hullWidth / 2) < 0)
+        alpha = 0;
+    else if (vehvel[0] - vehvel[5] * (params.d + params.hullWidth / 2) < 0 && vehvel[0] - vehvel[5] * (params.d - params.hullWidth / 2) < 0)
+        alpha = 0;
+    else if (vehvel[0] + vehvel[5] * (params.d + params.hullWidth / 2) < 0 || vehvel[0] + vehvel[5] * (params.d - params.hullWidth / 2) < 0)
+        alpha = (-vehvel[0] / vehvel[5] - (params.d - params.hullWidth / 2)) / 0.4;
+    else if (vehvel[0] - vehvel[5] * (params.d + params.hullWidth / 2) < 0 || vehvel[0] - vehvel[5] * (params.d - params.hullWidth / 2) < 0)
+        alpha = (vehvel[0] / vehvel[5] - (params.d - params.hullWidth / 2)) / params.hullWidth;
+    else
+        alpha = 1;
 
-    return { tempX * params.cX, tempN * params.cN };
+    double neg_tauN = params.cNneg[0] * vehvel[0] * vehvel[5] + params.cNneg[1] * vehvel[5] + params.cNneg[2] * vehvel[5] * abs(vehvel[5]);
+    double pos_tauN = params.cN[0] * vehvel[0] * vehvel[5] + params.cN[1] * vehvel[5] + params.cN[2] * vehvel[5] * abs(vehvel[5]);
+
+    return { params.cX[0] * vehvel[5] * vehvel[5] + params.cX[1] * vehvel[0] + params.cX[2] * vehvel[0] * abs(vehvel[0]), alpha * pos_tauN + (1 - alpha) * neg_tauN };
 }
 
 Eigen::Vector2d SurfaceVehicleModel::ThusterAllocation(Eigen::Vector2d& tau)

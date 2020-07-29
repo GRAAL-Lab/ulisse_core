@@ -86,8 +86,7 @@ namespace llc {
         data_.messageType = MessageType::get_config;
         llcHlp_.SendMessage(data_);
 
-        thruster_data_sub_ = create_subscription<ulisse_msgs::msg::ThrustersData>(
-            ulisse_msgs::topicnames::thrusters_data, std::bind(&ThreadSender::ThrustersDataCB, this, _1));
+        thruster_data_sub_ = create_subscription<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data, 10, std::bind(&ThreadSender::ThrustersDataCB, this, _1));
 
         SetupCommandServer();
     }

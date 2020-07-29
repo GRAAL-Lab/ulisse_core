@@ -174,12 +174,12 @@ int main(int argc, char* argv[])
 
                         if (filterEnable) {
 
-                            obs.Update(Eigen::Vector4d{ p_ned.x(), p_ned.y(), compassData.orientation.yaw, simulatedVelocitySensor.water_relative_surge });
+                            obs.Update(Eigen::Vector4d { p_ned.x(), p_ned.y(), compassData.orientation.yaw, simulatedVelocitySensor.water_relative_surge });
                             filterData.inertialframe_water_current.fill(0.0);
 
                             //Construct the inertial to body frame rotation
-                            rml::EulerRPY rpy{ 0.0, 0.0, compassData.orientation.yaw };
-                            Eigen::Vector3d bodyF_linearVelocity = rpy.ToRotationMatrix().transpose() * Eigen::Vector3d{ obs.LinearVelocity().x(), obs.LinearVelocity().y(), 0.0 };
+                            rml::EulerRPY rpy { 0.0, 0.0, compassData.orientation.yaw };
+                            Eigen::Vector3d bodyF_linearVelocity = rpy.ToRotationMatrix().transpose() * Eigen::Vector3d { obs.LinearVelocity().x(), obs.LinearVelocity().y(), 0.0 };
 
                             filterData.bodyframe_linear_velocity.surge = bodyF_linearVelocity.x();
                             filterData.bodyframe_linear_velocity.sway = bodyF_linearVelocity.y();
@@ -189,10 +189,6 @@ int main(int argc, char* argv[])
                             p_utm = { p_ned.y(), p_ned.x() };
 
                             GeographicLib::UTMUPS::Reverse(zone, northp, p_utm.x(), p_utm.y(), filterData.inertialframe_linear_position.latlong.latitude, filterData.inertialframe_linear_position.latlong.longitude);
-
-                        } else {
-                            filterData.inertialframe_linear_position.latlong.latitude = gpsData.latitude;
-                            filterData.inertialframe_linear_position.latlong.longitude = gpsData.longitude;
                         }
 
                         /// FILL THE MSG WITH ALL THE REST OF UNMANAGED DATA
@@ -209,7 +205,6 @@ int main(int argc, char* argv[])
 
                         filterData.bodyframe_angular_velocity.yaw_rate = yawRateFilterGains[0] * filterData.bodyframe_angular_velocity.yaw_rate + yawRateFilterGains[1] * yawRate_dot;
 
-                        navDataPub->publish(filterData);
                     } catch (const GeographicLib::GeographicErr& e) {
                         RCLCPP_ERROR(node->get_logger(), "GeographicLib exception: what = %s", e.what());
                         obs.Reset();
@@ -226,7 +221,7 @@ int main(int argc, char* argv[])
                         Eigen::Vector3d cartesian_p;
                         //The filter use the cartesian coordinates
                         ctb::Map2CartesianPoint(ctb::LatLong(gpsData.latitude, gpsData.longitude), centroidLocation, cartesian_p);
-                        gpsMeasurement->MeasureVector() = Eigen::Vector3d{ cartesian_p.y(), cartesian_p.x(), cartesian_p.z() };
+                        gpsMeasurement->MeasureVector() = Eigen::Vector3d { cartesian_p.y(), cartesian_p.x(), cartesian_p.z() };
                         extendedKalmanFilter->AddMeasurement(gpsMeasurement);
 
                         lastValidGPSTime = gpsData.time;
@@ -236,11 +231,11 @@ int main(int argc, char* argv[])
 
             if (measuresActive.find("gyro")->second) {
                 if (imuData.stamp.sec + (imuData.stamp.nanosec * 1e-9) > lastValidImuTime) {
-                    gyroMeasurement->MeasureVector() = Eigen::Vector3d{ imuData.gyro[0], imuData.gyro[1], imuData.gyro[2] };
+                    gyroMeasurement->MeasureVector() = Eigen::Vector3d { imuData.gyro[0], imuData.gyro[1], imuData.gyro[2] };
                     extendedKalmanFilter->AddMeasurement(gyroMeasurement);
 
                     if (measuresActive.find("accelerometer")->second) {
-                        accelerometerMeasurement->MeasureVector() = Eigen::Vector3d{ imuData.accelerometer[0], imuData.accelerometer[1], imuData.accelerometer[2] };
+                        accelerometerMeasurement->MeasureVector() = Eigen::Vector3d { imuData.accelerometer[0], imuData.accelerometer[1], imuData.accelerometer[2] };
                         extendedKalmanFilter->AddMeasurement(accelerometerMeasurement);
                     }
 
@@ -250,7 +245,7 @@ int main(int argc, char* argv[])
 
             if (compassData.stamp.sec + (compassData.stamp.nanosec * 1e-9) > lastValidCompassTime) {
                 if (measuresActive.find("compass")->second) {
-                    compassMeasurement->MeasureVector() = Eigen::Vector3d{ compassData.orientation.roll, compassData.orientation.pitch, compassData.orientation.yaw };
+                    compassMeasurement->MeasureVector() = Eigen::Vector3d { compassData.orientation.roll, compassData.orientation.pitch, compassData.orientation.yaw };
                     extendedKalmanFilter->AddMeasurement(compassMeasurement);
 
                     lastValidCompassTime = compassData.stamp.sec + (compassData.stamp.nanosec * 1e-9);
@@ -268,11 +263,11 @@ int main(int argc, char* argv[])
             }
 
             //Filter Update
-            extendedKalmanFilter->Update(Eigen::Vector2d{ thrustersFbk.motor_percentage.left, thrustersFbk.motor_percentage.right });
+            extendedKalmanFilter->Update(Eigen::Vector2d { thrustersFbk.motor_percentage.left, thrustersFbk.motor_percentage.right });
 
             state = extendedKalmanFilter->StateVector();
             ctb::LatLong map_p;
-            ctb::Cartesian2MapPoint(Eigen::Vector3d{ state.y(), state.x(), state.z() }, centroidLocation, map_p);
+            ctb::Cartesian2MapPoint(Eigen::Vector3d { state.y(), state.x(), state.z() }, centroidLocation, map_p);
 
             auto tNow = std::chrono::system_clock::now();
             long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(tNow.time_since_epoch())).count();
@@ -307,10 +302,37 @@ int main(int argc, char* argv[])
             }
 
             filterData.propagation_error = P;
+        } else if (filterParams.mode == FilterMode::GroundTruth) {
 
-            navDataPub->publish(filterData);
+            auto tNow = std::chrono::system_clock::now();
+            long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(tNow.time_since_epoch())).count();
+            auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
+            auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
+
+            filterData.stamp.sec = now_stamp_secs;
+            filterData.stamp.nanosec = now_stamp_nanosecs;
+
+            filterData.inertialframe_linear_position.latlong.latitude = groundTruthData.inertialframe_linear_position.latlong.latitude;
+            filterData.inertialframe_linear_position.latlong.longitude = groundTruthData.inertialframe_linear_position.latlong.longitude;
+            filterData.inertialframe_linear_position.altitude = groundTruthData.inertialframe_linear_position.altitude;
+            filterData.bodyframe_angular_position.roll = groundTruthData.bodyframe_angular_position.roll;
+            filterData.bodyframe_angular_position.pitch = groundTruthData.bodyframe_angular_position.pitch;
+            filterData.bodyframe_angular_position.yaw = groundTruthData.bodyframe_angular_position.yaw;
+            filterData.bodyframe_linear_velocity.surge = groundTruthData.bodyframe_linear_velocity.surge;
+            filterData.bodyframe_linear_velocity.sway = groundTruthData.bodyframe_linear_velocity.sway;
+            filterData.bodyframe_linear_velocity.heave = groundTruthData.bodyframe_linear_velocity.heave;
+
+            filterData.bodyframe_angular_velocity.roll_rate = groundTruthData.bodyframe_angular_velocity.roll_rate;
+            filterData.bodyframe_angular_velocity.pitch_rate = groundTruthData.bodyframe_angular_velocity.pitch_rate;
+            filterData.bodyframe_angular_velocity.yaw_rate = groundTruthData.bodyframe_angular_velocity.yaw_rate;
+            filterData.inertialframe_water_current[0] = groundTruthData.inertialframe_water_current[0];
+            filterData.inertialframe_water_current[1] = groundTruthData.inertialframe_water_current[1];
+            filterData.gyro_bias[0] = groundTruthData.gyro_bias[0];
+            filterData.gyro_bias[1] = groundTruthData.gyro_bias[1];
+            filterData.gyro_bias[2] = groundTruthData.gyro_bias[2];
         }
 
+        navDataPub->publish(filterData);
         rclcpp::spin_some(node);
         loop_rate.sleep();
     }
@@ -346,6 +368,7 @@ bool LoadConfiguration() noexcept(false)
         LuenbergerObserverConfiguration(confObj);
     } else if (filterParams.mode == FilterMode::KalmanFilter) {
         KalmanFilterConfiguration(confObj);
+    } else if (filterParams.mode == FilterMode::GroundTruth) {
     } else {
         std::cerr << "Type of filter not recognized" << std::endl;
         return -1;

@@ -11,8 +11,8 @@
 
 #include "ulisse_msgs/msg/thrusters_data.hpp"
 #include "ulisse_msgs/srv/llc_command.hpp"
-#include "ulisse_msgs/topicnames.hpp"
 #include "ulisse_msgs/terminal_utils.hpp"
+#include "ulisse_msgs/topicnames.hpp"
 
 #include "ulisse_driver/LLCHelperDataStructs.h"
 
@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
         }
         RCLCPP_INFO(node->get_logger(), "waiting for LLC Driver service to appear...");
     }
-    auto thruster_data_pub_ = node->create_publisher<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data);
+    auto thruster_data_pub_ = node->create_publisher<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data, 1);
 
     while (rclcpp::ok()) {
         int choice;

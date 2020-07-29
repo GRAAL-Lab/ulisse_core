@@ -21,7 +21,7 @@ struct TasksInfo {
 enum class ControlMode : int {
     ThrusterMapping,
     ClassicPIDControl,
-    SlidingMode
+    ComputedTorque
 };
 
 struct ControllerConfiguration {
@@ -90,7 +90,7 @@ struct ThrusterMapping {
     }
 };
 
-struct ClassicPidControl {
+struct DynamicPid {
     ctb::PIDGains pidGainsSurge;
     double pidSatSurge;
     ctb::PIDGains pidGainsYawRate;
@@ -118,7 +118,7 @@ struct ClassicPidControl {
         ctb::SetParam(pidYawRate, pidSatYawRate, "sat");
     }
 
-    friend std::ostream& operator<<(std::ostream& os, ClassicPidControl const& a)
+    friend std::ostream& operator<<(std::ostream& os, DynamicPid const& a)
     {
         return os << "======= Classic Pid Control CONF =======\n"
                   << "Pid Surge: "
@@ -154,7 +154,8 @@ struct DCLConfiguration {
 
     UlisseModelParameters ulisseModel;
     ThrusterMapping thrusterMapping;
-    ClassicPidControl classicPidControl;
+    DynamicPid classicPidControl;
+    DynamicPid computedTorqueControl;
 
     friend std::ostream& operator<<(std::ostream& os, DCLConfiguration const& a)
     {
@@ -167,8 +168,10 @@ struct DCLConfiguration {
            << "----------------------\n";
         if (a.ctrlMode == ControlMode::ThrusterMapping) {
             os << a.thrusterMapping;
+        } else if (a.ctrlMode == ControlMode::ClassicPIDControl) {
+            os << a.classicPidControl;
         } else {
-            return os << a.classicPidControl;
+            os << a.computedTorqueControl;
         }
 
         os << "==============================\n";
@@ -199,6 +202,9 @@ struct DCLConfiguration {
         } else if (ctrlMode == ControlMode::ClassicPIDControl) {
             const libconfig::Setting& classicPidCtr = dcl["classicPidControl"];
             classicPidControl.ConfigureFromFile(classicPidCtr);
+        } else if (ctrlMode == ControlMode::ComputedTorque) {
+            const libconfig::Setting& computedTorqueCtr = dcl["computedTorqueControl"];
+            computedTorqueControl.ConfigureFromFile(computedTorqueCtr);
         } else {
             std::cerr << "Type of control not recognized" << std::endl;
         }
