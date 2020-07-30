@@ -41,17 +41,14 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/MicroLoopCount.msg"
   "msg/GPSData.msg"
   "msg/GPSStatus.msg"
-  "msg/SSH.msg"
   "msg/LatLongAlt.msg"
-  "msg/RPYRate.msg"
   "msg/ReferenceVelocities.msg"
   "msg/VehicleStatus.msg"
   "msg/ThrusterMappingControl.msg"
-  "msg/SlidingModeControl.msg"
   "msg/SimulatedVelocitySensor.msg"
   "msg/FeedbackGui.msg"
   "msg/RealSystem.msg"
-  "msg/ClassicPidControl.msg"
+  "msg/DynamicPidControl.msg"
 
   # Commands
   "msg/CommandHold.msg"

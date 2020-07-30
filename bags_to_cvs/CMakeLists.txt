@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(convert2file)
+project(bags_to_csv)
 
 # Default to C++14
 if(NOT CMAKE_CXX_STANDARD)

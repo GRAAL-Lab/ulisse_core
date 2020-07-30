@@ -180,7 +180,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     srvGetBoundaries_ = nh_->create_service<ulisse_msgs::srv::GetBoundaries>(ulisse_msgs::topicnames::get_boundaries_service, handle_get_bounds);
 }
 
-VehicleController::~VehicleController() {}
+VehicleController::~VehicleController() { }
 
 bool VehicleController::LoadConfiguration()
 {
@@ -416,11 +416,11 @@ void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::Share
     Eigen::Vector3d worldF_vehicleLinearPosition(vehiclePosition_->latitude, vehiclePosition_->longitude, 0.0);
 
     // Angualr position in world frame
-    rml::EulerRPY rpy{ 0.0, 0.0, msg->bodyframe_angular_position.yaw };
+    rml::EulerRPY rpy { 0.0, 0.0, msg->bodyframe_angular_position.yaw };
 
     Eigen::Vector6d velocity_fbk = Eigen::Vector6d::Zero();
-    velocity_fbk(0) = msg->bodyframe_linear_velocity.surge;
-    velocity_fbk(1) = msg->bodyframe_linear_velocity.sway;
+    velocity_fbk(0) = msg->bodyframe_linear_velocity[0];
+    velocity_fbk(1) = msg->bodyframe_linear_velocity[1];
 
     // Updating the robot model
     Eigen::TransformationMatrix worldF_T_vehicleF;

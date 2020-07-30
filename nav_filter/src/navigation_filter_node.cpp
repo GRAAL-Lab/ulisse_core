@@ -181,8 +181,8 @@ int main(int argc, char* argv[])
                             rml::EulerRPY rpy { 0.0, 0.0, compassData.orientation.yaw };
                             Eigen::Vector3d bodyF_linearVelocity = rpy.ToRotationMatrix().transpose() * Eigen::Vector3d { obs.LinearVelocity().x(), obs.LinearVelocity().y(), 0.0 };
 
-                            filterData.bodyframe_linear_velocity.surge = bodyF_linearVelocity.x();
-                            filterData.bodyframe_linear_velocity.sway = bodyF_linearVelocity.y();
+                            filterData.bodyframe_linear_velocity[0] = bodyF_linearVelocity.x();
+                            filterData.bodyframe_linear_velocity[1] = bodyF_linearVelocity.y();
 
                             p_ned = obs.LinearPosition();
 
@@ -192,18 +192,18 @@ int main(int argc, char* argv[])
                         }
 
                         /// FILL THE MSG WITH ALL THE REST OF UNMANAGED DATA
-                        filterData.bodyframe_linear_velocity.heave = 0.0;
+                        filterData.bodyframe_linear_velocity[2] = 0.0;
                         filterData.inertialframe_linear_position.altitude = 0.0;
                         filterData.bodyframe_angular_position = compassData.orientation;
 
-                        filterData.bodyframe_angular_velocity.roll_rate = imuData.gyro[0];
-                        filterData.bodyframe_angular_velocity.pitch_rate = imuData.gyro[1];
+                        filterData.bodyframe_angular_velocity[0] = imuData.gyro[0];
+                        filterData.bodyframe_angular_velocity[1] = imuData.gyro[1];
 
                         //Yaw rate estimation with a digital filter
-                        double yawRate_dot = ctb::HeadingErrorRad(compassData.orientation.yaw, previousYaw) / sampleTime;
+                        double omega_dot_dot = ctb::HeadingErrorRad(compassData.orientation.yaw, previousYaw) / sampleTime;
                         previousYaw = compassData.orientation.yaw;
 
-                        filterData.bodyframe_angular_velocity.yaw_rate = yawRateFilterGains[0] * filterData.bodyframe_angular_velocity.yaw_rate + yawRateFilterGains[1] * yawRate_dot;
+                        filterData.bodyframe_angular_velocity[2] = yawRateFilterGains[0] * filterData.bodyframe_angular_velocity[2] + yawRateFilterGains[1] * omega_dot_dot;
 
                     } catch (const GeographicLib::GeographicErr& e) {
                         RCLCPP_ERROR(node->get_logger(), "GeographicLib exception: what = %s", e.what());
@@ -283,13 +283,13 @@ int main(int argc, char* argv[])
             filterData.bodyframe_angular_position.roll = state[3];
             filterData.bodyframe_angular_position.pitch = state[4];
             filterData.bodyframe_angular_position.yaw = state[5];
-            filterData.bodyframe_linear_velocity.surge = state[6];
-            filterData.bodyframe_linear_velocity.sway = state[7];
-            filterData.bodyframe_linear_velocity.heave = state[8];
+            filterData.bodyframe_linear_velocity[0] = state[6];
+            filterData.bodyframe_linear_velocity[1] = state[7];
+            filterData.bodyframe_linear_velocity[2] = state[8];
 
-            filterData.bodyframe_angular_velocity.roll_rate = state[9];
-            filterData.bodyframe_angular_velocity.pitch_rate = state[10];
-            filterData.bodyframe_angular_velocity.yaw_rate = state[11];
+            filterData.bodyframe_angular_velocity[0] = state[9];
+            filterData.bodyframe_angular_velocity[1] = state[10];
+            filterData.bodyframe_angular_velocity[2] = state[11];
             filterData.inertialframe_water_current[0] = state[12];
             filterData.inertialframe_water_current[1] = state[13];
             filterData.gyro_bias[0] = state[14];
@@ -301,7 +301,7 @@ int main(int argc, char* argv[])
                 P.push_back(extendedKalmanFilter->PropagationError().at(i, i));
             }
 
-            filterData.propagation_error = P;
+            filterData.covariance_estimation_diag = P;
         } else if (filterParams.mode == FilterMode::GroundTruth) {
 
             auto tNow = std::chrono::system_clock::now();
@@ -318,13 +318,13 @@ int main(int argc, char* argv[])
             filterData.bodyframe_angular_position.roll = groundTruthData.bodyframe_angular_position.roll;
             filterData.bodyframe_angular_position.pitch = groundTruthData.bodyframe_angular_position.pitch;
             filterData.bodyframe_angular_position.yaw = groundTruthData.bodyframe_angular_position.yaw;
-            filterData.bodyframe_linear_velocity.surge = groundTruthData.bodyframe_linear_velocity.surge;
-            filterData.bodyframe_linear_velocity.sway = groundTruthData.bodyframe_linear_velocity.sway;
-            filterData.bodyframe_linear_velocity.heave = groundTruthData.bodyframe_linear_velocity.heave;
+            filterData.bodyframe_linear_velocity[0] = groundTruthData.bodyframe_linear_velocity[0];
+            filterData.bodyframe_linear_velocity[1] = groundTruthData.bodyframe_linear_velocity[1];
+            filterData.bodyframe_linear_velocity[2] = groundTruthData.bodyframe_linear_velocity[2];
 
-            filterData.bodyframe_angular_velocity.roll_rate = groundTruthData.bodyframe_angular_velocity.roll_rate;
-            filterData.bodyframe_angular_velocity.pitch_rate = groundTruthData.bodyframe_angular_velocity.pitch_rate;
-            filterData.bodyframe_angular_velocity.yaw_rate = groundTruthData.bodyframe_angular_velocity.yaw_rate;
+            filterData.bodyframe_angular_velocity[0] = groundTruthData.bodyframe_angular_velocity[0];
+            filterData.bodyframe_angular_velocity[1] = groundTruthData.bodyframe_angular_velocity[1];
+            filterData.bodyframe_angular_velocity[2] = groundTruthData.bodyframe_angular_velocity[2];
             filterData.inertialframe_water_current[0] = groundTruthData.inertialframe_water_current[0];
             filterData.inertialframe_water_current[1] = groundTruthData.inertialframe_water_current[1];
             filterData.gyro_bias[0] = groundTruthData.gyro_bias[0];
@@ -346,7 +346,7 @@ bool LoadConfiguration() noexcept(false)
     libconfig::Config confObj;
 
     //Inizialization
-    std::string confPath = ament_index_cpp::get_package_share_directory("nav_filter").append("/conf/navfilter.conf");
+    std::string confPath = ament_index_cpp::get_package_share_directory("nav_filter").append("/conf/navigation_filter.conf");
 
     std::cout << "PATH TO CONF FILE : " << confPath << std::endl;
 

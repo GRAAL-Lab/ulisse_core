@@ -108,7 +108,7 @@ void FeedbackUpdater::NavFilterData(const ulisse_msgs::msg::NavFilterData::Share
     q_ulisse_pos_.setLatitude(msg->inertialframe_linear_position.latlong.latitude);
     q_ulisse_pos_.setLongitude(msg->inertialframe_linear_position.latlong.longitude);
     q_ulisse_yaw_deg_ = msg->bodyframe_angular_position.yaw * 180 / M_PI;
-    q_ulisse_surge_ = msg->bodyframe_linear_velocity.surge;
+    q_ulisse_surge_ = msg->bodyframe_linear_velocity[0];
 
     // Rounding surge and heading to 2 decimal places
     q_ulisse_yaw_deg_ = int(q_ulisse_yaw_deg_ * 1E2) / 1E2;

@@ -5,7 +5,6 @@
 #include "ulisse_msgs/topicnames.hpp"
 #include "ulisse_sim/vehiclesimulator.hpp"
 
-
 namespace ulisse {
 using namespace std::chrono_literals;
 using std::placeholders::_1;
@@ -255,12 +254,12 @@ void VehicleSimulator::SimulateSensors()
     groundTruthMsg_.bodyframe_angular_position.roll = bodyF_orientation_.Roll();
     groundTruthMsg_.bodyframe_angular_position.pitch = bodyF_orientation_.Pitch();
     groundTruthMsg_.bodyframe_angular_position.yaw = bodyF_orientation_.Yaw();
-    groundTruthMsg_.bodyframe_linear_velocity.surge = bodyF_relativeVelocity_(0);
-    groundTruthMsg_.bodyframe_linear_velocity.sway = bodyF_relativeVelocity_(1);
-    groundTruthMsg_.bodyframe_linear_velocity.heave = bodyF_relativeVelocity_(2);
-    groundTruthMsg_.bodyframe_angular_velocity.roll_rate = bodyF_relativeVelocity_(3);
-    groundTruthMsg_.bodyframe_angular_velocity.pitch_rate = bodyF_relativeVelocity_(4);
-    groundTruthMsg_.bodyframe_angular_velocity.yaw_rate = bodyF_relativeVelocity_(5);
+    groundTruthMsg_.bodyframe_linear_velocity[0] = bodyF_relativeVelocity_(0);
+    groundTruthMsg_.bodyframe_linear_velocity[1] = bodyF_relativeVelocity_(1);
+    groundTruthMsg_.bodyframe_linear_velocity[2] = bodyF_relativeVelocity_(2);
+    groundTruthMsg_.bodyframe_angular_velocity[0] = bodyF_relativeVelocity_(3);
+    groundTruthMsg_.bodyframe_angular_velocity[1] = bodyF_relativeVelocity_(4);
+    groundTruthMsg_.bodyframe_angular_velocity[2] = bodyF_relativeVelocity_(5);
     groundTruthMsg_.inertialframe_water_current[0] = worldF_waterVelocity_[0];
     groundTruthMsg_.inertialframe_water_current[1] = worldF_waterVelocity_[1];
     groundTruthMsg_.gyro_bias[0] = bx;

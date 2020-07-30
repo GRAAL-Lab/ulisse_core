@@ -9,7 +9,7 @@
 
 #include "rclcpp/rclcpp.hpp"
 
-#include "ulisse_msgs/msg/classic_pid_control.hpp"
+#include "ulisse_msgs/msg/dynamic_pid_control.hpp"
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
 #include "ulisse_msgs/msg/reference_velocities.hpp"
 #include "ulisse_msgs/msg/simulated_velocity_sensor.hpp"
@@ -69,8 +69,8 @@ int main(int argc, char* argv[])
     auto thrusterDataPub = nh->create_publisher<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data, 1);
     auto thrusterMappigPub = nh->create_publisher<ulisse_msgs::msg::ThrusterMappingControl>(ulisse_msgs::topicnames::thruster_mapping_control, 1);
     auto simulatedVelocitySensorPub = nh->create_publisher<ulisse_msgs::msg::SimulatedVelocitySensor>(ulisse_msgs::topicnames::simulated_velocity_sensor, 1);
-    auto classicPidControlPub = nh->create_publisher<ulisse_msgs::msg::ClassicPidControl>(ulisse_msgs::topicnames::classic_pid_control, 1);
-    auto computedTorqueControlPub = nh->create_publisher<ulisse_msgs::msg::ClassicPidControl>(ulisse_msgs::topicnames::classic_pid_control, 1);
+    auto classicPidControlPub = nh->create_publisher<ulisse_msgs::msg::DynamicPidControl>(ulisse_msgs::topicnames::classic_pid_control, 1);
+    auto computedTorqueControlPub = nh->create_publisher<ulisse_msgs::msg::DynamicPidControl>(ulisse_msgs::topicnames::computed_torque_control, 1);
 
     //name of conf file
     std::string filename = "dcl_ulisse.conf";
@@ -85,7 +85,7 @@ int main(int argc, char* argv[])
     //local variables
     ulisse_msgs::msg::ThrusterMappingControl thrusterMappingMsg;
     ulisse_msgs::msg::ThrustersData thrustersData;
-    ulisse_msgs::msg::ClassicPidControl classicPidControlMsg, computedTorqueMsg;
+    ulisse_msgs::msg::DynamicPidControl classicPidControlMsg, computedTorqueMsg;
     ulisse_msgs::msg::SimulatedVelocitySensor simulatedVelocitySensor;
 
     //feedback from nav filter
@@ -146,8 +146,8 @@ int main(int argc, char* argv[])
     while (rclcpp::ok()) {
 
         //The feedback coming form the navigation filter
-        surgeFbk = filterData.bodyframe_linear_velocity.surge;
-        yawRateFbk = filterData.bodyframe_angular_velocity.yaw_rate;
+        surgeFbk = filterData.bodyframe_linear_velocity[0];
+        yawRateFbk = filterData.bodyframe_angular_velocity[2];
 
         if (vehicleStatus.vehicle_state != ulisse::states::ID::halt) {
             //ThrusterMapping mode
