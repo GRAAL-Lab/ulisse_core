@@ -106,8 +106,14 @@ void VehicleSimulator::SimulateActuation()
     bodyF_relativeVelocity_ = bodyF_relativeVelocity_ + bodyF_relativeAcceleration_ * Ts_;
 
     // Projecting the acceleration and velocity on the world frame
+    long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
+    auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
+    auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
+    double t = now_stamp_secs + (now_stamp_nanosecs * 1e-9);
+
+    bodyF_wavesEffects_ << 0.0, 0.0, 0.0, config->wx.A * sin(2 * M_PI * config->wx.f * t) + config->wx.C, config->wy.A * sin(2 * M_PI * config->wy.f * t) + config->wy.C, 0.0;
     worldF_relativeAcceleration_ = bodyF_orientation_.ToRotationMatrix().CartesianRotationMatrix() * bodyF_relativeAcceleration_;
-    worldF_relativeVelocity_ = bodyF_orientation_.ToRotationMatrix().CartesianRotationMatrix() * bodyF_relativeVelocity_;
+    worldF_relativeVelocity_ = bodyF_orientation_.ToRotationMatrix().CartesianRotationMatrix() * (bodyF_relativeVelocity_ + bodyF_wavesEffects_);
 
     // Get the vehicle absolute velocity by adding the water current velocity
 
@@ -222,8 +228,14 @@ void VehicleSimulator::SimulateSensors()
     double bx = config->sensorsNoise.bx.C + config->sensorsNoise.bx.A * sin(2 * M_PI * config->sensorsNoise.bx.f * t);
     double by = config->sensorsNoise.by.C + config->sensorsNoise.by.A * sin(2 * M_PI * config->sensorsNoise.by.f * t);
     double bz = config->sensorsNoise.bz.C + config->sensorsNoise.bz.A * sin(2 * M_PI * config->sensorsNoise.bz.f * t);
-    imuMsg_.gyro[0] = bodyF_relativeVelocity_(3) + gyroNoiseX(generator) + bx + config->wx.A * sin(2 * M_PI * config->wx.f * t) + config->wx.C;
-    imuMsg_.gyro[1] = bodyF_relativeVelocity_(4) + gyroNoiseY(generator) + by + config->wy.A * sin(2 * M_PI * config->wy.f * t) + config->wy.C;
+
+    //add sin wave to simulate the effects of water waves
+    Eigen::Vector3d bodyF_relativeAngularVelocity;
+    bodyF_relativeAngularVelocity(0) = bodyF_relativeVelocity_(3) + bodyF_wavesEffects_(3);
+    bodyF_relativeAngularVelocity(1) = bodyF_relativeVelocity_(4) + bodyF_wavesEffects_(4);
+
+    imuMsg_.gyro[0] = bodyF_relativeAngularVelocity(0) + gyroNoiseX(generator) + bx;
+    imuMsg_.gyro[1] = bodyF_relativeAngularVelocity(1) + gyroNoiseY(generator) + by;
     imuMsg_.gyro[2] = bodyF_relativeVelocity_(5) + gyroNoiseZ(generator) + bz;
 
     //ambient sensor
@@ -265,17 +277,17 @@ void VehicleSimulator::SimulateSensors()
     //Fill the ground truth msg
     groundTruthMsg_.stamp.sec = now_stamp_secs;
     groundTruthMsg_.stamp.nanosec = now_stamp_nanosecs;
-    groundTruthMsg_.inertialframe_linear_position.latlong.latitude = /*real_map_p.latitude*/ p[0];
-    groundTruthMsg_.inertialframe_linear_position.latlong.longitude = /*real_map_p.longitude*/ p[1];
-    groundTruthMsg_.inertialframe_linear_position.altitude = /* real_altitude*/ p[2];
+    groundTruthMsg_.inertialframe_linear_position.latlong.latitude = real_map_p.latitude;
+    groundTruthMsg_.inertialframe_linear_position.latlong.longitude = real_map_p.longitude;
+    groundTruthMsg_.inertialframe_linear_position.altitude = real_altitude;
     groundTruthMsg_.bodyframe_angular_position.roll = bodyF_orientation_.Roll();
     groundTruthMsg_.bodyframe_angular_position.pitch = bodyF_orientation_.Pitch();
     groundTruthMsg_.bodyframe_angular_position.yaw = bodyF_orientation_.Yaw();
     groundTruthMsg_.bodyframe_linear_velocity[0] = bodyF_relativeVelocity_(0);
     groundTruthMsg_.bodyframe_linear_velocity[1] = bodyF_relativeVelocity_(1);
     groundTruthMsg_.bodyframe_linear_velocity[2] = bodyF_relativeVelocity_(2);
-    groundTruthMsg_.bodyframe_angular_velocity[0] = bodyF_relativeVelocity_(3);
-    groundTruthMsg_.bodyframe_angular_velocity[1] = bodyF_relativeVelocity_(4);
+    groundTruthMsg_.bodyframe_angular_velocity[0] = bodyF_relativeAngularVelocity(0);
+    groundTruthMsg_.bodyframe_angular_velocity[1] = bodyF_relativeAngularVelocity(1);
     groundTruthMsg_.bodyframe_angular_velocity[2] = bodyF_relativeVelocity_(5);
     groundTruthMsg_.inertialframe_water_current[0] = worldF_waterVelocity_[0];
     groundTruthMsg_.inertialframe_water_current[1] = worldF_waterVelocity_[1];

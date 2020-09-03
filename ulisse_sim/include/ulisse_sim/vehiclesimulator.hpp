@@ -119,7 +119,7 @@ class VehicleSimulator {
 
     rml::EulerRPY bodyF_orientation_, previous_bodyF_orientation_;
     Eigen::Vector6d bodyF_relativeVelocity_, worldF_relativeVelocity_, worldF_velocity_, worldF_waterVelocity_;
-    Eigen::Vector6d bodyF_relativeAcceleration_, worldF_relativeAcceleration_;
+    Eigen::Vector6d bodyF_relativeAcceleration_, worldF_relativeAcceleration_, bodyF_wavesEffects_;
 
     double latitude_, longitude_, previousLatitude_, previousLongitude_, altitude_;
     double vehicleTrack_, vehicleSpeed_;
