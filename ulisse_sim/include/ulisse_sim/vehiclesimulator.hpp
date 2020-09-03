@@ -24,7 +24,7 @@
 
 namespace ulisse {
 
-struct GyroBias {
+struct SinusoidalWave {
     double A, C, f;
 
     void ConfigureFromFile(const libconfig::Setting& confObj) noexcept(false)
@@ -41,7 +41,7 @@ struct SensorsNoise {
     Eigen::Vector3d magnetometer_stdd;
     Eigen::Vector3d gyro_stdd;
     Eigen::Vector3d accelerometer_stdd;
-    GyroBias bx, by, bz;
+    SinusoidalWave bx, by, bz;
 
     void ConfigureFromFile(const libconfig::Setting& confObj) noexcept(false)
     {
@@ -68,6 +68,7 @@ struct SimulatorConfiguration {
     double modelErrorPercentage;
     UlisseModelParameters modelParams;
     Eigen::Vector2d inertialF_waterCurrent;
+    SinusoidalWave wx, wy;
 
     void ConfigureFromFile(libconfig::Config& confObj) noexcept(false)
     {
@@ -96,6 +97,13 @@ struct SimulatorConfiguration {
 
         const libconfig::Setting& sensorsnoise = root["sensorsNoise"];
         sensorsNoise.ConfigureFromFile(sensorsnoise);
+
+        //load additive sinusoidal noise on wx wy to simulate wawes
+        const libconfig::Setting& wavesSimulator = root["wavesSimulator"];
+        const libconfig::Setting& omega_x = wavesSimulator["wx"];
+        wx.ConfigureFromFile(omega_x);
+        const libconfig::Setting& omega_y = wavesSimulator["wy"];
+        wy.ConfigureFromFile(omega_y);
     }
 };
 
@@ -113,7 +121,7 @@ class VehicleSimulator {
     Eigen::Vector6d bodyF_relativeVelocity_, worldF_relativeVelocity_, worldF_velocity_, worldF_waterVelocity_;
     Eigen::Vector6d bodyF_relativeAcceleration_, worldF_relativeAcceleration_;
 
-    double latitude_, longitude_, previousLatitude_, previousLongitude_;
+    double latitude_, longitude_, previousLatitude_, previousLongitude_, altitude_;
     double vehicleTrack_, vehicleSpeed_;
 
     uint32_t timestamp_count_; // [200Hz counter]

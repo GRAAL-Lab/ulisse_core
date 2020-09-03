@@ -25,14 +25,14 @@ void SafetyBoundaries::Update() noexcept(false)
     }
 
     //form lat long to euclidian
-    ctb::Map2CartesianPoint(vehiclePositionLatLong_, centroid_, vehiclePosition_);
+    ctb::Map2CartesianPoint(vehiclePositionLatLong_, 0.0, centroid_, vehiclePosition_);
 
     DistanceCheck(point_type(vehiclePosition_[0], vehiclePosition_[1]));
 
     if (d_ < 0) {
-        x_ = robotModel_->TransformationMatrix(robotModel_->BodyFrameID()).RotationMatrix().transpose() * Eigen::Vector3d{ d_ * alignVector_(0), d_ * alignVector_(1), 0.0 };
+        x_ = robotModel_->TransformationMatrix(robotModel_->BodyFrameID()).RotationMatrix().transpose() * Eigen::Vector3d { d_ * alignVector_(0), d_ * alignVector_(1), 0.0 };
     } else {
-        x_ = robotModel_->TransformationMatrix(robotModel_->BodyFrameID()).RotationMatrix().transpose() * Eigen::Vector3d{ -d_ * alignVector_(0), -d_ * alignVector_(1), 0.0 };
+        x_ = robotModel_->TransformationMatrix(robotModel_->BodyFrameID()).RotationMatrix().transpose() * Eigen::Vector3d { -d_ * alignVector_(0), -d_ * alignVector_(1), 0.0 };
     }
 
     ReactiveTask::Update();
@@ -75,7 +75,7 @@ bool SafetyBoundaries::InitializePolygon(const ulisse_msgs::msg::Boundaries& bou
             latlongVertex.latitude = vertex.latitude;
             latlongVertex.longitude = vertex.longitude;
 
-            Map2CartesianPoint(latlongVertex, centroid_, cartesianVertex);
+            Map2CartesianPoint(latlongVertex, 0.0, centroid_, cartesianVertex);
 
             polygon = polygon + boost::lexical_cast<std::string>(cartesianVertex[0]) + " " + boost::lexical_cast<std::string>(cartesianVertex[1]);
         }
@@ -151,10 +151,10 @@ void SafetyBoundaries::ComputeAlignVectorConcave(segment_type segment, point_typ
     // there are three situation in which the robot can be:
 
     // starting point of the first segment the one at min dist
-    point_type p1{ boost::geometry::get<0, 0>(segment), boost::geometry::get<0, 1>(segment) };
+    point_type p1 { boost::geometry::get<0, 0>(segment), boost::geometry::get<0, 1>(segment) };
 
     // ending point of the first segment
-    point_type p2{ boost::geometry::get<1, 0>(segment), boost::geometry::get<1, 1>(segment) };
+    point_type p2 { boost::geometry::get<1, 0>(segment), boost::geometry::get<1, 1>(segment) };
 
     // compute the distaces form the starting and ending point and the distance
     // from the segment
@@ -277,13 +277,13 @@ void SafetyBoundaries::ComputeAlignVectorConvex(std::list<segment_type> segments
 bool SafetyBoundaries::ComputeIntersectionPointMiddleZone(std::list<segment_type> segments, std::list<point_type>& points)
 {
     // starting point of the first segment
-    point_type p1{ boost::geometry::get<0, 0>(segments.front()), boost::geometry::get<0, 1>(segments.front()) };
+    point_type p1 { boost::geometry::get<0, 0>(segments.front()), boost::geometry::get<0, 1>(segments.front()) };
     // ending point of the segment
-    point_type p2{ boost::geometry::get<1, 0>(segments.front()), boost::geometry::get<1, 1>(segments.front()) };
+    point_type p2 { boost::geometry::get<1, 0>(segments.front()), boost::geometry::get<1, 1>(segments.front()) };
     //starting point of the second segment
-    point_type s1{ boost::geometry::get<0, 0>(segments.back()), boost::geometry::get<0, 1>(segments.back()) };
+    point_type s1 { boost::geometry::get<0, 0>(segments.back()), boost::geometry::get<0, 1>(segments.back()) };
     // ending point of the second segment
-    point_type s2{ boost::geometry::get<1, 0>(segments.back()), boost::geometry::get<1, 1>(segments.back()) };
+    point_type s2 { boost::geometry::get<1, 0>(segments.back()), boost::geometry::get<1, 1>(segments.back()) };
 
     point_type frontSegDirPerp, backSegDirPerp, frontSegDir, backSegDir;
 
@@ -316,10 +316,10 @@ bool SafetyBoundaries::ComputeIntersectionPointMiddleZone(std::list<segment_type
     point_type r2 = { intersecP.x() + k * backSegDir.x(), intersecP.y() + k * backSegDir.y() };
 
     //find the min/max x e y
-    double xMin = Eigen::Vector3d{ intersecP.x(), r1.x(), r2.x() }.minCoeff();
-    double xMax = Eigen::Vector3d{ intersecP.x(), r1.x(), r2.x() }.maxCoeff();
-    double yMin = Eigen::Vector3d{ intersecP.y(), r1.y(), r2.y() }.minCoeff();
-    double yMax = Eigen::Vector3d{ intersecP.y(), r1.y(), r2.y() }.maxCoeff();
+    double xMin = Eigen::Vector3d { intersecP.x(), r1.x(), r2.x() }.minCoeff();
+    double xMax = Eigen::Vector3d { intersecP.x(), r1.x(), r2.x() }.maxCoeff();
+    double yMin = Eigen::Vector3d { intersecP.y(), r1.y(), r2.y() }.minCoeff();
+    double yMax = Eigen::Vector3d { intersecP.y(), r1.y(), r2.y() }.maxCoeff();
 
     point_type pMin = { xMin, yMin };
     point_type pMax = { xMax, yMax };
@@ -336,10 +336,10 @@ void SafetyBoundaries::ComputeNormalVector2Segment(segment_type segment, point_t
     // point towards the center of the polygon
 
     // starting point of the first segment
-    point_type p1{ boost::geometry::get<0, 0>(segment), boost::geometry::get<0, 1>(segment) };
+    point_type p1 { boost::geometry::get<0, 0>(segment), boost::geometry::get<0, 1>(segment) };
 
     // ending point of the segment
-    point_type p2{ boost::geometry::get<1, 0>(segment), boost::geometry::get<1, 1>(segment) };
+    point_type p2 { boost::geometry::get<1, 0>(segment), boost::geometry::get<1, 1>(segment) };
 
     point_type u, midP;
 
@@ -385,10 +385,10 @@ void SafetyBoundaries::ComputeNormalVector2Segment(segment_type segment, point_t
     // point towards the center of the polygon
 
     // starting point of the first segment
-    point_type p1{ boost::geometry::get<0, 0>(segment), boost::geometry::get<0, 1>(segment) };
+    point_type p1 { boost::geometry::get<0, 0>(segment), boost::geometry::get<0, 1>(segment) };
 
     // ending point of the segment
-    point_type p2{ boost::geometry::get<1, 0>(segment), boost::geometry::get<1, 1>(segment) };
+    point_type p2 { boost::geometry::get<1, 0>(segment), boost::geometry::get<1, 1>(segment) };
 
     point_type midP;
 
@@ -484,14 +484,14 @@ bool SafetyBoundaries::IsConvex(std::list<segment_type> segments)
     point_type midP;
 
     // starting point of the first segment
-    point_type p1{ boost::geometry::get<0, 0>(segments.front()), boost::geometry::get<0, 1>(segments.front()) };
+    point_type p1 { boost::geometry::get<0, 0>(segments.front()), boost::geometry::get<0, 1>(segments.front()) };
     // ending point of the segment
-    point_type p2{ boost::geometry::get<1, 0>(segments.front()), boost::geometry::get<1, 1>(segments.front()) };
+    point_type p2 { boost::geometry::get<1, 0>(segments.front()), boost::geometry::get<1, 1>(segments.front()) };
 
-    point_type s1{ boost::geometry::get<0, 0>(segments.back()), boost::geometry::get<0, 1>(segments.back()) };
+    point_type s1 { boost::geometry::get<0, 0>(segments.back()), boost::geometry::get<0, 1>(segments.back()) };
 
     // ending point of the segment
-    point_type s2{ boost::geometry::get<1, 0>(segments.back()), boost::geometry::get<1, 1>(segments.back()) };
+    point_type s2 { boost::geometry::get<1, 0>(segments.back()), boost::geometry::get<1, 1>(segments.back()) };
 
     // find the medium point of the segment
     if (p2.x() == s1.x() && p2.y() == s1.y()) {

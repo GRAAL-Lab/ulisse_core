@@ -1,11 +1,11 @@
 #include "ulisse_ctrl/nurbs.h"
 
 Nurbs::Nurbs(int dim)
-    : dim_{ dim }
-    , startP_{ 0.0, 0.0 }
-    , endP_{ 0.0, 0.0 }
-    , parvalue_{ 0.0 }
-    , centroid_{ 0.0, 0.0 }
+    : dim_ { dim }
+    , startP_ { 0.0, 0.0 }
+    , endP_ { 0.0, 0.0 }
+    , parvalue_ { 0.0 }
+    , centroid_ { 0.0, 0.0 }
 {
     //default initialization of Nurbs.cpp param
     nurbsParam.aepsge = 0.001;
@@ -67,7 +67,7 @@ bool Nurbs::Initialization(const ulisse_msgs::msg::Path& path)
                 point.longitude = curves.points.at(i).longitude;
                 std::cout << "point.latitude : " << point.latitude << std::endl;
                 std::cout << "point.latiude : " << point.longitude << std::endl;
-                ctb::Map2CartesianPoint(point, centroid_, pointC);
+                ctb::Map2CartesianPoint(point, 0.0, centroid_, pointC);
 
                 coef[count] = pointC[0] * weights[i];
                 coef[count + 1] = pointC[1] * weights[i];
@@ -122,11 +122,12 @@ bool Nurbs::Initialization(const ulisse_msgs::msg::Path& path)
     }
 
     Eigen::VectorXd startP = Eigen::VectorXd::Zero(dim_);
+    double altitude;
     //first dim components of derive are the components of the position vector, then the dim components of the tangent vector
     for (int i = 0; i < dim_; i++) {
         startP[i] = deriveStart[i];
     }
-    ctb::Cartesian2MapPoint(startP, centroid_, startP_);
+    ctb::Cartesian2MapPoint(startP, centroid_, startP_, altitude);
 
     Eigen::VectorXd endP = Eigen::VectorXd::Zero(dim_);
     //compute the starting point and the starting direction
@@ -142,7 +143,7 @@ bool Nurbs::Initialization(const ulisse_msgs::msg::Path& path)
     for (int i = 0; i < dim_; i++) {
         endP[i] = deriveEnd[i];
     }
-    ctb::Cartesian2MapPoint(endP, centroid_, endP_);
+    ctb::Cartesian2MapPoint(endP, centroid_, endP_, altitude);
 
     return true;
 }
@@ -150,7 +151,7 @@ bool Nurbs::Initialization(const ulisse_msgs::msg::Path& path)
 bool Nurbs::ComputeNextPoint(const ctb::LatLong& currentP, ctb::LatLong& nextP)
 {
     Eigen::VectorXd currentPCartesian = Eigen::VectorXd::Zero(dim_);
-    ctb::Map2CartesianPoint(currentP, centroid_, currentPCartesian);
+    ctb::Map2CartesianPoint(currentP, 0.0, centroid_, currentPCartesian);
 
     //Get the current Parvalue
     if (!ComputeParameterValue(currentPCartesian)) {
@@ -220,7 +221,8 @@ bool Nurbs::ComputeNextPoint(const ctb::LatLong& currentP, ctb::LatLong& nextP)
     }
 
     //Convert the next point in latlong coordinates
-    ctb::Cartesian2MapPoint(possibleNextP, centroid_, nextP);
+    double altitude;
+    ctb::Cartesian2MapPoint(possibleNextP, centroid_, nextP, altitude);
     std::cout << "tangent of the current parvalue: " << currenDirection.transpose() << std::endl;
     std::cout << "current delta: " << currentDelta_ << std::endl;
     return true;

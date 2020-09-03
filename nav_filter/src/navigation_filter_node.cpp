@@ -220,7 +220,7 @@ int main(int argc, char* argv[])
 
                         Eigen::Vector3d cartesian_p;
                         //The filter use the cartesian coordinates
-                        ctb::Map2CartesianPoint(ctb::LatLong(gpsData.latitude, gpsData.longitude), centroidLocation, cartesian_p);
+                        ctb::Map2CartesianPoint(ctb::LatLong(gpsData.latitude, gpsData.longitude), gpsData.altitude, centroidLocation, cartesian_p);
                         gpsMeasurement->MeasureVector() = Eigen::Vector3d { cartesian_p.y(), cartesian_p.x(), cartesian_p.z() };
                         extendedKalmanFilter->AddMeasurement(gpsMeasurement);
 
@@ -267,7 +267,8 @@ int main(int argc, char* argv[])
 
             state = extendedKalmanFilter->StateVector();
             ctb::LatLong map_p;
-            ctb::Cartesian2MapPoint(Eigen::Vector3d { state.y(), state.x(), state.z() }, centroidLocation, map_p);
+            double altitude;
+            ctb::Cartesian2MapPoint(Eigen::Vector3d { state.y(), state.x(), state.z() }, centroidLocation, map_p, altitude);
 
             auto tNow = std::chrono::system_clock::now();
             long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(tNow.time_since_epoch())).count();
@@ -279,7 +280,7 @@ int main(int argc, char* argv[])
 
             filterData.inertialframe_linear_position.latlong.latitude = map_p.latitude;
             filterData.inertialframe_linear_position.latlong.longitude = map_p.longitude;
-            filterData.inertialframe_linear_position.altitude = state[2];
+            filterData.inertialframe_linear_position.altitude = altitude;
             filterData.bodyframe_angular_position.roll = state[3];
             filterData.bodyframe_angular_position.pitch = state[4];
             filterData.bodyframe_angular_position.yaw = state[5];
@@ -440,7 +441,7 @@ void KalmanFilterConfiguration(libconfig::Config& confObj) noexcept(false)
     Eigen::VectorXd initialState;
     ctb::SetParamVector(state, initialState, "initialization");
     Eigen::Vector3d cartesian_p;
-    ctb::Map2CartesianPoint(ctb::LatLong(initialState[0], initialState[1]), centroidLocation, cartesian_p);
+    ctb::Map2CartesianPoint(ctb::LatLong(initialState[0], initialState[1]), initialState[2], centroidLocation, cartesian_p);
     initialState.segment(0, 2) = cartesian_p.segment(0, 2);
 
     ctb::SetParamVector(state, covariance, "initializationCovariance");

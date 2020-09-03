@@ -156,24 +156,39 @@ void VehicleSimulator::SimulateSensors()
 
     std::normal_distribution<double> gpsNoiseX(0.0, config->sensorsNoise.gps_stdd.x());
     std::normal_distribution<double> gpsNoiseY(0.0, config->sensorsNoise.gps_stdd.y());
+    std::normal_distribution<double> gpsNoiseZ(0.0, config->sensorsNoise.gps_stdd.z());
 
-    //add noise to gps. Transform to cartesian, add noise and come back to map coordinates
+    //Transform to cartesian,
     static ctb::LatLong centroidLocation(44.414165, 8.942184);
     Eigen::Vector3d cartesian_p;
-    ctb::Map2CartesianPoint(ctb::LatLong(latitude_, longitude_), centroidLocation, cartesian_p);
+    ctb::Map2CartesianPoint(ctb::LatLong(latitude_, longitude_), 0.0, centroidLocation, cartesian_p);
+    //distance vector of the antenna w.r.t the COM
+    Eigen::Vector3d r = { -0.49, 0.0, -1.0 };
 
+    //move the gps from COM to the antenna
+    cartesian_p.x() = cartesian_p.x() - r.y() * (cos(bodyF_orientation_.Roll()) * sin(bodyF_orientation_.Yaw()) - cos(bodyF_orientation_.Yaw()) * sin(bodyF_orientation_.Pitch()) * sin(bodyF_orientation_.Roll())) + r.z() * (sin(bodyF_orientation_.Roll()) * sin(bodyF_orientation_.Yaw()) + cos(bodyF_orientation_.Roll()) * cos(bodyF_orientation_.Yaw()) * sin(bodyF_orientation_.Pitch())) + r.x() * cos(bodyF_orientation_.Pitch()) * cos(bodyF_orientation_.Yaw());
+    cartesian_p.y() = cartesian_p.y() + r.y() * (cos(bodyF_orientation_.Roll()) * cos(bodyF_orientation_.Yaw()) + sin(bodyF_orientation_.Pitch()) * sin(bodyF_orientation_.Roll()) * sin(bodyF_orientation_.Yaw())) - r.z() * (cos(bodyF_orientation_.Yaw()) * sin(bodyF_orientation_.Roll()) - cos(bodyF_orientation_.Roll()) * sin(bodyF_orientation_.Pitch()) * sin(bodyF_orientation_.Yaw())) + r.x() * cos(bodyF_orientation_.Pitch()) * sin(bodyF_orientation_.Yaw());
+    cartesian_p.z() = -r.x() * sin(bodyF_orientation_.Pitch()) + cartesian_p.z() + r.z() * cos(bodyF_orientation_.Pitch()) * cos(bodyF_orientation_.Roll()) + r.y() * cos(bodyF_orientation_.Pitch()) * sin(bodyF_orientation_.Roll());
+
+    ctb::LatLong real_map_p;
+    double real_altitude;
+    ctb::Cartesian2MapPoint(cartesian_p, centroidLocation, real_map_p, real_altitude);
+
+    //add noise and come back to map coordinates
     cartesian_p.x() = cartesian_p.x() + gpsNoiseX(generator);
     cartesian_p.y() = cartesian_p.y() + gpsNoiseY(generator);
+    cartesian_p.z() = cartesian_p.z() + gpsNoiseZ(generator);
 
     ctb::LatLong map_p;
-    ctb::Cartesian2MapPoint(cartesian_p, centroidLocation, map_p);
+    double altitude;
+    ctb::Cartesian2MapPoint(cartesian_p, centroidLocation, map_p, altitude);
 
     gpsMsg_.time = static_cast<double>(now_nanosecs / 1E9);
     gpsMsg_.track = vehicleTrack_;
     gpsMsg_.speed = vehicleSpeed_;
     gpsMsg_.latitude = map_p.latitude;
     gpsMsg_.longitude = map_p.longitude;
-    gpsMsg_.altitude = 0.0;
+    gpsMsg_.altitude = altitude;
     gpsMsg_.gpsfixmode = 3u; //ulisse_msgs::msg::GPSData::MODE_3D;
 
     std::normal_distribution<double> compassNoiseR(0.0, config->sensorsNoise.compass_stdd.x());
@@ -207,8 +222,8 @@ void VehicleSimulator::SimulateSensors()
     double bx = config->sensorsNoise.bx.C + config->sensorsNoise.bx.A * sin(2 * M_PI * config->sensorsNoise.bx.f * t);
     double by = config->sensorsNoise.by.C + config->sensorsNoise.by.A * sin(2 * M_PI * config->sensorsNoise.by.f * t);
     double bz = config->sensorsNoise.bz.C + config->sensorsNoise.bz.A * sin(2 * M_PI * config->sensorsNoise.bz.f * t);
-    imuMsg_.gyro[0] = bodyF_relativeVelocity_(3) + gyroNoiseX(generator) + bx;
-    imuMsg_.gyro[1] = bodyF_relativeVelocity_(4) + gyroNoiseY(generator) + by;
+    imuMsg_.gyro[0] = bodyF_relativeVelocity_(3) + gyroNoiseX(generator) + bx + config->wx.A * sin(2 * M_PI * config->wx.f * t) + config->wx.C;
+    imuMsg_.gyro[1] = bodyF_relativeVelocity_(4) + gyroNoiseY(generator) + by + config->wy.A * sin(2 * M_PI * config->wy.f * t) + config->wy.C;
     imuMsg_.gyro[2] = bodyF_relativeVelocity_(5) + gyroNoiseZ(generator) + bz;
 
     //ambient sensor
@@ -245,12 +260,14 @@ void VehicleSimulator::SimulateSensors()
     magnetometerMsg_.orthogonalstrength[1] = ned_m.y() + magnetometerNoiseY(generator);
     magnetometerMsg_.orthogonalstrength[2] = ned_m.z() + magnetometerNoiseZ(generator);
 
+    Eigen::Vector3d p;
+    ctb::Map2CartesianPoint(ctb::LatLong(gpsMsg_.latitude, gpsMsg_.longitude), gpsMsg_.altitude, centroidLocation, p);
     //Fill the ground truth msg
     groundTruthMsg_.stamp.sec = now_stamp_secs;
     groundTruthMsg_.stamp.nanosec = now_stamp_nanosecs;
-    groundTruthMsg_.inertialframe_linear_position.latlong.latitude = latitude_;
-    groundTruthMsg_.inertialframe_linear_position.latlong.longitude = longitude_;
-    groundTruthMsg_.inertialframe_linear_position.altitude = 0.0;
+    groundTruthMsg_.inertialframe_linear_position.latlong.latitude = /*real_map_p.latitude*/ p[0];
+    groundTruthMsg_.inertialframe_linear_position.latlong.longitude = /*real_map_p.longitude*/ p[1];
+    groundTruthMsg_.inertialframe_linear_position.altitude = /* real_altitude*/ p[2];
     groundTruthMsg_.bodyframe_angular_position.roll = bodyF_orientation_.Roll();
     groundTruthMsg_.bodyframe_angular_position.pitch = bodyF_orientation_.Pitch();
     groundTruthMsg_.bodyframe_angular_position.yaw = bodyF_orientation_.Yaw();
