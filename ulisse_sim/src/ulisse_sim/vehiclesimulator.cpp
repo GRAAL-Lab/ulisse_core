@@ -167,18 +167,19 @@ void VehicleSimulator::SimulateSensors()
     //Transform to cartesian,
     static ctb::LatLong centroidLocation(44.414165, 8.942184);
     Eigen::Vector3d cartesian_p;
-    ctb::Map2CartesianPoint(ctb::LatLong(latitude_, longitude_), 0.0, centroidLocation, cartesian_p);
+    ctb::LatLong2LocalNED(ctb::LatLong(latitude_, longitude_), 0.0, centroidLocation, cartesian_p);
     //distance vector of the antenna w.r.t the COM
     Eigen::Vector3d r = { -0.49, 0.0, -1.0 };
 
     //move the gps from COM to the antenna
     cartesian_p.x() = cartesian_p.x() - r.y() * (cos(bodyF_orientation_.Roll()) * sin(bodyF_orientation_.Yaw()) - cos(bodyF_orientation_.Yaw()) * sin(bodyF_orientation_.Pitch()) * sin(bodyF_orientation_.Roll())) + r.z() * (sin(bodyF_orientation_.Roll()) * sin(bodyF_orientation_.Yaw()) + cos(bodyF_orientation_.Roll()) * cos(bodyF_orientation_.Yaw()) * sin(bodyF_orientation_.Pitch())) + r.x() * cos(bodyF_orientation_.Pitch()) * cos(bodyF_orientation_.Yaw());
     cartesian_p.y() = cartesian_p.y() + r.y() * (cos(bodyF_orientation_.Roll()) * cos(bodyF_orientation_.Yaw()) + sin(bodyF_orientation_.Pitch()) * sin(bodyF_orientation_.Roll()) * sin(bodyF_orientation_.Yaw())) - r.z() * (cos(bodyF_orientation_.Yaw()) * sin(bodyF_orientation_.Roll()) - cos(bodyF_orientation_.Roll()) * sin(bodyF_orientation_.Pitch()) * sin(bodyF_orientation_.Yaw())) + r.x() * cos(bodyF_orientation_.Pitch()) * sin(bodyF_orientation_.Yaw());
-    cartesian_p.z() = -r.x() * sin(bodyF_orientation_.Pitch()) + cartesian_p.z() + r.z() * cos(bodyF_orientation_.Pitch()) * cos(bodyF_orientation_.Roll()) + r.y() * cos(bodyF_orientation_.Pitch()) * sin(bodyF_orientation_.Roll());
+    cartesian_p.z() = - r.x() * sin(bodyF_orientation_.Pitch()) + cartesian_p.z() + r.z() * cos(bodyF_orientation_.Pitch()) * cos(bodyF_orientation_.Roll()) + r.y() * cos(bodyF_orientation_.Pitch()) * sin(bodyF_orientation_.Roll());
 
+    //for gound truth
     ctb::LatLong real_map_p;
     double real_altitude;
-    ctb::Cartesian2MapPoint(cartesian_p, centroidLocation, real_map_p, real_altitude);
+    ctb::LocalNED2LatLong(cartesian_p, centroidLocation, real_map_p, real_altitude);
 
     //add noise and come back to map coordinates
     cartesian_p.x() = cartesian_p.x() + gpsNoiseX(generator);
@@ -187,7 +188,7 @@ void VehicleSimulator::SimulateSensors()
 
     ctb::LatLong map_p;
     double altitude;
-    ctb::Cartesian2MapPoint(cartesian_p, centroidLocation, map_p, altitude);
+    ctb::LocalNED2LatLong(cartesian_p, centroidLocation, map_p, altitude);
 
     gpsMsg_.time = static_cast<double>(now_nanosecs / 1E9);
     gpsMsg_.track = vehicleTrack_;
@@ -272,8 +273,6 @@ void VehicleSimulator::SimulateSensors()
     magnetometerMsg_.orthogonalstrength[1] = ned_m.y() + magnetometerNoiseY(generator);
     magnetometerMsg_.orthogonalstrength[2] = ned_m.z() + magnetometerNoiseZ(generator);
 
-    Eigen::Vector3d p;
-    ctb::Map2CartesianPoint(ctb::LatLong(gpsMsg_.latitude, gpsMsg_.longitude), gpsMsg_.altitude, centroidLocation, p);
     //Fill the ground truth msg
     groundTruthMsg_.stamp.sec = now_stamp_secs;
     groundTruthMsg_.stamp.nanosec = now_stamp_nanosecs;

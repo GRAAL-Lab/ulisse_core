@@ -25,7 +25,7 @@ void SafetyBoundaries::Update() noexcept(false)
     }
 
     //form lat long to euclidian
-    ctb::Map2CartesianPoint(vehiclePositionLatLong_, 0.0, centroid_, vehiclePosition_);
+    ctb::LatLong2LocalUTM(vehiclePositionLatLong_, 0.0, centroid_, vehiclePosition_);
 
     DistanceCheck(point_type(vehiclePosition_[0], vehiclePosition_[1]));
 
@@ -75,7 +75,7 @@ bool SafetyBoundaries::InitializePolygon(const ulisse_msgs::msg::Boundaries& bou
             latlongVertex.latitude = vertex.latitude;
             latlongVertex.longitude = vertex.longitude;
 
-            Map2CartesianPoint(latlongVertex, 0.0, centroid_, cartesianVertex);
+            LatLong2LocalUTM(latlongVertex, 0.0, centroid_, cartesianVertex);
 
             polygon = polygon + boost::lexical_cast<std::string>(cartesianVertex[0]) + " " + boost::lexical_cast<std::string>(cartesianVertex[1]);
         }

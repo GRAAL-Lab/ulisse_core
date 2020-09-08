@@ -15,7 +15,7 @@ namespace nav {
     {
         Eigen::MatrixXd H = Eigen::MatrixXd::Zero(3, state.size());
         //distance vector of the antenna w.r.t the COM
-        Eigen::Vector3d r = { 0.0, -0.49, 1.0 };
+        Eigen::Vector3d r = { -0.49, 0.0, -1.0 };
 
         //        H.block(0, 0, 2, 2) = Eigen::MatrixXd::Identity(2, 2);
         //        H(2, 2) = -1;
@@ -34,7 +34,7 @@ namespace nav {
         //        linearPosition.z() = -state.z();
 
         //distance vector of the antenna w.r.t the COM
-        Eigen::Vector3d r = { 0.0, -0.49, 1.0 };
+        Eigen::Vector3d r = { -0.49, 0.0, -1.0 };
 
         //move the gps from COM to the antenna
         linearPosition.x() = state[0] - r.y() * (cos(state[3]) * sin(state[5]) - cos(state[5]) * sin(state[4]) * sin(state[3])) + r.z() * (sin(state[3]) * sin(state[5]) + cos(state[3]) * cos(state[5]) * sin(state[4])) + r.x() * cos(state[4]) * cos(state[5]);
