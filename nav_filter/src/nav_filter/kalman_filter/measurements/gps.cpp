@@ -22,7 +22,8 @@ namespace nav {
 
         H << 1, 0, 0, r.y() * (sin(state[3]) * sin(state[5]) + cos(state[3]) * cos(state[5]) * sin(state[4])) + r.z() * (cos(state[3]) * sin(state[5]) - cos(state[5]) * sin(state[4]) * sin(state[3])), r.z() * cos(state[4]) * cos(state[3]) * cos(state[5]) - r.x() * cos(state[5]) * sin(state[4]) + r.y() * cos(state[4]) * cos(state[5]) * sin(state[3]), r.z() * (cos(state[5]) * sin(state[3]) - cos(state[3]) * sin(state[4]) * sin(state[5])) - r.y() * (cos(state[3]) * cos(state[5]) + sin(state[4]) * sin(state[3]) * sin(state[5])) - r.x() * cos(state[4]) * sin(state[5]), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 1, 0, -r.y() * (cos(state[5]) * sin(state[3]) - cos(state[3]) * sin(state[4]) * sin(state[5])) - r.z() * (cos(state[3]) * cos(state[5]) + sin(state[4]) * sin(state[3]) * sin(state[5])), r.z() * cos(state[4]) * cos(state[3]) * sin(state[5]) - r.x() * sin(state[4]) * sin(state[5]) + r.y() * cos(state[4]) * sin(state[3]) * sin(state[5]), r.z() * (sin(state[3]) * sin(state[5]) + cos(state[3]) * cos(state[5]) * sin(state[4])) - r.y() * (cos(state[3]) * sin(state[5]) - cos(state[5]) * sin(state[4]) * sin(state[3])) + r.x() * cos(state[4]) * cos(state[5]), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, -1, r.z() * cos(state[4]) * sin(state[3]) - r.y() * cos(state[4]) * cos(state[3]), r.x() * cos(state[4]) + r.z() * cos(state[3]) * sin(state[4]) + r.y() * sin(state[4]) * sin(state[3]), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0;
+            0, 0, 1, -r.z() * cos(state[4]) * sin(state[3]) + r.y() * cos(state[4]) * cos(state[3]), -r.x() * cos(state[4]) - r.z() * cos(state[3]) * sin(state[4]) - r.y() * sin(state[4]) * sin(state[3]), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0;
+
 
         return H;
     }
@@ -39,7 +40,7 @@ namespace nav {
         //move the gps from COM to the antenna
         linearPosition.x() = state[0] - r.y() * (cos(state[3]) * sin(state[5]) - cos(state[5]) * sin(state[4]) * sin(state[3])) + r.z() * (sin(state[3]) * sin(state[5]) + cos(state[3]) * cos(state[5]) * sin(state[4])) + r.x() * cos(state[4]) * cos(state[5]);
         linearPosition.y() = state[1] + r.y() * (cos(state[3]) * cos(state[5]) + sin(state[4]) * sin(state[3]) * sin(state[5])) - r.z() * (cos(state[5]) * sin(state[3]) - cos(state[3]) * sin(state[4]) * sin(state[5])) + r.x() * cos(state[4]) * sin(state[5]);
-        linearPosition.z() = r.x() * sin(state[4]) - state[2] - r.z() * cos(state[4]) * cos(state[3]) - r.y() * cos(state[4]) * sin(state[3]);
+        linearPosition.z() = -r.x() * sin(state[4]) + state[2] + r.z() * cos(state[4]) * cos(state[3]) + r.y() * cos(state[4]) * sin(state[3]);
 
         return linearPosition;
     }

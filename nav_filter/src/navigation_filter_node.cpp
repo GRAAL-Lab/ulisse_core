@@ -221,8 +221,7 @@ int main(int argc, char* argv[])
                         Eigen::Vector3d cartesian_p;
                         //The filter use the cartesian coordinates
                         ctb::LatLong2LocalNED(ctb::LatLong(gpsData.latitude, gpsData.longitude), gpsData.altitude, centroidLocation, cartesian_p);
-                        //change the sign of z component because the filter expects a positive z
-                        gpsMeasurement->MeasureVector() = Eigen::Vector3d { cartesian_p.x(), cartesian_p.y(), -cartesian_p.z() };
+                        gpsMeasurement->MeasureVector() = Eigen::Vector3d { cartesian_p.x(), cartesian_p.y(), cartesian_p.z() };
                         extendedKalmanFilter->AddMeasurement(gpsMeasurement);
 
                         lastValidGPSTime = gpsData.time;
