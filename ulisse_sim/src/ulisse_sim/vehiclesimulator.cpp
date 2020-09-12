@@ -49,6 +49,8 @@ VehicleSimulator::VehicleSimulator(const rclcpp::Node::SharedPtr& nh)
 
     worldF_waterVelocity_(0) = 0.0;
     worldF_waterVelocity_(1) = 0.0;
+
+    bodyF_projection_.setZero(6, 6);
 }
 
 void VehicleSimulator::SetRealtime(bool realtime)
@@ -92,6 +94,7 @@ void VehicleSimulator::ExecuteStep()
     previous_bodyF_orientation_ = bodyF_orientation_;
     previousLatitude_ = latitude_;
     previousLongitude_ = longitude_;
+    altitude_ = 0.0;
 }
 
 void VehicleSimulator::SimulateActuation()
@@ -99,11 +102,39 @@ void VehicleSimulator::SimulateActuation()
     // Computing vehicle acceleration
     ulisseModel.DirectDynamics(hp_, hs_, bodyF_relativeVelocity_, bodyF_relativeAcceleration_);
 
+    //Compute the worldF_R_bodyF
+    Eigen::RotationMatrix Rz, Ry, Rx;
+    Rz << cos(bodyF_orientation_.Yaw()), -sin(bodyF_orientation_.Yaw()), 0,
+        sin(bodyF_orientation_.Yaw()), cos(bodyF_orientation_.Yaw()), 0,
+        0, 0, 1;
+
+    Ry << cos(bodyF_orientation_.Pitch()), 0, sin(bodyF_orientation_.Pitch()),
+        0, 1, 0,
+        -sin(bodyF_orientation_.Pitch()), 0, cos(bodyF_orientation_.Pitch());
+
+    Rx << 1, 0, 0,
+        0, cos(bodyF_orientation_.Roll()), -sin(bodyF_orientation_.Roll()),
+        0, sin(bodyF_orientation_.Roll()), cos(bodyF_orientation_.Roll());
+
+    worldF_R_bodyF_ = Rz * Ry * Rx;
+
+    //Compute the projection of the velocity on the plane
+    Eigen::Vector3d worldF_wFk = { 0.0, 0.0, 1.0 };
+
+    bodyF_wFk_ = worldF_R_bodyF_.transpose() * worldF_wFk;
+
+    P_ = Eigen::Matrix3d::Identity() - bodyF_wFk_ * bodyF_wFk_.transpose();
+
+    bodyF_projection_.block(0, 0, 3, 3) = P_;
+    bodyF_projection_.block(3, 3, 3, 3) = Eigen::Matrix3d::Identity();
+
+    bodyF_relativeAcceleration_projected_ = bodyF_projection_ * bodyF_relativeAcceleration_;
+
     worldF_waterVelocity_(0) = config->inertialF_waterCurrent.x();
     worldF_waterVelocity_(1) = config->inertialF_waterCurrent.y();
 
     // Integrating the acceleration to get the vehicle velocity
-    bodyF_relativeVelocity_ = bodyF_relativeVelocity_ + bodyF_relativeAcceleration_ * Ts_;
+    bodyF_relativeVelocity_ = bodyF_relativeVelocity_ + bodyF_relativeAcceleration_projected_ * Ts_;
 
     // Projecting the acceleration and velocity on the world frame
     long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
@@ -112,11 +143,10 @@ void VehicleSimulator::SimulateActuation()
     double t = now_stamp_secs + (now_stamp_nanosecs * 1e-9);
 
     bodyF_wavesEffects_ << 0.0, 0.0, 0.0, config->wx.A * sin(2 * M_PI * config->wx.f * t) + config->wx.C, config->wy.A * sin(2 * M_PI * config->wy.f * t) + config->wy.C, 0.0;
-    worldF_relativeAcceleration_ = bodyF_orientation_.ToRotationMatrix().CartesianRotationMatrix() * bodyF_relativeAcceleration_;
+    worldF_relativeAcceleration_ = bodyF_orientation_.ToRotationMatrix().CartesianRotationMatrix() * bodyF_relativeAcceleration_projected_;
     worldF_relativeVelocity_ = bodyF_orientation_.ToRotationMatrix().CartesianRotationMatrix() * (bodyF_relativeVelocity_ + bodyF_wavesEffects_);
 
     // Get the vehicle absolute velocity by adding the water current velocity
-
     worldF_velocity_ = worldF_relativeVelocity_ + worldF_waterVelocity_;
 
     // Passing from angular vehicle acceleration to Euler rates
@@ -166,36 +196,29 @@ void VehicleSimulator::SimulateSensors()
 
     //Transform to cartesian,
     static ctb::LatLong centroidLocation(44.414165, 8.942184);
-    Eigen::Vector3d cartesian_p;
-    ctb::LatLong2LocalNED(ctb::LatLong(latitude_, longitude_), 0.0, centroidLocation, cartesian_p);
+    Eigen::Vector3d worldF_com, worldF_antenna;
+    ctb::LatLong2LocalNED(ctb::LatLong(latitude_, longitude_), altitude_, centroidLocation, worldF_com);
     //distance vector of the antenna w.r.t the COM
-    Eigen::Vector3d r = { -0.49, 0.0, -1.0 };
+    Eigen::Vector3d bodyF_r = { -0.49, 0.0, -1.0 };
 
     //move the gps from COM to the antenna
-    cartesian_p.x() = cartesian_p.x() - r.y() * (cos(bodyF_orientation_.Roll()) * sin(bodyF_orientation_.Yaw()) - cos(bodyF_orientation_.Yaw()) * sin(bodyF_orientation_.Pitch()) * sin(bodyF_orientation_.Roll())) + r.z() * (sin(bodyF_orientation_.Roll()) * sin(bodyF_orientation_.Yaw()) + cos(bodyF_orientation_.Roll()) * cos(bodyF_orientation_.Yaw()) * sin(bodyF_orientation_.Pitch())) + r.x() * cos(bodyF_orientation_.Pitch()) * cos(bodyF_orientation_.Yaw());
-    cartesian_p.y() = cartesian_p.y() + r.y() * (cos(bodyF_orientation_.Roll()) * cos(bodyF_orientation_.Yaw()) + sin(bodyF_orientation_.Pitch()) * sin(bodyF_orientation_.Roll()) * sin(bodyF_orientation_.Yaw())) - r.z() * (cos(bodyF_orientation_.Yaw()) * sin(bodyF_orientation_.Roll()) - cos(bodyF_orientation_.Roll()) * sin(bodyF_orientation_.Pitch()) * sin(bodyF_orientation_.Yaw())) + r.x() * cos(bodyF_orientation_.Pitch()) * sin(bodyF_orientation_.Yaw());
-    cartesian_p.z() = - r.x() * sin(bodyF_orientation_.Pitch()) + cartesian_p.z() + r.z() * cos(bodyF_orientation_.Pitch()) * cos(bodyF_orientation_.Roll()) + r.y() * cos(bodyF_orientation_.Pitch()) * sin(bodyF_orientation_.Roll());
-
-    //for gound truth
-    ctb::LatLong real_map_p;
-    double real_altitude;
-    ctb::LocalNED2LatLong(cartesian_p, centroidLocation, real_map_p, real_altitude);
+    worldF_antenna = worldF_com + worldF_R_bodyF_ * bodyF_r;
 
     //add noise and come back to map coordinates
-    cartesian_p.x() = cartesian_p.x() + gpsNoiseX(generator);
-    cartesian_p.y() = cartesian_p.y() + gpsNoiseY(generator);
-    cartesian_p.z() = cartesian_p.z() + gpsNoiseZ(generator);
+    worldF_antenna.x() += gpsNoiseX(generator);
+    worldF_antenna.y() += gpsNoiseY(generator);
+    worldF_antenna.z() += gpsNoiseZ(generator);
 
-    ctb::LatLong map_p;
-    double altitude;
-    ctb::LocalNED2LatLong(cartesian_p, centroidLocation, map_p, altitude);
+    ctb::LatLong gpsLatlong;
+    double gpsAltitude;
+    ctb::LocalNED2LatLong(worldF_antenna, centroidLocation, gpsLatlong, gpsAltitude);
 
     gpsMsg_.time = static_cast<double>(now_nanosecs / 1E9);
     gpsMsg_.track = vehicleTrack_;
     gpsMsg_.speed = vehicleSpeed_;
-    gpsMsg_.latitude = map_p.latitude;
-    gpsMsg_.longitude = map_p.longitude;
-    gpsMsg_.altitude = altitude;
+    gpsMsg_.latitude = gpsLatlong.latitude;
+    gpsMsg_.longitude = gpsLatlong.longitude;
+    gpsMsg_.altitude = gpsAltitude;
     gpsMsg_.gpsfixmode = 3u; //ulisse_msgs::msg::GPSData::MODE_3D;
 
     std::normal_distribution<double> compassNoiseR(0.0, config->sensorsNoise.compass_stdd.x());
@@ -215,9 +238,12 @@ void VehicleSimulator::SimulateSensors()
 
     imuMsg_.stamp.sec = now_stamp_secs;
     imuMsg_.stamp.nanosec = now_stamp_nanosecs;
-    imuMsg_.accelerometer[0] = bodyF_relativeAcceleration_(0) + accelerometerNoiseX(generator);
-    imuMsg_.accelerometer[1] = bodyF_relativeAcceleration_(1) + accelerometerNoiseY(generator);
-    imuMsg_.accelerometer[2] = 9.81 + accelerometerNoiseZ(generator);
+    Eigen::Vector3d bodyF_linearAcceleration, worldF_gravity = { 0.0, 0.0, 9.81 };
+    bodyF_linearAcceleration = bodyF_relativeAcceleration_projected_.segment(0, 3) + worldF_R_bodyF_.transpose() * worldF_gravity;
+
+    imuMsg_.accelerometer[0] = bodyF_linearAcceleration.x() + accelerometerNoiseX(generator);
+    imuMsg_.accelerometer[1] = bodyF_linearAcceleration.y() + accelerometerNoiseY(generator);
+    imuMsg_.accelerometer[2] = bodyF_linearAcceleration.z() + accelerometerNoiseZ(generator);
 
     //gyro noise
     std::normal_distribution<double> gyroNoiseX(0.0, config->sensorsNoise.gyro_stdd.x());
@@ -234,10 +260,11 @@ void VehicleSimulator::SimulateSensors()
     Eigen::Vector3d bodyF_relativeAngularVelocity;
     bodyF_relativeAngularVelocity(0) = bodyF_relativeVelocity_(3) + bodyF_wavesEffects_(3);
     bodyF_relativeAngularVelocity(1) = bodyF_relativeVelocity_(4) + bodyF_wavesEffects_(4);
+    bodyF_relativeAngularVelocity(2) = bodyF_relativeVelocity_(5);
 
     imuMsg_.gyro[0] = bodyF_relativeAngularVelocity(0) + gyroNoiseX(generator) + bx;
     imuMsg_.gyro[1] = bodyF_relativeAngularVelocity(1) + gyroNoiseY(generator) + by;
-    imuMsg_.gyro[2] = bodyF_relativeVelocity_(5) + gyroNoiseZ(generator) + bz;
+    imuMsg_.gyro[2] = bodyF_relativeAngularVelocity(2) + gyroNoiseZ(generator) + bz;
 
     //ambient sensor
     ambsensMsg_.stamp.sec = now_stamp_secs;
@@ -248,20 +275,7 @@ void VehicleSimulator::SimulateSensors()
     //magnetometer
     Eigen::Vector3d m = { 23186.6 * 1E-9, 0.0 * 1E-9, 41122.0 * 1E-9 }; // Example of magnetic field at lat long: 44.4056° N, 8.9463° E
 
-    Eigen::RotationMatrix Rz, Ry, Rx;
-    Rz << cos(bodyF_orientation_.Yaw()), -sin(bodyF_orientation_.Yaw()), 0,
-        sin(bodyF_orientation_.Yaw()), cos(bodyF_orientation_.Yaw()), 0,
-        0, 0, 1;
-
-    Ry << cos(bodyF_orientation_.Pitch()), 0, sin(bodyF_orientation_.Pitch()),
-        0, 1, 0,
-        -sin(bodyF_orientation_.Pitch()), 0, cos(bodyF_orientation_.Pitch());
-
-    Rx << 1, 0, 0,
-        0, cos(bodyF_orientation_.Roll()), -sin(bodyF_orientation_.Roll()),
-        0, sin(bodyF_orientation_.Roll()), cos(bodyF_orientation_.Roll());
-
-    Eigen::Vector3d ned_m = (Rz * Ry * Rx).transpose() * m;
+    Eigen::Vector3d ned_m = worldF_R_bodyF_.transpose() * m;
 
     std::normal_distribution<double> magnetometerNoiseX(0.0, config->sensorsNoise.magnetometer_stdd.x());
     std::normal_distribution<double> magnetometerNoiseY(0.0, config->sensorsNoise.magnetometer_stdd.y());
@@ -276,9 +290,9 @@ void VehicleSimulator::SimulateSensors()
     //Fill the ground truth msg
     groundTruthMsg_.stamp.sec = now_stamp_secs;
     groundTruthMsg_.stamp.nanosec = now_stamp_nanosecs;
-    groundTruthMsg_.inertialframe_linear_position.latlong.latitude = real_map_p.latitude;
-    groundTruthMsg_.inertialframe_linear_position.latlong.longitude = real_map_p.longitude;
-    groundTruthMsg_.inertialframe_linear_position.altitude = real_altitude;
+    groundTruthMsg_.inertialframe_linear_position.latlong.latitude = latitude_;
+    groundTruthMsg_.inertialframe_linear_position.latlong.longitude = longitude_;
+    groundTruthMsg_.inertialframe_linear_position.altitude = altitude_;
     groundTruthMsg_.bodyframe_angular_position.roll = bodyF_orientation_.Roll();
     groundTruthMsg_.bodyframe_angular_position.pitch = bodyF_orientation_.Pitch();
     groundTruthMsg_.bodyframe_angular_position.yaw = bodyF_orientation_.Yaw();
@@ -287,7 +301,7 @@ void VehicleSimulator::SimulateSensors()
     groundTruthMsg_.bodyframe_linear_velocity[2] = bodyF_relativeVelocity_(2);
     groundTruthMsg_.bodyframe_angular_velocity[0] = bodyF_relativeAngularVelocity(0);
     groundTruthMsg_.bodyframe_angular_velocity[1] = bodyF_relativeAngularVelocity(1);
-    groundTruthMsg_.bodyframe_angular_velocity[2] = bodyF_relativeVelocity_(5);
+    groundTruthMsg_.bodyframe_angular_velocity[2] = bodyF_relativeAngularVelocity(2);
     groundTruthMsg_.inertialframe_water_current[0] = worldF_waterVelocity_[0];
     groundTruthMsg_.inertialframe_water_current[1] = worldF_waterVelocity_[1];
     groundTruthMsg_.gyro_bias[0] = bx;

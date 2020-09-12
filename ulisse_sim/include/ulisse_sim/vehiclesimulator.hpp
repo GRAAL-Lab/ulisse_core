@@ -119,9 +119,15 @@ class VehicleSimulator {
 
     rml::EulerRPY bodyF_orientation_, previous_bodyF_orientation_;
     Eigen::Vector6d bodyF_relativeVelocity_, worldF_relativeVelocity_, worldF_velocity_, worldF_waterVelocity_;
-    Eigen::Vector6d bodyF_relativeAcceleration_, worldF_relativeAcceleration_, bodyF_wavesEffects_;
+    Eigen::Vector6d bodyF_relativeAcceleration_, worldF_relativeAcceleration_, bodyF_relativeAcceleration_projected_, bodyF_wavesEffects_;
 
     double latitude_, longitude_, previousLatitude_, previousLongitude_, altitude_;
+
+    Eigen::Matrix3d P_;
+    Eigen::Matrix6d bodyF_projection_;
+
+    Eigen::Vector3d bodyF_wFk_;
+
     double vehicleTrack_, vehicleSpeed_;
 
     uint32_t timestamp_count_; // [200Hz counter]
@@ -152,6 +158,8 @@ class VehicleSimulator {
     double hp_, hs_;
 
     bool realTime_;
+
+    Eigen::RotationMatrix worldF_R_bodyF_;
 
     void SimulateActuation();
 

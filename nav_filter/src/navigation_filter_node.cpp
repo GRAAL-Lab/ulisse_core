@@ -287,7 +287,6 @@ int main(int argc, char* argv[])
             filterData.bodyframe_linear_velocity[0] = state[6];
             filterData.bodyframe_linear_velocity[1] = state[7];
             filterData.bodyframe_linear_velocity[2] = state[8];
-
             filterData.bodyframe_angular_velocity[0] = state[9];
             filterData.bodyframe_angular_velocity[1] = state[10];
             filterData.bodyframe_angular_velocity[2] = state[11];
