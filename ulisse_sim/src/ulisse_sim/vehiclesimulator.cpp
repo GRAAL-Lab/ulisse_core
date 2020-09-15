@@ -136,6 +136,9 @@ void VehicleSimulator::SimulateActuation()
     // Integrating the acceleration to get the vehicle velocity
     bodyF_relativeVelocity_ = bodyF_relativeVelocity_ + bodyF_relativeAcceleration_projected_ * Ts_;
 
+    //add projection on bodyF_relativeVelocity (plane constraint)
+    bodyF_relativeVelocity_ = bodyF_projection_ * bodyF_relativeVelocity_;
+
     // Projecting the acceleration and velocity on the world frame
     long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
     auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));

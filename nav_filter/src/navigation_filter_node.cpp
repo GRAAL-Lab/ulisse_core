@@ -27,6 +27,7 @@
 #include "nav_filter/kalman_filter/measurements/gps.hpp"
 #include "nav_filter/kalman_filter/measurements/gyro.hpp"
 #include "nav_filter/kalman_filter/measurements/magnetometer.hpp"
+#include "nav_filter/kalman_filter/measurements/z_meter.hpp"
 #include "nav_filter/kalman_filter/ulisse_vehicle_model.hpp"
 #include "nav_filter/luenberger_observer/pos_vel_observer.hpp"
 #include "surface_vehicle_model/surfacevehiclemodel.hpp"
@@ -62,6 +63,7 @@ static std::shared_ptr<CompassMeasurement> compassMeasurement;
 static std::shared_ptr<AccelerometerMeasurement> accelerometerMeasurement;
 static std::shared_ptr<MagnetometerMeasurement> magnetometerMeasurement;
 static std::shared_ptr<GyroMeasurement> gyroMeasurement;
+static std::shared_ptr<zMeter> zMeterMeasurement;
 
 static std::shared_ptr<ctb::ExtendedKalmanFilter> extendedKalmanFilter;
 
@@ -110,6 +112,7 @@ int main(int argc, char* argv[])
     accelerometerMeasurement = std::make_shared<ulisse::nav::AccelerometerMeasurement>(ulisse::nav::AccelerometerMeasurement());
     gpsMeasurement = std::make_shared<ulisse::nav::GpsMeasurement>(ulisse::nav::GpsMeasurement());
     magnetometerMeasurement = std::make_shared<ulisse::nav::MagnetometerMeasurement>(ulisse::nav::MagnetometerMeasurement());
+    zMeterMeasurement = std::make_shared<ulisse::nav::zMeter>(ulisse::nav::zMeter());
 
     //Load filter params
     LoadConfiguration();
@@ -135,6 +138,7 @@ int main(int argc, char* argv[])
     double lastValidImuTime = 0.0;
     double lastValidCompassTime = 0.0;
     double lastValidMagnetomerTime = 0.0;
+    double lastValidGroundTruthTime = 0.0;
 
     ulisse_msgs::msg::NavFilterData filterData;
 
@@ -218,10 +222,10 @@ int main(int argc, char* argv[])
                 if (gpsData.time > lastValidGPSTime) {
                     if (gpsData.gpsfixmode >= static_cast<int>(ulisse::gpsd::GpsFixMode::mode_2d)) {
 
-                        Eigen::Vector3d cartesian_p;
+                        Eigen::Vector3d NED_p;
                         //The filter use the cartesian coordinates
-                        ctb::LatLong2LocalNED(ctb::LatLong(gpsData.latitude, gpsData.longitude), gpsData.altitude, centroidLocation, cartesian_p);
-                        gpsMeasurement->MeasureVector() = Eigen::Vector3d { cartesian_p.x(), cartesian_p.y(), cartesian_p.z() };
+                        ctb::LatLong2LocalNED(ctb::LatLong(gpsData.latitude, gpsData.longitude), gpsData.altitude, centroidLocation, NED_p);
+                        gpsMeasurement->MeasureVector() = Eigen::Vector3d { NED_p.x(), NED_p.y(), NED_p.z() };
                         extendedKalmanFilter->AddMeasurement(gpsMeasurement);
 
                         lastValidGPSTime = gpsData.time;
@@ -262,6 +266,18 @@ int main(int argc, char* argv[])
                 }
             }
 
+            //Added a perfect com altitude meter to be coherent with the real data that recod 0.0 as altitude
+            if (groundTruthData.stamp.sec + (groundTruthData.stamp.nanosec * 1e-9) > lastValidGroundTruthTime) {
+                if (measuresActive.find("zMeter")->second) {
+                    Eigen::Vector3d NED_p;
+                    //The filter use the cartesian coordinates
+                    ctb::LatLong2LocalNED(ctb::LatLong(groundTruthData.inertialframe_linear_position.latlong.latitude, groundTruthData.inertialframe_linear_position.latlong.longitude), groundTruthData.inertialframe_linear_position.altitude, centroidLocation, NED_p);
+                    zMeterMeasurement->MeasureVector() << NED_p.z();
+                    extendedKalmanFilter->AddMeasurement(zMeterMeasurement);
+
+                    lastValidGroundTruthTime = groundTruthData.stamp.sec + (groundTruthData.stamp.nanosec * 1e-9);
+                }
+            }
             //Filter Update
             extendedKalmanFilter->Update(Eigen::Vector2d { thrustersFbk.motor_percentage.left, thrustersFbk.motor_percentage.right });
 
@@ -426,6 +442,12 @@ void KalmanFilterConfiguration(libconfig::Config& confObj) noexcept(false)
     measuresActive.insert(std::make_pair("magnetometer", isActive));
     ctb::SetParamVector(magnetometer, covariance, "covariance");
     magnetometerMeasurement->Covariance().diagonal() = covariance;
+
+    const libconfig::Setting& zMeterSetting = measure["z_meter"];
+    ctb::SetParam(zMeterSetting, isActive, "enable");
+    measuresActive.insert(std::make_pair("zMeter", isActive));
+    ctb::SetParamVector(zMeterSetting, covariance, "covariance");
+    zMeterMeasurement->Covariance().diagonal() = covariance;
 
     //Load the initial state and covariance and the model covariance
 
