@@ -36,6 +36,9 @@ add_custom_target(.Files. SOURCES ${SOURCE_FILES})
 
 add_executable(simluator_node src/simluator_node.cpp)
 ament_target_dependencies(simluator_node rclcpp std_msgs ulisse_msgs ctrl_toolbox ament_index_cpp)
+target_link_libraries(simluator_node Geographic )
+
+
 target_include_directories(simluator_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
