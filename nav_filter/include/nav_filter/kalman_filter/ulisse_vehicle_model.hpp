@@ -37,6 +37,8 @@ namespace nav {
          */
         auto ModelParameters() -> UlisseModelParameters& { return params_; }
 
+        double sign(double x);
+
     private:
         UlisseModelParameters params_;
     };

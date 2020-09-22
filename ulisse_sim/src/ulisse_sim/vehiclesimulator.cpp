@@ -99,6 +99,7 @@ void VehicleSimulator::ExecuteStep()
 
 void VehicleSimulator::SimulateActuation()
 {
+     std::cout << "dt sim" << Ts_ << std::endl;
     // Computing vehicle acceleration
     ulisseModel.DirectDynamics(hp_, hs_, bodyF_relativeVelocity_, bodyF_relativeAcceleration_);
 

@@ -159,7 +159,8 @@ int main(int argc, char* argv[])
                 requestedVel(0) = pidSurgeTM.Compute(referenceVelocities.desired_surge, surgeFbk);
                 requestedVel(5) = referenceVelocities.desired_yaw_rate;
 
-                tau = ulisseModel.ComputeCoriolisAndDragForces(requestedVel);
+                Eigen::Vector3d tauDrag = ulisseModel.ComputeCoriolisAndDragForces(requestedVel);
+                tau = Eigen::Vector2d(tauDrag[0], tauDrag[2]);
                 Eigen::Vector2d forces = ulisseModel.ThusterAllocation(tau);
 
                 //saturation
@@ -233,9 +234,9 @@ int main(int argc, char* argv[])
 
                 tau = { pidSurgeCT.Compute(referenceVelocities.desired_surge, surgeFbk), pidYawRateCT.Compute(referenceVelocities.desired_yaw_rate, yawRateFbk) };
 
-                Eigen::Vector2d tauDrag = ulisseModel.ComputeCoriolisAndDragForces(feedbackVel);
+                Eigen::Vector3d tauDrag = ulisseModel.ComputeCoriolisAndDragForces(feedbackVel);
 
-                tau += tauDrag;
+                tau += Eigen::Vector2d(tauDrag[0], tauDrag[2]);
                 double outleft, outrigh;
 
                 Eigen::Vector2d forces = ulisseModel.ThusterAllocation(tau);
@@ -254,7 +255,7 @@ int main(int argc, char* argv[])
                 computedTorqueMsg.feedback_yaw_rate = yawRateFbk;
                 computedTorqueMsg.out_pid_yaw_rate = pidYawRateCP.GetOutput();
                 computedTorqueMsg.forces = { forces[0], forces[1] };
-                computedTorqueMsg.tau = { tau[0], tau[1] };
+                computedTorqueMsg.tau = { tau[0], tau[2] };
                 computedTorqueMsg.motor_percentage.left = outleft;
                 computedTorqueMsg.motor_percentage.right = outrigh;
 
@@ -265,6 +266,9 @@ int main(int argc, char* argv[])
                 simulatedVelocitySensorPub->publish(simulatedVelocitySensor);
             }
         } else {
+            thrustersData.motor_percentage.left = 0.0;
+            thrustersData.motor_percentage.right = 0.0;
+
             if (conf->ctrlMode == ControlMode::ThrusterMapping) {
                 pidSurgeTM.Reset();
             } else if (conf->ctrlMode == ControlMode::ClassicPIDControl) {

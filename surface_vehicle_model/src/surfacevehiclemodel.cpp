@@ -59,11 +59,11 @@ void SurfaceVehicleModel::DirectDynamics(double h_p, double h_s, const Eigen::Ve
     nir.setZero();
     tauStar.setZero();
 
-    Eigen::Vector2d tau = ComputeCoriolisAndDragForces(linAngVel);
+    Eigen::Vector3d tau = ComputeCoriolisAndDragForces(linAngVel);
 
     tauStar(0) = tau[0];
-    tauStar(1) = 0.0;
-    tauStar(2) = tau[1];
+    tauStar(1) = tau[1];
+    tauStar(2) = tau[2];
 
     double motorlinearXVel_p = linAngVel(0) + linAngVel(5) * params.d;
     double motorlinearXVel_s = linAngVel(0) - linAngVel(5) * params.d;
@@ -103,7 +103,7 @@ void SurfaceVehicleModel::DirectDynamics(double h_p, double h_s, const Eigen::Ve
     */
 }
 
-Eigen::Vector2d SurfaceVehicleModel::ComputeCoriolisAndDragForces(Eigen::Vector6d vehvel)
+Eigen::Vector3d SurfaceVehicleModel::ComputeCoriolisAndDragForces(Eigen::Vector6d vehvel)
 {
     double alpha;
 
@@ -121,7 +121,7 @@ Eigen::Vector2d SurfaceVehicleModel::ComputeCoriolisAndDragForces(Eigen::Vector6
     double neg_tauN = params.cNneg[0] * vehvel[0] * vehvel[5] + params.cNneg[1] * vehvel[5] + params.cNneg[2] * vehvel[5] * abs(vehvel[5]);
     double pos_tauN = params.cN[0] * vehvel[0] * vehvel[5] + params.cN[1] * vehvel[5] + params.cN[2] * vehvel[5] * abs(vehvel[5]);
 
-    return { params.cX[0] * vehvel[5] * vehvel[5] + params.cX[1] * vehvel[0] + params.cX[2] * vehvel[0] * abs(vehvel[0]), alpha * pos_tauN + (1 - alpha) * neg_tauN };
+    return { params.cX[0] * vehvel[5] * vehvel[5] + params.cX[1] * vehvel[0] + params.cX[2] * vehvel[0] * abs(vehvel[0]), params.cY[0] * vehvel[5] * vehvel[5] + params.cY[1] * vehvel[1] + params.cY[2] * vehvel[1] * abs(vehvel[1]), alpha * pos_tauN + (1 - alpha) * neg_tauN };
 }
 
 Eigen::Vector2d SurfaceVehicleModel::ThusterAllocation(Eigen::Vector2d& tau)

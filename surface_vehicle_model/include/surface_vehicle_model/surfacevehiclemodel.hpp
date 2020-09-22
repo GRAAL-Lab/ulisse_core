@@ -12,6 +12,7 @@ struct UlisseModelParameters {
     double d;
     Eigen::Vector3d cX;
     Eigen::Vector3d cN;
+    Eigen::Vector3d cY;
     Eigen::Vector3d cNneg;
     double b1_pos, b2_pos, b1_neg, b2_neg;
     double hullWidth;
@@ -28,6 +29,7 @@ struct UlisseModelParameters {
         , hullWidth(0.0)
     {
         cX.setZero();
+        cY.setZero();
         cN.setZero();
         cNneg.setZero();
         Inertia.setZero();
@@ -42,6 +44,7 @@ struct UlisseModelParameters {
                   << "tmotors distance: " << a.d << "\n"
                   << "hull width: " << a.hullWidth << "\n"
                   << "tcX: " << a.cX.transpose() << "\n"
+                  << "tcY: " << a.cY.transpose() << "\n"
                   << "tcN: " << a.cN.transpose() << "\n"
                   << "tcN negative: " << a.cNneg.transpose() << "\n"
                   << "tcB: " << a.b1_pos << " " << a.b2_pos << " " << a.b1_neg << " " << a.b2_neg << "\n"
@@ -54,6 +57,7 @@ struct UlisseModelParameters {
         ctb::SetParamVector(ulisseModel, cN, "cN");
         ctb::SetParamVector(ulisseModel, cNneg, "cNneg");
         ctb::SetParamVector(ulisseModel, cX, "cX");
+        ctb::SetParamVector(ulisseModel, cY, "cY");
         ctb::SetParam(ulisseModel, lambda_neg, "lambdaNeg");
         ctb::SetParam(ulisseModel, lambda_pos, "lambdaPos");
         ctb::SetParam(ulisseModel, b1_neg, "b1Neg");
@@ -73,6 +77,7 @@ struct UlisseModelParameters {
     {
         ctb::SetParamVector(ulisseModel, cN, "cN");
         ctb::SetParamVector(ulisseModel, cX, "cX");
+        ctb::SetParamVector(ulisseModel, cY, "cY");
         ctb::SetParamVector(ulisseModel, cNneg, "cNneg");
         ctb::SetParam(ulisseModel, lambda_neg, "lambdaNeg");
         ctb::SetParam(ulisseModel, lambda_pos, "lambdaPos");
@@ -113,7 +118,7 @@ class SurfaceVehicleModel {
 public:
     UlisseModelParameters params;
     SurfaceVehicleModel();
-    Eigen::Vector2d ComputeCoriolisAndDragForces(Eigen::Vector6d vel);
+    Eigen::Vector3d ComputeCoriolisAndDragForces(Eigen::Vector6d vel);
     double GetThrusterForce(double n, double linXVel);
     double PercentageToRPM(double h);
     double RPMToPercentage(double n);

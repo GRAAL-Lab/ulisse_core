@@ -225,7 +225,7 @@ int main(int argc, char* argv[])
                         Eigen::Vector3d NED_p;
                         //The filter use the cartesian coordinates
                         ctb::LatLong2LocalNED(ctb::LatLong(gpsData.latitude, gpsData.longitude), gpsData.altitude, centroidLocation, NED_p);
-                        gpsMeasurement->MeasureVector() = Eigen::Vector3d { NED_p.x(), NED_p.y(), NED_p.z() };
+                        gpsMeasurement->MeasureVector() = Eigen::Vector2d { NED_p.x(), NED_p.y()};
                         extendedKalmanFilter->AddMeasurement(gpsMeasurement);
 
                         lastValidGPSTime = gpsData.time;
