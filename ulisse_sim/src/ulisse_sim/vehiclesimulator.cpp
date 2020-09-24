@@ -99,7 +99,7 @@ void VehicleSimulator::ExecuteStep()
 
 void VehicleSimulator::SimulateActuation()
 {
-     std::cout << "dt sim" << Ts_ << std::endl;
+    std::cout << "dt sim" << Ts_ << std::endl;
     // Computing vehicle acceleration
     ulisseModel.DirectDynamics(hp_, hs_, bodyF_relativeVelocity_, bodyF_relativeAcceleration_);
 
@@ -242,7 +242,7 @@ void VehicleSimulator::SimulateSensors()
 
     imuMsg_.stamp.sec = now_stamp_secs;
     imuMsg_.stamp.nanosec = now_stamp_nanosecs;
-    Eigen::Vector3d bodyF_linearAcceleration, worldF_gravity = { 0.0, 0.0, 9.81 };
+    Eigen::Vector3d bodyF_linearAcceleration, worldF_gravity = { 0.0, 0.0, -9.81 };
     bodyF_linearAcceleration = bodyF_relativeAcceleration_projected_.segment(0, 3) + worldF_R_bodyF_.transpose() * worldF_gravity;
 
     imuMsg_.accelerometer[0] = bodyF_linearAcceleration.x() + accelerometerNoiseX(generator);

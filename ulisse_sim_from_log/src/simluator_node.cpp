@@ -1,4 +1,5 @@
 #include "eigen3/Eigen/Dense"
+#include "ulisse_msgs/msg/compass.hpp"
 #include "ulisse_msgs/msg/gps_data.hpp"
 #include "ulisse_msgs/msg/imu_data.hpp"
 #include "ulisse_msgs/msg/magnetometer.hpp"
@@ -16,7 +17,7 @@ void ReadFile(std::string fileName, Eigen::MatrixXd& data, std::vector<long long
 int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
-    auto node = rclcpp::Node::make_shared("to_csv_node");
+    auto node = rclcpp::Node::make_shared("simluator_node");
     int rate = 100;
 
     rclcpp::WallRate loop_rate(rate);
@@ -25,6 +26,7 @@ int main(int argc, char* argv[])
     ulisse_msgs::msg::IMUData imuMsg;
     ulisse_msgs::msg::Magnetometer magnetometerMsg;
     ulisse_msgs::msg::ThrustersData appliedMotorRefMsg;
+    ulisse_msgs::msg::Compass compassMsg;
 
     ctb::LatLong centroid(44.393, 8.945); // Genova Harbour lat-long
 
@@ -33,6 +35,7 @@ int main(int argc, char* argv[])
     auto imuPub = node->create_publisher<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu, 1);
     auto magnetometerPub = node->create_publisher<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer, 1);
     auto thrustersPub = node->create_publisher<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data, 1);
+    auto compassPub = node->create_publisher<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass, 1);
 
     //open gps log file
     std::string line;
@@ -42,7 +45,6 @@ int main(int argc, char* argv[])
     std::vector<long long int> gpsTs;
     ReadFile(gpsConfPath, gpsData, gpsTs);
     std::cout.setf(std::ios::fixed, std::ios::floatfield);
-    //    std::cout << gpsData;
 
     Eigen::MatrixXd sensorsData;
     std::vector<long long int> sensorsTs;
@@ -54,94 +56,279 @@ int main(int argc, char* argv[])
     ReadFile(sensorsConfPath, sensorsData, sensorsTs);
 
     unsigned int i = 0, j = 0;
-    int gpsCount = 20, sensorsCount = 20;
+    int gpsCount = 0, sensorsCount = 0;
     Eigen::Vector3d NED_cartesian_p = Eigen::Vector3d::Zero();
     ctb::LatLong NED_latlong(0.0, 0.0);
     double NED_altitude = 0.0;
+    bool isFirst = true;
+
     while (rclcpp::ok()) {
 
-        sensorsCount++;
-        std::cout << "sensorsCount " << sensorsCount << std::endl;
-        std::cout << "(sensorsTs[i + 1] - sensorsTs[i]) * 1E-9 " << (sensorsTs[i + 1] - sensorsTs[i]) * 1E-9 << std::endl;
-        if (sensorsCount >= (sensorsTs[i + 1] - sensorsTs[i]) * 1E-9 * rate) {
+        if (isFirst) {
+            //Read the first timestamp to decide which sensor has to publish before
+            if (sensorsTs[0] >= gpsTs[0]) {
 
-            //fill sensors msgs
-            long now_nanosecs_sensors = (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch())).count();
-            auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs_sensors / static_cast<int>(1E9));
-            auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs_sensors % static_cast<int>(1E9));
+                //fill sensors msgs
+                long now_nanosecs_sensors = (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch())).count();
+                auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs_sensors / static_cast<int>(1E9));
+                auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs_sensors % static_cast<int>(1E9));
 
-            imuMsg.stamp.sec = now_stamp_secs;
-            imuMsg.stamp.nanosec = now_stamp_nanosecs;
-            imuMsg.accelerometer[0] = sensorsData.row(i)(8);
-            imuMsg.accelerometer[1] = sensorsData.row(i)(9);
-            imuMsg.accelerometer[2] = sensorsData.row(i)(10);
-            imuMsg.gyro[0] = sensorsData.row(i)(11);
-            imuMsg.gyro[1] = sensorsData.row(i)(12);
-            imuMsg.gyro[2] = sensorsData.row(i)(13);
-            imuMsg.gyro4x[0] = sensorsData.row(i)(14);
-            imuMsg.gyro4x[1] = sensorsData.row(i)(15);
+                compassMsg.stamp.sec = now_stamp_secs;
+                compassMsg.stamp.nanosec = now_stamp_nanosecs;
+                compassMsg.orientation.roll = sensorsData.row(j)(4);
+                compassMsg.orientation.pitch = -sensorsData.row(j)(3);
+                compassMsg.orientation.yaw = sensorsData.row(j)(2);
 
-            magnetometerMsg.stamp.sec = now_stamp_secs;
-            magnetometerMsg.stamp.nanosec = now_stamp_nanosecs;
-            magnetometerMsg.orthogonalstrength[0] = sensorsData.row(i)(5);
-            magnetometerMsg.orthogonalstrength[1] = sensorsData.row(i)(6);
-            magnetometerMsg.orthogonalstrength[2] = sensorsData.row(i)(7);
+                magnetometerMsg.stamp.sec = now_stamp_secs;
+                magnetometerMsg.stamp.nanosec = now_stamp_nanosecs;
+                magnetometerMsg.orthogonalstrength[0] = sensorsData.row(j)(6);
+                magnetometerMsg.orthogonalstrength[1] = sensorsData.row(j)(5);
+                magnetometerMsg.orthogonalstrength[2] = -sensorsData.row(j)(7);
 
-            appliedMotorRefMsg.stamp.sec = now_stamp_secs;
-            appliedMotorRefMsg.stamp.nanosec = now_stamp_nanosecs;
-            appliedMotorRefMsg.motor_percentage.left = sensorsData.row(i)(20) / 10;
-            appliedMotorRefMsg.motor_percentage.right = sensorsData.row(i)(21) / 10;
+                imuMsg.stamp.sec = now_stamp_secs;
+                imuMsg.stamp.nanosec = now_stamp_nanosecs;
+                imuMsg.accelerometer[0] = sensorsData.row(j)(9);
+                imuMsg.accelerometer[1] = sensorsData.row(j)(8);
+                imuMsg.accelerometer[2] = -sensorsData.row(j)(10);
+                imuMsg.gyro[0] = sensorsData.row(j)(12);
+                imuMsg.gyro[1] = sensorsData.row(j)(11);
+                imuMsg.gyro[2] = -sensorsData.row(j)(13);
+                imuMsg.gyro4x[0] = sensorsData.row(j)(14);
+                imuMsg.gyro4x[1] = sensorsData.row(j)(15);
 
-            std::cout << "Sto pubblicando " << std::endl;
-            magnetometerPub->publish(magnetometerMsg);
-            imuPub->publish(imuMsg);
-            thrustersPub->publish(appliedMotorRefMsg);
-            j++;
-            std::cout << "j: " << j << std::endl;
-            sensorsCount = 0;
-        }
+                appliedMotorRefMsg.stamp.sec = now_stamp_secs;
+                appliedMotorRefMsg.stamp.nanosec = now_stamp_nanosecs;
+                appliedMotorRefMsg.motor_percentage.left = sensorsData.row(j)(20) / 10;
+                appliedMotorRefMsg.motor_percentage.right = sensorsData.row(j)(21) / 10;
 
-        gpsCount++;
-        std::cout << "gpsCount " << gpsCount << std::endl;
-        std::cout << "(gpsTs[i + 1] - gpsTs[i]) * 1E-9 " << (gpsTs[i + 1] - gpsTs[i]) * 1E-9 << std::endl;
-        if (gpsCount >= (gpsTs[i + 1] - gpsTs[i]) * 1E-9 * rate) {
-            //fill the gps msg
-            long now_nanosecs_gps = (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch())).count();
+                std::cout << "Sto pubblicando " << std::endl;
+                magnetometerPub->publish(magnetometerMsg);
+                imuPub->publish(imuMsg);
+                thrustersPub->publish(appliedMotorRefMsg);
+                compassPub->publish(compassMsg);
 
-            //This data are in ENU reference coordinate. Change to NED
-            ctb::LatLong2LocalNED(ctb::LatLong(gpsData.row(i)(4), gpsData.row(i)(5)), gpsData.row(i)(6), centroid, NED_cartesian_p);
-            ctb::LocalNED2LatLong(NED_cartesian_p, centroid, NED_latlong, NED_altitude);
+                std::cout << "(sensorsTs[0] - gpsTs[0]) * 1E-9 " << (sensorsTs[0] - gpsTs[0]) * 1E-9 << std::endl;
 
-            gpsMsg.time = static_cast<double>(now_nanosecs_gps / 1E9);
-            gpsMsg.gpsfixmode = gpsData.row(i)(2);
-            gpsMsg.flags = gpsData.row(i)(3);
-            gpsMsg.latitude = NED_latlong.latitude;
-            gpsMsg.longitude = NED_latlong.longitude;
-            gpsMsg.altitude = NED_altitude;
-            gpsMsg.track = gpsData.row(i)(7);
-            gpsMsg.speed = gpsData.row(i)(8);
-            gpsMsg.climb = gpsData.row(i)(9);
-            gpsMsg.err = gpsData.row(i)(10);
-            gpsMsg.err_time = gpsData.row(i)(11);
-            gpsMsg.err_latitude = gpsData.row(i)(12);
-            gpsMsg.err_longitude = gpsData.row(i)(13);
-            gpsMsg.err_altitude = gpsData.row(i)(14);
-            gpsMsg.err_track = gpsData.row(i)(15);
-            gpsMsg.err_speed = gpsData.row(i)(16);
-            gpsMsg.err_climb = gpsData.row(i)(17);
-            gpsMsg.xdop = gpsData.row(i)(18);
-            gpsMsg.ydop = gpsData.row(i)(19);
-            gpsMsg.gdop = gpsData.row(i)(20);
-            gpsMsg.pdop = gpsData.row(i)(21);
-            gpsMsg.hdop = gpsData.row(i)(22);
-            gpsMsg.vdop = gpsData.row(i)(23);
-            gpsMsg.tdop = gpsData.row(i)(24);
+                //wait the righ amount of time form other sensors
+                while (gpsCount < (sensorsTs[0] - gpsTs[0]) * 1E-9 * rate) {
+                    gpsCount++;
+                    std::cout << "gpsCount " << gpsCount << std::endl;
+                }
 
-            std::cout << "Sto pubblicando " << std::endl;
-            gpsPub->publish(gpsMsg);
-            i++;
-            std::cout << "i: " << i << std::endl;
-            gpsCount = 0;
+                //fill the gps msg
+                long now_nanosecs_gps = (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch())).count();
+
+                //This data are in ENU reference coordinate. Change to NED
+                ctb::LatLong2LocalNED(ctb::LatLong(gpsData.row(i)(4), gpsData.row(i)(5)), gpsData.row(i)(6), centroid, NED_cartesian_p);
+                ctb::LocalNED2LatLong(NED_cartesian_p, centroid, NED_latlong, NED_altitude);
+
+                gpsMsg.time = static_cast<double>(now_nanosecs_gps / 1E9);
+                gpsMsg.gpsfixmode = gpsData.row(i)(2);
+                gpsMsg.flags = gpsData.row(i)(3);
+                gpsMsg.latitude = NED_latlong.latitude;
+                gpsMsg.longitude = NED_latlong.longitude;
+                gpsMsg.altitude = NED_altitude;
+                gpsMsg.track = gpsData.row(i)(7);
+                gpsMsg.speed = gpsData.row(i)(8);
+                gpsMsg.climb = gpsData.row(i)(9);
+                gpsMsg.err = gpsData.row(i)(10);
+                gpsMsg.err_time = gpsData.row(i)(11);
+                gpsMsg.err_latitude = gpsData.row(i)(12);
+                gpsMsg.err_longitude = gpsData.row(i)(13);
+                gpsMsg.err_altitude = gpsData.row(i)(14);
+                gpsMsg.err_track = gpsData.row(i)(15);
+                gpsMsg.err_speed = gpsData.row(i)(16);
+                gpsMsg.err_climb = gpsData.row(i)(17);
+                gpsMsg.xdop = gpsData.row(i)(18);
+                gpsMsg.ydop = gpsData.row(i)(19);
+                gpsMsg.gdop = gpsData.row(i)(20);
+                gpsMsg.pdop = gpsData.row(i)(21);
+                gpsMsg.hdop = gpsData.row(i)(22);
+                gpsMsg.vdop = gpsData.row(i)(23);
+                gpsMsg.tdop = gpsData.row(i)(24);
+
+                std::cout << "Sto pubblicando " << std::endl;
+                gpsPub->publish(gpsMsg);
+                gpsCount = 0;
+                isFirst = false;
+
+            } else {
+                //fill the gps msg
+                long now_nanosecs_gps = (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch())).count();
+
+                //This data are in ENU reference coordinate. Change to NED
+                ctb::LatLong2LocalNED(ctb::LatLong(gpsData.row(i)(4), gpsData.row(i)(5)), gpsData.row(i)(6), centroid, NED_cartesian_p);
+                ctb::LocalNED2LatLong(NED_cartesian_p, centroid, NED_latlong, NED_altitude);
+
+                gpsMsg.time = static_cast<double>(now_nanosecs_gps / 1E9);
+                gpsMsg.gpsfixmode = gpsData.row(i)(2);
+                gpsMsg.flags = gpsData.row(i)(3);
+                gpsMsg.latitude = NED_latlong.latitude;
+                gpsMsg.longitude = NED_latlong.longitude;
+                gpsMsg.altitude = NED_altitude;
+                gpsMsg.track = gpsData.row(i)(7);
+                gpsMsg.speed = gpsData.row(i)(8);
+                gpsMsg.climb = gpsData.row(i)(9);
+                gpsMsg.err = gpsData.row(i)(10);
+                gpsMsg.err_time = gpsData.row(i)(11);
+                gpsMsg.err_latitude = gpsData.row(i)(12);
+                gpsMsg.err_longitude = gpsData.row(i)(13);
+                gpsMsg.err_altitude = gpsData.row(i)(14);
+                gpsMsg.err_track = gpsData.row(i)(15);
+                gpsMsg.err_speed = gpsData.row(i)(16);
+                gpsMsg.err_climb = gpsData.row(i)(17);
+                gpsMsg.xdop = gpsData.row(i)(18);
+                gpsMsg.ydop = gpsData.row(i)(19);
+                gpsMsg.gdop = gpsData.row(i)(20);
+                gpsMsg.pdop = gpsData.row(i)(21);
+                gpsMsg.hdop = gpsData.row(i)(22);
+                gpsMsg.vdop = gpsData.row(i)(23);
+                gpsMsg.tdop = gpsData.row(i)(24);
+
+                std::cout << "Sto pubblicando " << std::endl;
+                gpsPub->publish(gpsMsg);
+
+                std::cout << "(gpsTs[0] - sensorsTs[0]) * 1E-9 " << (gpsTs[0] - sensorsTs[0]) * 1E-9 << std::endl;
+
+                //wait the righ amount of time form other sensors
+                while (sensorsCount < (gpsTs[0] - sensorsTs[0]) * 1E-9 * rate) {
+                    sensorsCount++;
+                    std::cout << "sensorsCount " << sensorsCount << std::endl;
+                }
+
+                //fill sensors msgs
+                long now_nanosecs_sensors = (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch())).count();
+                auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs_sensors / static_cast<int>(1E9));
+                auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs_sensors % static_cast<int>(1E9));
+
+                compassMsg.stamp.sec = now_stamp_secs;
+                compassMsg.stamp.nanosec = now_stamp_nanosecs;
+                compassMsg.orientation.roll = sensorsData.row(j)(4);
+                compassMsg.orientation.pitch = -sensorsData.row(j)(3);
+                compassMsg.orientation.yaw = sensorsData.row(j)(2);
+
+                magnetometerMsg.stamp.sec = now_stamp_secs;
+                magnetometerMsg.stamp.nanosec = now_stamp_nanosecs;
+                magnetometerMsg.orthogonalstrength[0] = sensorsData.row(j)(6);
+                magnetometerMsg.orthogonalstrength[1] = sensorsData.row(j)(5);
+                magnetometerMsg.orthogonalstrength[2] = -sensorsData.row(j)(7);
+
+                imuMsg.stamp.sec = now_stamp_secs;
+                imuMsg.stamp.nanosec = now_stamp_nanosecs;
+                imuMsg.accelerometer[0] = sensorsData.row(j)(9);
+                imuMsg.accelerometer[1] = sensorsData.row(j)(8);
+                imuMsg.accelerometer[2] = -sensorsData.row(j)(10);
+                imuMsg.gyro[0] = sensorsData.row(j)(12);
+                imuMsg.gyro[1] = sensorsData.row(j)(11);
+                imuMsg.gyro[2] = -sensorsData.row(j)(13);
+                imuMsg.gyro4x[0] = sensorsData.row(j)(14);
+                imuMsg.gyro4x[1] = sensorsData.row(j)(15);
+
+                appliedMotorRefMsg.stamp.sec = now_stamp_secs;
+                appliedMotorRefMsg.stamp.nanosec = now_stamp_nanosecs;
+                appliedMotorRefMsg.motor_percentage.left = sensorsData.row(j)(20) / 10;
+                appliedMotorRefMsg.motor_percentage.right = sensorsData.row(j)(21) / 10;
+
+                std::cout << "Sto pubblicando " << std::endl;
+                magnetometerPub->publish(magnetometerMsg);
+                imuPub->publish(imuMsg);
+                thrustersPub->publish(appliedMotorRefMsg);
+                compassPub->publish(compassMsg);
+
+                sensorsCount = 0;
+                isFirst = false;
+            }
+        } else {
+            sensorsCount++;
+            std::cout << "sensorsCount " << sensorsCount << std::endl;
+            std::cout << "(sensorsTs[i + 1] - sensorsTs[i]) * 1E-9 " << (sensorsTs[j + 1] - sensorsTs[j]) * 1E-9 << std::endl;
+            if (sensorsCount >= (sensorsTs[j + 1] - sensorsTs[j]) * 1E-9 * rate) {
+
+                //fill sensors msgs
+                long now_nanosecs_sensors = (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch())).count();
+                auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs_sensors / static_cast<int>(1E9));
+                auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs_sensors % static_cast<int>(1E9));
+
+                compassMsg.stamp.sec = now_stamp_secs;
+                compassMsg.stamp.nanosec = now_stamp_nanosecs;
+                compassMsg.orientation.roll = sensorsData.row(j + 1)(4);
+                compassMsg.orientation.pitch = -sensorsData.row(j + 1)(3);
+                compassMsg.orientation.yaw = sensorsData.row(j + 1)(2);
+
+                magnetometerMsg.stamp.sec = now_stamp_secs;
+                magnetometerMsg.stamp.nanosec = now_stamp_nanosecs;
+                magnetometerMsg.orthogonalstrength[0] = sensorsData.row(j + 1)(6);
+                magnetometerMsg.orthogonalstrength[1] = sensorsData.row(j + 1)(5);
+                magnetometerMsg.orthogonalstrength[2] = -sensorsData.row(j + 1)(7);
+
+                imuMsg.stamp.sec = now_stamp_secs;
+                imuMsg.stamp.nanosec = now_stamp_nanosecs;
+                imuMsg.accelerometer[0] = sensorsData.row(j + 1)(9);
+                imuMsg.accelerometer[1] = sensorsData.row(j + 1)(8);
+                imuMsg.accelerometer[2] = -sensorsData.row(j + 1)(10);
+                imuMsg.gyro[0] = sensorsData.row(j + 1)(12);
+                imuMsg.gyro[1] = sensorsData.row(j + 1)(11);
+                imuMsg.gyro[2] = -sensorsData.row(j + 1)(13);
+                imuMsg.gyro4x[0] = sensorsData.row(j + 1)(14);
+                imuMsg.gyro4x[1] = sensorsData.row(j + 1)(15);
+
+                appliedMotorRefMsg.stamp.sec = now_stamp_secs;
+                appliedMotorRefMsg.stamp.nanosec = now_stamp_nanosecs;
+                appliedMotorRefMsg.motor_percentage.left = sensorsData.row(j + 1)(20) / 10;
+                appliedMotorRefMsg.motor_percentage.right = sensorsData.row(j + 1)(21) / 10;
+
+                std::cout << "Sto pubblicando " << std::endl;
+                magnetometerPub->publish(magnetometerMsg);
+                imuPub->publish(imuMsg);
+                thrustersPub->publish(appliedMotorRefMsg);
+                compassPub->publish(compassMsg);
+                j++;
+                std::cout << "j: " << j << std::endl;
+                sensorsCount = 0;
+            }
+
+            gpsCount++;
+            std::cout << "gpsCount " << gpsCount << std::endl;
+            std::cout << "(gpsTs[i + 1] - gpsTs[i]) * 1E-9 " << (gpsTs[i + 1] - gpsTs[i]) * 1E-9 << std::endl;
+            if (gpsCount >= (gpsTs[i + 1] - gpsTs[i]) * 1E-9 * rate) {
+                //fill the gps msg
+                long now_nanosecs_gps = (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch())).count();
+
+                //This data are in ENU reference coordinate. Change to NED
+                ctb::LatLong2LocalNED(ctb::LatLong(gpsData.row(i + 1)(4), gpsData.row(i + 1)(5)), gpsData.row(i + 1)(6), centroid, NED_cartesian_p);
+                ctb::LocalNED2LatLong(NED_cartesian_p, centroid, NED_latlong, NED_altitude);
+
+                gpsMsg.time = static_cast<double>(now_nanosecs_gps / 1E9);
+                gpsMsg.gpsfixmode = gpsData.row(i + 1)(2);
+                gpsMsg.flags = gpsData.row(i + 1)(3);
+                gpsMsg.latitude = NED_latlong.latitude;
+                gpsMsg.longitude = NED_latlong.longitude;
+                gpsMsg.altitude = NED_altitude;
+                gpsMsg.track = gpsData.row(i + 1)(7);
+                gpsMsg.speed = gpsData.row(i + 1)(8);
+                gpsMsg.climb = gpsData.row(i + 1)(9);
+                gpsMsg.err = gpsData.row(i + 1)(10);
+                gpsMsg.err_time = gpsData.row(i + 1)(11);
+                gpsMsg.err_latitude = gpsData.row(i + 1)(12);
+                gpsMsg.err_longitude = gpsData.row(i + 1)(13);
+                gpsMsg.err_altitude = gpsData.row(i + 1)(14);
+                gpsMsg.err_track = gpsData.row(i + 1)(15);
+                gpsMsg.err_speed = gpsData.row(i + 1)(16);
+                gpsMsg.err_climb = gpsData.row(i + 1)(17);
+                gpsMsg.xdop = gpsData.row(i + 1)(18);
+                gpsMsg.ydop = gpsData.row(i + 1)(19);
+                gpsMsg.gdop = gpsData.row(i + 1)(20);
+                gpsMsg.pdop = gpsData.row(i + 1)(21);
+                gpsMsg.hdop = gpsData.row(i + 1)(22);
+                gpsMsg.vdop = gpsData.row(i + 1)(23);
+                gpsMsg.tdop = gpsData.row(i + 1)(24);
+
+                std::cout << "Sto pubblicando " << std::endl;
+                gpsPub->publish(gpsMsg);
+                i++;
+                std::cout << "i: " << i << std::endl;
+                gpsCount = 0;
+            }
         }
 
         rclcpp::spin_some(node);

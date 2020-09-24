@@ -15,12 +15,12 @@ namespace nav {
     {
         Eigen::MatrixXd H = Eigen::MatrixXd::Zero(3, state.size());
 
-        H(1, 3) = g_ * cos(state(4)) * cos(state(3));
-        H(2, 3) = -g_ * cos(state(4)) * sin(state(3));
+        H(1, 3) = -g_ * cos(state(4)) * cos(state(3));
+        H(2, 3) = g_ * cos(state(4)) * sin(state(3));
 
-        H(0, 4) = -g_ * cos(state(4));
-        H(1, 4) = -g_ * sin(state(4)) * sin(state(3));
-        H(2, 4) = -g_ * sin(state(4)) * cos(state(3));
+        H(0, 4) = g_ * cos(state(4));
+        H(1, 4) = g_ * sin(state(4)) * sin(state(3));
+        H(2, 4) = g_ * sin(state(4)) * cos(state(3));
 
         return H;
     }
@@ -28,9 +28,9 @@ namespace nav {
     Eigen::VectorXd AccelerometerMeasurement::ComputePrediction(const Eigen::VectorXd& state)
     {
         Eigen::Vector3d linearAcceleration;
-        linearAcceleration.x() = -g_ * sin(state(4));
-        linearAcceleration.y() = g_ * cos(state(4)) * sin(state(3));
-        linearAcceleration.z() = g_ * cos(state(4)) * cos(state(3));
+        linearAcceleration.x() = g_ * sin(state(4));
+        linearAcceleration.y() = -g_ * cos(state(4)) * sin(state(3));
+        linearAcceleration.z() = -g_ * cos(state(4)) * cos(state(3));
 
         return linearAcceleration;
     }

@@ -71,7 +71,7 @@ static std::unordered_map<std::string, bool> measuresActive;
 
 static int stateDim;
 
-static ctb::LatLong centroidLocation(44.414165, 8.942184);
+static ctb::LatLong centroidLocation(44.095693, 9.862684);
 
 void CommandHandler(const std::shared_ptr<rmw_request_id_t> request_header, const std::shared_ptr<ulisse_msgs::srv::NavFilterCommand::Request> request, std::shared_ptr<ulisse_msgs::srv::NavFilterCommand::Response> response);
 
@@ -138,7 +138,6 @@ int main(int argc, char* argv[])
     double lastValidImuTime = 0.0;
     double lastValidCompassTime = 0.0;
     double lastValidMagnetomerTime = 0.0;
-    double lastValidGroundTruthTime = 0.0;
 
     ulisse_msgs::msg::NavFilterData filterData;
 
@@ -148,14 +147,15 @@ int main(int argc, char* argv[])
 
     if (filterParams.mode == FilterMode::LuenbergerObserver) {
         //init position
-        gpsData.latitude = 44.4;
-        gpsData.longitude = 8.94;
+        gpsData.latitude = 44.095693;
+        gpsData.longitude = 9.862684;
 
         sampleTime = 1.0 / filterParams.rate;
     }
 
     bool filterEnable(true);
     Eigen::VectorXd state = Eigen::VectorXd::Zero(stateDim);
+    Eigen::Vector3d NED_gps_cartesian;
 
     last_comp_time_ = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
 
@@ -222,10 +222,10 @@ int main(int argc, char* argv[])
                 if (gpsData.time > lastValidGPSTime) {
                     if (gpsData.gpsfixmode >= static_cast<int>(ulisse::gpsd::GpsFixMode::mode_2d)) {
 
-                        Eigen::Vector3d NED_p;
                         //The filter use the cartesian coordinates
-                        ctb::LatLong2LocalNED(ctb::LatLong(gpsData.latitude, gpsData.longitude), gpsData.altitude, centroidLocation, NED_p);
-                        gpsMeasurement->MeasureVector() = Eigen::Vector2d { NED_p.x(), NED_p.y()};
+                        ctb::LatLong2LocalNED(ctb::LatLong(gpsData.latitude, gpsData.longitude), gpsData.altitude, centroidLocation, NED_gps_cartesian);
+                        std::cout << "Gps Measurement: " << NED_gps_cartesian.transpose() << std::endl;
+                        gpsMeasurement->MeasureVector() = Eigen::Vector2d { NED_gps_cartesian.x(), NED_gps_cartesian.y() };
                         extendedKalmanFilter->AddMeasurement(gpsMeasurement);
 
                         lastValidGPSTime = gpsData.time;
@@ -267,23 +267,40 @@ int main(int argc, char* argv[])
             }
 
             //Added a perfect com altitude meter to be coherent with the real data that recod 0.0 as altitude
-            if (groundTruthData.stamp.sec + (groundTruthData.stamp.nanosec * 1e-9) > lastValidGroundTruthTime) {
-                if (measuresActive.find("zMeter")->second) {
-                    Eigen::Vector3d NED_p;
-                    //The filter use the cartesian coordinates
-                    ctb::LatLong2LocalNED(ctb::LatLong(groundTruthData.inertialframe_linear_position.latlong.latitude, groundTruthData.inertialframe_linear_position.latlong.longitude), groundTruthData.inertialframe_linear_position.altitude, centroidLocation, NED_p);
-                    zMeterMeasurement->MeasureVector() << NED_p.z();
-                    extendedKalmanFilter->AddMeasurement(zMeterMeasurement);
 
-                    lastValidGroundTruthTime = groundTruthData.stamp.sec + (groundTruthData.stamp.nanosec * 1e-9);
-                }
+            if (measuresActive.find("zMeter")->second) {
+                Eigen::Vector3d NED_p;
+                //The filter use the cartesian coordinates
+                //                ctb::LatLong2LocalNED(ctb::LatLong(groundTruthData.inertialframe_linear_position.latlong.latitude, groundTruthData.inertialframe_linear_position.latlong.longitude), groundTruthData.inertialframe_linear_position.altitude, centroidLocation, NED_p);
+                zMeterMeasurement->MeasureVector() << 0.0;
+                extendedKalmanFilter->AddMeasurement(zMeterMeasurement);
             }
+
             //Filter Update
             extendedKalmanFilter->Update(Eigen::Vector2d { thrustersFbk.motor_percentage.left, thrustersFbk.motor_percentage.right });
 
             state = extendedKalmanFilter->StateVector();
+
+            //Compute the worldF_R_bodyF
+            Eigen::RotationMatrix Rz, Ry, Rx;
+            Rz << cos(state[5]), -sin(state[5]), 0,
+                sin(state[5]), cos(state[5]), 0,
+                0, 0, 1;
+
+            Ry << cos(state[4]), 0, sin(state[4]),
+                0, 1, 0,
+                -sin(state[4]), 0, cos(state[4]);
+
+            Rx << 1, 0, 0,
+                0, cos(state[3]), -sin(state[3]),
+                0, sin(state[3]), cos(state[3]);
+
+            Eigen::Matrix3d worldF_R_bodyF = Rz * Ry * Rx;
+
+            std::cout << "bodyF_antenna: " << (worldF_R_bodyF.transpose() * (NED_gps_cartesian - state.segment(0, 3))).transpose() << std::endl;
             ctb::LatLong map_p;
             double altitude;
+
             ctb::LocalNED2LatLong(Eigen::Vector3d { state.x(), state.y(), state.z() }, centroidLocation, map_p, altitude);
 
             auto tNow = std::chrono::system_clock::now();
