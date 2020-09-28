@@ -29,6 +29,11 @@ namespace nav {
          * @return The observation model
          */
         Eigen::VectorXd ComputePrediction(const Eigen::VectorXd& state) override;
+
+        /*
+         * body frame antenna location
+         */
+        Eigen::Vector3d bodyF_gps_position_;
     };
 }
 }

@@ -99,7 +99,6 @@ void VehicleSimulator::ExecuteStep()
 
 void VehicleSimulator::SimulateActuation()
 {
-    std::cout << "dt sim" << Ts_ << std::endl;
     // Computing vehicle acceleration
     ulisseModel.DirectDynamics(hp_, hs_, bodyF_relativeVelocity_, bodyF_relativeAcceleration_);
 
@@ -202,11 +201,9 @@ void VehicleSimulator::SimulateSensors()
     static ctb::LatLong centroidLocation(44.414165, 8.942184);
     Eigen::Vector3d worldF_com, worldF_antenna;
     ctb::LatLong2LocalNED(ctb::LatLong(latitude_, longitude_), altitude_, centroidLocation, worldF_com);
-    //distance vector of the antenna w.r.t the COM
-    Eigen::Vector3d bodyF_r = { -0.49, 0.0, -1.0 };
 
     //move the gps from COM to the antenna
-    worldF_antenna = worldF_com + worldF_R_bodyF_ * bodyF_r;
+    worldF_antenna = worldF_com + worldF_R_bodyF_ * config->bodyF_gps_position;
 
     //add noise and come back to map coordinates
     worldF_antenna.x() += gpsNoiseX(generator);

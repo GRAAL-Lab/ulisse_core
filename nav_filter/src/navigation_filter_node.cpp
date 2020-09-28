@@ -71,7 +71,9 @@ static std::unordered_map<std::string, bool> measuresActive;
 
 static int stateDim;
 
-static ctb::LatLong centroidLocation(44.095693, 9.862684);
+static ctb::LatLong centroidLocation(44.4, 8.94);
+
+static Eigen::VectorXd state;
 
 void CommandHandler(const std::shared_ptr<rmw_request_id_t> request_header, const std::shared_ptr<ulisse_msgs::srv::NavFilterCommand::Request> request, std::shared_ptr<ulisse_msgs::srv::NavFilterCommand::Response> response);
 
@@ -154,8 +156,9 @@ int main(int argc, char* argv[])
     }
 
     bool filterEnable(true);
-    Eigen::VectorXd state = Eigen::VectorXd::Zero(stateDim);
+    state = Eigen::VectorXd::Zero(stateDim);
     Eigen::Vector3d NED_gps_cartesian;
+    bool isFirst = true;
 
     last_comp_time_ = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
 
@@ -222,9 +225,17 @@ int main(int argc, char* argv[])
                 if (gpsData.time > lastValidGPSTime) {
                     if (gpsData.gpsfixmode >= static_cast<int>(ulisse::gpsd::GpsFixMode::mode_2d)) {
 
+                        if (isFirst) {
+                            Eigen::VectorXd initialState = Eigen::VectorXd::Zero(stateDim);
+                            centroidLocation = { gpsData.latitude, gpsData.longitude };
+                            ctb::LatLong2LocalNED(ctb::LatLong(gpsData.latitude, gpsData.longitude), gpsData.altitude, centroidLocation, NED_gps_cartesian);
+
+                            initialState.segment(0, 2) << NED_gps_cartesian.x(), NED_gps_cartesian.y();
+                            isFirst = false;
+                        }
+
                         //The filter use the cartesian coordinates
                         ctb::LatLong2LocalNED(ctb::LatLong(gpsData.latitude, gpsData.longitude), gpsData.altitude, centroidLocation, NED_gps_cartesian);
-                        std::cout << "Gps Measurement: " << NED_gps_cartesian.transpose() << std::endl;
                         gpsMeasurement->MeasureVector() = Eigen::Vector2d { NED_gps_cartesian.x(), NED_gps_cartesian.y() };
                         extendedKalmanFilter->AddMeasurement(gpsMeasurement);
 
@@ -270,8 +281,6 @@ int main(int argc, char* argv[])
 
             if (measuresActive.find("zMeter")->second) {
                 Eigen::Vector3d NED_p;
-                //The filter use the cartesian coordinates
-                //                ctb::LatLong2LocalNED(ctb::LatLong(groundTruthData.inertialframe_linear_position.latlong.latitude, groundTruthData.inertialframe_linear_position.latlong.longitude), groundTruthData.inertialframe_linear_position.altitude, centroidLocation, NED_p);
                 zMeterMeasurement->MeasureVector() << 0.0;
                 extendedKalmanFilter->AddMeasurement(zMeterMeasurement);
             }
@@ -281,23 +290,6 @@ int main(int argc, char* argv[])
 
             state = extendedKalmanFilter->StateVector();
 
-            //Compute the worldF_R_bodyF
-            Eigen::RotationMatrix Rz, Ry, Rx;
-            Rz << cos(state[5]), -sin(state[5]), 0,
-                sin(state[5]), cos(state[5]), 0,
-                0, 0, 1;
-
-            Ry << cos(state[4]), 0, sin(state[4]),
-                0, 1, 0,
-                -sin(state[4]), 0, cos(state[4]);
-
-            Rx << 1, 0, 0,
-                0, cos(state[3]), -sin(state[3]),
-                0, sin(state[3]), cos(state[3]);
-
-            Eigen::Matrix3d worldF_R_bodyF = Rz * Ry * Rx;
-
-            std::cout << "bodyF_antenna: " << (worldF_R_bodyF.transpose() * (NED_gps_cartesian - state.segment(0, 3))).transpose() << std::endl;
             ctb::LatLong map_p;
             double altitude;
 
@@ -427,44 +419,48 @@ void KalmanFilterConfiguration(libconfig::Config& confObj) noexcept(false)
     //Load the measures covariance
     const libconfig::Setting& measure = ekf["measures"];
 
-    Eigen::VectorXd covariance;
+    Eigen::VectorXd covarianceDiag;
     bool isActive;
+    Eigen::Vector3d bodyF_gps_position;
 
     const libconfig::Setting& gps = measure["gps"];
     ctb::SetParam(gps, isActive, "enable");
     measuresActive.insert(std::make_pair("gps", isActive));
-    ctb::SetParamVector(gps, covariance, "covariance");
-    gpsMeasurement->Covariance().diagonal() = covariance;
+    ctb::SetParamVector(gps, covarianceDiag, "covariance");
+    gpsMeasurement->Covariance().diagonal() = covarianceDiag;
+
+    ctb::SetParamVector(gps, bodyF_gps_position, "bodyF_gps_position");
+    gpsMeasurement->bodyF_gps_position_ = bodyF_gps_position;
 
     const libconfig::Setting& compass = measure["compass"];
     ctb::SetParam(compass, isActive, "enable");
     measuresActive.insert(std::make_pair("compass", isActive));
-    ctb::SetParamVector(compass, covariance, "covariance");
-    compassMeasurement->Covariance().diagonal() = covariance;
+    ctb::SetParamVector(compass, covarianceDiag, "covariance");
+    compassMeasurement->Covariance().diagonal() = covarianceDiag;
 
     const libconfig::Setting& gyro = measure["gyro"];
     ctb::SetParam(gyro, isActive, "enable");
     measuresActive.insert(std::make_pair("gyro", isActive));
-    ctb::SetParamVector(gyro, covariance, "covariance");
-    gyroMeasurement->Covariance().diagonal() = covariance;
+    ctb::SetParamVector(gyro, covarianceDiag, "covariance");
+    gyroMeasurement->Covariance().diagonal() = covarianceDiag;
 
     const libconfig::Setting& accelerometer = measure["accelerometer"];
     ctb::SetParam(accelerometer, isActive, "enable");
     measuresActive.insert(std::make_pair("accelerometer", isActive));
-    ctb::SetParamVector(accelerometer, covariance, "covariance");
-    accelerometerMeasurement->Covariance().diagonal() = covariance;
+    ctb::SetParamVector(accelerometer, covarianceDiag, "covariance");
+    accelerometerMeasurement->Covariance().diagonal() = covarianceDiag;
 
     const libconfig::Setting& magnetometer = measure["magnetometer"];
     ctb::SetParam(magnetometer, isActive, "enable");
     measuresActive.insert(std::make_pair("magnetometer", isActive));
-    ctb::SetParamVector(magnetometer, covariance, "covariance");
-    magnetometerMeasurement->Covariance().diagonal() = covariance;
+    ctb::SetParamVector(magnetometer, covarianceDiag, "covariance");
+    magnetometerMeasurement->Covariance().diagonal() = covarianceDiag;
 
     const libconfig::Setting& zMeterSetting = measure["z_meter"];
     ctb::SetParam(zMeterSetting, isActive, "enable");
     measuresActive.insert(std::make_pair("zMeter", isActive));
-    ctb::SetParamVector(zMeterSetting, covariance, "covariance");
-    zMeterMeasurement->Covariance().diagonal() = covariance;
+    ctb::SetParamVector(zMeterSetting, covarianceDiag, "covariance");
+    zMeterMeasurement->Covariance().diagonal() = covarianceDiag;
 
     //Load the initial state and covariance and the model covariance
 
@@ -473,8 +469,8 @@ void KalmanFilterConfiguration(libconfig::Config& confObj) noexcept(false)
 
     ctb::SetParam(state, stateDim, "dim");
 
-    ctb::SetParamVector(state, covariance, "modelCovariance");
-    ulisseModelEKF->Covariance().diagonal() = covariance;
+    ctb::SetParamVector(state, covarianceDiag, "modelCovariance");
+    ulisseModelEKF->Covariance().diagonal() = covarianceDiag;
 
     Eigen::VectorXd initialState;
     ctb::SetParamVector(state, initialState, "initialization");
@@ -482,9 +478,10 @@ void KalmanFilterConfiguration(libconfig::Config& confObj) noexcept(false)
     ctb::LatLong2LocalNED(ctb::LatLong(initialState[0], initialState[1]), initialState[2], centroidLocation, cartesian_p);
     initialState.segment(0, 2) = cartesian_p.segment(0, 2);
 
-    ctb::SetParamVector(state, covariance, "initializationCovariance");
+    ctb::SetParamVector(state, covarianceDiag, "initializationCovariance");
     Eigen::MatrixXd initialCovariance = Eigen::MatrixXd::Zero(stateDim, stateDim);
-    initialCovariance.diagonal() = covariance;
+
+    initialCovariance.diagonal() = covarianceDiag;
 
     extendedKalmanFilter->Init(initialState, initialCovariance);
 }
@@ -520,6 +517,15 @@ void CommandHandler(const std::shared_ptr<rmw_request_id_t> request_header, cons
             RCLCPP_INFO(node->get_logger(), "Reset Luenberger observer");
         } else {
             extendedKalmanFilter->Reset();
+            //sample the current gps data anfd yaw
+            Eigen::VectorXd initialState = Eigen::VectorXd::Zero(stateDim);
+            Eigen::Vector3d NED_currentPosition;
+            ctb::LatLong2LocalNED(ctb::LatLong(gpsData.latitude, gpsData.longitude), gpsData.altitude, centroidLocation, NED_currentPosition);
+            initialState.segment(0, 2) = NED_currentPosition.segment(0, 2);
+
+            initialState[5] = -atan2(magnetometerData.orthogonalstrength[1] * cos(state[3]) - magnetometerData.orthogonalstrength[2] * sin(state[3]), magnetometerData.orthogonalstrength[0] * cos(state[4]) + magnetometerData.orthogonalstrength[2] * cos(state[3]) * sin(state[4]) + magnetometerData.orthogonalstrength[1] * sin(state[4]) * sin(state[3]));
+
+            extendedKalmanFilter->Init(initialState);
             RCLCPP_INFO(node->get_logger(), "Reset EKF");
         }
         break;

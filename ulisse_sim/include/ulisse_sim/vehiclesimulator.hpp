@@ -68,6 +68,7 @@ struct SimulatorConfiguration {
     double modelErrorPercentage;
     UlisseModelParameters modelParams;
     Eigen::Vector2d inertialF_waterCurrent;
+    Eigen::Vector3d bodyF_gps_position;
     SinusoidalWave wx, wy;
 
     void ConfigureFromFile(libconfig::Config& confObj) noexcept(false)
@@ -75,6 +76,7 @@ struct SimulatorConfiguration {
         ctb::SetParam(confObj, rate, "rate");
         ctb::SetParam(confObj, modelErrorPercentage, "modelErrorPercentage");
         ctb::SetParamVector(confObj, inertialF_waterCurrent, "inertialF_waterCurrent");
+        ctb::SetParamVector(confObj, bodyF_gps_position, "bodyF_gps_position");
 
         //ulisse param
         const libconfig::Setting& root = confObj.getRoot();

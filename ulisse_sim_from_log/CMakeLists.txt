@@ -27,6 +27,7 @@ find_package(Eigen3 REQUIRED)
 # Add files in the tree of "Projects" view in QtCreator
 file(GLOB_RECURSE SOURCE_FILES
     "logs/*.log"
+    "conf/*.conf"
 )
 add_custom_target(.Files. SOURCES ${SOURCE_FILES})
 
@@ -34,9 +35,9 @@ add_custom_target(.Files. SOURCES ${SOURCE_FILES})
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
-add_executable(simluator_node src/simluator_node.cpp)
+add_executable(simluator_node src/simulator_node.cpp)
 ament_target_dependencies(simluator_node rclcpp std_msgs ulisse_msgs ctrl_toolbox ament_index_cpp)
-target_link_libraries(simluator_node Geographic )
+target_link_libraries(simluator_node Geographic config++ )
 
 
 target_include_directories(simluator_node PUBLIC
@@ -47,6 +48,7 @@ install(TARGETS simluator_node
   DESTINATION lib/${PROJECT_NAME})
 install(DIRECTORY
   logs
+  conf
   DESTINATION share/${PROJECT_NAME}/
 )
 
