@@ -44,7 +44,7 @@ public:
    */
     void Update() noexcept(false) override;
 
-    bool InitializePolygon(const ulisse_msgs::msg::Boundaries &boundaries);
+    bool InitializePolygon(const ulisse_msgs::msg::Boundaries& boundaries);
 
     //  void SetBoundaries(double bound_min, double bound_max);
 
@@ -87,13 +87,13 @@ protected:
 
     void ExtractMinDistanceSegments(std::list<segment_type> segments, point_type currentPosition, std::list<segment_type>& segment);
 
-    void DistanceCheck(point_type const& currentPositionr);
+    void DistanceCheck(point_type const& currentPositionr, Eigen::Vector3d& UTM_alignVecotr);
 
     bool IsConvex(std::list<segment_type> segments);
 
-    void ComputeAlignVectorConcave(segment_type segment, point_type currentPosition);
+    void ComputeAlignVectorConcave(segment_type segment, point_type currentPosition, Eigen::Vector3d& UTM_alignVecotr);
 
-    void ComputeAlignVectorConvex(std::list<segment_type> segment, point_type currentPosition);
+    void ComputeAlignVectorConvex(std::list<segment_type> segment, point_type currentPosition, Eigen::Vector3d& UTM_alignVecotr);
 
     void ComputeNormalVector2Segment(segment_type segment, point_type& alignVector);
 

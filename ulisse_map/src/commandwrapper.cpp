@@ -4,8 +4,10 @@
 #include <fstream>
 #include <future>
 
+#include "sisl.h"
 #include "ulisse_ctrl/fsm_defines.hpp"
 #include "ulisse_driver/LLCHelperDataStructs.h"
+#include <ctrl_toolbox/HelperFunctions.h>
 #include <jsoncpp/json/json.h>
 
 using namespace std::chrono_literals;
@@ -128,8 +130,10 @@ bool CommandWrapper::sendPath(const QString path)
             }
 
             serviceReq->nav_cmd.path.nurbs.at(count).points.resize(obj["points"].size());
-            // //Acquired the vertices
+
+            // //Acquire the vertices
             for (Json::ArrayIndex i = 0; i < obj["points"].size(); i++) {
+
                 serviceReq->nav_cmd.path.nurbs.at(count).points.at(i).latitude = obj["points"][i][0].asDouble();
                 serviceReq->nav_cmd.path.nurbs.at(count).points.at(i).longitude = obj["points"][i][1].asDouble();
             }
@@ -149,6 +153,163 @@ bool CommandWrapper::sendPath(const QString path)
     }
 
     return SendCommandRequest(serviceReq);
+}
+
+QVector<double> CommandWrapper::createNurbs(const QString& pointForNurbs)
+{
+    QVector<double> nurbsDiscretize;
+    std::vector<SISLCurve*> nurbs;
+    Json::Reader reader;
+    Json::Value obj, objMaster;
+    bool reverse = false;
+    int count = 0;
+
+    //parse the jason
+    reader.parse(pointForNurbs.toStdString(), objMaster);
+
+    // check whatever the path has beeen reverse
+    reverse = objMaster["direction"].asInt() ? true : false;
+
+    ctb::LatLong centroid;
+    centroid.latitude = objMaster["centroid"][0].asDouble();
+    centroid.longitude = objMaster["centroid"][1].asDouble();
+
+    //some param needs to create a new curve
+    int kind = 2; /* Type of curve.
+                    = 1 : Polynomial B-spline curve.
+                    = 2 : Rational B-spline (nurbs) curve.
+                    = 3 : Polynomial Bezier curve.
+                    = 4 : Rational Bezier curve*/
+
+    int copy = 1; /* Flag
+                     = 0 : Set pointer to input arrays.
+                     = 1 : Copy input arrays.
+                     = 2 : Set pointer and remember to free arrays. */
+
+    try {
+        for (Json::Value c : objMaster["curves"]) {
+
+            reader.parse(c.toStyledString(), obj);
+
+            int order; //Order of curve.
+            order = obj["degree"].asInt();
+
+            std::shared_ptr<double[]> weights(new double[obj["weigths"].size()]); //whight vector of curve.
+            //Acquired the weights
+            for (Json::ArrayIndex i = 0; i < obj["weigths"].size(); i++) {
+                weights[i] = obj["weigths"][i].asDouble();
+            }
+
+            std::shared_ptr<double[]> coef(new double[obj["points"].size() * 4]); //Vertices of curve
+            // //Acquired the vertices
+            count = 0;
+            ctb::LatLong point;
+            Eigen::Vector3d pointC;
+            for (Json::ArrayIndex i = 0; i < obj["points"].size(); i++) {
+                point.latitude = obj["points"][i][0].asDouble();
+                point.longitude = obj["points"][i][1].asDouble();
+
+                ctb::LatLong2LocalUTM(point, 0.0, centroid, pointC);
+
+                coef[count] = pointC[0] * weights[i];
+                coef[count + 1] = pointC[1] * weights[i];
+                coef[count + 2] = 0;
+                coef[count + 3] = weights[i];
+
+                count += 4;
+            }
+
+            std::shared_ptr<double[]> knots(new double[obj["knots"].size()]); //Knot vector of curve
+            //Acquired the knots
+            for (Json::ArrayIndex i = 0; i < obj["knots"].size(); i++) {
+                knots[i] = obj["knots"][i].asDouble();
+            }
+
+            //create the curve
+            SISLCurve* curve = newCurve(static_cast<int>(obj["points"].size()), order + 1, knots.get(), coef.get(), kind, 3, copy);
+
+            if (curve == nullptr) {
+                std::cout << "Something Goes Wrong in NURBS Parsing" << std::endl;
+            }
+
+            if (reverse) {
+                // Turn the direction of a curve by reversing the ordering of the coefficients
+                s1706(curve);
+            }
+
+            nurbs.push_back(curve);
+        }
+
+    } catch (Json::Exception& e) {
+        // output exception information
+        std::cerr << "NURBS Descriptor Error: " << e.what();
+    }
+
+    // Revert the nurbs curve
+    if (reverse) {
+        std::reverse(nurbs.begin(), nurbs.end());
+    }
+
+    ctb::LatLong map_point(0.0, 0.0);
+    int j = 0;
+    for (unsigned int i = 0; i < nurbs.size(); i++) {
+        //Pick the i-th curve
+        SISLCurve* currentCurve = nurbs[i];
+        double currentParvalue = 0.0;
+        double altitude = 0.0;
+
+        while (currentParvalue < 1.0) {
+            Eigen::VectorXd derive;
+            int deriveDim = 3;
+            derive.setZero(deriveDim);
+
+            auto deriveTmp = std::unique_ptr<double[]>(new double[static_cast<unsigned int>(deriveDim)]);
+
+            // S1227 is a method for computing the position and the first derivatives of the curve at  a given parameter value Evaluation from the left hand side
+            int leftKnot; //Pointer to the interval in the knot vector where parvalue is located.
+            int stat; /* Status messages
+                        > 0 : warning
+                        = 0 : ok
+                        < 0 : error*/
+            // S1227 is a method for computing the position and the first derivatives of the curve at  a given parameter value Evaluation from the left hand side
+            s1227(currentCurve, 0, currentParvalue, &leftKnot, deriveTmp.get(), &stat);
+
+            if (stat < 0) {
+                std::cerr << "Compute derive fails" << std::endl;
+
+            } else {
+                for (int i = 0; i < deriveDim; i++) {
+                    derive[i] = deriveTmp[static_cast<unsigned int>(i)];
+                }
+            }
+
+            ctb::LocalUTM2LatLong(derive, centroid, map_point, altitude);
+
+            //            std::cout << "crateNurbs map point: " << map_point.latitude << ", " << map_point.longitude << std::endl;
+
+            nurbsDiscretize << map_point.latitude << map_point.longitude;
+            currentParvalue += 0.01;
+        }
+    }
+    return nurbsDiscretize;
+}
+
+QPoint CommandWrapper::latLong2LocalUTM(QGeoCoordinate latlong, QGeoCoordinate centroid)
+{
+
+    Eigen::Vector3d tmp;
+    ctb::LatLong2LocalUTM(ctb::LatLong(latlong.latitude(), latlong.longitude()), 0.0, ctb::LatLong(centroid.latitude(), centroid.longitude()), tmp);
+
+    return QPoint(tmp.x(), tmp.y());
+}
+
+QGeoCoordinate CommandWrapper::localUTM2LatLong(QPoint UTM_point, QGeoCoordinate centroid)
+{
+    ctb::LatLong tmp;
+    double altitude;
+    ctb::LocalUTM2LatLong(Eigen::Vector3d { UTM_point.x(), UTM_point.y(), 0.0 }, ctb::LatLong(centroid.latitude(), centroid.longitude()), tmp, altitude);
+
+    return QGeoCoordinate(tmp.latitude, tmp.longitude);
 }
 
 bool CommandWrapper::sendBoundaries(const QString boundary)

@@ -5,6 +5,7 @@ import QtQuick.Controls.Material 2.1
 import "."
 import "../scripts/helper.js" as Helper
 
+
 MapPolyline {
     id: root
     line.width: 3
@@ -230,11 +231,8 @@ MapPolyline {
         reposition_add_markers()
         reposition_vertex_markers()
         a_marker.coordinate = intersections_geographic[0][0]
-        b_marker.coordinate = intersections_geographic[intersections_geographic.length
-                                                       - 1][(intersections_geographic.length
-                                                             % 2 === 0) ? 0 : 1]
-        if (direction === 1) toggle_dir()
-//        direction = 1
+        b_marker.coordinate = intersections_geographic[intersections_geographic.length - 1][(intersections_geographic.length % 2 === 0) ? 0 : 1]
+        if (direction === 0) toggle_dir()
     }
 
     function enable_handle() {
@@ -445,13 +443,10 @@ MapPolyline {
                 var n_intervals = 16
                 var snap_interval = 2 * Math.PI / n_intervals
                 var theta = Math.atan2(p1.y - p0.y, p1.x - p0.x)
-                var snap_idx = Math.floor(
-                            (theta + snap_interval / 2) / snap_interval)
+                var snap_idx = Math.floor((theta + snap_interval / 2) / snap_interval)
                 var snap_theta = snap_idx * snap_interval
                 var m = Math.tan(snap_theta)
-                var lam = Helper.lat_to_m_coeff(coordinateAt(0).latitude)
-                var lom = Helper.lon_to_m_coeff(coordinateAt(0).longitude)
-                p1 = Helper.project(p0, m, p1, lam / lom)
+                p1 = Helper.project(p0, m, p1, 1)
             }
             replaceCoordinate(1, map.toCoordinate(p1))
         } else if (polygonal_phase === 2) {
@@ -460,18 +455,15 @@ MapPolyline {
             var cpc = map.toCoordinate(Qt.point(mouse.x, mouse.y), false)
             var coords = [cp0, cp1, cpc]
             var centroid = Helper.coords_centroid(coords)
-            var lam = Helper.lat_to_m_coeff(centroid.latitude)
-            var lom = Helper.lon_to_m_coeff(centroid.longitude)
-            var points = Helper.points_map2euclidean(coords, centroid, lam, lom)
-
+            var points = Helper.points_map2euclidean(coords, centroid)
             var m = Helper.slope(points[0], points[1])
-            var m_perp = -Math.pow(
-                        lam / lom,
-                        2) / m //perpendicularity constraint for aspect ratios different than 1:1
+
+            var m_perp = -1/ m //perpendicularity constraint for aspect ratios different than 1:1
+
             var p2 = Helper.intersect_two_lines(points[1], m_perp, points[2], m)
             var p3 = Helper.intersect_two_lines(points[0], m_perp, points[2], m)
-            var cp2 = Helper.point_euclidean2map(p2.x, p2.y, centroid, lam, lom)
-            var cp3 = Helper.point_euclidean2map(p3.x, p3.y, centroid, lam, lom)
+            var cp2 = cmdWrapper.localUTM2LatLong(p2, centroid)
+            var cp3 = cmdWrapper.localUTM2LatLong(p3, centroid)
 
             if (cp2 !== null && cp2.isValid && cp3 !== null && cp3.isValid) {
                 replaceCoordinate(2, cp2)
@@ -689,27 +681,23 @@ MapPolyline {
         centroid = Helper.coords_centroid(shape_coords)
         var limits = Helper.shape_geo_limits(shape_coords)
 
-        var dim = Helper.shape_px_dimensions(limits, map)
-
         var lam = Helper.lat_to_m_coeff(centroid.latitude)
         var lom = Helper.lon_to_m_coeff(centroid.longitude)
 
+        var dim = Helper.shape_px_dimensions(limits, map)
+
         // transform shape coordinates and work in a virtual euclidean metric system
-        var points = Helper.points_map2euclidean(shape_coords,
-                                                 centroid, lam, lom)
+        var points = Helper.points_map2euclidean(shape_coords, centroid)
         points = Helper.set_points_clockwise(points)
         var sides = Helper.make_sides(points)
 
-        intersections_cartesian = Helper.convex_polygon_parallel_slices_intersections(
-                    _angle, _offset, sides, lam / lom)
+        intersections_cartesian = Helper.convex_polygon_parallel_slices_intersections(_angle, _offset, sides, lam / lom)
 
         if (_method === "simple" || _method === "single_winding")
-            intersections_cartesian = Helper.rectify_dense_winding(
-                        intersections_cartesian, lam / lom)
+            intersections_cartesian = Helper.rectify_dense_winding(intersections_cartesian, lam / lom)
 
         // transform virtual euclidean reference points in map coordinates
-        intersections_geographic = Helper.segments_euclidean2map(
-                    intersections_cartesian, centroid, lam, lom)
+        intersections_geographic = Helper.segments_euclidean2map(intersections_cartesian, centroid)
 
         var a = map.toCoordinate(Qt.point(0, 0))
         var b = map.toCoordinate(Qt.point(0, 1))
@@ -729,8 +717,7 @@ MapPolyline {
         _offset /= 3
 
         // transform map coordinates in canvas pixel indexes
-        intersections_canvas = Helper.segments_map2canvas(
-                    intersections_geographic, map, _canvas)
+        intersections_canvas = Helper.segments_map2canvas(intersections_geographic, map, _canvas)
         map.tilt = orig_tilt
     }
 
@@ -764,8 +751,9 @@ MapPolyline {
         disable_handle()
         if (_method !== null || _method !== undefined) {
             generate_path()
-            draw_path()
             generate_nurbs()
+            draw_path()
+
         }
     }
 
@@ -817,46 +805,39 @@ MapPolyline {
         // clear the canvas
         _canvas.clear_canvas()
 
-        // draw parallel lines
-        Helper.draw_path_lines(_canvas, intersections_canvas)
 
-        // draw manouvre curves
-        if (_method === "simple")
-            Helper.draw_manouvre_simple(_canvas, intersections_canvas)
-        else if (_method === "single_winding")
-            Helper.draw_manouvre_single_winding(_canvas, intersections_canvas)
+
+        Helper.draw_path_lines(_canvas, cmdWrapper.createNurbs(JSON.stringify(generate_nurbs())), map)
+
     }
 
-
     ////////////////////////////////////////////////////////
-    // Serialization/deserialization, rasterization
     function generate_nurbs() {
-        var lam = Helper.lat_to_m_coeff(centroid.latitude)
-        var lom = Helper.lon_to_m_coeff(centroid.longitude)
-
         var nurb_l = []
         var nurb_c = []
         for (var i = 0; i < intersections_cartesian.length; i++) {
-            var p0 = Helper.point_euclidean2map(intersections_cartesian[i][i % 2].x, intersections_cartesian[i][i % 2].y, centroid, lam, lom)
-            var p1 = Helper.point_euclidean2map(intersections_cartesian[i][(i + 1) % 2].x, intersections_cartesian[i][(i + 1) % 2].y, centroid, lam, lom)
-            nurb_l.push(Helper.generate_nurb_line(p0, p1))
+            var p0 = intersections_cartesian[i][i % 2]
+            var p1 = intersections_cartesian[i][(i + 1) % 2]
+            nurb_l.push(Helper.generate_nurb_line(p0, p1, centroid))
         }
 
         for (var i = 0; i < intersections_cartesian.length - 1; i++) {
             var dir = (i + 1) % 2
-            var p2 = Helper.point_euclidean2map(intersections_cartesian[i][dir].x, intersections_cartesian[i][dir].y, centroid, lam, lom)
-            var p3 = Helper.point_euclidean2map(intersections_cartesian[i + 1][dir].x, intersections_cartesian[i + 1][dir].y, centroid, lam, lom)
+            var p0 = intersections_cartesian[i][dir]
+            var p3 = intersections_cartesian[i + 1][dir]
             if (_method === "simple")
-                nurb_c.push(Helper.generate_nurb_line(p2, p3))
+                nurb_c.push(Helper.generate_nurb_line(p0, p3, centroid))
             else if (_method === "single_winding")
-                nurb_c.push(Helper.generate_nurb_circle(p2, p3, dir))
+                nurb_c.push(Helper.generate_nurb_circle(p0, p3, dir, centroid))
         }
+
 
         var curves = [nurb_l[0]]
         for (var i = 0; i < intersections_cartesian.length - 1; i++) {
             curves.push(nurb_c[i])
             curves.push(nurb_l[i + 1])
         }
+
         var result = {
             centroid: [centroid.latitude, centroid.longitude],
             curves: curves,
@@ -897,6 +878,10 @@ MapPolyline {
         _angle = data.params.angle
         _offset = data.params.offset
         _method = data.params.method
+    }
+
+    function get_nurbs(data){
+    nurbs = data
     }
 
     ///////////////////////////////////////////////////

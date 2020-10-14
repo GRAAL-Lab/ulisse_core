@@ -61,6 +61,11 @@ public:
      * @param nextP - The returning curve length
     */
     bool ComputeCurveLength(SISLCurve* curve, double& length);
+    /*
+     * Method for log the path on file
+     * @param nurbs - The path described as nurbs
+    */
+    bool LogPathOnFile(const std::vector<SISLCurve*>& nurbs);
 
     //Nurbs parameters
     struct NurbsParam {
@@ -110,6 +115,7 @@ private:
      * @param nextP - The possible returning next point on curve
     */
     bool ComputePossibleNextPoint(Eigen::VectorXd& nextDirection, Eigen::VectorXd& nextP);
+
 
     int dim_; //dimention of the controlled points
     ctb::LatLong startP_; //starting point of the nurbs path

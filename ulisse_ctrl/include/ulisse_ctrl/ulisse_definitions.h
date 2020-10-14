@@ -11,6 +11,7 @@ namespace task {
     const std::string asvAngularPosition = "ASV_Angular_Position";
     const std::string asvAbsoluteAxisAlignment = "ASV_Absolute_Axis_Alignment";
     const std::string asvCartesianDistance = "ASV_Cartesian_Distance";
+     const std::string asvCartesianDistancePathFollowing = "ASV_Cartesian_Distance_Path_Following";
     const std::string asvSafetyBoundaries = "ASV_Safety_Boundaries";
     const std::string asvAbsoluteAxisAlignmentSafety = "ASV_Absolute_Axis_Alignment_Safety";
 }

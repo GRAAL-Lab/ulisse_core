@@ -72,6 +72,12 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Cartesian_Distance", 10);
     tasksMap_.insert(std::make_pair(ulisse::task::asvCartesianDistance, taskInfo_));
 
+    // ASV CONTROL DISTANCE PATH FOLLOWING
+    asvCartesianDistancePathFollowing_ = std::make_shared<ikcl::CartesianDistance>(ikcl::CartesianDistance(ulisse::task::asvCartesianDistancePathFollowing, robotModel_, ulisse::robotModelID::ASV));
+    taskInfo_.task = asvCartesianDistancePathFollowing_;
+    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Cartesian_Distance_Path_Following", 10);
+    tasksMap_.insert(std::make_pair(ulisse::task::asvCartesianDistancePathFollowing, taskInfo_));
+
     // ASV SAFETY BOUNDARIES (INEQUALITY TASK)
     asvSafetyBoundaries_ = std::make_shared<ikcl::SafetyBoundaries>(ikcl::SafetyBoundaries(ulisse::task::asvSafetyBoundaries, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvSafetyBoundaries_;
@@ -509,8 +515,8 @@ void VehicleController::PublishControl()
             }
 
             std::vector<double> diagonal_external_activation_function;
-            for (unsigned int i = 0; i < taskMap.second.task->InternalActivationFunction().rows(); i++) {
-                diagonal_external_activation_function.push_back(taskMap.second.task->InternalActivationFunction().at(i, i));
+            for (unsigned int i = 0; i < taskMap.second.task->ExternalActivationFunction().rows(); i++) {
+                diagonal_external_activation_function.push_back(taskMap.second.task->ExternalActivationFunction().at(i, i));
             }
 
             std::vector<double> referenceRate;

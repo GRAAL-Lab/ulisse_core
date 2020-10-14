@@ -18,7 +18,7 @@ namespace states {
         minHeadingError_ = M_PI / 64;
     }
 
-    StateSpeedHeading::~StateSpeedHeading() {}
+    StateSpeedHeading::~StateSpeedHeading() { }
 
     void StateSpeedHeading::ConfigureStateFromFile(libconfig::Config& confObj)
     {
@@ -77,7 +77,7 @@ namespace states {
         std::cout << "headingErrorsafety: " << headingErrorsafety << std::endl;
 
         //compute the gain of the cartesian distance
-        double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingErrorsafety);
+        double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0.0, 1.0, headingErrorsafety);
 
         // Set the gain of the cartesian distance task
         safetyBoundariesTask_->ExternalActivationFunction() = taskGainSafety * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());

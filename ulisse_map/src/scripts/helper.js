@@ -1,6 +1,10 @@
 
+
+//import "/home/frankthesnow/bower_components/proj4/dist/proj4.js" as proj
+
 var QtPositioning
 var QtLocation
+
 
 function init_lib(qt_positioning) {
     QtPositioning = qt_positioning
@@ -61,30 +65,18 @@ function point_canvas2screen(point, map, canvas) {
                     point.y / canvas.multiplier + o.y)
 }
 
-function point_map2euclidean(latitude, longitude, centroid, lam, lom) {
-    return Qt.point((centroid.longitude - longitude) * lom,
-                    (centroid.latitude - latitude) * lam)
-}
-
-function point_euclidean2map(x, y, centroid, lam, lom) {
-    return QtPositioning.coordinate(centroid.latitude - y / lam,
-                                    centroid.longitude - x / lom)
-}
-
-function points_map2euclidean(coordinates, centroid, lam, lom) {
+function points_map2euclidean(coordinates, centroid) {
     var points = []
-    for (var i = 0; i < coordinates.length; i++)
-        points.push(point_map2euclidean(coordinates[i].latitude,
-                                        coordinates[i].longitude, centroid,
-                                        lam, lom))
+    for (var i = 0; i < coordinates.length; i++){
+         points.push(cmdWrapper.latLong2LocalUTM(coordinates[i], centroid))
+    }
     return points
 }
 
-function points_euclidean2map(points, centroid, lam, lom) {
+function points_euclidean2map(points, centroid) {
     var coordinates = []
     for (var i = 0; i < points.length; i++)
-        coordinates.push(point_euclidean2map(points[i].x, points[i].y,
-                                             centroid, lam, lom))
+        coordinates.push(cmdWrapper.localUTM2LatLong(points[i], centroid))
     return coordinates
 }
 
@@ -368,42 +360,57 @@ function coherent_points_direction(pts, dir){
 
 function lat_to_m_coeff(lat) {
     lat = deg_to_rad(lat)
-    return 111132.92 - 559.82 * Math.cos(2 * lat) + 1.175 * Math.cos(
-                4 * lat) - 0.0023 * Math.cos(6 * lat)
+    return 111132.92 - 559.82 * Math.cos(2 * lat) + 1.175 * Math.cos(4 * lat) - 0.0023 * Math.cos(6 * lat)
 }
 
 function lon_to_m_coeff(lon) {
     lon = deg_to_rad(lon)
-    return 111412.84 * Math.cos(lon) - 93.5 * Math.cos(
-                3 * lon) + 0.118 * Math.cos(5 * lon)
+    return 111412.84 * Math.cos(lon) - 93.5 * Math.cos(3 * lon) + 0.118 * Math.cos(5 * lon)
 }
 
-function generate_nurb_circle(p0, p3, dir) {
-    var dist = distance(p0, p3)
-    var angle = Math.tan(1 / -slope(p0, p3))
-    if (dir === 1) {
-        var p1 = Qt.point(p0.x + Math.cos(angle) * dist,
-                          p0.y + Math.sin(angle) * dist)
-        var p2 = Qt.point(p3.x + Math.cos(angle) * dist,
-                          p3.y + Math.sin(angle) * dist)
+function generate_nurb_circle(p0, p3, dir, centroid) {
+    var d = distance(p0, p3)
+    //u is the normal to the p3-p0 direction
+    var u = Qt.point((-p3.y+p0.y)/d, (p3.x - p0.x)/d)
+
+    //look for the points p2 and p1 that form a square, to generate the semicircle
+    var p1, p2
+
+    if (dir === 0) {
+         p1 = Qt.point(p0.x + u.x*d, p0.y + u.y*d)
+         p2 = Qt.point(p3.x + u.x*d, p3.y + u.y*d)
     } else {
-        var p1 = Qt.point(p0.x - Math.cos(angle) * dist,
-                          p0.y - Math.sin(angle) * dist)
-        var p2 = Qt.point(p3.x - Math.cos(angle) * dist,
-                          p3.y - Math.sin(angle) * dist)
+         p1 = Qt.point(p0.x - u.x*d, p0.y - u.y*d)
+         p2 = Qt.point(p3.x - u.x*d, p3.y - u.y*d)
     }
+
+    var lam = lat_to_m_coeff(centroid.latitude)
+    var lom = lon_to_m_coeff(centroid.longitude)
+
+    var p0_map = cmdWrapper.localUTM2LatLong(p0, centroid)
+    var p1_map = cmdWrapper.localUTM2LatLong(p1, centroid)
+    var p2_map = cmdWrapper.localUTM2LatLong(p2, centroid)
+    var p3_map = cmdWrapper.localUTM2LatLong(p3, centroid)
+
     return {
         degree: 3,
-        points: [[p0.x, p0.y], [p1.x, p1.y], [p2.x, p2.y], [p3.x, p3.y]],
+        points: [[p0_map.latitude, p0_map.longitude], [p1_map.latitude, p1_map.longitude], [p2_map.latitude, p2_map.longitude], [p3_map.latitude, p3_map.longitude]],
         weigths: [1, 1 / 3.0, 1 / 3.0, 1],
         knots: [0, 0, 0, 0, 1, 1, 1, 1]
     }
 }
 
-function generate_nurb_line(p0, p1) {
+function generate_nurb_line(p0, p1, centroid) {
+
+    var lam = lat_to_m_coeff(centroid.latitude)
+    var lom = lon_to_m_coeff(centroid.longitude)
+
+    var p0_map = cmdWrapper.localUTM2LatLong(p0, centroid)
+    var p1_map = cmdWrapper.localUTM2LatLong(p1, centroid)
+
     return {
         degree: 1,
-        points: [[p0.latitude, p0.longitude], [p1.latitude, p1.longitude]],
+        points: [[p0_map.latitude, p0_map.longitude], [p1_map.latitude, p1_map.longitude]],
         weigths: [1, 1],
         knots: [0, 0, 1, 1]
     }
@@ -488,17 +495,19 @@ function draw_bounding_rect(map, canvas, w, h) {
     canvas.requestPaint()
 }
 
-function ctx_draw_path_lines(ctx, pp) {
-    for (var i = 0; i < pp.length; i++) {
-        var p0 = pp[i][0]
-        var p1 = pp[i][1]
-        draw_line(ctx, p0.x, p0.y, p1.x, p1.y)
+function ctx_draw_path_lines(ctx, pp,map) {
+    var i=0
+    while(i < pp.length - 4){
+        var p0 = point_map2canvas(QtPositioning.coordinate(pp[i], pp[i+1]), map, ctx)
+        var p1 = point_map2canvas(QtPositioning.coordinate(pp[i+2], pp[i+3]), map, ctx)
+        draw_line(ctx.canvasCtx, p0.x, p0.y, p1.x, p1.y)
+        i=i+2
     }
 }
 
-function draw_path_lines(canvas, pp) {
+function draw_path_lines(canvas, pp, map) {
     var ctx = canvas.canvasCtx
-    ctx_draw_path_lines(ctx, pp)
+    ctx_draw_path_lines(canvas, pp, map)
     canvas.requestPaint()
 }
 
@@ -517,32 +526,35 @@ function draw_manouvre_simple(canvas, pp) {
     canvas.requestPaint()
 }
 
-function draw_manouvre_single_winding(canvas, pp) {
-    for (var i = 0, a = 0, b = 1; i < pp.length - 1; i++) {
+function draw_manouvre_single_winding(canvas, intersection_canvas, tilt) {
+    for (var i = 0, a = 0, b = 1; i < intersection_canvas.length - 1; i++) {
         a = flip(a)
         b = flip(b)
-        var p0 = pp[i][b]
-        var p1 = pp[i][a]
-        var p2 = pp[i + 1][a]
-        var p3 = pp[i + 1][b]
-        draw_semicircle(canvas.canvasCtx, p0, p1, p2, p3)
+        var p0 = intersection_canvas[i][b]
+        var p1 = intersection_canvas[i][a]
+        var p2 = intersection_canvas[i + 1][a]
+        var p3 = intersection_canvas[i + 1][b]
+        draw_semicircle(canvas.canvasCtx, p0, p1, p2, p3, tilt)
+
     }
 }
 
-function draw_semicircle(ctx, p0, p1, p2, p3) {
+function draw_semicircle(ctx, p0, p1, p2, p3, tilt) {
     var l1 = distance(p0, p1)
     var l2 = distance(p3, p2)
     var d = distance(p1, p2)
-    var c = 0.55191502449 * d / 2
-    var pc1a = interpolate(p0, p1, l1 + c, 1)
-    var pc1b = interpolate(p3, p2, l2 + c, 1)
+    var k = 0.5522847498 * d / 2
+    var pc1a = interpolate(p0, p1, l1 + k, 1)
+    var pc1b = interpolate(p3, p2, l2 + k, 1)
     var _a = interpolate(p0, p1, l1 + d / 2, 1)
     var _b = interpolate(p3, p2, l2 + d / 2, 1)
     var pc3 = interpolate(_a, _b, d / 2, 1)
-    var pc2a = interpolate(pc3, _a, c, 1)
-    var pc2b = interpolate(pc3, _b, c, 1)
+    var pc2a = interpolate(pc3, _a, k, 1)
+    var pc2b = interpolate(pc3, _b, k, 1)
+
     draw_cubic_bezier(ctx, p1, pc1a, pc2a, pc3)
     draw_cubic_bezier(ctx, pc3, pc2b, pc1b, p2)
+
 }
 
 function draw_cubic_bezier(ctx, c0, c1, c2, c3) {
@@ -553,14 +565,6 @@ function draw_cubic_bezier(ctx, c0, c1, c2, c3) {
     ctx.stroke()
 }
 
-function draw_circle(ctx, p0, p1, p2, p3, color) {
-    ctx.strokeStyle = color
-    ctx.beginPath()
-    ctx.moveTo(p0.x, p0.y)
-    ctx.arc(p0.x, p0.y, r, 0, 2 * Math.PI)
-    ctx.moveTo(p0.x, p0.y)
-    ctx.stroke()
-}
 
 function roundNumber(number, digits) {
     var multiple = Math.pow(10, digits)

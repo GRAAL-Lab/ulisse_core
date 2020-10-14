@@ -509,8 +509,7 @@ Pane {
                         text = "Redefine"
                         buttonSafety1.enabled = true
                         sidebar_manage.check_safety_all()
-                        cmdWrapper.sendBoundaries(JSON.stringify(
-                                                      map.polysec_cur.serialize()))
+                        cmdWrapper.sendBoundaries(JSON.stringify(map.polysec_cur.serialize()))
                     }
 
                     function reset_polysec(){

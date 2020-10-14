@@ -1,4 +1,5 @@
 #include "ulisse_ctrl/nurbs.h"
+#include <fstream>
 
 Nurbs::Nurbs(int dim)
     : dim_ { dim }
@@ -43,12 +44,14 @@ bool Nurbs::Initialization(const ulisse_msgs::msg::Path& path)
                      = 1 : Copy input arrays.
                      = 2 : Set pointer and remember to free arrays. */
 
+    int i = 0;
     try {
         for (auto curves : path.nurbs) {
 
             //Order of curve.
             int order = static_cast<int>(curves.degree);
             std::cout << "order: " << order << std::endl;
+            std::cout << "curve index: " << i++ << std::endl;
 
             std::shared_ptr<double[]> weights(new double[curves.weigths.size()]); //whight vector of curve.
             //Acquired the weights
@@ -66,8 +69,10 @@ bool Nurbs::Initialization(const ulisse_msgs::msg::Path& path)
                 point.latitude = curves.points.at(i).latitude;
                 point.longitude = curves.points.at(i).longitude;
                 std::cout << "point.latitude : " << point.latitude << std::endl;
-                std::cout << "point.latiude : " << point.longitude << std::endl;
+                std::cout << "point.longitude : " << point.longitude << std::endl;
                 ctb::LatLong2LocalUTM(point, 0.0, centroid_, pointC);
+
+                std::cout << "pointC: " << pointC.transpose() << std::endl;
 
                 coef[count] = pointC[0] * weights[i];
                 coef[count + 1] = pointC[1] * weights[i];
@@ -85,10 +90,10 @@ bool Nurbs::Initialization(const ulisse_msgs::msg::Path& path)
             }
 
             //create the curve
-            SISLCurve* curve = newCurve(2, order + 1, knots.get(), coef.get(), kind, dim_, copy);
+            SISLCurve* curve = newCurve(curves.points.size(), order + 1, knots.get(), coef.get(), kind, dim_, copy);
 
             if (curve == nullptr) {
-                std::cout << "Something Goes Wrong in NURBS Parsing" << std::endl;
+                std::cout << "Something Goes Wrong in newCurve " << std::endl;
                 return false;
             }
 
@@ -180,7 +185,7 @@ bool Nurbs::ComputeNextPoint(const ctb::LatLong& currentP, ctb::LatLong& nextP)
     Eigen::VectorXd nextDir;
     Eigen::VectorXd possibleNextP;
 
-    //To compute the next point on the curve, by addind a delta increment on the current parvalue
+    //Compute the next point on the curve, by adding a delta increment on the current parvalue
     //To avoiding reaching a point with a direction too different from the actual one, it has been defined
     //two threshold deltaMin and delta max. The current delta increment is
     //inizialize with deltaMax and then compute the next point and the next direction. Then,
@@ -225,6 +230,7 @@ bool Nurbs::ComputeNextPoint(const ctb::LatLong& currentP, ctb::LatLong& nextP)
     ctb::LocalUTM2LatLong(possibleNextP, centroid_, nextP, altitude);
     std::cout << "tangent of the current parvalue: " << currenDirection.transpose() << std::endl;
     std::cout << "current delta: " << currentDelta_ << std::endl;
+
     return true;
 }
 
@@ -439,6 +445,54 @@ bool Nurbs::ComputeParameterValue(const Eigen::VectorXd& epoint)
             parvalue_ = parvalueTmp2 + floor(maxParvalue);
         }
     }
+
+    return true;
+}
+
+bool Nurbs::LogPathOnFile(const std::vector<SISLCurve*>& nurbs)
+{
+    auto in_time_t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+
+    //open the csv file
+    std::ofstream myfile;
+    std::stringstream data;
+    std::string filename = "path_";
+    data << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d_%H.%M.%S");
+    filename.append(data.str()).append(".csv");
+
+    std::cout << "Filename: " << filename << std::endl;
+
+    myfile.open(filename);
+
+    //First row the header
+    myfile << "latitude, longitude"
+           << "\n";
+
+    ctb::LatLong map_point(0.0, 0.0);
+
+    for (unsigned int i = 1; i < 2; i++) {
+        //Pick the i-th curve
+        SISLCurve* currentCurve = nurbs[i];
+        double currentParvalue = 0.0;
+        double altitude = 0.0;
+
+        while (currentParvalue < 1.0) {
+            Eigen::VectorXd derive;
+            if (!ComputeDerive(currentCurve, 0, currentParvalue, derive)) {
+                std::cerr << "Initialization: ComputeDerive endpoint fails" << std::endl;
+                return false;
+            }
+
+            ctb::LocalUTM2LatLong(derive, centroid_, map_point, altitude);
+
+            currentParvalue += 0.01;
+            myfile.setf(std::ios_base::fixed);
+            myfile << map_point.latitude << "," << map_point.longitude
+                   << "\n";
+        }
+    }
+
+    myfile.close();
 
     return true;
 }

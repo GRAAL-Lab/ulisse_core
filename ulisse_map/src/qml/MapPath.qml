@@ -564,17 +564,12 @@ MapPolyline {
 
     function generate_nurbs() {
         var centroid = Helper.coords_centroid(path)
-//        var lam = Helper.lat_to_m_coeff(centroid.latitude)
-//        var lom = Helper.lon_to_m_coeff(centroid.longitude)
-//        var points = Helper.points_map2euclidean(path, centroid, lam, lom)
-        var points = []
-        for (var i = 0; i < path.length; i++)
-            points.push(QtPositioning.coordinate(path[i].latitude, path[i].longitude))
+        var points = Helper.points_map2euclidean(path, centroid)
 
         var nurb_l = []
 
         for (var i = 0; i < points.length-1; i++)
-                nurb_l.push(Helper.generate_nurb_line(path[i], path[i+1]))
+                nurb_l.push(Helper.generate_nurb_line(points[i], points[i+1],centroid))
 
         var result = {
             centroid: [centroid.latitude, centroid.longitude],
@@ -583,6 +578,7 @@ MapPolyline {
         }
         return result
     }
+
 
     function serialize() {
         var values = []

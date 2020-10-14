@@ -24,9 +24,10 @@ find_package(ulisse_msgs REQUIRED)
 find_package(ulisse_driver REQUIRED)
 find_package(ulisse_ctrl REQUIRED)
 
+
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(JSONCPP jsoncpp)
-link_libraries(${JSONCPP_LIBRARIES})
+link_libraries(${JSONCPP_LIBRARIES} sisl)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -70,6 +71,7 @@ target_link_libraries(${PROJECT_NAME}_node
 	ulissemap_lib
 	${ulisse_msgs_LIBRARIES}
         ${JSONCPP_LIBRARIES}
+        Geographic
 	)
 
 

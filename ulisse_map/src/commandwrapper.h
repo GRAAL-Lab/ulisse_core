@@ -9,13 +9,11 @@
 
 #include "rclcpp/rclcpp.hpp"
 
-
 #include "ulisse_msgs/msg/feedback_gui.hpp"
 #include "ulisse_msgs/srv/control_command.hpp"
 #include "ulisse_msgs/srv/llc_command.hpp"
 #include "ulisse_msgs/srv/set_boundaries.hpp"
 #include "ulisse_msgs/srv/set_cruise_control.hpp"
-
 #include "ulisse_msgs/topicnames.hpp"
 
 class CommandWrapper : public QObject {
@@ -72,6 +70,9 @@ public:
     Q_INVOKABLE QString loadPathFromFile(const QString file);
     Q_INVOKABLE bool goToNextWaypoint();
     Q_INVOKABLE bool goToPreviousWaypoint();
+    Q_INVOKABLE QVector<double> createNurbs(const QString& pointForNurbs);
+    Q_INVOKABLE QPoint latLong2LocalUTM(QGeoCoordinate latlong, QGeoCoordinate centroid);
+    Q_INVOKABLE QGeoCoordinate localUTM2LatLong(QPoint UTM_point, QGeoCoordinate centroid);
 
 public slots:
     void check_error_slot();

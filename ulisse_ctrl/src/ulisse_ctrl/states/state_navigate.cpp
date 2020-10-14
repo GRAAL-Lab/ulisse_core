@@ -8,13 +8,15 @@ namespace ulisse {
 namespace states {
 
     StateNavigate::StateNavigate()
-        : isCurveSet_{ false }
-        , isInStart_{ false }
-        , nurbsObj_{ 3 }
+        : isCurveSet_ { false }
+        , isInStart_ { false }
+        , logPathOnFile_ { false }
+        , nurbsObj_ { 3 }
+
     {
     }
 
-    StateNavigate::~StateNavigate() {}
+    StateNavigate::~StateNavigate() { }
 
     bool StateNavigate::LoadNurbs(const ulisse_msgs::msg::Path& path)
     {
@@ -22,8 +24,16 @@ namespace states {
             std::cerr << "LoadNurbs: fails" << std::endl;
             return false;
         }
-
         isCurveSet_ = true;
+
+        if (logPathOnFile_) {
+            //log path on file
+            if (!nurbsObj_.LogPathOnFile(nurbsObj_.Path())) {
+                std::cerr << "LogPathOnFile fails" << std::endl;
+                return false;
+            }
+        }
+
         return isCurveSet_;
     }
 
@@ -37,6 +47,7 @@ namespace states {
         ctb::SetParam(state, minHeadingError_, "minHeadingError");
         ctb::SetParam(state, tolleranceStartingPoint_, "tolleranceStartingPoint");
         ctb::SetParam(state, tolleranceEndingPoint_, "tolleranceEndingPoint");
+        ctb::SetParam(state, logPathOnFile_, "logPathOnFile");
 
         //configure the nurbs param
         nurbsObj_.nurbsParam.configureFromFile(confObj, ulisse::states::ID::navigate);
@@ -73,6 +84,7 @@ namespace states {
         absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
         cartesianDistanceTask_ = std::dynamic_pointer_cast<ikcl::CartesianDistance>(tasksMap.find(ulisse::task::asvCartesianDistance)->second.task);
         alignToTargetTask_ = std::dynamic_pointer_cast<ikcl::AlignToTarget>(tasksMap.find(ulisse::task::asvAngularPosition)->second.task);
+        cartesianDistancePathFollowingTask_ = std::dynamic_pointer_cast<ikcl::CartesianDistance>(tasksMap.find(ulisse::task::asvCartesianDistancePathFollowing)->second.task);
 
         actionManager->SetAction(ulisse::action::navigate, true);
         return fsm::ok;
@@ -159,7 +171,7 @@ namespace states {
                 ctb::DistanceAndAzimuthRad(*vehiclePosition, nextP_, goalDistance, goalHeading);
 
                 //Set the distance vector to the target
-                cartesianDistanceTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(goalHeading), goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame);
+                cartesianDistancePathFollowingTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(goalHeading), goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame);
                 //Set the align vector to the target
                 alignToTargetTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(goalHeading), goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame);
 
@@ -176,10 +188,10 @@ namespace states {
                 //compute the gain of the cartesian distance
                 double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingError);
 
-                std::cout << "Distance in the body frame: " << cartesianDistanceTask_->ControlVariable() << std::endl;
+                std::cout << "Distance in the body frame: " << cartesianDistancePathFollowingTask_->ControlVariable() << std::endl;
 
                 //Set the gain of the cartesian distance task
-                cartesianDistanceTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
+                cartesianDistancePathFollowingTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(cartesianDistancePathFollowingTask_->TaskSpace(), cartesianDistancePathFollowingTask_->TaskSpace());
             }
         }
 

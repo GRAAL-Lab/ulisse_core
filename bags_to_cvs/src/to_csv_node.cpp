@@ -67,8 +67,7 @@ int main(int argc, char* argv[])
     auto magSub = node->create_subscription<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer, 10, MagnetometerDataCB);
     auto refVelocitiesSub = node->create_subscription<ulisse_msgs::msg::ReferenceVelocities>(ulisse_msgs::topicnames::reference_velocities, 10, RefVelocitiesCb);
 
-    auto now = std::chrono::system_clock::now();
-    auto in_time_t = std::chrono::system_clock::to_time_t(now);
+    auto in_time_t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 
     //open the csv file
     std::ofstream myfile;
