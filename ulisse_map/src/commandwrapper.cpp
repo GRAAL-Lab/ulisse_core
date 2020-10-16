@@ -159,6 +159,7 @@ QVector<double> CommandWrapper::createNurbs(const QString& pointForNurbs)
 {
     QVector<double> nurbsDiscretize;
     std::vector<SISLCurve*> nurbs;
+    nurbs.clear();
     Json::Reader reader;
     Json::Value obj, objMaster;
     bool reverse = false;

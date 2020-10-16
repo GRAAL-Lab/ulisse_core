@@ -470,7 +470,7 @@ bool Nurbs::LogPathOnFile(const std::vector<SISLCurve*>& nurbs)
 
     ctb::LatLong map_point(0.0, 0.0);
 
-    for (unsigned int i = 1; i < 2; i++) {
+    for (unsigned int i = 0; i < nurbs.size(); i++) {
         //Pick the i-th curve
         SISLCurve* currentCurve = nurbs[i];
         double currentParvalue = 0.0;

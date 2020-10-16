@@ -46,6 +46,10 @@ public:
     */
     auto Path() const -> const std::vector<SISLCurve*>& { return nurbs_; }
     /*
+     * Method that reset the path
+    */
+    auto ResetPath() -> void { nurbs_.clear(); }
+    /*
      * Method that get the current parameter value on the path
     */
     auto CurrentParameterValue() const -> double { return parvalue_; }
@@ -115,7 +119,6 @@ private:
      * @param nextP - The possible returning next point on curve
     */
     bool ComputePossibleNextPoint(Eigen::VectorXd& nextDirection, Eigen::VectorXd& nextP);
-
 
     int dim_; //dimention of the controlled points
     ctb::LatLong startP_; //starting point of the nurbs path

@@ -7,9 +7,9 @@ namespace ulisse {
 
 namespace states {
 
-    StateHalt::StateHalt() {}
+    StateHalt::StateHalt() { }
 
-    StateHalt::~StateHalt() {}
+    StateHalt::~StateHalt() { }
 
     void StateHalt::ConfigureStateFromFile(libconfig::Config& confObj)
     {
@@ -43,7 +43,6 @@ namespace states {
         Eigen::MatrixXd Aexternal;
 
         Aexternal = safetyBoundariesTask_->InternalActivationFunction().maxCoeff() * Aexternal.setIdentity(absoluteAxisAlignmentSafetyTask_->TaskSpace(), absoluteAxisAlignmentSafetyTask_->TaskSpace());
-
         absoluteAxisAlignmentSafetyTask_->ExternalActivationFunction() = Aexternal;
 
         absoluteAxisAlignmentSafetyTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);

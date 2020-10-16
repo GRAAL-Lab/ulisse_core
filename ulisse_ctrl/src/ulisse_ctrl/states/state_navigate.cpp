@@ -20,6 +20,7 @@ namespace states {
 
     bool StateNavigate::LoadNurbs(const ulisse_msgs::msg::Path& path)
     {
+        nurbsObj_.ResetPath();
         if (!nurbsObj_.Initialization(path)) {
             std::cerr << "LoadNurbs: fails" << std::endl;
             return false;
@@ -31,6 +32,28 @@ namespace states {
             if (!nurbsObj_.LogPathOnFile(nurbsObj_.Path())) {
                 std::cerr << "LogPathOnFile fails" << std::endl;
                 return false;
+            }
+        }
+
+        //Get the staring and ending point of the path
+        startP_ = nurbsObj_.StartingPoint();
+
+        //evaluete the end curve length
+        double length;
+        nurbsObj_.ComputeCurveLength(nurbsObj_.Path()[nurbsObj_.Path().size() - 1], length);
+        //compute the prametric tollerance of the end curve
+        tolleranceEndingPoint_ = nurbsObj_.Path().size() - tolleranceEndingPoint_ / length;
+
+        //check if the curves are greater than the delta max
+        for (auto curve : nurbsObj_.Path()) {
+            if (!nurbsObj_.ComputeCurveLength(curve, length)) {
+                std::cerr << "State Navigate: ComputeCurveLength fails" << std::endl;
+                return fsm::fail;
+            }
+
+            if (length < nurbsObj_.nurbsParam.deltaMax) {
+                std::cerr << "State Navigate: Delta is too high" << std::endl;
+                return fsm::fail;
             }
         }
 
@@ -55,30 +78,6 @@ namespace states {
 
     fsm::retval StateNavigate::OnEntry()
     {
-        //Get the staring and ending point of the path
-        startP_ = nurbsObj_.StartingPoint();
-
-        //evaluete the end curve length
-        double length;
-        nurbsObj_.ComputeCurveLength(nurbsObj_.Path()[nurbsObj_.Path().size() - 1], length);
-        //compute the prametric tollerance of the end curve
-        tolleranceEndingPoint_ = nurbsObj_.Path().size() - tolleranceEndingPoint_ / length;
-
-        //check if the curves are greater than the delta max
-        for (auto curve : nurbsObj_.Path()) {
-            if (!nurbsObj_.ComputeCurveLength(curve, length)) {
-                std::cerr << "State Navigate: ComputeCurveLength fails" << std::endl;
-                return fsm::fail;
-            }
-
-            if (length < nurbsObj_.nurbsParam.deltaMax) {
-                std::cerr << "State Navigate: Delta is too high" << std::endl;
-                return fsm::fail;
-            }
-        }
-
-        std::cout << "debug here" << std::endl;
-
         //set tasks
         safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
         absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);

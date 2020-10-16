@@ -8,9 +8,9 @@ namespace ulisse {
 namespace states {
 
     StateHold::StateHold()
-        : goalDistance_{ 0.0 } {};
+        : goalDistance_ { 0.0 } {};
 
-    StateHold::~StateHold() {}
+    StateHold::~StateHold() { }
 
     fsm::retval StateHold::OnEntry()
     {
@@ -75,20 +75,29 @@ namespace states {
         safetyBoundariesTask_->ExternalActivationFunction() = taskGainSafety * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
 
         //hold task
-        absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(-intertialF_waterCurrent->normalized().x(), -intertialF_waterCurrent->normalized().y(), 0), rml::FrameID::WorldFrame);
-        absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
+        ctb::DistanceAndAzimuthRad(*vehiclePosition.get(), positionToHold, goalDistance_, goalHeading_); //compute the distanza between the current position and the position to hold
+        //if the robot is inside the circle put the catamaran countercurrent
+        if (goalDistance_ <= maxAcceptanceRadius && goalDistance_ >= minAcceptanceRadius) {
+            absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(-intertialF_waterCurrent->normalized().x(), -intertialF_waterCurrent->normalized().y(), 0), rml::FrameID::WorldFrame);
+            absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
 
-        //Avoid that the roboto try to align with very low intensity of water current
-        double absoluteAxisAlignmentGain = rml::IncreasingBellShapedFunction(minWaterCurrent_, maxWaterCurrent_, 0, 1, intertialF_waterCurrent->norm());
-        absoluteAxisAlignmentTask_->ExternalActivationFunction() = absoluteAxisAlignmentGain * Eigen::MatrixXd::Identity(absoluteAxisAlignmentTask_->TaskSpace(), absoluteAxisAlignmentTask_->TaskSpace());
+            //Avoid that the roboto try to align with very small intensity of water current
+            double absoluteAxisAlignmentGain = rml::IncreasingBellShapedFunction(minWaterCurrent_, maxWaterCurrent_, 0, 1, intertialF_waterCurrent->norm());
+            absoluteAxisAlignmentTask_->ExternalActivationFunction() = absoluteAxisAlignmentGain * Eigen::MatrixXd::Identity(absoluteAxisAlignmentTask_->TaskSpace(), absoluteAxisAlignmentTask_->TaskSpace());
+        }
+        //otherwise point to the hold circle defined by maxAcceptanceRadius and minAcceptanceRadius
+        else {
+            absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(cos(goalHeading_), sin(goalHeading_), 0.0), rml::FrameID::WorldFrame);
+            absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
 
-        linearVelocityTask_->Reference() = Eigen::Vector3d{ 1.0, 0.0, 0.0 };
-        ctb::DistanceAndAzimuthRad(*vehiclePosition.get(), positionToHold, goalDistance_, goalHeading_);
+            linearVelocityTask_->Reference() = Eigen::Vector3d { 1.0, 0.0, 0.0 }; //set a velocity to point to the circle in case of the catamaran  slips away
+            //compute the heading error
+            double headingError = absoluteAxisAlignmentTask_->ControlVariable().norm();
+             std::cout << "headingError hold: " << headingError << std::endl;
+            double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1, headingError); //compute the gain to modify the exernal activation function of linear velocity task
 
-        double taskGain = rml::IncreasingBellShapedFunction(minAcceptanceRadius, maxAcceptanceRadius, 0, 1, goalDistance_);
-
-        linearVelocityTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(linearVelocityTask_->TaskSpace(), linearVelocityTask_->TaskSpace());
-
+            linearVelocityTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(linearVelocityTask_->TaskSpace(), linearVelocityTask_->TaskSpace());
+        }
         std::cout << "STATE HOLD" << std::endl;
 
         return fsm::ok;

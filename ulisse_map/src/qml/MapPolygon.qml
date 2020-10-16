@@ -231,8 +231,10 @@ MapPolyline {
         reposition_add_markers()
         reposition_vertex_markers()
         a_marker.coordinate = intersections_geographic[0][0]
-        b_marker.coordinate = intersections_geographic[intersections_geographic.length - 1][(intersections_geographic.length % 2 === 0) ? 0 : 1]
-        if (direction === 0) toggle_dir()
+        b_marker.coordinate = intersections_geographic[intersections_geographic.length
+                                                       - 1][(intersections_geographic.length
+                                                             % 2 === 0) ? 0 : 1]
+        if (direction === 1) toggle_dir()
     }
 
     function enable_handle() {
@@ -436,6 +438,7 @@ MapPolyline {
     }
 
     function pos_changed_handler_rect(mouse) {
+
         if (polygonal_phase === 1) {
             var p0 = map.fromCoordinate(coordinateAt(0))
             var p1 = Qt.point(mouse.x, mouse.y)
@@ -446,7 +449,10 @@ MapPolyline {
                 var snap_idx = Math.floor((theta + snap_interval / 2) / snap_interval)
                 var snap_theta = snap_idx * snap_interval
                 var m = Math.tan(snap_theta)
-                p1 = Helper.project(p0, m, p1, 1)
+                var centroid = Helper.coords_centroid(coords)
+                var lam = Helper.lat_to_m_coeff(centroid.latitude)
+                var lom = Helper.lon_to_m_coeff(centroid.longitude)
+                p1 = Helper.project(p0, m, p1, lam / lom)
             }
             replaceCoordinate(1, map.toCoordinate(p1))
         } else if (polygonal_phase === 2) {
@@ -455,10 +461,12 @@ MapPolyline {
             var cpc = map.toCoordinate(Qt.point(mouse.x, mouse.y), false)
             var coords = [cp0, cp1, cpc]
             var centroid = Helper.coords_centroid(coords)
+            var lam = Helper.lat_to_m_coeff(centroid.latitude)
+            var lom = Helper.lon_to_m_coeff(centroid.longitude)
             var points = Helper.points_map2euclidean(coords, centroid)
             var m = Helper.slope(points[0], points[1])
 
-            var m_perp = -1/ m //perpendicularity constraint for aspect ratios different than 1:1
+            var m_perp = -(lam / lom)/ m //perpendicularity constraint for aspect ratios different than 1:1
 
             var p2 = Helper.intersect_two_lines(points[1], m_perp, points[2], m)
             var p3 = Helper.intersect_two_lines(points[0], m_perp, points[2], m)
@@ -663,12 +671,6 @@ MapPolyline {
     }
 
 
-
-
-
-
-
-
     function generate_path() {
         if (!(_method === "simple" || _method === "single_winding"))
             return
@@ -804,8 +806,6 @@ MapPolyline {
     function draw_path() {
         // clear the canvas
         _canvas.clear_canvas()
-
-
 
         Helper.draw_path_lines(_canvas, cmdWrapper.createNurbs(JSON.stringify(generate_nurbs())), map)
 
