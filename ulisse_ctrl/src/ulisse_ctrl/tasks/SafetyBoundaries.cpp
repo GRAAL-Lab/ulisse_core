@@ -521,7 +521,7 @@ void SafetyBoundaries::MakeSegments(point_type const& p, point_type const& next,
     boost::geometry::set<1, 1>(seg, next.y());
 }
 
-void SafetyBoundaries::ConfigFromFile(libconfig::Config& confObj)
+bool SafetyBoundaries::ConfigFromFile(libconfig::Config& confObj)
 {
     ReactiveTask::ConfigFromFile(confObj);
 
