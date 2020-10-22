@@ -118,7 +118,6 @@ ament_export_include_directories(include)
 install(TARGETS
   kinematic_control_node
   dynamic_control_node
-#  navigation_filter_node
   controller_console_node
   monitor_node
   control_test
