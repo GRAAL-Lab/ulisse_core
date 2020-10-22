@@ -67,7 +67,7 @@ public:
 
     auto AlignVector() const -> const Eigen::Vector3d& { return alignVector_; }
 
-    void ConfigFromFile(libconfig::Config& confObj) override;
+    bool ConfigFromFile(libconfig::Config& confObj) override;
 
 protected:
     /**
