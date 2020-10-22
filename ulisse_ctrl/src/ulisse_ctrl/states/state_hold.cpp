@@ -79,9 +79,14 @@ namespace states {
         linearVelocityTask_->Reference() = Eigen::Vector3d { 0.0, 0.0, 0.0 };
         ctb::DistanceAndAzimuthRad(*vehiclePosition.get(), positionToHold, goalDistance_, goalHeading_); //compute the distanza between the current position and the position to hold
         //if the robot is inside the circle put the catamaran countercurrent
+<<<<<<< HEAD
         if (goalDistance_ <= maxAcceptanceRadius) {
 
             std::cout << "SONO NEL CERCHIO: " << std::endl;
+=======
+        if (goalDistance_ <= maxAcceptanceRadius && goalDistance_ >= minAcceptanceRadius) {
+            linearVelocityTask_->Reference() = Eigen::Vector3d { 0.0, 0.0, 0.0 };
+>>>>>>> 5d65f39ed8865b85eb8d17448d08fec8849f8c4e
             absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(-intertialF_waterCurrent->normalized().x(), -intertialF_waterCurrent->normalized().y(), 0), rml::FrameID::WorldFrame);
             absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
 

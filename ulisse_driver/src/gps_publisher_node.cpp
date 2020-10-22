@@ -117,6 +117,7 @@ void process_data(GpsData& my_gps_data, struct gps_data_t* p)
         my_gps_data.longitude = p->fix.longitude;
     }
 
+    //TO FIX: fix.altHAE POSSIBLE SOLUTION
     if (my_gps_data.CheckFlag(ALTITUDE_SET)) {
         my_gps_data.altitude = p->fix.altitude;
     }
