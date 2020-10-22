@@ -74,10 +74,14 @@ namespace states {
         // Set the gain of the cartesian distance task
         safetyBoundariesTask_->ExternalActivationFunction() = taskGainSafety * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
 
+        std::cout << "goalDistance: " << goalDistance_ << std::endl;
         //hold task
+        linearVelocityTask_->Reference() = Eigen::Vector3d { 0.0, 0.0, 0.0 };
         ctb::DistanceAndAzimuthRad(*vehiclePosition.get(), positionToHold, goalDistance_, goalHeading_); //compute the distanza between the current position and the position to hold
         //if the robot is inside the circle put the catamaran countercurrent
-        if (goalDistance_ <= maxAcceptanceRadius && goalDistance_ >= minAcceptanceRadius) {
+        if (goalDistance_ <= maxAcceptanceRadius) {
+
+            std::cout << "SONO NEL CERCHIO: " << std::endl;
             absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(-intertialF_waterCurrent->normalized().x(), -intertialF_waterCurrent->normalized().y(), 0), rml::FrameID::WorldFrame);
             absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
 
@@ -93,7 +97,7 @@ namespace states {
             linearVelocityTask_->Reference() = Eigen::Vector3d { 1.0, 0.0, 0.0 }; //set a velocity to point to the circle in case of the catamaran  slips away
             //compute the heading error
             double headingError = absoluteAxisAlignmentTask_->ControlVariable().norm();
-             std::cout << "headingError hold: " << headingError << std::endl;
+            std::cout << "headingError hold: " << headingError << std::endl;
             double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1, headingError); //compute the gain to modify the exernal activation function of linear velocity task
 
             linearVelocityTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(linearVelocityTask_->TaskSpace(), linearVelocityTask_->TaskSpace());

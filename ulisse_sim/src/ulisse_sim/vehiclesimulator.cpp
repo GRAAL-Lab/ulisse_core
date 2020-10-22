@@ -171,8 +171,8 @@ void VehicleSimulator::SimulateActuation()
     geod_.Direct(previousLatitude_, previousLongitude_, vehicleTrack_ * 180.0 / M_PI, distance_, latitude_, longitude_);
 
     // Integrating the Euler rates to get the new Euler angles and wrapping around PI
-    bodyF_orientation_.Roll(std::fmod((previous_bodyF_orientation_.Roll() + rpyEulerRates(0) * Ts_) + 2 * M_PI, 2 * M_PI));
-    bodyF_orientation_.Pitch(std::fmod((previous_bodyF_orientation_.Pitch() + rpyEulerRates(1) * Ts_) + 2 * M_PI, 2 * M_PI));
+    bodyF_orientation_.Roll(std::fmod((previous_bodyF_orientation_.Roll() + rpyEulerRates(0) * Ts_) + 2 * M_PI, M_PI));
+    bodyF_orientation_.Pitch(std::fmod((previous_bodyF_orientation_.Pitch() + rpyEulerRates(1) * Ts_) + 2 * M_PI, M_PI));
     bodyF_orientation_.Yaw(std::fmod((previous_bodyF_orientation_.Yaw() + rpyEulerRates(2) * Ts_) + 2 * M_PI, 2 * M_PI));
 }
 
