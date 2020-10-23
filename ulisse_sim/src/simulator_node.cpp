@@ -17,7 +17,11 @@ int main(int argc, char* argv[])
     std::string filename = "simulator_ulisse.conf";
     simulatedVehicle.config = std::make_shared<ulisse::SimulatorConfiguration>();
 
-    LoadConfiguration(filename, simulatedVehicle.config);
+    if (!LoadConfiguration(filename, simulatedVehicle.config)) {
+        std::cerr << "Simulator node: Failed to load config params from files" << std::endl;
+        return -1;
+    }
+
     simulatedVehicle.ulisseModel.params = simulatedVehicle.config->modelParams;
 
     std::cout << simulatedVehicle.config->modelParams << std::endl;
@@ -59,7 +63,8 @@ bool LoadConfiguration(std::string fileName, std::shared_ptr<ulisse::SimulatorCo
         return -1;
     }
 
-    config->ConfigureFromFile(confObj);
+    if (!config->ConfigureFromFile(confObj))
+        return false;
 
-    return 0;
+    return true;
 }

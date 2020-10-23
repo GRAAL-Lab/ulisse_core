@@ -103,7 +103,10 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 
     // load config file
     // Setup Params for Tasks and iCAT
-    LoadConfiguration();
+    if (!LoadConfiguration(conf_)) {
+        std::cerr << "Failed to load KCL configuration from file" << std::endl;
+        return;
+    }
 
     // solver_ definition
     solver_ = std::make_shared<tpik::Solver>(tpik::Solver(actionManager_, iCat_));
@@ -163,8 +166,12 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         (void)request_header;
         RCLCPP_INFO(nh_->get_logger(), "Incoming request for reset conf");
 
+        auto previousConf = conf_;
         publishLog("Configuration Reset");
-        LoadConfiguration();
+        if (!LoadConfiguration(conf_)) {
+            LoadConfiguration(previousConf);
+            std::cerr << "Failed to reload KCL configuration from file. Load the previous configuration" << std::endl;
+        }
 
         response->res = "ResetConfiguration::ok";
     };
@@ -188,7 +195,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 
 VehicleController::~VehicleController() { }
 
-bool VehicleController::LoadConfiguration()
+bool VehicleController::LoadConfiguration(std::shared_ptr<ControllerConfiguration>& conf)
 {
     libconfig::Config confObj;
 
@@ -211,22 +218,38 @@ bool VehicleController::LoadConfiguration()
         return -1;
     }
 
-    conf_->ConfigureFromFile(confObj);
-    std::cout << tc::grayD << *conf_ << tc::none << std::endl;
+    if (!conf->ConfigureFromFile(confObj)) {
+        std::cerr << "Failed to load KCL configuration" << std::endl;
+        return false;
+    }
+
+    std::cout << tc::grayD << *conf << tc::none << std::endl;
 
     //acquired the centroid location
     Eigen::VectorXd centroidLocationTmp;
-    ctb::SetParamVector(confObj, centroidLocationTmp, "centroidLocation");
+    if (!ctb::SetParamVector(confObj, centroidLocationTmp, "centroidLocation")) {
+        std::cerr << "Failed to load centroidLocation from file" << std::endl;
+        return false;
+    };
     centroidLocation_.latitude = centroidLocationTmp[0];
     centroidLocation_.longitude = centroidLocationTmp[1];
 
-    ConfigureTaskFromFile(tasksMap_, confObj);
-    ConfigurePriorityLevelsFromFile(actionManager_, tasksMap_, confObj);
+    if (!ConfigureTaskFromFile(tasksMap_, confObj)) {
+        std::cerr << "Failed to load Tasks from file" << std::endl;
+        return false;
+    };
+    if (!ConfigurePriorityLevelsFromFile(actionManager_, tasksMap_, confObj)) {
+        std::cerr << "Failed to load Priority Levels from file" << std::endl;
+        return false;
+    };
 
     // Set Saturation values for the iCAT (read from conf file)
-    iCat_->SetSaturation(conf_->saturationMin, conf_->saturationMax);
+    iCat_->SetSaturation(conf->saturationMin, conf->saturationMax);
 
-    ConfigureActionsFromFile(actionManager_, confObj);
+    if (!ConfigureActionsFromFile(actionManager_, confObj)) {
+        std::cerr << "Failed to load  Actions from file" << std::endl;
+        return false;
+    };
 
     //insert states in the map
     statesMap_.insert({ ulisse::states::ID::halt, stateHalt_ });
@@ -235,7 +258,10 @@ bool VehicleController::LoadConfiguration()
     statesMap_.insert({ ulisse::states::ID::navigate, statePathFollowing_ });
     statesMap_.insert({ ulisse::states::ID::speedheading, stateSpeedHeading_ });
 
-    ConfigureSatesFromFile(statesMap_, confObj);
+    if (!ConfigureSatesFromFile(statesMap_, confObj)) {
+        std::cerr << "Failed to load  States from file" << std::endl;
+        return false;
+    };
 
     //insert command in the map
     commandsMap_.insert({ ulisse::commands::ID::halt, commandHalt_ });

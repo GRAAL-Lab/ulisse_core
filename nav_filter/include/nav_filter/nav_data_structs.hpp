@@ -20,13 +20,18 @@ namespace nav {
         int rate;
         FilterMode mode;
 
-        void ConfigureFromFile(libconfig::Config& confObj) noexcept(false)
+        bool ConfigureFromFile(libconfig::Config& confObj) noexcept(false)
         {
-            ctb::SetParam(confObj, rate, "rate");
+            if (!ctb::SetParam(confObj, rate, "rate"))
+                return false;
             //Read the type of filter to use
             int tmp;
-            ctb::SetParam(confObj, tmp, "filterMode");
+
+            if (!ctb::SetParam(confObj, tmp, "filterMode"))
+                return false;
             mode = static_cast<FilterMode>(tmp);
+
+            return true;
         }
 
         friend std::ostream& operator<<(std::ostream& os, NavigationFilterParams const& a)

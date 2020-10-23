@@ -80,18 +80,26 @@ public:
         double maxLookupParvalue; //max delta increment for select a part of a curve for computing the current parvalue
         double directionError; // threshold for the difference between the current and the next tangent direction of the path
 
-        void configureFromFile(const libconfig::Config& confObj, const std::string& stateName)
+        bool configureFromFile(const libconfig::Config& confObj, const std::string& stateName)
         {
             const libconfig::Setting& root = confObj.getRoot();
             const libconfig::Setting& states = root["states"];
 
             const libconfig::Setting& state = states.lookup(stateName);
-            ctb::SetParam(state, deltaMin, "deltaMin");
-            ctb::SetParam(state, deltaMax, "deltaMax");
-            ctb::SetParam(state, aepsge, "geometricTollerance");
-            ctb::SetParam(state, aepsco, "computationalTollerance");
-            ctb::SetParam(state, maxLookupParvalue, "maxLookupCurvilinearAbscissa");
-            ctb::SetParam(state, directionError, "tangentDirectionError");
+            if (!ctb::SetParam(state, deltaMin, "deltaMin"))
+                return false;
+            if (!ctb::SetParam(state, deltaMax, "deltaMax"))
+                return false;
+            if (!ctb::SetParam(state, aepsge, "geometricTollerance"))
+                return false;
+            if (!ctb::SetParam(state, aepsco, "computationalTollerance"))
+                return false;
+            if (!ctb::SetParam(state, maxLookupParvalue, "maxLookupCurvilinearAbscissa"))
+                return false;
+            if (!ctb::SetParam(state, directionError, "tangentDirectionError"))
+                return false;
+
+            return true;
         }
     } nurbsParam;
 

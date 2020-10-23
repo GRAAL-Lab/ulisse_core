@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
     std::string gpsFileName, sensorsFileName;
 
     if (!LoadConfiguration(rate, gpsFileName, sensorsFileName)) {
-        std::cerr << "Errors in reading conf file" << std::endl;
+        std::cerr << "Simulator node from files: Errors in reading conf file" << std::endl;
         return -1;
     }
 
@@ -263,15 +263,18 @@ bool LoadConfiguration(int& rate, std::string& gpsFileName, std::string& sensorF
         return false;
     }
 
-    ctb::SetParam(confObj, rate, "rate");
+    if (!ctb::SetParam(confObj, rate, "rate"))
+        return false;
 
     const libconfig::Setting& root = confObj.getRoot();
 
     const libconfig::Setting& filesName = root["files_name"];
 
-    ctb::SetParam(filesName, gpsFileName, "gps");
+    if (!ctb::SetParam(filesName, gpsFileName, "gps"))
+        return false;
 
-    ctb::SetParam(filesName, sensorFileName, "sensors");
+    if (!ctb::SetParam(filesName, sensorFileName, "sensors"))
+        return false;
 
     return true;
 }

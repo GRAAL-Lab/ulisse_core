@@ -11,14 +11,18 @@ namespace states {
 
     StateHalt::~StateHalt() { }
 
-    void StateHalt::ConfigureStateFromFile(libconfig::Config& confObj)
+    bool StateHalt::ConfigureStateFromFile(libconfig::Config& confObj)
     {
         const libconfig::Setting& root = confObj.getRoot();
         const libconfig::Setting& states = root["states"];
 
         const libconfig::Setting& state = states.lookup(ulisse::states::ID::halt);
-        ctb::SetParam(state, maxHeadingError_, "maxHeadingError");
-        ctb::SetParam(state, minHeadingError_, "minHeadingError");
+        if (!ctb::SetParam(state, maxHeadingError_, "maxHeadingError"))
+            return false;
+        if (!ctb::SetParam(state, minHeadingError_, "minHeadingError"))
+            return false;
+
+        return true;
     }
 
     fsm::retval StateHalt::OnEntry()

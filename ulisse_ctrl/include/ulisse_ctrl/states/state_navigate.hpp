@@ -34,7 +34,7 @@ namespace states {
         fsm::retval OnEntry() override;
         fsm::retval Execute() override;
 
-        void ConfigureStateFromFile(libconfig::Config& confObj) override;
+        bool ConfigureStateFromFile(libconfig::Config& confObj) override;
 
         bool LoadNurbs(const ulisse_msgs::msg::Path& path);
     };

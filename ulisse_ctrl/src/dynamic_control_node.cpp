@@ -36,7 +36,7 @@ static ulisse_msgs::msg::NavFilterData filterData;
 static ulisse_msgs::msg::ReferenceVelocities referenceVelocities;
 static ulisse_msgs::msg::VehicleStatus vehicleStatus;
 
-void LoadDclConfiguration(std::shared_ptr<DCLConfiguration> conf, std::string filename);
+bool LoadDclConfiguration(std::shared_ptr<DCLConfiguration> conf, std::string filename);
 
 void ThrusterMappingInizialization(std::shared_ptr<DCLConfiguration> conf, double sampleTime, ctb::DigitalPID& pid);
 void ClassicPidControlInizialization(std::shared_ptr<DCLConfiguration> conf, double sampleTime, ctb::DigitalPID& pidSurge, ctb::DigitalPID& pidYawRate);
@@ -76,7 +76,11 @@ int main(int argc, char* argv[])
     std::string filename = "dcl_ulisse.conf";
 
     //Ulisse params configuration
-    LoadDclConfiguration(conf, filename);
+    //Ulisse params configuration
+    if (!LoadDclConfiguration(conf, filename)) {
+        std::cerr << "Failed to laod DCL Configuration. Check the parameters in the conf file" << std::endl;
+        return -1;
+    }
 
     std::cout << tc::grayD << *conf << tc::none << std::endl;
 
@@ -124,8 +128,15 @@ int main(int argc, char* argv[])
         (void)request_header;
         RCLCPP_INFO(nh->get_logger(), "Incoming request for reset conf");
 
+        auto previousConf = conf;
         //Ulisse params configuration
-        LoadDclConfiguration(conf, filename);
+        if (!LoadDclConfiguration(conf, filename)) {
+
+            //If changing the file at runtime the configuration should fail, reload the previous configuration parameters
+            std::cerr << "Failed to laod new config file. Reload the last configuration" << std::endl;
+            LoadDclConfiguration(previousConf, filename);
+        }
+
         ulisseModel.params = conf->ulisseModel;
 
         //Controller inizialization
@@ -297,7 +308,7 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-void LoadDclConfiguration(std::shared_ptr<DCLConfiguration> conf, std::string filename)
+bool LoadDclConfiguration(std::shared_ptr<DCLConfiguration> conf, std::string filename)
 {
     libconfig::Config confObj;
 
@@ -316,10 +327,13 @@ void LoadDclConfiguration(std::shared_ptr<DCLConfiguration> conf, std::string fi
     } catch (libconfig::ParseException& e) {
         std::cerr << "Parse exception when reading:" << confPath << std::endl;
         std::cerr << "line: " << e.getLine() << " error: " << e.getError() << std::endl;
-        return;
+        return false;
     }
 
-    conf->ConfigureFromFile(confObj);
+    if (!conf->ConfigureFromFile(confObj))
+        return false;
+
+    return true;
 }
 
 void ThrusterMappingInizialization(std::shared_ptr<DCLConfiguration> conf, double sampleTime, ctb::DigitalPID& pid)

@@ -30,7 +30,7 @@ namespace states {
 
         ctb::LatLong positionToHold;
 
-        void ConfigureStateFromFile(libconfig::Config& confObj) override;
+        bool ConfigureStateFromFile(libconfig::Config& confObj) override;
     };
 }
 }

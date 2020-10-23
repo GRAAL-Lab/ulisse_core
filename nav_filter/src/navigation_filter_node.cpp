@@ -91,11 +91,11 @@ void ThrustersDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg);
 
 void GroundTruthDataCB(const ulisse_msgs::msg::RealSystem::SharedPtr msg);
 
-bool LoadConfiguration() noexcept(false);
+bool LoadConfiguration(NavigationFilterParams& filterParameters);
 
-void KalmanFilterConfiguration(libconfig::Config& confObj) noexcept(false);
+bool KalmanFilterConfiguration(libconfig::Config& confObj);
 
-void LuenbergerObserverConfiguration(libconfig::Config& confObj) noexcept(false);
+bool LuenbergerObserverConfiguration(libconfig::Config& confObj);
 
 static std::chrono::system_clock::time_point last_comp_time_;
 
@@ -117,7 +117,10 @@ int main(int argc, char* argv[])
     zMeterMeasurement = std::make_shared<ulisse::nav::zMeter>(ulisse::nav::zMeter());
 
     //Load filter params
-    LoadConfiguration();
+    if (!LoadConfiguration(filterParams)) {
+        std::cerr << "Failed to load navigation filter configuration" << std::endl;
+        return -1;
+    }
 
     rclcpp::WallRate loop_rate(filterParams.rate);
 
@@ -365,7 +368,7 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-bool LoadConfiguration() noexcept(false)
+bool LoadConfiguration(NavigationFilterParams& filterParameters)
 {
     //read conf file
     libconfig::Config confObj;
@@ -379,30 +382,40 @@ bool LoadConfiguration() noexcept(false)
         confObj.readFile(confPath.c_str());
     } catch (const libconfig::FileIOException& fioex) {
         std::cerr << "I/O error while reading file: " << fioex.what() << std::endl;
-        return -1;
+        return false;
     } catch (libconfig::ParseException& e) {
         std::cerr << "Parse exception when reading:" << confPath << std::endl;
         std::cerr << "line: " << e.getLine() << " error: " << e.getError() << std::endl;
-        return -1;
+        return false;
     }
 
     //Configure the filter node params
-    filterParams.ConfigureFromFile(confObj);
+    if (!filterParameters.ConfigureFromFile(confObj)) {
+        std::cerr << "Failed to load navigation mode/rate prams" << std::endl;
+        return false;
+    };
 
-    if (filterParams.mode == FilterMode::LuenbergerObserver) {
-        LuenbergerObserverConfiguration(confObj);
-    } else if (filterParams.mode == FilterMode::KalmanFilter) {
-        KalmanFilterConfiguration(confObj);
-    } else if (filterParams.mode == FilterMode::GroundTruth) {
+    if (filterParameters.mode == FilterMode::LuenbergerObserver) {
+        if (!LuenbergerObserverConfiguration(confObj)) {
+            std::cerr << "Failed to load Luenberger Observer configuration" << std::endl;
+            return false;
+        };
+
+    } else if (filterParameters.mode == FilterMode::KalmanFilter) {
+        if (!KalmanFilterConfiguration(confObj)) {
+            std::cerr << "Failed to load Kalman Filter configuration" << std::endl;
+            return false;
+        }
+    } else if (filterParameters.mode == FilterMode::GroundTruth) {
     } else {
         std::cerr << "Type of filter not recognized" << std::endl;
-        return -1;
+        return false;
     }
 
-    return 0;
+    return true;
 }
 
-void KalmanFilterConfiguration(libconfig::Config& confObj) noexcept(false)
+bool KalmanFilterConfiguration(libconfig::Config& confObj) noexcept(false)
 {
     const libconfig::Setting& root = confObj.getRoot();
     const libconfig::Setting& ekf = root["extendedKalmanFilter"];
@@ -410,7 +423,11 @@ void KalmanFilterConfiguration(libconfig::Config& confObj) noexcept(false)
     //Load the ulisse params
     const libconfig::Setting& ulisseModel = ekf["ulisseModel"];
     UlisseModelParameters ulisseModelParams;
-    ulisseModelParams.ConfigureFormFile(ulisseModel);
+
+    if (!ulisseModelParams.ConfigureFormFile(ulisseModel)) {
+        std::cerr << "Kalman Filter: Failed to load ulisse model" << std::endl;
+        return false;
+    }
 
     std::cout << ulisseModelParams << std::endl;
 
@@ -424,42 +441,65 @@ void KalmanFilterConfiguration(libconfig::Config& confObj) noexcept(false)
     Eigen::Vector3d bodyF_gps_position;
 
     const libconfig::Setting& gps = measure["gps"];
-    ctb::SetParam(gps, isActive, "enable");
+    if (!ctb::SetParam(gps, isActive, "enable"))
+        return false;
     measuresActive.insert(std::make_pair("gps", isActive));
-    ctb::SetParamVector(gps, covarianceDiag, "covariance");
+    if (!ctb::SetParamVector(gps, covarianceDiag, "covariance"))
+        return false;
     gpsMeasurement->Covariance().diagonal() = covarianceDiag;
 
-    ctb::SetParamVector(gps, bodyF_gps_position, "bodyF_gps_position");
+    if (!ctb::SetParamVector(gps, bodyF_gps_position, "bodyF_gps_position"))
+        return false;
     gpsMeasurement->bodyF_gps_position_ = bodyF_gps_position;
 
     const libconfig::Setting& compass = measure["compass"];
-    ctb::SetParam(compass, isActive, "enable");
+    if (!ctb::SetParam(compass, isActive, "enable"))
+        return false;
+
     measuresActive.insert(std::make_pair("compass", isActive));
-    ctb::SetParamVector(compass, covarianceDiag, "covariance");
+    if (!ctb::SetParamVector(compass, covarianceDiag, "covariance"))
+        return false;
+
     compassMeasurement->Covariance().diagonal() = covarianceDiag;
 
     const libconfig::Setting& gyro = measure["gyro"];
-    ctb::SetParam(gyro, isActive, "enable");
+    if (!ctb::SetParam(gyro, isActive, "enable"))
+        return false;
+
     measuresActive.insert(std::make_pair("gyro", isActive));
-    ctb::SetParamVector(gyro, covarianceDiag, "covariance");
+    if (!ctb::SetParamVector(gyro, covarianceDiag, "covariance"))
+        return false;
+
     gyroMeasurement->Covariance().diagonal() = covarianceDiag;
 
     const libconfig::Setting& accelerometer = measure["accelerometer"];
-    ctb::SetParam(accelerometer, isActive, "enable");
+    if (!ctb::SetParam(accelerometer, isActive, "enable"))
+        return false;
+
     measuresActive.insert(std::make_pair("accelerometer", isActive));
-    ctb::SetParamVector(accelerometer, covarianceDiag, "covariance");
+    if (!ctb::SetParamVector(accelerometer, covarianceDiag, "covariance"))
+        return false;
+
     accelerometerMeasurement->Covariance().diagonal() = covarianceDiag;
 
     const libconfig::Setting& magnetometer = measure["magnetometer"];
-    ctb::SetParam(magnetometer, isActive, "enable");
+    if (!ctb::SetParam(magnetometer, isActive, "enable"))
+        return false;
+
     measuresActive.insert(std::make_pair("magnetometer", isActive));
-    ctb::SetParamVector(magnetometer, covarianceDiag, "covariance");
+    if (!ctb::SetParamVector(magnetometer, covarianceDiag, "covariance"))
+        return false;
+
     magnetometerMeasurement->Covariance().diagonal() = covarianceDiag;
 
     const libconfig::Setting& zMeterSetting = measure["z_meter"];
-    ctb::SetParam(zMeterSetting, isActive, "enable");
+    if (!ctb::SetParam(zMeterSetting, isActive, "enable"))
+        return false;
+
     measuresActive.insert(std::make_pair("zMeter", isActive));
-    ctb::SetParamVector(zMeterSetting, covarianceDiag, "covariance");
+    if (!ctb::SetParamVector(zMeterSetting, covarianceDiag, "covariance"))
+        return false;
+
     zMeterMeasurement->Covariance().diagonal() = covarianceDiag;
 
     //Load the initial state and covariance and the model covariance
@@ -467,36 +507,49 @@ void KalmanFilterConfiguration(libconfig::Config& confObj) noexcept(false)
     //state dimention
     const libconfig::Setting& state = ekf["state"];
 
-    ctb::SetParam(state, stateDim, "dim");
+    if (!ctb::SetParam(state, stateDim, "dim"))
+        return false;
 
-    ctb::SetParamVector(state, covarianceDiag, "modelCovariance");
+    if (!ctb::SetParamVector(state, covarianceDiag, "modelCovariance"))
+        return false;
     ulisseModelEKF->Covariance().diagonal() = covarianceDiag;
 
     Eigen::VectorXd initialState;
-    ctb::SetParamVector(state, initialState, "initialization");
+    if (!ctb::SetParamVector(state, initialState, "initialization"))
+        return false;
+
     Eigen::Vector3d cartesian_p;
     ctb::LatLong2LocalNED(ctb::LatLong(initialState[0], initialState[1]), initialState[2], centroidLocation, cartesian_p);
     initialState.segment(0, 2) = cartesian_p.segment(0, 2);
 
-    ctb::SetParamVector(state, covarianceDiag, "initializationCovariance");
+    if (!ctb::SetParamVector(state, covarianceDiag, "initializationCovariance"))
+        return false;
+
     Eigen::MatrixXd initialCovariance = Eigen::MatrixXd::Zero(stateDim, stateDim);
 
     initialCovariance.diagonal() = covarianceDiag;
 
     extendedKalmanFilter->Init(initialState, initialCovariance);
+
+    return true;
 }
 
-void LuenbergerObserverConfiguration(libconfig::Config& confObj) noexcept(false)
+bool LuenbergerObserverConfiguration(libconfig::Config& confObj) noexcept(false)
 {
     const libconfig::Setting& root = confObj.getRoot();
     const libconfig::Setting& luenbergerObs = root["luenbergerObserver"];
 
     Eigen::VectorXd gain;
-    ctb::SetParamVector(luenbergerObs, gain, "gain");
+
+    if (!ctb::SetParamVector(luenbergerObs, gain, "gain"))
+        return false;
     obs.k = gain;
 
     //yaw rate digital filter gains. This is not used by the filter but is needed to filter the yaw rate
-    ctb::SetParamVector(luenbergerObs, yawRateFilterGains, "yawRateFilterGains");
+    if (!ctb::SetParamVector(luenbergerObs, yawRateFilterGains, "yawRateFilterGains"))
+        return false;
+
+    return true;
 }
 
 void CommandHandler(const std::shared_ptr<rmw_request_id_t> request_header, const std::shared_ptr<ulisse_msgs::srv::NavFilterCommand::Request> request, std::shared_ptr<ulisse_msgs::srv::NavFilterCommand::Response> response)
@@ -529,9 +582,11 @@ void CommandHandler(const std::shared_ptr<rmw_request_id_t> request_header, cons
             RCLCPP_INFO(node->get_logger(), "Reset EKF");
         }
         break;
-    case static_cast<uint16_t>(CommandType::reloadconfig):
-        LoadConfiguration();
+    case static_cast<uint16_t>(CommandType::reloadconfig): {
+        auto previousFilterParams = filterParams;
+        LoadConfiguration(previousFilterParams);
         break;
+    }
     default:
         RCLCPP_WARN(node->get_logger(), "Unsupported Command Code");
         break;

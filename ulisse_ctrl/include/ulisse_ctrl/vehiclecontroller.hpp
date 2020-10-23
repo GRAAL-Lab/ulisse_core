@@ -109,7 +109,7 @@ class VehicleController {
 
     std::shared_ptr<Eigen::Vector2d> inertialF_waterCurrent_;
 
-    bool LoadConfiguration();
+    bool LoadConfiguration(std::shared_ptr<ControllerConfiguration> &conf);
     void SetUpFSM();
     void SetupCommandServer();
 

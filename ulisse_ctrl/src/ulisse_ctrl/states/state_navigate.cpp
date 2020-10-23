@@ -60,20 +60,31 @@ namespace states {
         return isCurveSet_;
     }
 
-    void StateNavigate::ConfigureStateFromFile(libconfig::Config& confObj)
+    bool StateNavigate::ConfigureStateFromFile(libconfig::Config& confObj)
     {
         const libconfig::Setting& root = confObj.getRoot();
         const libconfig::Setting& states = root["states"];
 
         const libconfig::Setting& state = states.lookup(ulisse::states::ID::navigate);
-        ctb::SetParam(state, maxHeadingError_, "maxHeadingError");
-        ctb::SetParam(state, minHeadingError_, "minHeadingError");
-        ctb::SetParam(state, tolleranceStartingPoint_, "tolleranceStartingPoint");
-        ctb::SetParam(state, tolleranceEndingPoint_, "tolleranceEndingPoint");
-        ctb::SetParam(state, logPathOnFile_, "logPathOnFile");
+
+        if (!ctb::SetParam(state, maxHeadingError_, "maxHeadingError"))
+            return false;
+        if (!ctb::SetParam(state, minHeadingError_, "minHeadingError"))
+            return false;
+        if (!ctb::SetParam(state, tolleranceStartingPoint_, "tolleranceStartingPoint"))
+            return false;
+        if (!ctb::SetParam(state, tolleranceEndingPoint_, "tolleranceEndingPoint"))
+            return false;
+        if (!ctb::SetParam(state, logPathOnFile_, "logPathOnFile"))
+            return false;
 
         //configure the nurbs param
-        nurbsObj_.nurbsParam.configureFromFile(confObj, ulisse::states::ID::navigate);
+        if (!nurbsObj_.nurbsParam.configureFromFile(confObj, ulisse::states::ID::navigate)) {
+            std::cerr << "Failed to load Nurbs Params" << std::endl;
+            return false;
+        }
+
+        return true;
     }
 
     fsm::retval StateNavigate::OnEntry()
@@ -150,6 +161,8 @@ namespace states {
                     double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingError);
 
                     std::cout << "Distance in the body frame: " << cartesianDistanceTask_->ControlVariable() << std::endl;
+
+                    std::cout << "taskGain: " << taskGain << std::endl;
 
                     //Set the gain of the cartesian distance task
                     cartesianDistanceTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());

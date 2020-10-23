@@ -52,46 +52,79 @@ struct UlisseModelParameters {
                   << a.Inertia.format(TabbedCleanFmt);
     }
 
-    void ConfigureFormFile(const libconfig::Setting& ulisseModel) noexcept(false)
+    bool ConfigureFormFile(const libconfig::Setting& ulisseModel) noexcept(false)
     {
-        ctb::SetParamVector(ulisseModel, cN, "cN");
-        ctb::SetParamVector(ulisseModel, cNneg, "cNneg");
-        ctb::SetParamVector(ulisseModel, cX, "cX");
-        ctb::SetParamVector(ulisseModel, cY, "cY");
-        ctb::SetParam(ulisseModel, lambda_neg, "lambdaNeg");
-        ctb::SetParam(ulisseModel, lambda_pos, "lambdaPos");
-        ctb::SetParam(ulisseModel, b1_neg, "b1Neg");
-        ctb::SetParam(ulisseModel, b1_pos, "b1Pos");
-        ctb::SetParam(ulisseModel, b2_neg, "b2Neg");
-        ctb::SetParam(ulisseModel, b2_pos, "b2Pos");
-        ctb::SetParam(ulisseModel, d, "motorsDistance");
-        ctb::SetParam(ulisseModel, hullWidth, "hullWidth");
+        if (!ctb::SetParamVector(ulisseModel, cN, "cN"))
+            return false;
+        if (!ctb::SetParamVector(ulisseModel, cX, "cX"))
+            return false;
+        if (!ctb::SetParamVector(ulisseModel, cY, "cY"))
+            return false;
+        if (!ctb::SetParamVector(ulisseModel, cNneg, "cNneg"))
+            return false;
+        if (!ctb::SetParam(ulisseModel, lambda_neg, "lambdaNeg"))
+            return false;
+        if (!ctb::SetParam(ulisseModel, lambda_pos, "lambdaPos"))
+            return false;
+
+        if (!ctb::SetParam(ulisseModel, b1_neg, "b1Neg"))
+            return false;
+        if (!ctb::SetParam(ulisseModel, b1_pos, "b1Pos"))
+            return false;
+        if (!ctb::SetParam(ulisseModel, b2_neg, "b2Neg"))
+            return false;
+        if (!ctb::SetParam(ulisseModel, b2_pos, "b2Pos"))
+            return false;
+        if (!ctb::SetParam(ulisseModel, d, "motorsDistance"))
+            return false;
+        if (!ctb::SetParam(ulisseModel, hullWidth, "hullWidth"))
+            return false;
 
         Eigen::Vector3d tmp_Inerzia;
         tmp_Inerzia.setZero();
-        ctb::SetParamVector(ulisseModel, tmp_Inerzia, "inertia");
+        if (!ctb::SetParamVector(ulisseModel, tmp_Inerzia, "inertia"))
+            return false;
+
         Inertia.diagonal() = Eigen::Map<Eigen::Matrix<double, 3, 1>>(tmp_Inerzia.data());
+
+        return true;
     }
 
-    void ConfigureFormFile(const libconfig::Config& ulisseModel) noexcept(false)
+    bool ConfigureFormFile(const libconfig::Config& ulisseModel) noexcept(false)
     {
-        ctb::SetParamVector(ulisseModel, cN, "cN");
-        ctb::SetParamVector(ulisseModel, cX, "cX");
-        ctb::SetParamVector(ulisseModel, cY, "cY");
-        ctb::SetParamVector(ulisseModel, cNneg, "cNneg");
-        ctb::SetParam(ulisseModel, lambda_neg, "lambdaNeg");
-        ctb::SetParam(ulisseModel, lambda_pos, "lambdaPos");
-        ctb::SetParam(ulisseModel, b1_neg, "b1Neg");
-        ctb::SetParam(ulisseModel, b1_pos, "b1Pos");
-        ctb::SetParam(ulisseModel, b2_neg, "b2Neg");
-        ctb::SetParam(ulisseModel, b2_pos, "b2Pos");
-        ctb::SetParam(ulisseModel, d, "motorsDistance");
-        ctb::SetParam(ulisseModel, hullWidth, "hullWidth");
+        if (!ctb::SetParamVector(ulisseModel, cN, "cN"))
+            return false;
+        if (!ctb::SetParamVector(ulisseModel, cX, "cX"))
+            return false;
+        if (!ctb::SetParamVector(ulisseModel, cY, "cY"))
+            return false;
+        if (!ctb::SetParamVector(ulisseModel, cNneg, "cNneg"))
+            return false;
+        if (!ctb::SetParam(ulisseModel, lambda_neg, "lambdaNeg"))
+            return false;
+        if (!ctb::SetParam(ulisseModel, lambda_pos, "lambdaPos"))
+            return false;
+        if (!ctb::SetParam(ulisseModel, b1_neg, "b1Neg"))
+            return false;
+        if (!ctb::SetParam(ulisseModel, b1_pos, "b1Pos"))
+            return false;
+        if (!ctb::SetParam(ulisseModel, b2_neg, "b2Neg"))
+            return false;
+        if (!ctb::SetParam(ulisseModel, b2_pos, "b2Pos"))
+            return false;
+        if (!ctb::SetParam(ulisseModel, d, "motorsDistance"))
+            return false;
+        if (!ctb::SetParam(ulisseModel, hullWidth, "hullWidth"))
+            return false;
 
         Eigen::Vector3d tmp_Inerzia;
         tmp_Inerzia.setZero();
-        ctb::SetParamVector(ulisseModel, tmp_Inerzia, "inertia");
+        if (!ctb::SetParamVector(ulisseModel, tmp_Inerzia, "inertia"))
+            return false;
+
         Inertia.diagonal() = Eigen::Map<Eigen::Matrix<double, 3, 1>>(tmp_Inerzia.data());
+
+        return true;
     }
 };
 

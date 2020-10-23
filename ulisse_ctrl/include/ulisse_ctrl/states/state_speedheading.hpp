@@ -24,7 +24,7 @@ namespace states {
         fsm::retval Execute() override;
         void ResetTimer();
 
-        void ConfigureStateFromFile(libconfig::Config& confObj) override;
+        bool ConfigureStateFromFile(libconfig::Config& confObj) override;
     };
 } // namespace states
 } // namespace ulisse

@@ -13,16 +13,20 @@ namespace states {
         minHeadingError_ = M_PI / 32;
     }
 
-    StateLatLong::~StateLatLong() {}
+    StateLatLong::~StateLatLong() { }
 
-    void StateLatLong::ConfigureStateFromFile(libconfig::Config& confObj)
+    bool StateLatLong::ConfigureStateFromFile(libconfig::Config& confObj)
     {
         const libconfig::Setting& root = confObj.getRoot();
         const libconfig::Setting& states = root["states"];
 
         const libconfig::Setting& state = states.lookup(ulisse::states::ID::latlong);
-        ctb::SetParam(state, maxHeadingError_, "maxHeadingError");
-        ctb::SetParam(state, minHeadingError_, "minHeadingError");
+
+        if (!ctb::SetParam(state, maxHeadingError_, "maxHeadingError"))
+            return false;
+        if (!ctb::SetParam(state, minHeadingError_, "minHeadingError"))
+            return false;
+        return true;
     }
 
     fsm::retval StateLatLong::OnEntry()

@@ -523,12 +523,18 @@ void SafetyBoundaries::MakeSegments(point_type const& p, point_type const& next,
 
 bool SafetyBoundaries::ConfigFromFile(libconfig::Config& confObj)
 {
-    ReactiveTask::ConfigFromFile(confObj);
+    if (!ReactiveTask::ConfigFromFile(confObj))
+        return false;
 
     //read the centroid to transform a latlong point to a local cartesian one
     Eigen::VectorXd centroidTmp;
-    ctb::SetParamVector(confObj, centroidTmp, "centroidLocation");
+
+    if (!ctb::SetParamVector(confObj, centroidTmp, "centroidLocation"))
+        return false;
+
     centroid_.latitude = centroidTmp[0];
     centroid_.longitude = centroidTmp[1];
+
+    return true;
 }
 } // namespace ikcl

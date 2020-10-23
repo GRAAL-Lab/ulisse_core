@@ -36,13 +36,21 @@ struct ControllerConfiguration {
     {
     }
 
-    void ConfigureFromFile(libconfig::Config& confObj)
+    bool ConfigureFromFile(libconfig::Config& confObj)
     {
-        ctb::SetParam(confObj, goToHoldAfterMove, "goToHoldAfterMove");
-        ctb::SetParam(confObj, controlLoopPeriod, "controlLoopPeriod");
-        ctb::SetParam(confObj, posAcceptanceRadius, "posAcceptanceRadius");
-        ctb::SetParamVector(confObj, saturationMax, "saturationMax");
-        ctb::SetParamVector(confObj, saturationMin, "saturationMin");
+
+        if (!ctb::SetParam(confObj, goToHoldAfterMove, "goToHoldAfterMove"))
+            return false;
+        if (!ctb::SetParam(confObj, controlLoopPeriod, "controlLoopPeriod"))
+            return false;
+        if (!ctb::SetParam(confObj, posAcceptanceRadius, "posAcceptanceRadius"))
+            return false;
+        if (!ctb::SetParamVector(confObj, saturationMax, "saturationMax"))
+            return false;
+        if (!ctb::SetParamVector(confObj, saturationMin, "saturationMin"))
+            return false;
+
+        return true;
     }
 
     friend std::ostream& operator<<(std::ostream& os, ControllerConfiguration const& a)
@@ -61,17 +69,26 @@ struct ThrusterMapping {
     ctb::PIDGains pidGainsSurge;
     double pidSatSurge;
 
-    void ConfigureFromFile(const libconfig::Setting& confObj) noexcept(false)
+    bool ConfigureFromFile(const libconfig::Setting& confObj) noexcept(false)
     {
         const libconfig::Setting& pidSurge = confObj["pidSurge"];
 
-        ctb::SetParam(pidSurge, pidGainsSurge.Kd, "kd");
-        ctb::SetParam(pidSurge, pidGainsSurge.Kp, "kp");
-        ctb::SetParam(pidSurge, pidGainsSurge.Ki, "ki");
-        ctb::SetParam(pidSurge, pidGainsSurge.Kff, "kff");
-        ctb::SetParam(pidSurge, pidGainsSurge.N, "n");
-        ctb::SetParam(pidSurge, pidGainsSurge.Tr, "tr");
-        ctb::SetParam(pidSurge, pidSatSurge, "sat");
+        if (!ctb::SetParam(pidSurge, pidGainsSurge.Kd, "kd"))
+            return false;
+        if (!ctb::SetParam(pidSurge, pidGainsSurge.Kp, "kp"))
+            return false;
+        if (!ctb::SetParam(pidSurge, pidGainsSurge.Ki, "ki"))
+            return false;
+        if (!ctb::SetParam(pidSurge, pidGainsSurge.Kff, "kff"))
+            return false;
+        if (!ctb::SetParam(pidSurge, pidGainsSurge.N, "n"))
+            return false;
+        if (!ctb::SetParam(pidSurge, pidGainsSurge.Tr, "tr"))
+            return false;
+        if (!ctb::SetParam(pidSurge, pidSatSurge, "sat"))
+            return false;
+
+        return true;
     }
 
     friend std::ostream& operator<<(std::ostream& os, ThrusterMapping const& a)
@@ -96,26 +113,43 @@ struct DynamicPid {
     ctb::PIDGains pidGainsYawRate;
     double pidSatYawRate;
 
-    void ConfigureFromFile(const libconfig::Setting& confObj) noexcept(false)
+    bool ConfigureFromFile(const libconfig::Setting& confObj) noexcept(false)
     {
         const libconfig::Setting& pidSurge = confObj["pidSurge"];
 
-        ctb::SetParam(pidSurge, pidGainsSurge.Kd, "kd");
-        ctb::SetParam(pidSurge, pidGainsSurge.Kp, "kp");
-        ctb::SetParam(pidSurge, pidGainsSurge.Ki, "ki");
-        ctb::SetParam(pidSurge, pidGainsSurge.Kff, "kff");
-        ctb::SetParam(pidSurge, pidGainsSurge.N, "n");
-        ctb::SetParam(pidSurge, pidGainsSurge.Tr, "tr");
-        ctb::SetParam(pidSurge, pidSatSurge, "sat");
+        if (!ctb::SetParam(pidSurge, pidGainsSurge.Kd, "kd"))
+            return false;
+        if (!ctb::SetParam(pidSurge, pidGainsSurge.Kp, "kp"))
+            return false;
+        if (!ctb::SetParam(pidSurge, pidGainsSurge.Ki, "ki"))
+            return false;
+        if (!ctb::SetParam(pidSurge, pidGainsSurge.Kff, "kff"))
+            return false;
+        if (!ctb::SetParam(pidSurge, pidGainsSurge.N, "n"))
+            return false;
+        if (!ctb::SetParam(pidSurge, pidGainsSurge.Tr, "tr"))
+            return false;
+        if (!ctb::SetParam(pidSurge, pidSatSurge, "sat"))
+            return false;
 
         const libconfig::Setting& pidYawRate = confObj["pidYawRate"];
-        ctb::SetParam(pidYawRate, pidGainsYawRate.Kd, "kd");
-        ctb::SetParam(pidYawRate, pidGainsYawRate.Kp, "kp");
-        ctb::SetParam(pidYawRate, pidGainsYawRate.Ki, "ki");
-        ctb::SetParam(pidYawRate, pidGainsYawRate.Kff, "kff");
-        ctb::SetParam(pidYawRate, pidGainsYawRate.N, "n");
-        ctb::SetParam(pidYawRate, pidGainsYawRate.Tr, "tr");
-        ctb::SetParam(pidYawRate, pidSatYawRate, "sat");
+
+        if (!ctb::SetParam(pidYawRate, pidGainsYawRate.Kd, "kd"))
+            return false;
+        if (!ctb::SetParam(pidYawRate, pidGainsYawRate.Kp, "kp"))
+            return false;
+        if (!ctb::SetParam(pidYawRate, pidGainsYawRate.Ki, "ki"))
+            return false;
+        if (!ctb::SetParam(pidYawRate, pidGainsYawRate.Kff, "kff"))
+            return false;
+        if (!ctb::SetParam(pidYawRate, pidGainsYawRate.N, "n"))
+            return false;
+        if (!ctb::SetParam(pidYawRate, pidGainsYawRate.Tr, "tr"))
+            return false;
+        if (!ctb::SetParam(pidYawRate, pidSatYawRate, "sat"))
+            return false;
+
+        return true;
     }
 
     friend std::ostream& operator<<(std::ostream& os, DynamicPid const& a)
@@ -178,36 +212,54 @@ struct DCLConfiguration {
         return os;
     }
 
-    void ConfigureFromFile(libconfig::Config& confObj) noexcept(false)
+    bool ConfigureFromFile(libconfig::Config& confObj) noexcept(false)
     {
         const libconfig::Setting& root = confObj.getRoot();
         const libconfig::Setting& dcl = root["dcl_ulisse"];
         // Load DCL Config
         int tmpCtrlMode;
-        ctb::SetParam(dcl, tmpCtrlMode, "ctrlMode");
+        if (!ctb::SetParam(dcl, tmpCtrlMode, "ctrlMode"))
+            return false;
         ctrlMode = static_cast<ControlMode>(tmpCtrlMode);
-        ctb::SetParam(dcl, enableThrusters, "enableThrusters");
-        ctb::SetParam(dcl, thrusterPercLimit, "thrusterPercLimit");
-        ctb::SetParam(dcl, surgeMin, "surgeMin");
-        ctb::SetParam(dcl, surgeMax, "surgeMax");
-        ctb::SetParam(dcl, yawRateMin, "yawRateMin");
-        ctb::SetParam(dcl, yawRateMax, "yawRateMax");
+        if (!ctb::SetParam(dcl, enableThrusters, "enableThrusters"))
+            return false;
+        if (!ctb::SetParam(dcl, thrusterPercLimit, "thrusterPercLimit"))
+            return false;
+        if (!ctb::SetParam(dcl, surgeMin, "surgeMin"))
+            return false;
+        if (!ctb::SetParam(dcl, surgeMax, "surgeMax"))
+            return false;
+        if (!ctb::SetParam(dcl, yawRateMin, "yawRateMin"))
+            return false;
+        if (!ctb::SetParam(dcl, yawRateMax, "yawRateMax"))
+            return false;
 
         const libconfig::Setting& ulisseModelParams = dcl["ulisseModel"];
-        ulisseModel.ConfigureFormFile(ulisseModelParams);
+        if (!ulisseModel.ConfigureFormFile(ulisseModelParams))
+            return false;
+
+        std::cerr << "ulisseModelParams configured" << std::endl;
 
         if (ctrlMode == ControlMode::ThrusterMapping) {
             const libconfig::Setting& thrusterMap = dcl["thrusterMapping"];
-            thrusterMapping.ConfigureFromFile(thrusterMap);
+            if (!thrusterMapping.ConfigureFromFile(thrusterMap))
+                return false;
+            std::cerr << "ThrusterMapping configured" << std::endl;
         } else if (ctrlMode == ControlMode::ClassicPIDControl) {
             const libconfig::Setting& classicPidCtr = dcl["classicPidControl"];
-            classicPidControl.ConfigureFromFile(classicPidCtr);
+            if (!classicPidControl.ConfigureFromFile(classicPidCtr))
+                return false;
+            std::cerr << "ClassicPIDControl configured" << std::endl;
         } else if (ctrlMode == ControlMode::ComputedTorque) {
             const libconfig::Setting& computedTorqueCtr = dcl["computedTorqueControl"];
-            computedTorqueControl.ConfigureFromFile(computedTorqueCtr);
+            if (!computedTorqueControl.ConfigureFromFile(computedTorqueCtr))
+                return false;
+
         } else {
             std::cerr << "Type of control not recognized" << std::endl;
         }
+
+        return true;
     }
 };
 }

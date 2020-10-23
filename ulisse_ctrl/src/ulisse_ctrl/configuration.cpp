@@ -2,14 +2,19 @@
 #include <ulisse_ctrl/configuration.h>
 #include <ulisse_ctrl/ulisse_definitions.h>
 
-void ConfigureTaskFromFile(std::unordered_map<std::string, ulisse::TasksInfo>& tasksMap, libconfig::Config& confObj)
+bool ConfigureTaskFromFile(std::unordered_map<std::string, ulisse::TasksInfo>& tasksMap, libconfig::Config& confObj)
 {
     for (auto& map : tasksMap) {
-        map.second.task->ConfigFromFile(confObj);
+        if (!map.second.task->ConfigFromFile(confObj)) {
+            std::cerr << "Failed to configure task " << map.first << " form file" << std::endl;
+            return false;
+        }
     }
+
+    return true;
 }
 
-void ConfigurePriorityLevelsFromFile(std::shared_ptr<tpik::ActionManager> actionManager, std::unordered_map<std::string, ulisse::TasksInfo>& tasksMap, libconfig::Config& confObj)
+bool ConfigurePriorityLevelsFromFile(std::shared_ptr<tpik::ActionManager> actionManager, std::unordered_map<std::string, ulisse::TasksInfo>& tasksMap, libconfig::Config& confObj)
 {
     const libconfig::Setting& root = confObj.getRoot();
     const libconfig::Setting& priorityLevels = root["priorityLevels"];
@@ -20,14 +25,19 @@ void ConfigurePriorityLevelsFromFile(std::shared_ptr<tpik::ActionManager> action
 
         const libconfig::Setting& priorityLevel = priorityLevels[i];
         std::string PLID;
-        ctb::SetParam(priorityLevel, PLID, "name");
+
+        if (!ctb::SetParam(priorityLevel, PLID, "name"))
+            return false;
 
         hierarchy.push_back(PLID);
 
         //configure regularization data
         rml::RegularizationData regularizationData;
-        ctb::SetParam(priorityLevel, regularizationData.params.lambda, "lambda");
-        ctb::SetParam(priorityLevel, regularizationData.params.threshold, "threshold");
+
+        if (!ctb::SetParam(priorityLevel, regularizationData.params.lambda, "lambda"))
+            return false;
+        if (!ctb::SetParam(priorityLevel, regularizationData.params.threshold, "threshold"))
+            return false;
 
         actionManager->AddPriorityLevelWithRegularization(PLID, regularizationData);
 
@@ -45,9 +55,11 @@ void ConfigurePriorityLevelsFromFile(std::shared_ptr<tpik::ActionManager> action
     }
     //Set the hierarchy
     actionManager->SetUnifiedHierarchy(hierarchy);
+
+    return true;
 }
 
-void ConfigureActionsFromFile(std::shared_ptr<tpik::ActionManager> actionManager, libconfig::Config& confObj)
+bool ConfigureActionsFromFile(std::shared_ptr<tpik::ActionManager> actionManager, libconfig::Config& confObj)
 {
     const libconfig::Setting& root = confObj.getRoot();
     const libconfig::Setting& actions = root["actions"];
@@ -58,7 +70,8 @@ void ConfigureActionsFromFile(std::shared_ptr<tpik::ActionManager> actionManager
 
         const libconfig::Setting& action = actions[i];
         std::string actionID;
-        ctb::SetParam(action, actionID, "name");
+        if (!ctb::SetParam(action, actionID, "name"))
+            return false;
 
         std::vector<std::string> actionPL;
 
@@ -81,11 +94,17 @@ void ConfigureActionsFromFile(std::shared_ptr<tpik::ActionManager> actionManager
             std::cerr << "who " << e.what() << " how: " << e.how() << std::endl;
         }
     }
+
+    return true;
 }
 
-void ConfigureSatesFromFile(std::unordered_map<std::string, std::shared_ptr<ulisse::states::GenericState>> statesMap, libconfig::Config& confObj)
+bool ConfigureSatesFromFile(std::unordered_map<std::string, std::shared_ptr<ulisse::states::GenericState>> statesMap, libconfig::Config& confObj)
 {
     for (auto& mapLine : statesMap) {
-        mapLine.second->ConfigureStateFromFile(confObj);
+        if (!mapLine.second->ConfigureStateFromFile(confObj)) {
+            std::cerr << "Failed to configure from file: " << mapLine.first << std::endl;
+            return false;
+        }
     }
+    return true;
 }

@@ -11,11 +11,11 @@ namespace states {
 
     public:
         StateHalt();
-         ~StateHalt() override;
-         fsm::retval OnEntry() override;
-         fsm::retval Execute() override;
+        ~StateHalt() override;
+        fsm::retval OnEntry() override;
+        fsm::retval Execute() override;
 
-        void ConfigureStateFromFile(libconfig::Config& confObj) override;
+        bool ConfigureStateFromFile(libconfig::Config& confObj) override;
     };
 }
 }

@@ -30,7 +30,7 @@ namespace states {
         virtual ~GenericState(void);
 
         void CheckRadioController();
-        virtual void ConfigureStateFromFile(libconfig::Config& confObj) = 0;
+        virtual bool ConfigureStateFromFile(libconfig::Config& confObj) = 0;
     };
 }
 }

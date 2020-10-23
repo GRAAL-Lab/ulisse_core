@@ -28,18 +28,28 @@ namespace states {
         return fsm::ok;
     }
 
-    void StateHold::ConfigureStateFromFile(libconfig::Config& confObj)
+    bool StateHold::ConfigureStateFromFile(libconfig::Config& confObj)
     {
         const libconfig::Setting& root = confObj.getRoot();
         const libconfig::Setting& states = root["states"];
 
         const libconfig::Setting& state = states.lookup(ulisse::states::ID::hold);
-        ctb::SetParam(state, maxHeadingError_, "maxHeadingError");
-        ctb::SetParam(state, minHeadingError_, "minHeadingError");
-        ctb::SetParam(state, maxAcceptanceRadius, "maxAcceptanceRadius");
-        ctb::SetParam(state, minAcceptanceRadius, "minAcceptanceRadius");
-        ctb::SetParam(state, minWaterCurrent_, "minWaterCurrent");
-        ctb::SetParam(state, maxWaterCurrent_, "maxWaterCurrent");
+
+        if (!ctb::SetParam(state, maxHeadingError_, "maxHeadingError"))
+            return false;
+        if (!ctb::SetParam(state, minHeadingError_, "minHeadingError"))
+            return false;
+
+        if (!ctb::SetParam(state, maxAcceptanceRadius, "maxAcceptanceRadius"))
+            return false;
+        if (!ctb::SetParam(state, minAcceptanceRadius, "minAcceptanceRadius"))
+            return false;
+        if (!ctb::SetParam(state, minWaterCurrent_, "minWaterCurrent"))
+            return false;
+        if (!ctb::SetParam(state, maxWaterCurrent_, "maxWaterCurrent"))
+            return false;
+
+        return true;
     }
 
     fsm::retval StateHold::Execute()

@@ -27,11 +27,16 @@ namespace ulisse {
 struct SinusoidalWave {
     double A, C, f;
 
-    void ConfigureFromFile(const libconfig::Setting& confObj) noexcept(false)
+    bool ConfigureFromFile(const libconfig::Setting& confObj) noexcept(false)
     {
-        ctb::SetParam(confObj, A, "A");
-        ctb::SetParam(confObj, C, "C");
-        ctb::SetParam(confObj, f, "f");
+        if (!ctb::SetParam(confObj, A, "A"))
+            return false;
+        if (!ctb::SetParam(confObj, C, "C"))
+            return false;
+        if (!ctb::SetParam(confObj, f, "f"))
+            return false;
+
+        return true;
     }
 };
 
@@ -43,22 +48,40 @@ struct SensorsNoise {
     Eigen::Vector3d accelerometer_stdd;
     SinusoidalWave bx, by, bz;
 
-    void ConfigureFromFile(const libconfig::Setting& confObj) noexcept(false)
+    bool ConfigureFromFile(const libconfig::Setting& confObj) noexcept(false)
     {
-        ctb::SetParamVector(confObj, gps_stdd, "gps_stdd");
-        ctb::SetParamVector(confObj, compass_stdd, "compass_stdd");
-        ctb::SetParamVector(confObj, magnetometer_stdd, "magnetometer_stdd");
-        ctb::SetParamVector(confObj, gyro_stdd, "gyro_stdd");
-        ctb::SetParamVector(confObj, accelerometer_stdd, "accelerometer_stdd");
+        if (!ctb::SetParamVector(confObj, gps_stdd, "gps_stdd"))
+            return false;
+        if (!ctb::SetParamVector(confObj, compass_stdd, "compass_stdd"))
+            return false;
+        if (!ctb::SetParamVector(confObj, magnetometer_stdd, "magnetometer_stdd"))
+            return false;
+        if (!ctb::SetParamVector(confObj, gyro_stdd, "gyro_stdd"))
+            return false;
+        if (!ctb::SetParamVector(confObj, accelerometer_stdd, "accelerometer_stdd"))
+            return false;
 
         const libconfig::Setting& gyro_bias = confObj["gyro_bias"];
 
         const libconfig::Setting& b_x = gyro_bias["bx"];
-        bx.ConfigureFromFile(b_x);
+        if (!bx.ConfigureFromFile(b_x)) {
+            std::cerr << "Failed to laod gyro bias on x" << std::endl;
+            return false;
+        }
+
         const libconfig::Setting& b_y = gyro_bias["by"];
-        by.ConfigureFromFile(b_y);
+        if (!by.ConfigureFromFile(b_y)) {
+            std::cerr << "Failed to laod gyro bias on x" << std::endl;
+            return false;
+        }
+
         const libconfig::Setting& b_z = gyro_bias["bz"];
-        bz.ConfigureFromFile(b_z);
+        if (!bz.ConfigureFromFile(b_z)) {
+            std::cerr << "Failed to laod gyro bias on x" << std::endl;
+            return false;
+        }
+
+        return true;
     }
 };
 
@@ -71,17 +94,27 @@ struct SimulatorConfiguration {
     Eigen::Vector3d bodyF_gps_position;
     SinusoidalWave wx, wy;
 
-    void ConfigureFromFile(libconfig::Config& confObj) noexcept(false)
+    bool ConfigureFromFile(libconfig::Config& confObj) noexcept(false)
     {
-        ctb::SetParam(confObj, rate, "rate");
-        ctb::SetParam(confObj, modelErrorPercentage, "modelErrorPercentage");
-        ctb::SetParamVector(confObj, inertialF_waterCurrent, "inertialF_waterCurrent");
-        ctb::SetParamVector(confObj, bodyF_gps_position, "bodyF_gps_position");
+        if (!ctb::SetParam(confObj, rate, "rate"))
+            return false;
+
+        if (!ctb::SetParam(confObj, rate, "rate"))
+            return false;
+        if (!ctb::SetParam(confObj, modelErrorPercentage, "modelErrorPercentage"))
+            return false;
+        if (!ctb::SetParamVector(confObj, inertialF_waterCurrent, "inertialF_waterCurrent"))
+            return false;
+        if (!ctb::SetParamVector(confObj, bodyF_gps_position, "bodyF_gps_position"))
+            return false;
 
         //ulisse param
         const libconfig::Setting& root = confObj.getRoot();
         const libconfig::Setting& ulisseModel = root["ulisseModel"];
-        modelParams.ConfigureFormFile(ulisseModel);
+        if (!modelParams.ConfigureFormFile(ulisseModel)) {
+            std::cerr << "Failed to load ulisse model params " << std::endl;
+            return false;
+        }
 
         //Add model error
         // construct a trivial random generator engine from a time-based seed:
@@ -98,14 +131,28 @@ struct SimulatorConfiguration {
         modelParams.b1_neg *= distribution(generator);
 
         const libconfig::Setting& sensorsnoise = root["sensorsNoise"];
-        sensorsNoise.ConfigureFromFile(sensorsnoise);
+        if (!sensorsNoise.ConfigureFromFile(sensorsnoise)) {
+            std::cerr << "Failed to load ulisse sensors noise " << std::endl;
+            return false;
+        }
 
         //load additive sinusoidal noise on wx wy to simulate wawes
         const libconfig::Setting& wavesSimulator = root["wavesSimulator"];
         const libconfig::Setting& omega_x = wavesSimulator["wx"];
-        wx.ConfigureFromFile(omega_x);
+
+        if (!wx.ConfigureFromFile(omega_x)) {
+            std::cerr << "Failed to load waves params on x " << std::endl;
+            return false;
+        }
+
         const libconfig::Setting& omega_y = wavesSimulator["wy"];
-        wy.ConfigureFromFile(omega_y);
+
+        if (!wy.ConfigureFromFile(omega_y)) {
+            std::cerr << "Failed to load waves params on y " << std::endl;
+            return false;
+        }
+
+        return true;
     }
 };
 
