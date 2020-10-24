@@ -89,17 +89,17 @@ int main(int argc, char* argv[])
             magnetometerMsg.stamp.sec = now_stamp_secs;
             magnetometerMsg.stamp.nanosec = now_stamp_nanosecs;
             magnetometerMsg.orthogonalstrength[0] = sensorsData.row(j + 1)(5);
-            magnetometerMsg.orthogonalstrength[1] = -sensorsData.row(j + 1)(6);
-            magnetometerMsg.orthogonalstrength[2] = -sensorsData.row(j + 1)(7);
+            magnetometerMsg.orthogonalstrength[1] = sensorsData.row(j + 1)(6);
+            magnetometerMsg.orthogonalstrength[2] = sensorsData.row(j + 1)(7);
 
             imuMsg.stamp.sec = now_stamp_secs;
             imuMsg.stamp.nanosec = now_stamp_nanosecs;
             imuMsg.accelerometer[0] = sensorsData.row(j + 1)(8);
-            imuMsg.accelerometer[1] = -sensorsData.row(j + 1)(9);
-            imuMsg.accelerometer[2] = -sensorsData.row(j + 1)(10);
+            imuMsg.accelerometer[1] = sensorsData.row(j + 1)(9);
+            imuMsg.accelerometer[2] = sensorsData.row(j + 1)(10);
             imuMsg.gyro[0] = sensorsData.row(j + 1)(11);
-            imuMsg.gyro[1] = -sensorsData.row(j + 1)(12);
-            imuMsg.gyro[2] = -sensorsData.row(j + 1)(13);
+            imuMsg.gyro[1] = sensorsData.row(j + 1)(12);
+            imuMsg.gyro[2] = sensorsData.row(j + 1)(13);
             imuMsg.gyro4x[0] = sensorsData.row(j + 1)(14);
             imuMsg.gyro4x[1] = sensorsData.row(j + 1)(15);
 

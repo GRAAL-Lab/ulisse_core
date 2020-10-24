@@ -635,20 +635,23 @@ namespace llc {
         float32_t tmp;
 
         tmp = sensors.accelerometer[1];
-        sensors.accelerometer[1] = -sensors.accelerometer[0];
+        sensors.accelerometer[1] = sensors.accelerometer[0];
         sensors.accelerometer[0] = tmp;
+        sensors.accelerometer[2] = -sensors.accelerometer[2];
 
         tmp = sensors.gyro[1];
-        sensors.gyro[1] = -sensors.gyro[0];
+        sensors.gyro[1] = sensors.gyro[0];
         sensors.gyro[0] = tmp;
+        sensors.gyro[2] = -sensors.gyro[2];
 
         tmp = sensors.gyro4x[1];
-        sensors.gyro4x[1] = -sensors.gyro4x[0];
+        sensors.gyro4x[1] = sensors.gyro4x[0];
         sensors.gyro4x[0] = tmp;
 
         tmp = sensors.magnetometer[1];
-        sensors.magnetometer[1] = -sensors.magnetometer[0];
+        sensors.magnetometer[1] = sensors.magnetometer[0];
         sensors.magnetometer[0] = tmp;
+        sensors.magnetometer[2] = -sensors.magnetometer[2];
 
         tmp = sensors.compassPitch;
         sensors.compassPitch = -sensors.compassRoll;
