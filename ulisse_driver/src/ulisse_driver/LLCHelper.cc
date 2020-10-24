@@ -654,7 +654,7 @@ namespace llc {
         sensors.magnetometer[2] = -sensors.magnetometer[2];
 
         tmp = sensors.compassPitch;
-        sensors.compassPitch = -sensors.compassRoll;
+        sensors.compassPitch = sensors.compassRoll;
         sensors.compassRoll = tmp;
         sensors.compassHeading -= M_PI / 2.0;
 
