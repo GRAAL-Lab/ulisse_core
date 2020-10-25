@@ -67,12 +67,16 @@ class VehicleController {
 
     ///TASKS
     std::shared_ptr<ikcl::LinearVelocity> asvLinearVelocity_;
+    std::shared_ptr<ikcl::LinearVelocity> asvLinearVelocityHold_;
     std::shared_ptr<ikcl::AlignToTarget> asvAngularPosition_;
     std::shared_ptr<ikcl::CartesianDistance> asvCartesianDistance_;
     std::shared_ptr<ikcl::SafetyBoundaries> asvSafetyBoundaries_;
     std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignment_;
     std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentSafety_;
+    std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentHold_;
     std::shared_ptr<ikcl::CartesianDistance> asvCartesianDistancePathFollowing_;
+    std::shared_ptr<ikcl::AlignToTarget> asvAngularPositionHold_;
+    std::shared_ptr<ikcl::CartesianDistance> asvCartesianDistanceHold_;
 
     double timestamp_;
     double sampleTime_;
@@ -109,7 +113,7 @@ class VehicleController {
 
     std::shared_ptr<Eigen::Vector2d> inertialF_waterCurrent_;
 
-    bool LoadConfiguration(std::shared_ptr<ControllerConfiguration> &conf);
+    bool LoadConfiguration(std::shared_ptr<ControllerConfiguration>& conf);
     void SetUpFSM();
     void SetupCommandServer();
 

@@ -19,8 +19,10 @@ namespace states {
         //set tasks
         safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
         absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
-        linearVelocityTask_ = std::dynamic_pointer_cast<ikcl::LinearVelocity>(tasksMap.find(ulisse::task::asvLinearVelocity)->second.task);
-        absoluteAxisAlignmentTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignment)->second.task);
+        linearVelocityTask_ = std::dynamic_pointer_cast<ikcl::LinearVelocity>(tasksMap.find(ulisse::task::asvLinearVelocityHold)->second.task);
+        absoluteAxisAlignmentTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentHold)->second.task);
+        cartesianDistanceTask_ = std::dynamic_pointer_cast<ikcl::CartesianDistance>(tasksMap.find(ulisse::task::asvCartesianDistanceHold)->second.task);
+        alignToTargetTask_ = std::dynamic_pointer_cast<ikcl::AlignToTarget>(tasksMap.find(ulisse::task::asvAngularPositionHold)->second.task);
 
         //set action
         actionManager->SetAction(ulisse::action::hold, true);
@@ -84,7 +86,6 @@ namespace states {
         // Set the gain of the cartesian distance task
         safetyBoundariesTask_->ExternalActivationFunction() = taskGainSafety * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
 
-        std::cout << "goalDistance: " << goalDistance_ << std::endl;
         //hold task
         linearVelocityTask_->Reference() = Eigen::Vector3d { 0.0, 0.0, 0.0 };
         ctb::DistanceAndAzimuthRad(*vehiclePosition.get(), positionToHold, goalDistance_, goalHeading_); //compute the distanza between the current position and the position to hold
@@ -102,18 +103,40 @@ namespace states {
             absoluteAxisAlignmentTask_->ExternalActivationFunction() = absoluteAxisAlignmentGain * Eigen::MatrixXd::Identity(absoluteAxisAlignmentTask_->TaskSpace(), absoluteAxisAlignmentTask_->TaskSpace());
         }
         //otherwise point to the hold circle defined by maxAcceptanceRadius and minAcceptanceRadius
-        else {
-            absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(cos(goalHeading_), sin(goalHeading_), 0.0), rml::FrameID::WorldFrame);
-            absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
+        //        else {
+        //            absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(cos(goalHeading_), sin(goalHeading_), 0.0), rml::FrameID::WorldFrame);
+        //            absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
 
-            linearVelocityTask_->Reference() = Eigen::Vector3d { 1.0, 0.0, 0.0 }; //set a velocity to point to the circle in case of the catamaran  slips away
-            //compute the heading error
-            double headingError = absoluteAxisAlignmentTask_->ControlVariable().norm();
-            std::cout << "headingError hold: " << headingError << std::endl;
-            double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1, headingError); //compute the gain to modify the exernal activation function of linear velocity task
+        //            linearVelocityTask_->Reference() = Eigen::Vector3d { 1.0, 0.0, 0.0 }; //set a velocity to point to the circle in case of the catamaran  slips away
+        //            //compute the heading error
+        //            double headingError = absoluteAxisAlignmentTask_->ControlVariable().norm();
+        //            std::cout << "headingError hold: " << headingError << std::endl;
+        //            double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1, headingError); //compute the gain to modify the exernal activation function of linear velocity task
 
-            linearVelocityTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(linearVelocityTask_->TaskSpace(), linearVelocityTask_->TaskSpace());
-        }
+        //            linearVelocityTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(linearVelocityTask_->TaskSpace(), linearVelocityTask_->TaskSpace());
+        //        }
+
+        cartesianDistanceTask_->SetTargetDistance(Eigen::Vector3d(goalDistance_ * cos(goalHeading_), goalDistance_ * sin(goalHeading_), 0), rml::FrameID::WorldFrame);
+        alignToTargetTask_->SetTargetDistance(Eigen::Vector3d(goalDistance_ * cos(goalHeading_), goalDistance_ * sin(goalHeading_), 0), rml::FrameID::WorldFrame);
+        alignToTargetTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
+
+        //To avoid the case in which the error between the goal heading and the current heading is too big
+        //we activate the the cartesian distance through the gain based on a bell-shaped function on the heading error
+        //compute the heading error
+        double headingError = alignToTargetTask_->ControlVariable().norm();
+        std::cout << "Heading error: " << headingError << std::endl;
+
+        //compute the gain of the cartesian distance
+        double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingError);
+        double taskGainHold = rml::IncreasingBellShapedFunction(minAcceptanceRadius, maxAcceptanceRadius, 0, 1.0, goalDistance_);
+        std::cout << "taskGainHold : " << taskGainHold << std::endl;
+
+        std::cout << "Distance in the body frame: " << cartesianDistanceTask_->ControlVariable() << std::endl;
+
+        //Set the gain of the cartesian distance task
+        cartesianDistanceTask_->ExternalActivationFunction() = taskGainHold * taskGain * Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
+        alignToTargetTask_->ExternalActivationFunction() = taskGainHold * Eigen::MatrixXd::Identity(alignToTargetTask_->TaskSpace(), alignToTargetTask_->TaskSpace());
+
         std::cout << "STATE HOLD" << std::endl;
 
         return fsm::ok;

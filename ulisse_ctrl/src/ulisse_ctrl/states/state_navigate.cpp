@@ -142,6 +142,7 @@ namespace states {
                 if (goalDistance < tolleranceStartingPoint_) {
                     isInStart_ = true;
                 } else {
+
                     //Set the distance vector to the target
                     cartesianDistanceTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(goalHeading), goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame);
                     //Set the align vector to the target

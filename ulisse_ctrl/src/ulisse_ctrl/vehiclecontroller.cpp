@@ -57,44 +57,68 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     // ASV CONTROL VELOCITY LINEAR
     asvLinearVelocity_ = std::make_shared<ikcl::LinearVelocity>(ikcl::LinearVelocity(ulisse::task::asvLinearVelocity, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvLinearVelocity_;
-    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Linear_Velocity", 10);
+    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Linear_Velocity", 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvLinearVelocity, taskInfo_));
 
     // AUV CONTROL ANGULAR POSITION
     asvAngularPosition_ = std::make_shared<ikcl::AlignToTarget>(ikcl::AlignToTarget(ulisse::task::asvAngularPosition, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvAngularPosition_;
-    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Angular_Position", 10);
+    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Angular_Position", 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvAngularPosition, taskInfo_));
 
     // ASV CONTROL DISTANCE
     asvCartesianDistance_ = std::make_shared<ikcl::CartesianDistance>(ikcl::CartesianDistance(ulisse::task::asvCartesianDistance, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvCartesianDistance_;
-    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Cartesian_Distance", 10);
+    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Cartesian_Distance", 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvCartesianDistance, taskInfo_));
 
     // ASV CONTROL DISTANCE PATH FOLLOWING
     asvCartesianDistancePathFollowing_ = std::make_shared<ikcl::CartesianDistance>(ikcl::CartesianDistance(ulisse::task::asvCartesianDistancePathFollowing, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvCartesianDistancePathFollowing_;
-    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Cartesian_Distance_Path_Following", 10);
+    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Cartesian_Distance_Path_Following", 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvCartesianDistancePathFollowing, taskInfo_));
 
     // ASV SAFETY BOUNDARIES (INEQUALITY TASK)
     asvSafetyBoundaries_ = std::make_shared<ikcl::SafetyBoundaries>(ikcl::SafetyBoundaries(ulisse::task::asvSafetyBoundaries, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvSafetyBoundaries_;
-    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Safety_Boundaries", 10);
+    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Safety_Boundaries", 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvSafetyBoundaries, taskInfo_));
 
     // ASV absolute axis alignment task
     asvAbsoluteAxisAlignment_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asvAbsoluteAxisAlignment, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvAbsoluteAxisAlignment_;
-    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Absolute_Axis_Alignment", 10);
+    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Absolute_Axis_Alignment", 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvAbsoluteAxisAlignment, taskInfo_));
 
     // ASV absolute axis alignment task
     asvAbsoluteAxisAlignmentSafety_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asvAbsoluteAxisAlignmentSafety, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvAbsoluteAxisAlignmentSafety_;
-    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Absolute_Axis_Alignment_Safety", 10);
+    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Absolute_Axis_Alignment_Safety", 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvAbsoluteAxisAlignmentSafety, taskInfo_));
+
+    // ASV absolute axis alignment task hold
+    asvAbsoluteAxisAlignmentHold_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asvAbsoluteAxisAlignmentHold, robotModel_, ulisse::robotModelID::ASV));
+    taskInfo_.task = asvAbsoluteAxisAlignmentHold_;
+    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Absolute_Axis_Alignment_Hold", 1);
+    tasksMap_.insert(std::make_pair(ulisse::task::asvAbsoluteAxisAlignmentHold, taskInfo_));
+
+    // ASV CONTROL VELOCITY LINEAR HOLD
+    asvLinearVelocityHold_ = std::make_shared<ikcl::LinearVelocity>(ikcl::LinearVelocity(ulisse::task::asvLinearVelocityHold, robotModel_, ulisse::robotModelID::ASV));
+    taskInfo_.task = asvLinearVelocityHold_;
+    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Linear_Hold", 1);
+    tasksMap_.insert(std::make_pair(ulisse::task::asvLinearVelocityHold, taskInfo_));
+
+    // ASV CONTROL DISTANCE HOLD
+    asvCartesianDistanceHold_ = std::make_shared<ikcl::CartesianDistance>(ikcl::CartesianDistance(ulisse::task::asvCartesianDistanceHold, robotModel_, ulisse::robotModelID::ASV));
+    taskInfo_.task = asvCartesianDistanceHold_;
+    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Cartesian_Distance_Hold", 1);
+    tasksMap_.insert(std::make_pair(ulisse::task::asvCartesianDistanceHold, taskInfo_));
+
+    // AUV CONTROL ANGULAR POSITION HOLD
+    asvAngularPositionHold_ = std::make_shared<ikcl::AlignToTarget>(ikcl::AlignToTarget(ulisse::task::asvAngularPositionHold, robotModel_, ulisse::robotModelID::ASV));
+    taskInfo_.task = asvAngularPositionHold_;
+    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Angular_Position_Hold", 1);
+    tasksMap_.insert(std::make_pair(ulisse::task::asvAngularPositionHold, taskInfo_));
 
     // Initialize solver_ and iCAT
     int dof = 6;
