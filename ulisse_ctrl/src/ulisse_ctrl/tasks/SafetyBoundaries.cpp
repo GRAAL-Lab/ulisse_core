@@ -131,8 +131,6 @@ void SafetyBoundaries::DistanceCheck(point_type const& currentPosition, Eigen::V
     // check if the two nearest segments are a convex side of the polygon or not
     isConvex = IsConvex(minDistsegments);
 
-    std::cout << "DEBUG:: Is Convex:" << isConvex << std::endl;
-
     // Depending on the type of the two nearest segments, the strategy to compute
     // the aligment vector to cameback to safty position is different.
 
@@ -183,7 +181,6 @@ void SafetyBoundaries::ComputeAlignVectorConcave(segment_type segment, point_typ
             UTM_alignVecotr(0) = -UTM_alignVecotr(0);
             UTM_alignVecotr(1) = -UTM_alignVecotr(1);
         }
-        std::cout << "DEBUG ZONE IN THE MIDDLE: " << std::endl;
     } else if (dp1 > dp2 && dp2 == d) {
 
         double normAlignVector = std::sqrt(std::pow(currentPosition.y() - p2.y(), 2) + std::pow(currentPosition.x() - p2.x(), 2));
@@ -198,8 +195,6 @@ void SafetyBoundaries::ComputeAlignVectorConcave(segment_type segment, point_typ
             UTM_alignVecotr(1) = -UTM_alignVecotr(1);
         }
 
-        std::cout << "DEBUG ZONE IN THE MIDDLE: " << std::endl;
-
     } else {
 
         // if is inside one of the two area defined by the two segment I will take
@@ -212,7 +207,6 @@ void SafetyBoundaries::ComputeAlignVectorConcave(segment_type segment, point_typ
         if (!boost::geometry::covered_by(currentPosition, poly_)) {
             d = -d;
         }
-        std::cout << "DEBUG 1/3 ZONE: " << std::endl;
     }
 
     d_ = d;
@@ -257,12 +251,11 @@ void SafetyBoundaries::ComputeAlignVectorConvex(std::list<segment_type> segments
             UTM_alignVecotr(0) = -UTM_alignVecotr(0);
             UTM_alignVecotr(1) = -UTM_alignVecotr(1);
         }
-        std::cout << "DEBUG ZONE IN THE MIDDLE: " << std::endl;
+
     } else {
         //Compute the align vector if the robot is near one of the two nearest segments
         //In this case the align vector is the normal to the segment
         point_type u;
-        std::cout << "DEBUG 1/3 ZONE: " << std::endl;
 
         ComputeNormalVector2Segment(segments.front(), u);
 

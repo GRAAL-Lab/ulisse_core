@@ -78,7 +78,6 @@ namespace states {
 
         //compute the heading error
         double headingErrorsafety = absoluteAxisAlignmentSafetyTask_->ControlVariable().norm();
-        std::cout << "headingErrorsafety: " << headingErrorsafety << std::endl;
 
         //compute the gain of the cartesian distance
         double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0.0, 1.0, headingErrorsafety);
@@ -94,7 +93,6 @@ namespace states {
 
         //compute the heading error
         double headingError = absoluteAxisAlignmentTask_->ControlVariable().norm();
-        std::cout << "Heading error : " << headingError << std::endl;
 
         //compute the gain of the cartesian distance
         double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1, headingError);

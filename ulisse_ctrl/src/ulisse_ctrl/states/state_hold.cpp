@@ -8,13 +8,15 @@ namespace ulisse {
 namespace states {
 
     StateHold::StateHold()
-        : goalDistance_ { 0.0 } {};
+        : goalDistance_ { 0.0 }
+    {
+    }
 
     StateHold::~StateHold() { }
 
     fsm::retval StateHold::OnEntry()
     {
-        intertialF_waterCurrent = std::make_shared<Eigen::Vector2d>();
+        inertialF_waterCurrent = std::make_shared<Eigen::Vector2d>();
 
         //set tasks
         safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
@@ -78,7 +80,6 @@ namespace states {
 
         //compute the heading error
         double headingErrorsafety = absoluteAxisAlignmentSafetyTask_->ControlVariable().norm();
-        std::cout << "headingErrorsafety: " << headingErrorsafety << std::endl;
 
         //compute the gain of the cartesian distance
         double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingErrorsafety);
@@ -89,54 +90,30 @@ namespace states {
         //hold task
         linearVelocityTask_->Reference() = Eigen::Vector3d { 0.0, 0.0, 0.0 };
         ctb::DistanceAndAzimuthRad(*vehiclePosition.get(), positionToHold, goalDistance_, goalHeading_); //compute the distanza between the current position and the position to hold
+
         //if the robot is inside the circle put the catamaran countercurrent
+        if (goalDistance_ < minAcceptanceRadius) {
 
-        if (goalDistance_ <= maxAcceptanceRadius) {
+            linearVelocityTask_->Reference() = Eigen::Vector3d { inertialF_waterCurrent->x(), inertialF_waterCurrent->y(), 0.0 };
 
-            linearVelocityTask_->Reference() = Eigen::Vector3d { 0.0, 0.0, 0.0 };
-
-            absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(-intertialF_waterCurrent->normalized().x(), -intertialF_waterCurrent->normalized().y(), 0), rml::FrameID::WorldFrame);
+            absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(-inertialF_waterCurrent->normalized().x(), -inertialF_waterCurrent->normalized().y(), 0), rml::FrameID::WorldFrame);
             absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
 
             //Avoid that the roboto try to align with very small intensity of water current
-            double absoluteAxisAlignmentGain = rml::IncreasingBellShapedFunction(minWaterCurrent_, maxWaterCurrent_, 0, 1, intertialF_waterCurrent->norm());
+            double absoluteAxisAlignmentGain = rml::IncreasingBellShapedFunction(minWaterCurrent_, maxWaterCurrent_, 0, 1, inertialF_waterCurrent->norm());
             absoluteAxisAlignmentTask_->ExternalActivationFunction() = absoluteAxisAlignmentGain * Eigen::MatrixXd::Identity(absoluteAxisAlignmentTask_->TaskSpace(), absoluteAxisAlignmentTask_->TaskSpace());
+        } else if (goalDistance_ > maxAcceptanceRadius) {
+            //otherwise point to the hold circle defined by maxAcceptanceRadius and minAcceptanceRadiuos
+            absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(cos(goalHeading_), sin(goalHeading_), 0.0), rml::FrameID::WorldFrame);
+            absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
+
+            linearVelocityTask_->Reference() = Eigen::Vector3d { 1.0, 0.0, 0.0 }; //set a velocity to point to the circle in case of the catamaran  slips away
+            //compute the heading error
+            double headingError = absoluteAxisAlignmentTask_->ControlVariable().norm();
+            double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1, headingError); //compute the gain to modify the exernal activation function of linear velocity task
+
+            linearVelocityTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(linearVelocityTask_->TaskSpace(), linearVelocityTask_->TaskSpace());
         }
-        //otherwise point to the hold circle defined by maxAcceptanceRadius and minAcceptanceRadius
-        //        else {
-        //            absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(cos(goalHeading_), sin(goalHeading_), 0.0), rml::FrameID::WorldFrame);
-        //            absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
-
-        //            linearVelocityTask_->Reference() = Eigen::Vector3d { 1.0, 0.0, 0.0 }; //set a velocity to point to the circle in case of the catamaran  slips away
-        //            //compute the heading error
-        //            double headingError = absoluteAxisAlignmentTask_->ControlVariable().norm();
-        //            std::cout << "headingError hold: " << headingError << std::endl;
-        //            double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1, headingError); //compute the gain to modify the exernal activation function of linear velocity task
-
-        //            linearVelocityTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(linearVelocityTask_->TaskSpace(), linearVelocityTask_->TaskSpace());
-        //        }
-
-        cartesianDistanceTask_->SetTargetDistance(Eigen::Vector3d(goalDistance_ * cos(goalHeading_), goalDistance_ * sin(goalHeading_), 0), rml::FrameID::WorldFrame);
-        alignToTargetTask_->SetTargetDistance(Eigen::Vector3d(goalDistance_ * cos(goalHeading_), goalDistance_ * sin(goalHeading_), 0), rml::FrameID::WorldFrame);
-        alignToTargetTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
-
-        //To avoid the case in which the error between the goal heading and the current heading is too big
-        //we activate the the cartesian distance through the gain based on a bell-shaped function on the heading error
-        //compute the heading error
-        double headingError = alignToTargetTask_->ControlVariable().norm();
-        std::cout << "Heading error: " << headingError << std::endl;
-
-        //compute the gain of the cartesian distance
-        double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingError);
-        double taskGainHold = rml::IncreasingBellShapedFunction(minAcceptanceRadius, maxAcceptanceRadius, 0, 1.0, goalDistance_);
-        std::cout << "taskGainHold : " << taskGainHold << std::endl;
-
-        std::cout << "Distance in the body frame: " << cartesianDistanceTask_->ControlVariable() << std::endl;
-
-        //Set the gain of the cartesian distance task
-        cartesianDistanceTask_->ExternalActivationFunction() = taskGainHold * taskGain * Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
-        alignToTargetTask_->ExternalActivationFunction() = taskGainHold * Eigen::MatrixXd::Identity(alignToTargetTask_->TaskSpace(), alignToTargetTask_->TaskSpace());
-
         std::cout << "STATE HOLD" << std::endl;
 
         return fsm::ok;

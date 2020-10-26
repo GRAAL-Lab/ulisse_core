@@ -25,7 +25,7 @@ namespace states {
         fsm::retval Execute() override;
         fsm::retval OnExit() override;
 
-        std::shared_ptr<Eigen::Vector2d> intertialF_waterCurrent;
+        std::shared_ptr<Eigen::Vector2d> inertialF_waterCurrent;
 
         double maxAcceptanceRadius;
         double minAcceptanceRadius;

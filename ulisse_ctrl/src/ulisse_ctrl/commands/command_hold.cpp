@@ -5,9 +5,9 @@ namespace ulisse {
 
 namespace commands {
 
-    CommandHold::CommandHold() {}
+    CommandHold::CommandHold() { }
 
-    CommandHold::~CommandHold() {}
+    CommandHold::~CommandHold() { }
 
     fsm::retval CommandHold::Execute()
     {
@@ -21,7 +21,7 @@ namespace commands {
 
     void CommandHold::SetWaterCurrent(const std::shared_ptr<Eigen::Vector2d>& inertialF_waterCurrent)
     {
-        stateHold_->intertialF_waterCurrent = inertialF_waterCurrent;
+        stateHold_->inertialF_waterCurrent = inertialF_waterCurrent;
     }
 
     void CommandHold::SetPositionToHold(const std::shared_ptr<LatLong>& p)

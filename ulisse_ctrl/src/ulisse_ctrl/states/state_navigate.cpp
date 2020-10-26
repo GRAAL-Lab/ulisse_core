@@ -156,14 +156,9 @@ namespace states {
 
                     //compute the heading error
                     double headingError = alignToTargetTask_->ControlVariable().norm();
-                    std::cout << "Heading error: " << headingError << std::endl;
 
                     //compute the gain of the cartesian distance
                     double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingError);
-
-                    std::cout << "Distance in the body frame: " << cartesianDistanceTask_->ControlVariable() << std::endl;
-
-                    std::cout << "taskGain: " << taskGain << std::endl;
 
                     //Set the gain of the cartesian distance task
                     cartesianDistanceTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
@@ -178,8 +173,6 @@ namespace states {
                 if (!nurbsObj_.ComputeNextPoint(*vehiclePosition, nextP_)) {
                     return fsm::fail;
                 }
-
-                std::cout << "currentParvalue: " << nurbsObj_.CurrentParameterValue() << std::endl;
 
                 ctb::DistanceAndAzimuthRad(*vehiclePosition, nextP_, goalDistance, goalHeading);
 
@@ -196,12 +189,9 @@ namespace states {
 
                 //compute the heading error
                 double headingError = alignToTargetTask_->ControlVariable().norm();
-                std::cout << "Heading error: " << headingError << std::endl;
 
                 //compute the gain of the cartesian distance
                 double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingError);
-
-                std::cout << "Distance in the body frame: " << cartesianDistancePathFollowingTask_->ControlVariable() << std::endl;
 
                 //Set the gain of the cartesian distance task
                 cartesianDistancePathFollowingTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(cartesianDistancePathFollowingTask_->TaskSpace(), cartesianDistancePathFollowingTask_->TaskSpace());
