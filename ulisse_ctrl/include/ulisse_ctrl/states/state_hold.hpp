@@ -13,11 +13,15 @@ namespace states {
     protected:
         std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentTask_;
         std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask_;
-        std::shared_ptr<ikcl::AlignToTarget> alignToTargetTask_;
-        std::shared_ptr<ikcl::CartesianDistance> cartesianDistanceTask_;
         double goalDistance_, goalHeading_;
         double minWaterCurrent_, maxWaterCurrent_;
+        bool isOldAlignCountercurrent_, isOldComeback2HoldAcceptanceRadius_;
 
+        // align countercurrent action
+        bool AlignCounterCurrent();
+
+        // comeback to hold acceptance radius action
+        bool Comeback2HoldAcceptanceRadius();
     public:
         StateHold();
         ~StateHold() override;

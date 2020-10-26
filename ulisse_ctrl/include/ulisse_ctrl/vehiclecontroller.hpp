@@ -75,8 +75,6 @@ class VehicleController {
     std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentSafety_;
     std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentHold_;
     std::shared_ptr<ikcl::CartesianDistance> asvCartesianDistancePathFollowing_;
-    std::shared_ptr<ikcl::AlignToTarget> asvAngularPositionHold_;
-    std::shared_ptr<ikcl::CartesianDistance> asvCartesianDistanceHold_;
 
     double timestamp_;
     double sampleTime_;

@@ -108,17 +108,6 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Linear_Hold", 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvLinearVelocityHold, taskInfo_));
 
-    // ASV CONTROL DISTANCE HOLD
-    asvCartesianDistanceHold_ = std::make_shared<ikcl::CartesianDistance>(ikcl::CartesianDistance(ulisse::task::asvCartesianDistanceHold, robotModel_, ulisse::robotModelID::ASV));
-    taskInfo_.task = asvCartesianDistanceHold_;
-    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Cartesian_Distance_Hold", 1);
-    tasksMap_.insert(std::make_pair(ulisse::task::asvCartesianDistanceHold, taskInfo_));
-
-    // AUV CONTROL ANGULAR POSITION HOLD
-    asvAngularPositionHold_ = std::make_shared<ikcl::AlignToTarget>(ikcl::AlignToTarget(ulisse::task::asvAngularPositionHold, robotModel_, ulisse::robotModelID::ASV));
-    taskInfo_.task = asvAngularPositionHold_;
-    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Angular_Position_Hold", 1);
-    tasksMap_.insert(std::make_pair(ulisse::task::asvAngularPositionHold, taskInfo_));
 
     // Initialize solver_ and iCAT
     int dof = 6;

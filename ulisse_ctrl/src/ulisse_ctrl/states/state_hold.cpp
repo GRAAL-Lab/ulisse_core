@@ -9,6 +9,8 @@ namespace states {
 
     StateHold::StateHold()
         : goalDistance_ { 0.0 }
+        , isOldAlignCountercurrent_ { false }
+        , isOldComeback2HoldAcceptanceRadius_ { false }
     {
     }
 
@@ -23,8 +25,6 @@ namespace states {
         absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
         linearVelocityTask_ = std::dynamic_pointer_cast<ikcl::LinearVelocity>(tasksMap.find(ulisse::task::asvLinearVelocityHold)->second.task);
         absoluteAxisAlignmentTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentHold)->second.task);
-        cartesianDistanceTask_ = std::dynamic_pointer_cast<ikcl::CartesianDistance>(tasksMap.find(ulisse::task::asvCartesianDistanceHold)->second.task);
-        alignToTargetTask_ = std::dynamic_pointer_cast<ikcl::AlignToTarget>(tasksMap.find(ulisse::task::asvAngularPositionHold)->second.task);
 
         //set action
         actionManager->SetAction(ulisse::action::hold, true);
@@ -52,6 +52,34 @@ namespace states {
             return false;
         if (!ctb::SetParam(state, maxWaterCurrent_, "maxWaterCurrent"))
             return false;
+
+        return true;
+    }
+
+    bool StateHold::AlignCounterCurrent()
+    {
+        linearVelocityTask_->Reference() = Eigen::Vector3d { 0.0, 0.0, 0.0 };
+
+        absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(-inertialF_waterCurrent->normalized().x(), -inertialF_waterCurrent->normalized().y(), 0), rml::FrameID::WorldFrame);
+        absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
+
+        //Avoid that the roboto try to align with very small intensity of water current
+        double absoluteAxisAlignmentGain = rml::IncreasingBellShapedFunction(minWaterCurrent_, maxWaterCurrent_, 0, 1, inertialF_waterCurrent->norm());
+        absoluteAxisAlignmentTask_->ExternalActivationFunction() = absoluteAxisAlignmentGain * Eigen::MatrixXd::Identity(absoluteAxisAlignmentTask_->TaskSpace(), absoluteAxisAlignmentTask_->TaskSpace());
+        return true;
+    }
+
+    bool StateHold::Comeback2HoldAcceptanceRadius()
+    {
+        absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(cos(goalHeading_), sin(goalHeading_), 0.0), rml::FrameID::WorldFrame);
+        double surgeReferece = rml::IncreasingBellShapedFunction(minAcceptanceRadius, maxAcceptanceRadius, 0.0, 1.0, goalDistance_);
+        absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
+
+        linearVelocityTask_->Reference() = Eigen::Vector3d(surgeReferece, 0, 0); //set a velocity to point to the circle in case of the catamaran  slips away
+
+        //slow-down and turn
+        double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1, absoluteAxisAlignmentTask_->ControlVariable().norm()); //compute the gain to modify the exernal activation function of linear velocity task
+        linearVelocityTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(linearVelocityTask_->TaskSpace(), linearVelocityTask_->TaskSpace());
 
         return true;
     }
@@ -94,26 +122,27 @@ namespace states {
         //if the robot is inside the circle put the catamaran countercurrent
         if (goalDistance_ < minAcceptanceRadius) {
 
-            linearVelocityTask_->Reference() = Eigen::Vector3d { inertialF_waterCurrent->x(), inertialF_waterCurrent->y(), 0.0 };
+            isOldAlignCountercurrent_ = AlignCounterCurrent();
+            isOldComeback2HoldAcceptanceRadius_ = false;
 
-            absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(-inertialF_waterCurrent->normalized().x(), -inertialF_waterCurrent->normalized().y(), 0), rml::FrameID::WorldFrame);
-            absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
-
-            //Avoid that the roboto try to align with very small intensity of water current
-            double absoluteAxisAlignmentGain = rml::IncreasingBellShapedFunction(minWaterCurrent_, maxWaterCurrent_, 0, 1, inertialF_waterCurrent->norm());
-            absoluteAxisAlignmentTask_->ExternalActivationFunction() = absoluteAxisAlignmentGain * Eigen::MatrixXd::Identity(absoluteAxisAlignmentTask_->TaskSpace(), absoluteAxisAlignmentTask_->TaskSpace());
         } else if (goalDistance_ > maxAcceptanceRadius) {
+            isOldComeback2HoldAcceptanceRadius_ = Comeback2HoldAcceptanceRadius();
+            isOldAlignCountercurrent_ = false;
             //otherwise point to the hold circle defined by maxAcceptanceRadius and minAcceptanceRadiuos
-            absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(cos(goalHeading_), sin(goalHeading_), 0.0), rml::FrameID::WorldFrame);
-            absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
 
-            linearVelocityTask_->Reference() = Eigen::Vector3d { 1.0, 0.0, 0.0 }; //set a velocity to point to the circle in case of the catamaran  slips away
-            //compute the heading error
-            double headingError = absoluteAxisAlignmentTask_->ControlVariable().norm();
-            double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1, headingError); //compute the gain to modify the exernal activation function of linear velocity task
-
-            linearVelocityTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(linearVelocityTask_->TaskSpace(), linearVelocityTask_->TaskSpace());
         }
+        //if the goal distance is minAcceptanceRadius << goalDistance << maxAcceptanceRadius
+        else {
+            if (isOldAlignCountercurrent_) {
+                //if the previous action was align countercourrent, keep do it until d > maxAcceptanceRadius
+                AlignCounterCurrent();
+
+            } else if (isOldComeback2HoldAcceptanceRadius_) {
+                //if the previos action was comeback to the hold acceptance radius, keep do it until d < minAcceptanceRadius
+                Comeback2HoldAcceptanceRadius();
+            }
+        }
+
         std::cout << "STATE HOLD" << std::endl;
 
         return fsm::ok;
