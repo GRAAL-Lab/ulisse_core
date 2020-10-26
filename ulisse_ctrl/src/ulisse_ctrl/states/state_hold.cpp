@@ -52,6 +52,8 @@ namespace states {
             return false;
         if (!ctb::SetParam(state, maxWaterCurrent_, "maxWaterCurrent"))
             return false;
+        if (!ctb::SetParam(state, maxSurgeComeback2HoldAcceptanceRadius_, "maxSurgeComeback2HoldAcceptanceRadius"))
+            return false;
 
         return true;
     }
@@ -72,10 +74,10 @@ namespace states {
     bool StateHold::Comeback2HoldAcceptanceRadius()
     {
         absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(cos(goalHeading_), sin(goalHeading_), 0.0), rml::FrameID::WorldFrame);
-        double surgeReferece = rml::IncreasingBellShapedFunction(minAcceptanceRadius, maxAcceptanceRadius, 0.0, 1.0, goalDistance_);
+        double surgeReference = rml::IncreasingBellShapedFunction(minAcceptanceRadius, maxAcceptanceRadius, 0.0, maxSurgeComeback2HoldAcceptanceRadius_, goalDistance_);
         absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
 
-        linearVelocityTask_->Reference() = Eigen::Vector3d(surgeReferece, 0, 0); //set a velocity to point to the circle in case of the catamaran  slips away
+        linearVelocityTask_->Reference() = Eigen::Vector3d(surgeReference, 0, 0); //set a velocity to point to the circle in case of the catamaran  slips away
 
         //slow-down and turn
         double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1, absoluteAxisAlignmentTask_->ControlVariable().norm()); //compute the gain to modify the exernal activation function of linear velocity task

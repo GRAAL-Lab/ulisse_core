@@ -15,6 +15,7 @@ namespace states {
         std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask_;
         double goalDistance_, goalHeading_;
         double minWaterCurrent_, maxWaterCurrent_;
+        double maxSurgeComeback2HoldAcceptanceRadius_;
         bool isOldAlignCountercurrent_, isOldComeback2HoldAcceptanceRadius_;
 
         // align countercurrent action
@@ -22,6 +23,7 @@ namespace states {
 
         // comeback to hold acceptance radius action
         bool Comeback2HoldAcceptanceRadius();
+
     public:
         StateHold();
         ~StateHold() override;
