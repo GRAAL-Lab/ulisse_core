@@ -116,7 +116,6 @@ namespace states {
         safetyBoundariesTask_->ExternalActivationFunction() = taskGainSafety * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
 
         //hold task
-        linearVelocityTask_->Reference() = Eigen::Vector3d { 0.0, 0.0, 0.0 };
         ctb::DistanceAndAzimuthRad(*vehiclePosition.get(), positionToHold, goalDistance_, goalHeading_); //compute the distanza between the current position and the position to hold
 
         //if the robot is inside the circle put the catamaran countercurrent
