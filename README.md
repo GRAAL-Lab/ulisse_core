@@ -29,40 +29,37 @@ Short description of all the packages included in this meta package:
 - **SISL lib**: `git clone https://github.com/SINTEF-Geometry/SISL.git`
 - **qt5-libraries**: When building the package on the catamaran you don't need the **ulisse_map** sub-package (so you can add a COLCON_IGNORE file inside it), and these dependencies can be skipped.Otherwise, to use the interface, type:
 
-`sudo apt install gpsd-clients qtquickcontrols2-5-dev qtlocation5-dev qtpositioning5-dev qml-module-qtquick-controls2 qml-module-qt-labs-settings qml-module-qt-labs-folderlistmodel qml-module-qtlocation  qml-module-qtpositioning qml-module-qtquick-extras qml-module-qtgraphicaleffects qml-module-qtquick-dialogs qml-module-qtquick-controls python3-colcon-common-extensions
+`sudo apt install gpsd-clients qtquickcontrols2-5-dev qtlocation5-dev qtpositioning5-dev qml-module-qtquick-controls2 qml-module-qt-labs-settings qml-module-qt-labs-folderlistmodel qml-module-qtlocation  qml-module-qtpositioning qml-module-qtquick-extras qml-module-qtgraphicaleffects qml-module-qtquick-dialogs qml-module-qtquick-controls python3-colcon-common-extensions`
 
 
 ### Additional packages not coming with ros2
 
 - **colcon**: Follow the guide at https://colcon.readthedocs.io/en/master/user/installation.html
-- **rosbag2**: Follow the guide at https://github.com/ros2/rosbag2
 
 ## Build
 
-In the following instructions, the `sourceros#` commands are placeholders for your ROS sourcing commands.
+In the following instructions, the `sourceros#` commands are placeholders for your ROS sourcing commands. To create this placeholders write in **~/.bashrc**: 
 
-Write in **~/.bashrc**:  alias sourceros2='source /opt/ros/foxy/setup.bash&&source ~/*ros_ws_folder_name*/install/setup.bash'
+`alias sourceros2='source /opt/ros/foxy/setup.bash && source ~/*ros_ws_folder_name*/install/setup.bash'`
 
-If you're using both ROS1 and ROS2 it's important that you define separate aliases in your **~/.bashrc** to source your workspace, that are **not** automatically called when launching new terminals, otherwise you will mix environment variables from different ROS versions.
 
-### ROS2 Comnmands
+⚠️ If you're using both ROS1 and ROS2 it's important that you define separate aliases in your **~/.bashrc** to source your workspace, that are **not** automatically called when launching new terminals, otherwise you will mix environment variables from different ROS versions.
 
 After installing all the needed dependencies, to build the repo for the first time:
 
-- Create a ros2 workspace: https://index.ros.org/doc/ros2/Tutorials/Eclipse-Oxygen-with-ROS-2-and-rviz2/ and clone in src folder the ulisse_core repo
-- Source the workspace with sourceros2
-- Build ulisse_msgs as first: colcon build --symlink-install --packages-select ulisse_msgs
-- Then compile all the other pakages: colcon build --symlink-install
-
+- Create a ros2 workspace using `colcon` (https://docs.ros.org/en/foxy/Tutorials/Colcon-Tutorial.html)
+- Clone in the **src** folder the ulisse_core repo (git clone git@bitbucket.org:isme_robotics/ulisse_core.git)
+- Source the workspace with `sourceros2`
+- Build ulisse_msgs as first: `colcon build --symlink-install --packages-select ulisse_msgs`
+- Then compile all the other pakages: `colcon build --symlink-install`
 
 All the next times, just execute the following commands:
 
+```
 #!bash
-
-- sourceros2
-
-- colcon build --symlink-install
-
+sourceros2
+colcon build --symlink-install
+```
 
 ### Run the architecture
 Firstly be sure to **synchronize your system** time using the GPS, and then configure the GPS itself, by running these commands in the root of the repository:
@@ -75,6 +72,7 @@ ros2 launch ulisse_driver launchGPSSetup.py
 Wait till the launch files finishes printing info, then you can kill the process if hanging.
 
 The following launch files will run all the necessary nodes (all with `sourceros2`):
+
 ```
 #!bash
 # Shell A (driver)
@@ -87,7 +85,7 @@ ros2 launch ulisse_ctrl launchControl.py
 
 # Shell C (optional, GUI)
 ros2 run ulisse_map ulisse_map_node
-
+```
 
 ### Testing the serial
 
