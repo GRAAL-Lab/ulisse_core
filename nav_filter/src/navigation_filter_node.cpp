@@ -210,7 +210,7 @@ int main(int argc, char* argv[])
                         filterData.bodyframe_angular_velocity[1] = imuData.gyro[1];
 
                         //Yaw rate estimation with a digital filter
-                        double omega_dot_dot = ctb::HeadingErrorRad(compassData.orientation.yaw, previousYaw) / sampleTime;
+                        double omega_dot_dot = ctb::AngleDifference(compassData.orientation.yaw, previousYaw) / sampleTime;
                         previousYaw = compassData.orientation.yaw;
 
                         filterData.bodyframe_angular_velocity[2] = yawRateFilterGains[0] * filterData.bodyframe_angular_velocity[2] + yawRateFilterGains[1] * omega_dot_dot;
