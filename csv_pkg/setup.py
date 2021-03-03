@@ -10,6 +10,8 @@ setup(
     install_requires=['launch', 'setuptools'],
     data_files=[
         ('share/' + package_name, ['package.xml', 'launch/launchExperiment.py']),
+        ('share/ament_index/resource_index/packages',
+            ['resource/' + package_name]),
     ],
     zip_safe=True,
     author='Antonio Marino',
