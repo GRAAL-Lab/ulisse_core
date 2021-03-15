@@ -15,7 +15,7 @@ MapQuickItem {
     }
 
     function center_select(yes) {
-        _center.color = yes ? orange : blue
+        _center.color = yes ? orange : mainColor
     }
 
     function add_to_map(map) {

@@ -346,7 +346,7 @@ Pane {
                 Layout.fillHeight: false
 
                 highlighted: true
-                Material.background: pressed ? orange : blue
+                Material.background: pressed ? orange : mainColor
 
                 onClicked: {
                     cmdWrapper.sendSpeedHeadingCommand(speedText.value,
@@ -363,7 +363,7 @@ Pane {
             Layout.fillWidth: true
 
             highlighted: true
-            Material.background: pressed ? orange : blue
+            Material.background: pressed ? orange : mainColor
 
             font.capitalization: Font.AllUppercase
 
@@ -383,7 +383,7 @@ Pane {
             antialiasing: false
 
             highlighted: true
-            Material.background: pressed ? orange : blue
+            Material.background: pressed ? orange : mainColor
 
             onClicked: {
                 cmdWrapper.sendHoldCommand(holdRadius.value)
@@ -395,7 +395,7 @@ Pane {
             text: "Move to marker"
             Layout.fillWidth: true
             antialiasing: false
-            Material.background: pressed ? orange : blue
+            Material.background: pressed ? orange : mainColor
             enabled: Helper.coord_inside_polygon(map.marker_coords,
                                                  map.polysec_cur.path)
                      && (map.markerIcon.opacity > 0)
@@ -432,7 +432,7 @@ Pane {
                     text: "Save"
 
                     highlighted: true
-                    Material.background: pressed ? orange : blue
+                    Material.background: pressed ? orange : mainColor
 
                     antialiasing: false
                     transformOrigin: Item.Left
@@ -450,7 +450,7 @@ Pane {
                     text: "Load"
 
                     highlighted: true
-                    Material.background: pressed ? orange : blue
+                    Material.background: pressed ? orange : mainColor
 
                     focusPolicy: Qt.WheelFocus
                     transformOrigin: Item.Right

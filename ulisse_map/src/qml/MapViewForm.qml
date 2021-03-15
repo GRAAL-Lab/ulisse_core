@@ -104,9 +104,6 @@ RowLayout {
             plugin: mapPlugin
             center: marker_coords // Genoa
             zoomLevel: 16.5 //(maximumZoomLevel - minimumZoomLevel)/2
-
-
-
         }
 
         SidebarManage {
@@ -153,7 +150,7 @@ RowLayout {
                     id: recenterButton
                     text: "Recenter"
                     highlighted: true
-                    Material.background: blue
+                    Material.background: mainColor
                     Layout.leftMargin: 10
                 }
 
@@ -203,10 +200,4 @@ RowLayout {
         }
     }
 }
-
-/*##^##
-Designer {
-    D{i:0;height:800;width:1000}
-}
-##^##*/
 

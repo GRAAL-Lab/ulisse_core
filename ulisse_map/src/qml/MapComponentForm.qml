@@ -98,7 +98,7 @@ Map {
         z: map.z + 2
         anchorPoint.x: markerImage.width / 2
         anchorPoint.y: markerImage.height / 2
-        opacity: 0.0
+        opacity: 1.0
     }
 
     MapQuickItem {
@@ -158,7 +158,7 @@ Map {
         anchorPoint.x: -ulisseImage.width / 2
         anchorPoint.y: -ulisseImage.height / 2
         z: map.z + 3
-        opacity: 0.0
+        opacity: 1.0
     }
 
     MapCircle {

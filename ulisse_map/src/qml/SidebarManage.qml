@@ -91,7 +91,7 @@ Row {
         height: parent.height
         width: sliderTogglerLeft.checked ? defheigth + 120 : defheigth
         color: lightgrey
-        Material.accent: blue
+        Material.accent: mainColor
         Material.foreground: orange
 
         property string labelBorderColor: "transparent"

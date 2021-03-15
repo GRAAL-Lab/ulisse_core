@@ -20,12 +20,7 @@ MapViewForm {
         running: false
         repeat: true
 
-        onTriggered: {
-            map.center = fbkUpdater.ulisse_pos
-                    /*QtPositioning.coordinate(
-                        fbkUpdater.ulisse_pos.latitude,
-                        fbkUpdater.ulisse_pos.longitude)*/
-        }
+        onTriggered: { map.center = fbkUpdater.ulisse_pos }
     }
 
     Component {

@@ -121,10 +121,3 @@ Rectangle {
         }
     }
 }
-
-/*##^##
-Designer {
-    D{i:0;autoSize:true;height:1000;width:640}D{i:3;anchors_width:610}
-}
-##^##*/
-

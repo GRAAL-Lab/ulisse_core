@@ -14,9 +14,9 @@ import "./qml"
 ApplicationWindow {
     id: window
     minimumWidth: 1300
-    minimumHeight: 700
+    minimumHeight: 800
     visible: true
-    visibility: "Maximized"
+    //visibility: "Maximized"
 
     property color blue: Material.color(Material.Blue, Material.Shade700)
     property color orange: Material.color(Material.Amber, Material.Shade700)
@@ -51,13 +51,13 @@ ApplicationWindow {
         }
     }
 
-    Shortcut {
+    /*Shortcut {
         sequence: "q"
         context: Qt.ApplicationShortcut
         onActivated: {
             sig_escape()
         }
-    }
+    }*/
 
     signal sig_escape
 
@@ -110,17 +110,6 @@ ApplicationWindow {
             settingsDialog.mapCacheDirText = cleanPath
         }
     }
-
-    /*Text {
-        id: loadingText
-        //color: "#2b2b2b"
-        z: 10
-        anchors.centerIn: parent
-        //anchors.fill: parent
-        color: 'white'
-        text: "Loading... (%1 x %2)".arg(window.width).arg(window.height)
-        font.family: "Ubuntu Mono"
-    }*/
 
     //// UI part ////
     header: CustomHeader {
