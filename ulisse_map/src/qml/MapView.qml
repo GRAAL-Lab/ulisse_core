@@ -11,16 +11,20 @@ import QtQuick.Dialogs 1.2
 import "."
 
 MapViewForm {
+
     Timer {
+        // A Timer to center the catamaran in the screen when "Follow Vehicle"
+        // option is enabled.
         id: followMeTimer
         interval: 250
         running: false
         repeat: true
 
         onTriggered: {
-            map.center = QtPositioning.coordinate(
+            map.center = fbkUpdater.ulisse_pos
+                    /*QtPositioning.coordinate(
                         fbkUpdater.ulisse_pos.latitude,
-                        fbkUpdater.ulisse_pos.longitude)
+                        fbkUpdater.ulisse_pos.longitude)*/
         }
     }
 
@@ -61,5 +65,18 @@ MapViewForm {
 
     overlayStatusCbox.onCheckStateChanged: {
         map.overlayTextOpacity = overlayStatusCbox.checked ? 1.0 : 0.0
+    }
+
+
+    Timer {
+        // A Timer to center the catamaran in the screen at application startup
+        id: centerOnStartTimer
+        interval: 150
+        running: true
+        repeat: false
+
+        onTriggered: {
+            map.center = fbkUpdater.ulisse_pos
+        }
     }
 }

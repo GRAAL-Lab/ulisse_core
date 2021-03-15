@@ -103,7 +103,10 @@ RowLayout {
             height: parent.height - bottomToolbar.height
             plugin: mapPlugin
             center: marker_coords // Genoa
-            zoomLevel: 17.5 //(maximumZoomLevel - minimumZoomLevel)/2
+            zoomLevel: 16.5 //(maximumZoomLevel - minimumZoomLevel)/2
+
+
+
         }
 
         SidebarManage {
@@ -174,7 +177,7 @@ RowLayout {
                     id: overlayStatusCbox
                     text: "Show Overlay"
                     Material.accent: orange
-                    checked: false
+                    checked: true
                 }
 
                 Rectangle {

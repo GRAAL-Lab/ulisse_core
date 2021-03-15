@@ -41,8 +41,7 @@ MapComponentForm {
     property Component pathComponent
     property Component trackComponent
 
-    //FIXME -> Make relative
-    property var path_file: "/home/alessio/Desktop/Prova"
+    property var path_file: home_dir + "/Ulisse_Data/Path_Files/"
 
     Component.onCompleted: {
         polyComponent = Qt.createComponent("MapPolygon.qml")

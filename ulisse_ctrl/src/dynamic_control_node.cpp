@@ -126,6 +126,7 @@ int main(int argc, char* argv[])
                                  const std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Request> request,
                                  std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Response> response) -> void {
         (void)request_header;
+        (void)request;
         RCLCPP_INFO(nh->get_logger(), "Incoming request for reset conf");
 
         auto previousConf = conf;

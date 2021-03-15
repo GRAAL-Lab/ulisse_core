@@ -59,13 +59,13 @@ Dialog {
             font.pointSize: 11
             width: parent.width
             readOnly: true
-            text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin viverra in nibh ac auctor. Vestibulum id fermentum elit, sed mollis libero. Mauris sed vehicula tortor, et tempor erat. Maecenas orci est, dignissim non mattis sit amet, tincidunt at risus."
+            text: "This is a front-end interface to control the Ulisse catamaran. "
             wrapMode: Text.WordWrap
             Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
         }
 
         Label {
-            text: "Developed by GRAAL Lab (2019)"
+            text: "Developed by GRAAL Lab (2021)"
             horizontalAlignment: Text.AlignHCenter
             color: "grey"
             Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
@@ -79,6 +79,31 @@ Dialog {
             source: 'qrc:/images/graal_logo.png'
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked:  {
+                    eastereggDialog.open();
+                }
+            }
+
+            ModalPopup {
+                id: eastereggDialog
+                title: "Interfaccia bella assai"
+                contentItem: Text {
+                    id: theText
+                    width: parent.width
+                    color: "#ff7644"
+                    text: "by <b>wanderfra</b>"
+                    font.bold: true
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
+                    styleColor: "#ffead1"
+                    style: Text.Outline
+                }
+                //Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                anchors.centerIn: parent
+            }
         }
     }
 }

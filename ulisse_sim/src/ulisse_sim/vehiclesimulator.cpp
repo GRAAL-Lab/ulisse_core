@@ -28,7 +28,7 @@ VehicleSimulator::VehicleSimulator(const rclcpp::Node::SharedPtr& nh)
     , realTime_(true)
 {
 
-    latitude_ = 44.393; // Genova Harbour lat-long
+    latitude_ = 44.392; // Genova Harbour lat-long
     longitude_ = 8.945;
 
     previousLatitude_ = latitude_;
@@ -198,7 +198,7 @@ void VehicleSimulator::SimulateSensors()
     std::normal_distribution<double> gpsNoiseZ(0.0, config->sensorsNoise.gps_stdd.z());
 
     //Transform to cartesian,
-    static ctb::LatLong centroidLocation(44.414165, 8.942184);
+    static ctb::LatLong centroidLocation(44.393, 8.945);
     Eigen::Vector3d worldF_com, worldF_antenna;
     ctb::LatLong2LocalNED(ctb::LatLong(latitude_, longitude_), altitude_, centroidLocation, worldF_com);
 
@@ -220,7 +220,7 @@ void VehicleSimulator::SimulateSensors()
     gpsMsg_.latitude = gpsLatlong.latitude;
     gpsMsg_.longitude = gpsLatlong.longitude;
     gpsMsg_.altitude = gpsAltitude;
-    gpsMsg_.gpsfixmode = 3u; //ulisse_msgs::msg::GPSData::MODE_3D;
+    gpsMsg_.gpsfixmode = ulisse_msgs::msg::GPSData::MODE3D; //3u
 
     std::normal_distribution<double> compassNoiseR(0.0, config->sensorsNoise.compass_stdd.x());
     std::normal_distribution<double> compassNoiseP(0.0, config->sensorsNoise.compass_stdd.y());

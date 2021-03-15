@@ -63,6 +63,7 @@ Map {
         anchors.rightMargin: 15
         anchors.topMargin: 20
     }
+
     Item{
         id:itemcurrent
         anchors.right: compass.left
@@ -72,18 +73,19 @@ Map {
         width: 42
         height: 42
         z: map.z + 2
-    Image {
-        id: current
-        source: 'qrc:/images/windarrow.png'
+        Image {
+            id: current
+            source: 'qrc:/images/windarrow.png'
+        }
+        Label{
+            id:currentid
+            width: parent.width
+            horizontalAlignment: Text.AlignHCenter
+            anchors.left:current.left
+            anchors.top:current.bottom
+        }
     }
-    Label{
-        id:currentid
-        width: parent.width
-        horizontalAlignment: Text.AlignHCenter
-        anchors.left:current.left
-        anchors.top:current.bottom
-    }
-    }
+
     MapQuickItem {
         id: markerIcon
         sourceItem: Image {
@@ -197,9 +199,3 @@ Map {
         acceptedButtons: Qt.LeftButton | Qt.RightButton
     }
 }
-/*##^##
-Designer {
-    D{i:0;autoSize:true;height:480;width:640}
-}
-##^##*/
-

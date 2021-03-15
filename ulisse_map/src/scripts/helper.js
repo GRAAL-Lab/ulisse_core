@@ -1,7 +1,3 @@
-
-
-//import "/home/frankthesnow/bower_components/proj4/dist/proj4.js" as proj
-
 var QtPositioning
 var QtLocation
 
