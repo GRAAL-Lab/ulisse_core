@@ -22,14 +22,14 @@ MapQuickItem {
         map.addMapItem(_handle)
         map.addMapItem(_center)
         map.addMapItem(_line)
-        map.addMapItem(_canvas)
+        map.addMapItem(_canvasItem) //"Could not convert argument 0" (?)
     }
 
     function deregister_map_items() {
         map.removeMapItem(_handle)
         map.removeMapItem(_center)
         map.removeMapItem(_line)
-        map.removeMapItem(_canvas)
+        map.removeMapItem(_canvasItem)
     }
 
     coordinate: h_center
@@ -60,18 +60,21 @@ MapQuickItem {
             opacity: root.opacity
         }
 
-        Canvas {
-            id: _canvas
-            property var _ctx
-            antialiasing: true
-            width: 80
-            height: 80
-            x: parent.x - 40
-            y: parent.y - 40
-            onAvailableChanged: {
-                _ctx = getContext("2d")
+        MapQuickItem {
+            id: _canvasItem
+            sourceItem: Canvas {
+                id: _canvas
+                property var _ctx
+                antialiasing: true
+                width: 80
+                height: 80
+                x: root.x - 40
+                y: root.y - 40
+                onAvailableChanged: {
+                    _ctx = getContext("2d")
+                }
+                opacity: root.opacity
             }
-            opacity: root.opacity
         }
         opacity: root.opacity
     }

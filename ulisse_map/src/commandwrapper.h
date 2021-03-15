@@ -79,7 +79,7 @@ public slots:
     //void process_callbacks_slot();
 
 signals:
-    void callbacks_processed();
+    //void callbacks_processed();
     void connected();
 };
 

@@ -132,7 +132,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 
     // Create a callback function for when service set boundaries requests are  received.
     auto handle_set_boundaries = [this](const std::shared_ptr<rmw_request_id_t> request_header, const std::shared_ptr<ulisse_msgs::srv::SetBoundaries::Request> request, std::shared_ptr<ulisse_msgs::srv::SetBoundaries::Response> response)
-        -> void {
+            -> void {
         (void)request_header;
         RCLCPP_INFO(nh_->get_logger(), "Incoming request for set boundaries");
 
@@ -175,12 +175,14 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 
     // Create a callback function for when service reset configuration requests
     // are received.
+
     auto handle_reset_conf = [this](const std::shared_ptr<rmw_request_id_t> request_header, const std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Request> request, std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Response> response) -> void {
         (void)request_header;
+        (void)request;
         RCLCPP_INFO(nh_->get_logger(), "Incoming request for reset conf");
 
         auto previousConf = conf_;
-        publishLog("Configuration Reset");
+        publishLog("Configuration Reset:");
         if (!LoadConfiguration(conf_)) {
             LoadConfiguration(previousConf);
             std::cerr << "Failed to reload KCL configuration from file. Load the previous configuration" << std::endl;
@@ -194,6 +196,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     // Create a callback function for when service requests are received.
     auto handle_get_bounds = [this](const std::shared_ptr<rmw_request_id_t> request_header, const std::shared_ptr<ulisse_msgs::srv::GetBoundaries::Request> request, std::shared_ptr<ulisse_msgs::srv::GetBoundaries::Response> response) -> void {
         (void)request_header;
+        (void)request;
         RCLCPP_INFO(nh_->get_logger(), "Incoming request for get boundaries");
 
         if (boundariesSet_) {

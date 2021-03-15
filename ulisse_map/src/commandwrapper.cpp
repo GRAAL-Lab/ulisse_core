@@ -38,27 +38,29 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
 
     QObject::connect(myTimer_, SIGNAL(timeout()), this, SLOT(check_error_slot()));
 
-    toastMgrObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("toastManager");
+    QList<QObject*> root_objects = appEngine_->rootObjects();
+
+    toastMgrObj_ = root_objects.first()->findChild<QObject*>("toastManager");
     if (!toastMgrObj_) {
         qDebug("No 'toastManager' found!");
     }
 
-    mapMouseAreaObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("mapMouseArea");
+    mapMouseAreaObj_ = root_objects.first()->findChild<QObject*>("mapMouseArea");
     if (!mapMouseAreaObj_) {
         qDebug("No 'mapMouseArea' found!");
     }
 
-    goalDistanceObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("goalDistance");
+    goalDistanceObj_ = root_objects.first()->findChild<QObject*>("goalDistance");
     if (!goalDistanceObj_) {
         qDebug("No 'goalDistance' found!");
     }
 
-    cruiseSpeedObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("cruiseSpeed");
+    cruiseSpeedObj_ = root_objects.first()->findChild<QObject*>("cruiseSpeed");
     if (!cruiseSpeedObj_) {
         qDebug("No 'cruiseSpeed' found!");
     }
 
-    speedHeadTimoutObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("shTimeout");
+    speedHeadTimoutObj_ = root_objects.first()->findChild<QObject*>("shTimeout");
     if (!speedHeadTimoutObj_) {
         qDebug("No 'speedHeadTimeout' found!");
     }
@@ -252,7 +254,7 @@ QVector<double> CommandWrapper::createNurbs(const QString& pointForNurbs)
     }
 
     ctb::LatLong map_point(0.0, 0.0);
-    int j = 0;
+    //int j = 0;
     for (unsigned int i = 0; i < nurbs.size(); i++) {
         //Pick the i-th curve
         SISLCurve* currentCurve = nurbs[i];
@@ -308,7 +310,8 @@ QGeoCoordinate CommandWrapper::localUTM2LatLong(QPoint UTM_point, QGeoCoordinate
 {
     ctb::LatLong tmp;
     double altitude;
-    ctb::LocalUTM2LatLong(Eigen::Vector3d { UTM_point.x(), UTM_point.y(), 0.0 }, ctb::LatLong(centroid.latitude(), centroid.longitude()), tmp, altitude);
+    ctb::LocalUTM2LatLong(Eigen::Vector3d { static_cast<double>(UTM_point.x()), static_cast<double>(UTM_point.y()), 0.0 },
+        ctb::LatLong(centroid.latitude(), centroid.longitude()), tmp, altitude);
 
     return QGeoCoordinate(tmp.latitude, tmp.longitude);
 }
@@ -351,7 +354,7 @@ bool CommandWrapper::SendBoundariesRequest(ulisse_msgs::srv::SetBoundaries::Requ
     if (boundary_srv_->service_is_ready()) {
         auto result_future = boundary_srv_->async_send_request(req);
         std::cout << "Send Bounary to KCL" << std::endl;
-        if (rclcpp::spin_until_future_complete(np_, result_future) != rclcpp::executor::FutureReturnCode::SUCCESS) {
+        if (rclcpp::spin_until_future_complete(np_, result_future) != rclcpp::FutureReturnCode::SUCCESS) {
             result_msg = "service call failed :(";
             RCLCPP_ERROR(np_->get_logger(), result_msg.c_str());
         } else {
@@ -376,7 +379,7 @@ bool CommandWrapper::SendCommandRequest(ulisse_msgs::srv::ControlCommand::Reques
     if (command_srv_->service_is_ready()) {
         auto result_future = command_srv_->async_send_request(req);
         std::cout << "Sent Request to controller" << std::endl;
-        if (rclcpp::spin_until_future_complete(np_, result_future) != rclcpp::executor::FutureReturnCode::SUCCESS) {
+        if (rclcpp::spin_until_future_complete(np_, result_future) != rclcpp::FutureReturnCode::SUCCESS) {
             result_msg = "service call failed :(";
             RCLCPP_ERROR(np_->get_logger(), result_msg.c_str());
         } else {
@@ -386,7 +389,7 @@ bool CommandWrapper::SendCommandRequest(ulisse_msgs::srv::ControlCommand::Reques
         }
         serviceAvailable = true;
     } else {
-        result_msg = "No Command Server Available";
+        result_msg = "The controller doesn't seem to be active.\n(No CommandServer available)";
         serviceAvailable = false;
     }
     ShowToast(result_msg.c_str(), 2000);
@@ -439,12 +442,12 @@ bool CommandWrapper::sendThrusterActivation(bool activate)
     if (llc_srv_->service_is_ready()) {
         auto result_future = llc_srv_->async_send_request(req);
         std::cout << "Sent Request to controller" << std::endl;
-        if (rclcpp::spin_until_future_complete(np_, result_future) != rclcpp::executor::FutureReturnCode::SUCCESS) {
+        if (rclcpp::spin_until_future_complete(np_, result_future) != rclcpp::FutureReturnCode::SUCCESS) {
             result_msg = "service call failed :(";
             RCLCPP_ERROR(np_->get_logger(), result_msg.c_str());
         } else {
             auto result = result_future.get();
-            result_msg = "Service returned: " + result->res;
+            result_msg = "Service returned: " + std::to_string(result->res);
             RCLCPP_INFO(np_->get_logger(), result_msg.c_str());
         }
         serviceAvailable = true;
@@ -465,7 +468,7 @@ bool CommandWrapper::setCruiseSpeedCommand(double speed)
     if (cruise_srv_->service_is_ready()) {
         auto result_future = cruise_srv_->async_send_request(req);
         std::cout << "Sent Request to controller" << std::endl;
-        if (rclcpp::spin_until_future_complete(np_, result_future) != rclcpp::executor::FutureReturnCode::SUCCESS) {
+        if (rclcpp::spin_until_future_complete(np_, result_future) != rclcpp::FutureReturnCode::SUCCESS) {
             result_msg = "service call failed :(";
             RCLCPP_ERROR(np_->get_logger(), result_msg.c_str());
         } else {

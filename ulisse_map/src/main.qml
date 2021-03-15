@@ -136,6 +136,8 @@ ApplicationWindow {
         width: window.width
 
         Component {
+            // This Component is needed to load the map in an asynchronous way,
+            // using the Loader class.
             id: mapViewComponent
             MapView {
                 id: mapView
@@ -153,7 +155,7 @@ ApplicationWindow {
             Layout.fillWidth: true
 
             Loader {
-                // This loader is need to dynamically load the map plugin
+                // This loader is needed to dynamically load the map plugin
                 // only once the settings are loaded (so to be able to
                 // correctly read 'mapPluginType' and 'esriMapCacheDir').
                 id: mapViewLoader
