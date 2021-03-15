@@ -35,7 +35,6 @@ FeedbackUpdater::~FeedbackUpdater()
 
 void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
 {
-
     //FIXME: what if no np_ defined?
     appEngine_ = engine;
 
@@ -140,6 +139,7 @@ void FeedbackUpdater::LLCBatteryLeftCB(const ulisse_msgs::msg::LLCBattery::Share
 {
     q_battery_perc_L_ = msg->charge_percent;
 }
+
 void FeedbackUpdater::LLCBatteryRightCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg)
 {
     q_battery_perc_R_ = msg->charge_percent;
