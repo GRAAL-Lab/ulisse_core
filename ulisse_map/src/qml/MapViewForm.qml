@@ -177,7 +177,7 @@ RowLayout {
                     id: overlayStatusCbox
                     text: "Show Overlay"
                     Material.accent: orange
-                    checked: false
+                    checked: true
                 }
 
                 Rectangle {
