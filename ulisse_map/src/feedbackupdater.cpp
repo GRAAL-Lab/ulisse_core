@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "rml/RML.h"
 #include "feedbackupdater.h"
 #include "ulisse_ctrl/fsm_defines.hpp"
 #include "ulisse_msgs/topicnames.hpp"
@@ -67,8 +68,6 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
     q_gps_pos_ = q_goal_pos_ = q_ulisse_pos_;
     q_gps_time_ = "undefined";
 
-    current_data_n = 0;
-    current_data_e = 0;
     current_data_deg = 0;
     current_data_norm = 0;
 
@@ -99,15 +98,30 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
 
 void FeedbackUpdater::NavFilterData(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)
 {
-    current_data_n = msg->inertialframe_water_current[0];
-    current_data_e = msg->inertialframe_water_current[1];
-    current_data_deg = atan2(current_data_n, current_data_e) * (180.0 / M_PI);
-    current_data_norm = sqrt(pow(current_data_n, 2) + pow(current_data_e, 2));
+
+    //TODO Calcolare velocità assoluta tramite current velocity + bodyframe linvel
+
+    Eigen::Vector2d water_current_w(msg->inertialframe_water_current[0], msg->inertialframe_water_current[1]);
+    Eigen::Vector2d catamaran_rel_vel_b(msg->bodyframe_linear_velocity[0], msg->bodyframe_linear_velocity[1]);
+
+    //double current_data_n = msg->inertialframe_water_current[0];
+    //double current_data_e = msg->inertialframe_water_current[1];
+    current_data_deg = atan2(water_current_w.x(), water_current_w.y()) * (180.0 / M_PI);
+    current_data_norm = water_current_w.norm();
 
     q_ulisse_pos_.setLatitude(msg->inertialframe_linear_position.latlong.latitude);
     q_ulisse_pos_.setLongitude(msg->inertialframe_linear_position.latlong.longitude);
-    q_ulisse_yaw_deg_ = msg->bodyframe_angular_position.yaw * 180 / M_PI;
-    q_ulisse_surge_ = msg->bodyframe_linear_velocity[0];
+    // Converting the -pi/pi yaw value to a 0/360° range.
+    q_ulisse_yaw_deg_ = (msg->bodyframe_angular_position.yaw * 180.0 / M_PI);
+
+    // Evaluating the absolute catamaran velocity using the current and the surge.
+
+
+    double theta = atan2(catamaran_rel_vel_b.x(), catamaran_rel_vel_b.y());
+    Eigen::Rotation2D<double> wRb = Eigen::Rotation2D<double>(theta);
+    Eigen::Vector2d water_current_b = wRb.inverse() * water_current_w;
+
+    q_ulisse_surge_ = catamaran_rel_vel_b.x() + water_current_b.x();
 
     // Rounding surge and heading to 2 decimal places
     q_ulisse_yaw_deg_ = int(q_ulisse_yaw_deg_ * 1E2) / 1E2;

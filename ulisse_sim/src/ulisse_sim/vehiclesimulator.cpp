@@ -274,7 +274,7 @@ void VehicleSimulator::SimulateSensors()
     ambsensMsg_.humidityctrlbox = 50.0 + (rand() / static_cast<double>(RAND_MAX)) * 2.0;
 
     //magnetometer
-    Eigen::Vector3d m = { 23186.6 * 1E-9, 0.0 * 1E-9, 41122.0 * 1E-9 }; // Example of magnetic field at lat long: 44.4056° N, 8.9463° E
+    Eigen::Vector3d m = { 23186.6 * 1E-9, 0.0 * 1E-9, 41122.0 * 1E-9 };  // Example of magnetic field at lat long: 44.4056° N, 8.9463° E
 
     Eigen::Vector3d ned_m = worldF_R_bodyF_.transpose() * m;
 

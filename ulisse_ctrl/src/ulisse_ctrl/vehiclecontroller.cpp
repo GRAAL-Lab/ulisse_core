@@ -455,7 +455,7 @@ void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::Share
     vehiclePosition_->latitude = msg->inertialframe_linear_position.latlong.latitude;
     vehiclePosition_->longitude = msg->inertialframe_linear_position.latlong.longitude;
 
-    //Get the water current for hold state
+    // Get the water current for hold state
     *inertialF_waterCurrent_ = { msg->inertialframe_water_current[0], msg->inertialframe_water_current[1] };
 
     commandHold_.SetWaterCurrent(inertialF_waterCurrent_);
@@ -482,7 +482,7 @@ void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::Share
 void VehicleController::Run()
 {
     if (!boundariesSet_) {
-        std::cout << "Waiting for the Safety Bounding Box" << std::endl;
+        std::cout << "  Waiting for the Safety Bounding Box" << std::endl;
         return;
     }
 

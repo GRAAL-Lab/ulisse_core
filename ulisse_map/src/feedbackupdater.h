@@ -77,10 +77,9 @@ class FeedbackUpdater : public QObject {
     int left_satellite_sent_;
     int right_satellite_received_;
     int right_satellite_sent_;
+
     double current_data_deg;
     double current_data_norm;
-    double current_data_n;
-    double current_data_e;
 
     rclcpp::Node::SharedPtr np_;
     rclcpp::Subscription<ulisse_msgs::msg::GPSData>::SharedPtr gps_data_sub_;
