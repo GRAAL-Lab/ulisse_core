@@ -68,6 +68,9 @@ namespace states {
         //Avoid that the roboto try to align with very small intensity of water current
         double absoluteAxisAlignmentGain = rml::IncreasingBellShapedFunction(minWaterCurrent_, maxWaterCurrent_, 0, 1, inertialF_waterCurrent->norm());
         absoluteAxisAlignmentTask_->ExternalActivationFunction() = absoluteAxisAlignmentGain * Eigen::MatrixXd::Identity(absoluteAxisAlignmentTask_->TaskSpace(), absoluteAxisAlignmentTask_->TaskSpace());
+
+        std::cout << "linearVelocityTask_->ExternalActivationFunction():\n" << linearVelocityTask_->ExternalActivationFunction() << "\n";
+
         return true;
     }
 
@@ -82,6 +85,8 @@ namespace states {
         //slow-down and turn
         double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1, absoluteAxisAlignmentTask_->ControlVariable().norm()); //compute the gain to modify the exernal activation function of linear velocity task
         linearVelocityTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(linearVelocityTask_->TaskSpace(), linearVelocityTask_->TaskSpace());
+
+
 
         return true;
     }

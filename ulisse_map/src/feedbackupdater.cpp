@@ -112,16 +112,14 @@ void FeedbackUpdater::NavFilterData(const ulisse_msgs::msg::NavFilterData::Share
     q_ulisse_pos_.setLatitude(msg->inertialframe_linear_position.latlong.latitude);
     q_ulisse_pos_.setLongitude(msg->inertialframe_linear_position.latlong.longitude);
     // Converting the -pi/pi yaw value to a 0/360° range.
-    q_ulisse_yaw_deg_ = (msg->bodyframe_angular_position.yaw * 180.0 / M_PI);
+    q_ulisse_yaw_deg_ = RadiansToCompassDegrees(msg->bodyframe_angular_position.yaw);
 
-    // Evaluating the absolute catamaran velocity using the current and the surge.
-
-
-    double theta = atan2(catamaran_rel_vel_b.x(), catamaran_rel_vel_b.y());
-    Eigen::Rotation2D<double> wRb = Eigen::Rotation2D<double>(theta);
+    //double theta = atan2(catamaran_rel_vel_b.y(), catamaran_rel_vel_b.x());
+    Eigen::Rotation2D<double> wRb = Eigen::Rotation2D<double>(msg->bodyframe_angular_position.yaw);
     Eigen::Vector2d water_current_b = wRb.inverse() * water_current_w;
 
     q_ulisse_surge_ = catamaran_rel_vel_b.x() + water_current_b.x();
+    // freccia surge assoluto
 
     // Rounding surge and heading to 2 decimal places
     q_ulisse_yaw_deg_ = int(q_ulisse_yaw_deg_ * 1E2) / 1E2;
@@ -131,6 +129,13 @@ void FeedbackUpdater::NavFilterData(const ulisse_msgs::msg::NavFilterData::Share
 void FeedbackUpdater::SetNodeHandle(const rclcpp::Node::SharedPtr& np)
 {
     np_ = np;
+}
+
+double FeedbackUpdater::RadiansToCompassDegrees(const double angle_rad)
+{
+    double angle_compass = angle_rad * 180.0 / M_PI;
+    if (angle_compass < 0) {angle_compass += 360.0;}
+    return angle_compass;
 }
 
 void FeedbackUpdater::GPSDataCB(const ulisse_msgs::msg::GPSData::SharedPtr msg)

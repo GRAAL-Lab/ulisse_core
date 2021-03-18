@@ -44,6 +44,8 @@ int main(int argc, char* argv[])
 
     while (rclcpp::ok()) {
 
+        // TODO: Update fields to print!
+
 //        std::cout << tc::white << "GPS time:\t" << tc::none << std::setprecision(10) << gps_data.time << std::endl;
 //        std::cout << tc::white << "Vehicle State:\t" << tc::none << status_cxt.vehicle_state << std::endl;
 

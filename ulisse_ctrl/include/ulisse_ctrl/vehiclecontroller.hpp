@@ -51,6 +51,8 @@ class VehicleController {
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr genericLogPub_;
     rclcpp::Publisher<ulisse_msgs::msg::FeedbackGui>::SharedPtr feedbackGuiPub_;
 
+    rclcpp::TimerBase::SharedPtr slow_timer_;
+
     /// ROBOT MODEL
     std::shared_ptr<rml::RobotModel> robotModel_;
 
@@ -115,10 +117,11 @@ class VehicleController {
     void SetUpFSM();
     void SetupCommandServer();
 
+    void SlowTimerCB();
     void NavFilterCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
     void LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg);
 
-    void publishLog(std::string log);
+    void PublishLog(std::string log);
 
 public:
     VehicleController(const rclcpp::Node::SharedPtr& nh, double sampleTime, std::string file_name);

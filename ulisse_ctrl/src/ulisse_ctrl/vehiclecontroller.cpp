@@ -39,6 +39,9 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     referenceVelocitiesPub_ = nh_->create_publisher<ulisse_msgs::msg::ReferenceVelocities>(ulisse_msgs::topicnames::reference_velocities, 10);
     feedbackGuiPub_ = nh_->create_publisher<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10);
 
+    // Timer for slow check operations
+    slow_timer_ = nh_->create_wall_timer(std::chrono::seconds(10), std::bind(&VehicleController::SlowTimerCB, this));
+
     /// TPIK Manager
     actionManager_ = std::make_shared<tpik::ActionManager>(tpik::ActionManager());
 
@@ -132,7 +135,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 
     // Create a callback function for when service set boundaries requests are  received.
     auto handle_set_boundaries = [this](const std::shared_ptr<rmw_request_id_t> request_header, const std::shared_ptr<ulisse_msgs::srv::SetBoundaries::Request> request, std::shared_ptr<ulisse_msgs::srv::SetBoundaries::Response> response)
-            -> void {
+        -> void {
         (void)request_header;
         RCLCPP_INFO(nh_->get_logger(), "Incoming request for set boundaries");
 
@@ -146,7 +149,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 
         std::stringstream log;
         log << "Setting Bounding Box: " << request->boundaries.boundaries_string;
-        publishLog(log.str().c_str());
+        PublishLog(log.str().c_str());
     };
 
     srvBoundaries_ = nh_->create_service<ulisse_msgs::srv::SetBoundaries>(ulisse_msgs::topicnames::set_boundaries_service, handle_set_boundaries);
@@ -158,7 +161,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 
         std::stringstream log;
         log << "Cruise Control set to: " << request->cruise_control;
-        publishLog(log.str().c_str());
+        PublishLog(log.str().c_str());
 
         Eigen::VectorXd satMin, satMax;
         iCat_->GetSaturation(satMin, satMax);
@@ -182,7 +185,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
         RCLCPP_INFO(nh_->get_logger(), "Incoming request for reset conf");
 
         auto previousConf = conf_;
-        publishLog("Configuration Reset:");
+        PublishLog("Configuration Reset:");
         if (!LoadConfiguration(conf_)) {
             LoadConfiguration(previousConf);
             std::cerr << "Failed to reload KCL configuration from file. Load the previous configuration" << std::endl;
@@ -289,7 +292,7 @@ bool VehicleController::LoadConfiguration(std::shared_ptr<ControllerConfiguratio
     return true;
 }
 
-void VehicleController::publishLog(std::string log)
+void VehicleController::PublishLog(std::string log)
 {
     std_msgs::msg::String genericLogPub_msg;
     genericLogPub_msg.data = log;
@@ -376,7 +379,7 @@ void VehicleController::SetupCommandServer()
 
         std::stringstream logg;
         logg << "Incoming request: " << request->command_type.c_str();
-        publishLog(logg.str().c_str());
+        PublishLog(logg.str().c_str());
         fsm::retval ret = fsm::ok;
 
         if (!boundariesSet_) {
@@ -388,12 +391,12 @@ void VehicleController::SetupCommandServer()
         if (request->command_type == ulisse::commands::ID::halt) {
 
             std::cout << "Received Command Halt" << std::endl;
-            publishLog("Received Command Halt");
+            PublishLog("Received Command Halt");
 
         } else if (request->command_type == ulisse::commands::ID::hold) {
             commandHold_.SetPositionToHold(vehiclePosition_);
             std::cout << "Received Command Hold" << std::endl;
-            publishLog("Received Command Hold");
+            PublishLog("Received Command Hold");
 
         } else if (request->command_type == ulisse::commands::ID::latlong) {
 
@@ -401,7 +404,7 @@ void VehicleController::SetupCommandServer()
             commandLatLong_.SetGoTo(LatLong(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude), request->latlong_cmd.acceptance_radius);
 
             log << "Received Command GoTo (lat: " << request->latlong_cmd.goal.latitude << " , long: " << request->latlong_cmd.goal.longitude << " )";
-            publishLog(log.str().c_str());
+            PublishLog(log.str().c_str());
 
         } else if (request->command_type == ulisse::commands::ID::speedheading) {
 
@@ -409,7 +412,7 @@ void VehicleController::SetupCommandServer()
             commandSpeedHeading_.SetSpeedHeading(request->sh_cmd.speed, request->sh_cmd.heading, request->sh_cmd.timeout.sec);
             stateSpeedHeading_->ResetTimer();
             log << "Received Command SpeedHeading (speed: " << request->sh_cmd.speed << " , heading: " << request->sh_cmd.heading << " )";
-            publishLog(log.str().c_str());
+            PublishLog(log.str().c_str());
 
         } else if (request->command_type == ulisse::commands::ID::navigate) {
 
@@ -420,7 +423,7 @@ void VehicleController::SetupCommandServer()
             }
 
             log << "Received Command PathFollowing (nurbs: " << request->nav_cmd.path.nurbs_string << " )";
-            publishLog(log.str().c_str());
+            PublishLog(log.str().c_str());
 
         } else {
             RCLCPP_INFO(nh_->get_logger(), "Unsupported command: %s", request->command_type.c_str());
@@ -448,6 +451,14 @@ void VehicleController::SetupCommandServer()
     };
 
     srv_ = nh_->create_service<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service, handle_control_commands);
+}
+
+void VehicleController::SlowTimerCB()
+{
+    if (!boundariesSet_) {
+        RCLCPP_INFO(nh_->get_logger(), "Waiting for the Safety Bounding Box");
+    }
+    return;
 }
 
 void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)
@@ -482,7 +493,7 @@ void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::Share
 void VehicleController::Run()
 {
     if (!boundariesSet_) {
-        std::cout << "  Waiting for the Safety Bounding Box" << std::endl;
+        //RCLCPP_INFO(nh_->get_logger(), "Waiting for the Safety Bounding Box");
         return;
     }
 

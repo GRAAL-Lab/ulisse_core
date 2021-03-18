@@ -100,6 +100,7 @@ public:
     virtual ~FeedbackUpdater();
     void Init(QQmlApplicationEngine* engine);
     void SetNodeHandle(const rclcpp::Node::SharedPtr& np);
+    double RadiansToCompassDegrees(const double angle_rad);
 
     void GPSDataCB(const ulisse_msgs::msg::GPSData::SharedPtr msg);
     void LLCBatteryLeftCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg);

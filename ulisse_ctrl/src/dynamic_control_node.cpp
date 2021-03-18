@@ -157,8 +157,9 @@ int main(int argc, char* argv[])
 
     while (rclcpp::ok()) {
 
-        //The feedback coming form the navigation filter
-        surgeFbk = filterData.bodyframe_linear_velocity[0];   // ?!è la velocità relativa all'acqua?
+        // The feedback coming form the navigation filter
+        surgeFbk = filterData.bodyframe_linear_velocity[0];   // ?! è la velocità relativa all'acqua?
+
         yawRateFbk = filterData.bodyframe_angular_velocity[2];
 
         if (vehicleStatus.vehicle_state != ulisse::states::ID::halt) {
