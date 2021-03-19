@@ -111,8 +111,7 @@ Row {
                     width: parent.width
                     height: defheigth
 
-                    text: (sliderTogglerLeft.checked) ? qsTr("Add Path") : qsTr(
-                                                            "")
+                    text: (sliderTogglerLeft.checked) ? qsTr("Add Path") : qsTr("")
 
                     onHoveredChanged: function () {
                         addTracksRect.color = (addTracksRect.color === blue) ? orange : blue
@@ -154,7 +153,7 @@ Row {
                         multichoice = true
                         bar_manage.inhibit = true
                         bar_manage.hide_all()
-                        sidebar_manage.deselect_all()
+                        sweepPathCmdPane.deselect_all()
                         main_btns.visible = false
                         confirm_btns.visible = true
                     }

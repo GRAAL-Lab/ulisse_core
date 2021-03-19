@@ -54,7 +54,7 @@ public:
     void SetNodeHandle(const rclcpp::Node::SharedPtr& np);
     std::future<void> notificator;
 
-    Q_INVOKABLE bool SendBoundaries(const QString boundary);
+    Q_INVOKABLE bool sendBoundaries(const QString boundary);
     Q_INVOKABLE bool sendPath(const QString path);
     Q_INVOKABLE bool sendHaltCommand();
     Q_INVOKABLE bool sendHoldCommand(double radius);
@@ -71,8 +71,8 @@ public:
     Q_INVOKABLE bool goToNextWaypoint();
     Q_INVOKABLE bool goToPreviousWaypoint();
     Q_INVOKABLE QVector<double> createNurbs(const QString& pointForNurbs);
-    Q_INVOKABLE QPoint LatLong2LocalUTM(QGeoCoordinate latlong, QGeoCoordinate centroid);
-    Q_INVOKABLE QGeoCoordinate LocalUTM2LatLong(QPoint UTM_point, QGeoCoordinate centroid);
+    Q_INVOKABLE QPoint latLong2LocalUTM(QGeoCoordinate latlong, QGeoCoordinate centroid);
+    Q_INVOKABLE QGeoCoordinate localUTM2LatLong(QPoint UTM_point, QGeoCoordinate centroid);
 
 public slots:
     void check_error_slot();

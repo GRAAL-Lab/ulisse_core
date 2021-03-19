@@ -47,7 +47,7 @@
         <file>qml/PathIconForm.qml</file>
         <file>qml/CommandPane.qml</file>
         <file>qml/MapHandle.qml</file>
-        <file>qml/SidebarManage.qml</file>
+        <file>qml/SweepPathCommands.qml</file>
         <file>qml/BarParamsPolygon.qml</file>
         <file>qml/BarParamsPolyline.qml</file>
         <file>images/plus.png</file>

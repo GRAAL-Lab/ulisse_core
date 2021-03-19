@@ -22,7 +22,7 @@ MapQuickItem {
         map.addMapItem(_handle)
         map.addMapItem(_center)
         map.addMapItem(_line)
-        map.addMapItem(_canvasItem) //"Could not convert argument 0" (?)
+        map.addMapItem(_canvasItem)
     }
 
     function deregister_map_items() {

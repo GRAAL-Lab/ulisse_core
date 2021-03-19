@@ -12,10 +12,10 @@ import "../scripts/helper.js" as Helper
 Pane {
 
     property var polysec_bkp: []
-    property var buttonSafety: buttonSafety
+    property var buttonSafety: buttonBoundBoxDefine
     property var trackComponent
     property alias speedHeadTimeout: speedHeadTimeout
-    property alias buttonSafety1: buttonSafety1
+    property alias buttonSafety1: buttonBoundBoxResend
     visible: true
 
     Layout.fillWidth: true
@@ -29,6 +29,92 @@ Pane {
         id: buttonsColumn
         anchors.fill: parent
         spacing: 0
+
+
+
+        /*RowLayout {
+            id: additionalWpControls
+            spacing: 0
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+        }*/
+
+        RowLayout {
+            id: boundingBoxControls
+            Layout.fillWidth: true
+
+            Label {
+                color: green
+                text: "Safety area"
+                antialiasing: false
+                //Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                Layout.bottomMargin: 10
+                font.pointSize: 12
+                Layout.topMargin: 20
+                font.weight: Font.DemiBold
+            }
+
+            RowLayout {
+                id: boundingBoxButtons
+                Layout.fillWidth: true
+                Button {
+                    id: buttonBoundBoxDefine
+                    text: qsTr("Define")
+
+                    padding: 5
+                    antialiasing: false
+                    Layout.fillWidth: true
+                    Layout.fillHeight: false
+
+                    highlighted: true
+                    Material.background: green
+
+                    function end() {
+                        enabled = true
+                        map.polysec_cur.end.disconnect(end)
+                        window.sig_escape.disconnect(reset_polysec)
+                        map.click_handler = map.click_goto_handler
+                        map.pos_changed_handler = function () {}
+                        text = "Redefine"
+                        buttonBoundBoxResend.enabled = true
+                        sweepPathCmdPane.check_safety_all()
+                        cmdWrapper.sendBoundaries(JSON.stringify(map.polysec_cur.serialize()))
+                    }
+
+                    function reset_polysec(){
+                        enabled = true
+                        map.polysec_cur.end.disconnect(end)
+                        window.sig_escape.disconnect(reset_polysec)
+                        map.polysec_cur.path = polysec_bkp
+                        map.click_handler = map.click_goto_handler
+                        map.pos_changed_handler = function () {}
+                    }
+
+                    onClicked: function () {
+                        polysec_bkp = map.polysec_cur.path
+                        map.polysec_cur.clear_path()
+                        map.center = fbkUpdater.ulisse_pos
+                        map.click_handler = map.polysec_cur.click_handler
+                        map.pos_changed_handler = map.polysec_cur.pos_changed_handler
+                        enabled = false
+                        window.sig_escape.connect(reset_polysec)
+                        map.polysec_cur.end.connect(end)
+                    }
+                }
+
+                Button {
+                    id: buttonBoundBoxResend
+                    enabled: false
+                    text: qsTr("Resend")
+                    padding: 5
+                    antialiasing: false
+                    Layout.fillWidth: true
+                    highlighted: true
+                    Layout.fillHeight: false
+                    onClicked: cmdWrapper.sendBoundaries(JSON.stringify(map.polysec_cur.serialize()))
+                }
+            }
+        }
 
         Label {
             color: green
@@ -465,89 +551,6 @@ Pane {
             }
         }
 
-        Label {
-            color: green
-            text: "Safety area"
-            antialiasing: false
-            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-            Layout.bottomMargin: 10
-            font.pointSize: 12
-            Layout.topMargin: 20
-            font.weight: Font.DemiBold
-        }
-
-        RowLayout {
-            id: additionalWpControls
-            spacing: 0
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-        }
-
-        RowLayout {
-            id: additionalWpControls2
-            Layout.fillWidth: true
-            RowLayout {
-                id: loadSavePath1
-                Layout.fillWidth: true
-                Button {
-                    id: buttonSafety
-                    text: qsTr("Define")
-
-                    padding: 5
-                    antialiasing: false
-                    Layout.fillWidth: true
-                    Layout.fillHeight: false
-
-                    highlighted: true
-                    Material.background: green
-
-                    function end() {
-                        enabled = true
-                        map.polysec_cur.end.disconnect(end)
-                        window.sig_escape.disconnect(reset_polysec)
-                        map.click_handler = map.click_goto_handler
-                        map.pos_changed_handler = function () {}
-                        text = "Redefine"
-                        buttonSafety1.enabled = true
-                        sidebar_manage.check_safety_all()
-                        cmdWrapper.sendBoundaries(JSON.stringify(map.polysec_cur.serialize()))
-                    }
-
-                    function reset_polysec(){
-                        enabled = true
-                        map.polysec_cur.end.disconnect(end)
-                        window.sig_escape.disconnect(reset_polysec)
-                        map.polysec_cur.path = polysec_bkp
-                        map.click_handler = map.click_goto_handler
-                        map.pos_changed_handler = function () {}
-                    }
-
-                    onClicked: function () {                        
-                        polysec_bkp = map.polysec_cur.path
-                        map.polysec_cur.clear_path()
-                        map.center = fbkUpdater.ulisse_pos
-                        map.click_handler = map.polysec_cur.click_handler
-                        map.pos_changed_handler = map.polysec_cur.pos_changed_handler
-                        enabled = false
-                        window.sig_escape.connect(reset_polysec)
-                        map.polysec_cur.end.connect(end)
-                    }
-                }
-
-                Button {
-                    id: buttonSafety1
-                    enabled: false
-                    text: qsTr("Resend")
-                    padding: 5
-                    antialiasing: false
-                    Layout.fillWidth: true
-                    highlighted: true
-                    Layout.fillHeight: false
-                    onClicked: cmdWrapper.sendBoundaries(JSON.stringify(map.polysec_cur.serialize()))
-                }
-            }
-        }
-
         Rectangle {
             id: rectangle
             width: 200
@@ -597,7 +600,7 @@ Pane {
     }
 
     function savePaths(filePath) {
-        if (sidebar_manage.columnTrack.children.length === 0) {
+        if (sweepPathCmdPane.columnTrack.children.length === 0) {
             toast.show("There is nothing to save!")
             return
         }
@@ -608,9 +611,9 @@ Pane {
             : []
         }
 
-        for (var i = 0; i < sidebar_manage.columnTrack.children.length; i++) {
+        for (var i = 0; i < sweepPathCmdPane.columnTrack.children.length; i++) {
             all_paths.paths.push(
-                        sidebar_manage.columnTrack.children[i].managed_path.serialize())
+                        sweepPathCmdPane.columnTrack.children[i].managed_path.serialize())
         }
 
         cmdWrapper.savePathToFile(filePath, JSON.stringify(all_paths))
@@ -629,11 +632,11 @@ Pane {
                 var cur_managed = map.createPoly()
                 cur_managed.deserialize(data.paths[i])
 
-                var v = trackComponent.createObject(sidebar_manage.columnTrack)
+                var v = trackComponent.createObject(sweepPathCmdPane.columnTrack)
                 v.managed_path = cur_managed
-                v.ntrack = sidebar_manage.columnTrack.children.length
+                v.ntrack = sweepPathCmdPane.columnTrack.children.length
                 v.selected.connect(function (path) {
-                    sidebar_manage.update_selection(path)
+                    sweepPathCmdPane.update_selection(path)
                     bar_manage.manage(path)
                 })
 
@@ -643,11 +646,11 @@ Pane {
                 var cur_managed = map.createPath()
                 cur_managed.deserialize(data.paths[i])
 
-                var v = trackComponent.createObject(sidebar_manage.columnTrack)
+                var v = trackComponent.createObject(sweepPathCmdPane.columnTrack)
                 v.managed_path = cur_managed
-                v.ntrack = sidebar_manage.columnTrack.children.length
+                v.ntrack = sweepPathCmdPane.columnTrack.children.length
                 v.selected.connect(function (path) {
-                    sidebar_manage.update_selection(path)
+                    sweepPathCmdPane.update_selection(path)
                     bar_manage.manage(path)
                 })
 

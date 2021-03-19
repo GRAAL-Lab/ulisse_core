@@ -26,7 +26,7 @@ RowLayout {
     property alias map: map
     property alias mapsidebar: mapsidebar
     property alias pathState: pathState
-    property alias slidersLeft: sidebar_manage
+    property alias slidersLeft: sweepPathCmdPane
 
     spacing: 0
     width: window.width
@@ -106,11 +106,11 @@ RowLayout {
             zoomLevel: 16.5 //(maximumZoomLevel - minimumZoomLevel)/2
         }
 
-        SidebarManage {
-            id: sidebar_manage
+        SweepPathCommands {
+            id: sweepPathCmdPane
             anchors.bottom: bottomToolbar.top
             anchors.bottomMargin: 20
-            edge: Qt.LeftEdge
+            //edge: Qt.LeftEdge
         }
 
         Rectangle {
