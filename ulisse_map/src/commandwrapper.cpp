@@ -297,7 +297,7 @@ QVector<double> CommandWrapper::createNurbs(const QString& pointForNurbs)
     return nurbsDiscretize;
 }
 
-QPoint CommandWrapper::latLong2LocalUTM(QGeoCoordinate latlong, QGeoCoordinate centroid)
+QPoint CommandWrapper::LatLong2LocalUTM(QGeoCoordinate latlong, QGeoCoordinate centroid)
 {
 
     Eigen::Vector3d tmp;
@@ -306,7 +306,7 @@ QPoint CommandWrapper::latLong2LocalUTM(QGeoCoordinate latlong, QGeoCoordinate c
     return QPoint(tmp.x(), tmp.y());
 }
 
-QGeoCoordinate CommandWrapper::localUTM2LatLong(QPoint UTM_point, QGeoCoordinate centroid)
+QGeoCoordinate CommandWrapper::LocalUTM2LatLong(QPoint UTM_point, QGeoCoordinate centroid)
 {
     ctb::LatLong tmp;
     double altitude;
@@ -316,7 +316,7 @@ QGeoCoordinate CommandWrapper::localUTM2LatLong(QPoint UTM_point, QGeoCoordinate
     return QGeoCoordinate(tmp.latitude, tmp.longitude);
 }
 
-bool CommandWrapper::sendBoundaries(const QString boundary)
+bool CommandWrapper::SendBoundaries(const QString boundary)
 {
     auto serviceReq = std::make_shared<ulisse_msgs::srv::SetBoundaries::Request>();
     serviceReq->boundaries.boundaries_string = "" + boundary.toStdString();

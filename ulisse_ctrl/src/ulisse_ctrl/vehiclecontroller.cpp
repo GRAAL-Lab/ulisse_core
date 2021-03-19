@@ -492,36 +492,34 @@ void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::Share
 
 void VehicleController::Run()
 {
-    if (!boundariesSet_) {
-        //RCLCPP_INFO(nh_->get_logger(), "Waiting for the Safety Bounding Box");
-        return;
-    }
+    if (boundariesSet_) {
 
-    // Switch State (if something happens)
-    uFsm_.SwitchState();
-    // Process Events
-    uFsm_.ProcessEventQueue();
-    // Execute current state
-    uFsm_.ExecuteState();
+        // Switch State (if something happens)
+        uFsm_.SwitchState();
+        // Process Events
+        uFsm_.ProcessEventQueue();
+        // Execute current state
+        uFsm_.ExecuteState();
 
-    for (auto& taskMap : tasksMap_) {
-        try {
-            taskMap.second.task->Update();
-        } catch (tpik::ExceptionWithHow& e) {
-            std::cerr << "UPDATE TASK EXCEPTION" << std::endl;
-            std::cerr << "who " << e.what() << " how: " << e.how() << std::endl;
+        for (auto& taskMap : tasksMap_) {
+            try {
+                taskMap.second.task->Update();
+            } catch (tpik::ExceptionWithHow& e) {
+                std::cerr << "UPDATE TASK EXCEPTION" << std::endl;
+                std::cerr << "who " << e.what() << " how: " << e.how() << std::endl;
+            }
         }
-    }
-    // Computing Kinematic Control via TPIK
-    yTpik_ = solver_->ComputeVelocities();
+        // Computing Kinematic Control via TPIK
+        yTpik_ = solver_->ComputeVelocities();
 
-    std::cout << "yTpik_: " << std::endl;
-    std::cout << yTpik_ << std::endl;
+        /*std::cout << "yTpik_: " << std::endl;
+    std::cout << yTpik_ << std::endl;*/
 
-    for (int i = 0; i < yTpik_.size(); i++) {
-        if (std::isnan(yTpik_(i))) {
-            yTpik_(i) = 0.0;
-            RCLCPP_INFO(nh_->get_logger(), "NaN requested velocity");
+        for (int i = 0; i < yTpik_.size(); i++) {
+            if (std::isnan(yTpik_(i))) {
+                yTpik_(i) = 0.0;
+                RCLCPP_INFO(nh_->get_logger(), "NaN requested velocity");
+            }
         }
     }
 }

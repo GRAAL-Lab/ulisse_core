@@ -3,7 +3,7 @@ project(ulisse_map)
 
 set (CMAKE_CXX_STANDARD 17)
 if(NOT WIN32)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Wextra -fPIC")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Wextra -fPIC -Wno-deprecated-copy")
 endif()
 
 IF (NOT DEFINED BUILD_VERSION)
@@ -51,6 +51,7 @@ file(GLOB SOURCE_FILES
 
 add_library(ulissemap_lib
     src/feedbackupdater.cpp
+    src/taskdataupdater.cpp
     src/commandwrapper.cpp
 )
 

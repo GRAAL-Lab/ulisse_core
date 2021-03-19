@@ -103,7 +103,7 @@ namespace states {
             cartesianDistanceTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
         }
 
-        std::cout << "STATE LATLONG" << std::endl;
+        //std::cout << "STATE LATLONG" << std::endl;
 
         return fsm::ok;
     }

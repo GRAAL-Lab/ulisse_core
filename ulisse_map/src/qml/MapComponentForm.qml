@@ -37,8 +37,8 @@ Map {
 
     MapRuler {
         id: ruler
-        anchors.right: itemcurrent.left
-        anchors.top: parent.top
+        anchors.right: sliders.left
+        anchors.bottom: parent.bottom
         anchors.topMargin: 10
         anchors.rightMargin: 20
     }
@@ -65,7 +65,7 @@ Map {
     }
 
     Item{
-        id:itemcurrent
+        id: itemcurrent
         anchors.right: compass.left
         anchors.top: parent.top
         anchors.rightMargin: 15

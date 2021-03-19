@@ -10,12 +10,6 @@
 
 using std::placeholders::_1;
 
-double fRand(double fMin, double fMax)
-{
-    double f = (double)rand() / RAND_MAX;
-    return fMin + f * (fMax - fMin);
-}
-
 FeedbackUpdater::FeedbackUpdater(QObject* parent)
     : QObject(parent)
     , feedbackUpdateInterval_(200)
@@ -334,6 +328,17 @@ int FeedbackUpdater::get_right_satellite_sent()
     return right_satellite_sent_;
 }
 
+double FeedbackUpdater::get_current_data_deg()
+{
+    return current_data_deg;
+}
+
+double FeedbackUpdater::get_current_data_norm()
+{
+    return current_data_norm;
+}
+
+
 void FeedbackUpdater::process_callbacks_slot()
 {
 
@@ -347,17 +352,8 @@ QVector<double> FeedbackUpdater::GenerateRandFloatVector(int size)
     QVector<double> randVect(size);
 
     for (int i = 0; i < randVect.size(); i++) {
-        randVect[i] = fRand(0.0, 1.0);
+        randVect[i] = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);;
     }
     return randVect;
 }
 
-double FeedbackUpdater::get_current_data_deg()
-{
-    return current_data_deg;
-}
-
-double FeedbackUpdater::get_current_data_norm()
-{
-    return current_data_norm;
-}

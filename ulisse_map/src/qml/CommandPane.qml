@@ -386,6 +386,7 @@ Pane {
             Material.background: pressed ? orange : mainColor
 
             onClicked: {
+
                 cmdWrapper.sendHoldCommand(holdRadius.value)
             }
         }

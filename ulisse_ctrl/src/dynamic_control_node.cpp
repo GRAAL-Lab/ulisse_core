@@ -157,8 +157,11 @@ int main(int argc, char* argv[])
 
     while (rclcpp::ok()) {
 
-        // The feedback coming form the navigation filter
-        surgeFbk = filterData.bodyframe_linear_velocity[0];   // ?! è la velocità relativa all'acqua?
+        // Evaluating the total surge, taking into account the water current
+        Eigen::Rotation2D<double> wRb = Eigen::Rotation2D<double>(filterData.bodyframe_angular_position.yaw);
+        Eigen::Vector2d water_current_b = wRb.inverse() * Eigen::Vector2d(filterData.inertialframe_water_current.data());
+
+        surgeFbk = filterData.bodyframe_linear_velocity[0] + water_current_b[0];   // ?! è la velocità relativa all'acqua?
 
         yawRateFbk = filterData.bodyframe_angular_velocity[2];
 
@@ -212,11 +215,11 @@ int main(int argc, char* argv[])
 
                 feedbackVel(0) = surgeFbk;
                 feedbackVel(5) = yawRateFbk;
-                double outleft, outrigh;
+                double outleft, outright;
 
                 Eigen::Vector2d forces = ulisseModel.ThusterAllocation(tau);
-                ulisseModel.InverseMotorsEquations(feedbackVel, forces, outleft, outrigh);
-                ulisseModel.ThrustersSaturation(outleft, outrigh, -conf->thrusterPercLimit, conf->thrusterPercLimit, thrustersData.motor_percentage.left, thrustersData.motor_percentage.right);
+                ulisseModel.InverseMotorsEquations(feedbackVel, forces, outleft, outright);
+                ulisseModel.ThrustersSaturation(outleft, outright, -conf->thrusterPercLimit, conf->thrusterPercLimit, thrustersData.motor_percentage.left, thrustersData.motor_percentage.right);
 
                 //Fill the classic dynamic pid contol msg
                 auto t_now_ = std::chrono::system_clock::now();
@@ -232,11 +235,11 @@ int main(int argc, char* argv[])
                 classicPidControlMsg.forces = { forces[0], forces[1] };
                 classicPidControlMsg.tau = { tau[0], tau[1] };
                 classicPidControlMsg.motor_percentage.left = outleft;
-                classicPidControlMsg.motor_percentage.right = outrigh;
+                classicPidControlMsg.motor_percentage.right = outright;
 
                 classicPidControlPub->publish(classicPidControlMsg);
 
-                //fill the feedback for the nav filter
+                //fill the feedback for the nav filter    <----------- CHECK TODO
                 simulatedVelocitySensor.water_relative_surge = referenceVelocities.desired_surge;
                 simulatedVelocitySensorPub->publish(simulatedVelocitySensor);
             } else if (conf->ctrlMode == ControlMode::ComputedTorque) {

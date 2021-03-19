@@ -64,7 +64,7 @@ namespace states {
         // Set the gain of the cartesian distance task
         safetyBoundariesTask_->ExternalActivationFunction() = taskGainSafety * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
 
-        std::cout << "STATE HALT" << std::endl;
+        //std::cout << "STATE HALT" << std::endl;
         return fsm::ok;
     }
 }

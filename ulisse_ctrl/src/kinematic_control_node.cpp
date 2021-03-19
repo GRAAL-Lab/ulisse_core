@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
     int rate = 10;
     double sampleTime = 1.0 / rate;
     rclcpp::WallRate loop_rate(rate);
-    std::string filename="kcl_ulisse.conf";
+    std::string filename = "kcl_ulisse.conf";
 
     ulisse::VehicleController myVC(node, sampleTime, filename);
 

@@ -69,8 +69,6 @@ namespace states {
         double absoluteAxisAlignmentGain = rml::IncreasingBellShapedFunction(minWaterCurrent_, maxWaterCurrent_, 0, 1, inertialF_waterCurrent->norm());
         absoluteAxisAlignmentTask_->ExternalActivationFunction() = absoluteAxisAlignmentGain * Eigen::MatrixXd::Identity(absoluteAxisAlignmentTask_->TaskSpace(), absoluteAxisAlignmentTask_->TaskSpace());
 
-        std::cout << "linearVelocityTask_->ExternalActivationFunction():\n" << linearVelocityTask_->ExternalActivationFunction() << "\n";
-
         return true;
     }
 
@@ -149,7 +147,7 @@ namespace states {
             }
         }
 
-        std::cout << "STATE HOLD" << std::endl;
+        //std::cout << "STATE HOLD" << std::endl;
 
         return fsm::ok;
     }
