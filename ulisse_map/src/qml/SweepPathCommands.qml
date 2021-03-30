@@ -11,11 +11,11 @@ Row {
 
     property alias columnTrack: columnTrack
     property real fontSize: 14
-    property int defheigth: 41
+    property int defheigth: 42
     property color labelBackground: "transparent"
     property int edge: Qt.LeftEdge
     property color togglerColor: orange
-    property alias sliderW: sliderTogglerLeft.width
+    property int sliderW: 24
     property bool multichoice: false
 
     function rightEdge() {
@@ -27,69 +27,13 @@ Row {
     anchors.bottom: parent.bottom
     anchors.right: rightEdge() ? parent.right : undefined
     anchors.left: rightEdge() ? undefined : parent.left
-    width: sliderTogglerLeft.width + sliderContainerLeft.width
+    width: 24 + sliderContainerLeft.width
     opacity: 1
-
-    C1.Button {
-        id: sliderTogglerLeft
-        width: 24
-        height: 72
-        checkable: true
-        checked: false
-        y: parent.y + 350
-
-        transform: Scale {
-            origin.x: rightEdge() ? 0 : sliderTogglerLeft.width / 2
-            xScale: rightEdge() ? 1 : -1
-        }
-
-        style: C1S.ButtonStyle {
-            background: Rectangle {
-                color: "transparent"
-            }
-        }
-
-        property real shear: 0.333
-        property real mirror: rightEdge() ? 1.0 : -1.0
-
-        Rectangle {
-            width: sliderTogglerLeft.width / 2
-            height: sliderTogglerLeft.height / 2
-            color: togglerColor
-            antialiasing: true
-            anchors.top: parent.top
-            anchors.left: sliderTogglerLeft.checked ? parent.left : parent.horizontalCenter
-            anchors.leftMargin: -5
-
-            transform: Matrix4x4 {
-                property real d: sliderTogglerLeft.checked ? 1.0 : -1.0
-                matrix: Qt.matrix4x4(1.0, d * sliderTogglerLeft.shear, 0.0,
-                                     0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
-                                     0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0)
-            }
-        }
-
-        Rectangle {
-            width: sliderTogglerLeft.width / 2
-            height: sliderTogglerLeft.height / 2
-            color: togglerColor
-            antialiasing: true
-            anchors.top: parent.verticalCenter
-            anchors.right: sliderTogglerLeft.checked ? parent.right : parent.horizontalCenter
-            anchors.rightMargin: 5
-            transform: Matrix4x4 {
-                property real d: sliderTogglerLeft.checked ? -1.0 : 1.0
-                matrix: Qt.matrix4x4(1.0, d * sliderTogglerLeft.shear, 0.0,
-                                     0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
-                                     0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0)
-            }
-        }
-    }
 
     Rectangle {
         id: sliderContainerLeft
         height: parent.height
-        width: sliderTogglerLeft.checked ? defheigth + 120 : defheigth
+        width: 160//sliderTogglerLeft.checked ? defheigth + 120 : defheigth
         color: lightgrey
         Material.accent: mainColor
         Material.foreground: orange
@@ -103,7 +47,7 @@ Row {
 
             Column {
                 id: main_btns
-                width: sliderTogglerLeft.checked ? defheigth + 120 : defheigth
+                width: 160
 
                 Button {
                     id: addTracks
@@ -111,18 +55,18 @@ Row {
                     width: parent.width
                     height: defheigth
 
-                    text: (sliderTogglerLeft.checked) ? qsTr("Add Path") : qsTr("")
+                    text: qsTr("Add Path")
 
-                    onHoveredChanged: function () {
+                    /*onHoveredChanged: function () {
                         addTracksRect.color = (addTracksRect.color === blue) ? orange : blue
-                    }
+                    }*/
 
                     onClicked: function () {
                         bar_manage.show_shape_choice()
                         enableBtns(false)
                     }
 
-                    background: Rectangle {
+                    /*background: Rectangle {
                         id: addTracksRect
                         color: blue
                         anchors.fill: parent
@@ -133,7 +77,7 @@ Row {
                             visible: sliderTogglerLeft.checked ? false : true
                             source: 'qrc:/images/add-path.png'
                         }
-                    }
+                    }*/
                 }
 
                 Button {
@@ -141,13 +85,13 @@ Row {
                     height: defheigth
                     visible: columnTrack.children.length > 0
                     enabled: true
-                    text: sliderTogglerLeft.checked ? "Delete Paths" : ""
+                    text: "Delete Paths"
                     width: parent.width
-                    highlighted: true
+                    //highlighted: true
 
-                    onHoveredChanged: function () {
+                    /*onHoveredChanged: function () {
                         trackBG.color = (trackBG.color === blue) ? orange : blue
-                    }
+                    }*/
 
                     onClicked: function () {
                         multichoice = true
@@ -158,7 +102,7 @@ Row {
                         confirm_btns.visible = true
                     }
 
-                    background: Rectangle {
+                    /*background: Rectangle {
                         color: blue
                         anchors.fill: parent
                         id: trackBG
@@ -169,17 +113,17 @@ Row {
                             visible: sliderTogglerLeft.checked ? false : true
                             source: 'qrc:/images/trash.png'
                         }
-                    }
+                    }*/
                 }
             }
 
             Column {
                 id: confirm_btns
-                width: sliderTogglerLeft.checked ? defheigth + 120 : defheigth
+                width: defheigth + 120
                 visible: false
                 Button {
                     id: abort
-                    text: sliderTogglerLeft.checked ? "No" : ""
+                    text:"No"
                     width: parent.width
                     height: defheigth
                     highlighted: true
@@ -194,11 +138,11 @@ Row {
 
                     }
 
-                    onHoveredChanged: function () {
+                    /*onHoveredChanged: function () {
                         closeimg.color = (closeimg.color === red) ? lightred : red
-                    }
+                    }*/
 
-                    background: Rectangle {
+                    /*background: Rectangle {
                         id: closeimg
                         Image {
                             visible: sliderTogglerLeft.checked ? false : true
@@ -207,11 +151,11 @@ Row {
                             source: 'qrc:/images/close.png'
                         }
                         color: red
-                    }
+                    }*/
                 }
                 Button {
                     id: confirm
-                    text: sliderTogglerLeft.checked ? "Yes" : ""
+                    text: "Yes"
                     enabled: true
                     height: defheigth
                     highlighted: true
@@ -222,11 +166,11 @@ Row {
                         bar_manage.inhibit = false
                     }
 
-                    onHoveredChanged: function () {
+                    /*onHoveredChanged: function () {
                         checkimg.color = (checkimg.color === green) ? lightgreen : green
-                    }
+                    }*/
 
-                    background: Rectangle {
+                    /*background: Rectangle {
                         color: green
                         id: checkimg
                         Image {
@@ -235,15 +179,15 @@ Row {
                             anchors.verticalCenter: parent.verticalCenter
                             source: 'qrc:/images/check.png'
                         }
-                    }
+                    }*/
                 }
             }
 
             Column {
                 id: columnTrack
-                width: sliderTogglerLeft.checked ? defheigth + 120 : defheigth
+                width: defheigth + 120
                 y: 96
-                property bool expanded: sliderTogglerLeft.checked
+                //property bool expanded: sliderTogglerLeft.checked
             }
         }
     }

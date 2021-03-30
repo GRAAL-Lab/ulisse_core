@@ -114,8 +114,8 @@ RowLayout {
         }
 
         Rectangle {
-            id: manageToolbar
-            height: bar_manage.height
+            id: pathManageToolbar
+            height: 42
             color: Material.background
             anchors.bottom: bottomToolbar.top
             anchors.left: parent.left

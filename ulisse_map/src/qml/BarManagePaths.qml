@@ -182,7 +182,7 @@ BarManagePathsForm {
     }
 
     function show_panel(panel) {
-        manageToolbar.visible = true
+        pathManageToolbar.visible = true
         for (var i in panels)
             panels[i].visible = (panel === panels[i])
     }
@@ -206,7 +206,7 @@ BarManagePathsForm {
             sweepPathCmdPane.columnTrack.children[i].managed_path.disable_ab_markers()
         for (var i in panels)
             panels[i].visible = false
-        manageToolbar.visible = false
+        pathManageToolbar.visible = false
     }
 
     function enableBtns(y) {

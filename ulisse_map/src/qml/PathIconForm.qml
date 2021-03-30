@@ -20,7 +20,7 @@ RowLayout {
     property alias name: name
     property alias tracklistlayout: tracklistlayout
     property bool toggled: false
-    property bool expanded: false
+    //property bool expanded: false
 
     signal selected(var path)
     signal edit(var path)
@@ -31,7 +31,7 @@ RowLayout {
 
     Button {
         id: name
-        text: expanded ? managed_path._pathName : ntrack
+        text:  "Path " + ntrack // managed_path._pathName
         font.weight: Font.ExtraBold
         highlighted: true
         font.pointSize: 11

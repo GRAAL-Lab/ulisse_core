@@ -32,7 +32,7 @@ PathIconForm {
     Material.background: green
 
     //tracklistlayout.y: tracklistlayout.height*(tracklistlayout.ntrack)
-    expanded: parent.expanded
+    //expanded: parent.expanded
     width: parent.width
     //nametrack: qsTr(ntrack.toString())
 }
