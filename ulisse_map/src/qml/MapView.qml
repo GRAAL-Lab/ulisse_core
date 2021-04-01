@@ -48,9 +48,9 @@ MapViewForm {
     }
 
     map.onZoomLevelChanged: {
-        for (var i = 0; i < slidersLeft.columnTrack.children.length; i++) {
-            slidersLeft.columnTrack.children[i].managed_path.a_marker.zoomLevel = map.zoomLevel / 2 + 9
-            slidersLeft.columnTrack.children[i].managed_path.b_marker.zoomLevel = map.zoomLevel / 2 + 9
+        for (var i = 0; i < sweepPathCmdPane.columnTrack.children.length; i++) {
+            sweepPathCmdPane.columnTrack.children[i].managed_path.a_marker.zoomLevel = map.zoomLevel / 2 + 9
+            sweepPathCmdPane.columnTrack.children[i].managed_path.b_marker.zoomLevel = map.zoomLevel / 2 + 9
         }
     }
 

@@ -26,7 +26,7 @@ RowLayout {
     property alias map: map
     property alias mapsidebar: mapsidebar
     property alias pathState: pathState
-    property alias slidersLeft: sweepPathCmdPane
+    property alias sweepPathCmdPane: mapsidebar.sweepPathCmdPane
 
     spacing: 0
     width: window.width
@@ -85,6 +85,10 @@ RowLayout {
         Layout.maximumWidth: 350
         Material.elevation: myElevation
         Material.accent: grey
+
+        labelColor1: blue
+        labelColor2: red
+        labelColor3: green
     }
 
     property real my_height: 17
@@ -104,13 +108,6 @@ RowLayout {
             plugin: mapPlugin
             center: marker_coords // Genoa
             zoomLevel: 16.5 //(maximumZoomLevel - minimumZoomLevel)/2
-        }
-
-        SweepPathCommands {
-            id: sweepPathCmdPane
-            anchors.bottom: bottomToolbar.top
-            anchors.bottomMargin: 20
-            //edge: Qt.LeftEdge
         }
 
         Rectangle {

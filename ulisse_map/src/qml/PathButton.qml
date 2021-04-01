@@ -12,7 +12,7 @@ import QtQuick.Dialogs 1.2
 import "."
 import "../scripts/helper.js" as Helper
 
-PathIconForm {
+PathButtonForm {
     name.onClicked: function () {
         selected(managed_path)
     }

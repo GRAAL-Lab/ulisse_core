@@ -22,7 +22,7 @@
         <file>scripts/helper.js</file>
         <file>qml/MapRuler.qml</file>
         <file>qml/MapSliders.qml</file>
-        <file>qml/MapSidebarForm.qml</file>
+        <file>qml/MapSidebar.qml</file>
         <file>qml/DataView.qml</file>
         <file>qml/SettingsDialog.qml</file>
         <file>qml/HelpDialog.qml</file>
@@ -32,7 +32,6 @@
         <file>images/restart-256_grey.png</file>
         <file>qml/MapComponent.qml</file>
         <file>qml/MapRulerForm.qml</file>
-        <file>qml/MapSidebar.qml</file>
         <file>qml/LabelledTextForm.qml</file>
         <file>qml/MapViewForm.qml</file>
         <file>qml/MapComponentForm.qml</file>
@@ -43,11 +42,11 @@
         <file>qml/MapCanvas.qml</file>
         <file>qml/MapMarker.qml</file>
         <file>qml/MapDashedLine.qml</file>
-        <file>qml/PathIcon.qml</file>
-        <file>qml/PathIconForm.qml</file>
+        <file>qml/PathButton.qml</file>
+        <file>qml/PathButtonForm.qml</file>
         <file>qml/CommandPane.qml</file>
         <file>qml/MapHandle.qml</file>
-        <file>qml/SweepPathCommands.qml</file>
+        <file>qml/PathsCommands.qml</file>
         <file>qml/BarParamsPolygon.qml</file>
         <file>qml/BarParamsPolyline.qml</file>
         <file>images/plus.png</file>

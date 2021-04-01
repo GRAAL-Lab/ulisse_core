@@ -16,7 +16,7 @@ BarManagePathsForm {
 
     Component.onCompleted: function () {
         hide_all()
-        trackComponent = Qt.createComponent("PathIcon.qml")
+        trackComponent = Qt.createComponent("PathButton.qml")
     }
 
     cancelPathChoice.onClicked: function () {

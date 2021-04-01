@@ -89,7 +89,7 @@ namespace states {
         absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
         absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(cos(goalHeading), sin(goalHeading), 0), rml::FrameID::WorldFrame);
 
-        linearVelocityTask_->Reference() = Eigen::Vector3d(goalSurge, 0, 0);
+        linearVelocityTask_->SetReferenceRate(Eigen::Vector3d(goalSurge, 0, 0), robotModel->BodyFrameID());
 
         //compute the heading error
         double headingError = absoluteAxisAlignmentTask_->ControlVariable().norm();

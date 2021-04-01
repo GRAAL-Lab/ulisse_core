@@ -46,7 +46,7 @@ MapComponentForm {
     Component.onCompleted: {
         polyComponent = Qt.createComponent("MapPolygon.qml")
         pathComponent = Qt.createComponent("MapPath.qml")
-        trackComponent = Qt.createComponent("PathIcon.qml")
+        trackComponent = Qt.createComponent("PathButton.qml")
 
         polysec_cur = polyComponent.createObject(map_component)
         polysec_cur.click_handler = polysec_cur.click_handler_simple
