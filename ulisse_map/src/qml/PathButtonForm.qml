@@ -31,10 +31,7 @@ RowLayout {
 
     Button {
         id: name
-        text:  "Path " + ntrack // managed_path._pathName
-        font.weight: Font.ExtraBold
-        highlighted: true
-        font.pointSize: 11
+        text: ntrack + ": " + managed_path._pathName // managed_path._pathName
         Layout.fillHeight: true
         Layout.fillWidth: true
         antialiasing: false

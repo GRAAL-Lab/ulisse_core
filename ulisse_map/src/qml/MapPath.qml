@@ -6,7 +6,7 @@ import "."
 import "../scripts/helper.js" as Helper
 
 MapPolyline {
-    line.width: 3
+    line.width: 2
     line.color: lightgreen
     opacity: 1.0
     z: map.z + 5
@@ -14,6 +14,7 @@ MapPolyline {
     property bool multichoice: false
 
     property string type: "polyline"
+    property string _pathName: "Path"
 
     signal end
 
@@ -40,8 +41,6 @@ MapPolyline {
         a_marker.coordinate = t
     }
 
-    property string _pathName: "Path"
-
     Component.onCompleted: {
         Helper.init_lib(QtPositioning)
 
@@ -57,10 +56,8 @@ MapPolyline {
         b_marker = mapMarkerLetterComponent.createObject(map)
         a_marker.opacity = 0
         b_marker.opacity = 0
-        a_marker.source = "/images/a.png"
-        b_marker.source = "/images/b.png"
-        a_marker.z = z + 10
-        b_marker.z = z + 10
+        a_marker.content = "A";
+        b_marker.content = "B";
 
         map.addMapItem(_marker)
         map.addMapItem(_dashed_line)
@@ -189,8 +186,8 @@ MapPolyline {
     }
 
     function enable_ab_markers() {
-        a_marker.opacity = 1
-        b_marker.opacity = 1
+        a_marker.opacity = 0.75
+        b_marker.opacity = 0.75
     }
 
     function enable_vertex_markers() {

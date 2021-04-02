@@ -21,7 +21,6 @@ Rectangle {
         id: leftbarlayout
         anchors.fill: parent
         Layout.leftMargin: 15
-        width: parent.width
         spacing: 0
 
         Pane {
@@ -31,15 +30,9 @@ Rectangle {
             Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
             Layout.fillWidth: true
             Layout.fillHeight: false
+            Material.elevation: 6
 
             ColumnLayout {
-                id: mycol
-                anchors.top: parent.top
-                anchors.topMargin: 0
-                anchors.right: parent.right
-                anchors.rightMargin: 0
-                anchors.left: parent.left
-                anchors.leftMargin: 0
                 Layout.alignment: Qt.AlignLeft
 
                 Label {
@@ -71,9 +64,8 @@ Rectangle {
                     w:100
                     labelColor: labelColor1
                     label: "Position"
-                    text: fbkUpdater.ulisse_pos.latitude.toFixed(
-                              8) + ", " + fbkUpdater.ulisse_pos.longitude.toFixed(
-                              8)
+                    text: fbkUpdater.ulisse_pos.latitude.toFixed(8) + ", " +
+                          fbkUpdater.ulisse_pos.longitude.toFixed(8)
                     Layout.fillWidth: true
                 }
 

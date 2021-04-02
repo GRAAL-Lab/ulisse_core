@@ -11,7 +11,7 @@ import "."
 RowLayout {
     id: root
     property bool buttons: false
-    property var angle: parseInt(angleField.text)
+    property var angle: parseInt(angleField.text) + 90
     property var offset: parseInt(offsetField.text)
     property var method: methodField.currentText
     property var nameTrack: textnametrack.text
@@ -21,6 +21,8 @@ RowLayout {
     property var method_
     signal accept
     signal discard
+
+    //width: parent.width
 
     function getParams() {
         return {
@@ -77,12 +79,14 @@ RowLayout {
     LabelledField {
         id: groupBoxnurbs
         height: methodField.height + 40
+        width: methodField.width + 50
         title: qsTr("Path Type")
 
         ComboBox {
             id: methodField
             hoverEnabled: true
-            Layout.fillWidth: true
+            width: 140
+            //Layout.fillWidth: true
             model: ["simple", "single_winding"]
         }
     }

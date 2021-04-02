@@ -64,7 +64,7 @@ RowLayout {
         visible: false
     }
 
-    //Row for edit/play
+    // Row for edit/play
     RowLayout {
         id: panelManage
         width: 100

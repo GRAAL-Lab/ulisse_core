@@ -47,13 +47,6 @@ MapViewForm {
         cmdWrapper.sendThrusterActivation(true);
     }
 
-    map.onZoomLevelChanged: {
-        for (var i = 0; i < sweepPathCmdPane.columnTrack.children.length; i++) {
-            sweepPathCmdPane.columnTrack.children[i].managed_path.a_marker.zoomLevel = map.zoomLevel / 2 + 9
-            sweepPathCmdPane.columnTrack.children[i].managed_path.b_marker.zoomLevel = map.zoomLevel / 2 + 9
-        }
-    }
-
     followMeCheckbox.onCheckStateChanged: {
         followMeCheckbox.checked ? followMeTimer.start() : followMeTimer.stop()
     }

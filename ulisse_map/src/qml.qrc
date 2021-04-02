@@ -51,8 +51,6 @@
         <file>qml/BarParamsPolyline.qml</file>
         <file>images/plus.png</file>
         <file>qml/MapMarkerLetter.qml</file>
-        <file>images/a.png</file>
-        <file>images/b.png</file>
         <file>images/check.png</file>
         <file>images/close.png</file>
         <file>images/add-path.png</file>

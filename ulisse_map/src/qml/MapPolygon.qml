@@ -8,7 +8,7 @@ import "../scripts/helper.js" as Helper
 
 MapPolyline {
     id: root
-    line.width: 3
+    line.width: 2
     opacity: 1.0
     z: map.z + 5
 
@@ -73,8 +73,8 @@ MapPolyline {
         a_marker = mapMarkerLetterComponent.createObject(map)
         b_marker = mapMarkerLetterComponent.createObject(map)
 
-        a_marker.source = "/images/a.png"
-        b_marker.source = "/images/b.png"
+        a_marker.content = "A";
+        b_marker.content = "B";
 
         map.addMapItem(_canvas)
         map.addMapItem(_marker)
@@ -257,8 +257,8 @@ MapPolyline {
     }
 
     function enable_ab_markers() {
-        a_marker.opacity = 1
-        b_marker.opacity = 1
+        a_marker.opacity = 0.75
+        b_marker.opacity = 0.75
     }
 
     function enable_vertex_markers() {

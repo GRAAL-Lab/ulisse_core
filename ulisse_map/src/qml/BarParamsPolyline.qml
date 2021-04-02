@@ -10,6 +10,7 @@ import QtQuick.Dialogs 1.2
 RowLayout {
     id: root
 
+    // CHECK
     property bool buttons: false
     property var nameTrack: textnametrack.text
     property var nameTrack_

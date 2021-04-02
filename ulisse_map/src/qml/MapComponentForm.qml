@@ -32,15 +32,15 @@ Map {
         anchors.fill: map
         source: map
         //Qt.rgba(1.0, 0.2, 0, 0.1)
-        color: (settings.theme === "Light") ? "transparent" : cyan
+        color: (settings.theme === "Light") ? "transparent" : Qt.rgba(1.0, 0.2, 0, 0.1)
     }
 
     MapRuler {
         id: ruler
-        anchors.right: sliders.left
-        anchors.bottom: parent.bottom
+        anchors.left: map.left
+        anchors.top: map.top
         anchors.topMargin: 10
-        anchors.rightMargin: 20
+        anchors.leftMargin: 20
     }
 
     MapSliders {
