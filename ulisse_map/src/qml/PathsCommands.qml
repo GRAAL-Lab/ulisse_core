@@ -3,6 +3,7 @@ import QtQuick.Layouts 1.3
 import QtQuick.Controls 2.2
 import QtQml.Models 2.1
 import QtQuick.Controls.Material 2.1
+import QtQuick.Dialogs 1.2
 import "."
 
 RowLayout {
@@ -25,7 +26,7 @@ RowLayout {
             Button {
                 id: addTracks
                 highlighted: true
-                Material.background: pressed ? orange : mainColor
+                Material.background: pressed ? orange : softorange
                 Layout.fillWidth: true
                 Layout.fillHeight: false
                 text: qsTr("Add Path...")
@@ -34,19 +35,6 @@ RowLayout {
                     bar_manage.show_shape_choice()
                     enableBtns(false)
                 }
-
-                /*background: Rectangle {
-                        id: addTracksRect
-                        color: blue
-                        anchors.fill: parent
-                        Image {
-                            id: addimg
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            anchors.verticalCenter: parent.verticalCenter
-                            visible: sliderTogglerLeft.checked ? false : true
-                            source: 'qrc:/images/add-path.png'
-                        }
-                    }*/
             }
 
             Button {
@@ -57,29 +45,16 @@ RowLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: false
                 highlighted: true
-                Material.background: pressed ? orange : mainColor
+                Material.background: pressed ? orange : softorange
 
                 onClicked: function () {
                     multichoice = true
                     bar_manage.inhibit = true
                     bar_manage.hide_all()
-                    sweepPathCmdPane.deselect_all()
+                    pathCommandsPane.deselect_all()
                     main_btns.visible = false
                     confirm_btns.visible = true
                 }
-
-                /*background: Rectangle {
-                        color: blue
-                        anchors.fill: parent
-                        id: trackBG
-                        Image {
-                            id: trashimg
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            anchors.verticalCenter: parent.verticalCenter
-                            visible: sliderTogglerLeft.checked ? false : true
-                            source: 'qrc:/images/trash.png'
-                        }
-                    }*/
             }
         }
 
@@ -103,17 +78,6 @@ RowLayout {
                     bar_manage.hide_all()
                     bar_manage.show_manage()
                 }
-
-                /*background: Rectangle {
-                        id: closeimg
-                        Image {
-                            visible: sliderTogglerLeft.checked ? false : true
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            anchors.verticalCenter: parent.verticalCenter
-                            source: 'qrc:/images/close.png'
-                        }
-                        color: red
-                    }*/
             }
             Button {
                 id: confirm
@@ -128,17 +92,6 @@ RowLayout {
                     delete_toggled_items()
                     bar_manage.inhibit = false
                 }
-
-                /*background: Rectangle {
-                        color: green
-                        id: checkimg
-                        Image {
-                            visible: sliderTogglerLeft.checked ? false : true
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            anchors.verticalCenter: parent.verticalCenter
-                            source: 'qrc:/images/check.png'
-                        }
-                    }*/
             }
         }
 
@@ -148,7 +101,149 @@ RowLayout {
             width: defheigth + 120
             y: 96
         }
+
+
+        RowLayout {
+            id: loadSavePath
+            Layout.fillWidth: true
+            Button {
+                id: savePath
+                Layout.fillWidth: true
+                Layout.fillHeight: false
+                text: "Save"
+
+                highlighted: true
+                Material.background: pressed ? orange : softorange
+
+                antialiasing: false
+                transformOrigin: Item.Left
+                enabled: true
+
+                onClicked: {
+                    savePathDialog.open()
+                }
+            }
+
+            Button {
+                id: loadPath
+                Layout.fillWidth: true
+                Layout.fillHeight: false
+                text: "Load"
+
+                highlighted: true
+                Material.background: pressed ? orange : softorange
+
+                focusPolicy: Qt.WheelFocus
+                transformOrigin: Item.Right
+                antialiasing: false
+                enabled: (mapView.pathCurrentState === pathState.empty) ? true : false
+
+                onClicked: {
+                    loadPathDialog.open()
+                }
+            }
+        }
     }
+
+    FileDialog {
+        id: loadPathDialog
+        title: "Please choose a file"
+        folder: shortcuts.home
+        nameFilters: ["Path Files (*.path)"]
+
+        onAccepted: {
+            var path = loadPathDialog.fileUrl.toString()
+            path = path.replace(/^(file:\/{2})/, "")
+            loadPaths(path)
+        }
+    }
+
+    FileDialog {
+        id: savePathDialog
+        title: "Saving path..."
+        folder: shortcuts.home
+        selectExisting: false
+        nameFilters: ["Path Files (*.path)"]
+
+        onAccepted: {
+            var path = savePathDialog.fileUrl.toString()
+            path = path.replace(/^(file:\/{2})/,
+                                "") // remove prefixed "file://"
+            path = decodeURIComponent(
+                        path) + ".path" // unescape html codes like '%23' for '#'
+            savePaths(path)
+        }
+    }
+
+    function savePaths(filePath) {
+        if (pathCommandsPane.columnTrack.children.length === 0) {
+            toast.show("There is nothing to save!")
+            return
+        }
+
+        var all_paths = {
+            security_box: null,
+            paths//TODO security box
+            : []
+        }
+
+        for (var i = 0; i < pathCommandsPane.columnTrack.children.length; i++) {
+            all_paths.paths.push(
+                        pathCommandsPane.columnTrack.children[i].managed_path.serialize())
+        }
+
+        cmdWrapper.savePathToFile(filePath, JSON.stringify(all_paths))
+        toast.show("Mission saved", 2000)
+    }
+
+    function loadPaths(filePath) {
+        var jsondata = cmdWrapper.loadPathFromFile(filePath)
+        var data = JSON.parse(jsondata)
+
+        var i, j, lat, lon, p
+
+        for (i = 0; i < data.paths.length; i++) {
+            switch (data.paths[i].type) {
+            case "PolyPath":
+                var cur_managed = map.createPoly()
+                cur_managed.deserialize(data.paths[i])
+
+                var v = trackComponent.createObject(pathCommandsPane.columnTrack)
+                v.managed_path = cur_managed
+                v.ntrack = pathCommandsPane.columnTrack.children.length
+                v.selected.connect(function (path) {
+                    pathCommandsPane.update_selection(path)
+                    bar_manage.manage(path)
+                })
+
+                cur_managed.draw_deferred()
+                break
+            case "PointPath":
+                var cur_managed = map.createPath()
+                cur_managed.deserialize(data.paths[i])
+
+                var v = trackComponent.createObject(pathCommandsPane.columnTrack)
+                v.managed_path = cur_managed
+                v.ntrack = pathCommandsPane.columnTrack.children.length
+                v.selected.connect(function (path) {
+                    pathCommandsPane.update_selection(path)
+                    bar_manage.manage(path)
+                })
+
+                cur_managed.draw_deferred()
+                break
+            case "SecurityPoly":
+                map.polysec_cur.clear_path()
+                polysec_cur.deserialize(data.paths[i])
+                polysec_cur.draw_deferred()
+                break
+            }
+        }
+        toast.show("Mission loaded", 2000)
+    }
+
+
+
 
     function enableBtns(y) {
         addTracks.enabled = y

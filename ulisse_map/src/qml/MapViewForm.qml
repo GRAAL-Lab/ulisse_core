@@ -112,7 +112,7 @@ RowLayout {
 
         Rectangle {
             id: pathManageToolbar
-            color: Qt.rgba(0.2, 0.56, 0.64, 0.75)
+            color: Qt.rgba(0.9, 0.45, 0.1, 0.75)
             implicitWidth: bar_manage.implicitWidth
             implicitHeight: bar_manage.implicitHeight
             anchors.bottom: bottomToolbar.top

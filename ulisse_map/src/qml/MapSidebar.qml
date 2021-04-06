@@ -21,16 +21,14 @@ Rectangle {
         id: leftbarlayout
         anchors.fill: parent
         Layout.leftMargin: 15
-        spacing: 0
+        spacing: 2
 
         Pane {
             id: statusdatarect
-            height: 120
-            clip: false
             Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
             Layout.fillWidth: true
             Layout.fillHeight: false
-            Material.elevation: 6
+            Material.elevation: 0
 
             ColumnLayout {
                 Layout.alignment: Qt.AlignLeft
@@ -39,7 +37,7 @@ Rectangle {
                     id: my_label
                     font.pointSize: 12
                     font.weight: Font.DemiBold
-                    color: labelColor3
+                    color: labelColor1
                     text: "Status"
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter
@@ -49,7 +47,7 @@ Rectangle {
 
                 LabelledText {
                     id: ulisseStateLabel
-                    h:10
+                    h:12
                     w:100
                     labelColor: labelColor1
                     label: "State"
@@ -60,7 +58,7 @@ Rectangle {
 
                 LabelledText {
                     id: ulissePosLabel
-                    h:10
+                    h:12
                     w:100
                     labelColor: labelColor1
                     label: "Position"
@@ -71,7 +69,7 @@ Rectangle {
 
                 LabelledText {
                     id: markerTextLabel
-                    h:10
+                    h:12
                     w:100
                     labelColor: labelColor2
                     label: "Target"
@@ -81,7 +79,7 @@ Rectangle {
 
                 LabelledText {
                     id: goalDistLabel
-                    h:10
+                    h:12
                     w:100
                     text: fbkUpdater.goal_distance.toFixed(2) + " (m)"
                     objectName: "goalDistance"
@@ -108,9 +106,7 @@ Rectangle {
             antialiasing: true
             Layout.alignment: Qt.AlignLeft | Qt.AlignTop
             Layout.fillWidth: true
-            Layout.fillHeight: true
-            Layout.bottomMargin: 2
-            //Material.background: Material.color(Material.BlueGrey, Material.Shade50)
+            Material.background: Material.color(Material.BlueGrey, Material.Shade50)
         }
     }
 }

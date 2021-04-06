@@ -5,7 +5,7 @@ import QtLocation 5.6
 import QtPositioning 5.6
 import QtQuick.Controls.Material 2.1
 import QtGraphicalEffects 1.0
-import QtQuick.Dialogs 1.2
+
 import "."
 import "../scripts/helper.js" as Helper
 
@@ -16,11 +16,11 @@ Pane {
     property var trackComponent
     property alias speedHeadTimeout: speedHeadTimeout
     property alias buttonSafety1: buttonBoundBoxResend
-    property alias sweepPathCmdPane: sweepPathCmdPane
-    visible: true
+    property alias sweepPathCmdPane: pathCommandsPane
 
-    Layout.fillWidth: true
-    Layout.fillHeight: true
+    property var labelWidth: 100
+    property var sliderWidth: 100
+    property var unitsWidth: 50
 
     Component.onCompleted: {
         trackComponent = Qt.createComponent("PathButton.qml")
@@ -29,7 +29,7 @@ Pane {
     ColumnLayout {
         id: controlsColumn
         anchors.fill: parent
-        spacing: 0
+        spacing: 1
 
         RowLayout {
             id: boundingBoxControls
@@ -39,10 +39,10 @@ Pane {
                 color: green
                 text: "Safety area"
                 antialiasing: false
-                //Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                Layout.bottomMargin: 10
+                Layout.alignment: Qt.AlignVCenter //| Qt.AlignVCenter
+                //Layout.bottomMargin: 20
                 font.pointSize: 12
-                Layout.topMargin: 20
+                //Layout.topMargin: 20
                 font.weight: Font.DemiBold
             }
 
@@ -69,7 +69,7 @@ Pane {
                         map.pos_changed_handler = function () {}
                         text = "Redefine"
                         buttonBoundBoxResend.enabled = true
-                        sweepPathCmdPane.check_safety_all()
+                        pathCommandsPane.check_safety_all()
                         cmdWrapper.sendBoundaries(JSON.stringify(map.polysec_cur.serialize()))
                     }
 
@@ -110,7 +110,7 @@ Pane {
 
         Label {
             text: "Parameters"
-            color: green
+            color: grey
             Layout.bottomMargin: 10
             Layout.topMargin: 5
             antialiasing: false
@@ -120,15 +120,17 @@ Pane {
         }
 
         RowLayout {
-            Layout.fillWidth: true
-            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+            id: cruiseSpeedControl
+            //Layout.fillWidth: true
+            Layout.alignment: Qt.AlignVCenter //| Qt.AlignHCenter
 
             Label {
-                text: qsTr("Cruise speed")
+                text: qsTr("Cruise speed  ")
                 clip: false
                 leftPadding: 5
                 font.pointSize: 11
-                Layout.fillWidth: true
+                width: labelWidth
+                //Layout.fillWidth: true
                 verticalAlignment: Text.AlignVCenter
                 horizontalAlignment: Text.AlignLeft
             }
@@ -136,7 +138,8 @@ Pane {
             Slider {
                 id: sliderSpeed
                 objectName: "cruiseSpeed"
-                Layout.preferredWidth: 110
+                Layout.preferredWidth: sliderWidth
+                //Layout.preferredWidth: 110
                 Layout.leftMargin: 0
                 to: 5
                 from: 0.0
@@ -153,54 +156,23 @@ Pane {
                 verticalAlignment: Text.AlignVCenter
                 horizontalAlignment: Text.AlignLeft
                 Layout.leftMargin: 10
-                Layout.fillWidth: true
+                Layout.preferredWidth: unitsWidth
                 font.pointSize: 11
             }
         }
 
 
         RowLayout {
-            Layout.fillWidth: true
-            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+            id: cruiseHeadingControl
+            //Layout.fillWidth: true
+            Layout.alignment: Qt.AlignVCenter //| Qt.AlignHCenter
 
             Label {
-                text: qsTr("Accept. radius")
+                text: qsTr("Heading           ")
                 leftPadding: 5
                 font.pointSize: 11
-                Layout.fillWidth: true
-                horizontalAlignment: Text.AlignLeft
-                verticalAlignment: Text.AlignVCenter
-            }
-
-            Slider {
-                id: holdRadius
-                Layout.preferredWidth: 110
-                Layout.leftMargin: 0
-                value: 5
-                stepSize: 0.1
-                from: 0.5
-                to: 10
-            }
-
-            Text {
-                text: holdRadius.value.toFixed(1) + " m"
-                Layout.fillWidth: true
-                font.pointSize: 11
-                horizontalAlignment: Text.AlignLeft
-                verticalAlignment: Text.AlignVCenter
-            }
-        }
-
-
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-
-            Label {
-                text: qsTr("Heading")
-                leftPadding: 5
-                font.pointSize: 11
-                Layout.fillWidth: true
+                width: labelWidth
+                //Layout.fillWidth: true
                 horizontalAlignment: Text.AlignLeft
                 verticalAlignment: Text.AlignBottom
             }
@@ -210,7 +182,8 @@ Pane {
                 //width: 250
                 //wheelEnabled: false
                 value: 5
-                Layout.preferredWidth: 110
+                Layout.preferredWidth: sliderWidth
+                //: 110
                 Layout.leftMargin: 0
                 stepSize: 0.1
                 from: 0
@@ -223,15 +196,53 @@ Pane {
                 font.pointSize: 11
                 horizontalAlignment: Text.AlignLeft
                 verticalAlignment: Text.AlignVCenter
+                Layout.preferredWidth: unitsWidth
             }
         }
 
         RowLayout {
-            Layout.fillWidth: true
-            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+            id: acceptRadControl
+            //Layout.fillWidth: true
+            Layout.alignment: Qt.AlignVCenter //| Qt.AlignHCenter
+
+            Label {
+                text: qsTr("Accept. radius")
+                leftPadding: 5
+                font.pointSize: 11
+                width: labelWidth
+                //Layout.fillWidth: true
+                horizontalAlignment: Text.AlignLeft
+                verticalAlignment: Text.AlignVCenter
+            }
+
+            Slider {
+                id: holdRadius
+                Layout.preferredWidth: sliderWidth
+                //Layout.preferredWidth: 110
+                Layout.leftMargin: 0
+                value: 5
+                stepSize: 0.1
+                from: 0.5
+                to: 10
+            }
+
+            Text {
+                text: holdRadius.value.toFixed(1) + " m"
+                Layout.preferredWidth: unitsWidth
+                font.pointSize: 11
+                horizontalAlignment: Text.AlignLeft
+                verticalAlignment: Text.AlignVCenter
+            }
+        }
+
+        RowLayout {
+            id: commandDurationControl
+            //Layout.fillWidth: true
+            Layout.alignment: Qt.AlignVCenter //| Qt.AlignHCenter
 
             Column{
-                Layout.fillWidth: true
+                Layout.preferredWidth: labelWidth - 10
+                //Layout.fillWidth: true
                 Label {
                     text: qsTr("Duration")
                     font.underline: false
@@ -256,27 +267,27 @@ Pane {
                 editable: true
                 to: 1000
                 value: 200
-                Layout.fillWidth: true
+                Layout.preferredWidth: sliderWidth + 25
                 onValueChanged: function(){
                     settings.shTimeout = speedHeadTimeout.value
                 }
             }
 
             Text {
-                id: element3
                 text: "s"
                 font.pointSize: 11
                 horizontalAlignment: Text.AlignLeft
                 verticalAlignment: Text.AlignVCenter
+                Layout.preferredWidth: unitsWidth
             }
         }
 
 
         Label {
             Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-            font.pointSize: 11
+            font.pointSize: 12
             font.weight: Font.DemiBold
-            color: green
+            color: cyan
             text: "Commands"
         }
 
@@ -308,7 +319,6 @@ Pane {
         }
 
 
-
         Button {
             id: holdButton
             text: "Hold Position"
@@ -319,7 +329,6 @@ Pane {
             Material.background: pressed ? orange : mainColor
 
             onClicked: {
-
                 cmdWrapper.sendHoldCommand(holdRadius.value)
             }
         }
@@ -343,8 +352,8 @@ Pane {
         }
 
         Label {
-            id: pathlabel
-            color: green
+            id: pathLabel
+            color: softorange
             text: "Paths"
             //Layout.bottomMargin: 10
             Layout.topMargin: 10
@@ -355,173 +364,17 @@ Pane {
         }
 
         PathsCommands {
-            id: sweepPathCmdPane
+            id: pathCommandsPane
             Layout.bottomMargin: 10
             //Layout.topMargin: 20
             Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
             Layout.fillWidth: true
             Layout.fillHeight: false
-
         }
 
 
-        RowLayout {
-            id: rectid
-            Layout.fillWidth: true
-            RowLayout {
-                id: loadSavePath
-                Layout.fillWidth: true
-                Button {
-                    id: savePath
-                    Layout.fillWidth: true
-                    Layout.fillHeight: false
-                    text: "Save"
-
-                    highlighted: true
-                    Material.background: pressed ? orange : mainColor
-
-                    antialiasing: false
-                    transformOrigin: Item.Left
-                    enabled: true
-
-                    onClicked: {
-                        savePathDialog.open()
-                    }
-                }
-
-                Button {
-                    id: loadPath
-                    Layout.fillWidth: true
-                    Layout.fillHeight: false
-                    text: "Load"
-
-                    highlighted: true
-                    Material.background: pressed ? orange : mainColor
-
-                    focusPolicy: Qt.WheelFocus
-                    transformOrigin: Item.Right
-                    antialiasing: false
-                    enabled: (mapView.pathCurrentState === pathState.empty) ? true : false
-
-                    onClicked: {
-                        loadPathDialog.open()
-                    }
-                }
-            }
-        }
-
-        Rectangle {
-            id: rectangle
-            width: 200
-            height: 200
-            color: "#ffffff"
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-        }
 
     }
 
-    FileDialog {
-        id: loadPathDialog
-        title: "Please choose a file"
-        folder: shortcuts.home
-        nameFilters: ["Path Files (*.ulisse)"]
 
-        onAccepted: {
-            var path = loadPathDialog.fileUrl.toString()
-            path = path.replace(/^(file:\/{2})/, "")
-            loadPaths(path)
-        }
-    }
-
-    FileDialog {
-        id: savePathDialog
-        title: "Saving path..."
-        folder: shortcuts.home
-        selectExisting: false
-        nameFilters: ["Path Files (*.ulisse)"]
-
-        onAccepted: {
-            var path = savePathDialog.fileUrl.toString()
-            path = path.replace(/^(file:\/{2})/,
-                                "") // remove prefixed "file://"
-            path = decodeURIComponent(
-                        path) // unescape html codes like '%23' for '#'
-            savePaths(path)
-        }
-    }
-
-    function savePaths(filePath) {
-        if (sweepPathCmdPane.columnTrack.children.length === 0) {
-            toast.show("There is nothing to save!")
-            return
-        }
-
-        var all_paths = {
-            security_box: null,
-            paths//TODO security box
-            : []
-        }
-
-        for (var i = 0; i < sweepPathCmdPane.columnTrack.children.length; i++) {
-            all_paths.paths.push(
-                        sweepPathCmdPane.columnTrack.children[i].managed_path.serialize())
-        }
-
-        cmdWrapper.savePathToFile(filePath, JSON.stringify(all_paths))
-        toast.show("Mission saved", 2000)
-    }
-
-    function loadPaths(filePath) {
-        var jsondata = cmdWrapper.loadPathFromFile(filePath)
-        var data = JSON.parse(jsondata)
-
-        var i, j, lat, lon, p
-
-        for (i = 0; i < data.paths.length; i++) {
-            switch (data.paths[i].type) {
-            case "PolyPath":
-                var cur_managed = map.createPoly()
-                cur_managed.deserialize(data.paths[i])
-
-                var v = trackComponent.createObject(sweepPathCmdPane.columnTrack)
-                v.managed_path = cur_managed
-                v.ntrack = sweepPathCmdPane.columnTrack.children.length
-                v.selected.connect(function (path) {
-                    sweepPathCmdPane.update_selection(path)
-                    bar_manage.manage(path)
-                })
-
-                cur_managed.draw_deferred()
-                break
-            case "PointPath":
-                var cur_managed = map.createPath()
-                cur_managed.deserialize(data.paths[i])
-
-                var v = trackComponent.createObject(sweepPathCmdPane.columnTrack)
-                v.managed_path = cur_managed
-                v.ntrack = sweepPathCmdPane.columnTrack.children.length
-                v.selected.connect(function (path) {
-                    sweepPathCmdPane.update_selection(path)
-                    bar_manage.manage(path)
-                })
-
-                cur_managed.draw_deferred()
-                break
-            case "SecurityPoly":
-                map.polysec_cur.clear_path()
-                polysec_cur.deserialize(data.paths[i])
-                polysec_cur.draw_deferred()
-                break
-            }
-        }
-        toast.show("Mission loaded", 2000)
-    }
 }
-
-/*##^##
-Designer {
-    D{i:0;height:1078;width:300}D{i:5;anchors_x:0}D{i:4;anchors_x:0}D{i:11;anchors_x:0}
-D{i:10;anchors_x:0}D{i:20;anchors_x:0}D{i:19;anchors_x:0}D{i:24;anchors_width:200;anchors_x:0}
-}
-##^##*/

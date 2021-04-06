@@ -617,5 +617,5 @@ MapPolyline {
 
     function highlighted(yes) {
         //line.color = yes ? orange : green
-    }
+    }x  x
 }

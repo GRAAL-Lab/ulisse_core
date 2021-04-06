@@ -17,7 +17,7 @@ RowLayout {
     //elementi che definiscono l'elemento
     property int ntrack: -1
     property var managed_path
-    property alias name: name
+    property alias name: pathButton
     property alias tracklistlayout: tracklistlayout
     property bool toggled: false
     //property bool expanded: false
@@ -30,7 +30,7 @@ RowLayout {
     antialiasing: true
 
     Button {
-        id: name
+        id: pathButton
         text: ntrack + ": " + managed_path._pathName // managed_path._pathName
         Layout.fillHeight: true
         Layout.fillWidth: true
@@ -46,7 +46,7 @@ RowLayout {
             }
 
             PropertyChanges {
-                target: name
+                target: pathButton
             }
         }
     ]

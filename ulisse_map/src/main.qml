@@ -14,12 +14,13 @@ import "./qml"
 ApplicationWindow {
     id: window
     minimumWidth: 1300
-    minimumHeight: 800
+    minimumHeight: 900
     visible: true
     //visibility: "Maximized"
 
     property color blue: Material.color(Material.Blue, Material.Shade700)
     property color orange: Material.color(Material.Amber, Material.Shade700)
+    property color softorange: Material.color(Material.DeepOrange, Material.Shade400)
     property color red: Material.color(Material.Red, Material.Shade700)
     property color lightred: Material.color(Material.Red, Material.Shade500)
     property color green: Material.color(Material.Green, Material.Shade700)
