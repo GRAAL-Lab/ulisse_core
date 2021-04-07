@@ -11,7 +11,7 @@ import "."
 RowLayout {
     id: root
     property bool buttons: false
-    property var angle: parseInt(angleField.text) + 90
+    property var angle: parseInt(angleField.text)
     property var offset: parseInt(offsetField.text)
     property var method: methodField.currentText
     property var nameTrack: textnametrack.text

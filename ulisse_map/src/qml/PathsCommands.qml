@@ -41,7 +41,7 @@ RowLayout {
                 id: deleteTracks
                 visible: pathButtonsColumn.children.length > 0
                 enabled: true
-                text: "Delete Paths"
+                text: "Delete Paths..."
                 Layout.fillWidth: true
                 Layout.fillHeight: false
                 highlighted: true
@@ -312,4 +312,9 @@ RowLayout {
         restoreBtns()
         deselect_all()
     }
+
+    /*Keys.onEscapePressed: {
+         console.log("escapeItem in PathsCommands.qml is handling escape");
+        deselect_all()
+    }*/
 }

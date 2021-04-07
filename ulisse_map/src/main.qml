@@ -13,8 +13,8 @@ import "./qml"
 
 ApplicationWindow {
     id: window
-    minimumWidth: 1300
-    minimumHeight: 900
+    minimumWidth: 1100
+    minimumHeight: 800
     visible: true
     //visibility: "Maximized"
 
@@ -137,7 +137,7 @@ ApplicationWindow {
 
         StackLayout {
             id: mainStackView
-            height: parent.height
+            //height: parent.height
             anchors.fill: parent
             currentIndex: headerBar.tabBarIndex
             Layout.alignment: Qt.AlignHCenter

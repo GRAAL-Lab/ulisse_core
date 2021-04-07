@@ -19,8 +19,7 @@ Rectangle {
 
     ColumnLayout {
         id: leftbarlayout
-        anchors.fill: parent
-        Layout.leftMargin: 15
+        width: parent.width
         spacing: 2
 
         Pane {
@@ -103,9 +102,10 @@ Rectangle {
 
         CommandPane {
             id: commandRect
-            antialiasing: true
+            //antialiasing: true
             Layout.alignment: Qt.AlignLeft | Qt.AlignTop
             Layout.fillWidth: true
+            Layout.fillHeight: false
             Material.background: Material.color(Material.BlueGrey, Material.Shade50)
         }
     }

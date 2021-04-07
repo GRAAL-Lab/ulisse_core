@@ -59,5 +59,6 @@
         <file>images/alpha.svg</file>
         <file>qml/LabelledField.qml</file>
         <file>images/windarrow.png</file>
+        <file>qml/CommandsPathsTabView.qml</file>
     </qresource>
 </RCC>

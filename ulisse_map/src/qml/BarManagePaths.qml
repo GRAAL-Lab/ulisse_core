@@ -51,7 +51,7 @@ BarManagePathsForm {
 
     Keys.onEscapePressed: {
         discard()
-        console.log("escapeItem is handling escape");
+        console.log("escapeItem in BarManagePaths.qml is handling escape");
         // event.accepted is set to true by default for the specific key handlers
     }
 

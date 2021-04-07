@@ -899,6 +899,6 @@ MapPolyline {
 
 
     function highlighted(yes) {
-        //line.color = yes ? orange : lightgreen
+        line.color = yes ? orange : lightgreen
     }
 }
