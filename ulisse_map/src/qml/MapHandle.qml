@@ -48,6 +48,7 @@ MapQuickItem {
         MapPolyline {
             id: _line
             opacity: root.opacity
+            line.width: 2
         }
 
         MapCircle {

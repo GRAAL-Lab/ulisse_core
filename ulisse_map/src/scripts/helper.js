@@ -472,12 +472,13 @@ function init_canvas(canvas, map, width, height, lat, lon, px_multiplier) {
     canvas.coordinate = QtPositioning.coordinate(lat, lon)
     canvas.canvasAngle = 0
     canvas.multiplier = px_multiplier
-    canvas.canvasCtx.lineWidth = 6
+    canvas.canvasCtx.lineWidth = 3
     canvas.canvasCtx.lineJoin = "bevel"
 }
 
 function draw_line(ctx, x1, y1, x2, y2) {
-    ctx.strokeStyle = "#ff0000"
+    // line.color
+    ctx.strokeStyle = "#0093bf"
     ctx.beginPath()
     ctx.moveTo(x1, y1)
     ctx.lineTo(x2, y2)

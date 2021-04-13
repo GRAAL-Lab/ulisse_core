@@ -9,38 +9,61 @@ import QtGraphicalEffects 1.0
 import "."
 
 ToolBar {
-    property alias tabBarIndex: headerLayout.tabBarIndex
     id: toolBar
-    width: parent.width
 
+    property alias tabBarIndex: headerLayout.tabBarIndex
     property bool multichoice: false
 
-    Material.elevation: 4
-
-    Material.foreground: lightgrey
+    Material.foreground: lightergrey
     Material.background: (settings.theme == "Light" ? cyan : lightred)
     Material.accent: "white"
-
+    Material.elevation: 4
     Layout.alignment: Qt.AlignLeft
+    width: parent.width
 
     RowLayout {
         property alias tabBarIndex: headerBar.currentIndex
         id: headerLayout
         width: parent.width - toolButton.width
+        height: parent.height
         spacing: 0
 
         TabBar {
             id: headerBar
             width: headerLayout.width
+            height: headerLayout.height
+
             TabButton {
                 text: qsTr("Map")
                 Layout.fillWidth: true
-                width: headerLayout.width / 2
+                height: headerLayout.height
+                width: headerLayout.width / 3
+
+                background: Rectangle {
+                    color: (headerBar.currentIndex == 0) ? lightcyan : cyan
+                }
             }
+
             TabButton {
-                text: qsTr("Data")
+                text: qsTr("Sensors Data")
                 Layout.fillWidth: true
-                width: headerLayout.width / 2
+                height: headerLayout.height
+                width: headerLayout.width / 3
+
+                background: Rectangle {
+                    color: (headerBar.currentIndex == 1) ? lightcyan : cyan
+                }
+            }
+
+            TabButton {
+                text: qsTr("Tasks Data")
+                Layout.fillWidth: true
+                height: headerLayout.height
+                width: headerLayout.width / 3
+
+                background: Rectangle {
+                    color: (headerBar.currentIndex == 2) ? lightcyan : cyan
+                }
             }
         }
     }
@@ -52,6 +75,7 @@ ToolBar {
         font.pointSize: 16
         font.weight: Font.Bold
         Material.background: grey
+        Material.accent: "white"
 
         onClicked: optionsMenu.open()
         Menu {

@@ -13,8 +13,8 @@ Rectangle {
     property color labelColor3: green
     property alias commandRect: commandRect
     property alias speedHeadTimeout: commandRect.speedHeadTimeout
-    border.width: 5
-    border.color: lightgrey
+    //border.width: 5
+    //border.color: lightgrey
     visible: true
 
     ColumnLayout {

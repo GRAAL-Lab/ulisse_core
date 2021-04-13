@@ -18,6 +18,7 @@ RowLayout {
     property alias buttonEdit: buttonEdit
     property alias buttonPlay: buttonPlay
     property alias buttonToggle: buttonToggle
+    property alias buttonDeselectAll: buttonDeselectAll
 
     property alias rowChoices: rowChoices
     property alias panelPathChoice: panelPathChoice
@@ -84,6 +85,14 @@ RowLayout {
         Button {
             id: buttonEdit
             text: qsTr("Edit")
+        }
+
+        Button {
+            id: buttonDeselectAll
+            text: qsTr("X")
+            Material.background: red
+            Material.foreground: "white"
+            Layout.leftMargin: 10
         }
     }
 }

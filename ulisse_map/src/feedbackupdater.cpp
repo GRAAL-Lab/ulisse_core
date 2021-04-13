@@ -93,8 +93,6 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
 void FeedbackUpdater::NavFilterData(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)
 {
 
-    //TODO Calcolare velocità assoluta tramite current velocity + bodyframe linvel
-
     Eigen::Vector2d water_current_w(msg->inertialframe_water_current[0], msg->inertialframe_water_current[1]);
     Eigen::Vector2d catamaran_rel_vel_b(msg->bodyframe_linear_velocity[0], msg->bodyframe_linear_velocity[1]);
 

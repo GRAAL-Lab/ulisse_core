@@ -31,6 +31,13 @@ BarManagePathsForm {
         cur_managed.toggle_dir()
     }
 
+    buttonDeselectAll.onClicked: function () {
+        sweepPathCmdPane.deselect_all()
+        hide_all()
+    }
+
+
+
     /*-------------- POLY CREATION/EDITING ----------------*/
     property var cur_managed
     property var params_panel

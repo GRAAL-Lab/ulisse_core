@@ -5,8 +5,6 @@ import QtQuick.Controls.Material 2.1
 import QtGraphicalEffects 1.0
 import "."
 
-
-//TODO: complete the page
 Dialog {
     id: dialog
     property alias dialog: dialog

@@ -42,19 +42,6 @@ int main(int argc, char* argv[])
     //QSettings settings("folderName", "fileName");
     //qDebug() << "Settings file: " << settings.fileName();
 
-    /**
-     * Theme styling
-     */
-    /*QSettings settings;
-    QString theme;
-    settings.value("theme", theme);
-    if (!theme.isEmpty()) {
-        theme = "Light";
-        //QQuickStyle::setStyle(theme);
-        settings.setValue("Light", theme);
-    } else
-        QQuickStyle::setStyle(settings.value("Theme").toString());
-*/
     QQmlApplicationEngine appEngine;
 
     /**

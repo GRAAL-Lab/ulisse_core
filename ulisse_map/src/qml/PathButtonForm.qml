@@ -31,7 +31,7 @@ RowLayout {
 
     Button {
         id: pathButton
-        text: ntrack + ": " + managed_path._pathName // managed_path._pathName
+        text: "Path " + ntrack // managed_path._pathName
         Layout.fillHeight: true
         Layout.fillWidth: true
         antialiasing: false

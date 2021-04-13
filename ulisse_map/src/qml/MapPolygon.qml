@@ -53,7 +53,7 @@ MapPolyline {
     property var detection_intersect: 0
 
     onSafeChanged: function () {
-            line.color = safe ? green : red
+        line.color = safe ? green : red
     }
 
     ////////////////////////////////////
@@ -311,7 +311,7 @@ MapPolyline {
                                distance: d1
                            } : {
             nearest: n2,
-                     distance: d2
+            distance: d2
         }
     }
 
@@ -584,13 +584,13 @@ MapPolyline {
             var r2 = nearest_marker(
                         p, vertex_markers,
                         (r1.nearest === -1) ? -1 : r1.nearest + _path.length,
-                                              r1.distance)
+                        r1.distance)
             var r3 = nearest_than(p, r2.distance,
                                   (r2.nearest === -1) ? -1 : r2.nearest, hpc,
-                                                        2 * _path.length)
+                                  2 * _path.length)
             var r4 = nearest_than(p, r3.distance,
                                   (r3.nearest === -1) ? -1 : r3.nearest, hph,
-                                                        2 * _path.length + 1)
+                                  2 * _path.length + 1)
             var nearest = r4.nearest
             if (mouse.button & Qt.LeftButton) {
                 if (nearest >= 0 && nearest < _path.length) {
@@ -640,13 +640,13 @@ MapPolyline {
             var r2 = nearest_marker(
                         p, vertex_markers,
                         (r1.nearest === -1) ? -1 : r1.nearest + _path.length,
-                                              r1.distance)
+                        r1.distance)
             var r3 = nearest_than(p, r2.distance,
                                   (r2.nearest === -1) ? -1 : r2.nearest, hpc,
-                                                        2 * _path.length)
+                                  2 * _path.length)
             var r4 = nearest_than(p, r3.distance,
                                   (r3.nearest === -1) ? -1 : r3.nearest, hph,
-                                                        2 * _path.length + 1)
+                                  2 * _path.length + 1)
             change_marked(r4.nearest)
         } else if (moving_idx >= 0 && moving_idx < _path.length) {
             if (map_polygon_point_mod_admissibility(p, moving_idx)) {
@@ -806,7 +806,6 @@ MapPolyline {
     function draw_path() {
         // clear the canvas
         _canvas.clear_canvas()
-
         Helper.draw_path_lines(_canvas, cmdWrapper.createNurbs(JSON.stringify(generate_nurbs())), map)
 
     }
@@ -881,7 +880,7 @@ MapPolyline {
     }
 
     function get_nurbs(data){
-    nurbs = data
+        nurbs = data
     }
 
     ///////////////////////////////////////////////////
@@ -899,6 +898,6 @@ MapPolyline {
 
 
     function highlighted(yes) {
-        line.color = yes ? orange : lightgreen
+        //line.color = yes ? orange : lightgreen
     }
 }

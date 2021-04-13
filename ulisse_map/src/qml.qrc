@@ -23,7 +23,7 @@
         <file>qml/MapRuler.qml</file>
         <file>qml/MapSliders.qml</file>
         <file>qml/MapSidebar.qml</file>
-        <file>qml/DataView.qml</file>
+        <file>qml/SensorsDataView.qml</file>
         <file>qml/SettingsDialog.qml</file>
         <file>qml/HelpDialog.qml</file>
         <file>images/graal_logo.png</file>
@@ -60,5 +60,6 @@
         <file>qml/LabelledField.qml</file>
         <file>images/windarrow.png</file>
         <file>qml/CommandsPathsTabView.qml</file>
+        <file>qml/TasksDataView.qml</file>
     </qresource>
 </RCC>

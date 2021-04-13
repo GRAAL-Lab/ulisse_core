@@ -106,6 +106,8 @@ namespace states {
 
         absoluteAxisAlignmentSafetyTask_->ExternalActivationFunction() = Aexternal;
 
+
+
         absoluteAxisAlignmentSafetyTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
         absoluteAxisAlignmentSafetyTask_->SetDirectionAlignment(safetyBoundariesTask_->AlignVector(), rml::FrameID::WorldFrame);
 
@@ -118,7 +120,11 @@ namespace states {
         //compute the gain of the cartesian distance
         double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingErrorsafety);
 
+
+
         // Set the gain of the cartesian distance task
+
+        // CHECK TODO: Change this function to modify Reference gain (NOT Activation GAIN)
         safetyBoundariesTask_->ExternalActivationFunction() = taskGainSafety * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
 
         //hold task

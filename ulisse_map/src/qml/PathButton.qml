@@ -19,13 +19,13 @@ PathButtonForm {
 
     function toggle() {
         toggled = !toggled
-        name.Material.background = toggled ? orange : green
+        name.Material.background = toggled ? orange : lightgrey
         managed_path.highlighted(toggled)
     }
 
     function highlight(yes) {
         toggled = yes
-        name.Material.background = yes ? orange : green
+        name.Material.background = yes ? orange : lightgrey
         managed_path.highlighted(yes)
     }
 

@@ -20,14 +20,16 @@ ApplicationWindow {
 
     property color blue: Material.color(Material.Blue, Material.Shade700)
     property color orange: Material.color(Material.Amber, Material.Shade700)
-    property color softorange: Material.color(Material.DeepOrange, Material.Shade400)
+    property color softorange: Material.color(Material.DeepOrange, Material.Shade500)
     property color red: Material.color(Material.Red, Material.Shade700)
     property color lightred: Material.color(Material.Red, Material.Shade500)
     property color green: Material.color(Material.Green, Material.Shade700)
     property color lightgreen: Material.color(Material.Green, Material.Shade500)
     property color cyan: Material.color(Material.Cyan, Material.Shade700)
+    property color lightcyan: Material.color(Material.Cyan, Material.Shade500)
     property color grey: Material.color(Material.Grey, Material.Shade700)
-    property color lightgrey: Material.color(Material.Grey, Material.Shade50)
+    property color lightgrey: Material.color(Material.Grey, Material.Shade400)
+    property color lightergrey: Material.color(Material.Grey, Material.Shade100)
 
     property color mainColor: (settings.theme == "Light" ? cyan : red)
 
@@ -155,11 +157,16 @@ ApplicationWindow {
                 Layout.fillWidth: true
             }
 
-            DataView {
-                id: dataView
+            SensorsDataView {
+                id: sensorDataView
                 Layout.fillWidth: true
                 //Layout.margins: 10
             }
+
+            TasksDataView {
+                id: taskDataView
+            }
+
         }
     }
 }

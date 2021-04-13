@@ -19,8 +19,8 @@ Pane {
     property alias sweepPathCmdPane: commandPathsStackContainer.pathCommandsPane
 
     property var labelWidth: 100
-    property var sliderWidth: 100
-    property var unitsWidth: 50
+    property var sliderWidth: 130
+    property var unitsWidth: 40
 
     Component.onCompleted: {
         trackComponent = Qt.createComponent("PathButton.qml")
@@ -108,11 +108,6 @@ Pane {
             }
         }
 
-        /*Pane{
-            Layout.fillWidth: true
-            Material.background: lightgrey
-            Material.elevation: 4*/
-
         ColumnLayout {
             Layout.topMargin: 5
             Layout.bottomMargin: 10
@@ -171,7 +166,7 @@ Pane {
                 Layout.alignment: Qt.AlignVCenter //| Qt.AlignHCenter
 
                 Label {
-                    text: qsTr("Heading           ")
+                    text: qsTr("Heading")
                     leftPadding: 5
                     font.pointSize: 11
                     width: labelWidth
@@ -183,7 +178,7 @@ Pane {
                 Slider {
                     id: sliderHeading
                     value: 5
-                    Layout.preferredWidth: sliderWidth
+                    Layout.preferredWidth: sliderWidth + 50
                     Layout.leftMargin: 0
                     stepSize: 0.1
                     from: 0

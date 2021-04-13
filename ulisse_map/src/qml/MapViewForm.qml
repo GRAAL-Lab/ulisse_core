@@ -12,7 +12,7 @@ import "."
 
 RowLayout {
     property bool ulisse_state_changed: false
-    property real myElevation: 6
+    property real myElevation: 0
     property real panesMargin: 14
 
     property int currentState: generalState.empty
@@ -80,8 +80,8 @@ RowLayout {
         id: mapsidebar
         Layout.fillHeight: true
         Layout.minimumHeight: 150
-        Layout.minimumWidth: 300
-        Layout.preferredWidth: 300
+        Layout.minimumWidth: 320
+        Layout.preferredWidth: 320
         Layout.maximumWidth: 350
         Material.elevation: myElevation
         Material.accent: grey

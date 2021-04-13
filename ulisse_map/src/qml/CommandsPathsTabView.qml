@@ -2,15 +2,12 @@ import QtQuick 2.6
 import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.3
 import QtQuick.Controls.Material 2.1
-
 import "."
 import "../scripts/helper.js" as Helper
 
 Pane{
     property alias pathCommandsPane: pathCommandsPane
-
     topPadding: 0
-
     Material.elevation: 4
 
     ColumnLayout {
@@ -19,7 +16,6 @@ Pane{
         TabBar {
             id: commandPathsBar
             Layout.fillWidth: true
-            //Material.foreground: grey
             Material.accent: grey
             Material.background: Material.color(Material.BlueGrey, Material.Shade50)
 
@@ -27,18 +23,11 @@ Pane{
                 id: commandsTabButton
                 text: qsTr("Commands")
 
-                /*background: Rectangle {
-                    //implicitHeight: 40
-                    opacity: enabled ? 1 : 0.3
-                    color: cyan
-            }*/
-
                 contentItem: Text {
                     text: commandsTabButton.text
                     font: commandsTabButton.font
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
-                    //opacity: enabled ? 1.0 : 0.3
                     color: (commandPathsBar.currentIndex == 0) ? cyan : grey
                 }
             }
@@ -47,18 +36,11 @@ Pane{
                 id: pathsTabButton
                 text: qsTr("Paths")
 
-                /*background: Rectangle {
-                    //implicitHeight: 40
-                    opacity: enabled ? 1 : 0.3
-                    color: softorange
-            }*/
-
                 contentItem: Text {
                     text: pathsTabButton.text
                     font: pathsTabButton.font
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
-                    //opacity: enabled ? 1.0 : 0.3
                     color: (commandPathsBar.currentIndex == 1) ? softorange : grey
                 }
             }
@@ -70,17 +52,8 @@ Pane{
             Layout.fillWidth: true
 
             ColumnLayout {
-                Layout.fillWidth: true
-
                 id: commandsTab
-                /*Label {
-                text: "Commands"
-                Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                Layout.topMargin: 10
-                font.pointSize: 12
-                font.weight: Font.DemiBold
-                color: cyan
-            }*/
+                Layout.fillWidth: true
 
                 Button {
                     id: speedHeadButton
@@ -96,7 +69,6 @@ Pane{
                     }
                 }
 
-
                 Button {
                     text: "Halt"
                     highlighted: true
@@ -107,7 +79,6 @@ Pane{
                         cmdWrapper.sendHaltCommand()
                     }
                 }
-
 
                 Button {
                     id: holdButton
@@ -145,17 +116,6 @@ Pane{
             ColumnLayout {
                 id: pathsTab
                 Layout.fillWidth: true
-
-                /*Label {
-                id: pathLabel
-                color: softorange
-                text: "Paths"
-                Layout.topMargin: 10
-                antialiasing: false
-                font.weight: Font.DemiBold
-                Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                font.pointSize: 12
-            }*/
 
                 PathsCommands {
                     id: pathCommandsPane
