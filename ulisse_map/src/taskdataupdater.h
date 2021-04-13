@@ -25,19 +25,19 @@ class TaskDataUpdater : public QObject {
     QObject* goalFlagObj_;
 
 
-    Q_PROPERTY(QGeoCoordinate ulisse_pos READ get_ulisse_pos NOTIFY callbacks_processed)
+    /*Q_PROPERTY(QGeoCoordinate ulisse_pos READ get_ulisse_pos NOTIFY callbacks_processed)
     Q_PROPERTY(QGeoCoordinate goal_pos READ get_goal_pos NOTIFY callbacks_processed)
 
     Q_PROPERTY(double goal_distance READ get_goal_distance NOTIFY callbacks_processed)
     Q_PROPERTY(double goal_heading READ get_goal_heading NOTIFY callbacks_processed)
 
-    Q_PROPERTY(double accept_radius READ get_accept_radius NOTIFY callbacks_processed)
+    Q_PROPERTY(double accept_radius READ get_accept_radius NOTIFY callbacks_processed)*/
 
 
     int taskDataUpdateInterval_;
-    QGeoCoordinate q_ulisse_pos_, q_goal_pos_;
-    double q_goal_distance_, q_goal_heading_deg_;
-    double q_accept_radius_;
+    //QGeoCoordinate q_ulisse_pos_, q_goal_pos_;
+    //double q_goal_distance_, q_goal_heading_deg_;
+    //double q_accept_radius_;
 
     rclcpp::Node::SharedPtr np_;
     rclcpp::Subscription<ulisse_msgs::msg::FeedbackGui>::SharedPtr feedbackGuiSub_;
@@ -52,15 +52,15 @@ public:
     void SetNodeHandle(const rclcpp::Node::SharedPtr& np);
     double RadiansToCompassDegrees(const double angle_rad);
 
-    void FeedbackGuiCB(const ulisse_msgs::msg::FeedbackGui::SharedPtr msg);
+    void TaskDataCB(const ulisse_msgs::msg::FeedbackGui::SharedPtr msg);
 
     Q_INVOKABLE void copyToClipboard(QString value);
 
-    QGeoCoordinate get_ulisse_pos();
+    /*QGeoCoordinate get_ulisse_pos();
     QGeoCoordinate get_goal_pos();
     double get_goal_distance();
     double get_goal_heading();
-    double get_accept_radius();
+    double get_accept_radius();*/
 
 
 signals:

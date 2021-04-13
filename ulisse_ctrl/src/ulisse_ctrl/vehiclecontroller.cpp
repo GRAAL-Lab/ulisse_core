@@ -242,7 +242,7 @@ bool VehicleController::LoadConfiguration(std::shared_ptr<ControllerConfiguratio
         return false;
     }
 
-    std::cout << tc::grayD << *conf << tc::none << std::endl;
+    std::cout << tc::grayL << *conf << tc::none << std::endl;
 
     //acquired the centroid location
     Eigen::VectorXd centroidLocationTmp;
@@ -542,12 +542,19 @@ void VehicleController::PublishControl()
     ulisse_msgs::msg::FeedbackGui feedbackGuiMsg;
     feedbackGuiMsg.stamp.sec = now_stamp_secs;
     feedbackGuiMsg.stamp.nanosec = now_stamp_nanosecs;
-    feedbackGuiMsg.goal_position.latitude = stateLatLong_->goalPosition.latitude;
-    feedbackGuiMsg.goal_position.longitude = stateLatLong_->goalPosition.longitude;
-    feedbackGuiMsg.goal_heading = stateLatLong_->goalHeading;
-    feedbackGuiMsg.acceptance_radius = stateLatLong_->acceptanceRadius;
-    feedbackGuiMsg.goal_distance = stateLatLong_->goalDistance;
-
+    if (uFsm_.GetCurrentStateName() == ulisse::states::ID::hold){
+        feedbackGuiMsg.goal_position.latitude = stateHold_->positionToHold.latitude;
+        feedbackGuiMsg.goal_position.longitude = stateHold_->positionToHold.longitude;
+        feedbackGuiMsg.acceptance_radius = stateHold_->maxAcceptanceRadius;
+        //feedbackGuiMsg.goal_distance = stateHold_->;
+    }
+    else if (uFsm_.GetCurrentStateName() == ulisse::states::ID::latlong){
+        feedbackGuiMsg.goal_position.latitude = stateLatLong_->goalPosition.latitude;
+        feedbackGuiMsg.goal_position.longitude = stateLatLong_->goalPosition.longitude;
+        feedbackGuiMsg.goal_heading = stateLatLong_->goalHeading;
+        feedbackGuiMsg.acceptance_radius = stateLatLong_->acceptanceRadius;
+        feedbackGuiMsg.goal_distance = stateLatLong_->goalDistance;
+    }
     feedbackGuiPub_->publish(feedbackGuiMsg);
 
     ulisse_msgs::msg::VehicleStatus vehicleStatusMsg;

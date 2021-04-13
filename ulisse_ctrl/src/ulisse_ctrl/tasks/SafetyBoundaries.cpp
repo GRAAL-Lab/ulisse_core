@@ -37,6 +37,9 @@ void SafetyBoundaries::Update() noexcept(false)
         x_ = robotModel_->TransformationMatrix(robotModel_->BodyFrameID()).RotationMatrix().transpose() * Eigen::Vector3d { -d_ * UTM_alignVecotr(0), -d_ * UTM_alignVecotr(1), 0.0 };
     }
 
+    /*Eigen::IOFormat CommaInitFmt(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", ", ", "", "", " << ", ";");
+    std::cout << "Safety Task x_:" << x_.format(CommaInitFmt) << std::endl;*/
+
     //transform the align vector form UTM to NED
     alignVector_ << UTM_alignVecotr.y(), UTM_alignVecotr.x(), 0.0;
     ReactiveTask::Update();

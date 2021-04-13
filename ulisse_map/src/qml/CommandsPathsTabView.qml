@@ -57,7 +57,6 @@ Pane{
 
                 Button {
                     id: speedHeadButton
-                    y: 42
                     text: "Speed/Heading"
                     Layout.fillWidth: true
                     Layout.fillHeight: false
@@ -84,8 +83,6 @@ Pane{
                     id: holdButton
                     text: "Hold Position"
                     Layout.fillWidth: true
-                    antialiasing: false
-
                     highlighted: true
                     Material.background: pressed ? orange : mainColor
 
@@ -98,7 +95,6 @@ Pane{
                     id: moveToButton
                     text: "Move to marker"
                     Layout.fillWidth: true
-                    antialiasing: false
                     Material.background: pressed ? orange : mainColor
                     enabled: Helper.coord_inside_polygon(map.marker_coords,
                                                          map.polysec_cur.path)

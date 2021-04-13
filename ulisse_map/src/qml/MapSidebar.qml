@@ -71,7 +71,7 @@ Rectangle {
                     h:12
                     w:100
                     labelColor: labelColor2
-                    label: "Target"
+                    label: "Marker"
                     text: "Left click on map"
                     Layout.fillWidth: true
                 }

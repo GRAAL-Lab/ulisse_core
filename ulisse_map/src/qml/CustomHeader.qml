@@ -35,8 +35,7 @@ ToolBar {
 
             TabButton {
                 text: qsTr("Map")
-                Layout.fillWidth: true
-                height: headerLayout.height
+                height: headerLayout.height - 3
                 width: headerLayout.width / 3
 
                 background: Rectangle {
@@ -46,8 +45,7 @@ ToolBar {
 
             TabButton {
                 text: qsTr("Sensors Data")
-                Layout.fillWidth: true
-                height: headerLayout.height
+                height: headerLayout.height - 3
                 width: headerLayout.width / 3
 
                 background: Rectangle {
@@ -57,8 +55,7 @@ ToolBar {
 
             TabButton {
                 text: qsTr("Tasks Data")
-                Layout.fillWidth: true
-                height: headerLayout.height
+                height: headerLayout.height - 3
                 width: headerLayout.width / 3
 
                 background: Rectangle {

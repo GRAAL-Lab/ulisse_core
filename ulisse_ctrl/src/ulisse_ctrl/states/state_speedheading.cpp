@@ -70,6 +70,9 @@ namespace states {
         Aexternal = safetyBoundariesTask_->InternalActivationFunction().maxCoeff() * Aexternal.setIdentity(absoluteAxisAlignmentSafetyTask_->TaskSpace(), absoluteAxisAlignmentSafetyTask_->TaskSpace());
         absoluteAxisAlignmentSafetyTask_->ExternalActivationFunction() = Aexternal;
 
+        safetyBoundariesTask_->ExternalActivationFunction() = 1.0 * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
+
+
         absoluteAxisAlignmentSafetyTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
         absoluteAxisAlignmentSafetyTask_->SetDirectionAlignment(safetyBoundariesTask_->AlignVector(), rml::FrameID::WorldFrame);
 
@@ -79,11 +82,11 @@ namespace states {
         //compute the heading error
         double headingErrorsafety = absoluteAxisAlignmentSafetyTask_->ControlVariable().norm();
 
-        //compute the gain of the cartesian distance
-        double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0.0, 1.0, headingErrorsafety);
+        //compute the gain of the safety task
+        double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingErrorsafety);
 
         // Set the gain of the cartesian distance task
-        safetyBoundariesTask_->ExternalActivationFunction() = taskGainSafety * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
+        safetyBoundariesTask_->TaskParameter().gain = taskGainSafety * safetyBoundariesTask_->TaskParameter().conf_gain;
 
         //speedheading task
         absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
@@ -100,7 +103,23 @@ namespace states {
         //Set the gain of the cartesian distance task
         linearVelocityTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(linearVelocityTask_->TaskSpace(), linearVelocityTask_->TaskSpace());
 
-        std::cout << "STATE SPEED HEADING " << std::endl;
+        Eigen::IOFormat CommaInitFmt(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", " / ", "", "", "", ";");
+
+        std::cout << "* STATE SPEED HEADING *" << std::endl;
+
+        std::cout << "minHeadingError_: " << minHeadingError_ << std::endl;
+        std::cout << "maxHeadingError_: " << maxHeadingError_ << std::endl;
+        std::cout << "headingError(Safety): " << absoluteAxisAlignmentSafetyTask_->ControlVariable().norm() << std::endl;
+        std::cout << "taskGain(Safety): " << taskGainSafety << std::endl;
+        std::cout << "- - -" << std::endl;
+        std::cout << "headingError: " << absoluteAxisAlignmentTask_->ControlVariable().norm() << std::endl;
+        std::cout << "linearVel activation Gain: " << taskGain << std::endl;
+        std::cout << "- - -" << std::endl;
+        std::cout << "linearVelocityTask_->ReferenceRate(): " << linearVelocityTask_->ReferenceRate().format(CommaInitFmt) << std::endl;
+        std::cout << "linearVelocityTask_->InternalActivation(): " << linearVelocityTask_->InternalActivationFunction().format(CommaInitFmt) << std::endl;
+        std::cout << "linearVelocityTask_->ExternalActivation(): " << linearVelocityTask_->ExternalActivationFunction().format(CommaInitFmt) << std::endl;
+        std::cout << "linearVelocityTask_->gain: " << linearVelocityTask_->TaskParameter().gain << std::endl;
+        std::cout << "-----------------------" << std::endl;
 
         return fsm::ok;
     }

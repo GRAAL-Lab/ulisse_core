@@ -6,7 +6,7 @@
 #include <ikcl/ikcl.h>
 #include <libconfig.h++>
 
-//to be delete once safetyB in ickc
+//to be delete once safetyB in ikcl
 #include "ulisse_ctrl/tasks/SafetyBoundaries.h"
 
 namespace ulisse {

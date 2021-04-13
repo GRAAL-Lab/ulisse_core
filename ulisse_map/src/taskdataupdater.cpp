@@ -37,16 +37,12 @@ void TaskDataUpdater::Init(QQmlApplicationEngine* engine)
 
     QObject::connect(myTimer_, SIGNAL(timeout()), this, SLOT(process_callbacks_slot()));
 
-    q_ulisse_pos_.setLatitude(44.392);
-    q_ulisse_pos_.setLongitude(8.945);
 
-    q_goal_distance_ = 0.0;
-
-
-    goalFlagObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("goalFlag");
+    /*goalFlagObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("goalFlag");
     if (!goalFlagObj_) {
         qDebug() << "goalFlagObj_ Object NOT found!";
-    }
+    }*/
+
     //qDebug() << "INITIAL POS: LatLong = " << q_ulisse_pos_ << "- Compass = " << q_ulisse_yaw_deg_;
 
     // Set the QoS. ROS 2 will provide QoS profiles based on the following use cases:
@@ -57,7 +53,7 @@ void TaskDataUpdater::Init(QQmlApplicationEngine* engine)
     // set the depth to the QoS profile
     //custom_qos_profile.depth = 7;
 
-    feedbackGuiSub_ = np_->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10, std::bind(&TaskDataUpdater::FeedbackGuiCB, this, _1) /*custom_qos_profile*/);
+    feedbackGuiSub_ = np_->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10, std::bind(&TaskDataUpdater::TaskDataCB, this, _1) /*custom_qos_profile*/);
 }
 
 void TaskDataUpdater::SetNodeHandle(const rclcpp::Node::SharedPtr& np)
@@ -72,13 +68,13 @@ double TaskDataUpdater::RadiansToCompassDegrees(const double angle_rad)
     return angle_compass;
 }
 
-void TaskDataUpdater::FeedbackGuiCB(const ulisse_msgs::msg::FeedbackGui::SharedPtr msg)
+void TaskDataUpdater::TaskDataCB(const ulisse_msgs::msg::FeedbackGui::SharedPtr msg)
 {
-    q_goal_pos_.setLatitude(msg->goal_position.latitude);
+    /*q_goal_pos_.setLatitude(msg->goal_position.latitude);
     q_goal_pos_.setLongitude(msg->goal_position.longitude);
     q_goal_distance_ = msg->goal_distance;
     q_accept_radius_ = msg->acceptance_radius;
-    q_goal_heading_deg_ = msg->goal_heading * 180 / M_PI;
+    q_goal_heading_deg_ = msg->goal_heading * 180 / M_PI;*/
 }
 
 void TaskDataUpdater::copyToClipboard(QString newText)
@@ -87,7 +83,7 @@ void TaskDataUpdater::copyToClipboard(QString newText)
     clipboard->setText(newText);
 }
 
-QGeoCoordinate TaskDataUpdater::get_ulisse_pos()
+/*QGeoCoordinate TaskDataUpdater::get_ulisse_pos()
 {
     return q_ulisse_pos_;
 }
@@ -112,7 +108,7 @@ double TaskDataUpdater::get_goal_heading()
 double TaskDataUpdater::get_accept_radius()
 {
     return q_accept_radius_;
-}
+}*/
 
 void TaskDataUpdater::process_callbacks_slot()
 {

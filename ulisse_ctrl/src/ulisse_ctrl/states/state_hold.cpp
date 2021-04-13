@@ -20,13 +20,13 @@ namespace states {
     {
         inertialF_waterCurrent = std::make_shared<Eigen::Vector2d>();
 
-        //set tasks
+        // Set tasks
         safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
         absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
         linearVelocityTask_ = std::dynamic_pointer_cast<ikcl::LinearVelocity>(tasksMap.find(ulisse::task::asvLinearVelocityHold)->second.task);
         absoluteAxisAlignmentTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentHold)->second.task);
 
-        //set action
+        // Set action
         actionManager->SetAction(ulisse::action::hold, true);
 
         return fsm::ok;
@@ -43,7 +43,6 @@ namespace states {
             return false;
         if (!ctb::SetParam(state, minHeadingError_, "minHeadingError"))
             return false;
-
         if (!ctb::SetParam(state, maxAcceptanceRadius, "maxAcceptanceRadius"))
             return false;
         if (!ctb::SetParam(state, minAcceptanceRadius, "minAcceptanceRadius"))
@@ -65,7 +64,7 @@ namespace states {
         absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(-inertialF_waterCurrent->normalized().x(), -inertialF_waterCurrent->normalized().y(), 0), rml::FrameID::WorldFrame);
         absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
 
-        //Avoid that the roboto try to align with very small intensity of water current
+        // Avoid that the roboto try to align with very small intensity of water current
         double absoluteAxisAlignmentGain = rml::IncreasingBellShapedFunction(minWaterCurrent_, maxWaterCurrent_, 0, 1, inertialF_waterCurrent->norm());
         absoluteAxisAlignmentTask_->ExternalActivationFunction() = absoluteAxisAlignmentGain * Eigen::MatrixXd::Identity(absoluteAxisAlignmentTask_->TaskSpace(), absoluteAxisAlignmentTask_->TaskSpace());
 
@@ -106,8 +105,6 @@ namespace states {
 
         absoluteAxisAlignmentSafetyTask_->ExternalActivationFunction() = Aexternal;
 
-
-
         absoluteAxisAlignmentSafetyTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
         absoluteAxisAlignmentSafetyTask_->SetDirectionAlignment(safetyBoundariesTask_->AlignVector(), rml::FrameID::WorldFrame);
 
@@ -120,12 +117,18 @@ namespace states {
         //compute the gain of the cartesian distance
         double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingErrorsafety);
 
-
+        // CHECK TODO: Change this function to modify Reference gain (NOT Activation GAIN)
+        //safetyBoundariesTask_->ExternalActivationFunction() = taskGainSafety * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
 
         // Set the gain of the cartesian distance task
+        safetyBoundariesTask_->TaskParameter().gain = taskGainSafety * safetyBoundariesTask_->TaskParameter().conf_gain;
 
-        // CHECK TODO: Change this function to modify Reference gain (NOT Activation GAIN)
-        safetyBoundariesTask_->ExternalActivationFunction() = taskGainSafety * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
+        /*std::cout << "minHeadingError_: " << minHeadingError_ << std::endl;
+        std::cout << "maxHeadingError_: " << maxHeadingError_ << std::endl;
+        std::cout << "headingErrorsafety: " << absoluteAxisAlignmentSafetyTask_->ControlVariable().norm() << std::endl;
+        std::cout << "taskGainSafety: " << taskGainSafety << std::endl;
+        std::cout << "-----------------------" << std::endl;*/
+
 
         //hold task
         ctb::DistanceAndAzimuthRad(*vehiclePosition.get(), positionToHold, goalDistance_, goalHeading_); //compute the distanza between the current position and the position to hold

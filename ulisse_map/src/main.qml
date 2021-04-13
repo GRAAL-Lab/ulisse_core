@@ -160,11 +160,14 @@ ApplicationWindow {
             SensorsDataView {
                 id: sensorDataView
                 Layout.fillWidth: true
+                Layout.fillHeight: true
                 //Layout.margins: 10
             }
 
             TasksDataView {
                 id: taskDataView
+                Layout.fillWidth: true
+                Layout.fillHeight: true
             }
 
         }
