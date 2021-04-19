@@ -181,7 +181,7 @@ bool Nurbs::ComputeNextPoint(const ctb::LatLong& currentP, ctb::LatLong& nextP)
 
     //the first derivative of the current paramenter value is the direction of the curve
     currenDirection = derive.bottomRows(dim_) / derive.bottomRows(dim_).norm();
-    std::cout << "tangent of the current parvalue: " << currenDirection.transpose() << std::endl;
+    //std::cout << "tangent of the current parvalue: " << currenDirection.transpose() << std::endl;
 
     Eigen::VectorXd nextDir;
     Eigen::VectorXd possibleNextP;
@@ -229,8 +229,8 @@ bool Nurbs::ComputeNextPoint(const ctb::LatLong& currentP, ctb::LatLong& nextP)
     //Convert the next point in latlong coordinates
     double altitude;
     ctb::LocalUTM2LatLong(possibleNextP, centroid_, nextP, altitude);
-    std::cout << "tangent of the current parvalue: " << currenDirection.transpose() << std::endl;
-    std::cout << "current delta: " << currentDelta_ << std::endl;
+    //std::cout << "tangent of the current parvalue: " << currenDirection.transpose() << std::endl;
+    //std::cout << "current delta: " << currentDelta_ << std::endl;
 
     return true;
 }
@@ -298,7 +298,7 @@ bool Nurbs::ComputePossibleNextPoint(Eigen::VectorXd& nextDirection, Eigen::Vect
 
     nextDirection = Eigen::VectorXd::Zero(dim_);
     nextDirection = derive.bottomRows(dim_) / derive.bottomRows(dim_).norm();
-    std::cout << "tangent of the next parvalue: " << nextDirection.transpose() << std::endl;
+    //std::cout << "tangent of the next parvalue: " << nextDirection.transpose() << std::endl;
 
     nextP = derive.topRows(dim_);
     return true;
@@ -330,9 +330,9 @@ bool Nurbs::ComputeDerive(SISLCurve* curve, const int der, const double parvalue
                 = 0 : ok
                 < 0 : error*/
 
-    std::cout << "der:       " << der << std::endl;
-    std::cout << "deriveDim: " << deriveDim << std::endl;
-    std::cout << "parvalue:  " << parvalue << std::endl;
+    //std::cout << "der:       " << der << std::endl;
+    //std::cout << "deriveDim: " << deriveDim << std::endl;
+    //std::cout << "parvalue:  " << parvalue << std::endl;
 
     // S1227 is a method for computing the position and the first derivatives of the curve at  a given parameter value Evaluation from the left hand side
     s1227(curve, der, parvalue, &leftKnot, deriveTmp.get(), &stat);
@@ -350,7 +350,7 @@ bool Nurbs::ComputeDerive(SISLCurve* curve, const int der, const double parvalue
 
 bool Nurbs::ComputeParameterValue(const Eigen::VectorXd& epoint)
 {
-    std::cout << "epoint: " << epoint[0] << ", " << epoint[1] << std::endl;
+    //std::cout << "epoint: " << epoint[0] << ", " << epoint[1] << std::endl;
     //convert epoint in a formata readable for SISL
     auto epointTmp = std::unique_ptr<double[]>(new double[static_cast<unsigned int>(epoint.size())]);
     for (int i = 0; i < epoint.size(); i++)

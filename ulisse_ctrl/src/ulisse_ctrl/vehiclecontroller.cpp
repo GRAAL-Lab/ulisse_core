@@ -40,7 +40,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     feedbackGuiPub_ = nh_->create_publisher<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10);
 
     // Timer for slow check operations
-    slow_timer_ = nh_->create_wall_timer(std::chrono::seconds(2), std::bind(&VehicleController::SlowTimerCB, this));
+    slow_timer_ = nh_->create_wall_timer(std::chrono::seconds(5), std::bind(&VehicleController::SlowTimerCB, this));
 
     /// TPIK Manager
     actionManager_ = std::make_shared<tpik::ActionManager>(tpik::ActionManager());

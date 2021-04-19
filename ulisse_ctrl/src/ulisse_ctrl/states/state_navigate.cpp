@@ -59,6 +59,8 @@ namespace states {
                 return fsm::fail;
             }
         }
+        
+        std::cout << "*** GOING TO INITIAL POINT! ***" << std::endl;
 
         return isCurveSet_;
     }
@@ -138,11 +140,12 @@ namespace states {
         if (isCurveSet_) {
             //Going to the starting point
             if (!vehicleOnTrack_) {
-                std::cout << "*** GOING TO INITIAL POINT! ***" << std::endl;
+                
                 ctb::DistanceAndAzimuthRad(*vehiclePosition, startP_, goalDistance, goalHeading);
 
                 if (goalDistance < tolleranceStartingPoint_) {
                     vehicleOnTrack_ = true;
+                    std::cout << "*** STARTING TRACK ***" << std::endl;
                 } else {
 
                     //Set the distance vector to the target

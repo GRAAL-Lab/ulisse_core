@@ -25,7 +25,7 @@ namespace events {
 
     fsm::retval GenericEvent::Propagate(void)
     {
-        std::cout << "Executing Event" << std::endl;
+        //std::cout << "Executing Event" << std::endl;
         return fsm::retval::ok;
     }
 
