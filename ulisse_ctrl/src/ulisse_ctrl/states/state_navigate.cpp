@@ -9,7 +9,7 @@ namespace states {
 
     StateNavigate::StateNavigate()
         : isCurveSet_ { false }
-        , isInStart_ { false }
+        , vehicleOnTrack_ { false }
         , logPathOnFile_ { false }
         , nurbsObj_ { 3 }
 
@@ -20,6 +20,9 @@ namespace states {
 
     bool StateNavigate::LoadNurbs(const ulisse_msgs::msg::Path& path)
     {
+        vehicleOnTrack_ = false;
+
+        std::cout << "LOADING NURBS" << std::endl;
         nurbsObj_.ResetPath();
         if (!nurbsObj_.Initialization(path)) {
             std::cerr << "LoadNurbs: fails" << std::endl;
@@ -122,7 +125,7 @@ namespace states {
 
         //compute the heading error
         double headingErrorsafety = absoluteAxisAlignmentSafetyTask_->ControlVariable().norm();
-        std::cout << "headingErrorsafety: " << headingErrorsafety << std::endl;
+        //std::cout << "headingErrorsafety: " << headingErrorsafety << std::endl;
 
         //compute the gain of the cartesian distance
         double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingErrorsafety);
@@ -134,13 +137,12 @@ namespace states {
         //navigate action
         if (isCurveSet_) {
             //Going to the starting point
-            if (!isInStart_) {
+            if (!vehicleOnTrack_) {
                 std::cout << "*** GOING TO INITIAL POINT! ***" << std::endl;
-
                 ctb::DistanceAndAzimuthRad(*vehiclePosition, startP_, goalDistance, goalHeading);
 
                 if (goalDistance < tolleranceStartingPoint_) {
-                    isInStart_ = true;
+                    vehicleOnTrack_ = true;
                 } else {
 
                     //Set the distance vector to the target
@@ -166,10 +168,10 @@ namespace states {
             } else {
                 if (nurbsObj_.CurrentParameterValue() >= tolleranceEndingPoint_) {
                     std::cout << "*** MISSION FINISHED! ***" << std::endl;
+
                     fsm_->EmitEvent(ulisse::events::names::neargoalposition, ulisse::events::priority::medium);
                 }
-
-                std::cout << "*** STARTING POINT! ***" << std::endl;
+                //std::cout << "*** STARTING POINT! ***" << std::endl;
                 if (!nurbsObj_.ComputeNextPoint(*vehiclePosition, nextP_)) {
                     return fsm::fail;
                 }
@@ -198,7 +200,7 @@ namespace states {
             }
         }
 
-        std::cout << "STATE PATH FOLLOWING" << std::endl;
+        //std::cout << "STATE PATH FOLLOWING" << std::endl;
 
         return fsm::ok;
     }

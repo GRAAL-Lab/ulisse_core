@@ -898,6 +898,7 @@ MapPolyline {
 
 
     function highlighted(yes) {
-        //line.color = yes ? orange : lightgreen
+        var desel_line_color = safe ? lightgreen : red
+        line.color = yes ? orange : desel_line_color
     }
 }

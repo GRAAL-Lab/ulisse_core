@@ -87,7 +87,7 @@ RowLayout {
             hoverEnabled: true
             width: 140
             //Layout.fillWidth: true
-            model: ["simple", "single_winding"]
+            model: ["single_winding", "simple"]
         }
     }
 

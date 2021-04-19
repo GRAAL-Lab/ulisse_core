@@ -274,7 +274,7 @@ QVector<double> CommandWrapper::createNurbs(const QString& pointForNurbs)
                         > 0 : warning
                         = 0 : ok
                         < 0 : error*/
-            // S1227 is a method for computing the position and the first derivatives of the curve at  a given parameter value Evaluation from the left hand side
+            // S1227 is a method for computing the position and the first derivatives of the curve at a given parameter value Evaluation from the left hand side
             s1227(currentCurve, 0, currentParvalue, &leftKnot, deriveTmp.get(), &stat);
 
             if (stat < 0) {
@@ -288,7 +288,7 @@ QVector<double> CommandWrapper::createNurbs(const QString& pointForNurbs)
 
             ctb::LocalUTM2LatLong(derive, centroid, map_point, altitude);
 
-            //            std::cout << "crateNurbs map point: " << map_point.latitude << ", " << map_point.longitude << std::endl;
+            //std::cout << "crateNurbs map point: " << map_point.latitude << ", " << map_point.longitude << std::endl;
 
             nurbsDiscretize << map_point.latitude << map_point.longitude;
             currentParvalue += 0.01;

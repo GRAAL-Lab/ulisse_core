@@ -25,6 +25,7 @@ Nurbs::~Nurbs() { nurbs_.clear(); }
 bool Nurbs::Initialization(const ulisse_msgs::msg::Path& path)
 {
     bool reverse = false;
+    parvalue_ = 0.0;
 
     // check whatever the path has beeen reverse
     reverse = path.direction ? true : false;
@@ -98,7 +99,7 @@ bool Nurbs::Initialization(const ulisse_msgs::msg::Path& path)
             }
 
             if (reverse) {
-                // Turn the direction of a curve by reversing the ordering of the coefficients
+                // Turn the direction of a curve by reversing the ordering of the coefficients (reverse)
                 s1706(curve);
             }
 
@@ -328,11 +329,16 @@ bool Nurbs::ComputeDerive(SISLCurve* curve, const int der, const double parvalue
                 > 0 : warning
                 = 0 : ok
                 < 0 : error*/
+
+    std::cout << "der:       " << der << std::endl;
+    std::cout << "deriveDim: " << deriveDim << std::endl;
+    std::cout << "parvalue:  " << parvalue << std::endl;
+
     // S1227 is a method for computing the position and the first derivatives of the curve at  a given parameter value Evaluation from the left hand side
     s1227(curve, der, parvalue, &leftKnot, deriveTmp.get(), &stat);
 
     if (stat < 0) {
-        std::cerr << "Compute derive fails" << std::endl;
+        std::cerr << "Compute derive fails!" << std::endl;
         return -1;
     } else {
         for (int i = 0; i < deriveDim; i++) {

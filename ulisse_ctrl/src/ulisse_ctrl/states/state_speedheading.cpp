@@ -103,9 +103,10 @@ namespace states {
         //Set the gain of the cartesian distance task
         linearVelocityTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(linearVelocityTask_->TaskSpace(), linearVelocityTask_->TaskSpace());
 
-        Eigen::IOFormat CommaInitFmt(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", " / ", "", "", "", ";");
 
-        std::cout << "* STATE SPEED HEADING *" << std::endl;
+        /*std::cout << "* STATE SPEED HEADING *" << std::endl;
+
+        Eigen::IOFormat CommaInitFmt(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", " / ", "", "", "", ";");
 
         std::cout << "minHeadingError_: " << minHeadingError_ << std::endl;
         std::cout << "maxHeadingError_: " << maxHeadingError_ << std::endl;
@@ -115,13 +116,19 @@ namespace states {
         std::cout << "headingError: " << absoluteAxisAlignmentTask_->ControlVariable().norm() << std::endl;
         std::cout << "linearVel activation Gain: " << taskGain << std::endl;
         std::cout << "- - -" << std::endl;
+
         std::cout << "linearVelocityTask_->ReferenceRate(): " << linearVelocityTask_->ReferenceRate().format(CommaInitFmt) << std::endl;
+
         std::cout << "linearVelocityTask_->InternalActivation(): " << linearVelocityTask_->InternalActivationFunction().format(CommaInitFmt) << std::endl;
         std::cout << "linearVelocityTask_->ExternalActivation(): " << linearVelocityTask_->ExternalActivationFunction().format(CommaInitFmt) << std::endl;
         std::cout << "linearVelocityTask_->gain: " << linearVelocityTask_->TaskParameter().gain << std::endl;
-        std::cout << "-----------------------" << std::endl;
+        std::cout << "linearVelocityTask_->sauration: " << linearVelocityTask_->TaskParameter().saturation << std::endl;
+        std::cout << "-----------------------" << std::endl;*/
 
         return fsm::ok;
     }
 } // namespace states
 } // namespace ulisse
+
+
+

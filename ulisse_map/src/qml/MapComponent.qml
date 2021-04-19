@@ -18,8 +18,10 @@ MapComponentForm {
     property var marker_coords: markerIcon.coordinate
 
     function click_goto_handler(mouse) {
-        markerIcon.coordinate = toCoordinate(Qt.point(mouse.x, mouse.y))
-        markerIcon.opacity = 1
+        if(mouse.button & Qt.LeftButton){
+            markerIcon.coordinate = toCoordinate(Qt.point(mouse.x, mouse.y))
+            markerIcon.opacity = 1
+        }
     }
 
     property var click_handler: click_goto_handler
@@ -95,20 +97,20 @@ MapComponentForm {
     ]
 
     current.transform: [
-            Rotation {
-                origin.x: current.width / 2
-                origin.y: current.height / 2
-                angle: map.bearing - fbkUpdater.current_deg
-            },
-            Rotation {
-                origin.x: ulisseIcon.sourceItem.width / 2
-                origin.y: ulisseIcon.sourceItem.height / 2
-                angle: map.tilt
-                axis.x: 1
-                axis.y: 0
-                axis.z: 0
-            }
-        ]
+        Rotation {
+            origin.x: current.width / 2
+            origin.y: current.height / 2
+            angle: map.bearing - fbkUpdater.current_deg
+        },
+        Rotation {
+            origin.x: ulisseIcon.sourceItem.width / 2
+            origin.y: ulisseIcon.sourceItem.height / 2
+            angle: map.tilt
+            axis.x: 1
+            axis.y: 0
+            axis.z: 0
+        }
+    ]
 
     currentid.text:"%1".arg(fbkUpdater.current_norm.toFixed(2))
 

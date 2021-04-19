@@ -19,7 +19,7 @@ namespace states {
         std::shared_ptr<ikcl::CartesianDistance> cartesianDistancePathFollowingTask_;
 
         bool isCurveSet_; // flag for checking if a curve has been loaded
-        bool isInStart_; // flag for checking is the robot at the path start
+        bool vehicleOnTrack_; // flag for checking is the robot at the path start
         ctb::LatLong startP_, endP_; // starting and ending point
         ctb::LatLong nextP_; // next point of the path
         double tolleranceStartingPoint_; // tollerance on the starting point

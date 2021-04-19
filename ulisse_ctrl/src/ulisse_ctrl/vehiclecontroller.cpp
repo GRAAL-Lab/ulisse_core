@@ -1,4 +1,4 @@
-#include "ulisse_ctrl/vehiclecontroller.hpp"
+﻿#include "ulisse_ctrl/vehiclecontroller.hpp"
 #include "ulisse_ctrl/fsm_defines.hpp"
 #include "ulisse_msgs/terminal_utils.hpp"
 #include "ulisse_msgs/topicnames.hpp"
@@ -40,7 +40,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     feedbackGuiPub_ = nh_->create_publisher<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10);
 
     // Timer for slow check operations
-    slow_timer_ = nh_->create_wall_timer(std::chrono::seconds(10), std::bind(&VehicleController::SlowTimerCB, this));
+    slow_timer_ = nh_->create_wall_timer(std::chrono::seconds(2), std::bind(&VehicleController::SlowTimerCB, this));
 
     /// TPIK Manager
     actionManager_ = std::make_shared<tpik::ActionManager>(tpik::ActionManager());
@@ -509,11 +509,18 @@ void VehicleController::Run()
                 std::cerr << "who " << e.what() << " how: " << e.how() << std::endl;
             }
         }
+
         // Computing Kinematic Control via TPIK
         yTpik_ = solver_->ComputeVelocities();
 
-        /*std::cout << "yTpik_: " << std::endl;
-    std::cout << yTpik_ << std::endl;*/
+        auto deltays = solver_->DeltaYs();
+
+        /*int i = 0;
+        Eigen::IOFormat CommaInitFmt(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", " / ", "", "", "", ";");
+        for (auto& deltay : deltays) {
+            std::cout << "[ VC 2 ] deltay_" << i << ": " << deltay.transpose().format(CommaInitFmt) << std::endl;
+            i++;
+        }*/
 
         for (int i = 0; i < yTpik_.size(); i++) {
             if (std::isnan(yTpik_(i))) {
@@ -546,7 +553,6 @@ void VehicleController::PublishControl()
         feedbackGuiMsg.goal_position.latitude = stateHold_->positionToHold.latitude;
         feedbackGuiMsg.goal_position.longitude = stateHold_->positionToHold.longitude;
         feedbackGuiMsg.acceptance_radius = stateHold_->maxAcceptanceRadius;
-        //feedbackGuiMsg.goal_distance = stateHold_->;
     }
     else if (uFsm_.GetCurrentStateName() == ulisse::states::ID::latlong){
         feedbackGuiMsg.goal_position.latitude = stateLatLong_->goalPosition.latitude;
