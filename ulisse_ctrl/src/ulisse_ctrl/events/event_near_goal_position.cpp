@@ -13,7 +13,7 @@ namespace events {
 
     fsm::retval EventNearGoalPosition::Execute()
     {
-        std::cout << "Event near goal position" << std::endl;
+        std::cout << "Executing: EventNearGoalPosition" << std::endl;
 
         if (goToHold_) {
             stateHold_->positionToHold = *currentPosition_;
