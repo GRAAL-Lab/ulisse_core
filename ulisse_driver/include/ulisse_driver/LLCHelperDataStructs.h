@@ -211,6 +211,8 @@ namespace llc {
         uint16_t hbPacketMotorsMax;
         uint16_t hbPacketBattery0;
         uint16_t hbPacketBatteryMax;
+        uint16_t thrusterSaturation;
+
         float32_t timeoutAccelerometer;
         float32_t timeoutCompass;
         float32_t timeoutMagnetometer;
@@ -221,7 +223,6 @@ namespace llc {
         float32_t pwmTimeThreshold;
         float32_t pwmZeroThreshold;
         float32_t deadzoneTime;
-        uint16_t thrusterSaturation;
 
         void DebugPrint(rclcpp::Logger logger)
         {

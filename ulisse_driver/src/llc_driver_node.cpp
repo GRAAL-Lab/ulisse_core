@@ -10,6 +10,7 @@
 
 #include <cstdio>
 #include <thread>
+#include <libconfig.h++>
 
 #include "ulisse_driver/CSerialHelper.h"
 #include "ulisse_driver/LLCHelper.h"
@@ -29,43 +30,20 @@ int main(int argc, char* argv[])
     rclcpp::init(argc, argv);
     auto nh = rclcpp::Node::make_shared("llc_driver_node");
 
-    std::string serialDevice = "/dev/ttyS0";
-    int baudRate = 115200;
+    /*try {
+        confObj.readFile(confPath.c_str());
+    } catch (const libconfig::FileIOException& fioex) {
+        std::cerr << "I/O error while reading file: " << fioex.what() << std::endl;
+        return -1;
+    } catch (const libconfig::ParseException& pex) {
+        std::cerr << "Parse error at " << pex.getFile() << ":" << pex.getLine() << " - " << pex.getError() << std::endl;
+        return -1;
+    }*/
 
-    auto par_client_ = std::make_shared<rclcpp::SyncParametersClient>(nh);
-    while (!par_client_->wait_for_service(1ms)) {
-        if (!rclcpp::ok()) {
-            RCLCPP_ERROR(nh->get_logger(), "Interrupted while waiting for the service. Exiting.");
-            exit(0);
-        }
-        RCLCPP_INFO(nh->get_logger(), "service not available, waiting again...");
-    }
+    //std::string serialDevice;// = "/dev/ttyS0";
+    //int baudRate;// = 115200;
 
-    serialDevice = par_client_->get_parameter("SerialDevice", std::string(""));
-    baudRate = par_client_->get_parameter("BaudRate", 115200);
-
-    ulisse::CSerialHelper::getInstance(serialDevice.c_str(), baudRate);
-
-    /*rclcpp::executors::SingleThreadedExecutor executor1;
-    auto thread_receiver = std::make_shared<ThreadReceiver>(); // Async Node
-    executor1.add_node(thread_receiver);
-    auto spin_executor1 = [&executor1]() {
-        executor1.spin();
-    };
-    std::thread execution1_thread(spin_executor1);
-    RCLCPP_INFO(nh->get_logger(), "LLC receiver thread created");
-
-    rclcpp::executors::SingleThreadedExecutor executor2;
-    auto thread_sender = std::make_shared<ThreadSender>(); // Sync Node
-    executor2.add_node(thread_sender);
-    auto spin_executor2 = [&executor2]() {
-        executor2.spin();
-    };
-    std::thread execution2_thread(spin_executor2);
-    RCLCPP_INFO(nh->get_logger(), "LLC sender thread created");
-
-    execution1_thread.join();
-    execution2_thread.join();*/
+    //ulisse::CSerialHelper::getInstance(serialDevice.c_str(), baudRate);
 
     rclcpp::executors::MultiThreadedExecutor executor;
     auto thread_receiver = std::make_shared<ThreadReceiver>(); // Async Node

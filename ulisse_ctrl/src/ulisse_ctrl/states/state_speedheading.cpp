@@ -27,9 +27,9 @@ namespace states {
 
         const libconfig::Setting& state = states.lookup(ulisse::states::ID::speedheading);
 
-        if (!ctb::SetParam(state, maxHeadingError_, "maxHeadingError"))
+        if (!ctb::GetParam(state, maxHeadingError_, "maxHeadingError"))
             return false;
-        if (!ctb::SetParam(state, minHeadingError_, "minHeadingError"))
+        if (!ctb::GetParam(state, minHeadingError_, "minHeadingError"))
             return false;
         return true;
     }

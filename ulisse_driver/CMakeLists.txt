@@ -16,6 +16,8 @@ find_package(class_loader REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(ulisse_msgs REQUIRED)
 find_package(rml REQUIRED)
+find_package(ctrl_toolbox REQUIRED)
+find_package(ament_index_cpp REQUIRED)
 
 # Add files in directory tree to "Projects" view in QtCreator
 file(GLOB_RECURSE SOURCE_FILES
@@ -41,32 +43,32 @@ set(ulisse_driver_lib_sources
 ## Libraries
 add_library(ulisse_driver_lib SHARED ${ulisse_driver_lib_sources})
 ament_target_dependencies(ulisse_driver_lib rclcpp std_msgs ulisse_msgs)
-target_link_libraries(ulisse_driver_lib Geographic rml ctrl_toolbox)
+target_link_libraries(ulisse_driver_lib Geographic rml ctrl_toolbox config++)
 
 add_library(llc_driver_threads SHARED
             src/ulisse_driver/thread_sender.cpp
             src/ulisse_driver/thread_receiver.cpp)
 target_compile_definitions(llc_driver_threads
   PRIVATE "THREADS_COMPOSITION_DLL")
-ament_target_dependencies(llc_driver_threads rclcpp std_msgs class_loader)
-target_link_libraries(llc_driver_threads ulisse_driver_lib)
+ament_target_dependencies(llc_driver_threads rclcpp std_msgs class_loader ament_index_cpp)
+target_link_libraries(llc_driver_threads ulisse_driver_lib config++)
 
 ## Executables
 add_executable(llc_driver_node src/llc_driver_node.cpp)
-ament_target_dependencies(llc_driver_node rclcpp std_msgs ulisse_msgs rml)
-target_link_libraries(llc_driver_node rml ulisse_driver_lib llc_driver_threads)
+ament_target_dependencies(llc_driver_node rclcpp std_msgs ulisse_msgs ament_index_cpp)
+target_link_libraries(llc_driver_node ulisse_driver_lib llc_driver_threads rml ctrl_toolbox config++)
 
 add_executable(gps_setup_node src/gps_setup_node.cpp)
-ament_target_dependencies(gps_setup_node rclcpp std_msgs ulisse_msgs rml)
-target_link_libraries(gps_setup_node ulisse_driver_lib gps)
+ament_target_dependencies(gps_setup_node rclcpp std_msgs ulisse_msgs ament_index_cpp)
+target_link_libraries(gps_setup_node ulisse_driver_lib gps rml ctrl_toolbox config++)
 
 add_executable(gps_publisher_node src/gps_publisher_node.cpp)
-ament_target_dependencies(gps_publisher_node rclcpp std_msgs ulisse_msgs rml)
-target_link_libraries(gps_publisher_node ulisse_driver_lib gps)
+ament_target_dependencies(gps_publisher_node rclcpp std_msgs ulisse_msgs ament_index_cpp)
+target_link_libraries(gps_publisher_node ulisse_driver_lib gps rml ctrl_toolbox config++)
 
 add_executable(driver_console_node src/driver_console_node.cpp)
-ament_target_dependencies(driver_console_node rclcpp std_msgs ulisse_msgs rml)
-target_link_libraries(driver_console_node rml ulisse_driver_lib llc_driver_threads)
+ament_target_dependencies(driver_console_node rclcpp std_msgs ulisse_msgs)
+target_link_libraries(driver_console_node ulisse_driver_lib llc_driver_threads rml ctrl_toolbox config++)
 
 install(TARGETS
   ulisse_driver_lib

@@ -1,6 +1,7 @@
 #ifndef ULISSE_DRIVER_THREAD_RECEIVER_HPP
 #define ULISSE_DRIVER_THREAD_RECEIVER_HPP
 
+#include <libconfig.h++>
 #include "rclcpp/rclcpp.hpp"
 
 #include "ulisse_msgs/msg/ambient_sensors.hpp"
@@ -28,13 +29,16 @@ namespace llc {
 
     class ThreadReceiver : public rclcpp::Node {
     public:
-        THREADS_COMPOSITION_PUBLIC ThreadReceiver();
+        ThreadReceiver();
 
     private:
         void ReadLoop();
 
         void LLCData2RosMsg(const batteryData& llc_batt, ulisse_msgs::msg::LLCBattery& batt_msg);
         void LLCData2RosMsg(const motorData& llc_motor, ulisse_msgs::msg::MotorData& motor_msg);
+
+        std::string confPath_;
+        libconfig::Config confObj_;
 
         LLCHelper llcHlp_;
         LLCData llcData_;

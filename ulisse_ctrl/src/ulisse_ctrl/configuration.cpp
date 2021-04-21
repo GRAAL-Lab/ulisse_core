@@ -26,7 +26,7 @@ bool ConfigurePriorityLevelsFromFile(std::shared_ptr<tpik::ActionManager> action
         const libconfig::Setting& priorityLevel = priorityLevels[i];
         std::string PLID;
 
-        if (!ctb::SetParam(priorityLevel, PLID, "name"))
+        if (!ctb::GetParam(priorityLevel, PLID, "name"))
             return false;
 
         hierarchy.push_back(PLID);
@@ -34,9 +34,9 @@ bool ConfigurePriorityLevelsFromFile(std::shared_ptr<tpik::ActionManager> action
         //configure regularization data
         rml::RegularizationData regularizationData;
 
-        if (!ctb::SetParam(priorityLevel, regularizationData.params.lambda, "lambda"))
+        if (!ctb::GetParam(priorityLevel, regularizationData.params.lambda, "lambda"))
             return false;
-        if (!ctb::SetParam(priorityLevel, regularizationData.params.threshold, "threshold"))
+        if (!ctb::GetParam(priorityLevel, regularizationData.params.threshold, "threshold"))
             return false;
 
         actionManager->AddPriorityLevelWithRegularization(PLID, regularizationData);
@@ -70,7 +70,7 @@ bool ConfigureActionsFromFile(std::shared_ptr<tpik::ActionManager> actionManager
 
         const libconfig::Setting& action = actions[i];
         std::string actionID;
-        if (!ctb::SetParam(action, actionID, "name"))
+        if (!ctb::GetParam(action, actionID, "name"))
             return false;
 
         std::vector<std::string> actionPL;

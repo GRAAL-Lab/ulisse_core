@@ -70,15 +70,15 @@ namespace states {
 
         const libconfig::Setting& state = states.lookup(ulisse::states::ID::navigate);
 
-        if (!ctb::SetParam(state, maxHeadingError_, "maxHeadingError"))
+        if (!ctb::GetParam(state, maxHeadingError_, "maxHeadingError"))
             return false;
-        if (!ctb::SetParam(state, minHeadingError_, "minHeadingError"))
+        if (!ctb::GetParam(state, minHeadingError_, "minHeadingError"))
             return false;
-        if (!ctb::SetParam(state, tolleranceStartingPoint_, "tolleranceStartingPoint"))
+        if (!ctb::GetParam(state, tolleranceStartingPoint_, "tolleranceStartingPoint"))
             return false;
-        if (!ctb::SetParam(state, tolleranceEndingPoint_, "tolleranceEndingPoint"))
+        if (!ctb::GetParam(state, tolleranceEndingPoint_, "tolleranceEndingPoint"))
             return false;
-        if (!ctb::SetParam(state, logPathOnFile_, "logPathOnFile"))
+        if (!ctb::GetParam(state, logPathOnFile_, "logPathOnFile"))
             return false;
 
         //configure the nurbs param

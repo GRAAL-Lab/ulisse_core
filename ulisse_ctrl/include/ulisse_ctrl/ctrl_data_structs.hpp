@@ -39,15 +39,15 @@ struct ControllerConfiguration {
     bool ConfigureFromFile(libconfig::Config& confObj)
     {
 
-        if (!ctb::SetParam(confObj, goToHoldAfterMove, "goToHoldAfterMove"))
+        if (!ctb::GetParam(confObj, goToHoldAfterMove, "goToHoldAfterMove"))
             return false;
-        if (!ctb::SetParam(confObj, controlLoopPeriod, "controlLoopPeriod"))
+        if (!ctb::GetParam(confObj, controlLoopPeriod, "controlLoopPeriod"))
             return false;
-        if (!ctb::SetParam(confObj, posAcceptanceRadius, "posAcceptanceRadius"))
+        if (!ctb::GetParam(confObj, posAcceptanceRadius, "posAcceptanceRadius"))
             return false;
-        if (!ctb::SetParamVector(confObj, saturationMax, "saturationMax"))
+        if (!ctb::GetParamVector(confObj, saturationMax, "saturationMax"))
             return false;
-        if (!ctb::SetParamVector(confObj, saturationMin, "saturationMin"))
+        if (!ctb::GetParamVector(confObj, saturationMin, "saturationMin"))
             return false;
 
         return true;
@@ -73,19 +73,19 @@ struct ThrusterMapping {
     {
         const libconfig::Setting& pidSurge = confObj["pidSurge"];
 
-        if (!ctb::SetParam(pidSurge, pidGainsSurge.Kd, "kd"))
+        if (!ctb::GetParam(pidSurge, pidGainsSurge.Kd, "kd"))
             return false;
-        if (!ctb::SetParam(pidSurge, pidGainsSurge.Kp, "kp"))
+        if (!ctb::GetParam(pidSurge, pidGainsSurge.Kp, "kp"))
             return false;
-        if (!ctb::SetParam(pidSurge, pidGainsSurge.Ki, "ki"))
+        if (!ctb::GetParam(pidSurge, pidGainsSurge.Ki, "ki"))
             return false;
-        if (!ctb::SetParam(pidSurge, pidGainsSurge.Kff, "kff"))
+        if (!ctb::GetParam(pidSurge, pidGainsSurge.Kff, "kff"))
             return false;
-        if (!ctb::SetParam(pidSurge, pidGainsSurge.N, "n"))
+        if (!ctb::GetParam(pidSurge, pidGainsSurge.N, "n"))
             return false;
-        if (!ctb::SetParam(pidSurge, pidGainsSurge.Tr, "tr"))
+        if (!ctb::GetParam(pidSurge, pidGainsSurge.Tr, "tr"))
             return false;
-        if (!ctb::SetParam(pidSurge, pidSatSurge, "sat"))
+        if (!ctb::GetParam(pidSurge, pidSatSurge, "sat"))
             return false;
 
         return true;
@@ -117,36 +117,36 @@ struct DynamicPid {
     {
         const libconfig::Setting& pidSurge = confObj["pidSurge"];
 
-        if (!ctb::SetParam(pidSurge, pidGainsSurge.Kd, "kd"))
+        if (!ctb::GetParam(pidSurge, pidGainsSurge.Kd, "kd"))
             return false;
-        if (!ctb::SetParam(pidSurge, pidGainsSurge.Kp, "kp"))
+        if (!ctb::GetParam(pidSurge, pidGainsSurge.Kp, "kp"))
             return false;
-        if (!ctb::SetParam(pidSurge, pidGainsSurge.Ki, "ki"))
+        if (!ctb::GetParam(pidSurge, pidGainsSurge.Ki, "ki"))
             return false;
-        if (!ctb::SetParam(pidSurge, pidGainsSurge.Kff, "kff"))
+        if (!ctb::GetParam(pidSurge, pidGainsSurge.Kff, "kff"))
             return false;
-        if (!ctb::SetParam(pidSurge, pidGainsSurge.N, "n"))
+        if (!ctb::GetParam(pidSurge, pidGainsSurge.N, "n"))
             return false;
-        if (!ctb::SetParam(pidSurge, pidGainsSurge.Tr, "tr"))
+        if (!ctb::GetParam(pidSurge, pidGainsSurge.Tr, "tr"))
             return false;
-        if (!ctb::SetParam(pidSurge, pidSatSurge, "sat"))
+        if (!ctb::GetParam(pidSurge, pidSatSurge, "sat"))
             return false;
 
         const libconfig::Setting& pidYawRate = confObj["pidYawRate"];
 
-        if (!ctb::SetParam(pidYawRate, pidGainsYawRate.Kd, "kd"))
+        if (!ctb::GetParam(pidYawRate, pidGainsYawRate.Kd, "kd"))
             return false;
-        if (!ctb::SetParam(pidYawRate, pidGainsYawRate.Kp, "kp"))
+        if (!ctb::GetParam(pidYawRate, pidGainsYawRate.Kp, "kp"))
             return false;
-        if (!ctb::SetParam(pidYawRate, pidGainsYawRate.Ki, "ki"))
+        if (!ctb::GetParam(pidYawRate, pidGainsYawRate.Ki, "ki"))
             return false;
-        if (!ctb::SetParam(pidYawRate, pidGainsYawRate.Kff, "kff"))
+        if (!ctb::GetParam(pidYawRate, pidGainsYawRate.Kff, "kff"))
             return false;
-        if (!ctb::SetParam(pidYawRate, pidGainsYawRate.N, "n"))
+        if (!ctb::GetParam(pidYawRate, pidGainsYawRate.N, "n"))
             return false;
-        if (!ctb::SetParam(pidYawRate, pidGainsYawRate.Tr, "tr"))
+        if (!ctb::GetParam(pidYawRate, pidGainsYawRate.Tr, "tr"))
             return false;
-        if (!ctb::SetParam(pidYawRate, pidSatYawRate, "sat"))
+        if (!ctb::GetParam(pidYawRate, pidSatYawRate, "sat"))
             return false;
 
         return true;
@@ -218,20 +218,20 @@ struct DCLConfiguration {
         const libconfig::Setting& dcl = root["dcl_ulisse"];
         // Load DCL Config
         int tmpCtrlMode;
-        if (!ctb::SetParam(dcl, tmpCtrlMode, "ctrlMode"))
+        if (!ctb::GetParam(dcl, tmpCtrlMode, "ctrlMode"))
             return false;
         ctrlMode = static_cast<ControlMode>(tmpCtrlMode);
-        if (!ctb::SetParam(dcl, enableThrusters, "enableThrusters"))
+        if (!ctb::GetParam(dcl, enableThrusters, "enableThrusters"))
             return false;
-        if (!ctb::SetParam(dcl, thrusterPercLimit, "thrusterPercLimit"))
+        if (!ctb::GetParam(dcl, thrusterPercLimit, "thrusterPercLimit"))
             return false;
-        if (!ctb::SetParam(dcl, surgeMin, "surgeMin"))
+        if (!ctb::GetParam(dcl, surgeMin, "surgeMin"))
             return false;
-        if (!ctb::SetParam(dcl, surgeMax, "surgeMax"))
+        if (!ctb::GetParam(dcl, surgeMax, "surgeMax"))
             return false;
-        if (!ctb::SetParam(dcl, yawRateMin, "yawRateMin"))
+        if (!ctb::GetParam(dcl, yawRateMin, "yawRateMin"))
             return false;
-        if (!ctb::SetParam(dcl, yawRateMax, "yawRateMax"))
+        if (!ctb::GetParam(dcl, yawRateMax, "yawRateMax"))
             return false;
 
         const libconfig::Setting& ulisseModelParams = dcl["ulisseModel"];

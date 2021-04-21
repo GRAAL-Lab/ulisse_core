@@ -86,17 +86,17 @@ public:
             const libconfig::Setting& states = root["states"];
 
             const libconfig::Setting& state = states.lookup(stateName);
-            if (!ctb::SetParam(state, deltaMin, "deltaMin"))
+            if (!ctb::GetParam(state, deltaMin, "deltaMin"))
                 return false;
-            if (!ctb::SetParam(state, deltaMax, "deltaMax"))
+            if (!ctb::GetParam(state, deltaMax, "deltaMax"))
                 return false;
-            if (!ctb::SetParam(state, aepsge, "geometricTollerance"))
+            if (!ctb::GetParam(state, aepsge, "geometricTollerance"))
                 return false;
-            if (!ctb::SetParam(state, aepsco, "computationalTollerance"))
+            if (!ctb::GetParam(state, aepsco, "computationalTollerance"))
                 return false;
-            if (!ctb::SetParam(state, maxLookupParvalue, "maxLookupCurvilinearAbscissa"))
+            if (!ctb::GetParam(state, maxLookupParvalue, "maxLookupCurvilinearAbscissa"))
                 return false;
-            if (!ctb::SetParam(state, directionError, "tangentDirectionError"))
+            if (!ctb::GetParam(state, directionError, "tangentDirectionError"))
                 return false;
 
             return true;

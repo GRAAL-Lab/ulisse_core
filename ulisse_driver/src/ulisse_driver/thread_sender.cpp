@@ -13,11 +13,12 @@
 // limitations under the License.
 
 #include <chrono>
+#include <ctrl_toolbox/HelperFunctions.h>
+#include <ament_index_cpp/get_package_share_directory.hpp>
 
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
 #include "ulisse_driver/thread_sender.hpp"
-
 #include "ulisse_msgs/topicnames.hpp"
 
 using std::placeholders::_1;
@@ -35,39 +36,44 @@ namespace llc {
     ThreadSender::ThreadSender()
         : Node("llc_thread_sender")
     {
-        par_client_ = std::make_shared<rclcpp::AsyncParametersClient>(this);
 
-        while (!par_client_->wait_for_service(1ms)) {
-            if (!rclcpp::ok()) {
-                RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service. Exiting.");
-                exit(0);
-            }
-            RCLCPP_INFO(this->get_logger(), "service not available, waiting again...");
+        // Reading Parameters
+        libconfig::Config confObj;
+        std::string fileName = "ulisse_driver.conf";
+        std::string package_share_directory = ament_index_cpp::get_package_share_directory("ulisse_driver");
+        confPath_ = package_share_directory;
+        confPath_.append("/conf/");
+        confPath_.append(fileName);
+        std::cout << "[LLC ThreadSender] Config: " << confPath_ << std::endl;
+
+        try {
+            confObj_.readFile(confPath_.c_str());
+        } catch (const libconfig::FileIOException& fioex) {
+            std::cerr << "[LLC ThreadSender] I/O error while reading file: " << fioex.what() << std::endl;
+            exit(EXIT_FAILURE);
+        } catch (const libconfig::ParseException& pex) {
+            std::cerr << "Parse error at " << pex.getFile() << ":" << pex.getLine() << " - " << pex.getError() << std::endl;
+            exit(EXIT_FAILURE);
         }
 
         std::string serialDevice = "";
-        int baudRate = 0;
+        uint32_t baudRate = 0;
         bool debugBytes = false;
         bool debugIncomingValidMessageType = false;
         bool debugFailedCrc = false;
 
-        auto parameters = par_client_->get_parameters({ "SerialDevice", "BaudRate", "LLCHelper.DebugBytes",
-            "LLCHelper.DebugIncomingValidMessageType", "LLCHelper.DebugFailedCrc" });
-        if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), parameters) != rclcpp::executor::FutureReturnCode::SUCCESS) {
-            RCLCPP_ERROR(this->get_logger(), "get_parameters service call failed. Exiting.");
-            exit(EXIT_FAILURE);
-        }
-        std::cout << "=====    Sender Parameters    =====\n";
-        for (auto& parameter : parameters.get()) {
-            std::cout << parameter.get_name() << "(" << parameter.get_type_name() << "): " << parameter.value_to_string() << std::endl;
-        }
-        std::cout << "====================================" << std::endl;
+        ctb::GetParam(confObj_, serialDevice, "LLC.SerialDevice");
+        ctb::GetParam(confObj_, baudRate, "LLC.BaudRate");
+        ctb::GetParam(confObj_, debugBytes, "LLC.DebugBytes");
+        ctb::GetParam(confObj_, debugIncomingValidMessageType, "LLC.DebugIncomingValidMessageType");
+        ctb::GetParam(confObj_, debugFailedCrc, "LLC.DebugFailedCrc");
 
-        this->get_parameter_or("SerialDevice", serialDevice, std::string());
-        this->get_parameter_or("BaudRate", baudRate, 0);
-        this->get_parameter_or("LLCHelper.DebugBytes", debugBytes, false);
-        this->get_parameter_or("LLCHelper.DebugIncomingValidMessageType", debugIncomingValidMessageType, false);
-        this->get_parameter_or("LLCHelper.DebugFailedCrc", debugFailedCrc, false);
+        std::cout << "=====    Receiver Parameters    =====\n";
+        std::cout << "LLC.SerialDevice: "                  << serialDevice                  << std::endl;
+        std::cout << "LLC.BaudRate: "                      << baudRate                      << std::endl;
+        std::cout << "LLC.DebugBytes: "                    << debugBytes                    << std::endl;
+        std::cout << "LLC.DebugIncomingValidMessageType: " << debugIncomingValidMessageType << std::endl;
+        std::cout << "LLC.DebugFailedCrc: "                << debugFailedCrc                << std::endl;
 
         RCLCPP_INFO(this->get_logger(), "Trying to open serialDevice: %s, baudRate: %d ", serialDevice.c_str(), baudRate);
         llcHlp_.DebugBytes(debugBytes);
@@ -78,7 +84,7 @@ namespace llc {
             exit(0);
         }
 
-        ReloadConfigFile();
+        LoadConfigFile();
 
         data_.messageType = MessageType::set_config;
         data_.config = lowlevelconf_;
@@ -156,7 +162,7 @@ namespace llc {
                 llcHlp_.SendMessage(data_);
                 break;
             case (uint16_t)CommandType::reloadconfig:
-                ReloadConfigFile();
+                LoadConfigFile();
                 data_.messageType = MessageType::set_config;
                 data_.config = lowlevelconf_;
                 llcHlp_.SendMessage(data_);
@@ -216,31 +222,58 @@ namespace llc {
         lowlevelconf_.thrusterSaturation = request->config_data.thrustersaturation;
     }
 
-    void ThreadSender::ReloadConfigFile()
+    void ThreadSender::LoadConfigFile()
     {
-        get_parameter_or("LLCHelper.LowLevelConfig.HbCompass0", lowlevelconf_.hbCompass0, (uint16_t)0);
-        get_parameter_or("LLCHelper.LowLevelConfig.HbCompassMax", lowlevelconf_.hbCompassMax, (uint16_t)0);
-        get_parameter_or("LLCHelper.LowLevelConfig.HbMagnetometer0", lowlevelconf_.hbMagnetometer0, (uint16_t)0);
-        get_parameter_or("LLCHelper.LowLevelConfig.HbMagnetometerMax", lowlevelconf_.hbMagnetometerMax, (uint16_t)0);
-        get_parameter_or("LLCHelper.LowLevelConfig.HbPacketSensors0", lowlevelconf_.hbPacketSensors0, (uint16_t)0);
-        get_parameter_or("LLCHelper.LowLevelConfig.HbPacketSensorsMax", lowlevelconf_.hbPacketSensorsMax, (uint16_t)0);
-        get_parameter_or("LLCHelper.LowLevelConfig.HbPacketStatus0", lowlevelconf_.hbPacketStatus0, (uint16_t)0);
-        get_parameter_or("LLCHelper.LowLevelConfig.HbPacketStatusMax", lowlevelconf_.hbPacketStatusMax, (uint16_t)0);
-        get_parameter_or("LLCHelper.LowLevelConfig.HbPacketMotors0", lowlevelconf_.hbPacketMotors0, (uint16_t)0);
-        get_parameter_or("LLCHelper.LowLevelConfig.HbPacketMotorsMax", lowlevelconf_.hbPacketMotorsMax, (uint16_t)0);
-        get_parameter_or("LLCHelper.LowLevelConfig.HbPacketBattery0", lowlevelconf_.hbPacketBattery0, (uint16_t)0);
-        get_parameter_or("LLCHelper.LowLevelConfig.HbPacketBatteryMax", lowlevelconf_.hbPacketBatteryMax, (uint16_t)0);
-        get_parameter_or("LLCHelper.LowLevelConfig.TimeoutAccelerometer", lowlevelconf_.timeoutAccelerometer, (float)0.0);
-        get_parameter_or("LLCHelper.LowLevelConfig.TimeoutCompass", lowlevelconf_.timeoutCompass, (float)0.0);
-        get_parameter_or("LLCHelper.LowLevelConfig.TimeoutMagnetometer", lowlevelconf_.timeoutMagnetometer, (float)0.0);
-        get_parameter_or("LLCHelper.LowLevelConfig.PwmUpMin", lowlevelconf_.pwmUpMin, (float)0.0);
-        get_parameter_or("LLCHelper.LowLevelConfig.PwmUpMax", lowlevelconf_.pwmUpMax, (float)0.0);
-        get_parameter_or("LLCHelper.LowLevelConfig.PwmPeriodMin", lowlevelconf_.pwmPeriodMin, (float)0.0);
-        get_parameter_or("LLCHelper.LowLevelConfig.PwmPeriodMax", lowlevelconf_.pwmPeriodMax, (float)0.0);
-        get_parameter_or("LLCHelper.LowLevelConfig.PwmTimeThreshold", lowlevelconf_.pwmTimeThreshold, (float)0.0);
-        get_parameter_or("LLCHelper.LowLevelConfig.PwmZeroThreshold", lowlevelconf_.pwmZeroThreshold, (float)0.0);
-        get_parameter_or("LLCHelper.LowLevelConfig.DeadzoneTime", lowlevelconf_.deadzoneTime, (float)0.0);
-        get_parameter_or("LLCHelper.LowLevelConfig.ThrusterSaturation", lowlevelconf_.thrusterSaturation, (uint16_t)0.0);
+        uint temp_uint;
+        ctb::GetParam(confObj_, temp_uint, "LLC.Config.HbCompass0");
+        lowlevelconf_.hbCompass0 = (uint16_t)temp_uint;
+        ctb::GetParam(confObj_, temp_uint, "LLC.Config.HbCompassMax");
+        lowlevelconf_.hbCompassMax = (uint16_t)temp_uint;
+        ctb::GetParam(confObj_, temp_uint, "LLC.Config.HbMagnetometer0"     );
+        lowlevelconf_.hbMagnetometer0 = (uint16_t)temp_uint;
+        ctb::GetParam(confObj_, temp_uint, "LLC.Config.HbMagnetometerMax"   );
+        lowlevelconf_.hbMagnetometerMax = (uint16_t)temp_uint;
+        ctb::GetParam(confObj_, temp_uint, "LLC.Config.HbPacketSensors0"    );
+        lowlevelconf_.hbPacketSensors0 = (uint16_t)temp_uint;
+        ctb::GetParam(confObj_, temp_uint, "LLC.Config.HbPacketSensorsMax"  );
+        lowlevelconf_.hbPacketSensorsMax = (uint16_t)temp_uint;
+        ctb::GetParam(confObj_, temp_uint, "LLC.Config.HbPacketStatus0"     );
+        lowlevelconf_.hbPacketStatus0  = (uint16_t)temp_uint;
+        ctb::GetParam(confObj_, temp_uint, "LLC.Config.HbPacketStatusMax"   );
+        lowlevelconf_.hbPacketStatusMax = (uint16_t)temp_uint;
+        ctb::GetParam(confObj_, temp_uint, "LLC.Config.HbPacketMotors0"     );
+        lowlevelconf_.hbPacketMotors0 = (uint16_t)temp_uint;
+        ctb::GetParam(confObj_, temp_uint, "LLC.Config.HbPacketMotorsMax"   );
+        lowlevelconf_.hbPacketMotorsMax = (uint16_t)temp_uint;
+        ctb::GetParam(confObj_, temp_uint, "LLC.Config.HbPacketBattery0"    );
+        lowlevelconf_.hbPacketBattery0 = (uint16_t)temp_uint;
+        ctb::GetParam(confObj_, temp_uint, "LLC.Config.HbPacketBatteryMax"  );
+        lowlevelconf_.hbPacketBatteryMax = (uint16_t)temp_uint;
+        ctb::GetParam(confObj_, temp_uint, "LLC.Config.ThrusterSaturation"  );
+        lowlevelconf_.thrusterSaturation = (uint16_t)temp_uint;
+
+        double temp_double;
+        ctb::GetParam(confObj_, temp_double, "LLC.Config.TimeoutAccelerometer");
+        lowlevelconf_.timeoutAccelerometer = (float32_t)temp_double;
+        ctb::GetParam(confObj_, temp_double, "LLC.Config.TimeoutCompass"      );
+        lowlevelconf_.timeoutCompass = (float32_t)temp_double;
+        ctb::GetParam(confObj_, temp_double,  "LLC.Config.TimeoutMagnetometer");
+        lowlevelconf_.timeoutMagnetometer = (float32_t)temp_double;
+        ctb::GetParam(confObj_, temp_double, "LLC.Config.PwmUpMin"            );
+        lowlevelconf_.pwmUpMin = (float32_t)temp_double;
+        ctb::GetParam(confObj_, temp_double, "LLC.Config.PwmUpMax"            );
+        lowlevelconf_.pwmUpMax = (float32_t)temp_double;
+        ctb::GetParam(confObj_, temp_double, "LLC.Config.PwmPeriodMin"        );
+        lowlevelconf_.pwmPeriodMin = (float32_t)temp_double;
+        ctb::GetParam(confObj_, temp_double, "LLC.Config.PwmPeriodMax"        );
+        lowlevelconf_.pwmPeriodMax = (float32_t)temp_double;
+        ctb::GetParam(confObj_, temp_double, "LLC.Config.PwmTimeThreshold"    );
+        lowlevelconf_.pwmTimeThreshold = (float32_t)temp_double;
+        ctb::GetParam(confObj_, temp_double, "LLC.Config.PwmZeroThreshold"    );
+        lowlevelconf_.pwmZeroThreshold = (float32_t)temp_double;
+        ctb::GetParam(confObj_, temp_double, "LLC.Config.DeadzoneTime"        );
+        lowlevelconf_.deadzoneTime = (float32_t)temp_double;
+
 
         std::cout << "=====    Reload Sender Config    =====\n";
         lowlevelconf_.DebugPrint(this->get_logger());

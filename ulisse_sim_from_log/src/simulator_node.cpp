@@ -263,17 +263,17 @@ bool LoadConfiguration(int& rate, std::string& gpsFileName, std::string& sensorF
         return false;
     }
 
-    if (!ctb::SetParam(confObj, rate, "rate"))
+    if (!ctb::GetParam(confObj, rate, "rate"))
         return false;
 
     const libconfig::Setting& root = confObj.getRoot();
 
     const libconfig::Setting& filesName = root["files_name"];
 
-    if (!ctb::SetParam(filesName, gpsFileName, "gps"))
+    if (!ctb::GetParam(filesName, gpsFileName, "gps"))
         return false;
 
-    if (!ctb::SetParam(filesName, sensorFileName, "sensors"))
+    if (!ctb::GetParam(filesName, sensorFileName, "sensors"))
         return false;
 
     return true;

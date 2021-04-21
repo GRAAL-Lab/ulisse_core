@@ -29,11 +29,11 @@ struct SinusoidalWave {
 
     bool ConfigureFromFile(const libconfig::Setting& confObj) noexcept(false)
     {
-        if (!ctb::SetParam(confObj, A, "A"))
+        if (!ctb::GetParam(confObj, A, "A"))
             return false;
-        if (!ctb::SetParam(confObj, C, "C"))
+        if (!ctb::GetParam(confObj, C, "C"))
             return false;
-        if (!ctb::SetParam(confObj, f, "f"))
+        if (!ctb::GetParam(confObj, f, "f"))
             return false;
 
         return true;
@@ -50,15 +50,15 @@ struct SensorsNoise {
 
     bool ConfigureFromFile(const libconfig::Setting& confObj) noexcept(false)
     {
-        if (!ctb::SetParamVector(confObj, gps_stdd, "gps_stdd"))
+        if (!ctb::GetParamVector(confObj, gps_stdd, "gps_stdd"))
             return false;
-        if (!ctb::SetParamVector(confObj, compass_stdd, "compass_stdd"))
+        if (!ctb::GetParamVector(confObj, compass_stdd, "compass_stdd"))
             return false;
-        if (!ctb::SetParamVector(confObj, magnetometer_stdd, "magnetometer_stdd"))
+        if (!ctb::GetParamVector(confObj, magnetometer_stdd, "magnetometer_stdd"))
             return false;
-        if (!ctb::SetParamVector(confObj, gyro_stdd, "gyro_stdd"))
+        if (!ctb::GetParamVector(confObj, gyro_stdd, "gyro_stdd"))
             return false;
-        if (!ctb::SetParamVector(confObj, accelerometer_stdd, "accelerometer_stdd"))
+        if (!ctb::GetParamVector(confObj, accelerometer_stdd, "accelerometer_stdd"))
             return false;
 
         const libconfig::Setting& gyro_bias = confObj["gyro_bias"];
@@ -96,16 +96,16 @@ struct SimulatorConfiguration {
 
     bool ConfigureFromFile(libconfig::Config& confObj) noexcept(false)
     {
-        if (!ctb::SetParam(confObj, rate, "rate"))
+        if (!ctb::GetParam(confObj, rate, "rate"))
             return false;
 
-        if (!ctb::SetParam(confObj, rate, "rate"))
+        if (!ctb::GetParam(confObj, rate, "rate"))
             return false;
-        if (!ctb::SetParam(confObj, modelErrorPercentage, "modelErrorPercentage"))
+        if (!ctb::GetParam(confObj, modelErrorPercentage, "modelErrorPercentage"))
             return false;
-        if (!ctb::SetParamVector(confObj, inertialF_waterCurrent, "inertialF_waterCurrent"))
+        if (!ctb::GetParamVector(confObj, inertialF_waterCurrent, "inertialF_waterCurrent"))
             return false;
-        if (!ctb::SetParamVector(confObj, bodyF_gps_position, "bodyF_gps_position"))
+        if (!ctb::GetParamVector(confObj, bodyF_gps_position, "bodyF_gps_position"))
             return false;
 
         //ulisse param

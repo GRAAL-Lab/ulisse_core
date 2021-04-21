@@ -246,7 +246,7 @@ bool VehicleController::LoadConfiguration(std::shared_ptr<ControllerConfiguratio
 
     //acquired the centroid location
     Eigen::VectorXd centroidLocationTmp;
-    if (!ctb::SetParamVector(confObj, centroidLocationTmp, "centroidLocation")) {
+    if (!ctb::GetParamVector(confObj, centroidLocationTmp, "centroidLocation")) {
         std::cerr << "Failed to load centroidLocation from file" << std::endl;
         return false;
     };

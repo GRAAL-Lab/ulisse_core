@@ -7,55 +7,51 @@
 
 #include <memory>
 #include <rclcpp/rclcpp.hpp>
+#include <libconfig.h++>
+#include <ament_index_cpp/get_package_share_directory.hpp>
 
+#include "ctrl_toolbox/HelperFunctions.h"
 #include "ulisse_driver/CSerialHelper.h"
 
 using namespace std::chrono_literals;
 
-static rclcpp::Node::SharedPtr node;
+//static  node;
 
 bool CheckCommandConfirmation(const char* serialDevice, const char* command, const char* expectedAnswer,
-    bool& matchingAnswer);
+    bool& matchingAnswer, rclcpp::Node::SharedPtr node);
 
 int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
-    node = rclcpp::Node::make_shared("gps_setup_node");
+    rclcpp::Node::SharedPtr node = rclcpp::Node::make_shared("gps_setup_node");
 
-    auto par_client_ = std::make_shared<rclcpp::AsyncParametersClient>(node);
+    // Reading Parameters
 
-    while (!par_client_->wait_for_service(1ms)) {
-        if (!rclcpp::ok()) {
-            RCLCPP_ERROR(node->get_logger(), "Interrupted while waiting for the service. Exiting.");
-            exit(0);
-        }
-        RCLCPP_INFO(node->get_logger(), "service not available, waiting again...");
+    std::string fileName = "ulisse_driver.conf";
+    std::string package_share_directory = ament_index_cpp::get_package_share_directory("ulisse_driver");
+    std::string confPath = package_share_directory;
+    confPath.append("/conf/");
+    confPath.append(fileName);
+    std::cout << "GPS Setup Node Config: " << confPath << std::endl;
+
+    libconfig::Config confObj;
+    try {
+        confObj.readFile(confPath.c_str());
+    } catch (const libconfig::FileIOException& fioex) {
+        std::cerr << "I/O error while reading file: " << fioex.what() << std::endl;
+        return -1;
+    } catch (const libconfig::ParseException& pex) {
+        std::cerr << "Parse error at " << pex.getFile() << ":" << pex.getLine() << " - " << pex.getError() << std::endl;
+        return -1;
     }
 
-    std::string serialDevice = "";
-    uint32_t baudRate = 0;
-    node->get_parameter_or("SerialDevice", serialDevice, std::string());
-    node->get_parameter_or("BaudRate", baudRate, 0u);
+    std::string serialDevice;// = "";
+    uint32_t baudRate;// = 0;
+
+    ctb::GetParam(confObj, serialDevice, "GPS.SerialDevice");
+    ctb::GetParam(confObj, baudRate, "GPS.BaudRate");
 
     RCLCPP_INFO(node->get_logger(), "GPS SETUP: %s, %u", serialDevice.c_str(), baudRate);
-
-    //    //std::string serialDevice = "/dev/ttyS1";
-
-    //    for (int i = 1; i < argc; i++) {
-
-    //        if ((strcmp(argv[i], "--serial") == 0) && (i + 1 < argc)) {
-    //            serialDevice.assign(argv[i + 1]);
-    //        }
-
-    //        if ((strcmp(argv[i], "--help") == 0) || (strcmp(argv[i], "-h") == 0)) {
-    //            RCLCPP_INFO(node->get_logger(), "Usage: %s [options]", argv[0]);
-    //            RCLCPP_INFO(node->get_logger(), "Options");
-    //            RCLCPP_INFO(node->get_logger(),
-    //                "--serial device\t: 'device' is the serial port (default %s)", serialDevice.c_str());
-    //            return 0;
-    //        }
-    //    }
-
     RCLCPP_INFO(node->get_logger(), "Stopping gpsd server");
     int status = system("sudo service gpsd stop");
     RCLCPP_INFO(node->get_logger(), "service gpsd stop returned %d", status);
@@ -88,7 +84,7 @@ int main(int argc, char* argv[])
 
         stringToSend.assign("UNLOGALL COM1 TRUE\n\r");
         serial->Write(stringToSend.c_str(), stringToSend.size());
-        ret = CheckCommandConfirmation(serialDevice.c_str(), stringToSend.c_str(), "OK", matchingAnswer);
+        ret = CheckCommandConfirmation(serialDevice.c_str(), stringToSend.c_str(), "OK", matchingAnswer, node);
 
         if (!(ret && (matchingAnswer))) {
             RCLCPP_ERROR(node->get_logger(), "Clearing logs failed! (%s)",
@@ -100,7 +96,7 @@ int main(int argc, char* argv[])
 
         stringToSend.assign("LOG COM1 GPRMC ONTIME 0.1\n\r");
         serial->Write(stringToSend.c_str(), stringToSend.size());
-        ret = CheckCommandConfirmation(serialDevice.c_str(), stringToSend.c_str(), "OK", matchingAnswer);
+        ret = CheckCommandConfirmation(serialDevice.c_str(), stringToSend.c_str(), "OK", matchingAnswer, node);
 
         if (!(ret && (matchingAnswer))) {
             RCLCPP_ERROR(node->get_logger(), "Asking for GPRMC packet failed! (%s)",
@@ -113,7 +109,7 @@ int main(int argc, char* argv[])
 
         stringToSend.assign("LOG COM1 GPGSA ONTIME 0.1\n\r");
         serial->Write(stringToSend.c_str(), stringToSend.size());
-        ret = CheckCommandConfirmation(serialDevice.c_str(), stringToSend.c_str(), "OK", matchingAnswer);
+        ret = CheckCommandConfirmation(serialDevice.c_str(), stringToSend.c_str(), "OK", matchingAnswer, node);
 
         if (!(ret && (matchingAnswer))) {
             RCLCPP_ERROR(node->get_logger(), "Asking for GPGSA packet failed! (%s)",
@@ -124,7 +120,7 @@ int main(int argc, char* argv[])
 
         stringToSend.assign("LOG COM1 GPGSV ONTIME 0.1\n\r");
         serial->Write(stringToSend.c_str(), stringToSend.size());
-        ret = CheckCommandConfirmation(serialDevice.c_str(), stringToSend.c_str(), "OK", matchingAnswer);
+        ret = CheckCommandConfirmation(serialDevice.c_str(), stringToSend.c_str(), "OK", matchingAnswer, node);
 
         if (!(ret && (matchingAnswer))) {
             RCLCPP_ERROR(node->get_logger(), "Asking for GPGSV packet failed! (%s)",
@@ -135,7 +131,7 @@ int main(int argc, char* argv[])
 
         stringToSend.assign("LOG COM1 SATVISA ONTIME 60\n\r");
         serial->Write(stringToSend.c_str(), stringToSend.size());
-        ret = CheckCommandConfirmation(serialDevice.c_str(), stringToSend.c_str(), "OK", matchingAnswer);
+        ret = CheckCommandConfirmation(serialDevice.c_str(), stringToSend.c_str(), "OK", matchingAnswer, node);
 
         if (!(ret && (matchingAnswer))) {
             RCLCPP_ERROR(node->get_logger(), "Asking for SATVISA packet failed! (%s)",
@@ -146,7 +142,7 @@ int main(int argc, char* argv[])
 
         stringToSend.assign("LOG COM1 SATVIS2A ONCHANGED\n\r");
         serial->Write(stringToSend.c_str(), stringToSend.size());
-        ret = CheckCommandConfirmation(serialDevice.c_str(), stringToSend.c_str(), "OK", matchingAnswer);
+        ret = CheckCommandConfirmation(serialDevice.c_str(), stringToSend.c_str(), "OK", matchingAnswer, node);
 
         if (!(ret && (matchingAnswer))) {
             RCLCPP_ERROR(node->get_logger(), "Asking for SATVIS2A packet failed! (%s)",
@@ -157,7 +153,7 @@ int main(int argc, char* argv[])
 
         stringToSend.assign("LOG COM1 PSRDOPA ONCHANGED\n\r");
         serial->Write(stringToSend.c_str(), stringToSend.size());
-        ret = CheckCommandConfirmation(serialDevice.c_str(), stringToSend.c_str(), "OK", matchingAnswer);
+        ret = CheckCommandConfirmation(serialDevice.c_str(), stringToSend.c_str(), "OK", matchingAnswer, node);
 
         if (!(ret && (matchingAnswer))) {
             RCLCPP_ERROR(node->get_logger(), "Asking for PSRDOPA packet failed! (%s)",
@@ -169,7 +165,7 @@ int main(int argc, char* argv[])
 
         stringToSend.assign("SBASCONTROL ENABLE\n\r");
         serial->Write(stringToSend.c_str(), stringToSend.size());
-        ret = CheckCommandConfirmation(serialDevice.c_str(), stringToSend.c_str(), "OK", matchingAnswer);
+        ret = CheckCommandConfirmation(serialDevice.c_str(), stringToSend.c_str(), "OK", matchingAnswer, node);
 
         if (!(ret && (matchingAnswer))) {
             RCLCPP_ERROR(node->get_logger(), "Enabling SBAS failed! (%s)",
@@ -182,7 +178,7 @@ int main(int argc, char* argv[])
 
         stringToSend.assign("PDPMODE NORMAL DYNAMIC\n\r");
         serial->Write(stringToSend.c_str(), stringToSend.size());
-        ret = CheckCommandConfirmation(serialDevice.c_str(), stringToSend.c_str(), "OK", matchingAnswer);
+        ret = CheckCommandConfirmation(serialDevice.c_str(), stringToSend.c_str(), "OK", matchingAnswer, node);
 
         if (!(ret && (matchingAnswer))) {
             RCLCPP_ERROR(node->get_logger(), "Setting PDPMODE to DYNAMIC failed! (%s)",
@@ -193,16 +189,16 @@ int main(int argc, char* argv[])
         /*
         RCLCPP_INFO(node->get_logger(), "Disabling PDPFILTER");
 
-		stringToSend.assign("PDPFILTER DISABLE\n\r");
-		serial->Write(stringToSend.c_str(), stringToSend.size());
-		ret = CheckCommandConfirmation(serialDevice.c_str(), stringToSend.c_str(), "OK", matchingAnswer);
+        stringToSend.assign("PDPFILTER DISABLE\n\r");
+        serial->Write(stringToSend.c_str(), stringToSend.size());
+        ret = CheckCommandConfirmation(serialDevice.c_str(), stringToSend.c_str(), "OK", matchingAnswer);
 
         if (!(ret && (matchingAnswer))) {
             RCLCPP_ERROR(node->get_logger(), "Disabling PDPFILTER failed! (%s)",
-					stringToSend.c_str());
+                stringToSend.c_str());
             return EXIT_FAILURE;
-		}
-		*/
+        }
+        */
     }
 
     RCLCPP_INFO(node->get_logger(), "Starting gpsd server");
@@ -215,7 +211,7 @@ int main(int argc, char* argv[])
 }
 
 bool CheckCommandConfirmation(const char* serialDevice, const char* command, const char* expectedAnswer,
-    bool& matchingAnswer)
+    bool& matchingAnswer, rclcpp::Node::SharedPtr node)
 {
     ulisse::CSerialHelper* serial = ulisse::CSerialHelper::getInstance(serialDevice, 115200);
 

@@ -39,19 +39,19 @@ namespace states {
 
         const libconfig::Setting& state = states.lookup(ulisse::states::ID::hold);
 
-        if (!ctb::SetParam(state, maxHeadingError_, "maxHeadingError"))
+        if (!ctb::GetParam(state, maxHeadingError_, "maxHeadingError"))
             return false;
-        if (!ctb::SetParam(state, minHeadingError_, "minHeadingError"))
+        if (!ctb::GetParam(state, minHeadingError_, "minHeadingError"))
             return false;
-        if (!ctb::SetParam(state, maxAcceptanceRadius, "maxAcceptanceRadius"))
+        if (!ctb::GetParam(state, maxAcceptanceRadius, "maxAcceptanceRadius"))
             return false;
-        if (!ctb::SetParam(state, minAcceptanceRadius, "minAcceptanceRadius"))
+        if (!ctb::GetParam(state, minAcceptanceRadius, "minAcceptanceRadius"))
             return false;
-        if (!ctb::SetParam(state, minWaterCurrent_, "minWaterCurrent"))
+        if (!ctb::GetParam(state, minWaterCurrent_, "minWaterCurrent"))
             return false;
-        if (!ctb::SetParam(state, maxWaterCurrent_, "maxWaterCurrent"))
+        if (!ctb::GetParam(state, maxWaterCurrent_, "maxWaterCurrent"))
             return false;
-        if (!ctb::SetParam(state, maxSurgeComeback2HoldAcceptanceRadius_, "maxSurgeComeback2HoldAcceptanceRadius"))
+        if (!ctb::GetParam(state, maxSurgeComeback2HoldAcceptanceRadius_, "maxSurgeComeback2HoldAcceptanceRadius"))
             return false;
 
         return true;

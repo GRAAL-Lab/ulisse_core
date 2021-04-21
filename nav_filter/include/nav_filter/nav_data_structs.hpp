@@ -22,12 +22,12 @@ namespace nav {
 
         bool ConfigureFromFile(libconfig::Config& confObj) noexcept(false)
         {
-            if (!ctb::SetParam(confObj, rate, "rate"))
+            if (!ctb::GetParam(confObj, rate, "rate"))
                 return false;
             //Read the type of filter to use
             int tmp;
 
-            if (!ctb::SetParam(confObj, tmp, "filterMode"))
+            if (!ctb::GetParam(confObj, tmp, "filterMode"))
                 return false;
             mode = static_cast<FilterMode>(tmp);
 

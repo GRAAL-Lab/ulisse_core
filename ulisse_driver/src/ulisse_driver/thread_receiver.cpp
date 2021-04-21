@@ -1,9 +1,9 @@
-
-#include "rclcpp/rclcpp.hpp"
 #include <algorithm>
+#include <ctrl_toolbox/HelperFunctions.h>
+#include <ament_index_cpp/get_package_share_directory.hpp>
+#include "rclcpp/rclcpp.hpp"
 
 #include "ulisse_driver/thread_receiver.hpp"
-
 #include "ulisse_msgs/msg/time.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 
@@ -16,39 +16,44 @@ namespace llc {
     ThreadReceiver::ThreadReceiver()
         : Node("llc_thread_receiver")
     {
-        par_client_ = std::make_shared<rclcpp::AsyncParametersClient>(this);
+        // Reading Parameters
+        libconfig::Config confObj;
+        std::string fileName = "ulisse_driver.conf";
+        std::string package_share_directory = ament_index_cpp::get_package_share_directory("ulisse_driver");
+        confPath_ = package_share_directory;
+        confPath_.append("/conf/");
+        confPath_.append(fileName);
+        std::cout << "[LLC ThreadReceiver]  Config: " << confPath_ << std::endl;
 
-        while (!par_client_->wait_for_service(1ms)) {
-            if (!rclcpp::ok()) {
-                RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service. Exiting.");
-                exit(0);
-            }
-            RCLCPP_INFO(this->get_logger(), "service not available, waiting again...");
+        try {
+            confObj_.readFile(confPath_.c_str());
+        } catch (const libconfig::FileIOException& fioex) {
+            std::cerr << "[LLC ThreadReceiver] I/O error while reading file: " << fioex.what() << std::endl;
+            exit(EXIT_FAILURE);
+        } catch (const libconfig::ParseException& pex) {
+            std::cerr << "Parse error at " << pex.getFile() << ":" << pex.getLine() << " - " << pex.getError() << std::endl;
+            exit(EXIT_FAILURE);
         }
 
-        RetVal ret;
+
         std::string serialDevice = "";
-        int baudRate = 0;
+        uint32_t baudRate = 0;
         bool debugBytes = false;
         bool debugIncomingValidMessageType = false;
         bool debugFailedCrc = false;
 
-        auto parameters = par_client_->get_parameters({ "SerialDevice", "BaudRate", "LLCHelper.DebugBytes",
-            "LLCHelper.DebugIncomingValidMessageType", "LLCHelper.DebugFailedCrc" });
-        if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), parameters) != rclcpp::executor::FutureReturnCode::SUCCESS) {
-            RCLCPP_ERROR(this->get_logger(), "get_parameters service call failed. Exiting.");
-            exit(EXIT_FAILURE);
-        }
-        std::cout << "=====    Receiver Parameters    =====\n";
-        for (auto& parameter : parameters.get()) {
-            std::cout << parameter.get_name() << "(" << parameter.get_type_name() << "): " << parameter.value_to_string() << std::endl;
-        }
+        ctb::GetParam(confObj_, serialDevice, "LLC.SerialDevice");
+        ctb::GetParam(confObj_, baudRate, "LLC.BaudRate");
+        ctb::GetParam(confObj_, debugBytes, "LLC.DebugBytes");
+        ctb::GetParam(confObj_, debugIncomingValidMessageType, "LLC.DebugIncomingValidMessageType");
+        ctb::GetParam(confObj_, debugFailedCrc, "LLC.DebugFailedCrc");
 
-        this->get_parameter_or("SerialDevice", serialDevice, std::string());
-        this->get_parameter_or("BaudRate", baudRate, 0);
-        this->get_parameter_or("LLCHelper.DebugBytes", debugBytes, false);
-        this->get_parameter_or("LLCHelper.DebugIncomingValidMessageType", debugIncomingValidMessageType, false);
-        this->get_parameter_or("LLCHelper.DebugFailedCrc", debugFailedCrc, false);
+        std::cout << "=====    Receiver Parameters    =====\n";
+        std::cout << "LLC.SerialDevice: "                  << serialDevice                  << std::endl;
+        std::cout << "LLC.BaudRate: "                      << baudRate                      << std::endl;
+        std::cout << "LLC.DebugBytes: "                    << debugBytes                    << std::endl;
+        std::cout << "LLC.DebugIncomingValidMessageType: " << debugIncomingValidMessageType << std::endl;
+        std::cout << "LLC.DebugFailedCrc: "                << debugFailedCrc                << std::endl;
 
         RCLCPP_INFO(this->get_logger(), "Trying to open: serialDevice %s, baudRate %d ", serialDevice.c_str(), baudRate);
         std::cout << "===================================" << std::endl;
@@ -57,14 +62,13 @@ namespace llc {
         llcHlp_.DebugIncomingValidMessageType(debugIncomingValidMessageType);
         llcHlp_.DebugFailedCrc(debugFailedCrc);
 
-        ret = llcHlp_.SetSerial(serialDevice, baudRate);
+        RetVal ret = llcHlp_.SetSerial(serialDevice, baudRate);
         if (ret != RetVal::ok) {
             RCLCPP_ERROR(this->get_logger(), "Error opening serial %s %d", serialDevice.c_str(), baudRate);
             exit(0);
         }
 
         micro_loop_count_pub_ = this->create_publisher<ulisse_msgs::msg::MicroLoopCount>(ulisse_msgs::topicnames::micro_loop_count,1);
-        //gpsdata_pub_ = this->create_publisher<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data);
         compass_pub_ = this->create_publisher<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass,1);
         imu_pub_ = this->create_publisher<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu,1);
         ambsens_pub_ = this->create_publisher<ulisse_msgs::msg::AmbientSensors>(ulisse_msgs::topicnames::sensor_ambient,1);

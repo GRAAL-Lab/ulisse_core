@@ -50,6 +50,6 @@ llc_thread_sender:
                 ThrusterSaturation: 1000  # %
                 
 gps_setup_node:
-    ros__parameters:
-            SerialDevice: "/dev/ttyS1"
-            BaudRate: 115200
+  ros__parameters:
+    SerialDevice: "/dev/ttyS1"
+    BaudRate: 115200

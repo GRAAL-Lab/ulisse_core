@@ -13,10 +13,8 @@ def generate_launch_description():
     print("Simulator config file: ", simConfigfile)
     
     # Node arguments must be comma separated strings
-    ctrl_node = launch_ros.actions.Node(
-            package='ulisse_ctrl', node_executable='controller_node', output='screen', arguments=[ctrlConfigfile])
-    sim_node = launch_ros.actions.Node(
-            package='ulisse_sim', node_executable='simulator_node', output='screen', arguments=[simConfigfile])        
+    ctrl_node = launch_ros.actions.Node(package='ulisse_ctrl', executable='controller_node', output='screen', arguments=[ctrlConfigfile])
+    sim_node = launch_ros.actions.Node(package='ulisse_sim', executable='simulator_node', output='screen', arguments=[simConfigfile])        
             
 
     return LaunchDescription([

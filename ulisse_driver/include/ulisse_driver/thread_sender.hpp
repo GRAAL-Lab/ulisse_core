@@ -8,6 +8,8 @@
 #ifndef ULISSE_DRIVER_THREAD_SENDER_HPP
 #define ULISSE_DRIVER_THREAD_SENDER_HPP
 
+#include <libconfig.h++>
+
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
 
@@ -23,13 +25,16 @@ namespace llc {
 
     class ThreadSender : public rclcpp::Node {
     public:
-        THREADS_COMPOSITION_PUBLIC ThreadSender();
+        ThreadSender();
 
     private:
         void SetupCommandServer();
-        void ReloadConfigFile();
+        void LoadConfigFile();
         void ThrustersDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg);
         void CopyConfigMsg2LLCStruct(const std::shared_ptr<ulisse_msgs::srv::LLCCommand::Request> request);
+
+        std::string confPath_;
+        libconfig::Config confObj_;
 
         LLCData data_;
         LLCHelper llcHlp_;
@@ -39,8 +44,6 @@ namespace llc {
         rclcpp::Service<ulisse_msgs::srv::LLCCommand>::SharedPtr srv_;
         rclcpp::Subscription<ulisse_msgs::msg::ThrustersData>::SharedPtr thruster_data_sub_;
         rclcpp::TimerBase::SharedPtr timer_;
-
-        //ulisse_msgs::msg::ThrustersData ctrl_cxt_msg_;
     };
 }
 }

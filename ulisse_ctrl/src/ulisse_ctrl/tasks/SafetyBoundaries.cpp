@@ -525,7 +525,7 @@ bool SafetyBoundaries::ConfigFromFile(libconfig::Config& confObj)
     //read the centroid to transform a latlong point to a local cartesian one
     Eigen::VectorXd centroidTmp;
 
-    if (!ctb::SetParamVector(confObj, centroidTmp, "centroidLocation"))
+    if (!ctb::GetParamVector(confObj, centroidTmp, "centroidLocation"))
         return false;
 
     centroid_.latitude = centroidTmp[0];

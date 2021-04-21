@@ -441,63 +441,63 @@ bool KalmanFilterConfiguration(libconfig::Config& confObj) noexcept(false)
     Eigen::Vector3d bodyF_gps_position;
 
     const libconfig::Setting& gps = measure["gps"];
-    if (!ctb::SetParam(gps, isActive, "enable"))
+    if (!ctb::GetParam(gps, isActive, "enable"))
         return false;
     measuresActive.insert(std::make_pair("gps", isActive));
-    if (!ctb::SetParamVector(gps, covarianceDiag, "covariance"))
+    if (!ctb::GetParamVector(gps, covarianceDiag, "covariance"))
         return false;
     gpsMeasurement->Covariance().diagonal() = covarianceDiag;
 
-    if (!ctb::SetParamVector(gps, bodyF_gps_position, "bodyF_gps_position"))
+    if (!ctb::GetParamVector(gps, bodyF_gps_position, "bodyF_gps_position"))
         return false;
     gpsMeasurement->bodyF_gps_position_ = bodyF_gps_position;
 
     const libconfig::Setting& compass = measure["compass"];
-    if (!ctb::SetParam(compass, isActive, "enable"))
+    if (!ctb::GetParam(compass, isActive, "enable"))
         return false;
 
     measuresActive.insert(std::make_pair("compass", isActive));
-    if (!ctb::SetParamVector(compass, covarianceDiag, "covariance"))
+    if (!ctb::GetParamVector(compass, covarianceDiag, "covariance"))
         return false;
 
     compassMeasurement->Covariance().diagonal() = covarianceDiag;
 
     const libconfig::Setting& gyro = measure["gyro"];
-    if (!ctb::SetParam(gyro, isActive, "enable"))
+    if (!ctb::GetParam(gyro, isActive, "enable"))
         return false;
 
     measuresActive.insert(std::make_pair("gyro", isActive));
-    if (!ctb::SetParamVector(gyro, covarianceDiag, "covariance"))
+    if (!ctb::GetParamVector(gyro, covarianceDiag, "covariance"))
         return false;
 
     gyroMeasurement->Covariance().diagonal() = covarianceDiag;
 
     const libconfig::Setting& accelerometer = measure["accelerometer"];
-    if (!ctb::SetParam(accelerometer, isActive, "enable"))
+    if (!ctb::GetParam(accelerometer, isActive, "enable"))
         return false;
 
     measuresActive.insert(std::make_pair("accelerometer", isActive));
-    if (!ctb::SetParamVector(accelerometer, covarianceDiag, "covariance"))
+    if (!ctb::GetParamVector(accelerometer, covarianceDiag, "covariance"))
         return false;
 
     accelerometerMeasurement->Covariance().diagonal() = covarianceDiag;
 
     const libconfig::Setting& magnetometer = measure["magnetometer"];
-    if (!ctb::SetParam(magnetometer, isActive, "enable"))
+    if (!ctb::GetParam(magnetometer, isActive, "enable"))
         return false;
 
     measuresActive.insert(std::make_pair("magnetometer", isActive));
-    if (!ctb::SetParamVector(magnetometer, covarianceDiag, "covariance"))
+    if (!ctb::GetParamVector(magnetometer, covarianceDiag, "covariance"))
         return false;
 
     magnetometerMeasurement->Covariance().diagonal() = covarianceDiag;
 
     const libconfig::Setting& zMeterSetting = measure["z_meter"];
-    if (!ctb::SetParam(zMeterSetting, isActive, "enable"))
+    if (!ctb::GetParam(zMeterSetting, isActive, "enable"))
         return false;
 
     measuresActive.insert(std::make_pair("zMeter", isActive));
-    if (!ctb::SetParamVector(zMeterSetting, covarianceDiag, "covariance"))
+    if (!ctb::GetParamVector(zMeterSetting, covarianceDiag, "covariance"))
         return false;
 
     zMeterMeasurement->Covariance().diagonal() = covarianceDiag;
@@ -507,22 +507,22 @@ bool KalmanFilterConfiguration(libconfig::Config& confObj) noexcept(false)
     //state dimention
     const libconfig::Setting& state = ekf["state"];
 
-    if (!ctb::SetParam(state, stateDim, "dim"))
+    if (!ctb::GetParam(state, stateDim, "dim"))
         return false;
 
-    if (!ctb::SetParamVector(state, covarianceDiag, "modelCovariance"))
+    if (!ctb::GetParamVector(state, covarianceDiag, "modelCovariance"))
         return false;
     ulisseModelEKF->Covariance().diagonal() = covarianceDiag;
 
     Eigen::VectorXd initialState;
-    if (!ctb::SetParamVector(state, initialState, "initialization"))
+    if (!ctb::GetParamVector(state, initialState, "initialization"))
         return false;
 
     Eigen::Vector3d cartesian_p;
     ctb::LatLong2LocalNED(ctb::LatLong(initialState[0], initialState[1]), initialState[2], centroidLocation, cartesian_p);
     initialState.segment(0, 2) = cartesian_p.segment(0, 2);
 
-    if (!ctb::SetParamVector(state, covarianceDiag, "initializationCovariance"))
+    if (!ctb::GetParamVector(state, covarianceDiag, "initializationCovariance"))
         return false;
 
     Eigen::MatrixXd initialCovariance = Eigen::MatrixXd::Zero(stateDim, stateDim);
@@ -541,12 +541,12 @@ bool LuenbergerObserverConfiguration(libconfig::Config& confObj) noexcept(false)
 
     Eigen::VectorXd gain;
 
-    if (!ctb::SetParamVector(luenbergerObs, gain, "gain"))
+    if (!ctb::GetParamVector(luenbergerObs, gain, "gain"))
         return false;
     obs.k = gain;
 
     //yaw rate digital filter gains. This is not used by the filter but is needed to filter the yaw rate
-    if (!ctb::SetParamVector(luenbergerObs, yawRateFilterGains, "yawRateFilterGains"))
+    if (!ctb::GetParamVector(luenbergerObs, yawRateFilterGains, "yawRateFilterGains"))
         return false;
 
     return true;
