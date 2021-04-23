@@ -35,7 +35,6 @@ namespace llc {
             exit(EXIT_FAILURE);
         }
 
-
         std::string serialDevice = "";
         uint32_t baudRate = 0;
         bool debugBytes = false;
@@ -65,7 +64,7 @@ namespace llc {
         RetVal ret = llcHlp_.SetSerial(serialDevice, baudRate);
         if (ret != RetVal::ok) {
             RCLCPP_ERROR(this->get_logger(), "Error opening serial %s %d", serialDevice.c_str(), baudRate);
-            exit(0);
+            exit(EXIT_FAILURE);
         }
 
         micro_loop_count_pub_ = this->create_publisher<ulisse_msgs::msg::MicroLoopCount>(ulisse_msgs::topicnames::micro_loop_count,1);
@@ -103,6 +102,7 @@ namespace llc {
             ulisse_msgs::msg::Time time_msg;
             time_msg.sec = static_cast<unsigned int>(epoch_nanosecs / (int)1E9);
             unsigned int stepsnanosecs = static_cast<unsigned int>(llcData_.sensors.stepsSincePPS * 1E9 / 200.0);
+
             // Assuming that the time of the control PC is synchronized with the GPS time,
             // if the stepsSincePPS (time since last gps 'seconds' pulse) gives an elapsed intrasecond
             // time which is greater that the current intrasecond time, it means that the measures are
@@ -132,8 +132,10 @@ namespace llc {
                     compass_msg_.orientation.yaw = llcData_.sensors.compassHeading;
                     compass_pub_->publish(compass_msg_);
                 }
-
-                if (sensorStatus & EMB_SNSSTSMASK_UPDATEDMAGNETOMETER) {
+                // Here we check the compass bitmask (instead of the magnetometer one) since
+                // the sensor is the same one and, for a bitmask bug in the low level, the
+                // value will not be published otherwise.
+                if (sensorStatus & EMB_SNSSTSMASK_UPDATEDCOMPASS) {
                     magneto_msg_.stamp = time_msg;
                     magneto_msg_.orthogonalstrength.at(0) = llcData_.sensors.magnetometer[0];
                     magneto_msg_.orthogonalstrength.at(1) = llcData_.sensors.magnetometer[1];
@@ -303,7 +305,7 @@ namespace llc {
     }
 }
 }
-
+/*
 #include "class_loader/register_macro.hpp"
 
-CLASS_LOADER_REGISTER_CLASS(ulisse::llc::ThreadReceiver, rclcpp::Node)
+CLASS_LOADER_REGISTER_CLASS(ulisse::llc::ThreadReceiver, rclcpp::Node)*/

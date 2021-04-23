@@ -68,7 +68,7 @@ namespace llc {
         ctb::GetParam(confObj_, debugIncomingValidMessageType, "LLC.DebugIncomingValidMessageType");
         ctb::GetParam(confObj_, debugFailedCrc, "LLC.DebugFailedCrc");
 
-        std::cout << "=====    Receiver Parameters    =====\n";
+        std::cout << "=====    Sender Parameters    =====\n";
         std::cout << "LLC.SerialDevice: "                  << serialDevice                  << std::endl;
         std::cout << "LLC.BaudRate: "                      << baudRate                      << std::endl;
         std::cout << "LLC.DebugBytes: "                    << debugBytes                    << std::endl;
@@ -224,6 +224,8 @@ namespace llc {
 
     void ThreadSender::LoadConfigFile()
     {
+        // This temporary variablea are needed since the libconfig function does not
+        // have any implementation for bit specific types
         uint temp_uint;
         ctb::GetParam(confObj_, temp_uint, "LLC.Config.HbCompass0");
         lowlevelconf_.hbCompass0 = (uint16_t)temp_uint;
@@ -274,15 +276,14 @@ namespace llc {
         ctb::GetParam(confObj_, temp_double, "LLC.Config.DeadzoneTime"        );
         lowlevelconf_.deadzoneTime = (float32_t)temp_double;
 
-
-        std::cout << "=====    Reload Sender Config    =====\n";
+        //std::cout << "=====    Reload Sender Config    =====" << std::endl;
         lowlevelconf_.DebugPrint(this->get_logger());
-        std::cout << "======================================" << std::endl;
+        //std::cout << "======================================" << std::endl;
     }
 
 } // namespace llc
 } // namespace ulisse
-
+/*
 #include "class_loader/register_macro.hpp"
 
-CLASS_LOADER_REGISTER_CLASS(ulisse::llc::ThreadSender, rclcpp::Node)
+CLASS_LOADER_REGISTER_CLASS(ulisse::llc::ThreadSender, rclcpp::Node)*/
