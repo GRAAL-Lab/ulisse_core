@@ -90,7 +90,7 @@ ros2 run ulisse_map ulisse_map_node
 
 ### Testing the serial
 
-Be sure that in the driver configuration file *ulisse_driver/conf/ulisse_driver.yaml* the **SerialDevice** paramater is set to `"/tmp/serial1"`. Then, run the following commands in three separate ROS2 sourced terminals (`sourceros2` command):
+⚠️ Be sure that in the driver configuration file *ulisse_driver/conf/ulisse_driver.conf* the **SerialDevice** paramater is set to `"/tmp/serial1"`. Then, run the following commands in three separate ROS2 sourced terminals (`sourceros2` command):
 
 
 ```bash
@@ -105,8 +105,11 @@ ros2 launch ulisse_driver launchDriver.py
 ros2 topic echo /sensor/ambient
 
 # Shell D (transmit data on serial)
-cat ~/graal_ws/serialS0.txt > /tmp/serial2
+# '80' is the limit of bytes/sec, to slow down the cat command output
+cat serial_file.log | pv -l -L 80 -q > /tmp/serial2
 ```
+
+You can also use the file *play_serial.sh* to continuosly replay the logfile.
 
 ## Misc
 

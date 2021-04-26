@@ -8,6 +8,8 @@ import "."
 
 Rectangle {
 
+    property var titlesize: 15
+    property var labelsize: 13
     color: Material.background
 
     ColumnLayout {
@@ -38,6 +40,8 @@ Rectangle {
                     label: "gain"
                     textColor: 'grey'
                     text: " "//.arg(fbkUpdater.ulisse_yaw_deg)
+                    lsize: labelsize
+                    tsize: titlesize
 
                 }
 

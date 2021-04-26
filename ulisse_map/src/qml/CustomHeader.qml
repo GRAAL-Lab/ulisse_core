@@ -44,7 +44,7 @@ ToolBar {
             }
 
             TabButton {
-                text: qsTr("Sensors Data")
+                text: qsTr("Status Data")
                 height: headerLayout.height - 3
                 width: headerLayout.width / 3
 

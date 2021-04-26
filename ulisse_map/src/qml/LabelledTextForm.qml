@@ -12,18 +12,17 @@ RowLayout {
     property alias textColor: label_data.color
     property alias textBoldness: label_data.font.weight
     property alias labelMouseArea: labelMouseArea
-    property int h: 15
-    property int w: 200
+    /*property int h: 15
+    property int w: 200*/
     //Layout.alignment: Qt.AlignHCenter
     spacing: 1
     Rectangle {
-        width: w
-        height: h
+        //width: w
+        //height: h
         color: "#00000000"
 
         Text {
             id: title
-
             horizontalAlignment: Text.AlignHCenter
             font.pointSize: lsize
             color: 'cadetblue'
@@ -33,9 +32,10 @@ RowLayout {
             font.weight: Font.DemiBold
         }
     }
+
     Rectangle {
-        width: 200
-        height: h
+        //width: 200
+        //height: h
         color: "#00000000"
 
         Text {
@@ -43,7 +43,7 @@ RowLayout {
             id: label_data
             Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
             Layout.fillWidth: true
-//            horizontalAlignment: Text.Text.AlignHCenter
+            //            horizontalAlignment: Text.Text.AlignHCenter
             Layout.columnSpan: 1
             font.pointSize: tsize
             //Layout.fillWidth: true
@@ -54,9 +54,4 @@ RowLayout {
         }
     }
 }
-/*##^##
-Designer {
-    D{i:0;width:400}
-}
-##^##*/
 

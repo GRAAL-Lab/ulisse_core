@@ -46,8 +46,8 @@ Rectangle {
 
                 LabelledText {
                     id: ulisseStateLabel
-                    h:12
-                    w:100
+                    //h:12
+                    //w:100
                     labelColor: labelColor1
                     label: "State"
                     text: fbkUpdater.vehicle_state
@@ -57,8 +57,8 @@ Rectangle {
 
                 LabelledText {
                     id: ulissePosLabel
-                    h:12
-                    w:100
+                    //h:12
+                    //w:100
                     labelColor: labelColor1
                     label: "Position"
                     text: fbkUpdater.ulisse_pos.latitude.toFixed(8) + ", " +
@@ -68,8 +68,8 @@ Rectangle {
 
                 LabelledText {
                     id: markerTextLabel
-                    h:12
-                    w:100
+                    //h:12
+                    //w:100
                     labelColor: labelColor2
                     label: "Marker"
                     text: "Left click on map"
@@ -78,8 +78,8 @@ Rectangle {
 
                 LabelledText {
                     id: goalDistLabel
-                    h:12
-                    w:100
+                    //h:12
+                    //w:100
                     text: fbkUpdater.goal_distance.toFixed(2) + " (m)"
                     objectName: "goalDistance"
                     labelColor: labelColor1

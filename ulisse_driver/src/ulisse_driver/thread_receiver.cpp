@@ -97,7 +97,7 @@ namespace llc {
 
             llcHlp_.CollectValidMessage(llcData_);
             //std::cout << "ThreadReceiver::ReadLoop(), Collected Valid Message" << std::endl;
-            uint8_t sensorStatus = llcData_.sensors.sensorStatus;
+
 
             ulisse_msgs::msg::Time time_msg;
             time_msg.sec = static_cast<unsigned int>(epoch_nanosecs / (int)1E9);
@@ -119,50 +119,52 @@ namespace llc {
             PRINT_INT(sensorStatus & EMB_SNSSTSMASK_UPDATEDMAGNETOMETER),
             PRINT_INT(sensorStatus & EMB_SNSSTSMASK_UPDATEDANALOG));*/
 
+            // Due to how the microcontroller updates the SNSSTSMASK, the management of the
+            // UPDATED bit is by now not reliable. For this reason the check on this bit
+            // is disabled.
+            //uint8_t sensorStatus = llcData_.sensors.sensorStatus;
+
             switch (llcData_.messageType) {
             case MessageType::sensor:
                 microloopcount_msg_.timestamp = llcData_.sensors.timestamp;
                 microloopcount_msg_.stepssincepps = llcData_.sensors.stepsSincePPS;
                 micro_loop_count_pub_->publish(microloopcount_msg_);
 
-                if (sensorStatus & EMB_SNSSTSMASK_UPDATEDCOMPASS) {
-                    compass_msg_.stamp = time_msg;
-                    compass_msg_.orientation.roll = llcData_.sensors.compassRoll;
-                    compass_msg_.orientation.pitch = llcData_.sensors.compassPitch;
-                    compass_msg_.orientation.yaw = llcData_.sensors.compassHeading;
-                    compass_pub_->publish(compass_msg_);
-                }
-                // Here we check the compass bitmask (instead of the magnetometer one) since
-                // the sensor is the same one and, for a bitmask bug in the low level, the
-                // value will not be published otherwise.
-                if (sensorStatus & EMB_SNSSTSMASK_UPDATEDCOMPASS) {
-                    magneto_msg_.stamp = time_msg;
-                    magneto_msg_.orthogonalstrength.at(0) = llcData_.sensors.magnetometer[0];
-                    magneto_msg_.orthogonalstrength.at(1) = llcData_.sensors.magnetometer[1];
-                    magneto_msg_.orthogonalstrength.at(2) = llcData_.sensors.magnetometer[2];
-                    magneto_pub_->publish(magneto_msg_);
-                }
+                //if (sensorStatus & EMB_SNSSTSMASK_UPDATEDCOMPASS) {
+                compass_msg_.stamp = time_msg;
+                compass_msg_.orientation.roll = llcData_.sensors.compassRoll;
+                compass_msg_.orientation.pitch = llcData_.sensors.compassPitch;
+                compass_msg_.orientation.yaw = llcData_.sensors.compassHeading;
+                compass_pub_->publish(compass_msg_);
+                //}
+                //if (sensorStatus & EMB_SNSSTSMASK_UPDATEDCOMPASS) {
+                magneto_msg_.stamp = time_msg;
+                magneto_msg_.orthogonalstrength.at(0) = llcData_.sensors.magnetometer[0];
+                magneto_msg_.orthogonalstrength.at(1) = llcData_.sensors.magnetometer[1];
+                magneto_msg_.orthogonalstrength.at(2) = llcData_.sensors.magnetometer[2];
+                magneto_pub_->publish(magneto_msg_);
+                //}
 
                 // Separate accelerometer and gyro msg?
-                if (sensorStatus & EMB_SNSSTSMASK_UPDATEDACCELEROMETER || sensorStatus & EMB_SNSSTSMASK_UPDATEDANALOG) {
-                    imu_msg_.stamp = time_msg;
-                    imu_msg_.accelerometer.at(0) = llcData_.sensors.accelerometer[0];
-                    imu_msg_.accelerometer.at(1) = llcData_.sensors.accelerometer[1];
-                    imu_msg_.accelerometer.at(2) = llcData_.sensors.accelerometer[2];
-                    imu_msg_.gyro.at(0) = llcData_.sensors.gyro[0];
-                    imu_msg_.gyro.at(1) = llcData_.sensors.gyro[1];
-                    imu_msg_.gyro.at(2) = llcData_.sensors.gyro[2];
-                    imu_msg_.gyro4x.at(0) = llcData_.sensors.gyro4x[0];
-                    imu_msg_.gyro4x.at(1) = llcData_.sensors.gyro4x[1];
-                    imu_pub_->publish(imu_msg_);
-                }
+                //if (sensorStatus & EMB_SNSSTSMASK_UPDATEDACCELEROMETER || sensorStatus & EMB_SNSSTSMASK_UPDATEDANALOG) {
+                imu_msg_.stamp = time_msg;
+                imu_msg_.accelerometer.at(0) = llcData_.sensors.accelerometer[0];
+                imu_msg_.accelerometer.at(1) = llcData_.sensors.accelerometer[1];
+                imu_msg_.accelerometer.at(2) = llcData_.sensors.accelerometer[2];
+                imu_msg_.gyro.at(0) = llcData_.sensors.gyro[0];
+                imu_msg_.gyro.at(1) = llcData_.sensors.gyro[1];
+                imu_msg_.gyro.at(2) = llcData_.sensors.gyro[2];
+                imu_msg_.gyro4x.at(0) = llcData_.sensors.gyro4x[0];
+                imu_msg_.gyro4x.at(1) = llcData_.sensors.gyro4x[1];
+                imu_pub_->publish(imu_msg_);
+                //}
 
-                if (sensorStatus & EMB_SNSSTSMASK_UPDATEDANALOG) {
-                    ambsens_msg_.stamp = time_msg;
-                    ambsens_msg_.temperaturectrlbox = llcData_.sensors.temperatureCtrlBox;
-                    ambsens_msg_.humidityctrlbox = llcData_.sensors.humidityCtrlBox;
-                    ambsens_pub_->publish(ambsens_msg_);
-                }
+                //if (sensorStatus & EMB_SNSSTSMASK_UPDATEDANALOG) {
+                ambsens_msg_.stamp = time_msg;
+                ambsens_msg_.temperaturectrlbox = llcData_.sensors.temperatureCtrlBox;
+                ambsens_msg_.humidityctrlbox = llcData_.sensors.humidityCtrlBox;
+                ambsens_pub_->publish(ambsens_msg_);
+                //}
 
                 applied_motorref_msg_.left = llcData_.sensors.leftReference;
                 applied_motorref_msg_.right = llcData_.sensors.rightReference;
