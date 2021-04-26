@@ -55,8 +55,8 @@ After installing all the needed dependencies, to build the repo for the first ti
 
 All the next times, just execute the following commands:
 
-```
-#!bash
+```bash
+
 sourceros2
 colcon build --symlink-install
 ```
@@ -64,7 +64,8 @@ colcon build --symlink-install
 ### Run the architecture
 Firstly be sure to **synchronize your system** time using the GPS, and then configure the GPS itself, by running these commands in the root of the repository:
 
-```
+```bash
+
 python gpstime.py
 ros2 launch ulisse_driver launchGPSSetup.py
 ```
@@ -73,8 +74,8 @@ Wait till the launch files finishes printing info, then you can kill the process
 
 The following launch files will run all the necessary nodes (all with `sourceros2`):
 
-```
-#!bash
+```bash
+
 # Shell A (driver)
 ros2 launch ulisse_driver launchDriver.py  # real case
 -or-
@@ -91,8 +92,8 @@ ros2 run ulisse_map ulisse_map_node
 
 Be sure that in the driver configuration file *ulisse_driver/conf/ulisse_driver.yaml* the **SerialDevice** paramater is set to `"/tmp/serial1"`. Then, run the following commands in three separate ROS2 sourced terminals (`sourceros2` command):
 
-```
-#!bash
+
+```bash
 
 # Shell A (setup serial)
 socat -d -d pty,raw,echo=0,link=/tmp/serial1 pty,raw,echo=0,link=/tmp/serial2
