@@ -7,8 +7,8 @@ import QtQuick.Controls.Material 2.1
 import "."
 
 Rectangle {
-    property var labelsize: 11
-    property var textsize: 11
+    property var labelsize: 12
+    property var textsize: 12
     property real panesMargin: 14
     property real panesWidth: 252
     property bool responsive: false
@@ -17,7 +17,6 @@ Rectangle {
 
     GridLayout {
         id: gridView
-
         anchors.fill: parent
         columnSpacing: 0
         rowSpacing: 1
@@ -26,16 +25,19 @@ Rectangle {
 
         Pane {
             id: statusPane
-
             Layout.rowSpan: 1
             Layout.columnSpan: 1
             Layout.fillWidth: true
             Layout.preferredWidth: gridView.width / 2
+            Layout.leftMargin: 20
 
             ColumnLayout {
-                id: statusata
+                id: statusdata
                 width: parent.width
                 Layout.fillHeight: true
+                spacing: 8
+
+
                 Label {
                     Layout.fillHeight: true
                     Layout.alignment: Qt.AlignHCenter
@@ -47,7 +49,7 @@ Rectangle {
 
                 LabelledText {
                     Layout.fillHeight: true
-                    Layout.alignment: Qt.AlignHCenter
+                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                     labelColor: 'dodgerblue'
                     textColor: 'grey'
                     text: fbkUpdater.vehicle_state
@@ -117,6 +119,7 @@ Rectangle {
             Layout.columnSpan: 1
             Layout.fillWidth: true
             Layout.preferredWidth: gridView.width / 2
+            Layout.leftMargin: 20
 
             ColumnLayout {
                 id: lowLevelData
@@ -135,7 +138,7 @@ Rectangle {
                     labelColor: 'tomato'
                     label: "Micro Loop Count"
                     textColor: 'grey'
-                    text: "TBD"//fbkUpdater.micro_loop_count
+                    text: fbkUpdater.micro_loop_count
                     lsize: labelsize
                     tsize: textsize
                 }
@@ -166,7 +169,8 @@ Rectangle {
                     labelColor: 'tomato'
                     label: "Ambient"
                     textColor: 'grey'
-                    text: "Temperature: °C \nHumidity: \%"//.arg(fbkUpdater.right_satellite_received485)
+                    text: "Temperature: %1 °C \nHumidity: %2 \%"
+                            .arg(fbkUpdater.ambient_temperature.toFixed(1)).arg(fbkUpdater.ambient_humidity.toFixed(1))
                     lsize: labelsize
                     tsize: textsize
                 }

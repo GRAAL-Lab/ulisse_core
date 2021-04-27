@@ -4,7 +4,7 @@ import QtQuick.Controls 2.1
 import "."
 
 RowLayout {
-    property alias label: title.text
+    property var label: ""
     property int lsize: 11
     property int tsize: 9
     property alias labelColor: title.color
@@ -14,12 +14,12 @@ RowLayout {
     property alias labelMouseArea: labelMouseArea
     /*property int h: 15
     property int w: 200*/
-    //Layout.alignment: Qt.AlignHCenter
+    Layout.alignment: Qt.AlignHCenter
     spacing: 1
     Rectangle {
-        //width: w
-        //height: h
-        color: "#00000000"
+        width: 140
+        height: title.implicitHeight
+        color: "transparent"
 
         Text {
             id: title
@@ -30,28 +30,29 @@ RowLayout {
             Layout.fillWidth: false
             Layout.columnSpan: 1
             font.weight: Font.DemiBold
+            text: label + "\t"
         }
     }
 
-    Rectangle {
-        //width: 200
-        //height: h
-        color: "#00000000"
+    //    Rectangle {
+    //        //width: 200
+    //        //height: h
+    //        color: "#00000000"
 
-        Text {
+    Text {
 
-            id: label_data
-            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-            Layout.fillWidth: true
-            //            horizontalAlignment: Text.Text.AlignHCenter
-            Layout.columnSpan: 1
-            font.pointSize: tsize
-            //Layout.fillWidth: true
-            MouseArea {
-                id: labelMouseArea
-                anchors.fill: parent
-            }
+        id: label_data
+        Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+        Layout.fillWidth: true
+        //            horizontalAlignment: Text.Text.AlignHCenter
+        Layout.columnSpan: 1
+        font.pointSize: tsize
+        //Layout.fillWidth: true
+        MouseArea {
+            id: labelMouseArea
+            anchors.fill: parent
         }
+        //        }
     }
 }
 

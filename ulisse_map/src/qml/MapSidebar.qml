@@ -31,6 +31,7 @@ Rectangle {
 
             ColumnLayout {
                 Layout.alignment: Qt.AlignLeft
+                width: parent.width
 
                 Label {
                     id: my_label

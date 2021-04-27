@@ -54,10 +54,10 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
     left_motor_sent_ = 0;
     right_motor_received_ = 0;
     right_motor_sent_ = 0;
-    left_satellite_received_ = 0;
-    left_satellite_sent_ = 0;
-    right_satellite_received_ = 0;
-    right_satellite_sent_ = 0;
+//    left_satellite_received_ = 0;
+//    left_satellite_sent_ = 0;
+//    right_satellite_received_ = 0;
+//    right_satellite_sent_ = 0;
 
     q_gps_pos_ = q_goal_pos_ = q_ulisse_pos_;
     q_gps_time_ = "undefined";
@@ -79,15 +79,29 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
     // set the depth to the QoS profile
     //custom_qos_profile.depth = 7;
 
-    vehicleStatusSub_ = np_->create_subscription<ulisse_msgs::msg::VehicleStatus>(ulisse_msgs::topicnames::vehicle_status, 10, std::bind(&FeedbackUpdater::VehicleStatusCB, this, _1) /*, custom_qos_profile*/);
-    referenceVelocitieSub_ = np_->create_subscription<ulisse_msgs::msg::ReferenceVelocities>(ulisse_msgs::topicnames::reference_velocities, 10, std::bind(&FeedbackUpdater::ReferenceVelocitiesCB, this, _1) /*custom_qos_profile*/);
-    gps_data_sub_ = np_->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data, 10, std::bind(&FeedbackUpdater::GPSDataCB, this, _1) /*custom_qos_profile*/);
-    battery_left_sub_ = np_->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_left, 10, std::bind(&FeedbackUpdater::LLCBatteryLeftCB, this, _1) /*custom_qos_profile*/);
-    battery_right_sub_ = np_->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_right, 10, std::bind(&FeedbackUpdater::LLCBatteryRightCB, this, _1) /*custom_qos_profile*/);
-    thruster_data_sub_ = np_->create_subscription<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data, 10, std::bind(&FeedbackUpdater::ThrusterDataCB, this, _1) /*custom_qos_profile*/);
-    sw485_status_sub_ = np_->create_subscription<ulisse_msgs::msg::LLCSw485Status>(ulisse_msgs::topicnames::llc_sw485status, 10, std::bind(&FeedbackUpdater::LLCSw485StatusCB, this, _1));
-    current_status_sub_ = np_->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 10, std::bind(&FeedbackUpdater::NavFilterData, this, _1) /*custom_qos_profile*/);
-    feedbackGuiSub_ = np_->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10, std::bind(&FeedbackUpdater::FeedbackGuiCB, this, _1) /*custom_qos_profile*/);
+    vehicleStatusSub_ = np_->create_subscription<ulisse_msgs::msg::VehicleStatus>(ulisse_msgs::topicnames::vehicle_status,
+        10, std::bind(&FeedbackUpdater::VehicleStatusCB, this, _1) /*, custom_qos_profile*/);
+    referenceVelocitieSub_ = np_->create_subscription<ulisse_msgs::msg::ReferenceVelocities>(ulisse_msgs::topicnames::reference_velocities,
+        10, std::bind(&FeedbackUpdater::ReferenceVelocitiesCB, this, _1) /*custom_qos_profile*/);
+    gps_data_sub_ = np_->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data,
+        10, std::bind(&FeedbackUpdater::GPSDataCB, this, _1) /*custom_qos_profile*/);
+
+    micro_loop_count_sub_ = np_->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::micro_loop_count,
+        10, std::bind(&FeedbackUpdater::MicroLoopCountCB, this, _1) /*custom_qos_profile*/);
+    ambient_sensors_sub_ = np_->create_subscription<ulisse_msgs::msg::AmbientSensors>(ulisse_msgs::topicnames::sensor_ambient,
+        10, std::bind(&FeedbackUpdater::AmbientSensorsCB, this, _1) /*custom_qos_profile*/);
+    battery_left_sub_ = np_->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_left,
+        0, std::bind(&FeedbackUpdater::LLCBatteryLeftCB, this, _1) /*custom_qos_profile*/);
+    battery_right_sub_ = np_->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_right,
+        10, std::bind(&FeedbackUpdater::LLCBatteryRightCB, this, _1) /*custom_qos_profile*/);
+    thruster_data_sub_ = np_->create_subscription<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data,
+        10, std::bind(&FeedbackUpdater::ThrusterDataCB, this, _1) /*custom_qos_profile*/);
+    sw485_status_sub_ = np_->create_subscription<ulisse_msgs::msg::LLCSw485Status>(ulisse_msgs::topicnames::llc_sw485status,
+        10, std::bind(&FeedbackUpdater::LLCSw485StatusCB, this, _1));
+    current_status_sub_ = np_->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data,
+        10, std::bind(&FeedbackUpdater::NavFilterData, this, _1) /*custom_qos_profile*/);
+    feedbackGuiSub_ = np_->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui,
+        10, std::bind(&FeedbackUpdater::FeedbackGuiCB, this, _1) /*custom_qos_profile*/);
 }
 
 void FeedbackUpdater::NavFilterData(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)
@@ -146,6 +160,18 @@ void FeedbackUpdater::GPSDataCB(const ulisse_msgs::msg::GPSData::SharedPtr msg)
     q_gps_pos_.setLongitude(msg->longitude);
 }
 
+void FeedbackUpdater::MicroLoopCountCB(const ulisse_msgs::msg::MicroLoopCount::SharedPtr msg)
+{
+    micro_loop_count_t_ = msg->timestamp;
+}
+
+void FeedbackUpdater::AmbientSensorsCB(const ulisse_msgs::msg::AmbientSensors::SharedPtr msg)
+{
+    ambient_temperature_ = msg->temperaturectrlbox;
+    ambient_humidity_ = msg->humidityctrlbox;
+}
+
+
 void FeedbackUpdater::LLCBatteryLeftCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg)
 {
     q_battery_perc_L_ = msg->charge_percent;
@@ -165,7 +191,7 @@ void FeedbackUpdater::ThrusterDataCB(const ulisse_msgs::msg::ThrustersData::Shar
 void FeedbackUpdater::LLCSw485StatusCB(const ulisse_msgs::msg::LLCSw485Status::SharedPtr msg)
 {
     missed_deadlines_ = msg->missed_deadlines;
-    right_satellite_received_ = int(msg->right_satellite.received);
+    timestamp485_ = msg->timestamp_sw_485;
 }
 
 void FeedbackUpdater::ReferenceVelocitiesCB(const ulisse_msgs::msg::ReferenceVelocities::SharedPtr msg)
@@ -281,9 +307,29 @@ double FeedbackUpdater::get_thrust_ref_right()
     return q_thrust_ref_right_;
 }
 
+int FeedbackUpdater::get_micro_loop_count()
+{
+    return micro_loop_count_t_;
+}
+
+double FeedbackUpdater::get_ambient_temperature()
+{
+    return ambient_temperature_;
+}
+
+double FeedbackUpdater::get_ambient_humidity()
+{
+    return ambient_humidity_;
+}
+
 int FeedbackUpdater::get_missed_deadlines()
 {
     return missed_deadlines_;
+}
+
+int FeedbackUpdater::get_timestamp485()
+{
+    return timestamp485_;
 }
 
 int FeedbackUpdater::get_left_motor_received()
@@ -306,25 +352,25 @@ int FeedbackUpdater::get_right_motor_sent()
     return right_motor_sent_;
 }
 
-int FeedbackUpdater::get_left_satellite_received()
-{
-    return left_satellite_received_;
-}
+//int FeedbackUpdater::get_left_satellite_received()
+//{
+//    return left_satellite_received_;
+//}
 
-int FeedbackUpdater::get_left_satellite_sent()
-{
-    return left_satellite_sent_;
-}
+//int FeedbackUpdater::get_left_satellite_sent()
+//{
+//    return left_satellite_sent_;
+//}
 
-int FeedbackUpdater::get_right_satellite_received()
-{
-    return right_satellite_received_;
-}
+//int FeedbackUpdater::get_right_satellite_received()
+//{
+//    return right_satellite_received_;
+//}
 
-int FeedbackUpdater::get_right_satellite_sent()
-{
-    return right_satellite_sent_;
-}
+//int FeedbackUpdater::get_right_satellite_sent()
+//{
+//    return right_satellite_sent_;
+//}
 
 double FeedbackUpdater::get_current_data_deg()
 {

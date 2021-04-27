@@ -17,6 +17,7 @@ if test -f "$input"; then
   echo "Logfile: $input"
 else 
   echo "'$input' file does not exist."
+  echo "Provide file as 1st command line argument."
   exit
 fi
 

@@ -11,6 +11,8 @@
 
 #include "ulisse_msgs/msg/feedback_gui.hpp"
 #include "ulisse_msgs/msg/gps_data.hpp"
+#include "ulisse_msgs/msg/micro_loop_count.hpp"
+#include "ulisse_msgs/msg/ambient_sensors.hpp"
 #include "ulisse_msgs/msg/llc_battery.hpp"
 #include "ulisse_msgs/msg/llc_sw485_status.hpp"
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
@@ -44,15 +46,20 @@ class FeedbackUpdater : public QObject {
     Q_PROPERTY(double battery_perc_L READ get_battery_perc_L NOTIFY callbacks_processed)
     Q_PROPERTY(double battery_perc_R READ get_battery_perc_R NOTIFY callbacks_processed)
 
+    Q_PROPERTY(int micro_loop_count READ get_micro_loop_count NOTIFY callbacks_processed)
+    Q_PROPERTY(double ambient_temperature READ get_ambient_temperature NOTIFY callbacks_processed)
+    Q_PROPERTY(double ambient_humidity READ get_ambient_humidity NOTIFY callbacks_processed)
+
+    Q_PROPERTY(int timestamp485 READ get_timestamp485 NOTIFY callbacks_processed)
     Q_PROPERTY(int missed_deadlines485 READ get_missed_deadlines NOTIFY callbacks_processed)
     Q_PROPERTY(int left_motor_received485 READ get_left_motor_received NOTIFY callbacks_processed)
     Q_PROPERTY(int left_motor_sent485 READ get_left_motor_sent NOTIFY callbacks_processed)
     Q_PROPERTY(int right_motor_received485 READ get_right_motor_received NOTIFY callbacks_processed)
     Q_PROPERTY(int right_motor_sent485 READ get_right_motor_sent NOTIFY callbacks_processed)
-    Q_PROPERTY(int left_satellite_received485 READ get_left_satellite_received NOTIFY callbacks_processed)
-    Q_PROPERTY(int left_satellite_sent485 READ get_left_satellite_sent NOTIFY callbacks_processed)
-    Q_PROPERTY(int right_satellite_received485 READ get_right_satellite_received NOTIFY callbacks_processed)
-    Q_PROPERTY(int right_satellite_sent485 READ get_right_satellite_sent NOTIFY callbacks_processed)
+    //Q_PROPERTY(int left_satellite_received485 READ get_left_satellite_received NOTIFY callbacks_processed)
+    //Q_PROPERTY(int left_satellite_sent485 READ get_left_satellite_sent NOTIFY callbacks_processed)
+    //Q_PROPERTY(int right_satellite_received485 READ get_right_satellite_received NOTIFY callbacks_processed)
+    //Q_PROPERTY(int right_satellite_sent485 READ get_right_satellite_sent NOTIFY callbacks_processed)
 
     Q_PROPERTY(float current_norm READ get_current_data_norm NOTIFY callbacks_processed)
     Q_PROPERTY(float current_deg READ get_current_data_deg NOTIFY callbacks_processed)
@@ -68,21 +75,28 @@ class FeedbackUpdater : public QObject {
     double q_desired_surge_, q_desired_jog_;
     double q_thrust_ref_left_, q_thrust_ref_right_;
 
+    int micro_loop_count_t_; //Y
+    double ambient_temperature_; //Y
+    double ambient_humidity_; //Y
+
     int missed_deadlines_;
+    int timestamp485_;
     int left_motor_received_;
     int left_motor_sent_;
     int right_motor_received_;
     int right_motor_sent_;
-    int left_satellite_received_;
-    int left_satellite_sent_;
-    int right_satellite_received_;
-    int right_satellite_sent_;
+    //int left_satellite_received_;
+    //int left_satellite_sent_;
+    //int right_satellite_received_;
+    //int right_satellite_sent_;
 
     double current_data_deg;
     double current_data_norm;
 
     rclcpp::Node::SharedPtr np_;
     rclcpp::Subscription<ulisse_msgs::msg::GPSData>::SharedPtr gps_data_sub_;
+    rclcpp::Subscription<ulisse_msgs::msg::MicroLoopCount>::SharedPtr micro_loop_count_sub_;
+    rclcpp::Subscription<ulisse_msgs::msg::AmbientSensors>::SharedPtr ambient_sensors_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::LLCBattery>::SharedPtr battery_left_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::LLCBattery>::SharedPtr battery_right_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::ThrustersData>::SharedPtr thruster_data_sub_;
@@ -103,6 +117,8 @@ public:
     double RadiansToCompassDegrees(const double angle_rad);
 
     void GPSDataCB(const ulisse_msgs::msg::GPSData::SharedPtr msg);
+    void MicroLoopCountCB(const ulisse_msgs::msg::MicroLoopCount::SharedPtr msg);
+    void AmbientSensorsCB(const ulisse_msgs::msg::AmbientSensors::SharedPtr msg);
     void LLCBatteryLeftCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg);
     void LLCBatteryRightCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg);
     void ThrusterDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg);
@@ -133,15 +149,20 @@ public:
     double get_thrust_ref_left();
     double get_thrust_ref_right();
 
+    int get_micro_loop_count();
+    double get_ambient_temperature();
+    double get_ambient_humidity();
+
     int get_missed_deadlines();
+    int get_timestamp485();
     int get_left_motor_received();
     int get_left_motor_sent();
     int get_right_motor_received();
     int get_right_motor_sent();
-    int get_left_satellite_received();
-    int get_left_satellite_sent();
-    int get_right_satellite_received();
-    int get_right_satellite_sent();
+    //int get_left_satellite_received();
+    //int get_left_satellite_sent();
+    //int get_right_satellite_received();
+    //int get_right_satellite_sent();
     double get_current_data_norm();
     double get_current_data_deg();
 
