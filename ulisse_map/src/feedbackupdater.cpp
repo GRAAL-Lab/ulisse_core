@@ -54,6 +54,8 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
     left_motor_sent_ = 0;
     right_motor_received_ = 0;
     right_motor_sent_ = 0;
+    micro_loop_count_t_ = 0;
+    motor_speed_L_ = motor_speed_R_ = 0;
 //    left_satellite_received_ = 0;
 //    left_satellite_sent_ = 0;
 //    right_satellite_received_ = 0;
@@ -86,10 +88,21 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
     gps_data_sub_ = np_->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data,
         10, std::bind(&FeedbackUpdater::GPSDataCB, this, _1) /*custom_qos_profile*/);
 
-    micro_loop_count_sub_ = np_->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::micro_loop_count,
+    micro_loop_count_sub_ = np_->create_subscription<ulisse_msgs::msg::MicroLoopCount>(ulisse_msgs::topicnames::micro_loop_count,
         10, std::bind(&FeedbackUpdater::MicroLoopCountCB, this, _1) /*custom_qos_profile*/);
     ambient_sensors_sub_ = np_->create_subscription<ulisse_msgs::msg::AmbientSensors>(ulisse_msgs::topicnames::sensor_ambient,
         10, std::bind(&FeedbackUpdater::AmbientSensorsCB, this, _1) /*custom_qos_profile*/);
+    compass_sub_ = np_->create_subscription<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass,
+        10, std::bind(&FeedbackUpdater::CompassCB, this, _1) /*custom_qos_profile*/);
+    imu_data_sub_ = np_->create_subscription<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu,
+        10, std::bind(&FeedbackUpdater::IMUDataCB, this, _1) /*custom_qos_profile*/);
+    magnetometer_sub_ = np_->create_subscription<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer,
+        10, std::bind(&FeedbackUpdater::MagnetometerCB, this, _1) /*custom_qos_profile*/);
+    llc_motors_sub_ = np_->create_subscription<ulisse_msgs::msg::LLCMotors>(ulisse_msgs::topicnames::llc_motors,
+        10, std::bind(&FeedbackUpdater::LLCMotorsCB, this, _1) /*custom_qos_profile*/);
+
+
+
     battery_left_sub_ = np_->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_left,
         0, std::bind(&FeedbackUpdater::LLCBatteryLeftCB, this, _1) /*custom_qos_profile*/);
     battery_right_sub_ = np_->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_right,
@@ -171,6 +184,36 @@ void FeedbackUpdater::AmbientSensorsCB(const ulisse_msgs::msg::AmbientSensors::S
     ambient_humidity_ = msg->humidityctrlbox;
 }
 
+void FeedbackUpdater::CompassCB(const ulisse_msgs::msg::Compass::SharedPtr msg)
+{
+    compass_RPY_ = QString::number(msg->orientation.roll, 'f', 2) + ", "
+        + QString::number(msg->orientation.pitch, 'f', 2) + ", "
+        + QString::number(msg->orientation.yaw, 'f', 2);
+}
+
+void FeedbackUpdater::IMUDataCB(const ulisse_msgs::msg::IMUData::SharedPtr msg)
+{
+    imu_accelerometer_ = QString::number(msg->accelerometer[0], 'f', 2) + ", "
+        + QString::number(msg->accelerometer[1], 'f', 2) + ", "
+        + QString::number(msg->accelerometer[2], 'f', 2);
+
+    imu_gyro_ = QString::number(msg->gyro[0], 'f', 2) + ", "
+        + QString::number(msg->gyro[1], 'f', 2) + ", "
+        + QString::number(msg->gyro[2], 'f', 2);
+}
+
+void FeedbackUpdater::MagnetometerCB(const ulisse_msgs::msg::Magnetometer::SharedPtr msg)
+{
+    magnetometer_ = QString::number(msg->orthogonalstrength[0], 'f', 2) + ", "
+        + QString::number(msg->orthogonalstrength[1], 'f', 2) + ", "
+        + QString::number(msg->orthogonalstrength[2], 'f', 2);
+}
+
+void FeedbackUpdater::LLCMotorsCB(const ulisse_msgs::msg::LLCMotors::SharedPtr msg)
+{
+    motor_speed_L_ = (msg->left.motor_speed)/60;
+    motor_speed_R_ = (msg->right.motor_speed)/60;
+}
 
 void FeedbackUpdater::LLCBatteryLeftCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg)
 {
@@ -307,7 +350,7 @@ double FeedbackUpdater::get_thrust_ref_right()
     return q_thrust_ref_right_;
 }
 
-int FeedbackUpdater::get_micro_loop_count()
+uint FeedbackUpdater::get_micro_loop_count()
 {
     return micro_loop_count_t_;
 }
@@ -322,6 +365,36 @@ double FeedbackUpdater::get_ambient_humidity()
     return ambient_humidity_;
 }
 
+QString FeedbackUpdater::get_compass_rpy()
+{
+    return compass_RPY_;
+}
+
+QString FeedbackUpdater::get_imu_accelerometer()
+{
+    return imu_accelerometer_;
+}
+
+QString FeedbackUpdater::get_imu_gyro()
+{
+    return imu_gyro_;
+}
+
+QString FeedbackUpdater::get_magnetometer()
+{
+    return magnetometer_;
+}
+
+int FeedbackUpdater::get_motor_speed_L()
+{
+    return motor_speed_L_;
+}
+
+int FeedbackUpdater::get_motor_speed_R()
+{
+    return motor_speed_R_;
+}
+
 int FeedbackUpdater::get_missed_deadlines()
 {
     return missed_deadlines_;
@@ -332,25 +405,25 @@ int FeedbackUpdater::get_timestamp485()
     return timestamp485_;
 }
 
-int FeedbackUpdater::get_left_motor_received()
-{
-    return left_motor_received_;
-}
+//int FeedbackUpdater::get_left_motor_received()
+//{
+//    return left_motor_received_;
+//}
 
-int FeedbackUpdater::get_left_motor_sent()
-{
-    return left_motor_sent_;
-}
+//int FeedbackUpdater::get_left_motor_sent()
+//{
+//    return left_motor_sent_;
+//}
 
-int FeedbackUpdater::get_right_motor_received()
-{
-    return right_motor_received_;
-}
+//int FeedbackUpdater::get_right_motor_received()
+//{
+//    return right_motor_received_;
+//}
 
-int FeedbackUpdater::get_right_motor_sent()
-{
-    return right_motor_sent_;
-}
+//int FeedbackUpdater::get_right_motor_sent()
+//{
+//    return right_motor_sent_;
+//}
 
 //int FeedbackUpdater::get_left_satellite_received()
 //{

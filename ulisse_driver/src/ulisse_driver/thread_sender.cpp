@@ -192,7 +192,7 @@ namespace llc {
         clamp(data_.references.leftThruster, -1000, 1000);
         clamp(data_.references.rightThruster, -1000, 1000);
         llcHlp_.SendMessage(data_);
-        RCLCPP_INFO(this->get_logger(), "ControlContext_cb() sending reference! (L:%d, R:%d)", data_.references.leftThruster, data_.references.rightThruster);
+        //RCLCPP_INFO(this->get_logger(), "ControlContext_cb() sending reference! (L:%d, R:%d)", data_.references.leftThruster, data_.references.rightThruster);
     }
 
     void ThreadSender::CopyConfigMsg2LLCStruct(const std::shared_ptr<ulisse_msgs::srv::LLCCommand::Request> request)

@@ -138,7 +138,7 @@ Rectangle {
                     labelColor: 'tomato'
                     label: "Micro Loop Count"
                     textColor: 'grey'
-                    text: fbkUpdater.micro_loop_count
+                    text: "%1".arg(fbkUpdater.micro_loop_count)
                     lsize: labelsize
                     tsize: textsize
                 }
@@ -180,7 +180,7 @@ Rectangle {
                     labelColor: 'tomato'
                     label: "Compass"
                     textColor: 'grey'
-                    text: "RPY: "//.arg(fbkUpdater.right_satellite_received485)
+                    text: "RPY: %1".arg(fbkUpdater.compass_RPY)
                     lsize: labelsize
                     tsize: textsize
                 }
@@ -190,7 +190,7 @@ Rectangle {
                     labelColor: 'tomato'
                     label: "IMU"
                     textColor: 'grey'
-                    text: "Accelerometer: \nGyroscope:"//.arg(fbkUpdater.right_satellite_received485)
+                    text: "Accelerometer: %1 \nGyroscope: %2".arg(fbkUpdater.imu_accelerometer).arg(fbkUpdater.imu_gyro)
                     lsize: labelsize
                     tsize: textsize
                 }
@@ -200,7 +200,7 @@ Rectangle {
                     labelColor: 'tomato'
                     label: "Magnetometer"
                     textColor: 'grey'
-                    text: "strenght"//.arg(fbkUpdater.right_satellite_received485)
+                    text: "%1".arg(fbkUpdater.magnetometer)
                     lsize: labelsize
                     tsize: textsize
                 }
@@ -210,7 +210,7 @@ Rectangle {
                     labelColor: 'tomato'
                     label: "Motors Speed"
                     textColor: 'grey'
-                    text: "Left: , Right:" //to be divided by 6
+                    text: "Left: %1 , Right: %2 (rpm)".arg(fbkUpdater.motor_speed_L).arg(fbkUpdater.motor_speed_R)
                     lsize: labelsize
                     tsize: textsize
                 }

@@ -13,6 +13,10 @@
 #include "ulisse_msgs/msg/gps_data.hpp"
 #include "ulisse_msgs/msg/micro_loop_count.hpp"
 #include "ulisse_msgs/msg/ambient_sensors.hpp"
+#include "ulisse_msgs/msg/compass.hpp"
+#include "ulisse_msgs/msg/imu_data.hpp"
+#include "ulisse_msgs/msg/magnetometer.hpp"
+#include "ulisse_msgs/msg/llc_motors.hpp"
 #include "ulisse_msgs/msg/llc_battery.hpp"
 #include "ulisse_msgs/msg/llc_sw485_status.hpp"
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
@@ -46,16 +50,23 @@ class FeedbackUpdater : public QObject {
     Q_PROPERTY(double battery_perc_L READ get_battery_perc_L NOTIFY callbacks_processed)
     Q_PROPERTY(double battery_perc_R READ get_battery_perc_R NOTIFY callbacks_processed)
 
-    Q_PROPERTY(int micro_loop_count READ get_micro_loop_count NOTIFY callbacks_processed)
+    Q_PROPERTY(uint micro_loop_count READ get_micro_loop_count NOTIFY callbacks_processed)
     Q_PROPERTY(double ambient_temperature READ get_ambient_temperature NOTIFY callbacks_processed)
     Q_PROPERTY(double ambient_humidity READ get_ambient_humidity NOTIFY callbacks_processed)
+    Q_PROPERTY(QString compass_RPY READ get_compass_rpy NOTIFY callbacks_processed)
+    Q_PROPERTY(QString imu_accelerometer READ get_imu_accelerometer NOTIFY callbacks_processed)
+    Q_PROPERTY(QString imu_gyro READ get_imu_gyro NOTIFY callbacks_processed)
+    Q_PROPERTY(QString magnetometer READ get_magnetometer NOTIFY callbacks_processed)
+    Q_PROPERTY(int motor_speed_L READ get_motor_speed_L NOTIFY callbacks_processed)
+    Q_PROPERTY(int motor_speed_R READ get_motor_speed_R NOTIFY callbacks_processed)
+
 
     Q_PROPERTY(int timestamp485 READ get_timestamp485 NOTIFY callbacks_processed)
     Q_PROPERTY(int missed_deadlines485 READ get_missed_deadlines NOTIFY callbacks_processed)
-    Q_PROPERTY(int left_motor_received485 READ get_left_motor_received NOTIFY callbacks_processed)
-    Q_PROPERTY(int left_motor_sent485 READ get_left_motor_sent NOTIFY callbacks_processed)
-    Q_PROPERTY(int right_motor_received485 READ get_right_motor_received NOTIFY callbacks_processed)
-    Q_PROPERTY(int right_motor_sent485 READ get_right_motor_sent NOTIFY callbacks_processed)
+//    Q_PROPERTY(int left_motor_received485 READ get_left_motor_received NOTIFY callbacks_processed)
+//    Q_PROPERTY(int left_motor_sent485 READ get_left_motor_sent NOTIFY callbacks_processed)
+//    Q_PROPERTY(int right_motor_received485 READ get_right_motor_received NOTIFY callbacks_processed)
+//    Q_PROPERTY(int right_motor_sent485 READ get_right_motor_sent NOTIFY callbacks_processed)
     //Q_PROPERTY(int left_satellite_received485 READ get_left_satellite_received NOTIFY callbacks_processed)
     //Q_PROPERTY(int left_satellite_sent485 READ get_left_satellite_sent NOTIFY callbacks_processed)
     //Q_PROPERTY(int right_satellite_received485 READ get_right_satellite_received NOTIFY callbacks_processed)
@@ -75,9 +86,14 @@ class FeedbackUpdater : public QObject {
     double q_desired_surge_, q_desired_jog_;
     double q_thrust_ref_left_, q_thrust_ref_right_;
 
-    int micro_loop_count_t_; //Y
+    uint micro_loop_count_t_; //Y
     double ambient_temperature_; //Y
     double ambient_humidity_; //Y
+    QString compass_RPY_;
+    QString imu_accelerometer_;
+    QString imu_gyro_;
+    QString magnetometer_;
+    int motor_speed_L_, motor_speed_R_;
 
     int missed_deadlines_;
     int timestamp485_;
@@ -97,6 +113,11 @@ class FeedbackUpdater : public QObject {
     rclcpp::Subscription<ulisse_msgs::msg::GPSData>::SharedPtr gps_data_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::MicroLoopCount>::SharedPtr micro_loop_count_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::AmbientSensors>::SharedPtr ambient_sensors_sub_;
+    rclcpp::Subscription<ulisse_msgs::msg::Compass>::SharedPtr compass_sub_;
+    rclcpp::Subscription<ulisse_msgs::msg::IMUData>::SharedPtr imu_data_sub_;
+    rclcpp::Subscription<ulisse_msgs::msg::Magnetometer>::SharedPtr magnetometer_sub_;
+    rclcpp::Subscription<ulisse_msgs::msg::LLCMotors>::SharedPtr llc_motors_sub_;
+
     rclcpp::Subscription<ulisse_msgs::msg::LLCBattery>::SharedPtr battery_left_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::LLCBattery>::SharedPtr battery_right_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::ThrustersData>::SharedPtr thruster_data_sub_;
@@ -119,6 +140,11 @@ public:
     void GPSDataCB(const ulisse_msgs::msg::GPSData::SharedPtr msg);
     void MicroLoopCountCB(const ulisse_msgs::msg::MicroLoopCount::SharedPtr msg);
     void AmbientSensorsCB(const ulisse_msgs::msg::AmbientSensors::SharedPtr msg);
+    void CompassCB(const ulisse_msgs::msg::Compass::SharedPtr msg);
+    void IMUDataCB(const ulisse_msgs::msg::IMUData::SharedPtr msg);
+    void MagnetometerCB(const ulisse_msgs::msg::Magnetometer::SharedPtr msg);
+    void LLCMotorsCB(const ulisse_msgs::msg::LLCMotors::SharedPtr msg);
+
     void LLCBatteryLeftCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg);
     void LLCBatteryRightCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg);
     void ThrusterDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg);
@@ -149,16 +175,22 @@ public:
     double get_thrust_ref_left();
     double get_thrust_ref_right();
 
-    int get_micro_loop_count();
+    uint get_micro_loop_count();
     double get_ambient_temperature();
     double get_ambient_humidity();
+    QString get_compass_rpy();
+    QString get_imu_accelerometer();
+    QString get_imu_gyro();
+    QString get_magnetometer();
+    int get_motor_speed_L();
+    int get_motor_speed_R();
 
     int get_missed_deadlines();
     int get_timestamp485();
-    int get_left_motor_received();
-    int get_left_motor_sent();
-    int get_right_motor_received();
-    int get_right_motor_sent();
+    //    int get_left_motor_received();
+    //    int get_left_motor_sent();
+    //    int get_right_motor_received();
+    //    int get_right_motor_sent();
     //int get_left_satellite_received();
     //int get_left_satellite_sent();
     //int get_right_satellite_received();
