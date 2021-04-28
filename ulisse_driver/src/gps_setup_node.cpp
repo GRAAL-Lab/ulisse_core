@@ -199,6 +199,18 @@ int main(int argc, char* argv[])
             return EXIT_FAILURE;
         }
         */
+        
+        RCLCPP_INFO(node->get_logger(), "Sending SAVECONFIG Command");
+
+        stringToSend.assign("SAVECONFIG\n\r");
+        serial->Write(stringToSend.c_str(), stringToSend.size());
+        ret = CheckCommandConfirmation(serialDevice.c_str(), stringToSend.c_str(), "OK", matchingAnswer, node);
+
+        if (!(ret && (matchingAnswer))) {
+            RCLCPP_ERROR(node->get_logger(), "SAVECONFIG Command failed! (%s)",
+                stringToSend.c_str());
+            return EXIT_FAILURE;
+        }
     }
 
     RCLCPP_INFO(node->get_logger(), "Starting gpsd server");
