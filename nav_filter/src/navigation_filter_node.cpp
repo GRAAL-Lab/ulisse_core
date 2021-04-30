@@ -75,6 +75,8 @@ static ctb::LatLong centroidLocation(44.4, 8.94);
 
 static Eigen::VectorXd state;
 
+void SensorsCheckCB();
+
 void CommandHandler(const std::shared_ptr<rmw_request_id_t> request_header, const std::shared_ptr<ulisse_msgs::srv::NavFilterCommand::Request> request, std::shared_ptr<ulisse_msgs::srv::NavFilterCommand::Response> response);
 
 void CompassDataCB(const ulisse_msgs::msg::Compass::SharedPtr msg);
@@ -143,6 +145,8 @@ int main(int argc, char* argv[])
     double lastValidImuTime = 0.0;
     double lastValidCompassTime = 0.0;
     double lastValidMagnetomerTime = 0.0;
+    bool gpsValid(false), imuValid(false), compassValid(false), magnetometerValid(false);
+    bool gpsOnline(false), imuOnline(false), compassOnline(false), magnetometerOnline(false);
 
     ulisse_msgs::msg::NavFilterData filterData;
 
@@ -165,118 +169,144 @@ int main(int argc, char* argv[])
 
     last_comp_time_ = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
 
+    rclcpp::TimerBase::SharedPtr sensorsCheckTimer = node->create_wall_timer(5s, SensorsCheckCB);
+
     while (rclcpp::ok()) {
+
+        ///// Sensors Check /////
+        if (gpsData.time > lastValidGPSTime) {
+            if (gpsData.gpsfixmode >= static_cast<int>(ulisse::gpsd::GpsFixMode::mode_2d)) {
+                gpsValid = true;
+                gpsOnline = true;
+                lastValidGPSTime = gpsData.time;
+            } else {
+                gpsValid = false;
+            }
+        }
+        long now_secs = static_cast<long>(lastValidGPSTime);
+        std::time_t current = now_secs;
+
+        if (imuData.stamp.sec + (imuData.stamp.nanosec * 1e-9) > lastValidImuTime) {
+            imuValid = true;
+            imuOnline = true;
+            lastValidImuTime = imuData.stamp.sec + (imuData.stamp.nanosec * 1e-9);
+        } else {
+            imuValid = false;
+        }
+
+        if (compassData.stamp.sec + (compassData.stamp.nanosec * 1e-9) > lastValidCompassTime) {
+            compassValid = true;
+            compassOnline = true;
+            lastValidCompassTime = compassData.stamp.sec + (compassData.stamp.nanosec * 1e-9);
+        } else {
+            compassValid = false;
+        }
+
+        if (magnetometerData.stamp.sec + (magnetometerData.stamp.nanosec * 1e-9) > lastValidMagnetomerTime) {
+            magnetometerValid = true;
+            magnetometerOnline = true;
+            lastValidMagnetomerTime = magnetometerData.stamp.sec + (magnetometerData.stamp.nanosec * 1e-9);
+        } else {
+            magnetometerValid = false;
+        }
+
+        /////////////////////////
+
         if (filterParams.mode == FilterMode::LuenbergerObserver) {
-            if (gpsData.time > lastValidGPSTime) {
-                if (gpsData.gpsfixmode >= static_cast<int>(ulisse::gpsd::GpsFixMode::mode_2d)) {
+            if (gpsValid) {
 
-                    int zone;
-                    bool northp;
+                int zone;
+                bool northp;
+                Eigen::Vector2d p_utm;
 
-                    Eigen::Vector2d p_utm;
+                try {
+                    GeographicLib::UTMUPS::Forward(gpsData.latitude, gpsData.longitude, zone, northp, p_utm.x(), p_utm.y());
 
-                    try {
+                    // The geographic lib conversion outputs UTM coordinates but the filter uses NED.
+                    Eigen::Vector2d p_ned = { p_utm.y(), p_utm.x() };
 
-                        GeographicLib::UTMUPS::Forward(gpsData.latitude, gpsData.longitude, zone, northp, p_utm.x(), p_utm.y());
+                    if (filterEnable) {
 
-                        // The geographic lib conversion outputs UTM coordinates but the filter uses NED.
-                        Eigen::Vector2d p_ned = { p_utm.y(), p_utm.x() };
+                        obs.Update(Eigen::Vector4d { p_ned.x(), p_ned.y(), compassData.orientation.yaw, simulatedVelocitySensor.water_relative_surge });
+                        filterData.inertialframe_water_current.fill(0.0);
 
-                        if (filterEnable) {
+                        //Construct the inertial to body frame rotation
+                        rml::EulerRPY rpy { 0.0, 0.0, compassData.orientation.yaw };
+                        Eigen::Vector3d bodyF_linearVelocity = rpy.ToRotationMatrix().transpose() * Eigen::Vector3d { obs.LinearVelocity().x(), obs.LinearVelocity().y(), 0.0 };
 
-                            obs.Update(Eigen::Vector4d { p_ned.x(), p_ned.y(), compassData.orientation.yaw, simulatedVelocitySensor.water_relative_surge });
-                            filterData.inertialframe_water_current.fill(0.0);
+                        filterData.bodyframe_linear_velocity[0] = bodyF_linearVelocity.x();
+                        filterData.bodyframe_linear_velocity[1] = bodyF_linearVelocity.y();
 
-                            //Construct the inertial to body frame rotation
-                            rml::EulerRPY rpy { 0.0, 0.0, compassData.orientation.yaw };
-                            Eigen::Vector3d bodyF_linearVelocity = rpy.ToRotationMatrix().transpose() * Eigen::Vector3d { obs.LinearVelocity().x(), obs.LinearVelocity().y(), 0.0 };
+                        p_ned = obs.LinearPosition();
 
-                            filterData.bodyframe_linear_velocity[0] = bodyF_linearVelocity.x();
-                            filterData.bodyframe_linear_velocity[1] = bodyF_linearVelocity.y();
+                        p_utm = { p_ned.y(), p_ned.x() };
 
-                            p_ned = obs.LinearPosition();
-
-                            p_utm = { p_ned.y(), p_ned.x() };
-
-                            GeographicLib::UTMUPS::Reverse(zone, northp, p_utm.x(), p_utm.y(), filterData.inertialframe_linear_position.latlong.latitude, filterData.inertialframe_linear_position.latlong.longitude);
-                        }
-
-                        /// FILL THE MSG WITH ALL THE REST OF UNMANAGED DATA
-                        filterData.bodyframe_linear_velocity[2] = 0.0;
-                        filterData.inertialframe_linear_position.altitude = 0.0;
-                        filterData.bodyframe_angular_position = compassData.orientation;
-
-                        filterData.bodyframe_angular_velocity[0] = imuData.gyro[0];
-                        filterData.bodyframe_angular_velocity[1] = imuData.gyro[1];
-
-                        //Yaw rate estimation with a digital filter
-                        double omega_dot_dot = ctb::AngleDifference(compassData.orientation.yaw, previousYaw) / sampleTime;
-                        previousYaw = compassData.orientation.yaw;
-
-                        filterData.bodyframe_angular_velocity[2] = yawRateFilterGains[0] * filterData.bodyframe_angular_velocity[2] + yawRateFilterGains[1] * omega_dot_dot;
-
-                    } catch (const GeographicLib::GeographicErr& e) {
-                        RCLCPP_ERROR(node->get_logger(), "GeographicLib exception: what = %s", e.what());
-                        obs.Reset();
+                        GeographicLib::UTMUPS::Reverse(zone, northp, p_utm.x(), p_utm.y(), filterData.inertialframe_linear_position.latlong.latitude, filterData.inertialframe_linear_position.latlong.longitude);
                     }
 
-                    lastValidGPSTime = gpsData.time;
+                    /// FILL THE MSG WITH ALL THE REST OF UNMANAGED DATA
+                    filterData.bodyframe_linear_velocity[2] = 0.0;
+                    filterData.inertialframe_linear_position.altitude = 0.0;
+                    filterData.bodyframe_angular_position = compassData.orientation;
+
+                    filterData.bodyframe_angular_velocity[0] = imuData.gyro[0];
+                    filterData.bodyframe_angular_velocity[1] = imuData.gyro[1];
+
+                    //Yaw rate estimation with a digital filter
+                    double omega_dot_dot = ctb::AngleDifference(compassData.orientation.yaw, previousYaw) / sampleTime;
+                    previousYaw = compassData.orientation.yaw;
+
+                    filterData.bodyframe_angular_velocity[2] = yawRateFilterGains[0] * filterData.bodyframe_angular_velocity[2] + yawRateFilterGains[1] * omega_dot_dot;
+
+                } catch (const GeographicLib::GeographicErr& e) {
+                    RCLCPP_ERROR(node->get_logger(), "GeographicLib exception: what = %s", e.what());
+                    obs.Reset();
                 }
             }
         } else if (filterParams.mode == FilterMode::KalmanFilter) {
-            if (measuresActive.find("gps")->second) {
-                if (gpsData.time > lastValidGPSTime) {
-                    if (gpsData.gpsfixmode >= static_cast<int>(ulisse::gpsd::GpsFixMode::mode_2d)) {
+            if (gpsValid) {
+                if (measuresActive.find("gps")->second) {
 
-                        if (isFirst) {
-                            Eigen::VectorXd initialState = Eigen::VectorXd::Zero(stateDim);
-                            centroidLocation = { gpsData.latitude, gpsData.longitude };
-                            ctb::LatLong2LocalNED(ctb::LatLong(gpsData.latitude, gpsData.longitude), gpsData.altitude, centroidLocation, NED_gps_cartesian);
-
-                            initialState.segment(0, 2) << NED_gps_cartesian.x(), NED_gps_cartesian.y();
-                            isFirst = false;
-                        }
-
-                        //The filter use the cartesian coordinates
+                    if (isFirst) {
+                        Eigen::VectorXd initialState = Eigen::VectorXd::Zero(stateDim);
+                        centroidLocation = { gpsData.latitude, gpsData.longitude };
                         ctb::LatLong2LocalNED(ctb::LatLong(gpsData.latitude, gpsData.longitude), gpsData.altitude, centroidLocation, NED_gps_cartesian);
-                        gpsMeasurement->MeasureVector() = Eigen::Vector2d { NED_gps_cartesian.x(), NED_gps_cartesian.y() };
-                        extendedKalmanFilter->AddMeasurement(gpsMeasurement);
 
-                        lastValidGPSTime = gpsData.time;
+                        initialState.segment(0, 2) << NED_gps_cartesian.x(), NED_gps_cartesian.y();
+                        isFirst = false;
                     }
+
+                    //The filter use the cartesian coordinates
+                    ctb::LatLong2LocalNED(ctb::LatLong(gpsData.latitude, gpsData.longitude), gpsData.altitude, centroidLocation, NED_gps_cartesian);
+                    gpsMeasurement->MeasureVector() = Eigen::Vector2d { NED_gps_cartesian.x(), NED_gps_cartesian.y() };
+                    extendedKalmanFilter->AddMeasurement(gpsMeasurement);
                 }
             }
 
-            if (measuresActive.find("gyro")->second) {
-                if (imuData.stamp.sec + (imuData.stamp.nanosec * 1e-9) > lastValidImuTime) {
+            if (imuValid) {
+                if (measuresActive.find("gyro")->second) {
                     gyroMeasurement->MeasureVector() = Eigen::Vector3d { imuData.gyro[0], imuData.gyro[1], imuData.gyro[2] };
                     extendedKalmanFilter->AddMeasurement(gyroMeasurement);
-
-                    if (measuresActive.find("accelerometer")->second) {
-                        accelerometerMeasurement->MeasureVector() = Eigen::Vector3d { imuData.accelerometer[0], imuData.accelerometer[1], imuData.accelerometer[2] };
-                        extendedKalmanFilter->AddMeasurement(accelerometerMeasurement);
-                    }
-
-                    lastValidImuTime = imuData.stamp.sec + (imuData.stamp.nanosec * 1e-9);
                 }
+                if (measuresActive.find("accelerometer")->second) {
+                    accelerometerMeasurement->MeasureVector() = Eigen::Vector3d { imuData.accelerometer[0], imuData.accelerometer[1], imuData.accelerometer[2] };
+                    extendedKalmanFilter->AddMeasurement(accelerometerMeasurement);
+                }
+
             }
 
-            if (compassData.stamp.sec + (compassData.stamp.nanosec * 1e-9) > lastValidCompassTime) {
+            if (compassValid) {
                 if (measuresActive.find("compass")->second) {
                     compassMeasurement->MeasureVector() = Eigen::Vector3d { compassData.orientation.roll, compassData.orientation.pitch, compassData.orientation.yaw };
                     extendedKalmanFilter->AddMeasurement(compassMeasurement);
-
-                    lastValidCompassTime = compassData.stamp.sec + (compassData.stamp.nanosec * 1e-9);
                 }
             }
 
-            if (magnetometerData.stamp.sec + (magnetometerData.stamp.nanosec * 1e-9) > lastValidMagnetomerTime) {
+            if (magnetometerValid) {
                 if (measuresActive.find("magnetometer")->second) {
                     //preprocessing: I compensate for the roll and the pitch and then I pretend to have a sensor that measures the yaw
                     magnetometerMeasurement->MeasureVector() << -atan2(magnetometerData.orthogonalstrength[1] * cos(state[3]) - magnetometerData.orthogonalstrength[2] * sin(state[3]), magnetometerData.orthogonalstrength[0] * cos(state[4]) + magnetometerData.orthogonalstrength[2] * cos(state[3]) * sin(state[4]) + magnetometerData.orthogonalstrength[1] * sin(state[4]) * sin(state[3]));
                     extendedKalmanFilter->AddMeasurement(magnetometerMeasurement);
-
-                    lastValidMagnetomerTime = magnetometerData.stamp.sec + (magnetometerData.stamp.nanosec * 1e-9);
                 }
             }
 
@@ -366,6 +396,10 @@ int main(int argc, char* argv[])
     }
     node = nullptr;
     return 0;
+}
+
+void SensorsCheckCB(){
+    std::cout << "Hello, world!" << std::endl;
 }
 
 bool LoadConfiguration(NavigationFilterParams& filterParameters)

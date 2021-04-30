@@ -16,11 +16,11 @@ FeedbackUpdater::FeedbackUpdater(QObject* parent)
 {
 }
 
-FeedbackUpdater::FeedbackUpdater(QQmlApplicationEngine* engine, QObject* parent)
+FeedbackUpdater::FeedbackUpdater(QQmlApplicationEngine* engine, QObject* parent, const rclcpp::Node::SharedPtr& np)
     : QObject(parent)
     , feedbackUpdateInterval_(200)
 {
-    Init(engine);
+    Init(engine, np);
 }
 
 FeedbackUpdater::~FeedbackUpdater()
@@ -28,10 +28,10 @@ FeedbackUpdater::~FeedbackUpdater()
     delete myTimer_;
 }
 
-void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
+void FeedbackUpdater::Init(QQmlApplicationEngine* engine, const rclcpp::Node::SharedPtr& np)
 {
-    //FIXME: what if no np_ defined?
     appEngine_ = engine;
+    np_ = np;
 
     myTimer_ = new QTimer(this);
     myTimer_->start(feedbackUpdateInterval_);
@@ -50,16 +50,8 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
     q_thrust_ref_left_ = q_thrust_ref_right_ = 0.0;
 
     missed_deadlines_ = 0;
-    left_motor_received_ = 0;
-    left_motor_sent_ = 0;
-    right_motor_received_ = 0;
-    right_motor_sent_ = 0;
     micro_loop_count_t_ = 0;
     motor_speed_L_ = motor_speed_R_ = 0;
-//    left_satellite_received_ = 0;
-//    left_satellite_sent_ = 0;
-//    right_satellite_received_ = 0;
-//    right_satellite_sent_ = 0;
 
     q_gps_pos_ = q_goal_pos_ = q_ulisse_pos_;
     q_gps_time_ = "undefined";
@@ -77,16 +69,19 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
     // Default QoS settings for publishers and subscriptions (rmw_qos_profile_default).
     // Services (rmw_qos_profile_services_default).
 
+    //rmw_qos_profile_t custom_qos_profile;
     //custom_qos_profile.durability = RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL;
-    // set the depth to the QoS profile
-    //custom_qos_profile.depth = 7;
+    //custom_qos_profile.depth = 5;
+
+
+    //rmw_qos_profile_sensor_data
 
     vehicleStatusSub_ = np_->create_subscription<ulisse_msgs::msg::VehicleStatus>(ulisse_msgs::topicnames::vehicle_status,
         10, std::bind(&FeedbackUpdater::VehicleStatusCB, this, _1) /*, custom_qos_profile*/);
     referenceVelocitieSub_ = np_->create_subscription<ulisse_msgs::msg::ReferenceVelocities>(ulisse_msgs::topicnames::reference_velocities,
         10, std::bind(&FeedbackUpdater::ReferenceVelocitiesCB, this, _1) /*custom_qos_profile*/);
     gps_data_sub_ = np_->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data,
-        10, std::bind(&FeedbackUpdater::GPSDataCB, this, _1) /*custom_qos_profile*/);
+        10, std::bind(&FeedbackUpdater::GPSDataCB, this, _1)/*custom_qos_profile*/);
 
     micro_loop_count_sub_ = np_->create_subscription<ulisse_msgs::msg::MicroLoopCount>(ulisse_msgs::topicnames::micro_loop_count,
         10, std::bind(&FeedbackUpdater::MicroLoopCountCB, this, _1) /*custom_qos_profile*/);
@@ -100,8 +95,6 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
         10, std::bind(&FeedbackUpdater::MagnetometerCB, this, _1) /*custom_qos_profile*/);
     llc_motors_sub_ = np_->create_subscription<ulisse_msgs::msg::LLCMotors>(ulisse_msgs::topicnames::llc_motors,
         10, std::bind(&FeedbackUpdater::LLCMotorsCB, this, _1) /*custom_qos_profile*/);
-
-
 
     battery_left_sub_ = np_->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_left,
         0, std::bind(&FeedbackUpdater::LLCBatteryLeftCB, this, _1) /*custom_qos_profile*/);
@@ -166,7 +159,7 @@ void FeedbackUpdater::GPSDataCB(const ulisse_msgs::msg::GPSData::SharedPtr msg)
         timedate.erase(std::remove(timedate.begin(), timedate.end(), '\n'), timedate.end());
         q_gps_time_ = QString::fromStdString(timedate);
     } else {
-        q_gps_time_ = "not avaiable";
+        q_gps_time_ = "Not Available.";
     }
 
     q_gps_pos_.setLatitude(msg->latitude);
@@ -211,8 +204,8 @@ void FeedbackUpdater::MagnetometerCB(const ulisse_msgs::msg::Magnetometer::Share
 
 void FeedbackUpdater::LLCMotorsCB(const ulisse_msgs::msg::LLCMotors::SharedPtr msg)
 {
-    motor_speed_L_ = (msg->left.motor_speed)/60;
-    motor_speed_R_ = (msg->right.motor_speed)/60;
+    motor_speed_L_ = (msg->left.motor_speed)/6;
+    motor_speed_R_ = (msg->right.motor_speed)/6;
 }
 
 void FeedbackUpdater::LLCBatteryLeftCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg)

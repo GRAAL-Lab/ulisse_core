@@ -19,22 +19,24 @@ CommandWrapper::CommandWrapper(QObject* parent)
 {
 }
 
-CommandWrapper::CommandWrapper(QQmlApplicationEngine* engine, QObject* parent)
+CommandWrapper::CommandWrapper(QQmlApplicationEngine* engine, QObject* parent, const rclcpp::Node::SharedPtr& np)
     : QObject(parent)
 {
-    Init(engine);
+    Init(engine, np);
 }
 
 CommandWrapper::~CommandWrapper()
 {
 }
 
-void CommandWrapper::Init(QQmlApplicationEngine* engine)
+void CommandWrapper::Init(QQmlApplicationEngine* engine, const rclcpp::Node::SharedPtr& np)
 {
     appEngine_ = engine;
+    np_ = np;
     myTimer_ = new QTimer(this);
 
     errorCheckInterval_ = 500;
+    goalCtxRead_ = false;
 
     QObject::connect(myTimer_, SIGNAL(timeout()), this, SLOT(check_error_slot()));
 
@@ -364,7 +366,7 @@ bool CommandWrapper::SendBoundariesRequest(ulisse_msgs::srv::SetBoundaries::Requ
         }
         serviceAvailable = true;
     } else {
-        result_msg = "No Command Server Available";
+        result_msg = "No Boundary Server Available";
         serviceAvailable = false;
     }
 
@@ -452,7 +454,7 @@ bool CommandWrapper::sendThrusterActivation(bool activate)
         }
         serviceAvailable = true;
     } else {
-        result_msg = "No Command Server Available";
+        result_msg = "No LLC Server Available";
         serviceAvailable = false;
     }
     ShowToast(result_msg.c_str(), 2000);
@@ -478,7 +480,7 @@ bool CommandWrapper::setCruiseSpeedCommand(double speed)
         }
         serviceAvailable = true;
     } else {
-        result_msg = "No Command Server Available";
+        result_msg = "No Cruise Server Available";
         serviceAvailable = false;
     }
     ShowToast(result_msg.c_str(), 2000);
@@ -537,7 +539,6 @@ void CommandWrapper::resumePath()
 void CommandWrapper::savePathToFile(const QString fileName, const QString& data)
 {
     // Here we check whether the file has already an extension ".ulisse"
-    // and in case it doesn't we add it
     // and in case it doesn't we add it
     std::string filename = fileName.toStdString();
     std::string::size_type extensionDotPos = filename.find_last_of(".");

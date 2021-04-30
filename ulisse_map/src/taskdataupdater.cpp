@@ -37,12 +37,6 @@ void TaskDataUpdater::Init(QQmlApplicationEngine* engine)
 
     QObject::connect(myTimer_, SIGNAL(timeout()), this, SLOT(process_callbacks_slot()));
 
-
-    /*goalFlagObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("goalFlag");
-    if (!goalFlagObj_) {
-        qDebug() << "goalFlagObj_ Object NOT found!";
-    }*/
-
     //qDebug() << "INITIAL POS: LatLong = " << q_ulisse_pos_ << "- Compass = " << q_ulisse_yaw_deg_;
 
     // Set the QoS. ROS 2 will provide QoS profiles based on the following use cases:

@@ -96,7 +96,7 @@ ros2 run ulisse_map ulisse_map_node
 ```bash
 
 # Shell A (setup serial)
-socat -d -d pty,raw,echo=0,link=/tmp/serial1 pty,raw,echo=0,link=/tmp/serial2
+socat -d -d pty,raw,echo=0,link=/dev/ttyS0 pty,raw,echo=0,link=/dev/ttyS1
 
 # Shell B (launch driver)
 ros2 launch ulisse_driver launchDriver.py

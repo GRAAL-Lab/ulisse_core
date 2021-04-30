@@ -38,7 +38,6 @@ int main(int argc, char* argv[])
     QIcon icon(":/images/ulisse_icon-48.png");
     app.setWindowIcon(icon);
 
-
     //QSettings settings("folderName", "fileName");
     //qDebug() << "Settings file: " << settings.fileName();
 
@@ -50,8 +49,7 @@ int main(int argc, char* argv[])
      */
     QScopedPointer<FeedbackUpdater> fbkUpdater(new FeedbackUpdater);
     QScopedPointer<CommandWrapper> cmdWrapper(new CommandWrapper);
-    fbkUpdater->SetNodeHandle(nh);
-    cmdWrapper->SetNodeHandle(nh);
+
     appEngine.rootContext()->setContextProperty("fbkUpdater", fbkUpdater.data());
     appEngine.rootContext()->setContextProperty("cmdWrapper", cmdWrapper.data());
     appEngine.rootContext()->setContextProperty("home_dir", QDir::homePath());
@@ -63,8 +61,8 @@ int main(int argc, char* argv[])
       * this has to be done ONLY AFTER -->>> appEngine.load(), otherwise the functions
       * called inside C++ such as ->findChild() will not find anything.
       */
-    fbkUpdater.data()->Init(&appEngine);
-    cmdWrapper.data()->Init(&appEngine);
+    fbkUpdater.data()->Init(&appEngine, nh);
+    cmdWrapper.data()->Init(&appEngine, nh);
 
     if (appEngine.rootObjects().isEmpty())
         return -1;

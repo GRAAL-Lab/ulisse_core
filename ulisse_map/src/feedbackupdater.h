@@ -97,14 +97,6 @@ class FeedbackUpdater : public QObject {
 
     int missed_deadlines_;
     int timestamp485_;
-    int left_motor_received_;
-    int left_motor_sent_;
-    int right_motor_received_;
-    int right_motor_sent_;
-    //int left_satellite_received_;
-    //int left_satellite_sent_;
-    //int right_satellite_received_;
-    //int right_satellite_sent_;
 
     double current_data_deg;
     double current_data_norm;
@@ -131,9 +123,9 @@ class FeedbackUpdater : public QObject {
 
 public:
     explicit FeedbackUpdater(QObject* parent = nullptr);
-    explicit FeedbackUpdater(QQmlApplicationEngine* engine, QObject* parent = nullptr);
+    explicit FeedbackUpdater(QQmlApplicationEngine* engine, QObject* parent = nullptr, const rclcpp::Node::SharedPtr& np = nullptr);
     virtual ~FeedbackUpdater();
-    void Init(QQmlApplicationEngine* engine);
+    void Init(QQmlApplicationEngine* engine, const rclcpp::Node::SharedPtr& np);
     void SetNodeHandle(const rclcpp::Node::SharedPtr& np);
     double RadiansToCompassDegrees(const double angle_rad);
 
@@ -187,14 +179,6 @@ public:
 
     int get_missed_deadlines();
     int get_timestamp485();
-    //    int get_left_motor_received();
-    //    int get_left_motor_sent();
-    //    int get_right_motor_received();
-    //    int get_right_motor_sent();
-    //int get_left_satellite_received();
-    //int get_left_satellite_sent();
-    //int get_right_satellite_received();
-    //int get_right_satellite_sent();
     double get_current_data_norm();
     double get_current_data_deg();
 
