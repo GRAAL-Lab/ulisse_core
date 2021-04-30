@@ -44,8 +44,23 @@ namespace nav {
     class NavigationFilter{
 
         rclcpp::Node::SharedPtr nh_;
+        std::string confPath_;
         PosVelObserver obs;
-        rclcpp::Node::SharedPtr node = nullptr;
+
+        rclcpp::Publisher<ulisse_msgs::msg::NavFilterData>::SharedPtr navDataPub_;
+
+        rclcpp::Subscription<ulisse_msgs::msg::Compass>::SharedPtr compassSub_;
+        rclcpp::Subscription<ulisse_msgs::msg::GPSData>::SharedPtr gpsdataSub_;
+        rclcpp::Subscription<ulisse_msgs::msg::IMUData>::SharedPtr imudataSub_;
+        rclcpp::Subscription<ulisse_msgs::msg::Magnetometer>::SharedPtr magnetometerSub_;
+        rclcpp::Subscription<ulisse_msgs::msg::RealSystem>::SharedPtr groundTruthSub_;
+        rclcpp::Subscription<ulisse_msgs::msg::ThrustersData>::SharedPtr thrustersFkbSub_;
+        rclcpp::Subscription<ulisse_msgs::msg::SimulatedVelocitySensor>::SharedPtr simulatedVelocitySub_;
+
+        rclcpp::Service<ulisse_msgs::srv::NavFilterCommand>::SharedPtr navFilterCmdService_;
+
+        rclcpp::TimerBase::SharedPtr runTimer_;
+        rclcpp::TimerBase::SharedPtr sensorsCheckTimer_;
 
         ulisse_msgs::msg::Compass compassData;
         ulisse_msgs::msg::GPSData gpsData;
@@ -54,6 +69,12 @@ namespace nav {
         ulisse_msgs::msg::ThrustersData thrustersFbk;
         ulisse_msgs::msg::Magnetometer magnetometerData;
         ulisse_msgs::msg::RealSystem groundTruthData;
+
+        double lastValidGPSTime_;
+        double lastValidImuTime_;
+        double lastValidCompassTime_;
+        double lastValidMagnetomerTime_;
+        bool gpsOnline_, imuOnline_, compassOnline_, magnetometerOnline_;
 
         NavigationFilterParams filterParams;
         Eigen::Vector2d yawRateFilterGains;
@@ -76,9 +97,21 @@ namespace nav {
         Eigen::VectorXd state;
         std::chrono::system_clock::time_point last_comp_time_;
 
+        //luenberger variables
+        double previousYaw_;
+        double sampleTime_;
+
+        bool filterEnable_;
+        bool isFirst_;
+
+        ulisse_msgs::msg::NavFilterData filterData_;
+        Eigen::Vector3d NED_gps_cartesian_;
+
         void SensorsCheckCB();
 
-        void CommandHandler(const std::shared_ptr<rmw_request_id_t> request_header, const std::shared_ptr<ulisse_msgs::srv::NavFilterCommand::Request> request, std::shared_ptr<ulisse_msgs::srv::NavFilterCommand::Response> response);
+        void CommandHandler(const std::shared_ptr<rmw_request_id_t> request_header,
+            const std::shared_ptr<ulisse_msgs::srv::NavFilterCommand::Request> request,
+            std::shared_ptr<ulisse_msgs::srv::NavFilterCommand::Response> response);
 
         void CompassDataCB(const ulisse_msgs::msg::Compass::SharedPtr msg);
 
@@ -102,8 +135,9 @@ namespace nav {
 
 
     public:
-        NavigationFilter(const rclcpp::Node::SharedPtr& nh, const std::string& file_name);
+        NavigationFilter(const rclcpp::Node::SharedPtr& nh, const std::string& confPath);
         virtual ~NavigationFilter();
+        void Run();
 
     };
 

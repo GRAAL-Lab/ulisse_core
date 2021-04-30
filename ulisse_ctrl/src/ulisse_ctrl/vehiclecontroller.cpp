@@ -10,6 +10,8 @@
 #include <ulisse_ctrl/ulisse_definitions.h>
 
 using std::placeholders::_1;
+using std::placeholders::_2;
+using std::placeholders::_3;
 
 namespace ulisse {
 
@@ -130,86 +132,21 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     // FSM Initialization
     SetUpFSM();
 
-    // Command Server Setup
-    SetupCommandServer();
+    srv_ = nh_->create_service<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service,
+        std::bind(&VehicleController::CommandsHandler, this, _1, _2, _3));
 
-    // Create a callback function for when service set boundaries requests are  received.
-    auto handle_set_boundaries = [this](const std::shared_ptr<rmw_request_id_t> request_header, const std::shared_ptr<ulisse_msgs::srv::SetBoundaries::Request> request, std::shared_ptr<ulisse_msgs::srv::SetBoundaries::Response> response)
-        -> void {
-        (void)request_header;
-        RCLCPP_INFO(nh_->get_logger(), "Incoming request for set boundaries");
+    srvSetBoundaries_ = nh_->create_service<ulisse_msgs::srv::SetBoundaries>(ulisse_msgs::topicnames::set_boundaries_service,
+        std::bind(&VehicleController::SetBoundariesHandler, this, _1, _2, _3));
 
-        if (asvSafetyBoundaries_->InitializePolygon(request->boundaries)) {
-            boundariesJson_ = request->boundaries.boundaries_string;
-            response->res = "SetBound::ok";
-            boundariesSet_ = true;
-        } else {
-            response->res = "SetBound::error";
-        }
+    srvGetBoundaries_ = nh_->create_service<ulisse_msgs::srv::GetBoundaries>(ulisse_msgs::topicnames::get_boundaries_service,
+        std::bind(&VehicleController::GetBoundariesHandler, this, _1, _2, _3));
 
-        std::stringstream log;
-        log << "Setting Bounding Box: " << request->boundaries.boundaries_string;
-        PublishLog(log.str().c_str());
-    };
+    srvCruise_ = nh_->create_service<ulisse_msgs::srv::SetCruiseControl>(ulisse_msgs::topicnames::set_cruise_control_service,
+        std::bind(&VehicleController::SetCruiseControlHandler, this, _1, _2, _3));
 
-    srvBoundaries_ = nh_->create_service<ulisse_msgs::srv::SetBoundaries>(ulisse_msgs::topicnames::set_boundaries_service, handle_set_boundaries);
+    srvResetConf_ = nh_->create_service<ulisse_msgs::srv::ResetConfiguration>(ulisse_msgs::topicnames::reset_configuration_service,
+        std::bind(&VehicleController::ResetConfHandler, this, _1, _2, _3));
 
-    // Create a callback function for when service requests are received.
-    auto handle_set_cruise_control = [this](const std::shared_ptr<rmw_request_id_t> request_header, const std::shared_ptr<ulisse_msgs::srv::SetCruiseControl::Request> request, std::shared_ptr<ulisse_msgs::srv::SetCruiseControl::Response> response) -> void {
-        (void)request_header;
-        RCLCPP_INFO(nh_->get_logger(), "Incoming request for set cruise control");
-
-        std::stringstream log;
-        log << "Cruise Control set to: " << request->cruise_control;
-        PublishLog(log.str().c_str());
-
-        Eigen::VectorXd satMin, satMax;
-        iCat_->GetSaturation(satMin, satMax);
-
-        satMax.at(0) = request->cruise_control;
-
-        // Set Saturation values for the iCAT (read from conf file)
-        iCat_->SetSaturation(satMin, satMax);
-
-        response->res = "SetCruiseControl::ok";
-    };
-
-    srvCruise_ = nh_->create_service<ulisse_msgs::srv::SetCruiseControl>(ulisse_msgs::topicnames::set_cruise_control_service, handle_set_cruise_control);
-
-    // Create a callback function for when service reset configuration requests
-    // are received.
-
-    auto handle_reset_conf = [this](const std::shared_ptr<rmw_request_id_t> request_header, const std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Request> request, std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Response> response) -> void {
-        (void)request_header;
-        (void)request;
-        RCLCPP_INFO(nh_->get_logger(), "Incoming request for reset conf");
-
-        auto previousConf = conf_;
-        PublishLog("Configuration Reset:");
-        if (!LoadConfiguration(conf_)) {
-            LoadConfiguration(previousConf);
-            std::cerr << "Failed to reload KCL configuration from file. Load the previous configuration" << std::endl;
-        }
-
-        response->res = "ResetConfiguration::ok";
-    };
-
-    srvResetConf_ = nh_->create_service<ulisse_msgs::srv::ResetConfiguration>(ulisse_msgs::topicnames::reset_configuration_service, handle_reset_conf);
-
-    // Create a callback function for when service requests are received.
-    auto handle_get_bounds = [this](const std::shared_ptr<rmw_request_id_t> request_header, const std::shared_ptr<ulisse_msgs::srv::GetBoundaries::Request> request, std::shared_ptr<ulisse_msgs::srv::GetBoundaries::Response> response) -> void {
-        (void)request_header;
-        (void)request;
-        RCLCPP_INFO(nh_->get_logger(), "Incoming request for get boundaries");
-
-        if (boundariesSet_) {
-            response->res = boundariesJson_;
-        } else {
-            response->res = "NoBoundSet";
-        }
-    };
-
-    srvGetBoundaries_ = nh_->create_service<ulisse_msgs::srv::GetBoundaries>(ulisse_msgs::topicnames::get_boundaries_service, handle_get_bounds);
 }
 
 VehicleController::~VehicleController() { }
@@ -370,87 +307,161 @@ void VehicleController::SetUpFSM()
     uFsm_.SetInitState(ulisse::states::ID::halt);
 }
 
-void VehicleController::SetupCommandServer()
+void VehicleController::CommandsHandler(const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<ulisse_msgs::srv::ControlCommand::Request> request,
+    std::shared_ptr<ulisse_msgs::srv::ControlCommand::Response> response)
 {
     // Create a callback function for when service requests are received.
-    auto handle_control_commands = [this](const std::shared_ptr<rmw_request_id_t> request_header, const std::shared_ptr<ulisse_msgs::srv::ControlCommand::Request> request, std::shared_ptr<ulisse_msgs::srv::ControlCommand::Response> response) -> void {
-        (void)request_header;
-        RCLCPP_INFO(nh_->get_logger(), "Incoming request: %s", request->command_type.c_str());
+    //auto handle_control_commands = [this]() -> void {
+    (void)request_header;
+    RCLCPP_INFO(nh_->get_logger(), "Incoming request: %s", request->command_type.c_str());
 
-        std::stringstream logg;
-        logg << "Incoming request: " << request->command_type.c_str();
-        PublishLog(logg.str().c_str());
-        fsm::retval ret = fsm::ok;
+    std::stringstream logg;
+    logg << "Incoming request: " << request->command_type.c_str();
+    PublishLog(logg.str().c_str());
+    fsm::retval ret = fsm::ok;
 
-        if (!boundariesSet_) {
-            response->res = "CommandAnswer::NoBoundSet";
-            return;
-        }
+    if (!boundariesSet_) {
+        response->res = "CommandAnswer::NoBoundSet";
+        return;
+    }
 
-        std::stringstream log;
-        if (request->command_type == ulisse::commands::ID::halt) {
+    std::stringstream log;
+    if (request->command_type == ulisse::commands::ID::halt) {
 
-            std::cout << "Received Command Halt" << std::endl;
-            PublishLog("Received Command Halt");
+        std::cout << "Received Command Halt" << std::endl;
+        PublishLog("Received Command Halt");
 
-        } else if (request->command_type == ulisse::commands::ID::hold) {
-            commandHold_.SetPositionToHold(vehiclePosition_);
-            std::cout << "Received Command Hold" << std::endl;
-            PublishLog("Received Command Hold");
+    } else if (request->command_type == ulisse::commands::ID::hold) {
+        commandHold_.SetPositionToHold(vehiclePosition_);
+        std::cout << "Received Command Hold" << std::endl;
+        PublishLog("Received Command Hold");
 
-        } else if (request->command_type == ulisse::commands::ID::latlong) {
+    } else if (request->command_type == ulisse::commands::ID::latlong) {
 
-            std::cout << "Received Command LatLong" << std::endl;
-            commandLatLong_.SetGoTo(LatLong(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude), request->latlong_cmd.acceptance_radius);
+        std::cout << "Received Command LatLong" << std::endl;
+        commandLatLong_.SetGoTo(LatLong(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude), request->latlong_cmd.acceptance_radius);
 
-            log << "Received Command GoTo (lat: " << request->latlong_cmd.goal.latitude << " , long: " << request->latlong_cmd.goal.longitude << " )";
-            PublishLog(log.str().c_str());
+        log << "Received Command GoTo (lat: " << request->latlong_cmd.goal.latitude << " , long: " << request->latlong_cmd.goal.longitude << " )";
+        PublishLog(log.str().c_str());
 
-        } else if (request->command_type == ulisse::commands::ID::speedheading) {
+    } else if (request->command_type == ulisse::commands::ID::speedheading) {
 
-            std::cout << "Received Command SpeedHeading" << std::endl;
-            commandSpeedHeading_.SetSpeedHeading(request->sh_cmd.speed, request->sh_cmd.heading, request->sh_cmd.timeout.sec);
-            stateSpeedHeading_->ResetTimer();
-            log << "Received Command SpeedHeading (speed: " << request->sh_cmd.speed << " , heading: " << request->sh_cmd.heading << " )";
-            PublishLog(log.str().c_str());
+        std::cout << "Received Command SpeedHeading" << std::endl;
+        commandSpeedHeading_.SetSpeedHeading(request->sh_cmd.speed, request->sh_cmd.heading, request->sh_cmd.timeout.sec);
+        stateSpeedHeading_->ResetTimer();
+        log << "Received Command SpeedHeading (speed: " << request->sh_cmd.speed << " , heading: " << request->sh_cmd.heading << " )";
+        PublishLog(log.str().c_str());
 
-        } else if (request->command_type == ulisse::commands::ID::navigate) {
+    } else if (request->command_type == ulisse::commands::ID::navigate) {
 
-            std::cout << "Received Command Path Following" << std::endl;
+        std::cout << "Received Command Path Following" << std::endl;
 
-            if (!statePathFollowing_->LoadNurbs(request->nav_cmd.path)) {
-                ret = fsm::retval::fail;
-            }
-
-            log << "Received Command PathFollowing (nurbs: " << request->nav_cmd.path.nurbs_string << " )";
-            PublishLog(log.str().c_str());
-
-        } else {
-            RCLCPP_INFO(nh_->get_logger(), "Unsupported command: %s", request->command_type.c_str());
+        if (!statePathFollowing_->LoadNurbs(request->nav_cmd.path)) {
             ret = fsm::retval::fail;
         }
 
-        if (ret != fsm::retval::ok) {
+        log << "Received Command PathFollowing (nurbs: " << request->nav_cmd.path.nurbs_string << " )";
+        PublishLog(log.str().c_str());
 
-            response->res = "CommandAnswer::fail";
-            RCLCPP_INFO(nh_->get_logger(), "SendAnswer returned %s", response->res.c_str());
-        } else {
-            //task update
-            for (auto& taskMap : tasksMap_) {
-                try {
-                    taskMap.second.task->Update();
-                } catch (tpik::ExceptionWithHow& e) {
-                    std::cerr << "UPDATE TASK EXCEPTION" << std::endl;
-                    std::cerr << "who " << e.what() << " how: " << e.how() << std::endl;
-                }
+    } else {
+        RCLCPP_INFO(nh_->get_logger(), "Unsupported command: %s", request->command_type.c_str());
+        ret = fsm::retval::fail;
+    }
+
+    if (ret != fsm::retval::ok) {
+
+        response->res = "CommandAnswer::fail";
+        RCLCPP_INFO(nh_->get_logger(), "SendAnswer returned %s", response->res.c_str());
+    } else {
+        //task update
+        for (auto& taskMap : tasksMap_) {
+            try {
+                taskMap.second.task->Update();
+            } catch (tpik::ExceptionWithHow& e) {
+                std::cerr << "UPDATE TASK EXCEPTION" << std::endl;
+                std::cerr << "who " << e.what() << " how: " << e.how() << std::endl;
             }
-
-            uFsm_.ExecuteCommand(request->command_type);
-            response->res = "CommandAnswer::ok";
         }
-    };
 
-    srv_ = nh_->create_service<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service, handle_control_commands);
+        uFsm_.ExecuteCommand(request->command_type);
+        response->res = "CommandAnswer::ok";
+    }
+}
+
+void VehicleController::SetBoundariesHandler(const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<ulisse_msgs::srv::SetBoundaries::Request> request,
+    std::shared_ptr<ulisse_msgs::srv::SetBoundaries::Response> response)
+{
+    (void)request_header;
+    RCLCPP_INFO(nh_->get_logger(), "Incoming request for set boundaries");
+
+    if (asvSafetyBoundaries_->InitializePolygon(request->boundaries)) {
+        boundariesJson_ = request->boundaries.boundaries_string;
+        response->res = "SetBound::ok";
+        boundariesSet_ = true;
+    } else {
+        response->res = "SetBound::error";
+    }
+
+    std::stringstream log;
+    log << "Setting Bounding Box: " << request->boundaries.boundaries_string;
+    PublishLog(log.str().c_str());
+}
+
+void VehicleController::GetBoundariesHandler(const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<ulisse_msgs::srv::GetBoundaries::Request> request,
+    std::shared_ptr<ulisse_msgs::srv::GetBoundaries::Response> response)
+{
+    (void)request_header;
+    (void)request;
+    RCLCPP_INFO(nh_->get_logger(), "Incoming request for get boundaries");
+
+    if (boundariesSet_) {
+        response->res = boundariesJson_;
+    } else {
+        response->res = "NoBoundSet";
+    }
+}
+
+void VehicleController::SetCruiseControlHandler(const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<ulisse_msgs::srv::SetCruiseControl::Request> request,
+    std::shared_ptr<ulisse_msgs::srv::SetCruiseControl::Response> response)
+{
+    (void)request_header;
+    RCLCPP_INFO(nh_->get_logger(), "Incoming request for set cruise control");
+
+    std::stringstream log;
+    log << "Cruise Control set to: " << request->cruise_control;
+    PublishLog(log.str().c_str());
+
+    Eigen::VectorXd satMin, satMax;
+    iCat_->GetSaturation(satMin, satMax);
+
+    satMax.at(0) = request->cruise_control;
+
+    // Set Saturation values for the iCAT (read from conf file)
+    iCat_->SetSaturation(satMin, satMax);
+
+    response->res = "SetCruiseControl::ok";
+}
+
+void VehicleController::ResetConfHandler(const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Request> request,
+    std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Response> response)
+{
+    (void)request_header;
+    (void)request;
+    RCLCPP_INFO(nh_->get_logger(), "Incoming request for reset conf");
+
+    auto previousConf = conf_;
+    PublishLog("Configuration Reset:");
+    if (!LoadConfiguration(conf_)) {
+        LoadConfiguration(previousConf);
+        std::cerr << "Failed to reload KCL configuration from file. Load the previous configuration" << std::endl;
+    }
+
+    response->res = "ResetConfiguration::ok";
 }
 
 void VehicleController::SlowTimerCB()

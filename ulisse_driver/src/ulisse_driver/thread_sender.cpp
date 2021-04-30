@@ -22,6 +22,8 @@
 #include "ulisse_msgs/topicnames.hpp"
 
 using std::placeholders::_1;
+using std::placeholders::_2;
+using std::placeholders::_3;
 using namespace std::chrono_literals;
 
 double clamp(double n, double lower, double upper)
@@ -94,94 +96,98 @@ namespace llc {
 
         thruster_data_sub_ = create_subscription<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data, 10, std::bind(&ThreadSender::ThrustersDataCB, this, _1));
 
-        SetupCommandServer();
+        srv_ = create_service<ulisse_msgs::srv::LLCCommand>(ulisse_msgs::topicnames::llc_cmd_service,
+            std::bind(&ThreadSender::CommandsHandler, this, _1, _2, _3));
+
     }
 
-    void ThreadSender::SetupCommandServer()
+    void ThreadSender::CommandsHandler(const std::shared_ptr<rmw_request_id_t> request_header,
+        const std::shared_ptr<ulisse_msgs::srv::LLCCommand::Request> request,
+        std::shared_ptr<ulisse_msgs::srv::LLCCommand::Response> response)
     {
         // Create a callback function for when service requests are received.
-        auto handle_llc_commands =
+        /*auto handle_llc_commands =
             [this](const std::shared_ptr<rmw_request_id_t> request_header,
                 const std::shared_ptr<ulisse_msgs::srv::LLCCommand::Request> request,
-                std::shared_ptr<ulisse_msgs::srv::LLCCommand::Response> response) -> void {
-            (void)request_header;
-            RCLCPP_INFO(this->get_logger(), "Incoming request: %s", CommandTypeToString((CommandType)(request->command_type)).c_str());
+                std::shared_ptr<ulisse_msgs::srv::LLCCommand::Response> response) -> void {*/
+        (void)request_header;
+        RCLCPP_INFO(this->get_logger(), "Incoming request: %s", CommandTypeToString((CommandType)(request->command_type)).c_str());
 
-            RetVal ret = RetVal::ok;
+        RetVal ret = RetVal::ok;
 
-            switch (request->command_type) {
-            case (uint16_t)CommandType::beep:
-                data_.messageType = MessageType::beep;
-                data_.beep.delay = request->beep_data.delay;
-                data_.beep.loop = request->beep_data.loop;
-                data_.beep.numberOfBeeps = request->beep_data.numberofbeeps;
-                llcHlp_.SendMessage(data_);
-                break;
-            case (uint16_t)CommandType::enableref:
-                data_.messageType = MessageType::enable_ref;
-                data_.enableRef.enable = request->enable_ref_data.enable;
-                llcHlp_.SendMessage(data_);
-                break;
-            case (uint16_t)CommandType::setconfig:
-                data_.messageType = MessageType::set_config;
-                CopyConfigMsg2LLCStruct(request);
-                data_.config = lowlevelconf_;
-                llcHlp_.SendMessage(data_);
-                data_.messageType = MessageType::get_config;
-                llcHlp_.SendMessage(data_);
-                break;
-            case (uint16_t)CommandType::setpumps:
-                data_.messageType = MessageType::pumps;
-                data_.pumps.pumpsFlag[EMB_PUMPS_LEFT_IDX] = request->pumps_data.pumpsflag[EMB_PUMPS_LEFT_IDX];
-                data_.pumps.pumpsFlag[EMB_PUMPS_RIGHT_IDX] = request->pumps_data.pumpsflag[EMB_PUMPS_RIGHT_IDX];
-                llcHlp_.SendMessage(data_);
-                break;
-            case (uint16_t)CommandType::setpowerbuttons:
-                data_.messageType = MessageType::pwrbuttons;
-                data_.pwrButtons.pwrButtonsFlag = request->pwr_buttons_data.pwrbuttonsflag;
-                llcHlp_.SendMessage(data_);
-                break;
-            case (uint16_t)CommandType::getconfig:
-                data_.messageType = MessageType::get_config;
-                llcHlp_.SendMessage(data_);
-                break;
-            case (uint16_t)CommandType::getversion:
-                data_.messageType = MessageType::get_version;
-                llcHlp_.SendMessage(data_);
-                break;
-            case (uint16_t)CommandType::startcompasscal:
-                data_.messageType = MessageType::start_compass_cal;
-                llcHlp_.SendMessage(data_);
-                break;
-            case (uint16_t)CommandType::stopcompasscal:
-                data_.messageType = MessageType::stop_compass_cal;
-                llcHlp_.SendMessage(data_);
-                break;
-            case (uint16_t)CommandType::reset:
-                data_.messageType = MessageType::reset;
-                llcHlp_.SendMessage(data_);
-                break;
-            case (uint16_t)CommandType::reloadconfig:
-                LoadConfigFile();
-                data_.messageType = MessageType::set_config;
-                data_.config = lowlevelconf_;
-                llcHlp_.SendMessage(data_);
-                data_.messageType = MessageType::get_config;
-                llcHlp_.SendMessage(data_);
-                break;
-            default:
-                RCLCPP_INFO(this->get_logger(), "Unsupported command! [%s]", CommandTypeToString((CommandType)(request->command_type)).c_str());
-                ret = RetVal::fail;
-                break;
-            }
-            if (ret != RetVal::ok) {
-                response->res = (int16_t)(RetVal::fail);
-            } else {
-                response->res = (int16_t)(RetVal::ok);
-            }
-        };
+        switch (request->command_type) {
+        case (uint16_t)CommandType::beep:
+            data_.messageType = MessageType::beep;
+            data_.beep.delay = request->beep_data.delay;
+            data_.beep.loop = request->beep_data.loop;
+            data_.beep.numberOfBeeps = request->beep_data.numberofbeeps;
+            llcHlp_.SendMessage(data_);
+            break;
+        case (uint16_t)CommandType::enableref:
+            data_.messageType = MessageType::enable_ref;
+            data_.enableRef.enable = request->enable_ref_data.enable;
+            llcHlp_.SendMessage(data_);
+            break;
+        case (uint16_t)CommandType::setconfig:
+            data_.messageType = MessageType::set_config;
+            CopyConfigMsg2LLCStruct(request);
+            data_.config = lowlevelconf_;
+            llcHlp_.SendMessage(data_);
+            data_.messageType = MessageType::get_config;
+            llcHlp_.SendMessage(data_);
+            break;
+        case (uint16_t)CommandType::setpumps:
+            data_.messageType = MessageType::pumps;
+            data_.pumps.pumpsFlag[EMB_PUMPS_LEFT_IDX] = request->pumps_data.pumpsflag[EMB_PUMPS_LEFT_IDX];
+            data_.pumps.pumpsFlag[EMB_PUMPS_RIGHT_IDX] = request->pumps_data.pumpsflag[EMB_PUMPS_RIGHT_IDX];
+            llcHlp_.SendMessage(data_);
+            break;
+        case (uint16_t)CommandType::setpowerbuttons:
+            data_.messageType = MessageType::pwrbuttons;
+            data_.pwrButtons.pwrButtonsFlag = request->pwr_buttons_data.pwrbuttonsflag;
+            llcHlp_.SendMessage(data_);
+            break;
+        case (uint16_t)CommandType::getconfig:
+            data_.messageType = MessageType::get_config;
+            llcHlp_.SendMessage(data_);
+            break;
+        case (uint16_t)CommandType::getversion:
+            data_.messageType = MessageType::get_version;
+            llcHlp_.SendMessage(data_);
+            break;
+        case (uint16_t)CommandType::startcompasscal:
+            data_.messageType = MessageType::start_compass_cal;
+            llcHlp_.SendMessage(data_);
+            break;
+        case (uint16_t)CommandType::stopcompasscal:
+            data_.messageType = MessageType::stop_compass_cal;
+            llcHlp_.SendMessage(data_);
+            break;
+        case (uint16_t)CommandType::reset:
+            data_.messageType = MessageType::reset;
+            llcHlp_.SendMessage(data_);
+            break;
+        case (uint16_t)CommandType::reloadconfig:
+            LoadConfigFile();
+            data_.messageType = MessageType::set_config;
+            data_.config = lowlevelconf_;
+            llcHlp_.SendMessage(data_);
+            data_.messageType = MessageType::get_config;
+            llcHlp_.SendMessage(data_);
+            break;
+        default:
+            RCLCPP_INFO(this->get_logger(), "Unsupported command! [%s]", CommandTypeToString((CommandType)(request->command_type)).c_str());
+            ret = RetVal::fail;
+            break;
+        }
+        if (ret != RetVal::ok) {
+            response->res = (int16_t)(RetVal::fail);
+        } else {
+            response->res = (int16_t)(RetVal::ok);
+        }
+        //};
 
-        srv_ = create_service<ulisse_msgs::srv::LLCCommand>(ulisse_msgs::topicnames::llc_cmd_service, handle_llc_commands);
+
     }
 
     void ThreadSender::ThrustersDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg)

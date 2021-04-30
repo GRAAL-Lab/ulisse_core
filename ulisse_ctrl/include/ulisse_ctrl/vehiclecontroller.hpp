@@ -39,7 +39,7 @@ class VehicleController {
     rclcpp::Node::SharedPtr nh_;
     std::string fileName_;
     rclcpp::Service<ulisse_msgs::srv::ControlCommand>::SharedPtr srv_;
-    rclcpp::Service<ulisse_msgs::srv::SetBoundaries>::SharedPtr srvBoundaries_;
+    rclcpp::Service<ulisse_msgs::srv::SetBoundaries>::SharedPtr srvSetBoundaries_;
     rclcpp::Service<ulisse_msgs::srv::GetBoundaries>::SharedPtr srvGetBoundaries_;
     rclcpp::Service<ulisse_msgs::srv::ResetConfiguration>::SharedPtr srvResetConf_;
     rclcpp::Service<ulisse_msgs::srv::SetCruiseControl>::SharedPtr srvCruise_;
@@ -115,7 +115,22 @@ class VehicleController {
 
     bool LoadConfiguration(std::shared_ptr<ControllerConfiguration>& conf);
     void SetUpFSM();
-    void SetupCommandServer();
+
+    void CommandsHandler(const std::shared_ptr<rmw_request_id_t> request_header,
+        const std::shared_ptr<ulisse_msgs::srv::ControlCommand::Request> request,
+        std::shared_ptr<ulisse_msgs::srv::ControlCommand::Response> response);
+    void SetBoundariesHandler(const std::shared_ptr<rmw_request_id_t> request_header,
+        const std::shared_ptr<ulisse_msgs::srv::SetBoundaries::Request> request,
+        std::shared_ptr<ulisse_msgs::srv::SetBoundaries::Response> response);
+    void GetBoundariesHandler(const std::shared_ptr<rmw_request_id_t> request_header,
+        const std::shared_ptr<ulisse_msgs::srv::GetBoundaries::Request> request,
+        std::shared_ptr<ulisse_msgs::srv::GetBoundaries::Response> response);
+    void SetCruiseControlHandler(const std::shared_ptr<rmw_request_id_t> request_header,
+        const std::shared_ptr<ulisse_msgs::srv::SetCruiseControl::Request> request,
+        std::shared_ptr<ulisse_msgs::srv::SetCruiseControl::Response> response);
+    void ResetConfHandler(const std::shared_ptr<rmw_request_id_t> request_header,
+        const std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Request> request,
+        std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Response> response);
 
     void SlowTimerCB();
     void NavFilterCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);

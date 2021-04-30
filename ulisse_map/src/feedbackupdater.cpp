@@ -73,8 +73,10 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine, const rclcpp::Node::Sh
     //custom_qos_profile.durability = RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL;
     //custom_qos_profile.depth = 5;
 
-
     //rmw_qos_profile_sensor_data
+    //auto qos = rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_sensor_data);
+    //rclcpp::QoS my_qos(10);
+    //auto qos = rclcpp::QoS(10).
 
     vehicleStatusSub_ = np_->create_subscription<ulisse_msgs::msg::VehicleStatus>(ulisse_msgs::topicnames::vehicle_status,
         10, std::bind(&FeedbackUpdater::VehicleStatusCB, this, _1) /*, custom_qos_profile*/);

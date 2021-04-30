@@ -28,7 +28,9 @@ namespace llc {
         ThreadSender();
 
     private:
-        void SetupCommandServer();
+        void CommandsHandler(const std::shared_ptr<rmw_request_id_t> request_header,
+            const std::shared_ptr<ulisse_msgs::srv::LLCCommand::Request> request,
+            std::shared_ptr<ulisse_msgs::srv::LLCCommand::Response> response);
         void LoadConfigFile();
         void ThrustersDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg);
         void CopyConfigMsg2LLCStruct(const std::shared_ptr<ulisse_msgs::srv::LLCCommand::Request> request);
