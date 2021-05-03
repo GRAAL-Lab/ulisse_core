@@ -43,14 +43,14 @@ Rectangle {
                     Layout.alignment: Qt.AlignHCenter
                     font.pointSize: 18
                     font.weight: Font.DemiBold
-                    color: 'dodgerblue'
+                    color: blue
                     text: "Status"
                 }
 
                 LabelledText {
                     Layout.fillHeight: true
                     Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                    labelColor: 'dodgerblue'
+                    labelColor: blue
                     textColor: 'grey'
                     text: fbkUpdater.vehicle_state
                     label: qsTr("Vehicle State")
@@ -60,7 +60,7 @@ Rectangle {
 
                 LabelledText {
                     Layout.alignment: Qt.AlignHCenter
-                    labelColor: 'dodgerblue'
+                    labelColor: blue
                     label: "GPS time"
                     textColor: 'grey'
                     text: fbkUpdater.gps_time
@@ -70,7 +70,7 @@ Rectangle {
 
                 LabelledText {
                     Layout.alignment: Qt.AlignHCenter
-                    labelColor: 'dodgerblue'
+                    labelColor: blue
                     label: "GPS Pos"
                     textColor: 'grey'
                     text: "%1, %2".arg(fbkUpdater.gps_pos.latitude).arg(
@@ -79,9 +79,10 @@ Rectangle {
                     tsize: textsize
                 }
 
+
                 LabelledText {
                     Layout.alignment: Qt.AlignHCenter
-                    labelColor: 'dodgerblue'
+                    labelColor: blue
                     label: "Filtered Pos"
                     textColor: 'grey'
                     text: "%1, %2".arg(fbkUpdater.ulisse_pos.latitude).arg(
@@ -90,9 +91,10 @@ Rectangle {
                     tsize: textsize
                 }
 
+
                 LabelledText {
                     Layout.alignment: Qt.AlignHCenter
-                    labelColor: 'dodgerblue'
+                    labelColor: blue
                     label: "Surge"
                     textColor: 'grey'
                     text: "%1 m/s".arg(fbkUpdater.ulisse_surge)
@@ -102,12 +104,97 @@ Rectangle {
 
                 LabelledText {
                     Layout.alignment: Qt.AlignHCenter
-                    labelColor: 'dodgerblue'
+                    labelColor: blue
                     label: "Heading"
                     textColor: 'grey'
                     text: "%1°".arg(fbkUpdater.ulisse_yaw_deg)
                     lsize: labelsize
                     tsize: textsize
+                }
+
+                Row {
+                    spacing: 6
+                    LabelledText {
+                        Layout.alignment: Qt.AlignHCenter
+                        labelColor: blue
+                        label: "Filter Sensors"
+                        textColor: 'grey'
+                        text: ""
+                        lsize: labelsize
+                        tsize: textsize
+                    }
+
+                    Rectangle {
+                        width: gpsInfo.contentWidth + 6
+                        height: gpsInfo.contentHeight + 6
+                        border.color: fbkUpdater.gps_online ? "green" : "red"
+                        border.width: 1
+                        radius: 5
+
+                        Text {
+                            id: gpsInfo
+                            verticalAlignment: Text.AlignVCenter
+                            horizontalAlignment: Text.AlignHCenter
+                            anchors.fill:parent
+                            font.pointSize: 8
+                            color: fbkUpdater.gps_online ? "green" : "red"
+                            text:  fbkUpdater.gps_online ? qsTr("GPS Online") : qsTr("GPS Offline")
+                        }
+                    }
+
+                    Rectangle {
+                        width: compassInfo.contentWidth + 6
+                        height: compassInfo.contentHeight + 6
+                        border.color: fbkUpdater.compass_online ? "green" : "red"
+                        border.width: 1
+                        radius: 5
+
+                        Text {
+                            id: compassInfo
+                            verticalAlignment: Text.AlignVCenter
+                            horizontalAlignment: Text.AlignHCenter
+                            anchors.fill:parent
+                            font.pointSize: 8
+                            color: fbkUpdater.compass_online ? "green" : "red"
+                            text:  fbkUpdater.compass_online ? qsTr("Compass Online") : qsTr("Compass Offline")
+                        }
+                    }
+
+                    Rectangle {
+                        width: imuInfo.contentWidth + 6
+                        height: imuInfo.contentHeight + 6
+                        border.color: fbkUpdater.imu_online ? "green" : "red"
+                        border.width: 1
+                        radius: 5
+
+                        Text {
+                            id: imuInfo
+                            verticalAlignment: Text.AlignVCenter
+                            horizontalAlignment: Text.AlignHCenter
+                            anchors.fill:parent
+                            font.pointSize: 8
+                            color: fbkUpdater.imu_online ? "green" : "red"
+                            text:  fbkUpdater.imu_online ? qsTr("IMU Online") : qsTr("IMU Offline")
+                        }
+                    }
+
+                    Rectangle {
+                        width: magnetometerInfo.contentWidth + 6
+                        height: magnetometerInfo.contentHeight + 6
+                        border.color: fbkUpdater.magnetometer_online ? "green" : "red"
+                        border.width: 1
+                        radius: 5
+
+                        Text {
+                            id: magnetometerInfo
+                            verticalAlignment: Text.AlignVCenter
+                            horizontalAlignment: Text.AlignHCenter
+                            anchors.fill:parent
+                            font.pointSize: 8
+                            color: fbkUpdater.magnetometer_online ? "green" : "red"
+                            text:  fbkUpdater.magnetometer_online ? qsTr("Magnetometer Online") : qsTr("Magnetometer Offline")
+                        }
+                    }
                 }
             }
         }
@@ -129,13 +216,13 @@ Rectangle {
                     Layout.alignment: Qt.AlignHCenter
                     font.pointSize: 18
                     font.weight: Font.DemiBold
-                    color: 'tomato'
+                    color: red
                     text: "Low Level"
                 }
 
                 LabelledText {
                     Layout.alignment: Qt.AlignHCenter
-                    labelColor: 'tomato'
+                    labelColor: red
                     label: "Micro Loop Count"
                     textColor: 'grey'
                     text: "%1".arg(fbkUpdater.micro_loop_count)
@@ -145,18 +232,18 @@ Rectangle {
 
                 LabelledText {
                     Layout.alignment: Qt.AlignHCenter
-                    labelColor: 'tomato'
+                    labelColor: red
                     label: "Battery"
                     textColor: 'grey'
                     text: "Left: %1 \% - Right: %2 \%"
-                              .arg(fbkUpdater.battery_perc_L).arg(fbkUpdater.battery_perc_R)
+                    .arg(fbkUpdater.battery_perc_L).arg(fbkUpdater.battery_perc_R)
                     lsize: labelsize
                     tsize: textsize
                 }
 
                 LabelledText {
                     Layout.alignment: Qt.AlignHCenter
-                    labelColor: 'tomato'
+                    labelColor: red
                     label: "SW 485 Status"
                     textColor: 'grey'
                     text: "timestamp: "//.arg(fbkUpdater.right_satellite_received485)
@@ -166,18 +253,18 @@ Rectangle {
 
                 LabelledText {
                     Layout.alignment: Qt.AlignHCenter
-                    labelColor: 'tomato'
+                    labelColor: red
                     label: "Ambient"
                     textColor: 'grey'
                     text: "Temperature: %1 °C \nHumidity: %2 \%"
-                            .arg(fbkUpdater.ambient_temperature.toFixed(1)).arg(fbkUpdater.ambient_humidity.toFixed(1))
+                    .arg(fbkUpdater.ambient_temperature.toFixed(1)).arg(fbkUpdater.ambient_humidity.toFixed(1))
                     lsize: labelsize
                     tsize: textsize
                 }
 
                 LabelledText {
                     Layout.alignment: Qt.AlignHCenter
-                    labelColor: 'tomato'
+                    labelColor: red
                     label: "Compass"
                     textColor: 'grey'
                     text: "RPY: %1".arg(fbkUpdater.compass_RPY)
@@ -187,7 +274,7 @@ Rectangle {
 
                 LabelledText {
                     Layout.alignment: Qt.AlignHCenter
-                    labelColor: 'tomato'
+                    labelColor: red
                     label: "IMU"
                     textColor: 'grey'
                     text: "Accelerometer: %1 \nGyroscope: %2".arg(fbkUpdater.imu_accelerometer).arg(fbkUpdater.imu_gyro)
@@ -197,7 +284,7 @@ Rectangle {
 
                 LabelledText {
                     Layout.alignment: Qt.AlignHCenter
-                    labelColor: 'tomato'
+                    labelColor: red
                     label: "Magnetometer"
                     textColor: 'grey'
                     text: "%1".arg(fbkUpdater.magnetometer)
@@ -207,7 +294,7 @@ Rectangle {
 
                 LabelledText {
                     Layout.alignment: Qt.AlignHCenter
-                    labelColor: 'tomato'
+                    labelColor: red
                     label: "Motors Speed"
                     textColor: 'grey'
                     text: "Left: %1 , Right: %2 (rpm)".arg(fbkUpdater.motor_speed_L).arg(fbkUpdater.motor_speed_R)

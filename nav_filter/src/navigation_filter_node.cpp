@@ -109,6 +109,7 @@ int main(int argc, char* argv[])
     ulisseModelEKF = std::make_shared<UlisseVehicleModel>(UlisseVehicleModel());
 
     std::vector<int> indexAngles = { 3, 4, 5 }; //rpy
+    std::cout << "stateDim: " << stateDim << std::endl;
     extendedKalmanFilter = std::make_shared<ctb::ExtendedKalmanFilter>(ctb::ExtendedKalmanFilter(stateDim, indexAngles, ulisseModelEKF));
 
     gyroMeasurement = std::make_shared<ulisse::nav::GyroMeasurement>(ulisse::nav::GyroMeasurement());
@@ -146,7 +147,7 @@ int main(int argc, char* argv[])
     double lastValidCompassTime = 0.0;
     double lastValidMagnetomerTime = 0.0;
     bool gpsValid(false), imuValid(false), compassValid(false), magnetometerValid(false);
-    bool gpsOnline(false), imuOnline(false), compassOnline(false), magnetometerOnline(false);
+    //bool gpsOnline(false), imuOnline(false), compassOnline(false), magnetometerOnline(false);
 
     ulisse_msgs::msg::NavFilterData filterData;
 
@@ -177,18 +178,18 @@ int main(int argc, char* argv[])
         if (gpsData.time > lastValidGPSTime) {
             if (gpsData.gpsfixmode >= static_cast<int>(ulisse::gpsd::GpsFixMode::mode_2d)) {
                 gpsValid = true;
-                gpsOnline = true;
+                //gpsOnline = true;
                 lastValidGPSTime = gpsData.time;
             } else {
                 gpsValid = false;
             }
         }
-        long now_secs = static_cast<long>(lastValidGPSTime);
-        std::time_t current = now_secs;
+        //long now_secs = static_cast<long>(lastValidGPSTime);
+        //std::time_t current = now_secs;
 
         if (imuData.stamp.sec + (imuData.stamp.nanosec * 1e-9) > lastValidImuTime) {
             imuValid = true;
-            imuOnline = true;
+            //imuOnline = true;
             lastValidImuTime = imuData.stamp.sec + (imuData.stamp.nanosec * 1e-9);
         } else {
             imuValid = false;
@@ -196,7 +197,7 @@ int main(int argc, char* argv[])
 
         if (compassData.stamp.sec + (compassData.stamp.nanosec * 1e-9) > lastValidCompassTime) {
             compassValid = true;
-            compassOnline = true;
+            //compassOnline = true;
             lastValidCompassTime = compassData.stamp.sec + (compassData.stamp.nanosec * 1e-9);
         } else {
             compassValid = false;
@@ -204,7 +205,7 @@ int main(int argc, char* argv[])
 
         if (magnetometerData.stamp.sec + (magnetometerData.stamp.nanosec * 1e-9) > lastValidMagnetomerTime) {
             magnetometerValid = true;
-            magnetometerOnline = true;
+            //magnetometerOnline = true;
             lastValidMagnetomerTime = magnetometerData.stamp.sec + (magnetometerData.stamp.nanosec * 1e-9);
         } else {
             magnetometerValid = false;

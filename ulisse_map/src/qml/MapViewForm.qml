@@ -85,10 +85,6 @@ RowLayout {
         Layout.maximumWidth: 350
         Material.elevation: myElevation
         Material.accent: grey
-
-        labelColor1: blue
-        labelColor2: red
-        labelColor3: green
     }
 
     property real my_height: 17

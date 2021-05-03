@@ -38,6 +38,11 @@ class FeedbackUpdater : public QObject {
     Q_PROPERTY(QString gps_time READ get_gps_time NOTIFY callbacks_processed)
     Q_PROPERTY(QGeoCoordinate gps_pos READ get_gps_pos NOTIFY callbacks_processed)
 
+    Q_PROPERTY(bool gps_online READ get_gps_online NOTIFY callbacks_processed)
+    Q_PROPERTY(bool imu_online READ get_imu_online NOTIFY callbacks_processed)
+    Q_PROPERTY(bool compass_online READ get_compass_online NOTIFY callbacks_processed)
+    Q_PROPERTY(bool magnetometer_online READ get_magnetometer_online NOTIFY callbacks_processed)
+
     Q_PROPERTY(QGeoCoordinate goal_pos READ get_goal_pos NOTIFY callbacks_processed)
     Q_PROPERTY(double goal_distance READ get_goal_distance NOTIFY callbacks_processed)
     Q_PROPERTY(double goal_heading READ get_goal_heading NOTIFY callbacks_processed)
@@ -59,22 +64,13 @@ class FeedbackUpdater : public QObject {
     Q_PROPERTY(QString magnetometer READ get_magnetometer NOTIFY callbacks_processed)
     Q_PROPERTY(int motor_speed_L READ get_motor_speed_L NOTIFY callbacks_processed)
     Q_PROPERTY(int motor_speed_R READ get_motor_speed_R NOTIFY callbacks_processed)
-
-
     Q_PROPERTY(int timestamp485 READ get_timestamp485 NOTIFY callbacks_processed)
     Q_PROPERTY(int missed_deadlines485 READ get_missed_deadlines NOTIFY callbacks_processed)
-//    Q_PROPERTY(int left_motor_received485 READ get_left_motor_received NOTIFY callbacks_processed)
-//    Q_PROPERTY(int left_motor_sent485 READ get_left_motor_sent NOTIFY callbacks_processed)
-//    Q_PROPERTY(int right_motor_received485 READ get_right_motor_received NOTIFY callbacks_processed)
-//    Q_PROPERTY(int right_motor_sent485 READ get_right_motor_sent NOTIFY callbacks_processed)
-    //Q_PROPERTY(int left_satellite_received485 READ get_left_satellite_received NOTIFY callbacks_processed)
-    //Q_PROPERTY(int left_satellite_sent485 READ get_left_satellite_sent NOTIFY callbacks_processed)
-    //Q_PROPERTY(int right_satellite_received485 READ get_right_satellite_received NOTIFY callbacks_processed)
-    //Q_PROPERTY(int right_satellite_sent485 READ get_right_satellite_sent NOTIFY callbacks_processed)
 
     Q_PROPERTY(float current_norm READ get_current_data_norm NOTIFY callbacks_processed)
     Q_PROPERTY(float current_deg READ get_current_data_deg NOTIFY callbacks_processed)
 
+    bool gpsOnline_, imuOnline_, compassOnline_, magnetometerOnline_;
     QGeoCoordinate q_ulisse_pos_, q_goal_pos_, q_gps_pos_;
     double q_goal_distance_, q_goal_heading_deg_;
     double q_ulisse_surge_;
@@ -160,6 +156,11 @@ public:
     double get_battery_perc_R();
     QString get_gps_time();
     QGeoCoordinate get_gps_pos();
+
+    bool get_gps_online();
+    bool get_imu_online();
+    bool get_compass_online();
+    bool get_magnetometer_online();
 
     double get_desired_surge();
     double get_desired_jog();

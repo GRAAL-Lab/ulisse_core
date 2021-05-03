@@ -56,6 +56,8 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine, const rclcpp::Node::Sh
     q_gps_pos_ = q_goal_pos_ = q_ulisse_pos_;
     q_gps_time_ = "undefined";
 
+    gpsOnline_ = imuOnline_ = compassOnline_ = magnetometerOnline_ = false;
+
     current_data_deg = 0;
     current_data_norm = 0;
 
@@ -138,6 +140,12 @@ void FeedbackUpdater::NavFilterData(const ulisse_msgs::msg::NavFilterData::Share
     // Rounding surge and heading to 2 decimal places
     q_ulisse_yaw_deg_ = int(q_ulisse_yaw_deg_ * 1E2) / 1E2;
     q_ulisse_surge_ = int(q_ulisse_surge_ * 1E2) / 1E2;
+
+    gpsOnline_ = msg->using_gps;
+    imuOnline_ = msg->using_imu;
+    compassOnline_ = msg->using_compass;
+    magnetometerOnline_ = msg->using_magnetometer;
+    //std::cout << "magnetometerOnline_: " << magnetometerOnline_ << std::endl;
 }
 
 void FeedbackUpdater::SetNodeHandle(const rclcpp::Node::SharedPtr& np)
@@ -325,6 +333,26 @@ QGeoCoordinate FeedbackUpdater::get_gps_pos()
     return q_gps_pos_;
 }
 
+bool FeedbackUpdater::get_gps_online()
+{
+    return gpsOnline_;
+}
+
+bool FeedbackUpdater::get_imu_online()
+{
+    return imuOnline_;
+}
+
+bool FeedbackUpdater::get_compass_online()
+{
+    return compassOnline_;
+}
+
+bool FeedbackUpdater::get_magnetometer_online()
+{
+    return magnetometerOnline_;
+}
+
 double FeedbackUpdater::get_desired_surge()
 {
     return q_desired_surge_;
@@ -390,6 +418,8 @@ int FeedbackUpdater::get_motor_speed_R()
     return motor_speed_R_;
 }
 
+
+
 int FeedbackUpdater::get_missed_deadlines()
 {
     return missed_deadlines_;
@@ -399,46 +429,6 @@ int FeedbackUpdater::get_timestamp485()
 {
     return timestamp485_;
 }
-
-//int FeedbackUpdater::get_left_motor_received()
-//{
-//    return left_motor_received_;
-//}
-
-//int FeedbackUpdater::get_left_motor_sent()
-//{
-//    return left_motor_sent_;
-//}
-
-//int FeedbackUpdater::get_right_motor_received()
-//{
-//    return right_motor_received_;
-//}
-
-//int FeedbackUpdater::get_right_motor_sent()
-//{
-//    return right_motor_sent_;
-//}
-
-//int FeedbackUpdater::get_left_satellite_received()
-//{
-//    return left_satellite_received_;
-//}
-
-//int FeedbackUpdater::get_left_satellite_sent()
-//{
-//    return left_satellite_sent_;
-//}
-
-//int FeedbackUpdater::get_right_satellite_received()
-//{
-//    return right_satellite_received_;
-//}
-
-//int FeedbackUpdater::get_right_satellite_sent()
-//{
-//    return right_satellite_sent_;
-//}
 
 double FeedbackUpdater::get_current_data_deg()
 {

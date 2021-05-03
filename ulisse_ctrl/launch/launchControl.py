@@ -8,7 +8,7 @@ def generate_launch_description():
     # Node arguments must be comma separated strings
     dcl_node = launch_ros.actions.Node(package='ulisse_ctrl', executable='dynamic_control_node', output='screen', arguments=[])
     kcl_node = launch_ros.actions.Node(package='ulisse_ctrl', executable='kinematic_control_node', output='screen', arguments=[])
-    nav_filter_node = launch_ros.actions.Node(package='nav_filter', executable='navigation_filter_node', output='screen', arguments=[])
+    nav_filter_node = launch_ros.actions.Node(package='nav_filter', executable='nav_filter_node', output='screen', arguments=[])
 
     return LaunchDescription([
         dcl_node,

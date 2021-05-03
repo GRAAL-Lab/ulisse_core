@@ -41,11 +41,11 @@ namespace ulisse {
 
 namespace nav {
 
-    class NavigationFilter{
+    class NavigationFilter  : public rclcpp::Node{
 
-        rclcpp::Node::SharedPtr nh_;
+        //rclcpp::Node::SharedPtr nh_;
         std::string confPath_;
-        PosVelObserver obs;
+        PosVelObserver obs_;
 
         rclcpp::Publisher<ulisse_msgs::msg::NavFilterData>::SharedPtr navDataPub_;
 
@@ -62,39 +62,41 @@ namespace nav {
         rclcpp::TimerBase::SharedPtr runTimer_;
         rclcpp::TimerBase::SharedPtr sensorsCheckTimer_;
 
-        ulisse_msgs::msg::Compass compassData;
-        ulisse_msgs::msg::GPSData gpsData;
-        ulisse_msgs::msg::IMUData imuData;
-        ulisse_msgs::msg::SimulatedVelocitySensor simulatedVelocitySensor;
-        ulisse_msgs::msg::ThrustersData thrustersFbk;
-        ulisse_msgs::msg::Magnetometer magnetometerData;
-        ulisse_msgs::msg::RealSystem groundTruthData;
+        ulisse_msgs::msg::Compass compassData_;
+        ulisse_msgs::msg::GPSData gpsData_;
+        ulisse_msgs::msg::IMUData imuData_;
+        ulisse_msgs::msg::SimulatedVelocitySensor simulatedVelocitySensor_;
+        ulisse_msgs::msg::ThrustersData thrustersFbk_;
+        ulisse_msgs::msg::Magnetometer magnetometerData_;
+        ulisse_msgs::msg::RealSystem groundTruthData_;
 
         double lastValidGPSTime_;
         double lastValidImuTime_;
         double lastValidCompassTime_;
         double lastValidMagnetomerTime_;
-        bool gpsOnline_, imuOnline_, compassOnline_, magnetometerOnline_;
+        bool gpsValid_, imuValid_, compassValid_, magnetometerValid_;
 
-        NavigationFilterParams filterParams;
-        Eigen::Vector2d yawRateFilterGains;
+        int sensorsCheckInterval_;
+
+        NavigationFilterParams filterParams_;
+        Eigen::Vector2d yawRateFilterGains_;
 
         // Kalman defines
-        std::shared_ptr<UlisseVehicleModel> ulisseModelEKF; //kalman filter model
+        std::shared_ptr<UlisseVehicleModel> ulisseModelEKF_; //kalman filter model
 
         // Measurements
-        std::shared_ptr<GpsMeasurement> gpsMeasurement;
-        std::shared_ptr<CompassMeasurement> compassMeasurement;
-        std::shared_ptr<AccelerometerMeasurement> accelerometerMeasurement;
-        std::shared_ptr<MagnetometerMeasurement> magnetometerMeasurement;
-        std::shared_ptr<GyroMeasurement> gyroMeasurement;
-        std::shared_ptr<zMeter> zMeterMeasurement;
+        std::shared_ptr<GpsMeasurement> gpsMeasurement_;
+        std::shared_ptr<CompassMeasurement> compassMeasurement_;
+        std::shared_ptr<AccelerometerMeasurement> accelerometerMeasurement_;
+        std::shared_ptr<MagnetometerMeasurement> magnetometerMeasurement_;
+        std::shared_ptr<GyroMeasurement> gyroMeasurement_;
+        std::shared_ptr<zMeter> zMeterMeasurement_;
 
-        std::shared_ptr<ctb::ExtendedKalmanFilter> extendedKalmanFilter;
-        std::unordered_map<std::string, bool> measuresActive;
-        int stateDim;
-        ctb::LatLong centroidLocation; //(44.4, 8.94);
-        Eigen::VectorXd state;
+        std::shared_ptr<ctb::ExtendedKalmanFilter> extendedKalmanFilter_;
+        std::unordered_map<std::string, bool> measuresActive_;
+        int stateDim_;
+        ctb::LatLong centroidLocation_;
+        Eigen::VectorXd state_;
         std::chrono::system_clock::time_point last_comp_time_;
 
         //luenberger variables
@@ -107,7 +109,15 @@ namespace nav {
         ulisse_msgs::msg::NavFilterData filterData_;
         Eigen::Vector3d NED_gps_cartesian_;
 
-        void SensorsCheckCB();
+        void LuenbergerObserverFilter();
+
+        void ExtendedKalmanFilter();
+
+        void GroundThruthFilter();
+
+        void SensorsValidityCheck();
+
+        void SensorsOnlineCB();
 
         void CommandHandler(const std::shared_ptr<rmw_request_id_t> request_header,
             const std::shared_ptr<ulisse_msgs::srv::NavFilterCommand::Request> request,
@@ -135,7 +145,7 @@ namespace nav {
 
 
     public:
-        NavigationFilter(const rclcpp::Node::SharedPtr& nh, const std::string& confPath);
+        NavigationFilter(const std::string& confPath);
         virtual ~NavigationFilter();
         void Run();
 

@@ -8,9 +8,6 @@ Rectangle {
     property alias markerText: markerTextLabel.text
     property alias markerTextColor: markerTextLabel.textColor
     property alias sweepPathCmdPane: commandRect.sweepPathCmdPane
-    property color labelColor1: blue
-    property color labelColor2: red
-    property color labelColor3: green
     property alias commandRect: commandRect
     property alias speedHeadTimeout: commandRect.speedHeadTimeout
     //border.width: 5
@@ -34,10 +31,9 @@ Rectangle {
                 width: parent.width
 
                 Label {
-                    id: my_label
                     font.pointSize: 12
                     font.weight: Font.DemiBold
-                    color: labelColor1
+                    color: blue
                     text: "Status"
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter
@@ -49,7 +45,7 @@ Rectangle {
                     id: ulisseStateLabel
                     //h:12
                     //w:100
-                    labelColor: labelColor1
+                    labelColor: blue
                     label: "State"
                     text: fbkUpdater.vehicle_state
                     Layout.fillWidth: true
@@ -60,7 +56,7 @@ Rectangle {
                     id: ulissePosLabel
                     //h:12
                     //w:100
-                    labelColor: labelColor1
+                    labelColor: blue
                     label: "Position"
                     text: fbkUpdater.ulisse_pos.latitude.toFixed(8) + ", " +
                           fbkUpdater.ulisse_pos.longitude.toFixed(8)
@@ -71,7 +67,7 @@ Rectangle {
                     id: markerTextLabel
                     //h:12
                     //w:100
-                    labelColor: labelColor2
+                    labelColor: red
                     label: "Marker"
                     text: "Left click on map"
                     Layout.fillWidth: true
@@ -83,7 +79,7 @@ Rectangle {
                     //w:100
                     text: fbkUpdater.goal_distance.toFixed(2) + " (m)"
                     objectName: "goalDistance"
-                    labelColor: labelColor1
+                    labelColor: blue
                     label: "Distance"
                     Layout.fillWidth: true
                 }

@@ -4,20 +4,12 @@
 int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
-    auto node = rclcpp::Node::make_shared("navigation_filter_node");
 
-    int rate = 10;
-    rclcpp::WallRate loop_rate(rate);
     std::string confPath = ament_index_cpp::get_package_share_directory("nav_filter").append("/conf/navigation_filter.conf");
-    ulisse::nav::NavigationFilter myNavFilter(node, confPath);
+    std::cout << "PATH TO CONF FILE : " << confPath << std::endl;
 
-    while (rclcpp::ok()) {
-
-        rclcpp::spin_some(node);
-        loop_rate.sleep();
-    }
+    rclcpp::spin(std::make_shared<ulisse::nav::NavigationFilter>(confPath));
 
     rclcpp::shutdown();
-
     return 0;
 }
