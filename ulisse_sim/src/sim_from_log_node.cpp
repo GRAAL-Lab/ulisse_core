@@ -19,7 +19,7 @@ bool LoadConfiguration(int& rate, std::string& gpsFileName, std::string& sensorF
 int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
-    auto node = rclcpp::Node::make_shared("simulator_node");
+    auto node = rclcpp::Node::make_shared("sim_from_log_node");
 
     int rate = 0;
     std::string gpsFileName, sensorsFileName;
@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
 
     //open gps log file
     std::string line;
-    std::string gpsConfPath = ament_index_cpp::get_package_share_directory("ulisse_sim_from_log").append("/logs/").append(gpsFileName);
+    std::string gpsConfPath = ament_index_cpp::get_package_share_directory("ulisse_sim").append("/logs/").append(gpsFileName);
     std::cout << gpsConfPath << std::endl;
     Eigen::MatrixXd gpsData;
     std::vector<long long int> gpsTs;
@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
     std::vector<long long int> sensorsTs;
 
     //open the sensors file
-    std::string sensorsConfPath = ament_index_cpp::get_package_share_directory("ulisse_sim_from_log").append("/logs/").append(sensorsFileName);
+    std::string sensorsConfPath = ament_index_cpp::get_package_share_directory("ulisse_sim").append("/logs/").append(sensorsFileName);
     std::cout << sensorsFileName << std::endl;
     std::ifstream sensorsFile(sensorsConfPath);
 
@@ -248,7 +248,7 @@ bool LoadConfiguration(int& rate, std::string& gpsFileName, std::string& sensorF
     libconfig::Config confObj;
 
     //Inizialization
-    std::string confPath = ament_index_cpp::get_package_share_directory("ulisse_sim_from_log").append("/conf/simulator_node.conf");
+    std::string confPath = ament_index_cpp::get_package_share_directory("ulisse_sim").append("/conf/sim_from_log_node.conf");
 
     std::cout << "PATH TO CONF FILE : " << confPath << std::endl;
 
