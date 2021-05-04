@@ -13,12 +13,12 @@ Short description of all the packages included in this meta package:
 - **ulisse_driver**: The low level driver that communicates with the catamaran microcontrollers.
 - **ulisse_sim**: The dynamic simulator, which makes use of `surface_vehicle_model` library.
 - **ulisse_map**: Graphical interface (Qt based) for controlling the catamaran.
-- **bags_to_cvs**: node to log all necessary data to be plotted in matlab 
+- **bags_to_cvs**: node to log all necessary data to be plotted in matlab
 - **ulisse_sim_from_log**: node to read and publish gps and sensors data form file
 
 ## Dependencies
 
-- **ros2 foxy (argcomplete option included)**: https://index.ros.org/doc/ros2/Installation/Foxy/Linux-Install-Debians/ 
+- **ros2 foxy (argcomplete option included)**: https://index.ros.org/doc/ros2/Installation/Foxy/Linux-Install-Debians/
 - **rml**: http://bitbucket.org/isme_robotics/rml
 - **fsm**: http://bitbucket.org/isme_robotics/fsm
 - **ctrl_toolbox**: http://bitbucket.org/isme_robotics/ctrl_toolbox
@@ -38,7 +38,7 @@ Short description of all the packages included in this meta package:
 
 ## Build
 
-In the following instructions, the `sourceros#` commands are placeholders for your ROS sourcing commands. To create this placeholders write in **~/.bashrc**: 
+In the following instructions, the `sourceros#` commands are placeholders for your ROS sourcing commands. To create this placeholders write in **~/.bashrc**:
 
 `alias sourceros2='source /opt/ros/foxy/setup.bash && source ~/*ros_ws_folder_name*/install/setup.bash'`
 
@@ -96,7 +96,7 @@ ros2 run ulisse_map ulisse_map_node
 ```bash
 
 # Shell A (setup serial)
-socat -d -d pty,raw,echo=0,link=/dev/ttyS0 pty,raw,echo=0,link=/dev/ttyS1
+socat -d -d pty,raw,echo=0,link=/tmp/serial1 pty,raw,echo=0,link=/tmp/serial2
 
 # Shell B (launch driver)
 ros2 launch ulisse_driver launchDriver.py
