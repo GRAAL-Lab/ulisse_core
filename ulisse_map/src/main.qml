@@ -27,6 +27,7 @@ ApplicationWindow {
     property color lightgreen: Material.color(Material.Green, Material.Shade500)
     property color cyan: Material.color(Material.Cyan, Material.Shade700)
     property color lightcyan: Material.color(Material.Cyan, Material.Shade500)
+    property color darkgrey: Material.color(Material.Grey, Material.Shade800)
     property color grey: Material.color(Material.Grey, Material.Shade700)
     property color lightgrey: Material.color(Material.Grey, Material.Shade400)
     property color lightergrey: Material.color(Material.Grey, Material.Shade100)

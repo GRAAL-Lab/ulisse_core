@@ -63,11 +63,6 @@ ament_target_dependencies(nav_filter_lib rclcpp std_msgs ulisse_msgs surface_veh
 target_link_libraries(nav_filter_lib ${surface_vehicle_model_LIBRARIES} Geographic rml fsm ctrl_toolbox)
 
 ## Executables
-add_executable(navigation_filter_node src/navigation_filter_node.cpp)
-ament_target_dependencies(navigation_filter_node rclcpp std_msgs ulisse_msgs rml ctrl_toolbox ament_index_cpp)
-target_link_libraries(navigation_filter_node rml nav_filter_lib ctrl_toolbox config++)
-
-## Executables
 add_executable(nav_filter_node src/nav_filter_node.cpp)
 ament_target_dependencies(nav_filter_node rclcpp std_msgs ulisse_msgs rml ctrl_toolbox ament_index_cpp)
 target_link_libraries(nav_filter_node rml nav_filter_lib ctrl_toolbox config++)
