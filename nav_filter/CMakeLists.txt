@@ -71,7 +71,6 @@ ament_export_include_directories(include)
 
 ## Install
 install(TARGETS
-  navigation_filter_node
   nav_filter_node
   DESTINATION lib/${PROJECT_NAME}
 )

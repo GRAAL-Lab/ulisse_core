@@ -62,7 +62,7 @@ bool Nurbs::Initialization(const ulisse_msgs::msg::Path& path)
             }
 
             std::shared_ptr<double[]> coef(new double[curves.points.size() * 4]); //Vertices of curve
-            // //Acquired the vertices
+            // Acquired the vertices
             int count = 0;
             ctb::LatLong point;
             Eigen::Vector3d pointC;

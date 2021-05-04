@@ -41,7 +41,7 @@ namespace ulisse {
 
 namespace nav {
 
-    class NavigationFilter  : public rclcpp::Node{
+    class NavigationFilter  : public rclcpp::Node {
 
         //rclcpp::Node::SharedPtr nh_;
         std::string confPath_;
