@@ -46,9 +46,9 @@ class TaskDataUpdater : public QObject {
 
 public:
     explicit TaskDataUpdater(QObject* parent = nullptr);
-    explicit TaskDataUpdater(QQmlApplicationEngine* engine, QObject* parent = nullptr);
+    explicit TaskDataUpdater(QQmlApplicationEngine* engine, QObject* parent = nullptr, const rclcpp::Node::SharedPtr& np = nullptr);
     virtual ~TaskDataUpdater();
-    void Init(QQmlApplicationEngine* engine);
+    void Init(QQmlApplicationEngine* engine, const rclcpp::Node::SharedPtr& np);
     void SetNodeHandle(const rclcpp::Node::SharedPtr& np);
     double RadiansToCompassDegrees(const double angle_rad);
 

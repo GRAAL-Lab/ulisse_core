@@ -61,7 +61,7 @@ Rectangle {
                 LabelledText {
                     Layout.alignment: Qt.AlignHCenter
                     labelColor: blue
-                    label: "GPS time"
+                    label: "GPS Time"
                     textColor: 'grey'
                     text: fbkUpdater.gps_time
                     lsize: labelsize
@@ -71,7 +71,7 @@ Rectangle {
                 LabelledText {
                     Layout.alignment: Qt.AlignHCenter
                     labelColor: blue
-                    label: "GPS Pos"
+                    label: "GPS Position"
                     textColor: 'grey'
                     text: "%1, %2".arg(fbkUpdater.gps_pos.latitude).arg(
                               fbkUpdater.gps_pos.longitude)
@@ -83,7 +83,7 @@ Rectangle {
                 LabelledText {
                     Layout.alignment: Qt.AlignHCenter
                     labelColor: blue
-                    label: "Filtered Pos"
+                    label: "Filtered Position"
                     textColor: 'grey'
                     text: "%1, %2".arg(fbkUpdater.ulisse_pos.latitude).arg(
                               fbkUpdater.ulisse_pos.longitude)

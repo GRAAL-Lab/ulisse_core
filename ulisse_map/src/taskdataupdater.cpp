@@ -16,11 +16,11 @@ TaskDataUpdater::TaskDataUpdater(QObject* parent)
 {
 }
 
-TaskDataUpdater::TaskDataUpdater(QQmlApplicationEngine* engine, QObject* parent)
+TaskDataUpdater::TaskDataUpdater(QQmlApplicationEngine* engine, QObject* parent, const rclcpp::Node::SharedPtr& np)
     : QObject(parent)
     , taskDataUpdateInterval_(200)
 {
-    Init(engine);
+    Init(engine, np);
 }
 
 TaskDataUpdater::~TaskDataUpdater()
@@ -28,10 +28,10 @@ TaskDataUpdater::~TaskDataUpdater()
     delete myTimer_;
 }
 
-void TaskDataUpdater::Init(QQmlApplicationEngine* engine)
+void TaskDataUpdater::Init(QQmlApplicationEngine* engine, const rclcpp::Node::SharedPtr& np)
 {
-    //FIXME: what if no np_ defined?
     appEngine_ = engine;
+    np_ = np;
 
     myTimer_ = new QTimer(this);
 
