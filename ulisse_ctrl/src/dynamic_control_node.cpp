@@ -82,7 +82,7 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    std::cout << tc::grayD << *conf << tc::none << std::endl;
+    std::cout << tc::brown << *conf << tc::none << std::endl;
 
     ulisseModel.params = conf->ulisseModel;
 

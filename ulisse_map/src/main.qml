@@ -55,13 +55,13 @@ ApplicationWindow {
         }
     }
 
-    /*Shortcut {
-        sequence: "q"
+    Shortcut {
+        sequence: Qt.Key_Escape
         context: Qt.ApplicationShortcut
         onActivated: {
-            sig_escape()
+            toast.show("Escape.", 2000)//sig_escape()
         }
-    }*/
+    }
 
     signal sig_escape
 
@@ -169,7 +169,6 @@ ApplicationWindow {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
             }
-
         }
     }
 }

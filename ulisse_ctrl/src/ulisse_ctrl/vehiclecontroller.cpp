@@ -179,7 +179,7 @@ bool VehicleController::LoadConfiguration(std::shared_ptr<ControllerConfiguratio
         return false;
     }
 
-    std::cout << tc::grayL << *conf << tc::none << std::endl;
+    std::cout << tc::brown << *conf << tc::none << std::endl;
 
     //acquired the centroid location
     Eigen::VectorXd centroidLocationTmp;
@@ -526,12 +526,12 @@ void VehicleController::Run()
 
         auto deltays = solver_->DeltaYs();
 
-        /*int i = 0;
+        int i = 0;
         Eigen::IOFormat CommaInitFmt(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", " / ", "", "", "", ";");
         for (auto& deltay : deltays) {
             std::cout << "[ VC 2 ] deltay_" << i << ": " << deltay.transpose().format(CommaInitFmt) << std::endl;
             i++;
-        }*/
+        }
 
         for (int i = 0; i < yTpik_.size(); i++) {
             if (std::isnan(yTpik_(i))) {

@@ -4,14 +4,15 @@ using namespace ctb;
 namespace ikcl {
 
 SafetyBoundaries::SafetyBoundaries(std::string taskID, std::shared_ptr<rml::RobotModel> robotModel, std::string frameID)
-    : tpik::ReactiveTask(taskID, 3, robotModel->Dof(), tpik::TaskOption::UseErrorNorm)
+    : tpik::ReactiveTask(taskID, 1, robotModel->Dof(), tpik::TaskOption::Default)
     , robotModel_(robotModel)
     , frameID_(frameID)
 
 {
     isBoundariesInitialized_ = false;
     alignVector_ = Eigen::Vector3d::Zero();
-    x_ = INFINITY * Eigen::Vector3d::Ones();
+    //x_ = INFINITY * Eigen::Vector3d::Ones();
+    x_.resize(1,1);
 }
 
 void SafetyBoundaries::Update() noexcept(false)
@@ -27,27 +28,34 @@ void SafetyBoundaries::Update() noexcept(false)
     //form lat long to euclidian
     ctb::LatLong2LocalUTM(vehiclePositionLatLong_, 0.0, centroid_, vehiclePosition_);
 
-    Eigen::Vector3d UTM_alignVecotr = Eigen::Vector3d::Zero();
+    Eigen::IOFormat CleanFmt(4, 0, ", ", "\n", "[", "]");
+    Eigen::Vector3d UTM_alignVector = Eigen::Vector3d::Zero();
 
-    DistanceCheck(point_type(vehiclePosition_[0], vehiclePosition_[1]), UTM_alignVecotr);
+    DistanceCheck(point_type(vehiclePosition_[0], vehiclePosition_[1]), UTM_alignVector);
 
-    if (d_ < 0) {
-        x_ = robotModel_->TransformationMatrix(robotModel_->BodyFrameID()).RotationMatrix().transpose() * Eigen::Vector3d { d_ * UTM_alignVecotr(0), d_ * UTM_alignVecotr(1), 0.0 };
-    } else {
-        x_ = robotModel_->TransformationMatrix(robotModel_->BodyFrameID()).RotationMatrix().transpose() * Eigen::Vector3d { -d_ * UTM_alignVecotr(0), -d_ * UTM_alignVecotr(1), 0.0 };
-    }
+    std::cout << "Update(): d = " << d_ << std::endl;
+    std::cout << "Update(): UTM_alignVector = " << UTM_alignVector.transpose().format(CleanFmt) << std::endl;
 
-    /*Eigen::IOFormat CommaInitFmt(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", ", ", "", "", " << ", ";");
-    std::cout << "Safety Task x_:" << x_.format(CommaInitFmt) << std::endl;*/
+    //d_ = std::abs(d_);
 
     //transform the align vector form UTM to NED
-    alignVector_ << UTM_alignVecotr.y(), UTM_alignVecotr.x(), 0.0;
+    alignVector_ << UTM_alignVector.y(), UTM_alignVector.x(), 0.0;
+
+    //if (d_ < 0) {
+    x_.at(0) = d_;//robotModel_->TransformationMatrix(robotModel_->BodyFrameID()).RotationMatrix().transpose() * (d_ * alignVector_);
+    // } else {
+    //x_ = robotModel_->TransformationMatrix(robotModel_->BodyFrameID()).RotationMatrix().transpose() * Eigen::Vector3d { -d_ * UTM_alignVector(0), -d_ * UTM_alignVector(1), 0.0 };
+    //}
+
+    std::cout << "Safety Task x_:" << x_.transpose().format(CleanFmt) << std::endl;
+
+
     ReactiveTask::Update();
 }
 
 void SafetyBoundaries::UpdateJacobian()
 {
-    J_ = robotModel_->CartesianJacobian(frameID_).block(0, 0, 3, dof_);
+    J_ = alignVector_.transpose() * robotModel_->CartesianJacobian(frameID_).block(0, 0, 3, dof_);
     ReactiveTask::UpdateJacobian();
 }
 
@@ -120,7 +128,7 @@ bool SafetyBoundaries::InitializePolygon(const ulisse_msgs::msg::Boundaries& bou
     return true;
 }
 
-void SafetyBoundaries::DistanceCheck(point_type const& currentPosition, Eigen::Vector3d& UTM_alignVecotr)
+void SafetyBoundaries::DistanceCheck(point_type const& currentPosition, Eigen::Vector3d& UTM_alignVector)
 {
     std::list<segment_type> segments, minDistsegments;
     bool isConvex = false;
@@ -141,18 +149,19 @@ void SafetyBoundaries::DistanceCheck(point_type const& currentPosition, Eigen::V
     if (isConvex) {
         // compute the direct of alignent to escape from the border in case of
         // convex side of the polygon
-        ComputeAlignVectorConvex(minDistsegments, currentPosition, UTM_alignVecotr);
+        ComputeAlignVectorConvex(minDistsegments, currentPosition, UTM_alignVector);
     }
     // check if the robot is near the two segment concav
     else {
         // compute the direct of alignent to escape from the border in case of
         // concave side of the polygon
-        ComputeAlignVectorConcave(minDistsegments.front(), currentPosition, UTM_alignVecotr);
+        ComputeAlignVectorConcave(minDistsegments.front(), currentPosition, UTM_alignVector);
     }
 }
 
 void SafetyBoundaries::ComputeAlignVectorConcave(segment_type segment, point_type currentPosition, Eigen::Vector3d& UTM_alignVecotr)
 {
+    std::cout << "ComputeAlignVectorConcave():" << std::endl;
     // there are three situation in which the robot can be:
 
     // starting point of the first segment the one at min dist
@@ -172,7 +181,7 @@ void SafetyBoundaries::ComputeAlignVectorConcave(segment_type segment, point_typ
     // ugual to d then i am in the middle zone
 
     if (dp1 < dp2 && dp1 == d) {
-
+        std::cout << "if (dp1 < dp2 && dp1 == d) " << std::endl;
         double normAlignVector = std::sqrt(std::pow(currentPosition.y() - p1.y(), 2) + std::pow(currentPosition.x() - p1.x(), 2));
 
         UTM_alignVecotr(0) = (currentPosition.x() - p1.x()) / normAlignVector;
@@ -180,12 +189,13 @@ void SafetyBoundaries::ComputeAlignVectorConcave(segment_type segment, point_typ
 
         //if the robot is outside the polygon the directionis the opposite
         if (!boost::geometry::covered_by(currentPosition, poly_)) {
+            std::cout << "Robot is outside the polygon. d = -d" << std::endl;
             d = -d;
             UTM_alignVecotr(0) = -UTM_alignVecotr(0);
             UTM_alignVecotr(1) = -UTM_alignVecotr(1);
         }
     } else if (dp1 > dp2 && dp2 == d) {
-
+        std::cout << "if (dp1 > dp2 && dp2 == d) " << std::endl;
         double normAlignVector = std::sqrt(std::pow(currentPosition.y() - p2.y(), 2) + std::pow(currentPosition.x() - p2.x(), 2));
 
         UTM_alignVecotr(0) = (currentPosition.x() - p2.x()) / normAlignVector;
@@ -193,13 +203,14 @@ void SafetyBoundaries::ComputeAlignVectorConcave(segment_type segment, point_typ
 
         //if the robot is outside the polygon the directionis the opposite
         if (!boost::geometry::covered_by(currentPosition, poly_)) {
+            std::cout << "Robot is outside the polygon. d = -d" << std::endl;
             d = -d;
             UTM_alignVecotr(0) = -UTM_alignVecotr(0);
             UTM_alignVecotr(1) = -UTM_alignVecotr(1);
         }
 
     } else {
-
+        std::cout << "We are inside the segment: alignVector normal to the segment" << std::endl;
         // if is inside one of the two area defined by the two segment I will take
         // as alignVector the normal to the segment
         point_type u;
@@ -208,15 +219,17 @@ void SafetyBoundaries::ComputeAlignVectorConcave(segment_type segment, point_typ
         UTM_alignVecotr(1) = u.y();
 
         if (!boost::geometry::covered_by(currentPosition, poly_)) {
+            std::cout << "Robot is outside the polygon. d = -d" << std::endl;
             d = -d;
         }
     }
-
     d_ = d;
 }
 
-void SafetyBoundaries::ComputeAlignVectorConvex(std::list<segment_type> segments, point_type currentPosition, Eigen::Vector3d& UTM_alignVecotr)
+void SafetyBoundaries::ComputeAlignVectorConvex(std::list<segment_type> segments, point_type currentPosition, Eigen::Vector3d& UTM_alignVector)
 {
+    std::cout << "ComputeAlignVectorConvex():" << std::endl;
+
     //The variable that is continue in the convex case is the distance vector from the inner border of the safety zone
     //As in the concave case we have basically theree situations in which the robot can be:
     //- the robot is near of of the two nearest segments: only one activaction function is active
@@ -238,35 +251,42 @@ void SafetyBoundaries::ComputeAlignVectorConvex(std::list<segment_type> segments
 
     point_type pMax = points.front();
 
-    if (currentPosition.x() < pMax.x() && currentPosition.x() > pMin.x() && currentPosition.y() < pMax.y() && currentPosition.y() > pMin.y()) {
-        //Find the intersection point in wich the direction od the alignment must be direct in the middle zone of the two segments
+    if (currentPosition.x() < pMax.x() && currentPosition.x() > pMin.x() &&
+        currentPosition.y() < pMax.y() && currentPosition.y() > pMin.y()) {
+        //Find the intersection point in wich the direction of the alignment must be direct in the middle zone of the two segments
+        std::cout << "Intersection in the middle zone" << std::endl;
+
 
         //Compute the align vector if the robot is in the middle zone of two segments
         //In this case the align vector is the direction vector from the current position to the inner point
-        UTM_alignVecotr(0) = (currentPosition.x() - intersecP.x());
-        UTM_alignVecotr(1) = (currentPosition.y() - intersecP.y());
+        UTM_alignVector(0) = (currentPosition.x() - intersecP.x());
+        UTM_alignVector(1) = (currentPosition.y() - intersecP.y());
 
-        UTM_alignVecotr = UTM_alignVecotr.norm() * UTM_alignVecotr;
+        UTM_alignVector = UTM_alignVector.norm() * UTM_alignVector;
 
         //if the robot is outside the polygon the directionis the opposite
         if (!boost::geometry::covered_by(currentPosition, poly_)) {
+            std::cout << "Robot is outside the polygon. d = -d" << std::endl;
             d = -d;
-            UTM_alignVecotr(0) = -UTM_alignVecotr(0);
-            UTM_alignVecotr(1) = -UTM_alignVecotr(1);
+            UTM_alignVector(0) = -UTM_alignVector(0);
+            UTM_alignVector(1) = -UTM_alignVector(1);
         }
 
     } else {
         //Compute the align vector if the robot is near one of the two nearest segments
         //In this case the align vector is the normal to the segment
+        std::cout << "Robot is near one of the two nearest segments" << std::endl;
+
         point_type u;
 
         ComputeNormalVector2Segment(segments.front(), u);
 
-        UTM_alignVecotr(0) = u.x();
-        UTM_alignVecotr(1) = u.y();
+        UTM_alignVector(0) = u.x();
+        UTM_alignVector(1) = u.y();
 
         //if the robot is outside the polygon the directionis the opposite
         if (!boost::geometry::covered_by(currentPosition, poly_)) {
+            std::cout << "Robot is outside the polygon. d = -d" << std::endl;
             d = -d;
         }
     }
@@ -290,10 +310,14 @@ bool SafetyBoundaries::ComputeIntersectionPointMiddleZone(std::list<segment_type
     ComputeNormalVector2Segment(segments.front(), frontSegDirPerp, frontSegDir);
     ComputeNormalVector2Segment(segments.back(), backSegDirPerp, backSegDir);
 
-    point_type newP1 = { p1.x() + decreasingBellShapeParameter_.xmax(0) * frontSegDirPerp.x(), p1.y() + decreasingBellShapeParameter_.xmax(0) * frontSegDirPerp.y() };
-    point_type newP2 = { p2.x() + decreasingBellShapeParameter_.xmax(0) * frontSegDirPerp.x(), p2.y() + decreasingBellShapeParameter_.xmax(0) * frontSegDirPerp.y() };
-    point_type newS1 = { s1.x() + decreasingBellShapeParameter_.xmax(0) * backSegDirPerp.x(), s1.y() + decreasingBellShapeParameter_.xmax(0) * backSegDirPerp.y() };
-    point_type newS2 = { s2.x() + decreasingBellShapeParameter_.xmax(0) * backSegDirPerp.x(), s2.y() + decreasingBellShapeParameter_.xmax(0) * backSegDirPerp.y() };
+    point_type newP1 = { p1.x() + decreasingBellShapeParameter_.xmax(0) * frontSegDirPerp.x(), p1.y()
+            + decreasingBellShapeParameter_.xmax(0) * frontSegDirPerp.y() };
+    point_type newP2 = { p2.x() + decreasingBellShapeParameter_.xmax(0) * frontSegDirPerp.x(), p2.y()
+            + decreasingBellShapeParameter_.xmax(0) * frontSegDirPerp.y() };
+    point_type newS1 = { s1.x() + decreasingBellShapeParameter_.xmax(0) * backSegDirPerp.x(), s1.y()
+            + decreasingBellShapeParameter_.xmax(0) * backSegDirPerp.y() };
+    point_type newS2 = { s2.x() + decreasingBellShapeParameter_.xmax(0) * backSegDirPerp.x(), s2.y()
+            + decreasingBellShapeParameter_.xmax(0) * backSegDirPerp.y() };
 
     std::list<segment_type> newSegments;
     MakeSegments(newP1, newP2, newSegments.front());

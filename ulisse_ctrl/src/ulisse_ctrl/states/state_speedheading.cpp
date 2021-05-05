@@ -90,9 +90,11 @@ namespace states {
         // Set the gain of the cartesian distance task
         safetyBoundariesTask_->TaskParameter().gain = taskGainSafety * safetyBoundariesTask_->TaskParameter().conf_gain;
 
-        //speedheading task
+
+        //////     SpeedHeading task    /////////
         absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
-        absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(cos(goalHeading), sin(goalHeading), 0), rml::FrameID::WorldFrame);
+        absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(
+                                          cos(goalHeading), sin(goalHeading), 0), rml::FrameID::WorldFrame);
 
         linearVelocityTask_->SetReferenceRate(Eigen::Vector3d(goalSurge, 0, 0), robotModel->BodyFrameID());
 
@@ -103,7 +105,8 @@ namespace states {
         double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1, headingError);
 
         //Set the gain of the cartesian distance task
-        linearVelocityTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(linearVelocityTask_->TaskSpace(), linearVelocityTask_->TaskSpace());
+        linearVelocityTask_->ExternalActivationFunction() = taskGain *
+            Eigen::MatrixXd::Identity(linearVelocityTask_->TaskSpace(), linearVelocityTask_->TaskSpace());
 
 
         /*std::cout << "* STATE SPEED HEADING *" << std::endl;
