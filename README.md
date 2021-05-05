@@ -24,7 +24,6 @@ Short description of all the packages included in this meta package:
 - **tpik**: http://bitbucket.org/isme_robotics/tpik
 - **ikcl**: https://bitbucket.org/isme_robotics/ikcl
 - **libgps**: `sudo apt install libgps-dev`
-- **libz3-dev**: `sudo apt install libz3-dev`
 - **SISL lib**: `git clone https://github.com/SINTEF-Geometry/SISL.git`
 - **qt5-libraries**: When building the package on the catamaran you don't need the **ulisse_map** sub-package (so you can add a COLCON_IGNORE file inside it), and these dependencies can be skipped.Otherwise, to use the interface, type:
 

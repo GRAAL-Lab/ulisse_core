@@ -61,16 +61,18 @@ namespace states {
 
         //SafetyBoundaries task: it's a velocity task base on the distance from the boundaries. The behaviour that has to achive is align to
         //a desired escape directon and to generate a desired velocity. To do this we use the task AbsoluteAxisAlignment to cope with
-        //the align behavior activated in function of the internal actiovation function of the safety task.
+        //the align behavior activated in function of the internal activation function of the safety task.
 
         safetyBoundariesTask_->VehiclePosition() = *vehiclePosition.get();
 
         Eigen::MatrixXd Aexternal;
 
-        Aexternal = safetyBoundariesTask_->InternalActivationFunction().maxCoeff() * Aexternal.setIdentity(absoluteAxisAlignmentSafetyTask_->TaskSpace(), absoluteAxisAlignmentSafetyTask_->TaskSpace());
+        Aexternal = safetyBoundariesTask_->InternalActivationFunction().maxCoeff()* Aexternal.setIdentity(
+                        absoluteAxisAlignmentSafetyTask_->TaskSpace(), absoluteAxisAlignmentSafetyTask_->TaskSpace());
         absoluteAxisAlignmentSafetyTask_->ExternalActivationFunction() = Aexternal;
 
-        safetyBoundariesTask_->ExternalActivationFunction() = 1.0 * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
+        safetyBoundariesTask_->ExternalActivationFunction() = 1.0 * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(),
+                                                                  safetyBoundariesTask_->TaskSpace());
 
 
         absoluteAxisAlignmentSafetyTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
