@@ -177,7 +177,7 @@ Pane {
 
                 Slider {
                     id: sliderHeading
-                    value: 5
+                    value: 0
                     Layout.preferredWidth: sliderWidth + 50
                     Layout.leftMargin: 0
                     stepSize: 0.1

@@ -18,8 +18,8 @@ Map {
     property alias ulissePath: ulissePath
     property alias marker: marker
     property alias compass: compass
-    property alias current: current
-    property alias currentid: currentid
+    property alias current: currentArrow
+    property alias currentLabel: currentLabel
     property alias ulisseIcon: ulisseIcon
     property alias goalFlag: goalFlag
     property alias ruler: ruler
@@ -72,17 +72,20 @@ Map {
         anchors.topMargin: 20
         width: 42
         height: 42
-        z: map.z + 2
+        z: map.z + 5
         Image {
-            id: current
+            id: currentArrow
+            mipmap: true
+            antialiasing: true
             source: 'qrc:/images/windarrow.png'
         }
         Label{
-            id:currentid
+            id: currentLabel
+            color: blue
             width: parent.width
             horizontalAlignment: Text.AlignHCenter
-            anchors.left:current.left
-            anchors.top:current.bottom
+            anchors.left:currentArrow.left
+            anchors.top:currentArrow.bottom
         }
     }
 

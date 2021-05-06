@@ -65,7 +65,7 @@ public:
 
     auto VehiclePosition() -> LatLong& { return vehiclePositionLatLong_; }
 
-    auto AlignVector() const -> const Eigen::Vector3d& { return alignVector_; }
+    Eigen::Vector3d GetAlignVector(const std::string& frameID);
 
     bool ConfigFromFile(libconfig::Config& confObj) override;
 
@@ -75,7 +75,7 @@ protected:
    * Implementation of the pure virtual method of the base class
    * tpik::InequalityTask.
    */
-    void UpdateInternalActivationFunction() override;
+    //void UpdateInternalActivationFunction() override;
     /**
    * @brief Method updating the Jacobian.
    * Implementation of the pure virtual method of the base class
@@ -87,7 +87,7 @@ protected:
 
     void ExtractMinDistanceSegments(std::list<segment_type> segments, point_type currentPosition, std::list<segment_type>& segment);
 
-    void DistanceCheck(point_type const& currentPositionr, Eigen::Vector3d& UTM_alignVecotr);
+    void EvaluateAlignmentAndDistance(point_type const& currentPositionr, Eigen::Vector3d& UTM_alignVecotr);
 
     bool IsConvex(std::list<segment_type> segments);
 
@@ -107,7 +107,7 @@ protected:
     std::list<segment_type> segments_;
     ctb::LatLong centroid_;
     polygon_type poly_;
-    Eigen::Vector3d alignVector_;
+    Eigen::Vector3d bodyF_alignVector_;
     Eigen::Vector3d vehiclePosition_;
     LatLong vehiclePositionLatLong_;
     double d_;

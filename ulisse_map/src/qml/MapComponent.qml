@@ -112,7 +112,7 @@ MapComponentForm {
         }
     ]
 
-    currentid.text:"%1".arg(fbkUpdater.current_norm.toFixed(2))
+    currentLabel.text:"Current\n%1 m/s".arg(fbkUpdater.current_norm.toFixed(2))
 
     ulisseIcon.transform: [
         Rotation {
