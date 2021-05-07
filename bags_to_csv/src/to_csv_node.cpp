@@ -7,7 +7,7 @@
 #include "ulisse_msgs/msg/imu_data.hpp"
 #include "ulisse_msgs/msg/magnetometer.hpp"
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
-#include "ulisse_msgs/msg/real_system.hpp"
+#include "ulisse_msgs/msg/simulated_system.hpp"
 #include "ulisse_msgs/msg/reference_velocities.hpp"
 #include "ulisse_msgs/msg/thrusters_data.hpp"
 #include "ulisse_msgs/topicnames.hpp"
@@ -24,7 +24,7 @@ static rclcpp::Node::SharedPtr node = nullptr;
 
 static ulisse_msgs::msg::ThrustersData thrustersFbk;
 static ulisse_msgs::msg::NavFilterData filterData;
-static ulisse_msgs::msg::RealSystem groundTruthData;
+static ulisse_msgs::msg::SimulatedSystem groundTruthData;
 static ulisse_msgs::msg::Compass compassData;
 static ulisse_msgs::msg::GPSData gpsData;
 static ulisse_msgs::msg::IMUData imuData;
@@ -102,7 +102,7 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-void GroundTruthDataCB(const ulisse_msgs::msg::RealSystem::SharedPtr msg) { groundTruthData = *msg; }
+void GroundTruthDataCB(const ulisse_msgs::msg::SimulatedSystem::SharedPtr msg) { groundTruthData = *msg; }
 
 void FilterDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg) { filterData = *msg; }
 

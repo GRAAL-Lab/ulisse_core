@@ -129,7 +129,6 @@ Eigen::Vector3d SafetyBoundaries::GetAlignVector(const std::string &frameID)
 
 void SafetyBoundaries::EvaluateAlignmentAndDistance()
 {
-
     Eigen::Vector3d UTM_alignVector = Eigen::Vector3d::Zero();
     Eigen::Vector3d worldF_alignVector = Eigen::Vector3d::Zero();
     std::list<segment_t> segments, minDistsegments;
