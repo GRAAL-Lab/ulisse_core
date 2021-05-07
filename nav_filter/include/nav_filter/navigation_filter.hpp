@@ -16,7 +16,7 @@
 #include "ulisse_msgs/msg/imu_data.hpp"
 #include "ulisse_msgs/msg/magnetometer.hpp"
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
-#include "ulisse_msgs/msg/real_system.hpp"
+#include "ulisse_msgs/msg/simulated_system.hpp"
 #include "ulisse_msgs/msg/simulated_velocity_sensor.hpp"
 #include "ulisse_msgs/msg/thrusters_data.hpp"
 #include "ulisse_msgs/srv/nav_filter_command.hpp"
@@ -53,7 +53,7 @@ namespace nav {
         rclcpp::Subscription<ulisse_msgs::msg::GPSData>::SharedPtr gpsdataSub_;
         rclcpp::Subscription<ulisse_msgs::msg::IMUData>::SharedPtr imudataSub_;
         rclcpp::Subscription<ulisse_msgs::msg::Magnetometer>::SharedPtr magnetometerSub_;
-        rclcpp::Subscription<ulisse_msgs::msg::RealSystem>::SharedPtr groundTruthSub_;
+        rclcpp::Subscription<ulisse_msgs::msg::SimulatedSystem>::SharedPtr simulatedSystemSub_;
         rclcpp::Subscription<ulisse_msgs::msg::ThrustersData>::SharedPtr thrustersFkbSub_;
         rclcpp::Subscription<ulisse_msgs::msg::SimulatedVelocitySensor>::SharedPtr simulatedVelocitySub_;
 
@@ -68,7 +68,7 @@ namespace nav {
         ulisse_msgs::msg::SimulatedVelocitySensor simulatedVelocitySensor_;
         ulisse_msgs::msg::ThrustersData thrustersFbk_;
         ulisse_msgs::msg::Magnetometer magnetometerData_;
-        ulisse_msgs::msg::RealSystem groundTruthData_;
+        ulisse_msgs::msg::SimulatedSystem simulatedData_;
 
         double lastValidGPSTime_;
         double lastValidImuTime_;
@@ -135,7 +135,7 @@ namespace nav {
 
         void ThrustersDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg);
 
-        void GroundTruthDataCB(const ulisse_msgs::msg::RealSystem::SharedPtr msg);
+        void GroundTruthDataCB(const ulisse_msgs::msg::SimulatedSystem::SharedPtr msg);
 
         bool LoadConfiguration(NavigationFilterParams& filterParameters);
 

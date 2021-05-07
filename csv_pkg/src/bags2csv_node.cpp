@@ -35,7 +35,7 @@ static ctb::LatLong centroidLocation(44.414165, 8.942184);
 
 void FilterDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
 
-void GroundTruthDataCB(const ulisse_msgs::msg::RealSystem::SharedPtr msg);
+void GroundTruthDataCB(const ulisse_msgs::msg::SimulatedSystem::SharedPtr msg);
 
 void ThrustersDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg);
 
@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
     //Subscribes to filter, real and thrusters data
 
     auto filterDataSub = node->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 10, FilterDataCB);
-    auto realSystemSub = node->create_subscription<ulisse_msgs::msg::RealSystem>(ulisse_msgs::topicnames::real_system, 10, GroundTruthDataCB);
+    auto realSystemSub = node->create_subscription<ulisse_msgs::msg::SimulatedSystem>(ulisse_msgs::topicnames::simulated_system, 10, GroundTruthDataCB);
     auto thrustersFkbSub = node->create_subscription<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data, 10, ThrustersDataCB);
     auto compassSub = node->create_subscription<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass, 10, CompassDataCB);
     auto gpsSub = node->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data, 10, GpsDataCB);

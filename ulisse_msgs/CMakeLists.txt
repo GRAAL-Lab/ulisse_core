@@ -47,7 +47,7 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/ThrusterMappingControl.msg"
   "msg/SimulatedVelocitySensor.msg"
   "msg/FeedbackGui.msg"
-  "msg/RealSystem.msg"
+  "msg/SimulatedSystem.msg"
   "msg/DynamicPidControl.msg"
 
   # Commands

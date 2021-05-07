@@ -81,7 +81,7 @@ Map {
         }
         Label{
             id: currentLabel
-            color: blue
+            color: "#004EAE"
             width: parent.width
             horizontalAlignment: Text.AlignHCenter
             anchors.left:currentArrow.left

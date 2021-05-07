@@ -14,7 +14,7 @@ namespace topicnames {
     const std::string sensor_imu = "/ulisse/llc/sensor/imu";
     const std::string sensor_ambient = "/ulisse/llc/sensor/ambient";
     const std::string sensor_magnetometer = "/ulisse/llc/sensor/magnetometer";
-    const std::string real_system = "/ulisse/ground_truth";
+    const std::string simulated_system = "/ulisse/simulated_system";
 
     const std::string motor_applied_ref = "/ulisse/llc/motor_applied_ref";
     const std::string llc_status = "/ulisse/llc/status";

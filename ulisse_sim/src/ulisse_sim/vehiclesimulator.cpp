@@ -43,7 +43,7 @@ VehicleSimulator::VehicleSimulator(const rclcpp::Node::SharedPtr& nh)
     ambsensPub_ = nh_->create_publisher<ulisse_msgs::msg::AmbientSensors>(ulisse_msgs::topicnames::sensor_ambient, 1);
     magnetometerPub_ = nh_->create_publisher<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer, 1);
     appliedMotorRefPub_ = nh_->create_publisher<ulisse_msgs::msg::MotorReference>(ulisse_msgs::topicnames::motor_applied_ref, 1);
-    groundTruthPub_ = nh_->create_publisher<ulisse_msgs::msg::RealSystem>(ulisse_msgs::topicnames::real_system, 1);
+    simulatedSystemPub_ = nh_->create_publisher<ulisse_msgs::msg::SimulatedSystem>(ulisse_msgs::topicnames::simulated_system, 1);
 
     thrustersSub_ = nh_->create_subscription<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data, 1, std::bind(&VehicleSimulator::ThrusterDataCB, this, _1));
 
@@ -317,7 +317,7 @@ void VehicleSimulator::SimulateSensors()
 void VehicleSimulator::PublishSensors()
 {
     microLoopCountPub_->publish(microLoopCountMsg_);
-    groundTruthPub_->publish(groundTruthMsg_);
+    simulatedSystemPub_->publish(groundTruthMsg_);
     appliedMotorRefPub_->publish(appliedMotorRefMsg_);
 
     if (static_cast<int>(timestamp_count_ / 20) > gpsPubCounter_) {

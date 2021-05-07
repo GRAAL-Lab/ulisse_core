@@ -12,24 +12,40 @@ using namespace ctb;
 
 namespace ikcl {
 
-typedef boost::geometry::model::d2::point_xy<double> point_type;
-typedef boost::geometry::model::polygon<point_type> polygon_type;
-typedef boost::geometry::model::segment<point_type> segment_type;
+typedef boost::geometry::model::d2::point_xy<double> point_t;
+typedef boost::geometry::model::polygon<point_t> polygon_t;
+typedef boost::geometry::model::segment<point_t> segment_t;
+
+void MakeSegments(point_t const& p, point_t const& next, segment_t& seg);
+
+bool IsConvex(const std::list<segment_t>& segments, const polygon_t& poly);
+
+void ComputeAlignVectorConcave(const segment_t& segment, const point_t& currentPosition,
+    const polygon_t& poly, double& distance, Eigen::Vector3d& UTM_alignVector);
+
+void ComputeAlignVectorConvex(const std::list<segment_t>& segment, const point_t& currentPosition,
+    const polygon_t& poly, const tpik::BellShapedParameter& bellParam, double& distance, Eigen::Vector3d& UTM_alignVector);
+
+void ComputeNormalVector2Segment(const segment_t& segment, const polygon_t& poly,
+    point_t& alignVector);
+
+void ComputeNormalVector2Segment(const segment_t& segment, const polygon_t& poly,
+    point_t& alignVector, point_t& u);
+
+bool ComputeIntersectionPointMiddleZone(const std::list<segment_t>& segments, const polygon_t& poly,
+    const tpik::BellShapedParameter& bellParam, std::list<point_t>& points);
+
+void ExtractMinDistanceSegments(std::list<segment_t>& segments, const point_t& currentPosition,
+    std::list<segment_t>& segment);
 
 /**
- * @brief The LinearVelocity class implementing the linear velocity task.
- * @details ikcl class aimed to implement the linear velocity control task for
- * the constructor input frame. The class uses the rml::RobotModel in order to
- * compute the needed jacobians and parameters. The class derives from
- * tpik::EqualityTask and allows to control the linear velocity of the desired
- * frame in a task priority framework.\f$ \dot{x}= \gamma \cdot
- * DesiredVelocity  J=J_{f, lin} \f$
+ * @brief The SafetyBoundaries class implementing the repulsion mechanic from the boundaries.
  */
 
 class SafetyBoundaries : public tpik::ReactiveTask {
 public:
     /**
-   * @brief ControlLinearVelocity class constructor
+   * @brief SafetyBoundaries class constructor
    * @param taskID task id
    * @param robotModel shared ptr to the rml::RobotModel
    * @param frameID id of the frame to control
@@ -45,8 +61,6 @@ public:
     void Update() noexcept(false) override;
 
     bool InitializePolygon(const ulisse_msgs::msg::Boundaries& boundaries);
-
-    //  void SetBoundaries(double bound_min, double bound_max);
 
     /**
    * @brief Overloading of the cout operator
@@ -83,30 +97,14 @@ protected:
    */
     void UpdateJacobian() override;
 
-    void MakeSegments(point_type const& p, point_type const& next, segment_type& seg);
-
-    void ExtractMinDistanceSegments(std::list<segment_type> segments, point_type currentPosition, std::list<segment_type>& segment);
-
-    void EvaluateAlignmentAndDistance(point_type const& currentPositionr, Eigen::Vector3d& UTM_alignVecotr);
-
-    bool IsConvex(std::list<segment_type> segments);
-
-    void ComputeAlignVectorConcave(segment_type segment, point_type currentPosition, Eigen::Vector3d& UTM_alignVecotr);
-
-    void ComputeAlignVectorConvex(std::list<segment_type> segment, point_type currentPosition, Eigen::Vector3d& UTM_alignVecotr);
-
-    void ComputeNormalVector2Segment(segment_type segment, point_type& alignVector);
-
-    void ComputeNormalVector2Segment(segment_type segment, point_type& alignVector, point_type& u);
-
-    bool ComputeIntersectionPointMiddleZone(std::list<segment_type> segments, std::list<point_type>& points);
+    void EvaluateAlignmentAndDistance();
 
     std::shared_ptr<rml::RobotModel> robotModel_; //!< The shared ptr to the robot model
     std::string frameID_; //!< The id of the frame to be controlled
-    bool isBoundariesInitialized_; //!< Boolean used to state whehther deltaJL has been setted
-    std::list<segment_type> segments_;
+    bool boundariesInitialized_; //!< Boolean used to state whehther deltaJL has been setted
+    std::list<segment_t> segments_;
     ctb::LatLong centroid_;
-    polygon_type poly_;
+    polygon_t poly_;
     Eigen::Vector3d bodyF_alignVector_;
     Eigen::Vector3d vehiclePosition_;
     LatLong vehiclePositionLatLong_;

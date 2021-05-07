@@ -42,7 +42,7 @@ namespace nav {
             10, std::bind(&NavigationFilter::IMUDataCB, this, _1));
         magnetometerSub_ = this->create_subscription<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer,
             10, std::bind(&NavigationFilter::MagnetometerDataCB, this, _1));
-        groundTruthSub_ = this->create_subscription<ulisse_msgs::msg::RealSystem>(ulisse_msgs::topicnames::real_system,
+        simulatedSystemSub_ = this->create_subscription<ulisse_msgs::msg::SimulatedSystem>(ulisse_msgs::topicnames::simulated_system,
             10, std::bind(&NavigationFilter::GroundTruthDataCB, this, _1));
         thrustersFkbSub_ = this->create_subscription<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data,
             10, std::bind(&NavigationFilter::ThrustersDataCB, this, _1));
@@ -103,7 +103,6 @@ namespace nav {
         }
 
         navDataPub_->publish(filterData_);
-
     }
 
     void NavigationFilter::LuenbergerObserverFilter(){
@@ -267,24 +266,24 @@ namespace nav {
         filterData_.stamp.sec = now_stamp_secs;
         filterData_.stamp.nanosec = now_stamp_nanosecs;
 
-        filterData_.inertialframe_linear_position.latlong.latitude = groundTruthData_.inertialframe_linear_position.latlong.latitude;
-        filterData_.inertialframe_linear_position.latlong.longitude = groundTruthData_.inertialframe_linear_position.latlong.longitude;
-        filterData_.inertialframe_linear_position.altitude = groundTruthData_.inertialframe_linear_position.altitude;
-        filterData_.bodyframe_angular_position.roll = groundTruthData_.bodyframe_angular_position.roll;
-        filterData_.bodyframe_angular_position.pitch = groundTruthData_.bodyframe_angular_position.pitch;
-        filterData_.bodyframe_angular_position.yaw = groundTruthData_.bodyframe_angular_position.yaw;
-        filterData_.bodyframe_linear_velocity[0] = groundTruthData_.bodyframe_linear_velocity[0];
-        filterData_.bodyframe_linear_velocity[1] = groundTruthData_.bodyframe_linear_velocity[1];
-        filterData_.bodyframe_linear_velocity[2] = groundTruthData_.bodyframe_linear_velocity[2];
+        filterData_.inertialframe_linear_position.latlong.latitude = simulatedData_.inertialframe_linear_position.latlong.latitude;
+        filterData_.inertialframe_linear_position.latlong.longitude = simulatedData_.inertialframe_linear_position.latlong.longitude;
+        filterData_.inertialframe_linear_position.altitude = simulatedData_.inertialframe_linear_position.altitude;
+        filterData_.bodyframe_angular_position.roll = simulatedData_.bodyframe_angular_position.roll;
+        filterData_.bodyframe_angular_position.pitch = simulatedData_.bodyframe_angular_position.pitch;
+        filterData_.bodyframe_angular_position.yaw = simulatedData_.bodyframe_angular_position.yaw;
+        filterData_.bodyframe_linear_velocity[0] = simulatedData_.bodyframe_linear_velocity[0];
+        filterData_.bodyframe_linear_velocity[1] = simulatedData_.bodyframe_linear_velocity[1];
+        filterData_.bodyframe_linear_velocity[2] = simulatedData_.bodyframe_linear_velocity[2];
 
-        filterData_.bodyframe_angular_velocity[0] = groundTruthData_.bodyframe_angular_velocity[0];
-        filterData_.bodyframe_angular_velocity[1] = groundTruthData_.bodyframe_angular_velocity[1];
-        filterData_.bodyframe_angular_velocity[2] = groundTruthData_.bodyframe_angular_velocity[2];
-        filterData_.inertialframe_water_current[0] = groundTruthData_.inertialframe_water_current[0];
-        filterData_.inertialframe_water_current[1] = groundTruthData_.inertialframe_water_current[1];
-        filterData_.gyro_bias[0] = groundTruthData_.gyro_bias[0];
-        filterData_.gyro_bias[1] = groundTruthData_.gyro_bias[1];
-        filterData_.gyro_bias[2] = groundTruthData_.gyro_bias[2];
+        filterData_.bodyframe_angular_velocity[0] = simulatedData_.bodyframe_angular_velocity[0];
+        filterData_.bodyframe_angular_velocity[1] = simulatedData_.bodyframe_angular_velocity[1];
+        filterData_.bodyframe_angular_velocity[2] = simulatedData_.bodyframe_angular_velocity[2];
+        filterData_.inertialframe_water_current[0] = simulatedData_.inertialframe_water_current[0];
+        filterData_.inertialframe_water_current[1] = simulatedData_.inertialframe_water_current[1];
+        filterData_.gyro_bias[0] = simulatedData_.gyro_bias[0];
+        filterData_.gyro_bias[1] = simulatedData_.gyro_bias[1];
+        filterData_.gyro_bias[2] = simulatedData_.gyro_bias[2];
     }
 
     void NavigationFilter::SensorsValidityCheck(){
@@ -613,7 +612,7 @@ namespace nav {
 
     void NavigationFilter::ThrustersDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg) { thrustersFbk_ = *msg; }
 
-    void NavigationFilter::GroundTruthDataCB(const ulisse_msgs::msg::RealSystem::SharedPtr msg) { groundTruthData_ = *msg; }
+    void NavigationFilter::GroundTruthDataCB(const ulisse_msgs::msg::SimulatedSystem::SharedPtr msg) { simulatedData_ = *msg; }
 
 
 }

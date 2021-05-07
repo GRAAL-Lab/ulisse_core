@@ -14,7 +14,7 @@
 #include "ulisse_msgs/msg/magnetometer.hpp"
 #include "ulisse_msgs/msg/micro_loop_count.hpp"
 #include "ulisse_msgs/msg/motor_reference.hpp"
-#include "ulisse_msgs/msg/real_system.hpp"
+#include "ulisse_msgs/msg/simulated_system.hpp"
 #include "ulisse_msgs/msg/thrusters_data.hpp"
 #include "ulisse_sim/futils.h"
 
@@ -189,7 +189,7 @@ class VehicleSimulator {
     ulisse_msgs::msg::AmbientSensors ambsensMsg_;
     ulisse_msgs::msg::Magnetometer magnetometerMsg_;
     ulisse_msgs::msg::MotorReference appliedMotorRefMsg_;
-    ulisse_msgs::msg::RealSystem groundTruthMsg_;
+    ulisse_msgs::msg::SimulatedSystem groundTruthMsg_;
 
     rclcpp::Publisher<ulisse_msgs::msg::MicroLoopCount>::SharedPtr microLoopCountPub_;
     rclcpp::Publisher<ulisse_msgs::msg::GPSData>::SharedPtr gpsPub_;
@@ -198,7 +198,7 @@ class VehicleSimulator {
     rclcpp::Publisher<ulisse_msgs::msg::AmbientSensors>::SharedPtr ambsensPub_;
     rclcpp::Publisher<ulisse_msgs::msg::Magnetometer>::SharedPtr magnetometerPub_;
     rclcpp::Publisher<ulisse_msgs::msg::MotorReference>::SharedPtr appliedMotorRefPub_;
-    rclcpp::Publisher<ulisse_msgs::msg::RealSystem>::SharedPtr groundTruthPub_;
+    rclcpp::Publisher<ulisse_msgs::msg::SimulatedSystem>::SharedPtr simulatedSystemPub_;
     rclcpp::Subscription<ulisse_msgs::msg::ThrustersData>::SharedPtr thrustersSub_;
 
     int gpsPubCounter_, compassPubCounter_, imuPubCounter_, magnetometerPubCounter_, ambientPubCounter_;
