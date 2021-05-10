@@ -3,22 +3,22 @@ import sys
 import time
 from gps import *
 
-print 'Attempting to access GPS time...'
+print('Attempting to access GPS time...')
 
 try:
 	gpsd = gps(mode=WATCH_ENABLE|WATCH_NEWSTYLE) 
 except:
-	print 'No GPS connection present. TIME NOT SET!'
+	print('No GPS connection present. TIME NOT SET!')
 	sys.exit()
 
 while True:
 	gpsd.next()
 	if (gpsd.utc) != None and gpsd.utc != '':
 		gpstime = gpsd.utc[0:4] + gpsd.utc[5:7] + gpsd.utc[8:10] + ' ' + gpsd.utc[11:19]
-		print "Time: ",gpstime
-		print 'Setting system time to GPS time...'
+		print("Time: ", gpstime)
+		print('Setting system time to GPS time...')
 		os.system('sudo date -u --set="%s"' % gpstime)
-		print 'System time set.'
+		print('System time set.')
 		sys.exit()
 	time.sleep(1)
 
