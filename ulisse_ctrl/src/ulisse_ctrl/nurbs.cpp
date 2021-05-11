@@ -30,6 +30,8 @@ bool Nurbs::Initialization(const ulisse_msgs::msg::Path& path)
     // check whatever the path has beeen reverse
     reverse = path.direction ? true : false;
 
+    //path.nurbs_string;
+
     centroid_.latitude = path.centroid.latitude;
     centroid_.longitude = path.centroid.longitude;
 

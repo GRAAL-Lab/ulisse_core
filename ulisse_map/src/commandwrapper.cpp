@@ -9,6 +9,7 @@
 #include "ulisse_driver/LLCHelperDataStructs.h"
 #include <ctrl_toolbox/HelperFunctions.h>
 #include <jsoncpp/json/json.h>
+#include <QJsonDocument>
 
 using namespace std::chrono_literals;
 using std::placeholders::_1;
@@ -106,6 +107,12 @@ bool CommandWrapper::sendPath(const QString path)
     serviceReq->nav_cmd.path.nurbs_string = path.toStdString();
 
     std::string pathJason = path.toStdString();
+
+    /*std::cout << "JSON:\n" << pathJason;
+    QJsonDocument doc = QJsonDocument::fromJson(pathJason.c_str());
+    QString formattedJsonString = doc.toJson(QJsonDocument::Indented);
+    std::cout << "JSON Indented:\n" << formattedJsonString.toStdString();*/
+
     Json::Reader reader;
     Json::Value obj, objMaster;
 

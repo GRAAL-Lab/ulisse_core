@@ -45,9 +45,9 @@ bool SafetyBoundaries::ConfigFromFile(libconfig::Config& confObj)
         std::cerr << "[SafetyBoundaries::ConfigFromFile] Failed ConfigFromFile()" << std::endl;
         return false;
     }
-    std::cout << "== SAFETY BOUNDARIES" << std::endl;
-    std::cout << "== decreasingBellShapeParameter_.xmin = " << decreasingBellShapeParameter_.xmin << std::endl;
-    std::cout << "== decreasingBellShapeParameter_.xmax = " << decreasingBellShapeParameter_.xmax << std::endl;
+    //std::cout << "== SAFETY BOUNDARIES" << std::endl;
+    //std::cout << "== decreasingBellShapeParameter_.xmin = " << decreasingBellShapeParameter_.xmin << std::endl;
+    //std::cout << "== decreasingBellShapeParameter_.xmax = " << decreasingBellShapeParameter_.xmax << std::endl;
 
     // Read the centroid to transform a latlong point to a local cartesian one
     Eigen::VectorXd centroidTmp;
@@ -170,12 +170,12 @@ void SafetyBoundaries::EvaluateAlignmentAndDistance()
 
 
     Eigen::IOFormat CleanFmt(4, 0, ", ", "\n", "[", "]");
-    std::cout << "Update(): d = " << d_ << std::endl;
-    std::cout << "Update(): UTM_alignVector = " << UTM_alignVector.transpose().format(CleanFmt) << std::endl;
-    std::cout << "Safety Task x_:" << x_.transpose().format(CleanFmt) << std::endl;
+    //std::cout << "Update(): d = " << d_ << std::endl;
+    //std::cout << "Update(): UTM_alignVector = " << UTM_alignVector.transpose().format(CleanFmt) << std::endl;
+    //std::cout << "Safety Task x_:" << x_.transpose().format(CleanFmt) << std::endl;
 
-    std::cout << "Update(): x_bar_ = " << x_bar_ << std::endl;
-    std::cout << "Update(): x_dot_bar_ = " << x_dot_bar_ << std::endl;
+    //std::cout << "Update(): x_bar_ = " << x_bar_ << std::endl;
+    //std::cout << "Update(): x_dot_bar_ = " << x_dot_bar_ << std::endl;
 
 }
 

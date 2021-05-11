@@ -22,6 +22,11 @@ include_directories(
   ${ulisse_msgs_INCLUDE_DIRS}
 )
 
+## Libraries
+add_library(OfflineBagConverter src/bags_to_csv/offline_bag_converter.cpp)
+ament_target_dependencies(OfflineBagConverter rclcpp)
+target_link_libraries(OfflineBagConverter ${bags_to_csv_LIBRARIES})
+
 ## Executables
 add_executable(to_csv_node src/to_csv_node.cpp)
 ament_target_dependencies(to_csv_node rclcpp std_msgs ulisse_msgs ctrl_toolbox ament_index_cpp)
