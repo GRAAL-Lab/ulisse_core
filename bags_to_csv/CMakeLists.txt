@@ -16,6 +16,9 @@ find_package(std_msgs REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(ulisse_msgs REQUIRED)
 find_package(ctrl_toolbox REQUIRED)
+find_package(rosbag2 REQUIRED)
+find_package(rosbag2_storage REQUIRED)
+find_package(std_msgs REQUIRED)
 
 include_directories(
   include
@@ -24,7 +27,7 @@ include_directories(
 
 ## Libraries
 add_library(OfflineBagConverter src/bags_to_csv/offline_bag_converter.cpp)
-ament_target_dependencies(OfflineBagConverter rclcpp)
+ament_target_dependencies(OfflineBagConverter rclcpp rosbag2 rosbag2_storage)
 target_link_libraries(OfflineBagConverter ${bags_to_csv_LIBRARIES})
 
 ## Executables
