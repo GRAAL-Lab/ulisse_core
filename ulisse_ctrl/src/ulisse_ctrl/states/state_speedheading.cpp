@@ -63,7 +63,7 @@ namespace states {
         // a desired escape directon and to generate a desired velocity. To do this we use the task AbsoluteAxisAlignment to cope with
         // the align behavior activated in function of the internal activation function of the safety task.
 
-        safetyBoundariesTask_->VehiclePosition() = *vehiclePosition.get();
+        safetyBoundariesTask_->VehiclePosition() = *vehiclePosition;
 
         Eigen::MatrixXd Aexternal;
 

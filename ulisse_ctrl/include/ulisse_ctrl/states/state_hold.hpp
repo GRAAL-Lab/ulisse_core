@@ -8,6 +8,14 @@ namespace ulisse {
 
 namespace states {
 
+    enum class HysteresisState{
+        Align,
+        ComeBack
+    };
+
+    /**
+     * @brief The StateHold class
+     */
     class StateHold : public GenericState {
 
     protected:
@@ -16,13 +24,7 @@ namespace states {
         double goalDistance_, goalHeading_;
         double minWaterCurrent_, maxWaterCurrent_;
         double maxSurgeComeback2HoldAcceptanceRadius_;
-        bool isOldAlignCountercurrent_, isOldComeback2HoldAcceptanceRadius_;
-
-        // align countercurrent action
-        bool AlignCounterCurrent();
-
-        // comeback to hold acceptance radius action
-        bool Comeback2HoldAcceptanceRadius();
+        HysteresisState hysteresisState_;
 
     public:
         StateHold();

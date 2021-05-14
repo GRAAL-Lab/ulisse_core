@@ -255,7 +255,7 @@ void VehicleController::SetUpFSM()
     commandPathFollowing_.SetState(statePathFollowing_);
 
     // ***** STATES *****
-    //Set the fms and the structure that the states need.
+    //Set the fsm and the structure that the states need.
     for (auto& state : statesMap_) {
         state.second->actionManager = actionManager_;
         state.second->robotModel = robotModel_;
@@ -328,7 +328,6 @@ void VehicleController::CommandsHandler(const std::shared_ptr<rmw_request_id_t> 
 
     std::stringstream log;
     if (request->command_type == ulisse::commands::ID::halt) {
-
         std::cout << "Received Command Halt" << std::endl;
         PublishLog("Received Command Halt");
 
@@ -481,6 +480,8 @@ void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::Share
     *inertialF_waterCurrent_ = { msg->inertialframe_water_current[0], msg->inertialframe_water_current[1] };
 
     commandHold_.SetWaterCurrent(inertialF_waterCurrent_);
+
+
 
     // Linear position in world frame
     Eigen::Vector3d worldF_vehicleLinearPosition(vehiclePosition_->latitude, vehiclePosition_->longitude, 0.0);

@@ -1,5 +1,5 @@
 sudo apt install -y libeigen3-dev
-sudo apt-get install -y libgeographic-dev
+sudo apt install -y libgeographic-dev
 sudo apt install -y libconfig++-dev
 
 cd ~

@@ -97,7 +97,7 @@ target_link_libraries(kinematic_control_node rml ulisse_ctrl_lib ${JSONCPP_LIBRA
 
 add_executable(dynamic_control_node src/dynamic_control_node.cpp)
 ament_target_dependencies(dynamic_control_node rclcpp std_msgs ulisse_msgs rml ament_index_cpp ctrl_toolbox)
-target_link_libraries(dynamic_control_node rml ulisse_ctrl_lib )
+target_link_libraries(dynamic_control_node rml ulisse_ctrl_lib)
 
 add_executable(controller_console_node src/controller_console_node.cpp)
 ament_target_dependencies(controller_console_node rclcpp std_msgs ulisse_msgs rml)

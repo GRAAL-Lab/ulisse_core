@@ -214,8 +214,8 @@ void FeedbackUpdater::MagnetometerCB(const ulisse_msgs::msg::Magnetometer::Share
 
 void FeedbackUpdater::LLCMotorsCB(const ulisse_msgs::msg::LLCMotors::SharedPtr msg)
 {
-    motor_speed_L_ = (msg->left.motor_speed)/6;
-    motor_speed_R_ = (msg->right.motor_speed)/6;
+    motor_speed_L_ = (msg->left.motor_speed);
+    motor_speed_R_ = (msg->right.motor_speed);
 }
 
 void FeedbackUpdater::LLCBatteryLeftCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg)

@@ -3,18 +3,32 @@
 
 #include "std_msgs/msg/string.hpp"
 
+#include "bags_to_csv/futils.h"
 #include "bags_to_csv/offline_bag_converter.hpp"
 
-OfflineBagConverter::OfflineBagConverter()
+OfflineBagConverter::OfflineBagConverter(const std::string& bagPath)
+    : Node("offline_bag2csv_node"), bagPath_(bagPath)
 {
+    std::string homePath = futils::get_homepath();
+    std::string csvPath = homePath + "/logs/csv";
+    futils::MakeDir(csvPath.c_str());
+
+    ConvertToCSV(bagPath, csvPath);
+
+    rclcpp::shutdown();
+}
+
+OfflineBagConverter::~OfflineBagConverter(){
 
 }
 
-void OfflineBagConverter::ConvertToCSV(const std::string& bag_folder, const std::string& csv_folder)
+bool OfflineBagConverter::ConvertToCSV(const std::string& bag_folder, const std::string& csv_folder)
 {
-    using TopicMsgT = std_msgs::msg::String;
-
-    auto rosbag_directory = rcpputils::fs::path(bag_folder);
+    //auto rosbag_directory = rcpputils::fs::path(bag_folder);
+    if(!futils::does_file_exists(bag_folder)){
+        std::cerr << "Bag file does not exists" << std::endl;
+        return false;
+    }
 
     rosbag2_cpp::Reader reader(std::make_unique<rosbag2_cpp::readers::SequentialReader>());
 
@@ -37,11 +51,12 @@ void OfflineBagConverter::ConvertToCSV(const std::string& bag_folder, const std:
     }
 
     // read and deserialize "serialized data"
-    while (reader.has_next()) {
+    /*while (reader.has_next()) {
         auto bag_message = reader.read_next();
 
         std::cout<<"Found topic name " << bag_message->topic_name << std::endl;
 
+        using TopicMsgT = std_msgs::msg::String;
         if (bag_message->topic_name == "/topic") {
 
             TopicMsgT extracted_test_msg;
@@ -52,8 +67,9 @@ void OfflineBagConverter::ConvertToCSV(const std::string& bag_folder, const std:
 
             std::cout<<"Found data in topic " << bag_message->topic_name << ": " << extracted_test_msg.data << std::endl;
 
-
         }
 
-    }
+    }*/
+
+    return true;
 }

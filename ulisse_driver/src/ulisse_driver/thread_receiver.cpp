@@ -293,7 +293,7 @@ namespace llc {
         motor_msg.motor_voltage = llc_motor.motor_voltage; // [1/100 V]
         motor_msg.motor_current = llc_motor.motor_current;
         motor_msg.motor_power = llc_motor.motor_power;
-        motor_msg.motor_speed = llc_motor.motor_speed; // [RPM]
+        motor_msg.motor_speed = llc_motor.motor_speed / 6.0; // [RPM] To be divided by due to how the sensor works
         motor_msg.motor_pcb_temp = llc_motor.motor_pcb_temp; // [° celsius]
         motor_msg.motor_stator_temp = llc_motor.motor_stator_temp; // [° celsius]
         motor_msg.battery_charge = llc_motor.battery_charge;
