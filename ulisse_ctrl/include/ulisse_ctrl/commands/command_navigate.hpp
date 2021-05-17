@@ -1,7 +1,7 @@
 #ifndef ULISSE_CTRL_COMMANDNAVIGATE_HPP
 #define ULISSE_CTRL_COMMANDNAVIGATE_HPP
 
-#include "ulisse_ctrl/commands/genericCommand.hpp"
+#include "ulisse_ctrl/commands/generic_command.hpp"
 #include "ulisse_ctrl/states/state_navigate.hpp"
 
 namespace ulisse {

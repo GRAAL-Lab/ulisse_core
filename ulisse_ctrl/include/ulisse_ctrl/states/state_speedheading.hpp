@@ -1,7 +1,7 @@
 #ifndef ULISSE_CTRL_STATESPEEDHEADING_HPP
 #define ULISSE_CTRL_STATESPEEDHEADING_HPP
 
-#include "ulisse_ctrl/states/genericstate.hpp"
+#include "ulisse_ctrl/states/generic_state.hpp"
 
 namespace ulisse {
 

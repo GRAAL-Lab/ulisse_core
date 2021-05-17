@@ -57,14 +57,14 @@ set(ulisse_ctrl_lib_sources
     src/ulisse_ctrl/configuration.cpp
     src/ulisse_ctrl/nurbs.cpp
     # States
-    src/ulisse_ctrl/states/genericstate.cpp
+    src/ulisse_ctrl/states/generic_state.cpp
     src/ulisse_ctrl/states/state_halt.cpp
     src/ulisse_ctrl/states/state_latlong.cpp
     src/ulisse_ctrl/states/state_hold.cpp
     src/ulisse_ctrl/states/state_speedheading.cpp
     src/ulisse_ctrl/states/state_navigate.cpp
     # Commands
-    src/ulisse_ctrl/commands/genericCommand.cpp
+    src/ulisse_ctrl/commands/generic_command.cpp
     src/ulisse_ctrl/commands/command_halt.cpp
     src/ulisse_ctrl/commands/command_hold.cpp
     src/ulisse_ctrl/commands/command_latlong.cpp
@@ -77,9 +77,7 @@ set(ulisse_ctrl_lib_sources
 
     # TASKS
     src/ulisse_ctrl/tasks/SafetyBoundaries.cpp
-
-
-        )
+)
 
 ## Libraries
 add_library(ulisse_ctrl_lib ${ulisse_ctrl_lib_sources})

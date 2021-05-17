@@ -47,7 +47,7 @@ bool OfflineBagConverter::ConvertToCSV(const std::string& bag_folder, const std:
     for (auto&& t : topics){
         std::cout << "meta name: " << t.name << std::endl;
         std::cout << "meta type: " << t.type << std::endl;
-        std::cout << "meta serialization_format: " << t.serialization_format << std::endl;
+        //std::cout << "meta serialization_format: " << t.serialization_format << std::endl;
     }
 
     // read and deserialize "serialized data"

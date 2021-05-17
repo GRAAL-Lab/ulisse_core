@@ -3,7 +3,7 @@
 
 #include <ikcl/ikcl.h>
 #include <ulisse_ctrl/ctrl_data_structs.hpp>
-#include <ulisse_ctrl/states/genericstate.hpp>
+#include <ulisse_ctrl/states/generic_state.hpp>
 
 bool ConfigureTaskFromFile(std::unordered_map<std::string, ulisse::TasksInfo>& tasksMap, libconfig::Config& confObj);
 bool ConfigurePriorityLevelsFromFile(std::shared_ptr<tpik::ActionManager> actionManager, std::unordered_map<std::string, ulisse::TasksInfo>& tasksMap, libconfig::Config& confObj);

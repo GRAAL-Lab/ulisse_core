@@ -1,7 +1,7 @@
 #ifndef ULISSE_CTRL_STATEHOLD_HPP
 #define ULISSE_CTRL_STATEHOLD_HPP
 
-#include "ulisse_ctrl/states/genericstate.hpp"
+#include "ulisse_ctrl/states/generic_state.hpp"
 #include "ulisse_ctrl/states/state_latlong.hpp"
 
 namespace ulisse {

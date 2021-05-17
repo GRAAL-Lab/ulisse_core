@@ -6,7 +6,7 @@
 #include <jsoncpp/json/json.h>
 #include <ulisse_ctrl/configuration.h>
 #include <ulisse_ctrl/geometry_defines.h>
-#include <ulisse_ctrl/states/genericstate.hpp>
+#include <ulisse_ctrl/states/generic_state.hpp>
 #include <ulisse_ctrl/ulisse_definitions.h>
 
 using std::placeholders::_1;
@@ -34,6 +34,8 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 
     // Sensor Subscriptions
     navFilterSub_ = nh_->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 10, std::bind(&VehicleController::NavFilterCB, this, _1));
+    navFilterSub_ = nh_->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 10, std::bind(&VehicleController::NavFilterCB, this, _1));
+
 
     // Control Publishers
     genericLogPub_ = nh_->create_publisher<std_msgs::msg::String>("/ulisse/log/generic", 10);
@@ -132,7 +134,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     // FSM Initialization
     SetUpFSM();
 
-    srv_ = nh_->create_service<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service,
+    srvCommand_ = nh_->create_service<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service,
         std::bind(&VehicleController::CommandsHandler, this, _1, _2, _3));
 
     srvSetBoundaries_ = nh_->create_service<ulisse_msgs::srv::SetBoundaries>(ulisse_msgs::topicnames::set_boundaries_service,
@@ -500,6 +502,11 @@ void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::Share
 
     robotModel_->PositionOnInertialFrame(worldF_T_vehicleF);
     robotModel_->VelocityVector(ulisse::robotModelID::ASV, velocity_fbk);
+}
+
+void VehicleController::LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg)
+{
+
 }
 
 void VehicleController::Run()

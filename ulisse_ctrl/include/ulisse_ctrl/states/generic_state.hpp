@@ -1,5 +1,5 @@
-#ifndef ULISSE_CTRL_GENERICSTATE_HPP
-#define ULISSE_CTRL_GENERICSTATE_HPP
+#ifndef ULISSE_CTRL_GENERIC_STATE_HPP
+#define ULISSE_CTRL_GENERIC_STATE_HPP
 
 #include "ulisse_ctrl/ctrl_data_structs.hpp"
 #include <fsm/fsm.h>
@@ -35,4 +35,4 @@ namespace states {
 }
 }
 
-#endif // ULISSE_CTRL_GENERICSTATE_HPP
+#endif // ULISSE_CTRL_GENERIC_STATE_HPP

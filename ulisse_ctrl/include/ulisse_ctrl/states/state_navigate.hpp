@@ -2,7 +2,7 @@
 #define ULISSE_CTRL_STATENAVIGATE_HPP
 
 #include "sisl.h"
-#include "ulisse_ctrl/states/genericstate.hpp"
+#include "ulisse_ctrl/states/generic_state.hpp"
 #include "ulisse_msgs/msg/path.hpp"
 #include <ulisse_ctrl/nurbs.h>
 

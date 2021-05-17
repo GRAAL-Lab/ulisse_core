@@ -6,29 +6,36 @@
 #include "ulisse_msgs/msg/llc_status.hpp"
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
 #include "ulisse_msgs/msg/task_status.hpp"
+#include <ulisse_msgs/msg/feedback_gui.hpp>
+#include <ulisse_msgs/msg/reference_velocities.hpp>
+#include <ulisse_msgs/msg/vehicle_status.hpp>
+
 #include "ulisse_msgs/srv/control_command.hpp"
 #include "ulisse_msgs/srv/get_boundaries.hpp"
 #include "ulisse_msgs/srv/reset_configuration.hpp"
 #include "ulisse_msgs/srv/set_boundaries.hpp"
 #include "ulisse_msgs/srv/set_cruise_control.hpp"
+
 #include <ulisse_ctrl/commands/command_halt.hpp>
 #include <ulisse_ctrl/commands/command_hold.hpp>
 #include <ulisse_ctrl/commands/command_latlong.hpp>
 #include <ulisse_ctrl/commands/command_navigate.hpp>
 #include <ulisse_ctrl/commands/command_speedheading.hpp>
+
 #include <ulisse_ctrl/events/event_near_goal_position.hpp>
 #include <ulisse_ctrl/events/event_rc_enabled.hpp>
+
 #include <ulisse_ctrl/states/state_halt.hpp>
 #include <ulisse_ctrl/states/state_hold.hpp>
 #include <ulisse_ctrl/states/state_latlong.hpp>
 #include <ulisse_ctrl/states/state_navigate.hpp>
 #include <ulisse_ctrl/states/state_speedheading.hpp>
+
 #include <ulisse_ctrl/tasks/SafetyBoundaries.h>
-#include <ulisse_msgs/msg/feedback_gui.hpp>
-#include <ulisse_msgs/msg/reference_velocities.hpp>
-#include <ulisse_msgs/msg/vehicle_status.hpp>
+
 
 namespace ulisse {
+
 class VehicleController {
 
     TasksInfo taskInfo_;
@@ -38,13 +45,14 @@ class VehicleController {
 
     rclcpp::Node::SharedPtr nh_;
     std::string fileName_;
-    rclcpp::Service<ulisse_msgs::srv::ControlCommand>::SharedPtr srv_;
+    rclcpp::Service<ulisse_msgs::srv::ControlCommand>::SharedPtr srvCommand_;
     rclcpp::Service<ulisse_msgs::srv::SetBoundaries>::SharedPtr srvSetBoundaries_;
     rclcpp::Service<ulisse_msgs::srv::GetBoundaries>::SharedPtr srvGetBoundaries_;
     rclcpp::Service<ulisse_msgs::srv::ResetConfiguration>::SharedPtr srvResetConf_;
     rclcpp::Service<ulisse_msgs::srv::SetCruiseControl>::SharedPtr srvCruise_;
 
     rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr navFilterSub_;
+    rclcpp::Subscription<ulisse_msgs::msg::LLCStatus>::SharedPtr llcStatusSub_;
 
     rclcpp::Publisher<ulisse_msgs::msg::ReferenceVelocities>::SharedPtr referenceVelocitiesPub_;
     rclcpp::Publisher<ulisse_msgs::msg::VehicleStatus>::SharedPtr vehicleStatusPub_;
@@ -98,7 +106,6 @@ class VehicleController {
     commands::CommandNavigate commandPathFollowing_;
 
     events::EventRCEnabled eventRcEnabled_;
-
     events::EventNearGoalPosition eventNearGoalPosition_;
 
     std::shared_ptr<ControllerConfiguration> conf_;

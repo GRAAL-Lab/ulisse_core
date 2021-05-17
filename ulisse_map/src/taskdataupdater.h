@@ -52,7 +52,7 @@ public:
     void SetNodeHandle(const rclcpp::Node::SharedPtr& np);
     double RadiansToCompassDegrees(const double angle_rad);
 
-    void TaskDataCB(const ulisse_msgs::msg::FeedbackGui::SharedPtr msg);
+    //void TaskDataCB(const ulisse_msgs::msg::FeedbackGui::SharedPtr msg);
 
     Q_INVOKABLE void copyToClipboard(QString value);
 

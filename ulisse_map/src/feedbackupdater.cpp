@@ -141,10 +141,10 @@ void FeedbackUpdater::NavFilterData(const ulisse_msgs::msg::NavFilterData::Share
     q_ulisse_yaw_deg_ = int(q_ulisse_yaw_deg_ * 1E2) / 1E2;
     q_ulisse_surge_ = int(q_ulisse_surge_ * 1E2) / 1E2;
 
-    gpsOnline_ = msg->using_gps;
-    imuOnline_ = msg->using_imu;
-    compassOnline_ = msg->using_compass;
-    magnetometerOnline_ = msg->using_magnetometer;
+    gpsOnline_ = msg->gps_received;
+    imuOnline_ = msg->imu_received;
+    compassOnline_ = msg->compass_received;
+    magnetometerOnline_ = msg->magnetometer_received;
     //std::cout << "magnetometerOnline_: " << magnetometerOnline_ << std::endl;
 }
 

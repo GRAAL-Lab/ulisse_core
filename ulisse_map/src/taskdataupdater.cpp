@@ -47,7 +47,7 @@ void TaskDataUpdater::Init(QQmlApplicationEngine* engine, const rclcpp::Node::Sh
     // set the depth to the QoS profile
     //custom_qos_profile.depth = 7;
 
-    feedbackGuiSub_ = np_->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10, std::bind(&TaskDataUpdater::TaskDataCB, this, _1) /*custom_qos_profile*/);
+    //feedbackGuiSub_ = np_->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10, std::bind(&TaskDataUpdater::TaskDataCB, this, _1) /*custom_qos_profile*/);
 }
 
 void TaskDataUpdater::SetNodeHandle(const rclcpp::Node::SharedPtr& np)
@@ -62,14 +62,14 @@ double TaskDataUpdater::RadiansToCompassDegrees(const double angle_rad)
     return angle_compass;
 }
 
-void TaskDataUpdater::TaskDataCB(const ulisse_msgs::msg::FeedbackGui::SharedPtr msg)
+/*void TaskDataUpdater::TaskDataCB(const ulisse_msgs::msg::FeedbackGui::SharedPtr msg)
 {
-    /*q_goal_pos_.setLatitude(msg->goal_position.latitude);
+    q_goal_pos_.setLatitude(msg->goal_position.latitude);
     q_goal_pos_.setLongitude(msg->goal_position.longitude);
     q_goal_distance_ = msg->goal_distance;
     q_accept_radius_ = msg->acceptance_radius;
-    q_goal_heading_deg_ = msg->goal_heading * 180 / M_PI;*/
-}
+    q_goal_heading_deg_ = msg->goal_heading * 180 / M_PI;
+}*/
 
 void TaskDataUpdater::copyToClipboard(QString newText)
 {
