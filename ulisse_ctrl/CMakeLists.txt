@@ -52,7 +52,7 @@ set(use_SYSTEM_BOOST TRUE)
 ## Libraries ##
 set(ulisse_ctrl_lib_sources
     # Main Classes
-    src/ulisse_ctrl/vehiclecontroller.cpp
+    src/ulisse_ctrl/vehicle_controller.cpp
     # Helpers
     src/ulisse_ctrl/configuration.cpp
     src/ulisse_ctrl/nurbs.cpp

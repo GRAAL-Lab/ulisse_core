@@ -36,14 +36,14 @@
 
 namespace ulisse {
 
-class VehicleController {
+class VehicleController : public rclcpp::Node {
 
     TasksInfo taskInfo_;
     std::unordered_map<std::string, TasksInfo> tasksMap_;
     std::unordered_map<std::string, std::shared_ptr<states::GenericState>> statesMap_;
     std::unordered_map<std::string, commands::GenericCommand&> commandsMap_;
 
-    rclcpp::Node::SharedPtr nh_;
+    //rclcpp::Node::SharedPtr nh_;
     std::string fileName_;
     rclcpp::Service<ulisse_msgs::srv::ControlCommand>::SharedPtr srvCommand_;
     rclcpp::Service<ulisse_msgs::srv::SetBoundaries>::SharedPtr srvSetBoundaries_;
@@ -59,6 +59,7 @@ class VehicleController {
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr genericLogPub_;
     rclcpp::Publisher<ulisse_msgs::msg::FeedbackGui>::SharedPtr feedbackGuiPub_;
 
+    rclcpp::TimerBase::SharedPtr runTimer_;
     rclcpp::TimerBase::SharedPtr slow_timer_;
 
     /// ROBOT MODEL
@@ -87,7 +88,7 @@ class VehicleController {
     std::shared_ptr<ikcl::CartesianDistance> asvCartesianDistancePathFollowing_;
 
     double timestamp_;
-    double sampleTime_;
+    double rate_;
     bool boundariesSet_;
 
     // FSM
@@ -146,7 +147,7 @@ class VehicleController {
     void PublishLog(std::string log);
 
 public:
-    VehicleController(const rclcpp::Node::SharedPtr& nh, double sampleTime, std::string file_name);
+    VehicleController(int rate, std::string file_name);
     virtual ~VehicleController();
     void Run();
     void PublishControl();
