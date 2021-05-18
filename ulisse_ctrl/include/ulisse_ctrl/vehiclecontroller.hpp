@@ -19,7 +19,7 @@
 #include "ulisse_ctrl/commands/command_halt.hpp"
 #include "ulisse_ctrl/commands/command_hold.hpp"
 #include "ulisse_ctrl/commands/command_latlong.hpp"
-#include "ulisse_ctrl/commands/command_navigate.hpp"
+#include "ulisse_ctrl/commands/command_pathfollow.hpp"
 #include "ulisse_ctrl/commands/command_speedheading.hpp"
 
 #include "ulisse_ctrl/events/event_near_goal_position.hpp"
@@ -28,7 +28,7 @@
 #include "ulisse_ctrl/states/state_halt.hpp"
 #include "ulisse_ctrl/states/state_hold.hpp"
 #include "ulisse_ctrl/states/state_latlong.hpp"
-#include "ulisse_ctrl/states/state_navigate.hpp"
+#include "ulisse_ctrl/states/state_pathfollow.hpp"
 #include "ulisse_ctrl/states/state_speedheading.hpp"
 
 #include "ulisse_ctrl/tasks/SafetyBoundaries.hpp"
@@ -97,13 +97,13 @@ class VehicleController {
     std::shared_ptr<states::StateHold> stateHold_;
     std::shared_ptr<states::StateLatLong> stateLatLong_;
     std::shared_ptr<states::StateSpeedHeading> stateSpeedHeading_;
-    std::shared_ptr<states::StateNavigate> statePathFollowing_;
+    std::shared_ptr<states::StatePathFollow> statePathFollowing_;
 
     commands::CommandHalt commandHalt_;
     commands::CommandHold commandHold_;
     commands::CommandLatLong commandLatLong_;
     commands::CommandSpeedHeading commandSpeedHeading_;
-    commands::CommandNavigate commandPathFollowing_;
+    commands::CommandPathFollow commandPathFollowing_;
 
     events::EventRCEnabled eventRcEnabled_;
     events::EventNearGoalPosition eventNearGoalPosition_;

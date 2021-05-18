@@ -32,7 +32,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 
     stateHalt_ = std::make_shared<states::StateHalt>();
     stateHold_ = std::make_shared<states::StateHold>();
-    statePathFollowing_ = std::make_shared<states::StateNavigate>();
+    statePathFollowing_ = std::make_shared<states::StatePathFollow>();
     stateLatLong_ = std::make_shared<states::StateLatLong>();
     stateSpeedHeading_ = std::make_shared<states::StateSpeedHeading>();
 
@@ -217,7 +217,7 @@ bool VehicleController::LoadConfiguration(std::shared_ptr<ControllerConfiguratio
     statesMap_.insert({ ulisse::states::ID::halt, stateHalt_ });
     statesMap_.insert({ ulisse::states::ID::hold, stateHold_ });
     statesMap_.insert({ ulisse::states::ID::latlong, stateLatLong_ });
-    statesMap_.insert({ ulisse::states::ID::navigate, statePathFollowing_ });
+    statesMap_.insert({ ulisse::states::ID::pathfollow, statePathFollowing_ });
     statesMap_.insert({ ulisse::states::ID::speedheading, stateSpeedHeading_ });
 
     if (!ConfigureSatesFromFile(statesMap_, confObj)) {
@@ -229,7 +229,7 @@ bool VehicleController::LoadConfiguration(std::shared_ptr<ControllerConfiguratio
     commandsMap_.insert({ ulisse::commands::ID::halt, commandHalt_ });
     commandsMap_.insert({ ulisse::commands::ID::hold, commandHold_ });
     commandsMap_.insert({ ulisse::commands::ID::latlong, commandLatLong_ });
-    commandsMap_.insert({ ulisse::commands::ID::navigate, commandPathFollowing_ });
+    commandsMap_.insert({ ulisse::commands::ID::pathfollow, commandPathFollowing_ });
     commandsMap_.insert({ ulisse::commands::ID::speedheading, commandSpeedHeading_ });
 
     return true;
@@ -358,7 +358,7 @@ void VehicleController::CommandsHandler(const std::shared_ptr<rmw_request_id_t> 
         log << "Received Command SpeedHeading (speed: " << request->sh_cmd.speed << " , heading: " << request->sh_cmd.heading << " )";
         PublishLog(log.str().c_str());
 
-    } else if (request->command_type == ulisse::commands::ID::navigate) {
+    } else if (request->command_type == ulisse::commands::ID::pathfollow) {
 
         std::cout << "Received Command Path Following" << std::endl;
 

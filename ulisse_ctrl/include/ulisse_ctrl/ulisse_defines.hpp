@@ -33,7 +33,7 @@ namespace action {
     const std::string idle = "Idle";
     const std::string hold = "Hold";
     const std::string speed_heading = "Speed_Heading";
-    const std::string navigate = "Path_Following";
+    const std::string pathfollow = "Path_Following";
 }
 
 

@@ -13,7 +13,7 @@ namespace commands {
         const std::string latlong = "latlong_command";
         const std::string hold = "hold_command";
         const std::string speedheading = "speedheading_command";
-        const std::string navigate = "navigate_command";
+        const std::string pathfollow = "pathfollow_command";
     }
 }
 
@@ -25,7 +25,7 @@ namespace states {
         const std::string latlong = "Go_To";
         const std::string hold = "Hold";
         const std::string speedheading = "Speed_Heading";
-        const std::string navigate = "Path_Following";
+        const std::string pathfollow = "Path_Following";
     }
 }
 
