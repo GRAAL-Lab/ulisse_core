@@ -71,7 +71,7 @@ set(ulisse_ctrl_lib_sources
     src/ulisse_ctrl/commands/command_speedheading.cpp
     src/ulisse_ctrl/commands/command_navigate.cpp
     # Events
-    src/ulisse_ctrl/events/generic_event.cpp
+    #src/ulisse_ctrl/events/generic_event.cpp
     src/ulisse_ctrl/events/event_rc_enabled.cpp
     src/ulisse_ctrl/events/event_near_goal_position.cpp
 

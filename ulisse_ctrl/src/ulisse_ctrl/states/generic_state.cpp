@@ -16,9 +16,9 @@ namespace states {
 
     void GenericState::CheckRadioController()
     {
-                if ((stateCtx_.statusCxt->llcStatus & EMB_STSMASK_PPM_ENABLED) != 0) {
-                    fsm_->EmitEvent(ulisse::events::names::rcenabled, ulisse::events::priority::high);
-                }
+        if ((ctrlData->llcStatus & EMB_STSMASK_PPM_ENABLED) != 0) {
+            fsm_->EmitEvent(ulisse::events::names::rcenabled, ulisse::events::priority::high);
+        }
     }
 }
 }

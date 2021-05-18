@@ -1,7 +1,7 @@
 #include "ulisse_ctrl/states/state_latlong.hpp"
+
 #include "ulisse_ctrl/fsm_defines.hpp"
-#include <ulisse_ctrl/geometry_defines.h>
-#include <ulisse_ctrl/ulisse_definitions.h>
+#include "ulisse_ctrl/ulisse_defines.hpp"
 
 namespace ulisse {
 
@@ -51,7 +51,7 @@ namespace states {
         //a desired escape directon and to generate a desired velocity. To do this we use the task AbsoluteAxisAlignment to cope with
         //the align behavior activated in function of the internal actiovation function of the safety task.
 
-        safetyBoundariesTask_->VehiclePosition() = *vehiclePosition.get();
+        safetyBoundariesTask_->VehiclePosition() = ctrlData->inertialF_linearPosition;
 
         Eigen::MatrixXd Aexternal;
 
@@ -76,7 +76,7 @@ namespace states {
         safetyBoundariesTask_->ExternalActivationFunction() = taskGainSafety * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
 
         //goto task
-        ctb::DistanceAndAzimuthRad(*vehiclePosition.get(), goalPosition, goalDistance, goalHeading);
+        ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, goalPosition, goalDistance, goalHeading);
 
         if (goalDistance < acceptanceRadius) {
             std::cout << "*** GOAL REACHED! ***" << std::endl;

@@ -7,7 +7,7 @@
 #include <libconfig.h++>
 
 //to be delete once safetyB in ikcl
-#include "ulisse_ctrl/tasks/SafetyBoundaries.h"
+#include "ulisse_ctrl/tasks/SafetyBoundaries.hpp"
 
 namespace ulisse {
 
@@ -21,7 +21,7 @@ namespace states {
         double minHeadingError_, maxHeadingError_;
 
     public:
-        std::shared_ptr<LatLong> vehiclePosition; // [x y]
+        std::shared_ptr<ControlData> ctrlData; // [x y]
         std::shared_ptr<tpik::ActionManager> actionManager;
         std::shared_ptr<rml::RobotModel> robotModel;
         std::unordered_map<std::string, TasksInfo> tasksMap;

@@ -1,13 +1,15 @@
 ﻿#include "ulisse_ctrl/vehiclecontroller.hpp"
+
+#include <jsoncpp/json/json.h>
+#include <ament_index_cpp/get_package_share_directory.hpp>
+
 #include "ulisse_ctrl/fsm_defines.hpp"
+#include "ulisse_ctrl/configuration.hpp"
+#include "ulisse_ctrl/ulisse_defines.hpp"
+#include "ulisse_ctrl/states/generic_state.hpp"
+
 #include "ulisse_msgs/terminal_utils.hpp"
 #include "ulisse_msgs/topicnames.hpp"
-#include <ament_index_cpp/get_package_share_directory.hpp>
-#include <jsoncpp/json/json.h>
-#include <ulisse_ctrl/configuration.h>
-#include <ulisse_ctrl/geometry_defines.h>
-#include <ulisse_ctrl/states/generic_state.hpp>
-#include <ulisse_ctrl/ulisse_definitions.h>
 
 using std::placeholders::_1;
 using std::placeholders::_2;
@@ -21,8 +23,10 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     , boundariesSet_(false)
 {
     conf_ = std::make_shared<ControllerConfiguration>();
-    vehiclePosition_ = std::make_shared<LatLong>();
-    inertialF_waterCurrent_ = std::make_shared<Eigen::Vector2d>();
+
+    ctrlData_ = std::make_shared<ControlData>();
+    //vehiclePosition_ = std::make_shared<ctb::LatLong>();
+    //inertialF_waterCurrent_ = std::make_shared<Eigen::Vector2d>();
 
     fileName_ = file_name;
 
@@ -34,7 +38,7 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
 
     // Sensor Subscriptions
     navFilterSub_ = nh_->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 10, std::bind(&VehicleController::NavFilterCB, this, _1));
-    navFilterSub_ = nh_->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 10, std::bind(&VehicleController::NavFilterCB, this, _1));
+    llcStatusSub_ = nh_->create_subscription<ulisse_msgs::msg::LLCStatus>(ulisse_msgs::topicnames::llc_status, 10, std::bind(&VehicleController::LLCStatusCB, this, _1));
 
 
     // Control Publishers
@@ -262,14 +266,14 @@ void VehicleController::SetUpFSM()
         state.second->actionManager = actionManager_;
         state.second->robotModel = robotModel_;
         state.second->tasksMap = tasksMap_;
-        state.second->vehiclePosition = vehiclePosition_;
+        state.second->ctrlData = ctrlData_;
         state.second->SetFSM(&uFsm_);
     }
 
     // ***** EVENTS *****
     eventRcEnabled_.SetFSM(&uFsm_);
     eventNearGoalPosition_.SetFSM(&uFsm_);
-    eventNearGoalPosition_.CurrentPosition() = vehiclePosition_;
+    eventNearGoalPosition_.ControlData() = ctrlData_;
     eventNearGoalPosition_.GoToHoldAfterMove(conf_->goToHoldAfterMove);
     eventNearGoalPosition_.StateHold() = std::dynamic_pointer_cast<ulisse::states::StateHold>(statesMap_.find(ulisse::states::ID::hold)->second);
 
@@ -334,7 +338,7 @@ void VehicleController::CommandsHandler(const std::shared_ptr<rmw_request_id_t> 
         PublishLog("Received Command Halt");
 
     } else if (request->command_type == ulisse::commands::ID::hold) {
-        commandHold_.SetPositionToHold(vehiclePosition_);
+        commandHold_.SetPositionToHold(ctrlData_->inertialF_linearPosition);
         std::cout << "Received Command Hold" << std::endl;
         PublishLog("Received Command Hold");
 
@@ -475,30 +479,32 @@ void VehicleController::SlowTimerCB()
 
 void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)
 {
-    vehiclePosition_->latitude = msg->inertialframe_linear_position.latlong.latitude;
-    vehiclePosition_->longitude = msg->inertialframe_linear_position.latlong.longitude;
+    ctrlData_->inertialF_linearPosition.latitude = msg->inertialframe_linear_position.latlong.latitude;
+    ctrlData_->inertialF_linearPosition.longitude = msg->inertialframe_linear_position.latlong.longitude;
 
     // Get the water current for hold state
-    *inertialF_waterCurrent_ = { msg->inertialframe_water_current[0], msg->inertialframe_water_current[1] };
+    ctrlData_->inertialF_waterCurrent[0] = msg->inertialframe_water_current[0];
+    ctrlData_->inertialF_waterCurrent[1] = msg->inertialframe_water_current[1];
 
-    commandHold_.SetWaterCurrent(inertialF_waterCurrent_);
+    ctrlData_->bodyF_angularPosition.Pitch(0.0);
+    ctrlData_->bodyF_angularPosition.Roll(0.0);
+    ctrlData_->bodyF_angularPosition.Yaw(msg->bodyframe_angular_position.yaw);
 
-
+    ctrlData_->bodyF_linearVelocity[0] = msg->bodyframe_linear_velocity[0];
+    ctrlData_->bodyF_linearVelocity[1] = msg->bodyframe_linear_velocity[1];
+    ctrlData_->bodyF_linearVelocity[2] = msg->bodyframe_linear_velocity[2];
 
     // Linear position in world frame
-    Eigen::Vector3d worldF_vehicleLinearPosition(vehiclePosition_->latitude, vehiclePosition_->longitude, 0.0);
-
-    // Angualr position in world frame
-    rml::EulerRPY rpy { 0.0, 0.0, msg->bodyframe_angular_position.yaw };
-
-    Eigen::Vector6d velocity_fbk = Eigen::Vector6d::Zero();
-    velocity_fbk(0) = msg->bodyframe_linear_velocity[0];
-    velocity_fbk(1) = msg->bodyframe_linear_velocity[1];
+    Eigen::Vector3d worldF_vehicleLinearPosition(ctrlData_->inertialF_linearPosition.latitude, ctrlData_->inertialF_linearPosition.longitude, 0.0);
 
     // Updating the robot model
     Eigen::TransformationMatrix worldF_T_vehicleF;
     worldF_T_vehicleF.TranslationVector(worldF_vehicleLinearPosition);
-    worldF_T_vehicleF.RotationMatrix(rpy.ToRotationMatrix());
+    worldF_T_vehicleF.RotationMatrix(ctrlData_->bodyF_angularPosition.ToRotationMatrix());
+
+    Eigen::Vector6d velocity_fbk = Eigen::Vector6d::Zero();
+    velocity_fbk(0) = ctrlData_->bodyF_linearVelocity[0];
+    velocity_fbk(1) = ctrlData_->bodyF_linearVelocity[1];
 
     robotModel_->PositionOnInertialFrame(worldF_T_vehicleF);
     robotModel_->VelocityVector(ulisse::robotModelID::ASV, velocity_fbk);
@@ -506,7 +512,7 @@ void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::Share
 
 void VehicleController::LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg)
 {
-
+    ctrlData_->llcStatus = msg->status;
 }
 
 void VehicleController::Run()

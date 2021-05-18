@@ -1,7 +1,7 @@
 #include "ulisse_ctrl/states/state_navigate.hpp"
 #include "ulisse_ctrl/fsm_defines.hpp"
-#include <ulisse_ctrl/geometry_defines.h>
-#include <ulisse_ctrl/ulisse_definitions.h>
+
+#include "ulisse_ctrl/ulisse_defines.hpp"
 
 namespace ulisse {
 
@@ -111,7 +111,7 @@ namespace states {
         //a desired escape directon and to generate a desired velocity. To do this we use the task AbsoluteAxisAlignment to cope with
         //the align behavior activated in function of the internal actiovation function of the safety task.
 
-        safetyBoundariesTask_->VehiclePosition() = *vehiclePosition.get();
+        safetyBoundariesTask_->VehiclePosition() = ctrlData->inertialF_linearPosition;
 
         Eigen::MatrixXd Aexternal;
 
@@ -142,7 +142,7 @@ namespace states {
             //Going to the starting point
             if (!vehicleOnTrack_) {
                 
-                ctb::DistanceAndAzimuthRad(*vehiclePosition, startP_, goalDistance, goalHeading);
+                ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, startP_, goalDistance, goalHeading);
 
                 if (goalDistance < tolleranceStartingPoint_) {
                     vehicleOnTrack_ = true;
@@ -176,11 +176,11 @@ namespace states {
                     fsm_->EmitEvent(ulisse::events::names::neargoalposition, ulisse::events::priority::medium);
                 }
                 //std::cout << "*** STARTING POINT! ***" << std::endl;
-                if (!nurbsObj_.ComputeNextPoint(*vehiclePosition, nextP_)) {
+                if (!nurbsObj_.ComputeNextPoint(ctrlData->inertialF_linearPosition, nextP_)) {
                     return fsm::fail;
                 }
 
-                ctb::DistanceAndAzimuthRad(*vehiclePosition, nextP_, goalDistance, goalHeading);
+                ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, nextP_, goalDistance, goalHeading);
 
                 //Set the distance vector to the target
                 cartesianDistancePathFollowingTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(goalHeading), goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame);

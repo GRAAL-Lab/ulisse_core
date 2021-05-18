@@ -6,9 +6,9 @@
 #include "ulisse_msgs/msg/llc_status.hpp"
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
 #include "ulisse_msgs/msg/task_status.hpp"
-#include <ulisse_msgs/msg/feedback_gui.hpp>
-#include <ulisse_msgs/msg/reference_velocities.hpp>
-#include <ulisse_msgs/msg/vehicle_status.hpp>
+#include "ulisse_msgs/msg/feedback_gui.hpp"
+#include "ulisse_msgs/msg/reference_velocities.hpp"
+#include "ulisse_msgs/msg/vehicle_status.hpp"
 
 #include "ulisse_msgs/srv/control_command.hpp"
 #include "ulisse_msgs/srv/get_boundaries.hpp"
@@ -16,22 +16,22 @@
 #include "ulisse_msgs/srv/set_boundaries.hpp"
 #include "ulisse_msgs/srv/set_cruise_control.hpp"
 
-#include <ulisse_ctrl/commands/command_halt.hpp>
-#include <ulisse_ctrl/commands/command_hold.hpp>
-#include <ulisse_ctrl/commands/command_latlong.hpp>
-#include <ulisse_ctrl/commands/command_navigate.hpp>
-#include <ulisse_ctrl/commands/command_speedheading.hpp>
+#include "ulisse_ctrl/commands/command_halt.hpp"
+#include "ulisse_ctrl/commands/command_hold.hpp"
+#include "ulisse_ctrl/commands/command_latlong.hpp"
+#include "ulisse_ctrl/commands/command_navigate.hpp"
+#include "ulisse_ctrl/commands/command_speedheading.hpp"
 
-#include <ulisse_ctrl/events/event_near_goal_position.hpp>
-#include <ulisse_ctrl/events/event_rc_enabled.hpp>
+#include "ulisse_ctrl/events/event_near_goal_position.hpp"
+#include "ulisse_ctrl/events/event_rc_enabled.hpp"
 
-#include <ulisse_ctrl/states/state_halt.hpp>
-#include <ulisse_ctrl/states/state_hold.hpp>
-#include <ulisse_ctrl/states/state_latlong.hpp>
-#include <ulisse_ctrl/states/state_navigate.hpp>
-#include <ulisse_ctrl/states/state_speedheading.hpp>
+#include "ulisse_ctrl/states/state_halt.hpp"
+#include "ulisse_ctrl/states/state_hold.hpp"
+#include "ulisse_ctrl/states/state_latlong.hpp"
+#include "ulisse_ctrl/states/state_navigate.hpp"
+#include "ulisse_ctrl/states/state_speedheading.hpp"
 
-#include <ulisse_ctrl/tasks/SafetyBoundaries.h>
+#include "ulisse_ctrl/tasks/SafetyBoundaries.hpp"
 
 
 namespace ulisse {
@@ -116,9 +116,9 @@ class VehicleController {
 
     ctb::LatLong centroidLocation_;
 
-    std::shared_ptr<ctb::LatLong> vehiclePosition_;
-
-    std::shared_ptr<Eigen::Vector2d> inertialF_waterCurrent_;
+    std::shared_ptr<ControlData> ctrlData_;
+    //std::shared_ptr<ctb::LatLong> vehiclePosition_;
+    //std::shared_ptr<Eigen::Vector2d> inertialF_waterCurrent_;
 
     bool LoadConfiguration(std::shared_ptr<ControllerConfiguration>& conf);
     void SetUpFSM();

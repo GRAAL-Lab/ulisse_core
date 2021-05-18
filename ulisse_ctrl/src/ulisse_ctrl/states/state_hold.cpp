@@ -1,7 +1,6 @@
 #include "ulisse_ctrl/states/state_hold.hpp"
-#include <ulisse_ctrl/fsm_defines.hpp>
-#include <ulisse_ctrl/geometry_defines.h>
-#include <ulisse_ctrl/ulisse_definitions.h>
+#include "ulisse_ctrl/fsm_defines.hpp"
+#include "ulisse_ctrl/ulisse_defines.hpp"
 
 
 namespace ulisse {
@@ -18,7 +17,7 @@ namespace states {
 
     fsm::retval StateHold::OnEntry()
     {
-        inertialF_waterCurrent = std::make_shared<Eigen::Vector2d>();
+        //inertialF_waterCurrent = std::make_shared<Eigen::Vector2d>();
 
         // Set tasks
         safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
@@ -61,7 +60,7 @@ namespace states {
     {
         CheckRadioController();
 
-        safetyBoundariesTask_->VehiclePosition() = *vehiclePosition.get();
+        safetyBoundariesTask_->VehiclePosition() = ctrlData->inertialF_linearPosition;
 
         Eigen::MatrixXd Aexternal;
 
@@ -96,7 +95,7 @@ namespace states {
         std::cout << "-----------------------" << std::endl;*/
 
         //hold task
-        ctb::DistanceAndAzimuthRad(*vehiclePosition.get(), positionToHold, goalDistance_, goalHeading_); //compute the distanza between the current position and the position to hold
+        ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, positionToHold, goalDistance_, goalHeading_); //compute the distanza between the current position and the position to hold
 
         // If the robot is inside the circle put the catamaran countercurrent, otherwise
         // point to the hold circle defined by maxAcceptanceRadius and minAcceptanceRadiuos
@@ -110,12 +109,14 @@ namespace states {
         if (hysteresisState_ == HysteresisState::Align) {
             linearVelocityTask_->SetReferenceRate(Eigen::Vector3d::Zero(), robotModel->BodyFrameID());
 
-            absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(-inertialF_waterCurrent->normalized().x(), -inertialF_waterCurrent->normalized().y(), 0), rml::FrameID::WorldFrame);
+            absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(-(ctrlData->inertialF_waterCurrent).normalized().x(),
+                                                                  -(ctrlData->inertialF_waterCurrent).normalized().y(), 0), rml::FrameID::WorldFrame);
             absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
 
             // Avoid that the roboto try to align with very small intensity of water current.
-            double absoluteAxisAlignmentGain = rml::IncreasingBellShapedFunction(minWaterCurrent_, maxWaterCurrent_, 0, 1, inertialF_waterCurrent->norm());
-            absoluteAxisAlignmentTask_->ExternalActivationFunction() = absoluteAxisAlignmentGain * Eigen::MatrixXd::Identity(absoluteAxisAlignmentTask_->TaskSpace(), absoluteAxisAlignmentTask_->TaskSpace());
+            double absoluteAxisAlignmentGain = rml::IncreasingBellShapedFunction(minWaterCurrent_, maxWaterCurrent_, 0, 1, (ctrlData->inertialF_waterCurrent).norm());
+            absoluteAxisAlignmentTask_->ExternalActivationFunction() = absoluteAxisAlignmentGain *
+                Eigen::MatrixXd::Identity(absoluteAxisAlignmentTask_->TaskSpace(), absoluteAxisAlignmentTask_->TaskSpace());
 
         } else if (hysteresisState_ == HysteresisState::ComeBack) {
             // If the previos action was comeback to the hold acceptance radius, keep do it until d < minAcceptanceRadius.

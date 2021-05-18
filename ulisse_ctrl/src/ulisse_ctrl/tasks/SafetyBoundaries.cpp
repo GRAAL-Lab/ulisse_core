@@ -1,4 +1,4 @@
-#include "ulisse_ctrl/tasks/SafetyBoundaries.h"
+#include "ulisse_ctrl/tasks/SafetyBoundaries.hpp"
 
 using namespace ctb;
 namespace ikcl {

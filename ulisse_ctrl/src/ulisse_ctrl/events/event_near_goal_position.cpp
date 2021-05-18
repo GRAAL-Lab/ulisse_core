@@ -16,12 +16,18 @@ namespace events {
         std::cout << "Executing: EventNearGoalPosition" << std::endl;
 
         if (goToHold_) {
-            stateHold_->positionToHold = *currentPosition_;
+            stateHold_->positionToHold = ctrlData_->inertialF_linearPosition;
             fsm_->SetNextState("Hold");
         } else {
             fsm_->SetNextState("Halt");
         }
 
+        return fsm::retval::ok;
+    }
+
+    fsm::retval EventNearGoalPosition::Propagate(void)
+    {
+        //std::cout << "Executing Event" << std::endl;
         return fsm::retval::ok;
     }
 

@@ -1,16 +1,27 @@
 #ifndef ULISSE_CTRL_DATA_STRUCTS_HPP
 #define ULISSE_CTRL_DATA_STRUCTS_HPP
 
-#include "ctrl_toolbox/HelperFunctions.h"
-#include "ctrl_toolbox/pid/DigitalPID.h"
-#include "rclcpp/rclcpp.hpp"
-#include "surface_vehicle_model/surfacevehiclemodel.hpp"
-#include "ulisse_msgs/msg/task_status.hpp"
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <libconfig.h++>
 #include <tpik/TPIK.h>
 
+#include "rclcpp/rclcpp.hpp"
+#include "ctrl_toolbox/HelperFunctions.h"
+#include "ctrl_toolbox/pid/DigitalPID.h"
+#include "surface_vehicle_model/surfacevehiclemodel.hpp"
+#include "ulisse_msgs/msg/task_status.hpp"
+
+
 namespace ulisse {
+
+struct ControlData {
+    ctb::LatLong inertialF_linearPosition;
+    rml::EulerRPY bodyF_angularPosition;
+    Eigen::Vector3d bodyF_linearVelocity;
+    Eigen::Vector3d bodyF_angularVelocity;
+    Eigen::Vector2d inertialF_waterCurrent;
+    uint16_t llcStatus;
+};
 
 struct TasksInfo {
 
