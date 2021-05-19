@@ -43,7 +43,7 @@ MapViewForm {
         map.clearUlisseTrace()
     }
 
-    engine.onClicked: {
+    engineButton.onClicked: {
         cmdWrapper.sendThrusterActivation(true);
     }
 

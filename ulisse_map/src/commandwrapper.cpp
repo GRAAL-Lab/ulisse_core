@@ -16,28 +16,27 @@ using std::placeholders::_1;
 using namespace std;
 
 CommandWrapper::CommandWrapper(QObject* parent)
-    : QObject(parent)
+    : QObject(parent), Node("gui_commands_wrapper")
 {
 }
 
-CommandWrapper::CommandWrapper(QQmlApplicationEngine* engine, QObject* parent, const rclcpp::Node::SharedPtr& np)
-    : QObject(parent)
+CommandWrapper::CommandWrapper(QQmlApplicationEngine* engine, QObject* parent)
+    : QObject(parent), Node("gui_commands_wrapper")
 {
-    Init(engine, np);
+    LoadQmlEngine(engine);//, np);
 }
 
 CommandWrapper::~CommandWrapper()
 {
 }
 
-void CommandWrapper::Init(QQmlApplicationEngine* engine, const rclcpp::Node::SharedPtr& np)
+void CommandWrapper::LoadQmlEngine(QQmlApplicationEngine* engine)
 {
     appEngine_ = engine;
-    np_ = np;
     myTimer_ = new QTimer(this);
 
     errorCheckInterval_ = 500;
-    goalCtxRead_ = false;
+    fbkReceived_ = false;
 
     QObject::connect(myTimer_, SIGNAL(timeout()), this, SLOT(check_error_slot()));
 
@@ -68,12 +67,12 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine, const rclcpp::Node::Sha
         qDebug("No 'speedHeadTimeout' found!");
     }
 
-    command_srv_ = np_->create_client<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service);
-    cruise_srv_ = np_->create_client<ulisse_msgs::srv::SetCruiseControl>(ulisse_msgs::topicnames::set_cruise_control_service);
-    boundary_srv_ = np_->create_client<ulisse_msgs::srv::SetBoundaries>(ulisse_msgs::topicnames::set_boundaries_service);
-    llc_srv_ = np_->create_client<ulisse_msgs::srv::LLCCommand>(ulisse_msgs::topicnames::llc_cmd_service);
+    command_srv_ = this->create_client<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service);
+    cruise_srv_ = this->create_client<ulisse_msgs::srv::SetCruiseControl>(ulisse_msgs::topicnames::set_cruise_control_service);
+    boundary_srv_ = this->create_client<ulisse_msgs::srv::SetBoundaries>(ulisse_msgs::topicnames::set_boundaries_service);
+    llc_srv_ = this->create_client<ulisse_msgs::srv::LLCCommand>(ulisse_msgs::topicnames::llc_cmd_service);
 
-    feedbackGuiSub_ = np_->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10, std::bind(&CommandWrapper::FeedbackGuiCB, this, _1) /*, custom_qos_profile*/);
+    feedbackGuiSub_ = this->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10, std::bind(&CommandWrapper::FeedbackGuiCB, this, _1) /*, custom_qos_profile*/);
 
     connect(this, &CommandWrapper::connected, []() { std::cout << "service connected" << std::endl; });
     notificator = std::async([&] {
@@ -83,16 +82,11 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine, const rclcpp::Node::Sha
     });
 }
 
-void CommandWrapper::SetNodeHandle(const rclcpp::Node::SharedPtr& np)
-{
-    np_ = np;
-    goalCtxRead_ = false;
-}
 
 void CommandWrapper::FeedbackGuiCB(const ulisse_msgs::msg::FeedbackGui::SharedPtr msg)
 {
     feedbackGuiMsg = std::move(*msg);
-    goalCtxRead_ = true;
+    fbkReceived_ = true;
 }
 
 void CommandWrapper::ShowToast(const QVariant message, const QVariant duration)
@@ -363,13 +357,13 @@ bool CommandWrapper::SendBoundariesRequest(ulisse_msgs::srv::SetBoundaries::Requ
     if (boundary_srv_->service_is_ready()) {
         auto result_future = boundary_srv_->async_send_request(req);
         std::cout << "Send Bounary to KCL" << std::endl;
-        if (rclcpp::spin_until_future_complete(np_, result_future) != rclcpp::FutureReturnCode::SUCCESS) {
+        if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
             result_msg = "service call failed :(";
-            RCLCPP_ERROR(np_->get_logger(), result_msg.c_str());
+            RCLCPP_ERROR(this->get_logger(), result_msg.c_str());
         } else {
             auto result = result_future.get();
             result_msg = "Service returned: " + result->res;
-            RCLCPP_INFO(np_->get_logger(), result_msg.c_str());
+            RCLCPP_INFO(this->get_logger(), result_msg.c_str());
         }
         serviceAvailable = true;
     } else {
@@ -388,13 +382,13 @@ bool CommandWrapper::SendCommandRequest(ulisse_msgs::srv::ControlCommand::Reques
     if (command_srv_->service_is_ready()) {
         auto result_future = command_srv_->async_send_request(req);
         std::cout << "Sent Request to controller" << std::endl;
-        if (rclcpp::spin_until_future_complete(np_, result_future) != rclcpp::FutureReturnCode::SUCCESS) {
+        if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
             result_msg = "service call failed :(";
-            RCLCPP_ERROR(np_->get_logger(), result_msg.c_str());
+            RCLCPP_ERROR(this->get_logger(), result_msg.c_str());
         } else {
             auto result = result_future.get();
             result_msg = "Service returned: " + result->res;
-            RCLCPP_INFO(np_->get_logger(), result_msg.c_str());
+            RCLCPP_INFO(this->get_logger(), result_msg.c_str());
         }
         serviceAvailable = true;
     } else {
@@ -451,13 +445,13 @@ bool CommandWrapper::sendThrusterActivation(bool activate)
     if (llc_srv_->service_is_ready()) {
         auto result_future = llc_srv_->async_send_request(req);
         std::cout << "Sent Request to controller" << std::endl;
-        if (rclcpp::spin_until_future_complete(np_, result_future) != rclcpp::FutureReturnCode::SUCCESS) {
+        if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
             result_msg = "service call failed :(";
-            RCLCPP_ERROR(np_->get_logger(), result_msg.c_str());
+            RCLCPP_ERROR(this->get_logger(), result_msg.c_str());
         } else {
             auto result = result_future.get();
             result_msg = "Service returned: " + std::to_string(result->res);
-            RCLCPP_INFO(np_->get_logger(), result_msg.c_str());
+            RCLCPP_INFO(this->get_logger(), result_msg.c_str());
         }
         serviceAvailable = true;
     } else {
@@ -477,13 +471,13 @@ bool CommandWrapper::setCruiseSpeedCommand(double speed)
     if (cruise_srv_->service_is_ready()) {
         auto result_future = cruise_srv_->async_send_request(req);
         std::cout << "Sent Request to controller" << std::endl;
-        if (rclcpp::spin_until_future_complete(np_, result_future) != rclcpp::FutureReturnCode::SUCCESS) {
+        if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
             result_msg = "service call failed :(";
-            RCLCPP_ERROR(np_->get_logger(), result_msg.c_str());
+            RCLCPP_ERROR(this->get_logger(), result_msg.c_str());
         } else {
             auto result = result_future.get();
             result_msg = "Service returned: " + result->res;
-            RCLCPP_INFO(np_->get_logger(), result_msg.c_str());
+            RCLCPP_INFO(this->get_logger(), result_msg.c_str());
         }
         serviceAvailable = true;
     } else {
@@ -599,9 +593,9 @@ QString CommandWrapper::loadPathFromFile(const QString fileName)
 
 void CommandWrapper::check_error_slot()
 {
-    rclcpp::spin_some(np_);
+    rclcpp::spin_some(this->get_node_base_interface());
 
-    if (goalCtxRead_) {
+    if (fbkReceived_) {
         if (feedbackGuiMsg.goal_distance < wpRadius_) {
             goToNextWaypoint();
         }

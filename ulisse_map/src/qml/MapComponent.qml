@@ -96,10 +96,10 @@ MapComponentForm {
         }
     ]
 
-    current.transform: [
+    currentArrow.transform: [
         Rotation {
-            origin.x: current.width / 2
-            origin.y: current.height / 2
+            origin.x: currentArrow.width / 2
+            origin.y: currentArrow.height / 2
             angle: map.bearing - fbkUpdater.current_deg
         },
         Rotation {
@@ -129,6 +129,23 @@ MapComponentForm {
             axis.z: 0
         }
     ]
+
+    ulisseGPSIcon.transform: [
+        Rotation {
+            origin.x: ulisseIcon.sourceItem.width / 2
+            origin.y: ulisseIcon.sourceItem.height / 2
+            angle: fbkUpdater.ulisse_yaw_deg - map.bearing
+        },
+        Rotation {
+            origin.x: ulisseIcon.sourceItem.width / 2
+            origin.y: ulisseIcon.sourceItem.height / 2
+            angle: map.tilt
+            axis.x: 1
+            axis.y: 0
+            axis.z: 0
+        }
+    ]
+
 
     onCenterChanged: {
         ruler.rulerTimer.restart()

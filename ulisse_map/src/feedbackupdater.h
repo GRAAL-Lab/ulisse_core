@@ -24,7 +24,7 @@
 #include "ulisse_msgs/msg/thrusters_data.hpp"
 #include "ulisse_msgs/msg/vehicle_status.hpp"
 
-class FeedbackUpdater : public QObject {
+class FeedbackUpdater : public QObject, rclcpp::Node {
     Q_OBJECT
     QQmlApplicationEngine* appEngine_;
     QTimer* myTimer_;
@@ -97,7 +97,7 @@ class FeedbackUpdater : public QObject {
     double current_data_deg;
     double current_data_norm;
 
-    rclcpp::Node::SharedPtr np_;
+    //rclcpp::Node::SharedPtr np_;
     rclcpp::Subscription<ulisse_msgs::msg::GPSData>::SharedPtr gps_data_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::MicroLoopCount>::SharedPtr micro_loop_count_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::AmbientSensors>::SharedPtr ambient_sensors_sub_;
@@ -119,10 +119,10 @@ class FeedbackUpdater : public QObject {
 
 public:
     explicit FeedbackUpdater(QObject* parent = nullptr);
-    explicit FeedbackUpdater(QQmlApplicationEngine* engine, QObject* parent = nullptr, const rclcpp::Node::SharedPtr& np = nullptr);
+    explicit FeedbackUpdater(QQmlApplicationEngine* engine, QObject* parent = nullptr);
     virtual ~FeedbackUpdater();
-    void Init(QQmlApplicationEngine* engine, const rclcpp::Node::SharedPtr& np);
-    void SetNodeHandle(const rclcpp::Node::SharedPtr& np);
+    void LoadQmlEngine(QQmlApplicationEngine* engine);
+    //void SetNodeHandle(const rclcpp::Node::SharedPtr& np);
     double RadiansToCompassDegrees(const double angle_rad);
 
     void GPSDataCB(const ulisse_msgs::msg::GPSData::SharedPtr msg);

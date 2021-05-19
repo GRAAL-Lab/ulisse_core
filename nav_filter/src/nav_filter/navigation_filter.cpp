@@ -46,6 +46,9 @@ namespace nav {
             10, std::bind(&NavigationFilter::GroundTruthDataCB, this, _1));
         thrustersFkbSub_ = this->create_subscription<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data,
             10, std::bind(&NavigationFilter::ThrustersDataCB, this, _1));
+        llcMotorsSub_ = this->create_subscription<ulisse_msgs::msg::LLCMotors>(ulisse_msgs::topicnames::llc_motors,
+            10, std::bind(&NavigationFilter::LLCMotorsCB, this, _1));
+
         simulatedVelocitySub_ = this->create_subscription<ulisse_msgs::msg::SimulatedVelocitySensor>(ulisse_msgs::topicnames::simulated_velocity_sensor,
             10, std::bind(&NavigationFilter::SimulatedVelocitySensorCB, this, _1));
 
@@ -78,7 +81,6 @@ namespace nav {
 
         int msRunPeriod = 1.0/(filterParams_.rate) * 1000;
         std::cout << "NavFilter Rate: " << filterParams_.rate << "Hz" << std::endl;
-        //std::cout << "-> msRunPeriod: " << msRunPeriod << "ms" << std::endl;
         runTimer_ = this->create_wall_timer(std::chrono::milliseconds(msRunPeriod), std::bind(&NavigationFilter::Run, this));
 
         // Service
@@ -215,6 +217,7 @@ namespace nav {
 
         //Filter Update
         extendedKalmanFilter_->Update(Eigen::Vector2d { thrustersFbk_.motor_percentage.left, thrustersFbk_.motor_percentage.right });
+        //extendedKalmanFilter_->Update(Eigen::Vector2d { llcMotorsData_.left.motor_speed, llcMotorsData_.right.motor_speed });
 
         state_ = extendedKalmanFilter_->StateVector();
 
@@ -614,6 +617,7 @@ namespace nav {
 
     void NavigationFilter::GroundTruthDataCB(const ulisse_msgs::msg::SimulatedSystem::SharedPtr msg) { simulatedData_ = *msg; }
 
+    void NavigationFilter::LLCMotorsCB(const ulisse_msgs::msg::LLCMotors::SharedPtr msg) { llcMotorsData_ = *msg; }
 
 }
 }

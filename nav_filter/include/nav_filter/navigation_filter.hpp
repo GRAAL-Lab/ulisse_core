@@ -19,6 +19,7 @@
 #include "ulisse_msgs/msg/simulated_system.hpp"
 #include "ulisse_msgs/msg/simulated_velocity_sensor.hpp"
 #include "ulisse_msgs/msg/thrusters_data.hpp"
+#include "ulisse_msgs/msg/llc_motors.hpp"
 #include "ulisse_msgs/srv/nav_filter_command.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 #include "ulisse_driver/GPSDHelperDataStructs.h"
@@ -54,6 +55,7 @@ namespace nav {
         rclcpp::Subscription<ulisse_msgs::msg::Magnetometer>::SharedPtr magnetometerSub_;
         rclcpp::Subscription<ulisse_msgs::msg::SimulatedSystem>::SharedPtr simulatedSystemSub_;
         rclcpp::Subscription<ulisse_msgs::msg::ThrustersData>::SharedPtr thrustersFkbSub_;
+        rclcpp::Subscription<ulisse_msgs::msg::LLCMotors>::SharedPtr llcMotorsSub_;
         rclcpp::Subscription<ulisse_msgs::msg::SimulatedVelocitySensor>::SharedPtr simulatedVelocitySub_;
 
         rclcpp::Service<ulisse_msgs::srv::NavFilterCommand>::SharedPtr navFilterCmdService_;
@@ -68,6 +70,7 @@ namespace nav {
         ulisse_msgs::msg::ThrustersData thrustersFbk_;
         ulisse_msgs::msg::Magnetometer magnetometerData_;
         ulisse_msgs::msg::SimulatedSystem simulatedData_;
+        ulisse_msgs::msg::LLCMotors llcMotorsData_;
 
         double lastValidGPSTime_;
         double lastValidImuTime_;
@@ -135,6 +138,8 @@ namespace nav {
         void ThrustersDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg);
 
         void GroundTruthDataCB(const ulisse_msgs::msg::SimulatedSystem::SharedPtr msg);
+
+        void LLCMotorsCB(const ulisse_msgs::msg::LLCMotors::SharedPtr msg);
 
         bool LoadConfiguration(NavigationFilterParams& filterParameters);
 

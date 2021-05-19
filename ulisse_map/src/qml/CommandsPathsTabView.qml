@@ -56,6 +56,23 @@ Pane{
                 Layout.fillWidth: true
 
                 Button {
+                    id: moveToButton
+                    text: "Move to marker"
+                    Layout.fillWidth: true
+                    Material.background: pressed ? orange : mainColor
+                    enabled: Helper.coord_inside_polygon(map.marker_coords,
+                                                         map.polysec_cur.path)
+                             && (map.markerIcon.opacity > 0)
+                    highlighted: true
+
+                    onClicked: {
+                        cmdWrapper.sendLatLongCommand(
+                                    map.marker_coords,
+                                    holdRadius.value)
+                    }
+                }
+
+                Button {
                     id: speedHeadButton
                     text: "Speed/Heading"
                     Layout.fillWidth: true
@@ -88,23 +105,6 @@ Pane{
 
                     onClicked: {
                         cmdWrapper.sendHoldCommand(holdRadius.value)
-                    }
-                }
-
-                Button {
-                    id: moveToButton
-                    text: "Move to marker"
-                    Layout.fillWidth: true
-                    Material.background: pressed ? orange : mainColor
-                    enabled: Helper.coord_inside_polygon(map.marker_coords,
-                                                         map.polysec_cur.path)
-                             && (map.markerIcon.opacity > 0)
-                    highlighted: true
-
-                    onClicked: {
-                        cmdWrapper.sendLatLongCommand(
-                                    map.marker_coords,
-                                    holdRadius.value)
                     }
                 }
             }

@@ -55,6 +55,9 @@ namespace nav {
         double np = (input[0] < 0) ? input[0] * params_.lambda_neg : input[0] * params_.lambda_pos;
         double ns = (input[1] < 0) ? input[1] * params_.lambda_neg : input[1] * params_.lambda_pos;
 
+        //double np = input[0];
+        //double ns = input[1];
+
         //Get the right b params
         double b1_p = (np < 0) ? params_.b1_neg : params_.b1_pos;
         double b2_p = (np < 0) ? params_.b2_neg : params_.b2_pos;
@@ -195,9 +198,12 @@ namespace nav {
     {
         Eigen::VectorXd x = Eigen::VectorXd::Zero(state.size());
 
-        //Transform the input form percentage to RMP
+        //Transform the input form percentage to RPM
         double np = (input[0] < 0) ? input[0] * params_.lambda_neg : input[0] * params_.lambda_pos;
         double ns = (input[1] < 0) ? input[1] * params_.lambda_neg : input[1] * params_.lambda_pos;
+
+        //double np = input[0];
+        //double ns = input[1];
 
         //Get the right b params
         double b1_p = (np < 0) ? params_.b1_neg : params_.b1_pos;

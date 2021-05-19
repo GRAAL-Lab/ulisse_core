@@ -18,9 +18,10 @@ Map {
     property alias ulissePath: ulissePath
     property alias marker: marker
     property alias compass: compass
-    property alias current: currentArrow
+    property alias currentArrow: currentArrow
     property alias currentLabel: currentLabel
     property alias ulisseIcon: ulisseIcon
+    property alias ulisseGPSIcon: ulisseGPSIcon
     property alias goalFlag: goalFlag
     property alias ruler: ruler
     property alias greenFlag: greenFlag
@@ -113,6 +114,22 @@ Map {
             source: 'qrc:/images/catamaran_icon_64_sat.png'
         }
         coordinate: fbkUpdater.ulisse_pos
+        anchorPoint.x: ulisseImage.width / 2
+        anchorPoint.y: ulisseImage.height / 2
+        z: map.z + 2
+    }
+
+    MapQuickItem {
+        id: ulisseGPSIcon
+        sourceItem: Image {
+            id: ulisseGPSImage
+            width: 38
+            height: 38
+            opacity: 0.5
+            visible: gpsIconCBox.checked
+            source: 'qrc:/images/catamaran_icon_64_sat.png'
+        }
+        coordinate: fbkUpdater.gps_pos
         anchorPoint.x: ulisseImage.width / 2
         anchorPoint.y: ulisseImage.height / 2
         z: map.z + 2
