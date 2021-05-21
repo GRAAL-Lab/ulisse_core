@@ -40,15 +40,15 @@ Rectangle {
         CheckBox {
             id: followMeCheckbox
             text: "Follow vehicle"
-            Layout.alignment: Qt.AlignLeft
-            Material.accent: mainColor
+            //Layout.alignment: Qt.AlignLeft
+            //Material.accent: mainColor
             checked: false
         }
 
         CheckBox {
             id: overlayStatusCbox
             text: "Show Overlay"
-            Material.accent: orange
+            //Material.accent: orange
             checked: true
         }
 
