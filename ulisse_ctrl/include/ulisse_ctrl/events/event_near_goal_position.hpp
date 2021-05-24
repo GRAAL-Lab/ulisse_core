@@ -8,27 +8,29 @@
 #ifndef EVENT_NEAR_GOAL_RPOSITION_H_
 #define EVENT_NEAR_GOAL_RPOSITION_H_
 
-#include "generic_event.hpp"
+#include "fsm/fsm.h"
 #include "ulisse_ctrl/states/state_hold.hpp"
 
 namespace ulisse {
 
 namespace events {
 
-    class EventNearGoalPosition : public GenericEvent {
+    class EventNearGoalPosition : public fsm::BaseEvent {
 
-        std::shared_ptr<ctb::LatLong> currentPosition_;
         bool goToHold_;
+        std::shared_ptr<ulisse::ControlData> ctrlData_;
         std::shared_ptr<ulisse::states::StateHold> stateHold_;
 
     public:
         EventNearGoalPosition(void) {}
         virtual ~EventNearGoalPosition(void) {}
         virtual fsm::retval Execute(void);
+        virtual fsm::retval Propagate(void);
 
-        auto CurrentPosition() -> std::shared_ptr<ctb::LatLong>& { return currentPosition_; }
-        auto GoToHoldAfterMove(bool flag) { goToHold_ = flag; }
+        auto ControlData() -> std::shared_ptr<ulisse::ControlData>& { return ctrlData_; }
         auto StateHold() -> std::shared_ptr<ulisse::states::StateHold>& { return stateHold_; }
+
+        auto GoToHoldAfterMove(bool flag) { goToHold_ = flag; }
     };
 
 } // namespace events

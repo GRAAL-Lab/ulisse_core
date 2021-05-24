@@ -1,8 +1,8 @@
-#ifndef ULISSE_CTRL_STATENAVIGATE_HPP
-#define ULISSE_CTRL_STATENAVIGATE_HPP
+#ifndef ULISSE_CTRL_STATEpathfollow_HPP
+#define ULISSE_CTRL_STATEpathfollow_HPP
 
 #include "sisl.h"
-#include "ulisse_ctrl/states/genericstate.hpp"
+#include "ulisse_ctrl/states/generic_state.hpp"
 #include "ulisse_msgs/msg/path.hpp"
 #include <ulisse_ctrl/nurbs.h>
 
@@ -10,7 +10,7 @@ namespace ulisse {
 
 namespace states {
 
-    class StateNavigate : public GenericState {
+    class StatePathFollow : public GenericState {
 
     protected:
         //tasks of the state
@@ -29,8 +29,8 @@ namespace states {
         Nurbs nurbsObj_; //objet to handle the path
 
     public:
-        StateNavigate();
-        ~StateNavigate() override;
+        StatePathFollow();
+        ~StatePathFollow() override;
         fsm::retval OnEntry() override;
         fsm::retval Execute() override;
 

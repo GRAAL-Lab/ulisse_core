@@ -56,19 +56,6 @@ Pane{
                 Layout.fillWidth: true
 
                 Button {
-                    id: speedHeadButton
-                    text: "Speed/Heading"
-                    Layout.fillWidth: true
-                    Layout.fillHeight: false
-                    highlighted: true
-                    Material.background: pressed ? orange : mainColor
-                    onClicked: {
-                        cmdWrapper.sendSpeedHeadingCommand(sliderSpeed.value,
-                                                           sliderHeading.value)
-                    }
-                }
-
-                Button {
                     text: "Halt"
                     highlighted: true
                     Material.background: pressed ? orange : mainColor
@@ -76,18 +63,6 @@ Pane{
                     Layout.fillWidth: true
                     onClicked: {
                         cmdWrapper.sendHaltCommand()
-                    }
-                }
-
-                Button {
-                    id: holdButton
-                    text: "Hold Position"
-                    Layout.fillWidth: true
-                    highlighted: true
-                    Material.background: pressed ? orange : mainColor
-
-                    onClicked: {
-                        cmdWrapper.sendHoldCommand(holdRadius.value)
                     }
                 }
 
@@ -105,6 +80,31 @@ Pane{
                         cmdWrapper.sendLatLongCommand(
                                     map.marker_coords,
                                     holdRadius.value)
+                    }
+                }
+
+                Button {
+                    id: speedHeadButton
+                    text: "Speed/Heading"
+                    Layout.fillWidth: true
+                    Layout.fillHeight: false
+                    highlighted: true
+                    Material.background: pressed ? orange : mainColor
+                    onClicked: {
+                        cmdWrapper.sendSpeedHeadingCommand(sliderSpeed.value,
+                                                           sliderHeading.value)
+                    }
+                }
+
+                Button {
+                    id: holdButton
+                    text: "Hold Position"
+                    Layout.fillWidth: true
+                    highlighted: true
+                    Material.background: pressed ? orange : mainColor
+
+                    onClicked: {
+                        cmdWrapper.sendHoldCommand(holdRadius.value)
                     }
                 }
             }

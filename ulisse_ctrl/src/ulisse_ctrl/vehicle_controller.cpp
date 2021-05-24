@@ -1,13 +1,15 @@
-﻿#include "ulisse_ctrl/vehiclecontroller.hpp"
+﻿#include "ulisse_ctrl/vehicle_controller.hpp"
+
+#include <jsoncpp/json/json.h>
+#include <ament_index_cpp/get_package_share_directory.hpp>
+
 #include "ulisse_ctrl/fsm_defines.hpp"
+#include "ulisse_ctrl/configuration.hpp"
+#include "ulisse_ctrl/ulisse_defines.hpp"
+#include "ulisse_ctrl/states/generic_state.hpp"
+
 #include "ulisse_msgs/terminal_utils.hpp"
 #include "ulisse_msgs/topicnames.hpp"
-#include <ament_index_cpp/get_package_share_directory.hpp>
-#include <jsoncpp/json/json.h>
-#include <ulisse_ctrl/configuration.h>
-#include <ulisse_ctrl/geometry_defines.h>
-#include <ulisse_ctrl/states/genericstate.hpp>
-#include <ulisse_ctrl/ulisse_definitions.h>
 
 using std::placeholders::_1;
 using std::placeholders::_2;
@@ -15,34 +17,33 @@ using std::placeholders::_3;
 
 namespace ulisse {
 
-VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double sampleTime, std::string file_name)
-    : nh_(nh)
-    , sampleTime_(sampleTime)
+VehicleController::VehicleController(int rate, std::string file_name)
+    : Node("controller_node")
+    , rate_(rate)
     , boundariesSet_(false)
 {
     conf_ = std::make_shared<ControllerConfiguration>();
-    vehiclePosition_ = std::make_shared<LatLong>();
-    inertialF_waterCurrent_ = std::make_shared<Eigen::Vector2d>();
+
+    ctrlData_ = std::make_shared<ControlData>();
 
     fileName_ = file_name;
 
     stateHalt_ = std::make_shared<states::StateHalt>();
     stateHold_ = std::make_shared<states::StateHold>();
-    statePathFollowing_ = std::make_shared<states::StateNavigate>();
+    statePathFollowing_ = std::make_shared<states::StatePathFollow>();
     stateLatLong_ = std::make_shared<states::StateLatLong>();
     stateSpeedHeading_ = std::make_shared<states::StateSpeedHeading>();
 
     // Sensor Subscriptions
-    navFilterSub_ = nh_->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 10, std::bind(&VehicleController::NavFilterCB, this, _1));
+    navFilterSub_ = this->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 10, std::bind(&VehicleController::NavFilterCB, this, _1));
+    llcStatusSub_ = this->create_subscription<ulisse_msgs::msg::LLCStatus>(ulisse_msgs::topicnames::llc_status, 10, std::bind(&VehicleController::LLCStatusCB, this, _1));
+
 
     // Control Publishers
-    genericLogPub_ = nh_->create_publisher<std_msgs::msg::String>("/ulisse/log/generic", 10);
-    vehicleStatusPub_ = nh_->create_publisher<ulisse_msgs::msg::VehicleStatus>(ulisse_msgs::topicnames::vehicle_status, 10);
-    referenceVelocitiesPub_ = nh_->create_publisher<ulisse_msgs::msg::ReferenceVelocities>(ulisse_msgs::topicnames::reference_velocities, 10);
-    feedbackGuiPub_ = nh_->create_publisher<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10);
-
-    // Timer for slow check operations
-    slow_timer_ = nh_->create_wall_timer(std::chrono::seconds(5), std::bind(&VehicleController::SlowTimerCB, this));
+    genericLogPub_ = this->create_publisher<std_msgs::msg::String>("/ulisse/log/generic", 10);
+    vehicleStatusPub_ = this->create_publisher<ulisse_msgs::msg::VehicleStatus>(ulisse_msgs::topicnames::vehicle_status, 10);
+    referenceVelocitiesPub_ = this->create_publisher<ulisse_msgs::msg::ReferenceVelocities>(ulisse_msgs::topicnames::reference_velocities, 10);
+    feedbackGuiPub_ = this->create_publisher<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10);
 
     /// TPIK Manager
     actionManager_ = std::make_shared<tpik::ActionManager>(tpik::ActionManager());
@@ -62,55 +63,55 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     // ASV CONTROL VELOCITY LINEAR
     asvLinearVelocity_ = std::make_shared<ikcl::LinearVelocity>(ikcl::LinearVelocity(ulisse::task::asvLinearVelocity, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvLinearVelocity_;
-    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Linear_Velocity", 1);
+    taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Linear_Velocity", 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvLinearVelocity, taskInfo_));
 
     // AUV CONTROL ANGULAR POSITION
     asvAngularPosition_ = std::make_shared<ikcl::AlignToTarget>(ikcl::AlignToTarget(ulisse::task::asvAngularPosition, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvAngularPosition_;
-    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Angular_Position", 1);
+    taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Angular_Position", 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvAngularPosition, taskInfo_));
 
     // ASV CONTROL DISTANCE
     asvCartesianDistance_ = std::make_shared<ikcl::CartesianDistance>(ikcl::CartesianDistance(ulisse::task::asvCartesianDistance, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvCartesianDistance_;
-    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Cartesian_Distance", 1);
+    taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Cartesian_Distance", 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvCartesianDistance, taskInfo_));
 
     // ASV CONTROL DISTANCE PATH FOLLOWING
     asvCartesianDistancePathFollowing_ = std::make_shared<ikcl::CartesianDistance>(ikcl::CartesianDistance(ulisse::task::asvCartesianDistancePathFollowing, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvCartesianDistancePathFollowing_;
-    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Cartesian_Distance_Path_Following", 1);
+    taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Cartesian_Distance_Path_Following", 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvCartesianDistancePathFollowing, taskInfo_));
 
     // ASV SAFETY BOUNDARIES (INEQUALITY TASK)
     asvSafetyBoundaries_ = std::make_shared<ikcl::SafetyBoundaries>(ikcl::SafetyBoundaries(ulisse::task::asvSafetyBoundaries, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvSafetyBoundaries_;
-    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Safety_Boundaries", 1);
+    taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Safety_Boundaries", 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvSafetyBoundaries, taskInfo_));
 
     // ASV absolute axis alignment task
     asvAbsoluteAxisAlignment_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asvAbsoluteAxisAlignment, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvAbsoluteAxisAlignment_;
-    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Absolute_Axis_Alignment", 1);
+    taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Absolute_Axis_Alignment", 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvAbsoluteAxisAlignment, taskInfo_));
 
     // ASV absolute axis alignment task
     asvAbsoluteAxisAlignmentSafety_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asvAbsoluteAxisAlignmentSafety, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvAbsoluteAxisAlignmentSafety_;
-    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Absolute_Axis_Alignment_Safety", 1);
+    taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Absolute_Axis_Alignment_Safety", 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvAbsoluteAxisAlignmentSafety, taskInfo_));
 
     // ASV absolute axis alignment task hold
     asvAbsoluteAxisAlignmentHold_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asvAbsoluteAxisAlignmentHold, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvAbsoluteAxisAlignmentHold_;
-    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Absolute_Axis_Alignment_Hold", 1);
+    taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Absolute_Axis_Alignment_Hold", 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvAbsoluteAxisAlignmentHold, taskInfo_));
 
     // ASV CONTROL VELOCITY LINEAR HOLD
     asvLinearVelocityHold_ = std::make_shared<ikcl::LinearVelocity>(ikcl::LinearVelocity(ulisse::task::asvLinearVelocityHold, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvLinearVelocityHold_;
-    taskInfo_.taskPub = nh_->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Linear_Hold", 1);
+    taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Linear_Hold", 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvLinearVelocityHold, taskInfo_));
 
 
@@ -132,20 +133,30 @@ VehicleController::VehicleController(const rclcpp::Node::SharedPtr& nh, double s
     // FSM Initialization
     SetUpFSM();
 
-    srv_ = nh_->create_service<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service,
+    srvCommand_ = this->create_service<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service,
         std::bind(&VehicleController::CommandsHandler, this, _1, _2, _3));
 
-    srvSetBoundaries_ = nh_->create_service<ulisse_msgs::srv::SetBoundaries>(ulisse_msgs::topicnames::set_boundaries_service,
+    srvSetBoundaries_ = this->create_service<ulisse_msgs::srv::SetBoundaries>(ulisse_msgs::topicnames::set_boundaries_service,
         std::bind(&VehicleController::SetBoundariesHandler, this, _1, _2, _3));
 
-    srvGetBoundaries_ = nh_->create_service<ulisse_msgs::srv::GetBoundaries>(ulisse_msgs::topicnames::get_boundaries_service,
+    srvGetBoundaries_ = this->create_service<ulisse_msgs::srv::GetBoundaries>(ulisse_msgs::topicnames::get_boundaries_service,
         std::bind(&VehicleController::GetBoundariesHandler, this, _1, _2, _3));
 
-    srvCruise_ = nh_->create_service<ulisse_msgs::srv::SetCruiseControl>(ulisse_msgs::topicnames::set_cruise_control_service,
+    srvCruise_ = this->create_service<ulisse_msgs::srv::SetCruiseControl>(ulisse_msgs::topicnames::set_cruise_control_service,
         std::bind(&VehicleController::SetCruiseControlHandler, this, _1, _2, _3));
 
-    srvResetConf_ = nh_->create_service<ulisse_msgs::srv::ResetConfiguration>(ulisse_msgs::topicnames::reset_configuration_service,
+    srvResetConf_ = this->create_service<ulisse_msgs::srv::ResetConfiguration>(ulisse_msgs::topicnames::reset_configuration_service,
         std::bind(&VehicleController::ResetConfHandler, this, _1, _2, _3));
+
+
+    int msRunPeriod = 1.0/(rate_) * 1000;
+    std::cout << "Controller Rate: " << rate_ << "Hz" << std::endl;
+    // Main function timer
+    runTimer_ = this->create_wall_timer(std::chrono::milliseconds(msRunPeriod), std::bind(&VehicleController::Run, this));
+
+    // Timer for slow check operations
+    slow_timer_ = this->create_wall_timer(std::chrono::seconds(5), std::bind(&VehicleController::SlowTimerCB, this));
+
 
 }
 
@@ -211,7 +222,7 @@ bool VehicleController::LoadConfiguration(std::shared_ptr<ControllerConfiguratio
     statesMap_.insert({ ulisse::states::ID::halt, stateHalt_ });
     statesMap_.insert({ ulisse::states::ID::hold, stateHold_ });
     statesMap_.insert({ ulisse::states::ID::latlong, stateLatLong_ });
-    statesMap_.insert({ ulisse::states::ID::navigate, statePathFollowing_ });
+    statesMap_.insert({ ulisse::states::ID::pathfollow, statePathFollowing_ });
     statesMap_.insert({ ulisse::states::ID::speedheading, stateSpeedHeading_ });
 
     if (!ConfigureSatesFromFile(statesMap_, confObj)) {
@@ -223,7 +234,7 @@ bool VehicleController::LoadConfiguration(std::shared_ptr<ControllerConfiguratio
     commandsMap_.insert({ ulisse::commands::ID::halt, commandHalt_ });
     commandsMap_.insert({ ulisse::commands::ID::hold, commandHold_ });
     commandsMap_.insert({ ulisse::commands::ID::latlong, commandLatLong_ });
-    commandsMap_.insert({ ulisse::commands::ID::navigate, commandPathFollowing_ });
+    commandsMap_.insert({ ulisse::commands::ID::pathfollow, commandPathFollowing_ });
     commandsMap_.insert({ ulisse::commands::ID::speedheading, commandSpeedHeading_ });
 
     return true;
@@ -255,19 +266,19 @@ void VehicleController::SetUpFSM()
     commandPathFollowing_.SetState(statePathFollowing_);
 
     // ***** STATES *****
-    //Set the fms and the structure that the states need.
+    //Set the fsm and the structure that the states need.
     for (auto& state : statesMap_) {
         state.second->actionManager = actionManager_;
         state.second->robotModel = robotModel_;
         state.second->tasksMap = tasksMap_;
-        state.second->vehiclePosition = vehiclePosition_;
+        state.second->ctrlData = ctrlData_;
         state.second->SetFSM(&uFsm_);
     }
 
     // ***** EVENTS *****
     eventRcEnabled_.SetFSM(&uFsm_);
     eventNearGoalPosition_.SetFSM(&uFsm_);
-    eventNearGoalPosition_.CurrentPosition() = vehiclePosition_;
+    eventNearGoalPosition_.ControlData() = ctrlData_;
     eventNearGoalPosition_.GoToHoldAfterMove(conf_->goToHoldAfterMove);
     eventNearGoalPosition_.StateHold() = std::dynamic_pointer_cast<ulisse::states::StateHold>(statesMap_.find(ulisse::states::ID::hold)->second);
 
@@ -314,7 +325,7 @@ void VehicleController::CommandsHandler(const std::shared_ptr<rmw_request_id_t> 
     // Create a callback function for when service requests are received.
     //auto handle_control_commands = [this]() -> void {
     (void)request_header;
-    RCLCPP_INFO(nh_->get_logger(), "Incoming request: %s", request->command_type.c_str());
+    RCLCPP_INFO(this->get_logger(), "Incoming request: %s", request->command_type.c_str());
 
     std::stringstream logg;
     logg << "Incoming request: " << request->command_type.c_str();
@@ -328,12 +339,11 @@ void VehicleController::CommandsHandler(const std::shared_ptr<rmw_request_id_t> 
 
     std::stringstream log;
     if (request->command_type == ulisse::commands::ID::halt) {
-
         std::cout << "Received Command Halt" << std::endl;
         PublishLog("Received Command Halt");
 
     } else if (request->command_type == ulisse::commands::ID::hold) {
-        commandHold_.SetPositionToHold(vehiclePosition_);
+        commandHold_.SetPositionToHold(ctrlData_->inertialF_linearPosition);
         std::cout << "Received Command Hold" << std::endl;
         PublishLog("Received Command Hold");
 
@@ -353,7 +363,7 @@ void VehicleController::CommandsHandler(const std::shared_ptr<rmw_request_id_t> 
         log << "Received Command SpeedHeading (speed: " << request->sh_cmd.speed << " , heading: " << request->sh_cmd.heading << " )";
         PublishLog(log.str().c_str());
 
-    } else if (request->command_type == ulisse::commands::ID::navigate) {
+    } else if (request->command_type == ulisse::commands::ID::pathfollow) {
 
         std::cout << "Received Command Path Following" << std::endl;
 
@@ -365,14 +375,14 @@ void VehicleController::CommandsHandler(const std::shared_ptr<rmw_request_id_t> 
         PublishLog(log.str().c_str());
 
     } else {
-        RCLCPP_INFO(nh_->get_logger(), "Unsupported command: %s", request->command_type.c_str());
+        RCLCPP_INFO(this->get_logger(), "Unsupported command: %s", request->command_type.c_str());
         ret = fsm::retval::fail;
     }
 
     if (ret != fsm::retval::ok) {
 
         response->res = "CommandAnswer::fail";
-        RCLCPP_INFO(nh_->get_logger(), "SendAnswer returned %s", response->res.c_str());
+        RCLCPP_INFO(this->get_logger(), "SendAnswer returned %s", response->res.c_str());
     } else {
         //task update
         for (auto& taskMap : tasksMap_) {
@@ -394,7 +404,7 @@ void VehicleController::SetBoundariesHandler(const std::shared_ptr<rmw_request_i
     std::shared_ptr<ulisse_msgs::srv::SetBoundaries::Response> response)
 {
     (void)request_header;
-    RCLCPP_INFO(nh_->get_logger(), "Incoming request for set boundaries");
+    RCLCPP_INFO(this->get_logger(), "Incoming request for set boundaries");
 
     if (asvSafetyBoundaries_->InitializePolygon(request->boundaries)) {
         boundariesJson_ = request->boundaries.boundaries_string;
@@ -415,7 +425,7 @@ void VehicleController::GetBoundariesHandler(const std::shared_ptr<rmw_request_i
 {
     (void)request_header;
     (void)request;
-    RCLCPP_INFO(nh_->get_logger(), "Incoming request for get boundaries");
+    RCLCPP_INFO(this->get_logger(), "Incoming request for get boundaries");
 
     if (boundariesSet_) {
         response->res = boundariesJson_;
@@ -429,7 +439,7 @@ void VehicleController::SetCruiseControlHandler(const std::shared_ptr<rmw_reques
     std::shared_ptr<ulisse_msgs::srv::SetCruiseControl::Response> response)
 {
     (void)request_header;
-    RCLCPP_INFO(nh_->get_logger(), "Incoming request for set cruise control");
+    RCLCPP_INFO(this->get_logger(), "Incoming request for set cruise control");
 
     std::stringstream log;
     log << "Cruise Control set to: " << request->cruise_control;
@@ -452,7 +462,7 @@ void VehicleController::ResetConfHandler(const std::shared_ptr<rmw_request_id_t>
 {
     (void)request_header;
     (void)request;
-    RCLCPP_INFO(nh_->get_logger(), "Incoming request for reset conf");
+    RCLCPP_INFO(this->get_logger(), "Incoming request for reset conf");
 
     auto previousConf = conf_;
     PublishLog("Configuration Reset:");
@@ -467,38 +477,47 @@ void VehicleController::ResetConfHandler(const std::shared_ptr<rmw_request_id_t>
 void VehicleController::SlowTimerCB()
 {
     if (!boundariesSet_) {
-        RCLCPP_INFO(nh_->get_logger(), "Waiting for the Safety Bounding Box");
+        RCLCPP_INFO(this->get_logger(), "Waiting for the Safety Bounding Box");
     }
     return;
 }
 
 void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)
 {
-    vehiclePosition_->latitude = msg->inertialframe_linear_position.latlong.latitude;
-    vehiclePosition_->longitude = msg->inertialframe_linear_position.latlong.longitude;
+    ctrlData_->inertialF_linearPosition.latitude = msg->inertialframe_linear_position.latlong.latitude;
+    ctrlData_->inertialF_linearPosition.longitude = msg->inertialframe_linear_position.latlong.longitude;
 
     // Get the water current for hold state
-    *inertialF_waterCurrent_ = { msg->inertialframe_water_current[0], msg->inertialframe_water_current[1] };
+    ctrlData_->inertialF_waterCurrent[0] = msg->inertialframe_water_current[0];
+    ctrlData_->inertialF_waterCurrent[1] = msg->inertialframe_water_current[1];
 
-    commandHold_.SetWaterCurrent(inertialF_waterCurrent_);
+    ctrlData_->bodyF_angularPosition.Pitch(0.0);
+    ctrlData_->bodyF_angularPosition.Roll(0.0);
+    ctrlData_->bodyF_angularPosition.Yaw(msg->bodyframe_angular_position.yaw);
+
+    ctrlData_->bodyF_linearVelocity[0] = msg->bodyframe_linear_velocity[0];
+    ctrlData_->bodyF_linearVelocity[1] = msg->bodyframe_linear_velocity[1];
+    ctrlData_->bodyF_linearVelocity[2] = msg->bodyframe_linear_velocity[2];
 
     // Linear position in world frame
-    Eigen::Vector3d worldF_vehicleLinearPosition(vehiclePosition_->latitude, vehiclePosition_->longitude, 0.0);
-
-    // Angualr position in world frame
-    rml::EulerRPY rpy { 0.0, 0.0, msg->bodyframe_angular_position.yaw };
-
-    Eigen::Vector6d velocity_fbk = Eigen::Vector6d::Zero();
-    velocity_fbk(0) = msg->bodyframe_linear_velocity[0];
-    velocity_fbk(1) = msg->bodyframe_linear_velocity[1];
+    Eigen::Vector3d worldF_vehicleLinearPosition(ctrlData_->inertialF_linearPosition.latitude, ctrlData_->inertialF_linearPosition.longitude, 0.0);
 
     // Updating the robot model
     Eigen::TransformationMatrix worldF_T_vehicleF;
     worldF_T_vehicleF.TranslationVector(worldF_vehicleLinearPosition);
-    worldF_T_vehicleF.RotationMatrix(rpy.ToRotationMatrix());
+    worldF_T_vehicleF.RotationMatrix(ctrlData_->bodyF_angularPosition.ToRotationMatrix());
+
+    Eigen::Vector6d velocity_fbk = Eigen::Vector6d::Zero();
+    velocity_fbk(0) = ctrlData_->bodyF_linearVelocity[0];
+    velocity_fbk(1) = ctrlData_->bodyF_linearVelocity[1];
 
     robotModel_->PositionOnInertialFrame(worldF_T_vehicleF);
     robotModel_->VelocityVector(ulisse::robotModelID::ASV, velocity_fbk);
+}
+
+void VehicleController::LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg)
+{
+    ctrlData_->llcStatus = msg->status;
 }
 
 void VehicleController::Run()
@@ -536,10 +555,12 @@ void VehicleController::Run()
         for (int i = 0; i < yTpik_.size(); i++) {
             if (std::isnan(yTpik_(i))) {
                 yTpik_(i) = 0.0;
-                RCLCPP_INFO(nh_->get_logger(), "NaN requested velocity");
+                RCLCPP_INFO(this->get_logger(), "NaN requested velocity");
             }
         }
     }
+
+    PublishControl();
 }
 
 void VehicleController::PublishControl()

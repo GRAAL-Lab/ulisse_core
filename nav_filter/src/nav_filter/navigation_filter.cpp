@@ -46,6 +46,9 @@ namespace nav {
             10, std::bind(&NavigationFilter::GroundTruthDataCB, this, _1));
         thrustersFkbSub_ = this->create_subscription<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data,
             10, std::bind(&NavigationFilter::ThrustersDataCB, this, _1));
+        llcMotorsSub_ = this->create_subscription<ulisse_msgs::msg::LLCMotors>(ulisse_msgs::topicnames::llc_motors,
+            10, std::bind(&NavigationFilter::LLCMotorsCB, this, _1));
+
         simulatedVelocitySub_ = this->create_subscription<ulisse_msgs::msg::SimulatedVelocitySensor>(ulisse_msgs::topicnames::simulated_velocity_sensor,
             10, std::bind(&NavigationFilter::SimulatedVelocitySensorCB, this, _1));
 
@@ -54,7 +57,7 @@ namespace nav {
         lastValidCompassTime_ = 0.0;
         lastValidMagnetomerTime_ = 0.0;
 
-        filterData_.using_gps = filterData_.using_imu = filterData_.using_compass = filterData_.using_magnetometer = false;
+        filterData_.gps_received = filterData_.imu_received = filterData_.compass_received = filterData_.magnetometer_received = false;
 
         previousYaw_ = 0.0;
         sampleTime_ = 0.0;
@@ -78,7 +81,6 @@ namespace nav {
 
         int msRunPeriod = 1.0/(filterParams_.rate) * 1000;
         std::cout << "NavFilter Rate: " << filterParams_.rate << "Hz" << std::endl;
-        //std::cout << "-> msRunPeriod: " << msRunPeriod << "ms" << std::endl;
         runTimer_ = this->create_wall_timer(std::chrono::milliseconds(msRunPeriod), std::bind(&NavigationFilter::Run, this));
 
         // Service
@@ -214,8 +216,8 @@ namespace nav {
         }
 
         //Filter Update
-        // TODO: Instead of thruster_data (requested perc) use effective RPM from motors topic
-        extendedKalmanFilter_->Update(Eigen::Vector2d { thrustersFbk_.motor_percentage.left, thrustersFbk_.motor_percentage.right });
+        //extendedKalmanFilter_->Update(Eigen::Vector2d { thrustersFbk_.motor_percentage.left, thrustersFbk_.motor_percentage.right });
+        extendedKalmanFilter_->Update(Eigen::Vector2d { llcMotorsData_.left.motor_speed, llcMotorsData_.right.motor_speed });
 
         state_ = extendedKalmanFilter_->StateVector();
 
@@ -294,7 +296,7 @@ namespace nav {
         if (gpsData_.time > lastValidGPSTime_) {
             if (gpsData_.gpsfixmode >= static_cast<int>(ulisse::gpsd::GpsFixMode::mode_2d)) {
                 gpsValid_ = true;
-                filterData_.using_gps = true;
+                filterData_.gps_received = true;
                 lastValidGPSTime_ = gpsData_.time;
 
             } else {
@@ -304,7 +306,7 @@ namespace nav {
 
         if (imuData_.stamp.sec + (imuData_.stamp.nanosec * 1e-9) > lastValidImuTime_) {
             imuValid_ = true;
-            filterData_.using_imu = true;
+            filterData_.imu_received = true;
             lastValidImuTime_ = imuData_.stamp.sec + (imuData_.stamp.nanosec * 1e-9);
         } else {
             imuValid_ = false;
@@ -312,7 +314,7 @@ namespace nav {
 
         if (compassData_.stamp.sec + (compassData_.stamp.nanosec * 1e-9) > lastValidCompassTime_) {
             compassValid_ = true;
-            filterData_.using_compass = true;
+            filterData_.compass_received = true;
             lastValidCompassTime_ = compassData_.stamp.sec + (compassData_.stamp.nanosec * 1e-9);
         } else {
             compassValid_ = false;
@@ -320,7 +322,7 @@ namespace nav {
 
         if (magnetometerData_.stamp.sec + (magnetometerData_.stamp.nanosec * 1e-9) > lastValidMagnetomerTime_) {
             magnetometerValid_ = true;
-            filterData_.using_magnetometer = true;
+            filterData_.magnetometer_received = true;
             lastValidMagnetomerTime_ = magnetometerData_.stamp.sec + (magnetometerData_.stamp.nanosec * 1e-9);
         } else {
             magnetometerValid_ = false;
@@ -335,26 +337,26 @@ namespace nav {
 
         if (std::abs(lastValidGPSSecs - timeNowSecs) > sensorsCheckInterval_){
             RCLCPP_WARN(this->get_logger(), "GPS Data unavailable for more than %i seconds.", sensorsCheckInterval_);
-            filterData_.using_gps = false;
+            filterData_.gps_received = false;
         }
 
         if (std::abs(imuData_.stamp.sec - timeNowSecs) > sensorsCheckInterval_){
             RCLCPP_WARN(this->get_logger(), "IMU Data unavailable for more than %i seconds.", sensorsCheckInterval_);
-            filterData_.using_imu = false;
+            filterData_.imu_received = false;
         }
 
         if (std::abs(compassData_.stamp.sec - timeNowSecs) > sensorsCheckInterval_){
             RCLCPP_WARN(this->get_logger(), "Compass Data unavailable for more than %i seconds.", sensorsCheckInterval_);
-            filterData_.using_compass = false;
+            filterData_.compass_received = false;
         }
 
         if (std::abs(magnetometerData_.stamp.sec - timeNowSecs) > sensorsCheckInterval_){
             RCLCPP_WARN(this->get_logger(), "Magnetometer Data unavailable for more than %i seconds.", sensorsCheckInterval_);
-            filterData_.using_magnetometer = false;
+            filterData_.magnetometer_received = false;
         }
 
         // Utility Print
-        if(!filterData_.using_gps){
+        if(!filterData_.gps_received){
             if (std::ctime(&timeNowSecs) != nullptr) {
                 std::string timedate_cpu = std::ctime(&timeNowSecs);
                 timedate_cpu.erase(std::remove(timedate_cpu.begin(), timedate_cpu.end(), '\n'), timedate_cpu.end());
@@ -615,6 +617,7 @@ namespace nav {
 
     void NavigationFilter::GroundTruthDataCB(const ulisse_msgs::msg::SimulatedSystem::SharedPtr msg) { simulatedData_ = *msg; }
 
+    void NavigationFilter::LLCMotorsCB(const ulisse_msgs::msg::LLCMotors::SharedPtr msg) { llcMotorsData_ = *msg; }
 
 }
 }

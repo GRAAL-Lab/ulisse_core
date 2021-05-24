@@ -1,13 +1,13 @@
-#include "ulisse_ctrl/states/state_navigate.hpp"
+#include "ulisse_ctrl/states/state_pathfollow.hpp"
 #include "ulisse_ctrl/fsm_defines.hpp"
-#include <ulisse_ctrl/geometry_defines.h>
-#include <ulisse_ctrl/ulisse_definitions.h>
+
+#include "ulisse_ctrl/ulisse_defines.hpp"
 
 namespace ulisse {
 
 namespace states {
 
-    StateNavigate::StateNavigate()
+    StatePathFollow::StatePathFollow()
         : isCurveSet_ { false }
         , vehicleOnTrack_ { false }
         , logPathOnFile_ { false }
@@ -16,9 +16,9 @@ namespace states {
     {
     }
 
-    StateNavigate::~StateNavigate() { }
+    StatePathFollow::~StatePathFollow() { }
 
-    bool StateNavigate::LoadNurbs(const ulisse_msgs::msg::Path& path)
+    bool StatePathFollow::LoadNurbs(const ulisse_msgs::msg::Path& path)
     {
         vehicleOnTrack_ = false;
 
@@ -50,12 +50,12 @@ namespace states {
         //check if the curves are greater than the delta max
         for (auto curve : nurbsObj_.Path()) {
             if (!nurbsObj_.ComputeCurveLength(curve, length)) {
-                std::cerr << "State Navigate: ComputeCurveLength fails" << std::endl;
+                std::cerr << "State pathfollow: ComputeCurveLength fails" << std::endl;
                 return fsm::fail;
             }
 
             if (length < nurbsObj_.nurbsParam.deltaMax) {
-                std::cerr << "State Navigate: Delta is too high" << std::endl;
+                std::cerr << "State pathfollow: Delta is too high" << std::endl;
                 return fsm::fail;
             }
         }
@@ -65,12 +65,12 @@ namespace states {
         return isCurveSet_;
     }
 
-    bool StateNavigate::ConfigureStateFromFile(libconfig::Config& confObj)
+    bool StatePathFollow::ConfigureStateFromFile(libconfig::Config& confObj)
     {
         const libconfig::Setting& root = confObj.getRoot();
         const libconfig::Setting& states = root["states"];
 
-        const libconfig::Setting& state = states.lookup(ulisse::states::ID::navigate);
+        const libconfig::Setting& state = states.lookup(ulisse::states::ID::pathfollow);
 
         if (!ctb::GetParam(state, maxHeadingError_, "maxHeadingError"))
             return false;
@@ -84,7 +84,7 @@ namespace states {
             return false;
 
         //configure the nurbs param
-        if (!nurbsObj_.nurbsParam.configureFromFile(confObj, ulisse::states::ID::navigate)) {
+        if (!nurbsObj_.nurbsParam.configureFromFile(confObj, ulisse::states::ID::pathfollow)) {
             std::cerr << "Failed to load Nurbs Params" << std::endl;
             return false;
         }
@@ -92,7 +92,7 @@ namespace states {
         return true;
     }
 
-    fsm::retval StateNavigate::OnEntry()
+    fsm::retval StatePathFollow::OnEntry()
     {
         //set tasks
         safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
@@ -101,17 +101,17 @@ namespace states {
         alignToTargetTask_ = std::dynamic_pointer_cast<ikcl::AlignToTarget>(tasksMap.find(ulisse::task::asvAngularPosition)->second.task);
         cartesianDistancePathFollowingTask_ = std::dynamic_pointer_cast<ikcl::CartesianDistance>(tasksMap.find(ulisse::task::asvCartesianDistancePathFollowing)->second.task);
 
-        actionManager->SetAction(ulisse::action::navigate, true);
+        actionManager->SetAction(ulisse::action::pathfollow, true);
         return fsm::ok;
     }
 
-    fsm::retval StateNavigate::Execute()
+    fsm::retval StatePathFollow::Execute()
     {
         //SafetyBoundaries task: it's a velocity task base on the distance from the boundaries. The behaviour that has to achive is align to
         //a desired escape directon and to generate a desired velocity. To do this we use the task AbsoluteAxisAlignment to cope with
         //the align behavior activated in function of the internal actiovation function of the safety task.
 
-        safetyBoundariesTask_->VehiclePosition() = *vehiclePosition.get();
+        safetyBoundariesTask_->VehiclePosition() = ctrlData->inertialF_linearPosition;
 
         Eigen::MatrixXd Aexternal;
 
@@ -137,12 +137,12 @@ namespace states {
         safetyBoundariesTask_->ExternalActivationFunction() = taskGainSafety * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
 
         double goalDistance, goalHeading;
-        //navigate action
+        //pathfollow action
         if (isCurveSet_) {
             //Going to the starting point
             if (!vehicleOnTrack_) {
                 
-                ctb::DistanceAndAzimuthRad(*vehiclePosition, startP_, goalDistance, goalHeading);
+                ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, startP_, goalDistance, goalHeading);
 
                 if (goalDistance < tolleranceStartingPoint_) {
                     vehicleOnTrack_ = true;
@@ -176,11 +176,11 @@ namespace states {
                     fsm_->EmitEvent(ulisse::events::names::neargoalposition, ulisse::events::priority::medium);
                 }
                 //std::cout << "*** STARTING POINT! ***" << std::endl;
-                if (!nurbsObj_.ComputeNextPoint(*vehiclePosition, nextP_)) {
+                if (!nurbsObj_.ComputeNextPoint(ctrlData->inertialF_linearPosition, nextP_)) {
                     return fsm::fail;
                 }
 
-                ctb::DistanceAndAzimuthRad(*vehiclePosition, nextP_, goalDistance, goalHeading);
+                ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, nextP_, goalDistance, goalHeading);
 
                 //Set the distance vector to the target
                 cartesianDistancePathFollowingTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(goalHeading), goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame);

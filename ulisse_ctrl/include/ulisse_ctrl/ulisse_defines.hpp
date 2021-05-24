@@ -1,10 +1,16 @@
 #ifndef ULISSEDEFINES_H
 #define ULISSEDEFINES_H
 
-#include <rml/RMLDefines.h>
-#include <vector>
+/*#include <rml/RMLDefines.h>
+#include <vector>*/
+#include <string>
 
 namespace ulisse {
+
+namespace robotModelID {
+    const std::string ASV = "Ulisse";
+}
+
 namespace task {
 
     const std::string asvLinearVelocity = "ASV_Linear_Velocity";
@@ -27,7 +33,9 @@ namespace action {
     const std::string idle = "Idle";
     const std::string hold = "Hold";
     const std::string speed_heading = "Speed_Heading";
-    const std::string navigate = "Path_Following";
+    const std::string pathfollow = "Path_Following";
 }
+
+
 }
 #endif

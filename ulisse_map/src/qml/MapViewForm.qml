@@ -18,10 +18,12 @@ RowLayout {
     property int currentState: generalState.empty
     property int pathCurrentState: pathState.empty
     property var mapCircles: []
-    property alias recenterButton: recenterButton
-    property alias followMeCheckbox: followMeCheckbox
-    property alias overlayStatusCbox: overlayStatusCbox
-    property alias clearPathButton: clearPathButton
+    property alias recenterButton: bottomToolbar.recenterButton
+    property alias followMeCheckbox: bottomToolbar.followMeCheckbox
+    property alias overlayStatusCbox: bottomToolbar.overlayStatusCbox
+    property alias clearPathButton: bottomToolbar.clearPathButton
+    property alias gpsIconCBox: bottomToolbar.gpsIconCBox
+    property alias engineButton: bottomToolbar.engineButton
     property alias mapCache: mapCache
     property alias map: map
     property alias mapsidebar: mapsidebar
@@ -30,7 +32,7 @@ RowLayout {
 
     spacing: 0
     width: window.width
-    property alias engine: engine
+
     Plugin {
         id: mapPlugin
         name: settings.mapPluginType
@@ -127,70 +129,12 @@ RowLayout {
             }
         }
 
-        Rectangle {
+        BottomToolbar {
             id: bottomToolbar
             width: parent.width
             height: clearPathButton.height
             color: Material.background
             anchors.bottom: parent.bottom
-
-            RowLayout {
-                anchors.fill: parent
-                width: parent.width
-                height: parent.height - recenterButton.height
-                spacing: 8
-
-                Button {
-                    id: recenterButton
-                    text: "Recenter"
-                    highlighted: true
-                    Material.background: mainColor
-                    Layout.leftMargin: 10
-                }
-
-                Button {
-                    id: clearPathButton
-                    text: "Clear trace"
-                    highlighted: true
-                    Material.accent: orange
-                    Layout.alignment: Qt.AlignLeft
-                }
-
-                CheckBox {
-                    id: followMeCheckbox
-                    text: "Follow vehicle"
-                    Layout.alignment: Qt.AlignLeft
-                    Material.accent: mainColor
-                    checked: false
-                }
-
-                CheckBox {
-                    id: overlayStatusCbox
-                    text: "Show Overlay"
-                    Material.accent: orange
-                    checked: true
-                }
-
-                Rectangle {
-                    id: rectangle
-                    width: 200
-                    height: 200
-                    color: "#ffffff"
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                }
-
-                Button {
-                    id: engine
-                    anchors.rightMargin: parent.anchors.rightMargin
-                    //Layout.rightMargin: 5
-                    text: "engine"
-                    highlighted: true
-                    Material.accent: red
-                    Layout.alignment: Qt.AlignRight
-                    Layout.rightMargin: 20
-                }
-            }
         }
     }
 }

@@ -1,38 +1,20 @@
 #include "rclcpp/rclcpp.hpp"
 
 #include "ulisse_msgs/terminal_utils.hpp"
-#include "ulisse_ctrl/vehiclecontroller.hpp"
+#include "ulisse_ctrl/vehicle_controller.hpp"
 #include "rml/RML.h"
 
 int main(int argc, char* argv[])
 {
-    //    std::cout << "Argv Test:" << std::endl;
-    //    for (int i = 1; i < argc; i++) {
-    //        std::cout << "argv[" << i << "]: " << std::string(argv[i]) << std::endl;
-    //    }
-    //    std::cout << std::endl;
     rclcpp::init(argc, argv);
-    auto node = rclcpp::Node::make_shared("controller_node");
 
     int rate = 10;
-    double sampleTime = 1.0 / rate;
-    rclcpp::WallRate loop_rate(rate);
     std::string filename = "kcl_ulisse.conf";
+    auto vehicleController = std::make_shared<ulisse::VehicleController>(rate, filename);
 
-    ulisse::VehicleController myVC(node, sampleTime, filename);
-
-    ulisse::Spinner spinner(7);
-
-    while (rclcpp::ok()) {
-
-        spinner();
-
-        myVC.Run();
-        myVC.PublishControl();
-
-        rclcpp::spin_some(node);
-        loop_rate.sleep();
-    }
+    rclcpp::executors::SingleThreadedExecutor exe;
+    exe.add_node(vehicleController);
+    exe.spin();
 
     rclcpp::shutdown();
 

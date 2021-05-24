@@ -16,14 +16,14 @@
 #include "ulisse_msgs/srv/set_cruise_control.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 
-class CommandWrapper : public QObject {
+class CommandWrapper : public QObject, rclcpp::Node {
     Q_OBJECT
     QQmlApplicationEngine* appEngine_;
     QTimer* myTimer_;
     QObject *toastMgrObj_, *speedHeadTimoutObj_;
     QObject *cruiseSpeedObj_, *goalDistanceObj_, *waypointPathObj_, *waypointRadiusObj_, *loopPathObj_, *mapMouseAreaObj_;
 
-    rclcpp::Node::SharedPtr np_;
+    //rclcpp::Node::SharedPtr np_;
     rclcpp::Client<ulisse_msgs::srv::ControlCommand>::SharedPtr command_srv_;
     rclcpp::Client<ulisse_msgs::srv::SetCruiseControl>::SharedPtr cruise_srv_;
     rclcpp::Client<ulisse_msgs::srv::SetBoundaries>::SharedPtr boundary_srv_;
@@ -37,7 +37,7 @@ class CommandWrapper : public QObject {
     int wpCurrentIndex_;
     double wpRadius_;
     int errorCheckInterval_;
-    bool goalCtxRead_;
+    bool fbkReceived_;
 
     void FeedbackGuiCB(const ulisse_msgs::msg::FeedbackGui::SharedPtr msg);
     void ShowToast(const QVariant message, const QVariant duration);
@@ -48,10 +48,9 @@ class CommandWrapper : public QObject {
 
 public:
     explicit CommandWrapper(QObject* parent = nullptr);
-    explicit CommandWrapper(QQmlApplicationEngine* engine, QObject* parent = nullptr, const rclcpp::Node::SharedPtr& np = nullptr);
+    explicit CommandWrapper(QQmlApplicationEngine* engine, QObject* parent = nullptr);//, const rclcpp::Node::SharedPtr& np = nullptr);
     virtual ~CommandWrapper();
-    void Init(QQmlApplicationEngine* engine, const rclcpp::Node::SharedPtr& np);
-    void SetNodeHandle(const rclcpp::Node::SharedPtr& np);
+    void LoadQmlEngine(QQmlApplicationEngine* engine);
     std::future<void> notificator;
 
     Q_INVOKABLE bool sendBoundaries(const QString boundary);

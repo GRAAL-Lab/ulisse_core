@@ -94,6 +94,13 @@ namespace llc {
         data_.messageType = MessageType::get_config;
         llcHlp_.SendMessage(data_);
 
+        // Sending a message to make the catamaran emit an "alive" beep
+        data_.messageType = MessageType::beep;
+        data_.beep.delay = 30;
+        data_.beep.loop = 1;
+        data_.beep.numberOfBeeps = 1;
+        llcHlp_.SendMessage(data_);
+
         thruster_data_sub_ = create_subscription<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data, 10, std::bind(&ThreadSender::ThrustersDataCB, this, _1));
 
         srv_ = create_service<ulisse_msgs::srv::LLCCommand>(ulisse_msgs::topicnames::llc_cmd_service,
@@ -106,10 +113,6 @@ namespace llc {
         std::shared_ptr<ulisse_msgs::srv::LLCCommand::Response> response)
     {
         // Create a callback function for when service requests are received.
-        /*auto handle_llc_commands =
-            [this](const std::shared_ptr<rmw_request_id_t> request_header,
-                const std::shared_ptr<ulisse_msgs::srv::LLCCommand::Request> request,
-                std::shared_ptr<ulisse_msgs::srv::LLCCommand::Response> response) -> void {*/
         (void)request_header;
         RCLCPP_INFO(this->get_logger(), "Incoming request: %s", CommandTypeToString((CommandType)(request->command_type)).c_str());
 
@@ -185,9 +188,6 @@ namespace llc {
         } else {
             response->res = (int16_t)(RetVal::ok);
         }
-        //};
-
-
     }
 
     void ThreadSender::ThrustersDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg)

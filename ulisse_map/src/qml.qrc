@@ -61,5 +61,6 @@
         <file>images/windarrow.png</file>
         <file>qml/CommandsPathsTabView.qml</file>
         <file>qml/TasksDataView.qml</file>
+        <file>qml/BottomToolbar.qml</file>
     </qresource>
 </RCC>

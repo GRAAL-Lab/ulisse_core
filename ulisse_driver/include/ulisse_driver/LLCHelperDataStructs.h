@@ -196,8 +196,6 @@ namespace llc {
         }
     };
 
-    //PLEASE UPDATE GetSize method AND om2ctrl::llc::CommandContainer AND om2ctrl::enet::ENETContainer on fields change
-    //LoggerContainers too
     struct LowLevelConfiguration {
         uint16_t hbCompass0;
         uint16_t hbCompassMax;

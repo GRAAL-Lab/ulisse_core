@@ -52,34 +52,32 @@ set(use_SYSTEM_BOOST TRUE)
 ## Libraries ##
 set(ulisse_ctrl_lib_sources
     # Main Classes
-    src/ulisse_ctrl/vehiclecontroller.cpp
+    src/ulisse_ctrl/vehicle_controller.cpp
     # Helpers
     src/ulisse_ctrl/configuration.cpp
     src/ulisse_ctrl/nurbs.cpp
     # States
-    src/ulisse_ctrl/states/genericstate.cpp
+    src/ulisse_ctrl/states/generic_state.cpp
     src/ulisse_ctrl/states/state_halt.cpp
     src/ulisse_ctrl/states/state_latlong.cpp
     src/ulisse_ctrl/states/state_hold.cpp
     src/ulisse_ctrl/states/state_speedheading.cpp
-    src/ulisse_ctrl/states/state_navigate.cpp
+    src/ulisse_ctrl/states/state_pathfollow.cpp
     # Commands
-    src/ulisse_ctrl/commands/genericCommand.cpp
+    src/ulisse_ctrl/commands/generic_command.cpp
     src/ulisse_ctrl/commands/command_halt.cpp
     src/ulisse_ctrl/commands/command_hold.cpp
     src/ulisse_ctrl/commands/command_latlong.cpp
     src/ulisse_ctrl/commands/command_speedheading.cpp
-    src/ulisse_ctrl/commands/command_navigate.cpp
+    src/ulisse_ctrl/commands/command_pathfollow.cpp
     # Events
-    src/ulisse_ctrl/events/generic_event.cpp
+    #src/ulisse_ctrl/events/generic_event.cpp
     src/ulisse_ctrl/events/event_rc_enabled.cpp
     src/ulisse_ctrl/events/event_near_goal_position.cpp
 
     # TASKS
     src/ulisse_ctrl/tasks/SafetyBoundaries.cpp
-
-
-        )
+)
 
 ## Libraries
 add_library(ulisse_ctrl_lib ${ulisse_ctrl_lib_sources})
@@ -97,7 +95,7 @@ target_link_libraries(kinematic_control_node rml ulisse_ctrl_lib ${JSONCPP_LIBRA
 
 add_executable(dynamic_control_node src/dynamic_control_node.cpp)
 ament_target_dependencies(dynamic_control_node rclcpp std_msgs ulisse_msgs rml ament_index_cpp ctrl_toolbox)
-target_link_libraries(dynamic_control_node rml ulisse_ctrl_lib )
+target_link_libraries(dynamic_control_node rml ulisse_ctrl_lib)
 
 add_executable(controller_console_node src/controller_console_node.cpp)
 ament_target_dependencies(controller_console_node rclcpp std_msgs ulisse_msgs rml)

@@ -1,6 +1,6 @@
 #include <libconfig.h++>
-#include <ulisse_ctrl/configuration.h>
-#include <ulisse_ctrl/ulisse_definitions.h>
+#include "ulisse_ctrl/configuration.hpp"
+#include "ulisse_ctrl/ulisse_defines.hpp"
 
 bool ConfigureTaskFromFile(std::unordered_map<std::string, ulisse::TasksInfo>& tasksMap, libconfig::Config& confObj)
 {

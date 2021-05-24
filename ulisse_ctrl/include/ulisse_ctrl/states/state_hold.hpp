@@ -1,13 +1,21 @@
 #ifndef ULISSE_CTRL_STATEHOLD_HPP
 #define ULISSE_CTRL_STATEHOLD_HPP
 
-#include "ulisse_ctrl/states/genericstate.hpp"
+#include "ulisse_ctrl/states/generic_state.hpp"
 #include "ulisse_ctrl/states/state_latlong.hpp"
 
 namespace ulisse {
 
 namespace states {
 
+    enum class HysteresisState{
+        Align,
+        ComeBack
+    };
+
+    /**
+     * @brief The StateHold class
+     */
     class StateHold : public GenericState {
 
     protected:
@@ -16,13 +24,7 @@ namespace states {
         double goalDistance_, goalHeading_;
         double minWaterCurrent_, maxWaterCurrent_;
         double maxSurgeComeback2HoldAcceptanceRadius_;
-        bool isOldAlignCountercurrent_, isOldComeback2HoldAcceptanceRadius_;
-
-        // align countercurrent action
-        bool AlignCounterCurrent();
-
-        // comeback to hold acceptance radius action
-        bool Comeback2HoldAcceptanceRadius();
+        HysteresisState hysteresisState_;
 
     public:
         StateHold();
@@ -31,7 +33,7 @@ namespace states {
         fsm::retval Execute() override;
         fsm::retval OnExit() override;
 
-        std::shared_ptr<Eigen::Vector2d> inertialF_waterCurrent;
+        //std::shared_ptr<Eigen::Vector2d> inertialF_waterCurrent;
 
         double maxAcceptanceRadius;
         double minAcceptanceRadius;

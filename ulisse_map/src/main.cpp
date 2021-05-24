@@ -26,11 +26,8 @@ int main(int argc, char* argv[])
     char name[] = { "Ulisse Control GUI" };
 
     rclcpp::init(argc, argv);
-    auto nh = rclcpp::Node::make_shared("ulisse_map_node");
-    int rate = 10;
-    rclcpp::WallRate loop_rate(rate);
 
-    //QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QGuiApplication::setApplicationName(name);
     QGuiApplication::setOrganizationName("GRAAL Lab");
 
@@ -43,15 +40,12 @@ int main(int argc, char* argv[])
 
     QQmlApplicationEngine appEngine;
 
-    /**
-     * Making the QML aware of my functions
-     * (using the ScopedPointer we are sure they get destroyed when they go out of scope)
-     */
-    QScopedPointer<FeedbackUpdater> fbkUpdater(new FeedbackUpdater);
-    QScopedPointer<CommandWrapper> cmdWrapper(new CommandWrapper);
+    // Making the QML aware of my functions
+    auto fbkUpdater = std::make_shared<FeedbackUpdater>();
+    auto cmdWrapper = std::make_shared<CommandWrapper>();
 
-    appEngine.rootContext()->setContextProperty("fbkUpdater", fbkUpdater.data());
-    appEngine.rootContext()->setContextProperty("cmdWrapper", cmdWrapper.data());
+    appEngine.rootContext()->setContextProperty("fbkUpdater", fbkUpdater.get());
+    appEngine.rootContext()->setContextProperty("cmdWrapper", cmdWrapper.get());
     appEngine.rootContext()->setContextProperty("home_dir", QDir::homePath());
 
     appEngine.load(QUrl(QStringLiteral("qrc:/main.qml")));
@@ -61,8 +55,8 @@ int main(int argc, char* argv[])
       * this has to be done ONLY AFTER -->>> appEngine.load(), otherwise the functions
       * called inside C++ such as ->findChild() will not find anything.
       */
-    fbkUpdater.data()->Init(&appEngine, nh);
-    cmdWrapper.data()->Init(&appEngine, nh);
+    fbkUpdater->LoadQmlEngine(&appEngine);
+    cmdWrapper->LoadQmlEngine(&appEngine);
 
     if (appEngine.rootObjects().isEmpty())
         return -1;

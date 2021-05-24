@@ -6,7 +6,7 @@ float64[3] bodyframe_angular_velocity
 float64[2] inertialframe_water_current
 float64[3] gyro_bias
 float64[] covariance_estimation_diag
-bool using_gps
-bool using_imu
-bool using_compass
-bool using_magnetometer
+bool gps_received
+bool imu_received
+bool compass_received
+bool magnetometer_received

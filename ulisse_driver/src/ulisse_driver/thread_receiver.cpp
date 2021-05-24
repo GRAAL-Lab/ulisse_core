@@ -97,7 +97,7 @@ namespace llc {
 
             llcHlp_.CollectValidMessage(llcData_);
             //std::cout << "ThreadReceiver::ReadLoop(), Collected Valid Message" << std::endl;
-
+            
 
             ulisse_msgs::msg::Time time_msg;
             time_msg.sec = static_cast<unsigned int>(epoch_nanosecs / (int)1E9);
@@ -290,24 +290,29 @@ namespace llc {
         motor_msg.flags1 = llc_motor.flags1;
         motor_msg.master_state = llc_motor.master_state;
         motor_msg.master_error_code = llc_motor.master_error_code;
-        motor_msg.motor_voltage = llc_motor.motor_voltage; // [1/100 V]
-        motor_msg.motor_current = llc_motor.motor_current;
+        motor_msg.motor_voltage = llc_motor.motor_voltage * 100; // [1/100 V]
+        motor_msg.motor_current = llc_motor.motor_current * 10; // [1/10 A]
         motor_msg.motor_power = llc_motor.motor_power;
-        motor_msg.motor_speed = llc_motor.motor_speed; // [RPM]
+
         motor_msg.motor_pcb_temp = llc_motor.motor_pcb_temp; // [° celsius]
         motor_msg.motor_stator_temp = llc_motor.motor_stator_temp; // [° celsius]
         motor_msg.battery_charge = llc_motor.battery_charge;
-        motor_msg.battery_voltage = llc_motor.battery_voltage; // [1/100 V]
-        motor_msg.battery_current = llc_motor.battery_current; // [1/10 A]
+        motor_msg.battery_voltage = llc_motor.battery_voltage * 100; // [1/100 V]
+        motor_msg.battery_current = llc_motor.battery_current * 10; // [1/10 A]
         motor_msg.gps_speed = llc_motor.gps_speed;
         motor_msg.range_miles = llc_motor.range_miles;
         motor_msg.range_minutes = llc_motor.range_minutes;
         motor_msg.temperature_sw = llc_motor.temperature_sw; // sembra fissa a 0
         motor_msg.temperature_rp = llc_motor.temperature_rp; // [° celsius]*/
-    }
-}
-}
-/*
-#include "class_loader/register_macro.hpp"
 
-CLASS_LOADER_REGISTER_CLASS(ulisse::llc::ThreadReceiver, rclcpp::Node)*/
+        // [RPM] To be divided by 6 due to how the sensor works.
+        // Additional check to be sure the published values are within range (-1500,+1500).
+        if (abs(llc_motor.motor_speed/6.0) < 1500){
+            motor_msg.motor_speed = llc_motor.motor_speed / 6.0;
+        } else {
+            std::cerr << "Invalid motor RPM, discarding" << std::endl;
+        }
+    }
+
+} // llc
+} // ulissse

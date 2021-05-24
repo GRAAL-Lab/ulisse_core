@@ -1,5 +1,5 @@
-#ifndef ULISSE_CTRL_GENERICSTATE_HPP
-#define ULISSE_CTRL_GENERICSTATE_HPP
+#ifndef ULISSE_CTRL_GENERIC_STATE_HPP
+#define ULISSE_CTRL_GENERIC_STATE_HPP
 
 #include "ulisse_ctrl/ctrl_data_structs.hpp"
 #include <fsm/fsm.h>
@@ -7,7 +7,7 @@
 #include <libconfig.h++>
 
 //to be delete once safetyB in ikcl
-#include "ulisse_ctrl/tasks/SafetyBoundaries.h"
+#include "ulisse_ctrl/tasks/SafetyBoundaries.hpp"
 
 namespace ulisse {
 
@@ -21,7 +21,7 @@ namespace states {
         double minHeadingError_, maxHeadingError_;
 
     public:
-        std::shared_ptr<LatLong> vehiclePosition; // [x y]
+        std::shared_ptr<ControlData> ctrlData; // [x y]
         std::shared_ptr<tpik::ActionManager> actionManager;
         std::shared_ptr<rml::RobotModel> robotModel;
         std::unordered_map<std::string, TasksInfo> tasksMap;
@@ -35,4 +35,4 @@ namespace states {
 }
 }
 
-#endif // ULISSE_CTRL_GENERICSTATE_HPP
+#endif // ULISSE_CTRL_GENERIC_STATE_HPP
