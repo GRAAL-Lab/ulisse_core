@@ -214,6 +214,7 @@ namespace nav {
         }
 
         //Filter Update
+        // TODO: Instead of thruster_data (requested perc) use effective RPM from motors topic
         extendedKalmanFilter_->Update(Eigen::Vector2d { thrustersFbk_.motor_percentage.left, thrustersFbk_.motor_percentage.right });
 
         state_ = extendedKalmanFilter_->StateVector();

@@ -121,35 +121,34 @@ int main(int argc, char* argv[])
     std::string baseName = home + "/logs/" + data.str() + "_bag";
     MakeDir(baseName.c_str());
 
-    std::string filterFilename =  baseName + "/log_filter.csv";
-    std::string simFilename = baseName + "/log_sim.csv";
+    std::string filterFilename = baseName  + "/log_filter.csv";
+    std::string simFilename = baseName     + "/log_sim.csv";
     std::string controlFilename = baseName + "/log_control.csv";
     std::string sensorsFilename = baseName + "/log_sensors.csv";
     
-    //filename.append(data.str()).append(".csv");
     std::cout << "Log folder: " << baseName << std::endl;
 
     filterFile.open(filterFilename);
     if(!filterFile.is_open()){
-        std::cerr << "Failed to open filterFile, exiting..." << std::endl;
+        std::cerr << "Failed to open Filter log file, exiting..." << std::endl;
         exit(EXIT_FAILURE);
     }
 
     simFile.open(simFilename);
     if(!simFile.is_open()){
-        std::cerr << "Failed to open simFile, exiting..." << std::endl;
+        std::cerr << "Failed to open Sim log file, exiting..." << std::endl;
         exit(EXIT_FAILURE);
     }
 
     controlFile.open(controlFilename);
     if(!controlFile.is_open()){
-        std::cerr << "Failed to open controlFile, exiting..." << std::endl;
+        std::cerr << "Failed to open Control log file, exiting..." << std::endl;
         exit(EXIT_FAILURE);
     }
 
     sensorsFile.open(sensorsFilename);
     if(!sensorsFile.is_open()){
-        std::cerr << "Failed to open sensorsFile, exiting..." << std::endl;
+        std::cerr << "Failed to open Sensors log file, exiting..." << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -192,7 +191,7 @@ int main(int argc, char* argv[])
                     << "\n";
 
         sensorsFile << secs + (nanosecs * 1e-9) << "," << gpsData.time << "," << gpsData.latitude << "," << gpsData.longitude << "," << gpsData.altitude << "," << gpsData.speed << "," << gpsData.track << "," << compassData.stamp.sec + (compassData.stamp.nanosec * 1e-9) << "," << compassData.orientation.roll << "," << compassData.orientation.pitch << "," << compassData.orientation.yaw << ","
-                    << imuData.stamp.sec + (imuData.stamp.nanosec * 1e-9) << "," << imuData.accelerometer[0] << "," << imuData.accelerometer[1] << "," << imuData.accelerometer[2] << "," << imuData.stamp.sec + (imuData.stamp.nanosec * 1e-9) << "," << imuData.gyro[0] << "," << imuData.gyro[1] << "," << imuData.gyro[2] << "," << magnetometerData.stamp.sec + (magnetometerData.stamp.nanosec * 1e-9) << "," << magnetometerData.orthogonalstrength[0] << "," << magnetometerData.orthogonalstrength[1] << "," << magnetometerData.orthogonalstrength[2]
+                    << imuData.stamp.sec + (imuData.stamp.nanosec * 1e-9) << "," << imuData.accelerometer[0] << "," << imuData.accelerometer[1] << "," << imuData.accelerometer[2] << "," << imuData.stamp.sec + (imuData.stamp.nanosec * 1e-9) << "," << imuData.gyro[0] << "," << imuData.gyro[1] << "," << imuData.gyro[2] << "," << magnetometerData.stamp.sec + (magnetometerData.stamp.nanosec * 1e-9) << "," << magnetometerData.orthogonalstrength[0] << "," << magnetometerData.orthogonalstrength[1] << "," << magnetometerData.orthogonalstrength[2] << ", "
                     << batteryLeft.stamp.sec + (batteryLeft.stamp.nanosec * 1e-9) << "," << batteryLeft.charge_percent  << "," << batteryRight.stamp.sec + (batteryRight.stamp.nanosec * 1e-9) << "," << batteryRight.charge_percent
                     << "\n";
 
