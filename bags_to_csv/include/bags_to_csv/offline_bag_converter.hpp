@@ -60,6 +60,7 @@ private:
     std::ofstream compassFile_;
     std::ofstream imuFile_;
     std::ofstream magnetometerFile_;
+    std::ofstream sensorsFile_;
     std::ofstream motorsFile_;
     //std::ofstream batteryFile_;
     std::ofstream navFilterFile_;
