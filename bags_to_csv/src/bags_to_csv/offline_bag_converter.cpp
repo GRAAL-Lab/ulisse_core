@@ -9,11 +9,8 @@ OfflineBagConverter::OfflineBagConverter(const std::string& bagPath, const std::
 {
 
     OpenFiles();
-    if(ConvertToCSV()){
-        std::cout << "Conversion Successful." << std::endl;
-    } else {
-        std::cout << "Conversion Failed." << std::endl;
-    }
+    ConvertToCSV();
+    std::cout << "Conversion Successful." << std::endl;
     CloseFiles();
 
     rclcpp::shutdown();
@@ -23,10 +20,8 @@ OfflineBagConverter::~OfflineBagConverter(){
 
 }
 
-bool OfflineBagConverter::ConvertToCSV()//, const std::string& csv_folder)
+bool OfflineBagConverter::ConvertToCSV()
 {
-
-
     rosbag2_cpp::Reader reader(std::make_unique<rosbag2_cpp::readers::SequentialReader>());
 
     rosbag2_cpp::StorageOptions storage_options{};
@@ -102,14 +97,14 @@ bool OfflineBagConverter::ConvertToCSV()//, const std::string& csv_folder)
             rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
             serialization.deserialize_message(&extracted_serialized_msg, &navFilterData_);
             navFilterFile_ << std::fixed << std::setprecision(6)
-                        << navFilterData_.stamp.sec + (navFilterData_.stamp.nanosec * 1e-9) << ", "
-                        << navFilterData_.inertialframe_linear_position.latlong.latitude << ", " << navFilterData_.inertialframe_linear_position.latlong.longitude << ", " << navFilterData_.inertialframe_linear_position.altitude << ", "
-                        << navFilterData_.bodyframe_angular_position.roll << ", " << navFilterData_.bodyframe_angular_position.pitch << ", " << navFilterData_.bodyframe_angular_position.yaw << ", "
-                        << navFilterData_.bodyframe_linear_velocity[0] << ", " << navFilterData_.bodyframe_linear_velocity[1] << ", " << navFilterData_.bodyframe_linear_velocity[2] << ", "
-                        << navFilterData_.bodyframe_angular_velocity[0] << ", " << navFilterData_.bodyframe_angular_velocity[1] << ", " << navFilterData_.bodyframe_angular_velocity[2] << ", "
-                        << navFilterData_.inertialframe_water_current[0] << ", " << navFilterData_.inertialframe_water_current[1] << ", "
-                        << navFilterData_.gyro_bias[0] << ", " << navFilterData_.gyro_bias[1] << ", " << navFilterData_.gyro_bias[2]
-                        << "\n";
+                           << navFilterData_.stamp.sec + (navFilterData_.stamp.nanosec * 1e-9) << ", "
+                           << navFilterData_.inertialframe_linear_position.latlong.latitude << ", " << navFilterData_.inertialframe_linear_position.latlong.longitude << ", " << navFilterData_.inertialframe_linear_position.altitude << ", "
+                           << navFilterData_.bodyframe_angular_position.roll << ", " << navFilterData_.bodyframe_angular_position.pitch << ", " << navFilterData_.bodyframe_angular_position.yaw << ", "
+                           << navFilterData_.bodyframe_linear_velocity[0] << ", " << navFilterData_.bodyframe_linear_velocity[1] << ", " << navFilterData_.bodyframe_linear_velocity[2] << ", "
+                           << navFilterData_.bodyframe_angular_velocity[0] << ", " << navFilterData_.bodyframe_angular_velocity[1] << ", " << navFilterData_.bodyframe_angular_velocity[2] << ", "
+                           << navFilterData_.inertialframe_water_current[0] << ", " << navFilterData_.inertialframe_water_current[1] << ", "
+                           << navFilterData_.gyro_bias[0] << ", " << navFilterData_.gyro_bias[1] << ", " << navFilterData_.gyro_bias[2]
+                           << "\n";
 
         } else if (bag_message->topic_name == ulisse_msgs::topicnames::reference_velocities) {
             rclcpp::Serialization<ulisse_msgs::msg::ReferenceVelocities> serialization;
@@ -124,9 +119,9 @@ bool OfflineBagConverter::ConvertToCSV()//, const std::string& csv_folder)
             rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
             serialization.deserialize_message(&extracted_serialized_msg, &thrustersData_);
             thrustersFile_ << std::fixed << std::setprecision(6)
-                        << thrustersData_.stamp.sec + (thrustersData_.stamp.nanosec * 1e-9) << ", "
-                        << thrustersData_.motor_percentage.left << ", " << thrustersData_.motor_percentage.right
-                        << "\n";
+                           << thrustersData_.stamp.sec + (thrustersData_.stamp.nanosec * 1e-9) << ", "
+                           << thrustersData_.motor_percentage.left << ", " << thrustersData_.motor_percentage.right
+                           << "\n";
         }
         // else if (bag_message->topic_name == ulisse_msgs::topicnames::llc_battery_left) {
         //    batteryFile_ << batteryLeft_.stamp.sec + (batteryLeft_.stamp.nanosec * 1e-9) << ", " << batteryLeft_.charge_percent  << "\n";
@@ -135,12 +130,12 @@ bool OfflineBagConverter::ConvertToCSV()//, const std::string& csv_folder)
         if (sensorReceived) {
             sensorReceived = false;
             sensorsFile_ << std::fixed << std::setprecision(6)
-                         << bag_message->time_stamp
+                         << bag_message->time_stamp  * 1e-9 << ", "
                          << imuData_.stamp.sec + (imuData_.stamp.nanosec * 1e-9)<< ", "
                          << imuData_.accelerometer[0] << ", " << imuData_.accelerometer[1] << ", " << imuData_.accelerometer[2] << ", "
                          << imuData_.gyro[0] << ", " << imuData_.gyro[1] << ", " << imuData_.gyro[2] << ", "
                          << compassData_.stamp.sec + (compassData_.stamp.nanosec * 1e-9) << ", "
-                         << compassData_.orientation.roll << ", " << compassData_.orientation.pitch << ", " << compassData_.orientation.yaw
+                         << compassData_.orientation.roll << ", " << compassData_.orientation.pitch << ", " << compassData_.orientation.yaw << ", "
                          << magnetometerData_.stamp.sec + (magnetometerData_.stamp.nanosec * 1e-9) << ", "
                          << magnetometerData_.orthogonalstrength[0] << ", " << magnetometerData_.orthogonalstrength[1] << ", " << magnetometerData_.orthogonalstrength[2]
                          << "\n";
@@ -165,7 +160,7 @@ bool OfflineBagConverter::OpenFiles()
     magnetometerFile_ << "time, orth_x, orth_y, orth_z\n";
 
     sensorsFile_      .open(std::string(saveFolder_ + "/sensors.txt"));
-    sensorsFile_ << "time_imu, acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z, time_compass, compass_R, compass_P, compass_Y, time_magn, magn_x, magn_y, magn_z\n";
+    sensorsFile_ << "ros_time, time_imu, acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z, time_compass, compass_R, compass_P, compass_Y, time_magn, magn_x, magn_y, magn_z\n";
 
     motorsFile_       .open(std::string(saveFolder_ + "/motors.txt"));
     motorsFile_ << "time, rpm_L, rpm_R\n";
@@ -190,6 +185,7 @@ void OfflineBagConverter::CloseFiles()
     imuFile_          .close();
     compassFile_      .close();
     magnetometerFile_ .close();
+    sensorsFile_      .close();
     motorsFile_       .close();
     navFilterFile_    .close();
     refVelFile_       .close();

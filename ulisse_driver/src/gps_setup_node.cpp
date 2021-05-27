@@ -200,6 +200,7 @@ int main(int argc, char* argv[])
         }
         */
         
+        /*
         RCLCPP_INFO(node->get_logger(), "Sending SAVECONFIG Command");
 
         stringToSend.assign("SAVECONFIG\n\r");
@@ -211,6 +212,11 @@ int main(int argc, char* argv[])
                 stringToSend.c_str());
             return EXIT_FAILURE;
         }
+        */
+    } else {
+        RCLCPP_ERROR(node->get_logger(), "Failed opening Serial! Exiting...");
+        rclcpp::shutdown();
+        exit(EXIT_FAILURE);
     }
 
     RCLCPP_INFO(node->get_logger(), "Starting gpsd server");

@@ -309,9 +309,9 @@ namespace llc {
         // Additional check to be sure the published values are within range (-1500,+1500).
         if (abs(llc_motor.motor_speed/6.0) < 1500){
             motor_msg.motor_speed = llc_motor.motor_speed / 6.0;
-        } else {
+        } /*else {
             std::cerr << "Invalid motor RPM, discarding" << std::endl;
-        }
+        }*/
     }
 
 } // llc
