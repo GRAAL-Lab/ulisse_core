@@ -1,7 +1,5 @@
-
-
 /*
- * low_level_control_node.cpp
+ * dynamic_level_control_node.cpp
  *
  *  Created on: Feb 06, 2019
  *      Author: francescow
@@ -51,7 +49,7 @@ int main(int argc, char* argv[])
     rclcpp::init(argc, argv);
     static int rate = 10;
     static double sampleTime = 1.0 / rate;
-    auto nh = rclcpp::Node::make_shared("low_level_control_node");
+    auto nh = rclcpp::Node::make_shared("dynamic_control_node");
 
     //config struct
     auto conf = std::make_shared<DCLConfiguration>();
