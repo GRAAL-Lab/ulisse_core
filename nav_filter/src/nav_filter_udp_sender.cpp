@@ -18,12 +18,21 @@ bool dataReceived = false;
 
 void NavFilterCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg) {
     navFilterMsg = *msg;
-    std::cout << "Received ROS2 NavFilter message" << std::endl;
+    //std::cout << "Received ROS2 NavFilter message" << std::endl;
     dataReceived = true;
 }
 
 int main(int argc, char* argv[])
 {
+    if(argc < 2){
+        std::cerr << "argv[1] missing: No destination IP provided" << std::endl;
+        rclcpp::shutdown();
+        exit(EXIT_FAILURE);
+    }
+
+    std::string ip(argv[1]), port("8888");
+    std::cout << "UDP Configuration IP:port = " << ip << ":" << port << std::endl;
+
     rclcpp::init(argc, argv);
     auto node = rclcpp::Node::make_shared("nav_filter_udp_sender");
     rclcpp::WallRate loop_rate(10);
@@ -31,9 +40,7 @@ int main(int argc, char* argv[])
     rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr navFilterSub_;
     navFilterSub_ = node->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 10, NavFilterCB);
 
-    std::string ip, port;
-    ip = "130.251.6.42";
-    port = "8888";
+
 
     futils::UDPSenderSocket udpSender(ip.c_str(), port.c_str());
 
@@ -61,7 +68,7 @@ int main(int argc, char* argv[])
             navFilterData.inertialF_waterCurrent[1] = navFilterMsg.inertialframe_water_current[1];
 
             udpSender.Send(&navFilterData, sizeof(navFilterData));
-            std::cout << "Sent UDP navFilterData message" << std::endl;
+            //std::cout << "Sent UDP navFilterData message" << std::endl;
         }
 
         rclcpp::spin_some(node);

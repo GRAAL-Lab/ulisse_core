@@ -27,8 +27,8 @@ def generate_launch_description():
             package='nav_filter',
             executable='nav_filter_udp_sender',
             output='screen',
-            arguments=[])
-
+            arguments=["130.251.6.42"])
+    
     return LaunchDescription([
         dcl_node,
         kcl_node,
