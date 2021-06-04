@@ -3,7 +3,7 @@ sudo apt install -y libgeographic-dev
 sudo apt install -y libconfig++-dev
 
 cd ~
-mdkir graal_ws
+mkdir graal_ws
 cd graal_ws
 
 git clone git@bitbucket.org:isme_robotics/rml.git
