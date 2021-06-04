@@ -23,10 +23,16 @@ def generate_launch_description():
             executable='nav_filter_node',
             output='screen',
             arguments=[])
+    nav_filter_udp_sender = launch_ros.actions.Node(
+            package='nav_filter',
+            executable='nav_filter_udp_sender',
+            output='screen',
+            arguments=[])
 
     return LaunchDescription([
         dcl_node,
         kcl_node,
-        nav_filter_node
+        nav_filter_node,
+        nav_filter_udp_sender
         # more nodes can be added here
     ])
