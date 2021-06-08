@@ -100,7 +100,7 @@ MapComponentForm {
         Rotation {
             origin.x: currentArrow.width / 2
             origin.y: currentArrow.height / 2
-            angle: map.bearing - fbkUpdater.current_deg
+            angle: map.bearing - fbkUpdater.water_current_deg
         },
         Rotation {
             origin.x: ulisseIcon.sourceItem.width / 2
@@ -112,7 +112,7 @@ MapComponentForm {
         }
     ]
 
-    currentLabel.text:"Current\n%1 m/s".arg(fbkUpdater.current_norm.toFixed(2))
+    currentLabel.text:"Current\n%1 m/s".arg(fbkUpdater.water_current_norm.toFixed(2))
 
     ulisseIcon.transform: [
         Rotation {

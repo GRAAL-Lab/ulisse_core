@@ -52,7 +52,7 @@ bool OfflineBagConverter::ConvertToCSV()
             rclcpp::Serialization<ulisse_msgs::msg::GPSData> serialization;
             rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
             serialization.deserialize_message(&extracted_serialized_msg, &gpsData_);
-            gpsFile_ << std::fixed << std::setprecision(8)
+            gpsFile_ << std::fixed << std::setprecision(10)
                      << gpsData_.time << ", " << gpsData_.latitude << ", " << gpsData_.longitude << ", " << gpsData_.altitude << ", "
                      << gpsData_.speed << ", " << gpsData_.track
                      << "\n";

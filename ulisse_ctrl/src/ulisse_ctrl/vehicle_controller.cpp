@@ -145,7 +145,7 @@ VehicleController::VehicleController(int rate, std::string file_name)
     srvCruise_ = this->create_service<ulisse_msgs::srv::SetCruiseControl>(ulisse_msgs::topicnames::set_cruise_control_service,
         std::bind(&VehicleController::SetCruiseControlHandler, this, _1, _2, _3));
 
-    srvResetConf_ = this->create_service<ulisse_msgs::srv::ResetConfiguration>(ulisse_msgs::topicnames::reset_configuration_service,
+    srvResetConf_ = this->create_service<ulisse_msgs::srv::ResetConfiguration>(ulisse_msgs::topicnames::reset_kcl_conf_service,
         std::bind(&VehicleController::ResetConfHandler, this, _1, _2, _3));
 
 
@@ -471,7 +471,7 @@ void VehicleController::ResetConfHandler(const std::shared_ptr<rmw_request_id_t>
         std::cerr << "Failed to reload KCL configuration from file. Load the previous configuration" << std::endl;
     }
 
-    response->res = "ResetConfiguration::ok";
+        response->res = "[KCL] ReloadConfiguration::ok";
 }
 
 void VehicleController::SlowTimerCB()

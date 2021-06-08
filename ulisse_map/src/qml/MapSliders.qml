@@ -231,6 +231,7 @@ Row {
                     value: containerRow.mapSource.zoomLevel
                     onValueChanged: {
                         containerRow.mapSource.zoomLevel = value
+                        settings.mapZoom = value
                     }
                 }
                 Slider {
@@ -242,6 +243,7 @@ Row {
                     value: containerRow.mapSource.bearing
                     onValueChanged: {
                         containerRow.mapSource.bearing = value
+                        settings.mapBearing = value
                     }
                 }
                 Slider {

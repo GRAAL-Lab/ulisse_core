@@ -67,8 +67,8 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     Q_PROPERTY(int timestamp485 READ get_timestamp485 NOTIFY callbacks_processed)
     Q_PROPERTY(int missed_deadlines485 READ get_missed_deadlines NOTIFY callbacks_processed)
 
-    Q_PROPERTY(float current_norm READ get_current_data_norm NOTIFY callbacks_processed)
-    Q_PROPERTY(float current_deg READ get_current_data_deg NOTIFY callbacks_processed)
+    Q_PROPERTY(float water_current_norm READ get_water_current_norm NOTIFY callbacks_processed)
+    Q_PROPERTY(float water_current_deg READ get_water_current_deg NOTIFY callbacks_processed)
 
     bool gpsOnline_, imuOnline_, compassOnline_, magnetometerOnline_;
     QGeoCoordinate q_ulisse_pos_, q_goal_pos_, q_gps_pos_;
@@ -94,8 +94,8 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     int missed_deadlines_;
     int timestamp485_;
 
-    double current_data_deg;
-    double current_data_norm;
+    double water_current_deg;
+    double water_current_norm;
 
     //rclcpp::Node::SharedPtr np_;
     rclcpp::Subscription<ulisse_msgs::msg::GPSData>::SharedPtr gps_data_sub_;
@@ -180,8 +180,8 @@ public:
 
     int get_missed_deadlines();
     int get_timestamp485();
-    double get_current_data_norm();
-    double get_current_data_deg();
+    double get_water_current_norm();
+    double get_water_current_deg();
 
 signals:
     void callbacks_processed();

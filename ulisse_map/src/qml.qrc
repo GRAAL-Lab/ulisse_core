@@ -62,5 +62,6 @@
         <file>qml/CommandsPathsTabView.qml</file>
         <file>qml/TasksDataView.qml</file>
         <file>qml/BottomToolbar.qml</file>
+        <file>qml/UtilitiesView.qml</file>
     </qresource>
 </RCC>

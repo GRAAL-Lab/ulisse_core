@@ -45,7 +45,8 @@ namespace topicnames {
     const std::string get_boundaries_service = "/ulisse/ctrl/get_boundaries";
 
     const std::string set_cruise_control_service = "/ulisse/ctrl/set_cruise_control";
-    const std::string reset_configuration_service = "/ulisse/ctrl/reset_configuration";
+    const std::string reset_kcl_conf_service = "/ulisse/ctrl/reset_kcl_configuration";
+    const std::string reset_dcl_conf_service = "/ulisse/ctrl/reset_dcl_configuration";
 }
 }
 

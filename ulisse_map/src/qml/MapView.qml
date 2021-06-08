@@ -65,6 +65,8 @@ MapViewForm {
 
         onTriggered: {
             map.center = fbkUpdater.ulisse_pos
+            map.bearing = settings.mapBearing
+            map.zoomLevel = settings.mapZoom
         }
     }
 }

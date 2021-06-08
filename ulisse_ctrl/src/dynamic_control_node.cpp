@@ -74,7 +74,6 @@ int main(int argc, char* argv[])
     std::string filename = "dcl_ulisse.conf";
 
     //Ulisse params configuration
-    //Ulisse params configuration
     if (!LoadDclConfiguration(conf, filename)) {
         std::cerr << "Failed to laod DCL Configuration. Check the parameters in the conf file" << std::endl;
         return -1;
@@ -148,10 +147,10 @@ int main(int argc, char* argv[])
             ComputedTorqueControlInizialization(conf, sampleTime, pidSurgeCT, pidYawRateCT);
         }
 
-        response->res = "ResetConfiguration::ok";
+        response->res = "[DCL] ReloadConfiguration::ok";
     };
 
-    auto srv_reset_conf = nh->create_service<ulisse_msgs::srv::ResetConfiguration>(ulisse_msgs::topicnames::reset_configuration_service, handle_reset_conf);
+    auto srv_reset_conf = nh->create_service<ulisse_msgs::srv::ResetConfiguration>(ulisse_msgs::topicnames::reset_dcl_conf_service, handle_reset_conf);
 
     while (rclcpp::ok()) {
 
@@ -240,7 +239,9 @@ int main(int argc, char* argv[])
                 //fill the feedback for the nav filter    <----------- CHECK TODO
                 simulatedVelocitySensor.water_relative_surge = referenceVelocities.desired_surge;
                 simulatedVelocitySensorPub->publish(simulatedVelocitySensor);
+
             } else if (conf->ctrlMode == ControlMode::ComputedTorque) {
+
                 //Dynamic Pids
                 Eigen::Vector6d feedbackVel = Eigen::Vector6d::Zero();
                 feedbackVel(0) = surgeFbk;
@@ -248,14 +249,16 @@ int main(int argc, char* argv[])
 
                 tau = { pidSurgeCT.Compute(referenceVelocities.desired_surge, surgeFbk), pidYawRateCT.Compute(referenceVelocities.desired_yaw_rate, yawRateFbk) };
 
+
                 Eigen::Vector3d tauDrag = ulisseModel.ComputeCoriolisAndDragForces(feedbackVel);
 
                 tau += Eigen::Vector2d(tauDrag[0], tauDrag[2]);
-                double outleft, outrigh;
+                double outLeft, outRight;
 
                 Eigen::Vector2d forces = ulisseModel.ThusterAllocation(tau);
-                ulisseModel.InverseMotorsEquations(feedbackVel, forces, outleft, outrigh);
-                ulisseModel.ThrustersSaturation(outleft, outrigh, -conf->thrusterPercLimit, conf->thrusterPercLimit, thrustersData.motor_percentage.left, thrustersData.motor_percentage.right);
+                ulisseModel.InverseMotorsEquations(feedbackVel, forces, outLeft, outRight);
+                ulisseModel.ThrustersSaturation(outLeft, outRight, -conf->thrusterPercLimit, conf->thrusterPercLimit, thrustersData.motor_percentage.left, thrustersData.motor_percentage.right);
+
 
                 //Fill the classic dynamic pid contol msg
                 auto t_now_ = std::chrono::system_clock::now();
@@ -269,10 +272,9 @@ int main(int argc, char* argv[])
                 computedTorqueMsg.feedback_yaw_rate = yawRateFbk;
                 computedTorqueMsg.out_pid_yaw_rate = pidYawRateCP.GetOutput();
                 computedTorqueMsg.forces = { forces[0], forces[1] };
-                computedTorqueMsg.tau = { tau[0], tau[2] };
-                computedTorqueMsg.motor_percentage.left = outleft;
-                computedTorqueMsg.motor_percentage.right = outrigh;
-
+                computedTorqueMsg.tau = { tau[0], tau[1] };
+                computedTorqueMsg.motor_percentage.left = outLeft;
+                computedTorqueMsg.motor_percentage.right = outRight;
                 computedTorqueControlPub->publish(computedTorqueMsg);
 
                 //fill the feedback for the nav filter

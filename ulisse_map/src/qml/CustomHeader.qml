@@ -36,7 +36,7 @@ ToolBar {
             TabButton {
                 text: qsTr("Map")
                 height: headerLayout.height - 3
-                width: headerLayout.width / 3
+                width: headerLayout.width / 4
 
                 background: Rectangle {
                     color: (headerBar.currentIndex == 0) ? lightcyan : cyan
@@ -46,7 +46,7 @@ ToolBar {
             TabButton {
                 text: qsTr("Status Data")
                 height: headerLayout.height - 3
-                width: headerLayout.width / 3
+                width: headerLayout.width / 4
 
                 background: Rectangle {
                     color: (headerBar.currentIndex == 1) ? lightcyan : cyan
@@ -56,10 +56,20 @@ ToolBar {
             TabButton {
                 text: qsTr("Tasks Data")
                 height: headerLayout.height - 3
-                width: headerLayout.width / 3
+                width: headerLayout.width / 4
 
                 background: Rectangle {
                     color: (headerBar.currentIndex == 2) ? lightcyan : cyan
+                }
+            }
+
+            TabButton {
+                text: qsTr("Utilities")
+                height: headerLayout.height - 3
+                width: headerLayout.width / 4
+
+                background: Rectangle {
+                    color: (headerBar.currentIndex == 3) ? lightcyan : cyan
                 }
             }
         }

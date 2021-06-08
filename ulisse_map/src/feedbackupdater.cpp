@@ -57,8 +57,8 @@ void FeedbackUpdater::LoadQmlEngine(QQmlApplicationEngine* engine)
 
     gpsOnline_ = imuOnline_ = compassOnline_ = magnetometerOnline_ = false;
 
-    current_data_deg = 0;
-    current_data_norm = 0;
+    water_current_deg = 0;
+    water_current_norm = 0;
 
     goalFlagObj_ = appEngine_->rootObjects().first()->findChild<QObject*>("goalFlag");
     if (!goalFlagObj_) {
@@ -117,8 +117,9 @@ void FeedbackUpdater::NavFilterData(const ulisse_msgs::msg::NavFilterData::Share
 
     //double current_data_n = msg->inertialframe_water_current[0];
     //double current_data_e = msg->inertialframe_water_current[1];
-    current_data_deg = atan2(water_current_w.x(), water_current_w.y()) * (180.0 / M_PI);
-    current_data_norm = water_current_w.norm();
+    water_current_deg = atan2(water_current_w.y(), water_current_w.x()) * (180.0 / M_PI) + 90.0;
+
+    water_current_norm = water_current_w.norm();
 
     q_ulisse_pos_.setLatitude(msg->inertialframe_linear_position.latlong.latitude);
     q_ulisse_pos_.setLongitude(msg->inertialframe_linear_position.latlong.longitude);
@@ -427,16 +428,15 @@ int FeedbackUpdater::get_timestamp485()
     return timestamp485_;
 }
 
-double FeedbackUpdater::get_current_data_deg()
+double FeedbackUpdater::get_water_current_deg()
 {
-    return current_data_deg;
+    return water_current_deg;
 }
 
-double FeedbackUpdater::get_current_data_norm()
+double FeedbackUpdater::get_water_current_norm()
 {
-    return current_data_norm;
+    return water_current_norm;
 }
-
 
 void FeedbackUpdater::process_callbacks_slot()
 {

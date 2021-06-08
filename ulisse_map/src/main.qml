@@ -71,6 +71,9 @@ ApplicationWindow {
         property string mapPluginType: "esri"
         property string esriMapCacheDir: home_dir + "/.map_offline_tiles/esri/"
         property string theme: "Light"
+        property var mapBearing: 0.0
+        property var mapZoom: 19.0
+        property var mapCenter: QtPositioning.coordinate(44.392, 8.945)
 
         Component.onCompleted: {
             futureMapPlugin = mapPluginType
@@ -166,6 +169,12 @@ ApplicationWindow {
 
             TasksDataView {
                 id: taskDataView
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+            }
+
+            UtilitiesView {
+                id: utilitiesView
                 Layout.fillWidth: true
                 Layout.fillHeight: true
             }
