@@ -175,8 +175,10 @@ bool Nurbs::ComputeNextPoint(const ctb::LatLong& currentP, ctb::LatLong& nextP)
 
     //Compute the position and the first derivative of the current paramenter value
     Eigen::VectorXd derive, currenDirection = Eigen::VectorXd::Zero(dim_);
+    double intPart;
+    double fractionalValue = std::modf(parvalue_, &intPart);
     int der = 1; //compute the position and the first derivative
-    if (!ComputeDerive(currentCurve, der, parvalue_, derive)) {
+    if (!ComputeDerive(currentCurve, der, fractionalValue, derive)) {
         std::cerr << "ComputeNextPoint: ComputeDerive fails" << std::endl;
         return false;
     }
@@ -218,14 +220,18 @@ bool Nurbs::ComputeNextPoint(const ctb::LatLong& currentP, ctb::LatLong& nextP)
             }
             break;
         } else {
-            //otherwise decrease the delta by a 0.5 meter factor
-            currentDelta_ -= 0.5;
+            //otherwise decrease the delta by a 0.05 meter factor
+            currentDelta_ -= 0.05;
             //compute the next parvalue with this delta increment
             if (!ComputePossibleNextPoint(nextDir, possibleNextP)) {
                 std::cerr << "ComputeNextPossiblePoint fails" << std::endl;
                 return false;
             }
         }
+        //std::cerr << "current direction = " << currenDirection << std::endl;
+        //std::cerr << "current direction = " << nextDir << std::endl;
+        //std::cerr << "difference = " << diff.norm() << std::endl;
+        diff = rml::ReducedVersorLemma(currenDirection, nextDir);
     }
 
     //Convert the next point in latlong coordinates
@@ -263,6 +269,10 @@ bool Nurbs::ComputePossibleNextPoint(Eigen::VectorXd& nextDirection, Eigen::Vect
 
     unsigned int indexNextCurve = indexCurrentCurve;
     SISLCurve* nextCurve = nullptr;
+    
+    //std::cerr << "currentIndex = " << indexCurrentCurve << std::endl;
+    //std::cerr << "Current Delta = " << currentDelta_ << " - Delta Normalized = " << delta << std::endl; 
+    //std::cerr << "Current parvalue = " << parvalue_ << " - Next Parvalue = " << nextParvalue << std::endl; 
 
     //Check if adding a delta increment the next parvalue is on the next curve
     if (nextParvalue > 1) {
@@ -286,6 +296,10 @@ bool Nurbs::ComputePossibleNextPoint(Eigen::VectorXd& nextDirection, Eigen::Vect
             delta = (currentDelta_ - deltaTraveled) / newCurveLenght;
 
             nextParvalue = delta;
+            
+            //std::cerr << "nextCurveIndex = " << indexNextCurve << std::endl;
+            //std::cerr << "delta traveled = " << deltaTraveled << std::endl;
+            //std::cerr << "delta = " << delta << std::endl;
         }
     }
 
@@ -320,6 +334,7 @@ bool Nurbs::ComputeCurveLength(SISLCurve* curve, double& length)
 
 bool Nurbs::ComputeDerive(SISLCurve* curve, const int der, const double parvalue, Eigen::VectorXd& derive)
 {
+	//std::cerr << "ComputeDerive at parvalue " << parvalue << std::endl;
     int deriveDim = dim_ * (der + 1);
     derive.setZero(deriveDim);
 
