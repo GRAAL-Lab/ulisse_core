@@ -100,7 +100,7 @@ MapComponentForm {
         Rotation {
             origin.x: currentArrow.width / 2
             origin.y: currentArrow.height / 2
-            angle: map.bearing - fbkUpdater.water_current_deg
+            angle: fbkUpdater.water_current_deg - map.bearing
         },
         Rotation {
             origin.x: ulisseIcon.sourceItem.width / 2
@@ -153,6 +153,7 @@ MapComponentForm {
 
     onZoomLevelChanged: {
         ruler.rulerTimer.restart()
+        settings.mapCenter = map.center
     }
 
     onWidthChanged: {

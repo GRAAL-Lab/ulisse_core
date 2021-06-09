@@ -74,6 +74,7 @@ ApplicationWindow {
         property var mapBearing: 0.0
         property var mapZoom: 19.0
         property var mapCenter: QtPositioning.coordinate(44.392, 8.945)
+        property string savedBoundary: ""
 
         Component.onCompleted: {
             futureMapPlugin = mapPluginType

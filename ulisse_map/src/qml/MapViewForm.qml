@@ -104,8 +104,10 @@ RowLayout {
             width: parent.width
             height: parent.height - bottomToolbar.height
             plugin: mapPlugin
-            center: marker_coords // Genoa
-            zoomLevel: 16.5 //(maximumZoomLevel - minimumZoomLevel)/2
+            center: settings.mapCenter
+            zoomLevel: settings.mapZoom
+            bearing: settings.mapBearing
+
         }
 
         Rectangle {

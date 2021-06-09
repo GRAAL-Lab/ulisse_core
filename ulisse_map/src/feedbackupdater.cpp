@@ -104,12 +104,12 @@ void FeedbackUpdater::LoadQmlEngine(QQmlApplicationEngine* engine)
     sw485_status_sub_ = this->create_subscription<ulisse_msgs::msg::LLCSw485Status>(ulisse_msgs::topicnames::llc_sw485status,
         10, std::bind(&FeedbackUpdater::LLCSw485StatusCB, this, _1));
     current_status_sub_ = this->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data,
-        10, std::bind(&FeedbackUpdater::NavFilterData, this, _1) /*custom_qos_profile*/);
+        10, std::bind(&FeedbackUpdater::NavFilterDataCB, this, _1) /*custom_qos_profile*/);
     feedbackGuiSub_ = this->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui,
         10, std::bind(&FeedbackUpdater::FeedbackGuiCB, this, _1) /*custom_qos_profile*/);
 }
 
-void FeedbackUpdater::NavFilterData(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)
+void FeedbackUpdater::NavFilterDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)
 {
 
     Eigen::Vector2d water_current_w(msg->inertialframe_water_current[0], msg->inertialframe_water_current[1]);
@@ -117,7 +117,7 @@ void FeedbackUpdater::NavFilterData(const ulisse_msgs::msg::NavFilterData::Share
 
     //double current_data_n = msg->inertialframe_water_current[0];
     //double current_data_e = msg->inertialframe_water_current[1];
-    water_current_deg = atan2(water_current_w.y(), water_current_w.x()) * (180.0 / M_PI) + 90.0;
+    water_current_deg = atan2(water_current_w.y(), water_current_w.x()) * (180.0 / M_PI);
 
     water_current_norm = water_current_w.norm();
 

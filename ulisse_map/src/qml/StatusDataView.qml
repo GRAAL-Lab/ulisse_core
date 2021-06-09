@@ -73,8 +73,8 @@ Rectangle {
                     labelColor: blue
                     label: "GPS Position"
                     textColor: 'grey'
-                    text: "%1, %2".arg(fbkUpdater.gps_pos.latitude).arg(
-                              fbkUpdater.gps_pos.longitude)
+                    text: "%1, %2".arg(fbkUpdater.gps_pos.latitude.toFixed(8)).arg(
+                              fbkUpdater.gps_pos.longitude.toFixed(8))
                     lsize: labelsize
                     tsize: textsize
                 }
@@ -85,8 +85,8 @@ Rectangle {
                     labelColor: blue
                     label: "Filtered Position"
                     textColor: 'grey'
-                    text: "%1, %2".arg(fbkUpdater.ulisse_pos.latitude).arg(
-                              fbkUpdater.ulisse_pos.longitude)
+                    text: "%1, %2".arg(fbkUpdater.ulisse_pos.latitude.toFixed(8)).arg(
+                              fbkUpdater.ulisse_pos.longitude.toFixed(8))
                     lsize: labelsize
                     tsize: textsize
                 }

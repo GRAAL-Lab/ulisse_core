@@ -156,8 +156,6 @@ VehicleController::VehicleController(int rate, std::string file_name)
 
     // Timer for slow check operations
     slow_timer_ = this->create_wall_timer(std::chrono::seconds(5), std::bind(&VehicleController::SlowTimerCB, this));
-
-
 }
 
 VehicleController::~VehicleController() { }
@@ -310,11 +308,9 @@ void VehicleController::SetUpFSM()
     // ENABLE COMMANDS
     for (auto& state : statesMap_) {
         for (auto& command : commandsMap_) {
-
             uFsm_.EnableCommandInState(state.first, command.first, true);
         }
     }
-
     uFsm_.SetInitState(ulisse::states::ID::halt);
 }
 
@@ -332,6 +328,7 @@ void VehicleController::CommandsHandler(const std::shared_ptr<rmw_request_id_t> 
     PublishLog(logg.str().c_str());
     fsm::retval ret = fsm::ok;
 
+    // Check if Boundaries are set before accepting commands
     if (!boundariesSet_) {
         response->res = "CommandAnswer::NoBoundSet";
         return;
@@ -395,7 +392,7 @@ void VehicleController::CommandsHandler(const std::shared_ptr<rmw_request_id_t> 
         }
 
         uFsm_.ExecuteCommand(request->command_type);
-        response->res = "CommandAnswer::ok";
+        response->res = "[KCL] CommandAnswer::ok";
     }
 }
 
@@ -411,7 +408,7 @@ void VehicleController::SetBoundariesHandler(const std::shared_ptr<rmw_request_i
         response->res = "SetBound::ok";
         boundariesSet_ = true;
     } else {
-        response->res = "SetBound::error";
+        response->res = "[KCL] SetBound::error";
     }
 
     std::stringstream log;
@@ -430,7 +427,7 @@ void VehicleController::GetBoundariesHandler(const std::shared_ptr<rmw_request_i
     if (boundariesSet_) {
         response->res = boundariesJson_;
     } else {
-        response->res = "NoBoundSet";
+        response->res = "[KCL] NoBoundSet";
     }
 }
 
@@ -439,7 +436,7 @@ void VehicleController::SetCruiseControlHandler(const std::shared_ptr<rmw_reques
     std::shared_ptr<ulisse_msgs::srv::SetCruiseControl::Response> response)
 {
     (void)request_header;
-    RCLCPP_INFO(this->get_logger(), "Incoming request for set cruise control");
+    RCLCPP_INFO(this->get_logger(), "Incoming request for set cruise control. (value: %f)", request->cruise_control);
 
     std::stringstream log;
     log << "Cruise Control set to: " << request->cruise_control;
@@ -452,8 +449,9 @@ void VehicleController::SetCruiseControlHandler(const std::shared_ptr<rmw_reques
 
     // Set Saturation values for the iCAT (read from conf file)
     iCat_->SetSaturation(satMin, satMax);
+    //iCat_->SetSaturation(satMin, satMax);
 
-    response->res = "SetCruiseControl::ok";
+    response->res = "[KCL] SetCruiseControl::ok";
 }
 
 void VehicleController::ResetConfHandler(const std::shared_ptr<rmw_request_id_t> request_header,

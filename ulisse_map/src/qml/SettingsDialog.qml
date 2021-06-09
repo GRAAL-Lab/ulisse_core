@@ -13,24 +13,24 @@ Dialog {
 
     standardButtons: Dialog.Ok | Dialog.Cancel
     onAccepted: {
-        if (mapTypeBox.displayText != futureMapPlugin) {
+        /*if (mapTypeBox.displayText != futureMapPlugin) {
             futureMapPlugin = mapTypeBox.displayText
             toast.show("Changes will take effect on restart...", 2000)
-        }
+        }*/
 
         if (mapCacheDirectory.displayText != settings.esriMapCacheDir) {
             settings.esriMapCacheDir = mapCacheDirectory.displayText
             toast.show("Changes will take effect on restart...", 2000)
         }
 
-        settings.theme = styleBox.displayText
+        //settings.theme = styleBox.displayText
 
         close()
         stackViewContainer.forceActiveFocus()
     }
     onRejected: {
-        styleBox.currentIndex = styleBox.styleIndex
-        mapTypeBox.currentIndex = mapTypeBox.mapTypeIndex
+        //styleBox.currentIndex = styleBox.styleIndex
+        //mapTypeBox.currentIndex = mapTypeBox.mapTypeIndex
         mapCacheDirectory.text = settings.esriMapCacheDir
 
         close()
@@ -41,34 +41,24 @@ Dialog {
         id: settingsColumn
         spacing: 20
 
-        RowLayout {
+        /*RowLayout {
             id: mapTypesetting
             spacing: 10
 
             Label {
-                text: "Map Plugin Type:"
+                text: "Save current map view as center:"
             }
-            ComboBox {
-                id: mapTypeBox
-                property int mapTypeIndex: -1
-                property bool mapTypeSettingChanged: false
-                Layout.fillWidth: true
-                model: ["osm", "esri"]
+            Button {
+                id: setMapCenter
+                text: "Set Center"
+                font.pointSize: 10
 
-                Component.onCompleted: {
-                    mapTypeIndex = find(settings.mapPluginType,
-                                        Qt.MatchFixedString)
-                    if (mapTypeIndex !== -1)
-                        currentIndex = mapTypeIndex
-                }
-
-                onCurrentIndexChanged: {
-                    if (mapTypeIndex !== -1) {
-                        mapTypeSettingChanged = (mapTypeIndex !== currentIndex) ? true : false
-                    }
+                onClicked: {
+                    settings.mapCenter; //browseCacheDirDialog.open()
                 }
             }
-        }
+
+        }*/
 
         RowLayout {
             id: mapCacheSetting
@@ -110,7 +100,7 @@ Dialog {
             }
         }
 
-        RowLayout {
+        /*RowLayout {
             id: appStyleSetting
             spacing: 10
 
@@ -128,14 +118,13 @@ Dialog {
                 }
                 Layout.fillWidth: true
             }
-        }
+        }*/
 
         Label {
             id: restartText
             text: "Restart required!"
             color: "#e41e25"
-            opacity: mapCacheDirectory.cacheDirChanged
-                     | mapTypeBox.mapTypeSettingChanged ? 1.0 : 0.0
+            opacity: mapCacheDirectory.cacheDirChanged ? 1.0 : 0.0
             font.weight: Font.DemiBold
             horizontalAlignment: Label.AlignHCenter
             verticalAlignment: Label.AlignVCenter

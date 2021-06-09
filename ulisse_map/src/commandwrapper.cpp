@@ -77,12 +77,12 @@ void CommandWrapper::LoadQmlEngine(QQmlApplicationEngine* engine)
 
     feedbackGuiSub_ = this->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10, std::bind(&CommandWrapper::FeedbackGuiCB, this, _1) /*, custom_qos_profile*/);
 
-    connect(this, &CommandWrapper::connected, []() { std::cout << "service connected" << std::endl; });
+    /*connect(this, &CommandWrapper::connected, []() { std::cout << "service connected" << std::endl; });
     notificator = std::async([&] {
         command_srv_->wait_for_service();
         emit connected();
         setCruiseSpeedCommand(cruiseSpeedObj_->property("value").toUInt());
-    });
+    });*/
 }
 
 
@@ -409,7 +409,7 @@ bool CommandWrapper::SendBoundariesRequest(ulisse_msgs::srv::SetBoundaries::Requ
 
     if (boundary_srv_->service_is_ready()) {
         auto result_future = boundary_srv_->async_send_request(req);
-        std::cout << "Send Bounary to KCL" << std::endl;
+        std::cout << "Send Boundary to KCL" << std::endl;
         if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
             result_msg = "service call failed :(";
             RCLCPP_ERROR(this->get_logger(), result_msg.c_str());

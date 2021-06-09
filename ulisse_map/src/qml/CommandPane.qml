@@ -41,7 +41,7 @@ Pane {
                 antialiasing: false
                 Layout.alignment: Qt.AlignVCenter //| Qt.AlignVCenter
                 //Layout.bottomMargin: 20
-                font.pointSize: 12
+                font.pointSize: 11
                 //Layout.topMargin: 20
                 font.weight: Font.DemiBold
             }
@@ -49,15 +49,30 @@ Pane {
             RowLayout {
                 id: boundingBoxButtons
                 Layout.fillWidth: true
-                Button {
-                    id: buttonBoundBoxDefine
-                    text: qsTr("Define")
 
+                /*Button {
+                    id: buttonBoundBoxGet
+                    text: qsTr("Get")
+                    font.pointSize: 9
                     padding: 5
                     antialiasing: false
                     Layout.fillWidth: true
-                    Layout.fillHeight: false
+                    highlighted: true
+                    Material.background: green
+                    //Layout.fillHeight: false
+                    onClicked: {
+                        cmdWrapper.sendBoundaries(JSON.stringify(map.polysec_cur.serialize()))
+                    }
+                }*/
 
+                Button {
+                    id: buttonBoundBoxDefine
+                    text: qsTr("Define")
+                    font.pointSize: 9
+                    padding: 5
+                    antialiasing: false
+                    Layout.fillWidth: true
+                    //Layout.fillHeight: false
                     highlighted: true
                     Material.background: green
 
@@ -71,6 +86,7 @@ Pane {
                         buttonBoundBoxResend.enabled = true
                         commandPathsStackContainer.pathCommandsPane.check_safety_all()
                         cmdWrapper.sendBoundaries(JSON.stringify(map.polysec_cur.serialize()))
+                        settings.savedBoundary = JSON.stringify(map.polysec_cur.serialize())
                     }
 
                     function reset_polysec(){
@@ -82,7 +98,7 @@ Pane {
                         map.pos_changed_handler = function () {}
                     }
 
-                    onClicked: function () {
+                    onClicked: {
                         polysec_bkp = map.polysec_cur.path
                         map.polysec_cur.clear_path()
                         map.center = fbkUpdater.ulisse_pos
@@ -98,11 +114,12 @@ Pane {
                     id: buttonBoundBoxResend
                     enabled: false
                     text: qsTr("Resend")
+                    font.pointSize: 9
                     padding: 5
                     antialiasing: false
                     Layout.fillWidth: true
                     highlighted: true
-                    Layout.fillHeight: false
+                    //Layout.fillHeight: false
                     onClicked: cmdWrapper.sendBoundaries(JSON.stringify(map.polysec_cur.serialize()))
                 }
             }

@@ -215,7 +215,7 @@ RowLayout {
                     pathCommandsPane.update_selection(path)
                     bar_manage.manage(path)
                 })
-
+                cur_managed.check_safe(map.polysec_cur)
                 cur_managed.draw_deferred()
                 break
             case "PointPath":
@@ -229,7 +229,7 @@ RowLayout {
                     pathCommandsPane.update_selection(path)
                     bar_manage.manage(path)
                 })
-
+                cur_managed.check_safe(map.polysec_cur)
                 cur_managed.draw_deferred()
                 break
             case "SecurityPoly":
@@ -241,8 +241,6 @@ RowLayout {
         }
         toast.show("Mission loaded", 2000)
     }
-
-
 
 
     function enableBtns(y) {

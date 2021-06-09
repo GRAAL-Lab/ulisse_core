@@ -139,7 +139,7 @@ public:
     void LLCSw485StatusCB(const ulisse_msgs::msg::LLCSw485Status::SharedPtr msg);
     void ReferenceVelocitiesCB(const ulisse_msgs::msg::ReferenceVelocities::SharedPtr msg);
     void VehicleStatusCB(const ulisse_msgs::msg::VehicleStatus::SharedPtr msg);
-    void NavFilterData(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
+    void NavFilterDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
     void FeedbackGuiCB(const ulisse_msgs::msg::FeedbackGui::SharedPtr msg);
 
     Q_INVOKABLE void copyToClipboard(QString value);

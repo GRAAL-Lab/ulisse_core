@@ -64,6 +64,8 @@ int main(int argc, char* argv[])
             continue;
         }
 
+
+
         switch (choice) {
         case 1: {
             send = false;
@@ -82,6 +84,13 @@ int main(int argc, char* argv[])
                 std::cin >> delayMs;
             }
             do {
+                auto tNow = std::chrono::system_clock::now();
+                long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(tNow.time_since_epoch())).count();
+                auto secs = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
+                auto nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
+                thruster_data_msg.stamp.sec = secs;
+                thruster_data_msg.stamp.nanosec = nanosecs;
+
                 thruster_data_pub_->publish(thruster_data_msg);
                 if (--repetitions > 0) {
                     std::this_thread::sleep_for(std::chrono::milliseconds(delayMs));
