@@ -277,7 +277,7 @@ bool Nurbs::ComputePossibleNextPoint(Eigen::VectorXd& nextDirection, Eigen::Vect
 
             // Estimate the new curve length
             double newCurveLenght;
-            if (ComputeCurveLength(nextCurve, newCurveLenght)) {
+            if (!ComputeCurveLength(nextCurve, newCurveLenght)) {
                 std::cerr << "ComputeNextPossiblePoint: ComputeCurveLength fails" << std::endl;
                 return false;
             }

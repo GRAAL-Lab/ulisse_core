@@ -44,7 +44,7 @@ VehicleSimulator::VehicleSimulator(const rclcpp::Node::SharedPtr& nh)
     magnetometerPub_ = nh_->create_publisher<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer, 1);
     appliedMotorRefPub_ = nh_->create_publisher<ulisse_msgs::msg::MotorReference>(ulisse_msgs::topicnames::motor_applied_ref, 1);
     simulatedSystemPub_ = nh_->create_publisher<ulisse_msgs::msg::SimulatedSystem>(ulisse_msgs::topicnames::simulated_system, 1);
-
+	motorsDataPub_ = nh_->create_publisher<ulisse_msgs::msg::LLCMotors>(ulisse_msgs::topicnames::llc_motors, 1);
     thrustersSub_ = nh_->create_subscription<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data, 1, std::bind(&VehicleSimulator::ThrusterDataCB, this, _1));
 
     worldF_waterVelocity_(0) = 0.0;
@@ -312,6 +312,11 @@ void VehicleSimulator::SimulateSensors()
     //motor ref
     appliedMotorRefMsg_.left = hp_;
     appliedMotorRefMsg_.right = hs_;
+    
+    motorsDataMsg_.stamp.sec = now_stamp_secs;
+    motorsDataMsg_.stamp.nanosec = now_stamp_nanosecs;
+    motorsDataMsg_.left.motor_speed = ulisseModel.PercentageToRPM(hp_);
+    motorsDataMsg_.right.motor_speed = ulisseModel.PercentageToRPM(hs_);
 }
 
 void VehicleSimulator::PublishSensors()
@@ -319,6 +324,7 @@ void VehicleSimulator::PublishSensors()
     microLoopCountPub_->publish(microLoopCountMsg_);
     simulatedSystemPub_->publish(groundTruthMsg_);
     appliedMotorRefPub_->publish(appliedMotorRefMsg_);
+    motorsDataPub_->publish(motorsDataMsg_);
 
     if (static_cast<int>(timestamp_count_ / 20) > gpsPubCounter_) {
         gpsPubCounter_ = static_cast<int>(timestamp_count_ / 20);
