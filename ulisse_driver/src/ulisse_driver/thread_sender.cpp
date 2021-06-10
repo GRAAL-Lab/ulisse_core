@@ -94,12 +94,12 @@ namespace llc {
         data_.messageType = MessageType::get_config;
         llcHlp_.SendMessage(data_);
 
-        // Sending a message to make the catamaran emit an "alive" beep
-        data_.messageType = MessageType::beep;
-        data_.beep.delay = 30;
-        data_.beep.loop = 1;
-        data_.beep.numberOfBeeps = 1;
-        llcHlp_.SendMessage(data_);
+        /// Sending a message to make the catamaran emit an "alive" beep
+        //data_.messageType = MessageType::beep;
+        //data_.beep.delay = 30;
+        //data_.beep.loop = 1;
+        //data_.beep.numberOfBeeps = 1;
+        //llcHlp_.SendMessage(data_);
 
         thruster_data_sub_ = create_subscription<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data, 10, std::bind(&ThreadSender::ThrustersDataCB, this, _1));
 
