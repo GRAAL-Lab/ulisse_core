@@ -197,14 +197,14 @@ Pane {
                     value: 0
                     Layout.preferredWidth: sliderWidth + 50
                     Layout.leftMargin: 0
-                    stepSize: 0.1
+                    stepSize: 1
                     from: 0
-                    to: 359.9
+                    to: 359
                 }
 
                 Text {
                     width: 80
-                    text: sliderHeading.value.toFixed(1) + " °"
+                    text: sliderHeading.value + " °"
                     font.pointSize: 11
                     horizontalAlignment: Text.AlignLeft
                     verticalAlignment: Text.AlignVCenter

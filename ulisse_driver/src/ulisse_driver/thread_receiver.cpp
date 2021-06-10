@@ -72,11 +72,11 @@ namespace llc {
         imu_pub_ = this->create_publisher<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu,1);
         ambsens_pub_ = this->create_publisher<ulisse_msgs::msg::AmbientSensors>(ulisse_msgs::topicnames::sensor_ambient,1);
         magneto_pub_ = this->create_publisher<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer,1);
-        applied_motorref_pub_ = this->create_publisher<ulisse_msgs::msg::MotorReference>(ulisse_msgs::topicnames::motor_applied_ref,1);
+        applied_motorref_pub_ = this->create_publisher<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_applied_perc,1);
 
         llc_status_pub_ = this->create_publisher<ulisse_msgs::msg::LLCStatus>(ulisse_msgs::topicnames::llc_status,1);
         llc_config_pub_ = this->create_publisher<ulisse_msgs::msg::LLCConfig>(ulisse_msgs::topicnames::llc_config,1);
-        llc_motors_pub_ = this->create_publisher<ulisse_msgs::msg::LLCMotors>(ulisse_msgs::topicnames::llc_motors,1);
+        llc_motors_pub_ = this->create_publisher<ulisse_msgs::msg::LLCThrusters>(ulisse_msgs::topicnames::llc_thrusters,1);
         llc_version_pub_ = this->create_publisher<ulisse_msgs::msg::LLCVersion>(ulisse_msgs::topicnames::llc_version,1);
         llc_ack_pub_ = this->create_publisher<ulisse_msgs::msg::LLCAck>(ulisse_msgs::topicnames::llc_ack,1);
         llc_battery_left_pub_ = this->create_publisher<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_left,1);
@@ -88,7 +88,6 @@ namespace llc {
 
     void ThreadReceiver::ReadLoop()
     {
-        //std::cout << "ThreadReceiver::ReadLoop() was called" << std::endl;
         while (rclcpp::ok()) {
 
             t_now_ = std::chrono::system_clock::now();
@@ -96,18 +95,16 @@ namespace llc {
             //auto fraction_nanosecs = static_cast<unsigned int>(epoch_nanosecs % (int)1E9);
 
             llcHlp_.CollectValidMessage(llcData_);
-            //std::cout << "ThreadReceiver::ReadLoop(), Collected Valid Message" << std::endl;
             
             ulisse_msgs::msg::Time time_msg;
             time_msg.sec = static_cast<unsigned int>(epoch_nanosecs / (int)1E9);
             unsigned int stepsnanosecs = static_cast<unsigned int>(llcData_.sensors.stepsSincePPS * 1E9 / 200.0);
 
+            // TEMPORARILY DISABLED DUE TO DESYNC ISSUES
             // Assuming that the time of the control PC is synchronized with the GPS time,
             // if the stepsSincePPS (time since last gps 'seconds' pulse) gives an elapsed intrasecond
             // time which is greater that the current intrasecond time, it means that the measures are
             // referred to the previous second (since measure cannot come from the future)
-
-            // TEMPORARILY DISABLED DUE TO DESYNC ISSUES
 
             //if (stepsnanosecs > fraction_nanosecs) {
             //    // Data belonging to previous second
@@ -115,16 +112,18 @@ namespace llc {
             //}
             time_msg.nanosec = stepsnanosecs;
 
+            // Due to how the microcontroller updates the SNSSTSMASK, the management of the
+            // UPDATED bit is by now not reliable. For this reason the check on this bit
+            // is disabled.
+            //uint8_t sensorStatus = llcData_.sensors.sensorStatus;
+
             /*printf("sensorData: status:%X || UpdatedAcc %c UpdatedCompass %c UpdatedMagnetometer %c UpdatedAnalog %c",
             sensorStatus, PRINT_INT(sensorStatus & EMB_SNSSTSMASK_UPDATEDACCELEROMETER),
             PRINT_INT(sensorStatus & EMB_SNSSTSMASK_UPDATEDCOMPASS),
             PRINT_INT(sensorStatus & EMB_SNSSTSMASK_UPDATEDMAGNETOMETER),
             PRINT_INT(sensorStatus & EMB_SNSSTSMASK_UPDATEDANALOG));*/
 
-            // Due to how the microcontroller updates the SNSSTSMASK, the management of the
-            // UPDATED bit is by now not reliable. For this reason the check on this bit
-            // is disabled.
-            //uint8_t sensorStatus = llcData_.sensors.sensorStatus;
+
 
             switch (llcData_.messageType) {
             case MessageType::sensor:
@@ -168,13 +167,12 @@ namespace llc {
                 ambsens_pub_->publish(ambsens_msg_);
                 //}
 
-                applied_motorref_msg_.left = llcData_.sensors.leftReference;
-                applied_motorref_msg_.right = llcData_.sensors.rightReference;
+                applied_motorref_msg_.left_percentage = llcData_.sensors.leftReference;
+                applied_motorref_msg_.right_percentage = llcData_.sensors.rightReference;
                 applied_motorref_pub_->publish(applied_motorref_msg_);
                 break;
             case MessageType::status:
                 llc_status_msg_.stamp = time_msg;
-                llc_status_msg_.status = llcData_.status.status;
                 llc_status_msg_.commdataerrorcount = llcData_.status.commDataErrorCount;
                 llc_status_msg_.i2cdatastate = llcData_.status.i2cDataState;
                 llc_status_msg_.misseddeadlines = llcData_.status.missedDeadlines;
@@ -187,6 +185,34 @@ namespace llc {
                 llc_status_msg_.errorcount = llcData_.status.errorCount;
                 llc_status_msg_.overflowcount232 = llcData_.status.overflowCount232; // overflow buffer rs232
                 llc_status_msg_.overflowcount485 = llcData_.status.overflowCount485; // overflow buffer rs485
+
+                if (llcData_.status.status & EMB_STSMASK_ENABLE_ACCELEROMETER){
+                    llc_status_msg_.flags.enable_accelerometer = true; }
+                if (llcData_.status.status & EMB_STSMASK_ENABLE_COMPASS){
+                    llc_status_msg_.flags.enable_compass = true; }
+                if (llcData_.status.status & EMB_STSMASK_ENABLE_MAGNETOMETER){
+                    llc_status_msg_.flags.enable_magnetometer = true; }
+                if (llcData_.status.status & EMB_STSMASK_ENABLE_I2C){
+                    llc_status_msg_.flags.enable_i2c = true; }
+                if (llcData_.status.status & EMB_STSMASK_ENABLE_ANALOG){
+                    llc_status_msg_.flags.enable_analog = true; }
+                if (llcData_.status.status & EMB_STSMASK_MAGNETOMETERCALIBRATION){
+                    llc_status_msg_.flags.mag_calibration = true; }
+                if (llcData_.status.status & EMB_STSMASK_ENABLE_REFERENCE){
+                    llc_status_msg_.flags.enable_reference = true; }
+                if (llcData_.status.status & EMB_STSMASK_TIMEOUT_REFERENCE){
+                    llc_status_msg_.flags.timeout_reference = true; }
+                if (llcData_.status.status & EMB_STSMASK_PPM_MAIN_VALID){
+                    llc_status_msg_.flags.ppm_main_valid = true; }
+                if (llcData_.status.status & EMB_STSMASK_PPM_ENABLED){
+                    llc_status_msg_.flags.ppm_remote_enabled  = true; }
+                if (llcData_.status.status & EMB_STSMASK_PPM_NEEDZEROCHECK){
+                    llc_status_msg_.flags.ppm_need_zero_check = true; }
+                if (llcData_.status.status & EMB_STSMASK_PPM_CHANNEL){
+                    llc_status_msg_.flags.ppm_channel = true; }
+                if (llcData_.status.status & EMB_STSMASK_PPM_SECONDARY_VALID){
+                    llc_status_msg_.flags.ppm_secondary_valid = true; }
+
                 llc_status_pub_->publish(llc_status_msg_);
                 break;
             case MessageType::set_config:
@@ -218,6 +244,7 @@ namespace llc {
                 break;
             case MessageType::motors:
                 llc_motors_msg_.stamp = time_msg; // since LLC power-on
+                llc_motors_msg_.timestamp_485 = llcData_.motors.timestamp;
                 LLCData2RosMsg(llcData_.motors.left, llc_motors_msg_.left);
                 LLCData2RosMsg(llcData_.motors.right, llc_motors_msg_.right);
                 llc_motors_pub_->publish(llc_motors_msg_);
@@ -286,8 +313,9 @@ namespace llc {
         std::copy(llc_batt.cells, llc_batt.cells + 14, batt_msg.cells.begin());
     }
 
-    void ThreadReceiver::LLCData2RosMsg(const motorData& llc_motor, ulisse_msgs::msg::MotorData& motor_msg)
+    void ThreadReceiver::LLCData2RosMsg(const motorData& llc_motor, ulisse_msgs::msg::ThrusterData& motor_msg)
     {
+        motor_msg.timestamp_485 = llc_motor.timestamp;
         motor_msg.flags0 = llc_motor.flags0;
         motor_msg.flags1 = llc_motor.flags1;
         motor_msg.master_state = llc_motor.master_state;
@@ -307,10 +335,10 @@ namespace llc {
         motor_msg.temperature_sw = llc_motor.temperature_sw; // sembra fissa a 0
         motor_msg.temperature_rp = llc_motor.temperature_rp; // [° celsius]*/
 
-        // [RPM] To be divided by 6 due to how the sensor works.
+        // [RPM] Between the motor and the propeller there is a reduction gear with I =5:1.
         // Additional check to be sure the published values are within range (-1500,+1500).
         if (abs(llc_motor.motor_speed/6.0) < 1500){
-            motor_msg.motor_speed = llc_motor.motor_speed / 6.0;
+            motor_msg.motor_speed = llc_motor.motor_speed / 5.0;
         } /*else {
             std::cerr << "Invalid motor RPM, discarding" << std::endl;
         }*/

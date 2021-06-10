@@ -1,3 +1,4 @@
+uint32 timestamp_485
 uint8 flags0
 uint8 flags1
 uint8 master_state

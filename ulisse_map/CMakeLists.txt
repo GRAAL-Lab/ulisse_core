@@ -23,6 +23,7 @@ find_package(Qt5Positioning REQUIRED)
 find_package(ulisse_msgs REQUIRED)
 find_package(ulisse_driver REQUIRED)
 find_package(ulisse_ctrl REQUIRED)
+find_package(nav_filter REQUIRED)
 
 
 find_package(PkgConfig REQUIRED)
@@ -43,6 +44,7 @@ include_directories(
         ${ulisse_msgs_INCLUDE_DIRS}
         ${ulisse_ctrl_INCLUDE_DIRS}
         ${ulisse_driver_INCLUDE_DIRS}
+        ${nav_filter_INCLUDE_DIRS}
         )
 
 file(GLOB SOURCE_FILES
@@ -60,8 +62,9 @@ add_executable(${PROJECT_NAME}_node ${SOURCE_FILES} "src/qml.qrc")
 ament_target_dependencies(${PROJECT_NAME}_node
         rclcpp
         std_msgs
-    ulisse_msgs
+        ulisse_msgs
         rmw_implementation
+        nav_filter
         )
 target_link_libraries(${PROJECT_NAME}_node
         Qt5::Core

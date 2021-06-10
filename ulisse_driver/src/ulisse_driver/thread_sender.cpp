@@ -101,7 +101,8 @@ namespace llc {
         //data_.beep.numberOfBeeps = 1;
         //llcHlp_.SendMessage(data_);
 
-        thruster_data_sub_ = create_subscription<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data, 10, std::bind(&ThreadSender::ThrustersDataCB, this, _1));
+        thruster_data_sub_ = create_subscription<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_reference_perc, 10,
+            std::bind(&ThreadSender::ThrustersReferenceCB, this, _1));
 
         srv_ = create_service<ulisse_msgs::srv::LLCCommand>(ulisse_msgs::topicnames::llc_cmd_service,
             std::bind(&ThreadSender::CommandsHandler, this, _1, _2, _3));
@@ -190,11 +191,11 @@ namespace llc {
         }
     }
 
-    void ThreadSender::ThrustersDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg)
+    void ThreadSender::ThrustersReferenceCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg)
     {
         data_.messageType = MessageType::reference;
-        data_.references.leftThruster = static_cast<int16_t>(msg->motor_percentage.left * 10); // we multiply be 10 since the micro reads 'Per mille'
-        data_.references.rightThruster = static_cast<int16_t>(msg->motor_percentage.right * 10);
+        data_.references.leftThruster = static_cast<int16_t>(msg->left_percentage * 10); // we multiply be 10 since the micro reads 'Per mille'
+        data_.references.rightThruster = static_cast<int16_t>(msg->right_percentage * 10);
         clamp(data_.references.leftThruster, -1000, 1000);
         clamp(data_.references.rightThruster, -1000, 1000);
         llcHlp_.SendMessage(data_);

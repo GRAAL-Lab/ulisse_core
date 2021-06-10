@@ -110,6 +110,15 @@ BarManagePathsForm {
             return
         sweepPathCmdPane.enableBtns(false)
         var cur_val = cur_managed.get_params()
+        console.log("Type: " + cur_managed.type)
+        switch (cur_managed.type) {
+             case "PolyPath":
+                 params_panel = panelParamsPolygon
+                 break
+             case "PointPath":
+                 params_panel = panelParamsPolyline
+                 break
+        }
         params_panel.fill_cur_values(cur_val)
         show_edit()
         cur_managed.begin_edit()

@@ -59,7 +59,13 @@ sourceros2
 colcon build --symlink-install
 ```
 
-### Run the architecture
+## GPS Setup
+To enable the GPS on a fresh install of Linux you will have to:
+
+- Add in **/etc/default/gpsd** the following line: `DEVICE:"/dev/ttyS1"`.
+- Add your user to the `dialout` user group.
+
+## Run the architecture
 Firstly be sure to **synchronize your system** time using the GPS, and then configure the GPS itself, by running these commands in the root of the repository:
 
 ```bash
@@ -108,6 +114,22 @@ cat serial_file.log | pv -l -L 80 -q > /tmp/serial2
 ```
 
 You can also use the file *play_serial.sh* to continuosly replay the logfile.
+
+
+## Configure Ethernet-WiFi Bridge
+
+### Windows (host) side:
+
+- Connect to WiFi Hotspot.
+- Connect ethernet cable to catamaran.
+- Share WiFi connection with "Ethernet" in Control Panel: Network Connections->*Left Click on* WiFi Connection->Properties->Sharing Tab.
+- Set the IPv4 of the Ethernet Connection as 192.168.1.169 and it's gateway as the IP of the WiFi connection.
+
+### Ubuntu side (Catamaran or VirtualBox):
+
+- Use the following command to set the correct gateway:
+sudo route add default gw 192.168.1.169
+
 
 ## Misc
 

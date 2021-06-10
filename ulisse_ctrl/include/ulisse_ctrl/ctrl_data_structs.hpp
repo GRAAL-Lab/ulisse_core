@@ -20,7 +20,9 @@ struct ControlData {
     Eigen::Vector3d bodyF_linearVelocity;
     Eigen::Vector3d bodyF_angularVelocity;
     Eigen::Vector2d inertialF_waterCurrent;
-    uint16_t llcStatus;
+    bool radioControllerEnabled;
+
+    ControlData() : radioControllerEnabled(false) {}
 };
 
 struct TasksInfo {
