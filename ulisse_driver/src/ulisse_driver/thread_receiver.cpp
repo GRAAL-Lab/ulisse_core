@@ -93,12 +93,11 @@ namespace llc {
 
             t_now_ = std::chrono::system_clock::now();
             long epoch_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
-            auto fraction_nanosecs = static_cast<unsigned int>(epoch_nanosecs % (int)1E9);
+            //auto fraction_nanosecs = static_cast<unsigned int>(epoch_nanosecs % (int)1E9);
 
             llcHlp_.CollectValidMessage(llcData_);
             //std::cout << "ThreadReceiver::ReadLoop(), Collected Valid Message" << std::endl;
             
-
             ulisse_msgs::msg::Time time_msg;
             time_msg.sec = static_cast<unsigned int>(epoch_nanosecs / (int)1E9);
             unsigned int stepsnanosecs = static_cast<unsigned int>(llcData_.sensors.stepsSincePPS * 1E9 / 200.0);
@@ -107,10 +106,13 @@ namespace llc {
             // if the stepsSincePPS (time since last gps 'seconds' pulse) gives an elapsed intrasecond
             // time which is greater that the current intrasecond time, it means that the measures are
             // referred to the previous second (since measure cannot come from the future)
-            if (stepsnanosecs > fraction_nanosecs) {
-                // Data belonging to previous second
-                time_msg.sec = time_msg.sec - 1;
-            }
+
+            // TEMPORARILY DISABLED DUE TO DESYNC ISSUES
+
+            //if (stepsnanosecs > fraction_nanosecs) {
+            //    // Data belonging to previous second
+            //    time_msg.sec = time_msg.sec - 1;
+            //}
             time_msg.nanosec = stepsnanosecs;
 
             /*printf("sensorData: status:%X || UpdatedAcc %c UpdatedCompass %c UpdatedMagnetometer %c UpdatedAnalog %c",
