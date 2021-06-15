@@ -207,7 +207,7 @@ RowLayout {
             case "PolyPath":
                 var cur_managed = map.createPoly()
                 cur_managed.deserialize(data.paths[i])
-
+                cur_managed.type = "PolyPath"
                 var v = trackComponent.createObject(pathCommandsPane.columnTrack)
                 v.managed_path = cur_managed
                 v.ntrack = pathCommandsPane.columnTrack.children.length
@@ -221,7 +221,7 @@ RowLayout {
             case "PointPath":
                 var cur_managed = map.createPath()
                 cur_managed.deserialize(data.paths[i])
-
+                cur_managed.type = "PointPath"
                 var v = trackComponent.createObject(pathCommandsPane.columnTrack)
                 v.managed_path = cur_managed
                 v.ntrack = pathCommandsPane.columnTrack.children.length
@@ -239,7 +239,7 @@ RowLayout {
                 break
             }
         }
-        toast.show("Mission loaded", 2000)
+        toast.show("Path loaded", 2000)
     }
 
 
