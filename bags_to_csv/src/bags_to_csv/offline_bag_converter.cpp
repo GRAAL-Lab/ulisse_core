@@ -57,9 +57,20 @@ bool OfflineBagConverter::ConvertToCSV()
                      << gpsData_.time << ", " << gpsData_.latitude << ", " << gpsData_.longitude << ", " << gpsData_.altitude << ", "
                      << gpsData_.speed << ", " << gpsData_.track
                      << "\n";
-        } else if (bag_message->topic_name == ulisse_msgs::topicnames::sensor_imu ||
-                   bag_message->topic_name == ulisse_msgs::topicnames::sensor_compass ||
-                   bag_message->topic_name == ulisse_msgs::topicnames::sensor_magnetometer) {
+        } else if (bag_message->topic_name == ulisse_msgs::topicnames::sensor_imu){
+            rclcpp::Serialization<ulisse_msgs::msg::IMUData> serialization;
+            rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
+            serialization.deserialize_message(&extracted_serialized_msg, &imuData_);
+            sensorReceived = true;
+        } else if (bag_message->topic_name == ulisse_msgs::topicnames::sensor_compass) {
+            rclcpp::Serialization<ulisse_msgs::msg::Compass> serialization;
+            rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
+            serialization.deserialize_message(&extracted_serialized_msg, &compassData_);
+            sensorReceived = true;
+        } else if (bag_message->topic_name == ulisse_msgs::topicnames::sensor_magnetometer) {
+            rclcpp::Serialization<ulisse_msgs::msg::Magnetometer> serialization;
+            rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
+            serialization.deserialize_message(&extracted_serialized_msg, &magnetometerData_);
             sensorReceived = true;
         } else if (bag_message->topic_name == ulisse_msgs::topicnames::llc_motors) {
             rclcpp::Serialization<ulisse_msgs::msg::LLCMotors> serialization;
