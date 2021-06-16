@@ -9,13 +9,16 @@
 
 #include "rclcpp/rclcpp.hpp"
 
+#include "ulisse_msgs/topicnames.hpp"
 #include "ulisse_msgs/msg/feedback_gui.hpp"
 #include "ulisse_msgs/srv/control_command.hpp"
 #include "ulisse_msgs/srv/llc_command.hpp"
 #include "ulisse_msgs/srv/set_boundaries.hpp"
 #include "ulisse_msgs/srv/set_cruise_control.hpp"
 #include "ulisse_msgs/srv/reset_configuration.hpp"
-#include "ulisse_msgs/topicnames.hpp"
+#include "ulisse_msgs/srv/nav_filter_command.hpp"
+
+
 
 class CommandWrapper : public QObject, rclcpp::Node {
     Q_OBJECT
@@ -31,6 +34,7 @@ class CommandWrapper : public QObject, rclcpp::Node {
     rclcpp::Client<ulisse_msgs::srv::LLCCommand>::SharedPtr llc_srv_;
     rclcpp::Client<ulisse_msgs::srv::ResetConfiguration>::SharedPtr kcl_conf_srv_;
     rclcpp::Client<ulisse_msgs::srv::ResetConfiguration>::SharedPtr dcl_conf_srv_;
+    rclcpp::Client<ulisse_msgs::srv::NavFilterCommand>::SharedPtr nav_filter_srv_;
 
     rclcpp::Subscription<ulisse_msgs::msg::FeedbackGui>::SharedPtr feedbackGuiSub_;
 
@@ -77,6 +81,7 @@ public:
     Q_INVOKABLE QGeoCoordinate localUTM2LatLong(QPoint UTM_point, QGeoCoordinate centroid);
     Q_INVOKABLE bool reloadKCLConf();
     Q_INVOKABLE bool reloadDCLConf();
+    Q_INVOKABLE bool reloadNavFilterConf();
 
 public slots:
     void check_error_slot();

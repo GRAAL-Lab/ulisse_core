@@ -83,7 +83,6 @@ Rectangle {
 
         Pane {
             id: lowLevelPane
-
             Layout.rowSpan: 1
             Layout.columnSpan: 1
             Layout.fillWidth: true
