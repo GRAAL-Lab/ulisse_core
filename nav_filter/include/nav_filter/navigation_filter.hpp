@@ -125,6 +125,8 @@ namespace nav {
             const std::shared_ptr<ulisse_msgs::srv::NavFilterCommand::Request> request,
             std::shared_ptr<ulisse_msgs::srv::NavFilterCommand::Response> response);
 
+        void ResetFilter();
+
         void CompassDataCB(const ulisse_msgs::msg::Compass::SharedPtr msg);
 
         void GPSDataCB(const ulisse_msgs::msg::GPSData::SharedPtr msg);

@@ -3,13 +3,15 @@
 #include <chrono>
 #include <fstream>
 #include <future>
+#include <ctrl_toolbox/HelperFunctions.h>
+#include <jsoncpp/json/json.h>
+#include <QJsonDocument>
 
 #include "sisl.h"
 #include "ulisse_ctrl/fsm_defines.hpp"
 #include "ulisse_driver/LLCHelperDataStructs.h"
-#include <ctrl_toolbox/HelperFunctions.h>
-#include <jsoncpp/json/json.h>
-#include <QJsonDocument>
+#include "nav_filter/nav_data_structs.hpp"
+
 
 using namespace std::chrono_literals;
 using std::placeholders::_1;
@@ -74,6 +76,7 @@ void CommandWrapper::LoadQmlEngine(QQmlApplicationEngine* engine)
 
     kcl_conf_srv_ = this->create_client<ulisse_msgs::srv::ResetConfiguration>(ulisse_msgs::topicnames::reset_kcl_conf_service);
     dcl_conf_srv_ = this->create_client<ulisse_msgs::srv::ResetConfiguration>(ulisse_msgs::topicnames::reset_dcl_conf_service);
+    nav_filter_srv_ = this->create_client<ulisse_msgs::srv::NavFilterCommand>(ulisse_msgs::topicnames::navfilter_cmd_service);
 
     feedbackGuiSub_ = this->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10, std::bind(&CommandWrapper::FeedbackGuiCB, this, _1) /*, custom_qos_profile*/);
 
@@ -361,6 +364,32 @@ bool CommandWrapper::reloadDCLConf()
         } else {
             auto result = result_future.get();
             result_msg = "Service returned: " + result->res;
+            RCLCPP_INFO(this->get_logger(), result_msg.c_str());
+        }
+        serviceAvailable = true;
+    } else {
+        result_msg = "No \"DCL Reload Conf\" Server Available";
+        serviceAvailable = false;
+    }
+    ShowToast(result_msg.c_str(), 2000);
+    return serviceAvailable;
+}
+
+bool CommandWrapper::reloadNavFilterConf()
+{
+    std::string result_msg;
+    bool serviceAvailable;
+    auto req = std::make_shared<ulisse_msgs::srv::NavFilterCommand::Request>();
+    req->command_type = static_cast<uint16_t>(ulisse::nav::CommandType::reloadconfig);
+    if (nav_filter_srv_->service_is_ready()) {
+        auto result_future = nav_filter_srv_->async_send_request(req);
+        std::cout << "Sent Request to controller" << std::endl;
+        if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
+            result_msg = "service call failed :(";
+            RCLCPP_ERROR(this->get_logger(), result_msg.c_str());
+        } else {
+            auto result = result_future.get();
+            result_msg = "Service returned: " + std::to_string(result->res);
             RCLCPP_INFO(this->get_logger(), result_msg.c_str());
         }
         serviceAvailable = true;

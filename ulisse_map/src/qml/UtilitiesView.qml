@@ -50,6 +50,18 @@ Rectangle {
                         cmdWrapper.reloadDCLConf()
                     }
                 }
+
+                Button {
+                    id: navFilterReconfButton
+                    text: "  Reload NavFilter Conf  "
+                    Layout.alignment: Qt.AlignCenter
+                    highlighted: true
+                    Material.background: pressed ? orange : mainColor
+
+                    onClicked: {
+                        cmdWrapper.reloadNavFilterConf()
+                    }
+                }
             }
         }
     }

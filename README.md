@@ -59,6 +59,12 @@ sourceros2
 colcon build --symlink-install
 ```
 
+### GPS Setup
+To enable the GPS on a fresh install of Linux you will have to:
+
+- Add in **/etc/default/gpsd** the following line: `DEVICE:"/dev/ttyS1"`.
+- Add your user to the `dialout` user group.
+
 ### Run the architecture
 Firstly be sure to **synchronize your system** time using the GPS, and then configure the GPS itself, by running these commands in the root of the repository:
 
