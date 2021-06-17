@@ -4,4 +4,4 @@ float64 feedback_surge
 float64 out_pid_surge
 float64 desired_yaw_rate
 float64 feedback_yaw_rate
-MotorReference motor_percentage
+ThrustersReference motor_percentage

@@ -3,7 +3,7 @@
 #include "ulisse_msgs/msg/gps_data.hpp"
 #include "ulisse_msgs/msg/imu_data.hpp"
 #include "ulisse_msgs/msg/magnetometer.hpp"
-#include "ulisse_msgs/msg/thrusters_data.hpp"
+#include "ulisse_msgs/msg/thrusters_reference.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <ctrl_toolbox/HelperFunctions.h>
@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
     ulisse_msgs::msg::GPSData gpsMsg;
     ulisse_msgs::msg::IMUData imuMsg;
     ulisse_msgs::msg::Magnetometer magnetometerMsg;
-    ulisse_msgs::msg::ThrustersData appliedMotorRefMsg;
+    ulisse_msgs::msg::ThrustersReference appliedMotorRefMsg;
     ulisse_msgs::msg::Compass compassMsg;
 
     ctb::LatLong centroid(44.393, 8.945); // Genova Harbour lat-long
@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
     auto gpsPub = node->create_publisher<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data, 1);
     auto imuPub = node->create_publisher<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu, 1);
     auto magnetometerPub = node->create_publisher<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer, 1);
-    auto thrustersPub = node->create_publisher<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data, 1);
+    auto thrustersPub = node->create_publisher<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_reference_perc, 1);
     auto compassPub = node->create_publisher<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass, 1);
 
     //open gps log file
@@ -105,10 +105,10 @@ int main(int argc, char* argv[])
 
             appliedMotorRefMsg.stamp.sec = now_stamp_secs;
             appliedMotorRefMsg.stamp.nanosec = now_stamp_nanosecs;
-            appliedMotorRefMsg.motor_percentage.left = sensorsData.row(j + 1)(20) / 10;
-            appliedMotorRefMsg.motor_percentage.right = sensorsData.row(j + 1)(21) / 10;
+            appliedMotorRefMsg.left_percentage = sensorsData.row(j + 1)(20) / 10;
+            appliedMotorRefMsg.right_percentage = sensorsData.row(j + 1)(21) / 10;
 
-            std::cout << "Sto pubblicando " << std::endl;
+            //std::cout << "Publishing..." << std::endl;
             magnetometerPub->publish(magnetometerMsg);
             imuPub->publish(imuMsg);
             thrustersPub->publish(appliedMotorRefMsg);

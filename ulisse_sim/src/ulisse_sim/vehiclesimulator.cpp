@@ -42,10 +42,12 @@ VehicleSimulator::VehicleSimulator(const rclcpp::Node::SharedPtr& nh)
     imuPub_ = nh_->create_publisher<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu, 1);
     ambsensPub_ = nh_->create_publisher<ulisse_msgs::msg::AmbientSensors>(ulisse_msgs::topicnames::sensor_ambient, 1);
     magnetometerPub_ = nh_->create_publisher<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer, 1);
-    appliedMotorRefPub_ = nh_->create_publisher<ulisse_msgs::msg::MotorReference>(ulisse_msgs::topicnames::motor_applied_ref, 1);
+    appliedMotorRefPub_ = nh_->create_publisher<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_applied_perc, 1);
     simulatedSystemPub_ = nh_->create_publisher<ulisse_msgs::msg::SimulatedSystem>(ulisse_msgs::topicnames::simulated_system, 1);
-	motorsDataPub_ = nh_->create_publisher<ulisse_msgs::msg::LLCMotors>(ulisse_msgs::topicnames::llc_motors, 1);
-    thrustersSub_ = nh_->create_subscription<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data, 1, std::bind(&VehicleSimulator::ThrusterDataCB, this, _1));
+    motorsDataPub_ = nh_->create_publisher<ulisse_msgs::msg::LLCThrusters>(ulisse_msgs::topicnames::llc_thrusters, 1);
+
+    thrustersSub_ = nh_->create_subscription<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_reference_perc, 1,
+        std::bind(&VehicleSimulator::ThrustersReferenceCB, this, _1));
 
     worldF_waterVelocity_(0) = 0.0;
     worldF_waterVelocity_(1) = 0.0;
@@ -310,8 +312,8 @@ void VehicleSimulator::SimulateSensors()
     groundTruthMsg_.gyro_bias[2] = bz;
 
     //motor ref
-    appliedMotorRefMsg_.left = hp_;
-    appliedMotorRefMsg_.right = hs_;
+    appliedMotorRefMsg_.left_percentage = hp_;
+    appliedMotorRefMsg_.right_percentage = hs_;
     
     motorsDataMsg_.stamp.sec = now_stamp_secs;
     motorsDataMsg_.stamp.nanosec = now_stamp_nanosecs;
@@ -358,10 +360,10 @@ double VehicleSimulator::GetCurrentTimeStamp() const
     return static_cast<double>(now_nanosecs / 1E9);
 }
 
-void VehicleSimulator::ThrusterDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg)
+void VehicleSimulator::ThrustersReferenceCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg)
 {
-    hp_ = msg->motor_percentage.left;
-    hs_ = msg->motor_percentage.right;
+    hp_ = msg->left_percentage;
+    hs_ = msg->right_percentage;
 
     motorTimeout_.Start();
 }

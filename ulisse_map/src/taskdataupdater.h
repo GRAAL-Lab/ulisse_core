@@ -15,7 +15,6 @@
 #include "ulisse_msgs/msg/llc_sw485_status.hpp"
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
 #include "ulisse_msgs/msg/reference_velocities.hpp"
-#include "ulisse_msgs/msg/thrusters_data.hpp"
 #include "ulisse_msgs/msg/vehicle_status.hpp"
 
 class TaskDataUpdater : public QObject {

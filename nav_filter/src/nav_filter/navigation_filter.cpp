@@ -44,10 +44,10 @@ namespace nav {
             10, std::bind(&NavigationFilter::MagnetometerDataCB, this, _1));
         simulatedSystemSub_ = this->create_subscription<ulisse_msgs::msg::SimulatedSystem>(ulisse_msgs::topicnames::simulated_system,
             10, std::bind(&NavigationFilter::GroundTruthDataCB, this, _1));
-        thrustersFkbSub_ = this->create_subscription<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data,
-            10, std::bind(&NavigationFilter::ThrustersDataCB, this, _1));
-        llcMotorsSub_ = this->create_subscription<ulisse_msgs::msg::LLCMotors>(ulisse_msgs::topicnames::llc_motors,
-            10, std::bind(&NavigationFilter::LLCMotorsCB, this, _1));
+        thrustersRefSub_ = this->create_subscription<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_reference_perc,
+            10, std::bind(&NavigationFilter::ThrustersReferenceCB, this, _1));
+        llcThrustersSub_ = this->create_subscription<ulisse_msgs::msg::LLCThrusters>(ulisse_msgs::topicnames::llc_thrusters,
+            10, std::bind(&NavigationFilter::LLCThrustersCB, this, _1));
 
         simulatedVelocitySub_ = this->create_subscription<ulisse_msgs::msg::SimulatedVelocitySensor>(ulisse_msgs::topicnames::simulated_velocity_sensor,
             10, std::bind(&NavigationFilter::SimulatedVelocitySensorCB, this, _1));
@@ -217,7 +217,7 @@ namespace nav {
 
         //Filter Update
         //extendedKalmanFilter_->Update(Eigen::Vector2d { thrustersFbk_.motor_percentage.left, thrustersFbk_.motor_percentage.right });
-        extendedKalmanFilter_->Update(Eigen::Vector2d { llcMotorsData_.left.motor_speed, llcMotorsData_.right.motor_speed });
+        extendedKalmanFilter_->Update(Eigen::Vector2d { llcThrustersData_.left.motor_speed, llcThrustersData_.right.motor_speed });
 
         state_ = extendedKalmanFilter_->StateVector();
 
@@ -613,11 +613,11 @@ namespace nav {
 
     void NavigationFilter::SimulatedVelocitySensorCB(const ulisse_msgs::msg::SimulatedVelocitySensor::SharedPtr msg) { simulatedVelocitySensor_ = *msg; }
 
-    void NavigationFilter::ThrustersDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg) { thrustersFbk_ = *msg; }
+    void NavigationFilter::ThrustersReferenceCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg) { thrustersFbk_ = *msg; }
 
     void NavigationFilter::GroundTruthDataCB(const ulisse_msgs::msg::SimulatedSystem::SharedPtr msg) { simulatedData_ = *msg; }
 
-    void NavigationFilter::LLCMotorsCB(const ulisse_msgs::msg::LLCMotors::SharedPtr msg) { llcMotorsData_ = *msg; }
+    void NavigationFilter::LLCThrustersCB(const ulisse_msgs::msg::LLCThrusters::SharedPtr msg) { llcThrustersData_ = *msg; }
 
 }
 }

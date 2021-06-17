@@ -72,14 +72,15 @@ bool OfflineBagConverter::ConvertToCSV()
             rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
             serialization.deserialize_message(&extracted_serialized_msg, &magnetometerData_);
             sensorReceived = true;
-        } else if (bag_message->topic_name == ulisse_msgs::topicnames::llc_motors) {
-            rclcpp::Serialization<ulisse_msgs::msg::LLCMotors> serialization;
+        } else if (bag_message->topic_name == ulisse_msgs::topicnames::llc_thrusters) {
+            rclcpp::Serialization<ulisse_msgs::msg::LLCThrusters> serialization;
             rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
-            serialization.deserialize_message(&extracted_serialized_msg, &llcMotorsData_);
+            serialization.deserialize_message(&extracted_serialized_msg, &llcThrustersData_);
             motorsFile_ << std::fixed << std::setprecision(6)
                         << bag_message->time_stamp  * 1e-9 << ", "
-                        << llcMotorsData_.stamp.sec + (llcMotorsData_.stamp.nanosec * 1e-9) << ", "
-                        << llcMotorsData_.left.motor_speed << ", " << llcMotorsData_.right.motor_speed
+                        << llcThrustersData_.stamp.sec + (llcThrustersData_.stamp.nanosec * 1e-9) << ", "
+                        << llcThrustersData_.left.timestamp_485 << ", " << llcThrustersData_.left.motor_speed << ", "
+                        << llcThrustersData_.right.timestamp_485 << ", " << llcThrustersData_.right.motor_speed
                         << "\n";
         } else if (bag_message->topic_name == ulisse_msgs::topicnames::nav_filter_data) {
             rclcpp::Serialization<ulisse_msgs::msg::NavFilterData> serialization;
@@ -105,14 +106,14 @@ bool OfflineBagConverter::ConvertToCSV()
                         << referenceVel_.stamp.sec + (referenceVel_.stamp.nanosec * 1e-9) << ", "
                         << referenceVel_.desired_surge << ", " << referenceVel_.desired_yaw_rate
                         << "\n";
-        } else if (bag_message->topic_name == ulisse_msgs::topicnames::thrusters_data) {
-            rclcpp::Serialization<ulisse_msgs::msg::ThrustersData> serialization;
+        } else if (bag_message->topic_name == ulisse_msgs::topicnames::llc_thrusters_reference_perc) {
+            rclcpp::Serialization<ulisse_msgs::msg::ThrustersReference> serialization;
             rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
-            serialization.deserialize_message(&extracted_serialized_msg, &thrustersData_);
+            serialization.deserialize_message(&extracted_serialized_msg, &thrustersReference_);
             thrustersFile_ << std::fixed << std::setprecision(6)
                            << bag_message->time_stamp  * 1e-9 << ", "
-                           << thrustersData_.stamp.sec + (thrustersData_.stamp.nanosec * 1e-9) << ", "
-                           << thrustersData_.motor_percentage.left << ", " << thrustersData_.motor_percentage.right
+                           << thrustersReference_.stamp.sec + (thrustersReference_.stamp.nanosec * 1e-9) << ", "
+                           << thrustersReference_.left_percentage << ", " << thrustersReference_.right_percentage
                            << "\n";
         }
         // else if (bag_message->topic_name == ulisse_msgs::topicnames::llc_battery_left) {
@@ -165,7 +166,7 @@ bool OfflineBagConverter::OpenFiles()
     refVelFile_ << "ros_time, time, surge, yawrate\n";
 
     thrustersFile_   .open(std::string(saveFolder_ + "/thrusters.txt"));
-    thrustersFile_ << "ros_time, time, perc_L, perc_R\n";
+    thrustersFile_ << "ros_time, time, time485_L, perc_L, time485_R, perc_R\n";
     //vehicleStatusFile_.open(std::string(saveFolder_ + "/vehicle_status.txt"));
 
     return true;

@@ -4,7 +4,7 @@
 
 #include "ulisse_msgs/msg/gps_data.hpp"
 #include "ulisse_msgs/msg/llc_battery.hpp"
-#include "ulisse_msgs/msg/thrusters_data.hpp"
+#include "ulisse_msgs/msg/thrusters_reference.hpp"
 
 #include "ulisse_msgs/terminal_utils.hpp"
 #include "ulisse_msgs/topicnames.hpp"
@@ -16,12 +16,12 @@
 using namespace ulisse;
 
 static ulisse_msgs::msg::GPSData gps_data;
-static ulisse_msgs::msg::ThrustersData thrusters_data;
+static ulisse_msgs::msg::ThrustersReference thrusters_reference;
 static ulisse_msgs::msg::LLCBattery battery_left;
 static ulisse_msgs::msg::LLCBattery battery_right;
 
 void GpsCB(const ulisse_msgs::msg::GPSData::SharedPtr msg);
-void ThrustersDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg);
+void ThrustersDataCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg);
 
 void BatteryLeftCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg);
 void BatteryRightCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg);
@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
 //    auto poscxt_sub = nh->create_subscription<ulisse_msgs::msg::GoalContext>(ulisse_msgs::topicnames::goal_context, 10, GoalContextCB);
 //    auto ctrlcxt_sub = nh->create_subscription<ulisse_msgs::msg::ControlContext>(ulisse_msgs::topicnames::control_context, 10, ControlContextCB);
 //    auto statuscxt_sub = nh->create_subscription<ulisse_msgs::msg::StatusContext>(ulisse_msgs::topicnames::status_context, 10, StatusContextCB);
-    auto thrusterdata_sub = nh->create_subscription<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data, 10, ThrustersDataCB);
+    auto thrusterdata_sub = nh->create_subscription<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_reference_perc, 10, ThrustersDataCB);
     auto batteryleft_sub = nh->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_left, 10, BatteryLeftCB);
     auto batteryright_sub = nh->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_right, 10, BatteryRightCB);
 
@@ -85,7 +85,7 @@ void GpsCB(const ulisse_msgs::msg::GPSData::SharedPtr msg) { gps_data = *msg; }
 
 //void StatusContextCB(const ulisse_msgs::msg::StatusContext::SharedPtr msg) { status_cxt = *msg; }
 
-void ThrustersDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg) { thrusters_data = *msg; }
+void ThrustersDataCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg) { thrusters_reference = *msg; }
 
 void BatteryLeftCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg) { battery_left = *msg; }
 

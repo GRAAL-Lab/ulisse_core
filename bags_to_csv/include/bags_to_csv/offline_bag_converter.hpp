@@ -23,10 +23,10 @@
 #include "ulisse_msgs/msg/compass.hpp"
 #include "ulisse_msgs/msg/imu_data.hpp"
 #include "ulisse_msgs/msg/magnetometer.hpp"
-#include "ulisse_msgs/msg/llc_motors.hpp"
+#include "ulisse_msgs/msg/llc_thrusters.hpp"
 #include "ulisse_msgs/msg/llc_battery.hpp"
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
-#include "ulisse_msgs/msg/thrusters_data.hpp"
+#include "ulisse_msgs/msg/thrusters_reference.hpp"
 #include "ulisse_msgs/msg/reference_velocities.hpp"
 #include "ulisse_msgs/msg/vehicle_status.hpp"
 
@@ -48,10 +48,10 @@ private:
     ulisse_msgs::msg::Compass compassData_;
     ulisse_msgs::msg::IMUData imuData_;
     ulisse_msgs::msg::Magnetometer magnetometerData_;
-    ulisse_msgs::msg::LLCMotors llcMotorsData_;
+    ulisse_msgs::msg::LLCThrusters llcThrustersData_;
     //ulisse_msgs::msg::LLCBattery llcBattery_;
     ulisse_msgs::msg::NavFilterData navFilterData_;
-    ulisse_msgs::msg::ThrustersData thrustersData_;
+    ulisse_msgs::msg::ThrustersReference thrustersReference_;
     ulisse_msgs::msg::ReferenceVelocities referenceVel_;
     //ulisse_msgs::msg::VehicleStatus vehicleStatus_;
 

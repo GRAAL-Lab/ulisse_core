@@ -9,7 +9,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <stdio.h>
 
-#include "ulisse_msgs/msg/thrusters_data.hpp"
+#include "ulisse_msgs/msg/thrusters_reference.hpp"
 #include "ulisse_msgs/srv/llc_command.hpp"
 #include "ulisse_msgs/terminal_utils.hpp"
 #include "ulisse_msgs/topicnames.hpp"
@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
         }
         RCLCPP_INFO(node->get_logger(), "waiting for LLC Driver service to appear...");
     }
-    auto thruster_data_pub_ = node->create_publisher<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data, 1);
+    auto thruster_ref_pub = node->create_publisher<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_reference_perc, 1);
 
     while (rclcpp::ok()) {
         int choice;
@@ -69,11 +69,11 @@ int main(int argc, char* argv[])
         switch (choice) {
         case 1: {
             send = false;
-            ulisse_msgs::msg::ThrustersData thruster_data_msg;
+            ulisse_msgs::msg::ThrustersReference thruster_ref_msg;
             std::cout << "left thruster (%): ";
-            std::cin >> thruster_data_msg.motor_percentage.left;
+            std::cin >> thruster_ref_msg.left_percentage;
             std::cout << "right thruster (%): ";
-            std::cin >> thruster_data_msg.motor_percentage.right;
+            std::cin >> thruster_ref_msg.right_percentage;
 
             std::cout << "repeat? (1 yes, 0 no): ";
             std::cin >> repeat;
@@ -88,10 +88,10 @@ int main(int argc, char* argv[])
                 long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(tNow.time_since_epoch())).count();
                 auto secs = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
                 auto nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
-                thruster_data_msg.stamp.sec = secs;
-                thruster_data_msg.stamp.nanosec = nanosecs;
+                thruster_ref_msg.stamp.sec = secs;
+                thruster_ref_msg.stamp.nanosec = nanosecs;
 
-                thruster_data_pub_->publish(thruster_data_msg);
+                thruster_ref_pub->publish(thruster_ref_msg);
                 if (--repetitions > 0) {
                     std::this_thread::sleep_for(std::chrono::milliseconds(delayMs));
                 } else

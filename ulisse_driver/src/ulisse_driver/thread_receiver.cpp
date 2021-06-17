@@ -72,11 +72,11 @@ namespace llc {
         imu_pub_ = this->create_publisher<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu,1);
         ambsens_pub_ = this->create_publisher<ulisse_msgs::msg::AmbientSensors>(ulisse_msgs::topicnames::sensor_ambient,1);
         magneto_pub_ = this->create_publisher<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer,1);
-        applied_motorref_pub_ = this->create_publisher<ulisse_msgs::msg::MotorReference>(ulisse_msgs::topicnames::motor_applied_ref,1);
+        applied_motorref_pub_ = this->create_publisher<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_applied_perc,1);
 
         llc_status_pub_ = this->create_publisher<ulisse_msgs::msg::LLCStatus>(ulisse_msgs::topicnames::llc_status,1);
         llc_config_pub_ = this->create_publisher<ulisse_msgs::msg::LLCConfig>(ulisse_msgs::topicnames::llc_config,1);
-        llc_motors_pub_ = this->create_publisher<ulisse_msgs::msg::LLCMotors>(ulisse_msgs::topicnames::llc_motors,1);
+        llc_motors_pub_ = this->create_publisher<ulisse_msgs::msg::LLCThrusters>(ulisse_msgs::topicnames::llc_thrusters,1);
         llc_version_pub_ = this->create_publisher<ulisse_msgs::msg::LLCVersion>(ulisse_msgs::topicnames::llc_version,1);
         llc_ack_pub_ = this->create_publisher<ulisse_msgs::msg::LLCAck>(ulisse_msgs::topicnames::llc_ack,1);
         llc_battery_left_pub_ = this->create_publisher<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_left,1);
@@ -168,8 +168,8 @@ namespace llc {
                 ambsens_pub_->publish(ambsens_msg_);
                 //}
 
-                applied_motorref_msg_.left = llcData_.sensors.leftReference;
-                applied_motorref_msg_.right = llcData_.sensors.rightReference;
+                applied_motorref_msg_.left_percentage = llcData_.sensors.leftReference;
+                applied_motorref_msg_.right_percentage = llcData_.sensors.rightReference;
                 applied_motorref_pub_->publish(applied_motorref_msg_);
                 break;
             case MessageType::status:
@@ -218,6 +218,7 @@ namespace llc {
                 break;
             case MessageType::motors:
                 llc_motors_msg_.stamp = time_msg; // since LLC power-on
+                llc_motors_msg_.timestamp_485 = llcData_.motors.timestamp;
                 LLCData2RosMsg(llcData_.motors.left, llc_motors_msg_.left);
                 LLCData2RosMsg(llcData_.motors.right, llc_motors_msg_.right);
                 llc_motors_pub_->publish(llc_motors_msg_);
@@ -286,8 +287,9 @@ namespace llc {
         std::copy(llc_batt.cells, llc_batt.cells + 14, batt_msg.cells.begin());
     }
 
-    void ThreadReceiver::LLCData2RosMsg(const motorData& llc_motor, ulisse_msgs::msg::MotorData& motor_msg)
+    void ThreadReceiver::LLCData2RosMsg(const motorData& llc_motor, ulisse_msgs::msg::ThrusterData& motor_msg)
     {
+        motor_msg.timestamp_485 = llc_motor.timestamp;
         motor_msg.flags0 = llc_motor.flags0;
         motor_msg.flags1 = llc_motor.flags1;
         motor_msg.master_state = llc_motor.master_state;
@@ -307,10 +309,10 @@ namespace llc {
         motor_msg.temperature_sw = llc_motor.temperature_sw; // sembra fissa a 0
         motor_msg.temperature_rp = llc_motor.temperature_rp; // [° celsius]*/
 
-        // [RPM] To be divided by 6 due to how the sensor works.
+        // [RPM] Between the motor and the propeller there is a reduction gear with I =5:1.
         // Additional check to be sure the published values are within range (-1500,+1500).
         if (abs(llc_motor.motor_speed/6.0) < 1500){
-            motor_msg.motor_speed = llc_motor.motor_speed / 6.0;
+            motor_msg.motor_speed = llc_motor.motor_speed / 5.0;
         } /*else {
             std::cerr << "Invalid motor RPM, discarding" << std::endl;
         }*/

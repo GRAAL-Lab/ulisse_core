@@ -12,7 +12,7 @@
 #include "ulisse_msgs/msg/reference_velocities.hpp"
 #include "ulisse_msgs/msg/simulated_velocity_sensor.hpp"
 #include "ulisse_msgs/msg/thruster_mapping_control.hpp"
-#include "ulisse_msgs/msg/thrusters_data.hpp"
+#include "ulisse_msgs/msg/thrusters_reference.hpp"
 #include "ulisse_msgs/msg/vehicle_status.hpp"
 #include "ulisse_msgs/srv/min_srv.hpp"
 #include "ulisse_msgs/srv/reset_configuration.hpp"
@@ -64,7 +64,7 @@ int main(int argc, char* argv[])
     auto referenceVelocitiesSub = nh->create_subscription<ulisse_msgs::msg::ReferenceVelocities>(ulisse_msgs::topicnames::reference_velocities, 10, ReferenceVelocitiesCB);
 
     //Publishers
-    auto thrusterDataPub = nh->create_publisher<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data, 1);
+    auto thrusterDataPub = nh->create_publisher<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_reference_perc, 1);
     auto thrusterMappigPub = nh->create_publisher<ulisse_msgs::msg::ThrusterMappingControl>(ulisse_msgs::topicnames::thruster_mapping_control, 1);
     auto simulatedVelocitySensorPub = nh->create_publisher<ulisse_msgs::msg::SimulatedVelocitySensor>(ulisse_msgs::topicnames::simulated_velocity_sensor, 1);
     auto classicPidControlPub = nh->create_publisher<ulisse_msgs::msg::DynamicPidControl>(ulisse_msgs::topicnames::classic_pid_control, 1);
@@ -85,7 +85,7 @@ int main(int argc, char* argv[])
 
     //local variables
     ulisse_msgs::msg::ThrusterMappingControl thrusterMappingMsg;
-    ulisse_msgs::msg::ThrustersData thrustersData;
+    ulisse_msgs::msg::ThrustersReference thrustersReference;
     ulisse_msgs::msg::DynamicPidControl classicPidControlMsg, computedTorqueMsg;
     ulisse_msgs::msg::SimulatedVelocitySensor simulatedVelocitySensor;
 
@@ -182,7 +182,7 @@ int main(int argc, char* argv[])
 
                 ulisseModel.InverseMotorsEquations(requestedVel, forces, motorLeft, motorRight);
 
-                ulisseModel.ThrustersSaturation(motorLeft, motorRight, -conf->thrusterPercLimit, conf->thrusterPercLimit, thrustersData.motor_percentage.left, thrustersData.motor_percentage.right);
+                ulisseModel.ThrustersSaturation(motorLeft, motorRight, -conf->thrusterPercLimit, conf->thrusterPercLimit, thrustersReference.left_percentage, thrustersReference.right_percentage);
 
                 //Fill the Thruster Mapping msg
                 auto t_now_ = std::chrono::system_clock::now();
@@ -195,8 +195,8 @@ int main(int argc, char* argv[])
                 thrusterMappingMsg.out_pid_surge = pidSurgeTM.GetOutput();
                 thrusterMappingMsg.desired_yaw_rate = referenceVelocities.desired_yaw_rate;
                 thrusterMappingMsg.feedback_yaw_rate = yawRateFbk;
-                thrusterMappingMsg.motor_percentage.left = motorLeft;
-                thrusterMappingMsg.motor_percentage.right = motorRight;
+                thrusterMappingMsg.motor_percentage.left_percentage = motorLeft;
+                thrusterMappingMsg.motor_percentage.right_percentage = motorRight;
 
                 thrusterMappigPub->publish(thrusterMappingMsg);
 
@@ -216,7 +216,7 @@ int main(int argc, char* argv[])
 
                 Eigen::Vector2d forces = ulisseModel.ThusterAllocation(tau);
                 ulisseModel.InverseMotorsEquations(feedbackVel, forces, outleft, outright);
-                ulisseModel.ThrustersSaturation(outleft, outright, -conf->thrusterPercLimit, conf->thrusterPercLimit, thrustersData.motor_percentage.left, thrustersData.motor_percentage.right);
+                ulisseModel.ThrustersSaturation(outleft, outright, -conf->thrusterPercLimit, conf->thrusterPercLimit, thrustersReference.left_percentage, thrustersReference.right_percentage);
 
                 //Fill the classic dynamic pid contol msg
                 auto t_now_ = std::chrono::system_clock::now();
@@ -231,8 +231,8 @@ int main(int argc, char* argv[])
                 classicPidControlMsg.out_pid_yaw_rate = pidYawRateCP.GetOutput();
                 classicPidControlMsg.forces = { forces[0], forces[1] };
                 classicPidControlMsg.tau = { tau[0], tau[1] };
-                classicPidControlMsg.motor_percentage.left = outleft;
-                classicPidControlMsg.motor_percentage.right = outright;
+                classicPidControlMsg.motor_percentage.left_percentage = outleft;
+                classicPidControlMsg.motor_percentage.right_percentage = outright;
 
                 classicPidControlPub->publish(classicPidControlMsg);
 
@@ -257,7 +257,7 @@ int main(int argc, char* argv[])
 
                 Eigen::Vector2d forces = ulisseModel.ThusterAllocation(tau);
                 ulisseModel.InverseMotorsEquations(feedbackVel, forces, outLeft, outRight);
-                ulisseModel.ThrustersSaturation(outLeft, outRight, -conf->thrusterPercLimit, conf->thrusterPercLimit, thrustersData.motor_percentage.left, thrustersData.motor_percentage.right);
+                ulisseModel.ThrustersSaturation(outLeft, outRight, -conf->thrusterPercLimit, conf->thrusterPercLimit, thrustersReference.left_percentage, thrustersReference.right_percentage);
 
 
                 //Fill the classic dynamic pid contol msg
@@ -273,8 +273,8 @@ int main(int argc, char* argv[])
                 computedTorqueMsg.out_pid_yaw_rate = pidYawRateCP.GetOutput();
                 computedTorqueMsg.forces = { forces[0], forces[1] };
                 computedTorqueMsg.tau = { tau[0], tau[1] };
-                computedTorqueMsg.motor_percentage.left = outLeft;
-                computedTorqueMsg.motor_percentage.right = outRight;
+                computedTorqueMsg.motor_percentage.left_percentage = outLeft;
+                computedTorqueMsg.motor_percentage.right_percentage = outRight;
                 computedTorqueControlPub->publish(computedTorqueMsg);
 
                 //fill the feedback for the nav filter
@@ -282,8 +282,8 @@ int main(int argc, char* argv[])
                 simulatedVelocitySensorPub->publish(simulatedVelocitySensor);
             }
         } else {
-            thrustersData.motor_percentage.left = 0.0;
-            thrustersData.motor_percentage.right = 0.0;
+            thrustersReference.left_percentage = 0.0;
+            thrustersReference.right_percentage = 0.0;
 
             if (conf->ctrlMode == ControlMode::ThrusterMapping) {
                 pidSurgeTM.Reset();
@@ -300,9 +300,9 @@ int main(int argc, char* argv[])
         long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(tNow.time_since_epoch())).count();
         auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
         auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
-        thrustersData.stamp.sec = now_stamp_secs;
-        thrustersData.stamp.nanosec = now_stamp_nanosecs;
-        thrusterDataPub->publish(thrustersData);
+        thrustersReference.stamp.sec = now_stamp_secs;
+        thrustersReference.stamp.nanosec = now_stamp_nanosecs;
+        thrusterDataPub->publish(thrustersReference);
 
         rclcpp::spin_some(nh);
         loop_rate.sleep();

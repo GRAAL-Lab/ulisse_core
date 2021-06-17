@@ -1,2 +1,0 @@
-Time stamp
-MotorReference motor_percentage

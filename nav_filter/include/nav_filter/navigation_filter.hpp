@@ -18,8 +18,8 @@
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
 #include "ulisse_msgs/msg/simulated_system.hpp"
 #include "ulisse_msgs/msg/simulated_velocity_sensor.hpp"
-#include "ulisse_msgs/msg/thrusters_data.hpp"
-#include "ulisse_msgs/msg/llc_motors.hpp"
+#include "ulisse_msgs/msg/thrusters_reference.hpp"
+#include "ulisse_msgs/msg/llc_thrusters.hpp"
 #include "ulisse_msgs/srv/nav_filter_command.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 #include "ulisse_driver/GPSDHelperDataStructs.h"
@@ -54,8 +54,8 @@ namespace nav {
         rclcpp::Subscription<ulisse_msgs::msg::IMUData>::SharedPtr imudataSub_;
         rclcpp::Subscription<ulisse_msgs::msg::Magnetometer>::SharedPtr magnetometerSub_;
         rclcpp::Subscription<ulisse_msgs::msg::SimulatedSystem>::SharedPtr simulatedSystemSub_;
-        rclcpp::Subscription<ulisse_msgs::msg::ThrustersData>::SharedPtr thrustersFkbSub_;
-        rclcpp::Subscription<ulisse_msgs::msg::LLCMotors>::SharedPtr llcMotorsSub_;
+        rclcpp::Subscription<ulisse_msgs::msg::ThrustersReference>::SharedPtr thrustersRefSub_;
+        rclcpp::Subscription<ulisse_msgs::msg::LLCThrusters>::SharedPtr llcThrustersSub_;
         rclcpp::Subscription<ulisse_msgs::msg::SimulatedVelocitySensor>::SharedPtr simulatedVelocitySub_;
 
         rclcpp::Service<ulisse_msgs::srv::NavFilterCommand>::SharedPtr navFilterCmdService_;
@@ -67,10 +67,10 @@ namespace nav {
         ulisse_msgs::msg::GPSData gpsData_;
         ulisse_msgs::msg::IMUData imuData_;
         ulisse_msgs::msg::SimulatedVelocitySensor simulatedVelocitySensor_;
-        ulisse_msgs::msg::ThrustersData thrustersFbk_;
+        ulisse_msgs::msg::ThrustersReference thrustersFbk_;
         ulisse_msgs::msg::Magnetometer magnetometerData_;
         ulisse_msgs::msg::SimulatedSystem simulatedData_;
-        ulisse_msgs::msg::LLCMotors llcMotorsData_;
+        ulisse_msgs::msg::LLCThrusters llcThrustersData_;
 
         double lastValidGPSTime_;
         double lastValidImuTime_;
@@ -135,11 +135,11 @@ namespace nav {
 
         void SimulatedVelocitySensorCB(const ulisse_msgs::msg::SimulatedVelocitySensor::SharedPtr msg);
 
-        void ThrustersDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg);
+        void ThrustersReferenceCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg);
 
         void GroundTruthDataCB(const ulisse_msgs::msg::SimulatedSystem::SharedPtr msg);
 
-        void LLCMotorsCB(const ulisse_msgs::msg::LLCMotors::SharedPtr msg);
+        void LLCThrustersCB(const ulisse_msgs::msg::LLCThrusters::SharedPtr msg);
 
         bool LoadConfiguration(NavigationFilterParams& filterParameters);
 
