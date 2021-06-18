@@ -56,7 +56,6 @@ namespace llc {
         sw485Status = 134
     };
 
-    //PLEASE UPDATE GetSize method on fields change
     struct referencesData {
         int16_t leftThruster;
         int16_t rightThruster;
@@ -74,7 +73,6 @@ namespace llc {
         }
     };
 
-    //PLEASE UPDATE GetSize method AND om2ctrl::llc::CommandContainer on fields change
     struct beepData {
         uint8_t numberOfBeeps;
         uint8_t loop;
@@ -91,7 +89,6 @@ namespace llc {
         }
     };
 
-    //PLEASE UPDATE GetSize method AND om2ctrl::llc::CommandContainer on fields change
     struct enableRefData {
         uint8_t enable;
 
@@ -116,8 +113,6 @@ namespace llc {
 *
 */
 
-    //PLEASE UPDATE GetSize method AND om2ctrl::enet::ENETContainer on fields change
-    //LoggerContainers too
     struct sensorData {
         uint32_t timestamp; //micro loop count (200hz)
         float32_t compassHeading; //[rad]
@@ -151,8 +146,6 @@ namespace llc {
         }
     };
 
-    //PLEASE UPDATE GetSize method AND om2ctrl::enet::ENETContainer on fields change
-    //LoggerContainers too
     struct statusData {
         uint32_t timestamp; //micro loop count (200hz)
         uint16_t status;
@@ -183,8 +176,8 @@ namespace llc {
                 PRINT_INT(status & EMB_STSMASK_TIMEOUT_REFERENCE), PRINT_INT(status & EMB_STSMASK_TIMEOUTPUMPS));
 
             RCLCPP_INFO(logger, "statusData: PPM: MAIN VALID %c BACKUP VALID %c EN %c ZEROCHECK %c CHANNEL %c",
-                PRINT_INT(status & EMB_STSMASK_PPMMAIN_VALID), PRINT_INT(status & EMB_STSMASK_PPMBACKUP_VALID), PRINT_INT(status & EMB_STSMASK_PPM_ENABLED),
-                PRINT_INT(status & EMB_STSMASK_PPMNEEDZEROCHECK), ((status & EMB_STSMASK_PPMCHANNEL) != 0) ? 'B' : 'M');
+                PRINT_INT(status & EMB_STSMASK_PPM_MAIN_VALID), PRINT_INT(status & EMB_STSMASK_PPM_SECONDARY_VALID), PRINT_INT(status & EMB_STSMASK_PPM_ENABLED),
+                PRINT_INT(status & EMB_STSMASK_PPM_NEEDZEROCHECK), ((status & EMB_STSMASK_PPM_CHANNEL) != 0) ? 'B' : 'M');
 
             RCLCPP_INFO(logger, "statusData:  485sent %" PRIu64 " 485received %" PRIu64 " diff %" PRIu64 "", messageSent485, messageReceived485, messageSent485 - messageReceived485);
             RCLCPP_INFO(logger, "statusData:  RS232 error count %u RS485 error count %u Overflow RS232 %u Overflow RS485 %u", commDataErrorCount, errorCount, overflowCount232, overflowCount485);

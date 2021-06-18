@@ -63,6 +63,7 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/ThrusterData.msg"
   "msg/LLCThrusters.msg"
   "msg/LLCStatus.msg"
+  "msg/LLCStatusFlags.msg"
   "msg/LLCBeep.msg"
   "msg/LLCConfig.msg"
   "msg/LLCEnableRef.msg"

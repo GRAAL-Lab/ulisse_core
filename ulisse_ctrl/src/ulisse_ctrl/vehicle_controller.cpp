@@ -515,7 +515,7 @@ void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::Share
 
 void VehicleController::LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg)
 {
-    ctrlData_->llcStatus = msg->status;
+    ctrlData_->radioControllerEnabled = msg->flags.ppm_remote_enabled;
 }
 
 void VehicleController::Run()

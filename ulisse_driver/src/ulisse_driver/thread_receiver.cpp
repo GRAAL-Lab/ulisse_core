@@ -88,7 +88,6 @@ namespace llc {
 
     void ThreadReceiver::ReadLoop()
     {
-        //std::cout << "ThreadReceiver::ReadLoop() was called" << std::endl;
         while (rclcpp::ok()) {
 
             t_now_ = std::chrono::system_clock::now();
@@ -96,18 +95,16 @@ namespace llc {
             //auto fraction_nanosecs = static_cast<unsigned int>(epoch_nanosecs % (int)1E9);
 
             llcHlp_.CollectValidMessage(llcData_);
-            //std::cout << "ThreadReceiver::ReadLoop(), Collected Valid Message" << std::endl;
             
             ulisse_msgs::msg::Time time_msg;
             time_msg.sec = static_cast<unsigned int>(epoch_nanosecs / (int)1E9);
             unsigned int stepsnanosecs = static_cast<unsigned int>(llcData_.sensors.stepsSincePPS * 1E9 / 200.0);
 
+            // TEMPORARILY DISABLED DUE TO DESYNC ISSUES
             // Assuming that the time of the control PC is synchronized with the GPS time,
             // if the stepsSincePPS (time since last gps 'seconds' pulse) gives an elapsed intrasecond
             // time which is greater that the current intrasecond time, it means that the measures are
             // referred to the previous second (since measure cannot come from the future)
-
-            // TEMPORARILY DISABLED DUE TO DESYNC ISSUES
 
             //if (stepsnanosecs > fraction_nanosecs) {
             //    // Data belonging to previous second
@@ -115,16 +112,18 @@ namespace llc {
             //}
             time_msg.nanosec = stepsnanosecs;
 
+            // Due to how the microcontroller updates the SNSSTSMASK, the management of the
+            // UPDATED bit is by now not reliable. For this reason the check on this bit
+            // is disabled.
+            //uint8_t sensorStatus = llcData_.sensors.sensorStatus;
+
             /*printf("sensorData: status:%X || UpdatedAcc %c UpdatedCompass %c UpdatedMagnetometer %c UpdatedAnalog %c",
             sensorStatus, PRINT_INT(sensorStatus & EMB_SNSSTSMASK_UPDATEDACCELEROMETER),
             PRINT_INT(sensorStatus & EMB_SNSSTSMASK_UPDATEDCOMPASS),
             PRINT_INT(sensorStatus & EMB_SNSSTSMASK_UPDATEDMAGNETOMETER),
             PRINT_INT(sensorStatus & EMB_SNSSTSMASK_UPDATEDANALOG));*/
 
-            // Due to how the microcontroller updates the SNSSTSMASK, the management of the
-            // UPDATED bit is by now not reliable. For this reason the check on this bit
-            // is disabled.
-            //uint8_t sensorStatus = llcData_.sensors.sensorStatus;
+
 
             switch (llcData_.messageType) {
             case MessageType::sensor:
@@ -174,7 +173,6 @@ namespace llc {
                 break;
             case MessageType::status:
                 llc_status_msg_.stamp = time_msg;
-                llc_status_msg_.status = llcData_.status.status;
                 llc_status_msg_.commdataerrorcount = llcData_.status.commDataErrorCount;
                 llc_status_msg_.i2cdatastate = llcData_.status.i2cDataState;
                 llc_status_msg_.misseddeadlines = llcData_.status.missedDeadlines;
@@ -187,6 +185,34 @@ namespace llc {
                 llc_status_msg_.errorcount = llcData_.status.errorCount;
                 llc_status_msg_.overflowcount232 = llcData_.status.overflowCount232; // overflow buffer rs232
                 llc_status_msg_.overflowcount485 = llcData_.status.overflowCount485; // overflow buffer rs485
+
+                if (llcData_.status.status & EMB_STSMASK_ENABLE_ACCELEROMETER){
+                    llc_status_msg_.flags.enable_accelerometer = true; }
+                if (llcData_.status.status & EMB_STSMASK_ENABLE_COMPASS){
+                    llc_status_msg_.flags.enable_compass = true; }
+                if (llcData_.status.status & EMB_STSMASK_ENABLE_MAGNETOMETER){
+                    llc_status_msg_.flags.enable_magnetometer = true; }
+                if (llcData_.status.status & EMB_STSMASK_ENABLE_I2C){
+                    llc_status_msg_.flags.enable_i2c = true; }
+                if (llcData_.status.status & EMB_STSMASK_ENABLE_ANALOG){
+                    llc_status_msg_.flags.enable_analog = true; }
+                if (llcData_.status.status & EMB_STSMASK_MAGNETOMETERCALIBRATION){
+                    llc_status_msg_.flags.mag_calibration = true; }
+                if (llcData_.status.status & EMB_STSMASK_ENABLE_REFERENCE){
+                    llc_status_msg_.flags.enable_reference = true; }
+                if (llcData_.status.status & EMB_STSMASK_TIMEOUT_REFERENCE){
+                    llc_status_msg_.flags.timeout_reference = true; }
+                if (llcData_.status.status & EMB_STSMASK_PPM_MAIN_VALID){
+                    llc_status_msg_.flags.ppm_main_valid = true; }
+                if (llcData_.status.status & EMB_STSMASK_PPM_ENABLED){
+                    llc_status_msg_.flags.ppm_remote_enabled  = true; }
+                if (llcData_.status.status & EMB_STSMASK_PPM_NEEDZEROCHECK){
+                    llc_status_msg_.flags.ppm_need_zero_check = true; }
+                if (llcData_.status.status & EMB_STSMASK_PPM_CHANNEL){
+                    llc_status_msg_.flags.ppm_channel = true; }
+                if (llcData_.status.status & EMB_STSMASK_PPM_SECONDARY_VALID){
+                    llc_status_msg_.flags.ppm_secondary_valid = true; }
+
                 llc_status_pub_->publish(llc_status_msg_);
                 break;
             case MessageType::set_config:
