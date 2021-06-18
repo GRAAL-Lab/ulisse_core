@@ -64,6 +64,7 @@ ament_target_dependencies(${PROJECT_NAME}_node
         std_msgs
         ulisse_msgs
         rmw_implementation
+        nav_filter
         )
 target_link_libraries(${PROJECT_NAME}_node
         Qt5::Core
