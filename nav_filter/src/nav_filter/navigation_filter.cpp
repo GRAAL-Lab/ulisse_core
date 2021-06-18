@@ -11,7 +11,7 @@ namespace nav {
         : Node("navigation_filter_node"), confPath_(confPath)
     {
         stateDim_ = 0;
-        centroidLocation_ = ctb::LatLong(44.4, 8.94);
+        centroidLocation_ = ctb::LatLong(44.393, 8.945);
         ulisseModelEKF_ = std::make_shared<UlisseVehicleModel>(UlisseVehicleModel());
 
         std::vector<int> indexAngles = { 3, 4, 5 }; //rpy

@@ -167,10 +167,8 @@ RowLayout {
 
         onAccepted: {
             var path = savePathDialog.fileUrl.toString()
-            path = path.replace(/^(file:\/{2})/,
-                                "") // remove prefixed "file://"
-            path = decodeURIComponent(
-                        path) + ".path" // unescape html codes like '%23' for '#'
+            path = path.replace(/^(file:\/{2})/, "") // remove prefixed "file://"
+            path = decodeURIComponent(path) // unescape html codes like '%23' for '#'
             savePaths(path)
         }
     }
@@ -182,7 +180,7 @@ RowLayout {
         }
 
         var all_paths = {
-            security_box: null,
+            //security_box: null,
             paths//TODO security box
             : []
         }

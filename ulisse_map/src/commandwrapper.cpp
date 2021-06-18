@@ -619,23 +619,27 @@ void CommandWrapper::resumePath()
     // FIXME: what if resuming a loop path, and we were at the last waypoint?
 }
 
-void CommandWrapper::savePathToFile(const QString fileName, const QString& data)
+void CommandWrapper::savePathToFile(const QString QFileName, const QString& data)
 {
-    // Here we check whether the file has already an extension ".ulisse"
+
     // and in case it doesn't we add it
-    std::string filename = fileName.toStdString();
+    std::string filename = QFileName.toStdString();
     std::string::size_type extensionDotPos = filename.find_last_of(".");
     std::string filePrevExtension;
 
+     // Here we check whether the file has already an extension
     if (extensionDotPos != std::string::npos) {
         filePrevExtension = filename.substr(extensionDotPos, filename.size());
+        std::cout << "File has already extension: " + filePrevExtension << std::endl;
     }
 
-    if ((extensionDotPos == std::string::npos) | (filePrevExtension != ".ulisse")) {
-        filename = filename + ".ulisse";
+    // If the extension is not present, or if it is not ".path", we add it
+    if ((extensionDotPos == std::string::npos) | (filePrevExtension != ".path")) {
+        filename = filename + ".path";
+        std::cout << "Extension is not present, or it's not .path" << std::endl;
     }
 
-    QFile file(fileName);
+    QFile file(QString::fromStdString(filename));
     if (!file.open(QFile::WriteOnly | QFile::Truncate)) {
         std::cout << "Cannot save the file" << std::endl;
         ShowToast(std::string("Cannot save the file").c_str(), 3000);
@@ -652,9 +656,7 @@ void CommandWrapper::savePathToFile(const QString fileName, const QString& data)
 }
 
 QString CommandWrapper::loadPathFromFile(const QString fileName)
-{
-    //std::string filename = file.toStdString();
-
+{       
     QFile file(fileName);
     QString fileContent;
     if (file.open(QIODevice::ReadOnly)) {
@@ -666,6 +668,7 @@ QString CommandWrapper::loadPathFromFile(const QString fileName)
         } while (!line.isNull());
 
         file.close();
+        ShowToast(std::string("Loaded: " + fileName.toStdString()).c_str(), 3000);
     } else {
         std::cout << "Error: Unable to open the file" << std::endl;
         return QString();

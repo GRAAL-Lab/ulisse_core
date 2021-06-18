@@ -54,7 +54,7 @@ Dialog {
                 font.pointSize: 10
 
                 onClicked: {
-                    settings.mapCenter; //browseCacheDirDialog.open()
+                    settings.mapCenter;
                 }
             }
 

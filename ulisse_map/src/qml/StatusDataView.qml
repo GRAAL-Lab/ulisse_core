@@ -81,109 +81,6 @@ Rectangle {
             }
         }
 
-        Pane {
-            id: lowLevelPane
-            Layout.rowSpan: 1
-            Layout.columnSpan: 1
-            Layout.fillWidth: true
-            Layout.preferredWidth: gridView.width / 2
-            Layout.leftMargin: 20
-
-            ColumnLayout {
-                id: lowLevelData
-                width: parent.width
-                Layout.alignment: Qt.AlignHCenter
-                Label {
-                    Layout.alignment: Qt.AlignHCenter
-                    font.pointSize: 18
-                    font.weight: Font.DemiBold
-                    color: darkgrey
-                    text: "Low Level"
-                }
-
-                LabelledText {
-                    Layout.alignment: Qt.AlignHCenter
-                    labelColor: darkgrey
-                    label: "Micro Loop Count"
-                    textColor: 'grey'
-                    text: "%1".arg(fbkUpdater.micro_loop_count)
-                    lsize: labelsize
-                    tsize: textsize
-                }
-
-                LabelledText {
-                    Layout.alignment: Qt.AlignHCenter
-                    labelColor: darkgrey
-                    label: "Battery"
-                    textColor: 'grey'
-                    text: "Left: %1 \% - Right: %2 \%"
-                    .arg(fbkUpdater.battery_perc_L).arg(fbkUpdater.battery_perc_R)
-                    lsize: labelsize
-                    tsize: textsize
-                }
-
-                LabelledText {
-                    Layout.alignment: Qt.AlignHCenter
-                    labelColor: darkgrey
-                    label: "SW 485 Status"
-                    textColor: 'grey'
-                    text: "timestamp: "//.arg(fbkUpdater.right_satellite_received485)
-                    lsize: labelsize
-                    tsize: textsize
-                }
-
-                LabelledText {
-                    Layout.alignment: Qt.AlignHCenter
-                    labelColor: darkgrey
-                    label: "Ambient"
-                    textColor: 'grey'
-                    text: "Temperature: %1 °C \nHumidity: %2 \%"
-                    .arg(fbkUpdater.ambient_temperature.toFixed(1)).arg(fbkUpdater.ambient_humidity.toFixed(1))
-                    lsize: labelsize
-                    tsize: textsize
-                }
-
-                LabelledText {
-                    Layout.alignment: Qt.AlignHCenter
-                    labelColor: darkgrey
-                    label: "Compass"
-                    textColor: 'grey'
-                    text: "RPY: %1".arg(fbkUpdater.compass_RPY)
-                    lsize: labelsize
-                    tsize: textsize
-                }
-
-                LabelledText {
-                    Layout.alignment: Qt.AlignHCenter
-                    labelColor: darkgrey
-                    label: "IMU"
-                    textColor: 'grey'
-                    text: "Accelerometer: %1 \nGyroscope: %2".arg(fbkUpdater.imu_accelerometer).arg(fbkUpdater.imu_gyro)
-                    lsize: labelsize
-                    tsize: textsize
-                }
-
-                LabelledText {
-                    Layout.alignment: Qt.AlignHCenter
-                    labelColor: darkgrey
-                    label: "Magnetometer"
-                    textColor: 'grey'
-                    text: "Strength: %1".arg(fbkUpdater.magnetometer)
-                    lsize: labelsize
-                    tsize: textsize
-                }
-
-                LabelledText {
-                    Layout.alignment: Qt.AlignHCenter
-                    labelColor: darkgrey
-                    label: "Motors Speed"
-                    textColor: 'grey'
-                    text: "Left: %1 , Right: %2 (rpm)".arg(fbkUpdater.motor_speed_L).arg(fbkUpdater.motor_speed_R)
-                    lsize: labelsize
-                    tsize: textsize
-                }
-            }
-        }
 
         Pane {
             id: navFilterPane
@@ -328,6 +225,110 @@ Rectangle {
                             }
                         }
                     }
+                }
+            }
+        }
+
+        Pane {
+            id: lowLevelPane
+            Layout.rowSpan: 1
+            Layout.columnSpan: 1
+            Layout.fillWidth: true
+            Layout.preferredWidth: gridView.width / 2
+            Layout.leftMargin: 20
+
+            ColumnLayout {
+                id: lowLevelData
+                width: parent.width
+                Layout.alignment: Qt.AlignHCenter
+                Label {
+                    Layout.alignment: Qt.AlignHCenter
+                    font.pointSize: 18
+                    font.weight: Font.DemiBold
+                    color: darkgrey
+                    text: "Low Level"
+                }
+
+                LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
+                    labelColor: darkgrey
+                    label: "Micro Loop Count"
+                    textColor: 'grey'
+                    text: "%1".arg(fbkUpdater.micro_loop_count)
+                    lsize: labelsize
+                    tsize: textsize
+                }
+
+                LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
+                    labelColor: darkgrey
+                    label: "Battery"
+                    textColor: 'grey'
+                    text: "Left: %1 \% - Right: %2 \%"
+                    .arg(fbkUpdater.battery_perc_L).arg(fbkUpdater.battery_perc_R)
+                    lsize: labelsize
+                    tsize: textsize
+                }
+
+                LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
+                    labelColor: darkgrey
+                    label: "SW 485 Status"
+                    textColor: 'grey'
+                    text: "timestamp: "//.arg(fbkUpdater.right_satellite_received485)
+                    lsize: labelsize
+                    tsize: textsize
+                }
+
+                LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
+                    labelColor: darkgrey
+                    label: "Ambient"
+                    textColor: 'grey'
+                    text: "Temperature: %1 °C \nHumidity: %2 \%"
+                    .arg(fbkUpdater.ambient_temperature.toFixed(1)).arg(fbkUpdater.ambient_humidity.toFixed(1))
+                    lsize: labelsize
+                    tsize: textsize
+                }
+
+                LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
+                    labelColor: darkgrey
+                    label: "Compass"
+                    textColor: 'grey'
+                    text: "RPY: %1".arg(fbkUpdater.compass_RPY)
+                    lsize: labelsize
+                    tsize: textsize
+                }
+
+                LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
+                    labelColor: darkgrey
+                    label: "IMU"
+                    textColor: 'grey'
+                    text: "Accelerometer: %1 \nGyroscope: %2".arg(fbkUpdater.imu_accelerometer).arg(fbkUpdater.imu_gyro)
+                    lsize: labelsize
+                    tsize: textsize
+                }
+
+                LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
+                    labelColor: darkgrey
+                    label: "Magnetometer"
+                    textColor: 'grey'
+                    text: "Strength: %1".arg(fbkUpdater.magnetometer)
+                    lsize: labelsize
+                    tsize: textsize
+                }
+
+                LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
+                    labelColor: darkgrey
+                    label: "Motors Speed"
+                    textColor: 'grey'
+                    text: "Left: %1 , Right: %2 (rpm)".arg(fbkUpdater.motor_speed_L).arg(fbkUpdater.motor_speed_R)
+                    lsize: labelsize
+                    tsize: textsize
                 }
             }
         }
