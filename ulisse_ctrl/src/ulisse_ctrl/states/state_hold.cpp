@@ -121,7 +121,7 @@ namespace states {
         } else if (hysteresisState_ == HysteresisState::ComeBack) {
             // If the previos action was comeback to the hold acceptance radius, keep do it until d < minAcceptanceRadius.
             absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(cos(goalHeading_), sin(goalHeading_), 0.0), rml::FrameID::WorldFrame);
-            double surgeReference = rml::IncreasingBellShapedFunction(minAcceptanceRadius, maxAcceptanceRadius, 0.0, maxSurgeComeback2HoldAcceptanceRadius_, goalDistance_);
+            double surgeReference = rml::IncreasingBellShapedFunction(minAcceptanceRadius, maxAcceptanceRadius, 0.25, maxSurgeComeback2HoldAcceptanceRadius_, goalDistance_);
             absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
 
             // Set a velocity to point to the circle in case of the catamaran  slips away.

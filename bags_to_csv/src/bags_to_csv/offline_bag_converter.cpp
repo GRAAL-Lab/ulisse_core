@@ -53,6 +53,7 @@ bool OfflineBagConverter::ConvertToCSV()
             rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
             serialization.deserialize_message(&extracted_serialized_msg, &gpsData_);
             gpsFile_ << std::fixed << std::setprecision(10)
+                     << bag_message->time_stamp  * 1e-9 << ", "
                      << gpsData_.time << ", " << gpsData_.latitude << ", " << gpsData_.longitude << ", " << gpsData_.altitude << ", "
                      << gpsData_.speed << ", " << gpsData_.track
                      << "\n";
@@ -61,42 +62,32 @@ bool OfflineBagConverter::ConvertToCSV()
             rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
             serialization.deserialize_message(&extracted_serialized_msg, &imuData_);
             sensorReceived = true;
-            imuFile_ << std::fixed << std::setprecision(6)
-                     << imuData_.stamp.sec + (imuData_.stamp.nanosec * 1e-9)<< ", "
-                     << imuData_.accelerometer[0] << ", " << imuData_.accelerometer[1] << ", " << imuData_.accelerometer[2] << ", "
-                     << imuData_.gyro[0] << ", " << imuData_.gyro[1] << ", " << imuData_.gyro[2]
-                     << "\n";
         } else if (bag_message->topic_name == ulisse_msgs::topicnames::sensor_compass) {
             rclcpp::Serialization<ulisse_msgs::msg::Compass> serialization;
             rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
             serialization.deserialize_message(&extracted_serialized_msg, &compassData_);
             sensorReceived = true;
-            compassFile_ << std::fixed << std::setprecision(6)
-                         << compassData_.stamp.sec + (compassData_.stamp.nanosec * 1e-9) << ", "
-                         << compassData_.orientation.roll << ", " << compassData_.orientation.pitch << ", " << compassData_.orientation.yaw
-                         << "\n";
         } else if (bag_message->topic_name == ulisse_msgs::topicnames::sensor_magnetometer) {
             rclcpp::Serialization<ulisse_msgs::msg::Magnetometer> serialization;
             rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
             serialization.deserialize_message(&extracted_serialized_msg, &magnetometerData_);
             sensorReceived = true;
-            magnetometerFile_ << std::fixed << std::setprecision(6)
-                              << magnetometerData_.stamp.sec + (magnetometerData_.stamp.nanosec * 1e-9) << ", "
-                              << magnetometerData_.orthogonalstrength[0] << ", " << magnetometerData_.orthogonalstrength[1] << ", " << magnetometerData_.orthogonalstrength[2]
-                              << "\n";
-        } else if (bag_message->topic_name == ulisse_msgs::topicnames::llc_motors) {
-            rclcpp::Serialization<ulisse_msgs::msg::LLCMotors> serialization;
+        } else if (bag_message->topic_name == ulisse_msgs::topicnames::llc_thrusters) {
+            rclcpp::Serialization<ulisse_msgs::msg::LLCThrusters> serialization;
             rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
-            serialization.deserialize_message(&extracted_serialized_msg, &llcMotorsData_);
+            serialization.deserialize_message(&extracted_serialized_msg, &llcThrustersData_);
             motorsFile_ << std::fixed << std::setprecision(6)
-                        << llcMotorsData_.stamp.sec + (llcMotorsData_.stamp.nanosec * 1e-9) << ", "
-                        << llcMotorsData_.left.motor_speed << ", " << llcMotorsData_.right.motor_speed
+                        << bag_message->time_stamp  * 1e-9 << ", "
+                        << llcThrustersData_.stamp.sec + (llcThrustersData_.stamp.nanosec * 1e-9) << ", "
+                        << llcThrustersData_.left.timestamp_485 << ", " << llcThrustersData_.left.motor_speed << ", "
+                        << llcThrustersData_.right.timestamp_485 << ", " << llcThrustersData_.right.motor_speed
                         << "\n";
         } else if (bag_message->topic_name == ulisse_msgs::topicnames::nav_filter_data) {
             rclcpp::Serialization<ulisse_msgs::msg::NavFilterData> serialization;
             rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
             serialization.deserialize_message(&extracted_serialized_msg, &navFilterData_);
             navFilterFile_ << std::fixed << std::setprecision(6)
+                           << bag_message->time_stamp  * 1e-9 << ", "
                            << navFilterData_.stamp.sec + (navFilterData_.stamp.nanosec * 1e-9) << ", "
                            << navFilterData_.inertialframe_linear_position.latlong.latitude << ", " << navFilterData_.inertialframe_linear_position.latlong.longitude << ", " << navFilterData_.inertialframe_linear_position.altitude << ", "
                            << navFilterData_.bodyframe_angular_position.roll << ", " << navFilterData_.bodyframe_angular_position.pitch << ", " << navFilterData_.bodyframe_angular_position.yaw << ", "
@@ -111,16 +102,18 @@ bool OfflineBagConverter::ConvertToCSV()
             rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
             serialization.deserialize_message(&extracted_serialized_msg, &referenceVel_);
             refVelFile_ << std::fixed << std::setprecision(6)
+                        << bag_message->time_stamp  * 1e-9 << ", "
                         << referenceVel_.stamp.sec + (referenceVel_.stamp.nanosec * 1e-9) << ", "
                         << referenceVel_.desired_surge << ", " << referenceVel_.desired_yaw_rate
                         << "\n";
-        } else if (bag_message->topic_name == ulisse_msgs::topicnames::thrusters_data) {
-            rclcpp::Serialization<ulisse_msgs::msg::ThrustersData> serialization;
+        } else if (bag_message->topic_name == ulisse_msgs::topicnames::llc_thrusters_reference_perc) {
+            rclcpp::Serialization<ulisse_msgs::msg::ThrustersReference> serialization;
             rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
-            serialization.deserialize_message(&extracted_serialized_msg, &thrustersData_);
+            serialization.deserialize_message(&extracted_serialized_msg, &thrustersReference_);
             thrustersFile_ << std::fixed << std::setprecision(6)
-                           << thrustersData_.stamp.sec + (thrustersData_.stamp.nanosec * 1e-9) << ", "
-                           << thrustersData_.motor_percentage.left << ", " << thrustersData_.motor_percentage.right
+                           << bag_message->time_stamp  * 1e-9 << ", "
+                           << thrustersReference_.stamp.sec + (thrustersReference_.stamp.nanosec * 1e-9) << ", "
+                           << thrustersReference_.left_percentage << ", " << thrustersReference_.right_percentage
                            << "\n";
         }
         // else if (bag_message->topic_name == ulisse_msgs::topicnames::llc_battery_left) {
@@ -148,32 +141,32 @@ bool OfflineBagConverter::ConvertToCSV()
 bool OfflineBagConverter::OpenFiles()
 {
     gpsFile_          .open(std::string(saveFolder_ + "/gps.txt"));
-    gpsFile_ << "time, lat, long, alt, speed, track\n";
+    gpsFile_ << "ros_time, gps_time, lat, long, alt, speed, track\n";
 
-    imuFile_          .open(std::string(saveFolder_ + "/imu.txt"));
+    /*imuFile_          .open(std::string(saveFolder_ + "/imu.txt"));
     imuFile_ << "time, acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z\n";
 
     compassFile_      .open(std::string(saveFolder_ + "/compass.txt"));
     compassFile_ << "time, roll, pitch, yaw\n";
 
     magnetometerFile_ .open(std::string(saveFolder_ + "/magnetometer.txt"));
-    magnetometerFile_ << "time, orth_x, orth_y, orth_z\n";
+    magnetometerFile_ << "time, orth_x, orth_y, orth_z\n";*/
 
     sensorsFile_      .open(std::string(saveFolder_ + "/sensors.txt"));
-    sensorsFile_ << "ros_time, time_imu, acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z, time_compass, compass_R, compass_P, compass_Y, time_magn, magn_x, magn_y, magn_z\n";
+    sensorsFile_ << "ros_time, imu_time, acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z, time_compass, compass_R, compass_P, compass_Y, time_magn, magn_x, magn_y, magn_z\n";
 
     motorsFile_       .open(std::string(saveFolder_ + "/motors.txt"));
-    motorsFile_ << "time, rpm_L, rpm_R\n";
+    motorsFile_ << "ros_time, time, rpm_L, rpm_R\n";
 
     navFilterFile_    .open(std::string(saveFolder_ + "/nav_filter.txt"));
-    navFilterFile_ << "time, x, y, z, r, p, y, u, v, h, "
+    navFilterFile_ << "ros_time, time, x, y, z, r, p, y, u, v, h, "
                    << "rRate, pRate, yRate, cx, cy, bx, by, bz\n";
 
     refVelFile_      .open(std::string(saveFolder_ + "/reference_vel.txt"));
-    refVelFile_ << "time, surge, yawrate\n";
+    refVelFile_ << "ros_time, time, surge, yawrate\n";
 
     thrustersFile_   .open(std::string(saveFolder_ + "/thrusters.txt"));
-    thrustersFile_ << "time, perc_L, perc_R\n";
+    thrustersFile_ << "ros_time, time, time485_L, perc_L, time485_R, perc_R\n";
     //vehicleStatusFile_.open(std::string(saveFolder_ + "/vehicle_status.txt"));
 
     return true;
@@ -182,9 +175,9 @@ bool OfflineBagConverter::OpenFiles()
 void OfflineBagConverter::CloseFiles()
 {
     gpsFile_          .close();
-    imuFile_          .close();
+    /*imuFile_          .close();
     compassFile_      .close();
-    magnetometerFile_ .close();
+    magnetometerFile_ .close();*/
     sensorsFile_      .close();
     motorsFile_       .close();
     navFilterFile_    .close();

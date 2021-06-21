@@ -7,4 +7,4 @@ float64 feedback_yaw_rate
 float64 out_pid_yaw_rate
 float64[2] tau
 float64[2] forces
-MotorReference motor_percentage
+ThrustersReference motor_percentage

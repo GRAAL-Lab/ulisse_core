@@ -16,12 +16,12 @@
 #include "ulisse_msgs/msg/compass.hpp"
 #include "ulisse_msgs/msg/imu_data.hpp"
 #include "ulisse_msgs/msg/magnetometer.hpp"
-#include "ulisse_msgs/msg/llc_motors.hpp"
+#include "ulisse_msgs/msg/llc_thrusters.hpp"
 #include "ulisse_msgs/msg/llc_battery.hpp"
 #include "ulisse_msgs/msg/llc_sw485_status.hpp"
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
 #include "ulisse_msgs/msg/reference_velocities.hpp"
-#include "ulisse_msgs/msg/thrusters_data.hpp"
+#include "ulisse_msgs/msg/thrusters_reference.hpp"
 #include "ulisse_msgs/msg/vehicle_status.hpp"
 
 class FeedbackUpdater : public QObject, rclcpp::Node {
@@ -104,11 +104,11 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     rclcpp::Subscription<ulisse_msgs::msg::Compass>::SharedPtr compass_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::IMUData>::SharedPtr imu_data_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::Magnetometer>::SharedPtr magnetometer_sub_;
-    rclcpp::Subscription<ulisse_msgs::msg::LLCMotors>::SharedPtr llc_motors_sub_;
+    rclcpp::Subscription<ulisse_msgs::msg::LLCThrusters>::SharedPtr llc_motors_sub_;
 
     rclcpp::Subscription<ulisse_msgs::msg::LLCBattery>::SharedPtr battery_left_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::LLCBattery>::SharedPtr battery_right_sub_;
-    rclcpp::Subscription<ulisse_msgs::msg::ThrustersData>::SharedPtr thruster_data_sub_;
+    rclcpp::Subscription<ulisse_msgs::msg::ThrustersReference>::SharedPtr thruster_reference_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::LLCSw485Status>::SharedPtr sw485_status_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr current_status_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::ReferenceVelocities>::SharedPtr referenceVelocitieSub_;
@@ -131,11 +131,11 @@ public:
     void CompassCB(const ulisse_msgs::msg::Compass::SharedPtr msg);
     void IMUDataCB(const ulisse_msgs::msg::IMUData::SharedPtr msg);
     void MagnetometerCB(const ulisse_msgs::msg::Magnetometer::SharedPtr msg);
-    void LLCMotorsCB(const ulisse_msgs::msg::LLCMotors::SharedPtr msg);
+    void LLCMotorsCB(const ulisse_msgs::msg::LLCThrusters::SharedPtr msg);
 
     void LLCBatteryLeftCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg);
     void LLCBatteryRightCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg);
-    void ThrusterDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg);
+    void ThrusterDataCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg);
     void LLCSw485StatusCB(const ulisse_msgs::msg::LLCSw485Status::SharedPtr msg);
     void ReferenceVelocitiesCB(const ulisse_msgs::msg::ReferenceVelocities::SharedPtr msg);
     void VehicleStatusCB(const ulisse_msgs::msg::VehicleStatus::SharedPtr msg);

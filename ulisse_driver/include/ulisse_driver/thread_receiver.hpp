@@ -10,12 +10,12 @@
 #include "ulisse_msgs/msg/imu_data.hpp"
 #include "ulisse_msgs/msg/magnetometer.hpp"
 #include "ulisse_msgs/msg/micro_loop_count.hpp"
-#include "ulisse_msgs/msg/motor_reference.hpp"
+#include "ulisse_msgs/msg/thrusters_reference.hpp"
 
 #include "ulisse_msgs/msg/llc_ack.hpp"
 #include "ulisse_msgs/msg/llc_battery.hpp"
 #include "ulisse_msgs/msg/llc_config.hpp"
-#include "ulisse_msgs/msg/llc_motors.hpp"
+#include "ulisse_msgs/msg/llc_thrusters.hpp"
 #include "ulisse_msgs/msg/llc_status.hpp"
 #include "ulisse_msgs/msg/llc_sw485_status.hpp"
 #include "ulisse_msgs/msg/llc_version.hpp"
@@ -35,7 +35,7 @@ namespace llc {
         void ReadLoop();
 
         void LLCData2RosMsg(const batteryData& llc_batt, ulisse_msgs::msg::LLCBattery& batt_msg);
-        void LLCData2RosMsg(const motorData& llc_motor, ulisse_msgs::msg::MotorData& motor_msg);
+        void LLCData2RosMsg(const motorData& llc_motor, ulisse_msgs::msg::ThrusterData& motor_msg);
 
         std::string confPath_;
         libconfig::Config confObj_;
@@ -53,11 +53,11 @@ namespace llc {
         ulisse_msgs::msg::IMUData imu_msg_;
         ulisse_msgs::msg::AmbientSensors ambsens_msg_;
         ulisse_msgs::msg::Magnetometer magneto_msg_;
-        ulisse_msgs::msg::MotorReference applied_motorref_msg_;
+        ulisse_msgs::msg::ThrustersReference applied_motorref_msg_;
         // LLC
         ulisse_msgs::msg::LLCStatus llc_status_msg_;
         ulisse_msgs::msg::LLCConfig llc_config_msg_;
-        ulisse_msgs::msg::LLCMotors llc_motors_msg_;
+        ulisse_msgs::msg::LLCThrusters llc_motors_msg_;
         ulisse_msgs::msg::LLCVersion llc_version_msg_;
         ulisse_msgs::msg::LLCAck llc_ack_msg_;
         ulisse_msgs::msg::LLCBattery llc_battery_left_msg_;
@@ -70,11 +70,11 @@ namespace llc {
         rclcpp::Publisher<ulisse_msgs::msg::IMUData>::SharedPtr imu_pub_;
         rclcpp::Publisher<ulisse_msgs::msg::AmbientSensors>::SharedPtr ambsens_pub_;
         rclcpp::Publisher<ulisse_msgs::msg::Magnetometer>::SharedPtr magneto_pub_;
-        rclcpp::Publisher<ulisse_msgs::msg::MotorReference>::SharedPtr applied_motorref_pub_;
+        rclcpp::Publisher<ulisse_msgs::msg::ThrustersReference>::SharedPtr applied_motorref_pub_;
         // LLC
         rclcpp::Publisher<ulisse_msgs::msg::LLCStatus>::SharedPtr llc_status_pub_;
         rclcpp::Publisher<ulisse_msgs::msg::LLCConfig>::SharedPtr llc_config_pub_;
-        rclcpp::Publisher<ulisse_msgs::msg::LLCMotors>::SharedPtr llc_motors_pub_;
+        rclcpp::Publisher<ulisse_msgs::msg::LLCThrusters>::SharedPtr llc_motors_pub_;
         rclcpp::Publisher<ulisse_msgs::msg::LLCVersion>::SharedPtr llc_version_pub_;
         rclcpp::Publisher<ulisse_msgs::msg::LLCAck>::SharedPtr llc_ack_pub_;
         rclcpp::Publisher<ulisse_msgs::msg::LLCBattery>::SharedPtr llc_battery_left_pub_;

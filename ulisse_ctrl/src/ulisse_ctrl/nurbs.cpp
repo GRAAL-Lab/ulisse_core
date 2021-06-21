@@ -356,7 +356,7 @@ bool Nurbs::ComputeDerive(SISLCurve* curve, const int der, const double parvalue
 
     if (stat < 0) {
         std::cerr << "Compute derive fails!" << std::endl;
-        return -1;
+        return false;
     } else {
         for (int i = 0; i < deriveDim; i++) {
             derive[i] = deriveTmp[static_cast<unsigned int>(i)];

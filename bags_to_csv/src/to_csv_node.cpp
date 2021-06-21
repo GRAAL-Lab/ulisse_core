@@ -13,7 +13,7 @@
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
 #include "ulisse_msgs/msg/simulated_system.hpp"
 #include "ulisse_msgs/msg/reference_velocities.hpp"
-#include "ulisse_msgs/msg/thrusters_data.hpp"
+#include "ulisse_msgs/msg/thrusters_reference.hpp"
 #include "ulisse_msgs/msg/llc_battery.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 #include <iomanip> // put_time
@@ -25,7 +25,7 @@
 
 using namespace std::chrono_literals;
 
-ulisse_msgs::msg::ThrustersData thrustersFbk;
+ulisse_msgs::msg::ThrustersReference thrustersRef;
 ulisse_msgs::msg::NavFilterData filterData;
 ulisse_msgs::msg::SimulatedSystem groundTruthData;
 ulisse_msgs::msg::Compass compassData;
@@ -39,7 +39,7 @@ void FilterDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
 
 void GroundTruthDataCB(const ulisse_msgs::msg::SimulatedSystem::SharedPtr msg);
 
-void ThrustersDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg);
+void ThrustersReferenceCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg);
 
 void CompassDataCB(const ulisse_msgs::msg::Compass::SharedPtr msg);
 
@@ -103,7 +103,7 @@ int main(int argc, char* argv[])
     //Subscribes to filter, real and thrusters data
     auto filterDataSub = node->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 10, FilterDataCB);
     auto realSystemSub = node->create_subscription<ulisse_msgs::msg::SimulatedSystem>(ulisse_msgs::topicnames::simulated_system, 10, GroundTruthDataCB);
-    auto thrustersFkbSub = node->create_subscription<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data, 10, ThrustersDataCB);
+    auto thrustersFkbSub = node->create_subscription<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_reference_perc, 10, ThrustersReferenceCB);
     auto compassSub = node->create_subscription<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass, 10, CompassDataCB);
     auto gpsSub = node->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data, 10, GpsDataCB);
     auto imuSub = node->create_subscription<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu, 10, ImuDataCB);
@@ -186,8 +186,8 @@ int main(int argc, char* argv[])
                 << groundTruthData.inertialframe_linear_position.latlong.latitude << "," << groundTruthData.inertialframe_linear_position.latlong.longitude << "," << groundTruthData.inertialframe_linear_position.altitude << "," << groundTruthData.bodyframe_angular_position.roll << "," << groundTruthData.bodyframe_angular_position.pitch << "," << groundTruthData.bodyframe_angular_position.yaw << "," << groundTruthData.bodyframe_linear_velocity[0] << "," << groundTruthData.bodyframe_linear_velocity[1] << "," << groundTruthData.bodyframe_linear_velocity[2] << "," << groundTruthData.bodyframe_angular_velocity[0] << "," << groundTruthData.bodyframe_angular_velocity[1] << "," << groundTruthData.bodyframe_angular_velocity[2] << "," << groundTruthData.inertialframe_water_current[0] << "," << groundTruthData.inertialframe_water_current[1] << "," << groundTruthData.gyro_bias[0] << "," << groundTruthData.gyro_bias[1] << "," << groundTruthData.gyro_bias[2]
                 << "\n";
 
-        controlFile << secs + (nanosecs * 1e-9) << "," << thrustersFbk.stamp.sec + (thrustersFbk.stamp.nanosec * 1e-9) << ","
-                    << thrustersFbk.motor_percentage.left << "," << thrustersFbk.motor_percentage.right << "," << refVelocities.stamp.sec + (refVelocities.stamp.nanosec * 1e-9) << "," << refVelocities.desired_surge << "," << refVelocities.desired_yaw_rate
+        controlFile << secs + (nanosecs * 1e-9) << "," << thrustersRef.stamp.sec + (thrustersRef.stamp.nanosec * 1e-9) << ","
+                    << thrustersRef.left_percentage << "," << thrustersRef.right_percentage << "," << refVelocities.stamp.sec + (refVelocities.stamp.nanosec * 1e-9) << "," << refVelocities.desired_surge << "," << refVelocities.desired_yaw_rate
                     << "\n";
 
         sensorsFile << secs + (nanosecs * 1e-9) << "," << gpsData.time << "," << gpsData.latitude << "," << gpsData.longitude << "," << gpsData.altitude << "," << gpsData.speed << "," << gpsData.track << "," << compassData.stamp.sec + (compassData.stamp.nanosec * 1e-9) << "," << compassData.orientation.roll << "," << compassData.orientation.pitch << "," << compassData.orientation.yaw << ","
@@ -212,7 +212,7 @@ void GroundTruthDataCB(const ulisse_msgs::msg::SimulatedSystem::SharedPtr msg) {
 
 void FilterDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg) { filterData = *msg; }
 
-void ThrustersDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg) { thrustersFbk = *msg; }
+void ThrustersReferenceCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg) { thrustersRef = *msg; }
 
 void CompassDataCB(const ulisse_msgs::msg::Compass::SharedPtr msg) { compassData = *msg; }
 

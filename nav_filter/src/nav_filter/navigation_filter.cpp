@@ -11,7 +11,7 @@ namespace nav {
         : Node("navigation_filter_node"), confPath_(confPath)
     {
         stateDim_ = 0;
-        centroidLocation_ = ctb::LatLong(44.4, 8.94);
+        centroidLocation_ = ctb::LatLong(44.393, 8.945);
         ulisseModelEKF_ = std::make_shared<UlisseVehicleModel>(UlisseVehicleModel());
 
         std::vector<int> indexAngles = { 3, 4, 5 }; //rpy
@@ -47,11 +47,12 @@ namespace nav {
         magnetometerSub_ = this->create_subscription<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer,
             1, std::bind(&NavigationFilter::MagnetometerDataCB, this, _1));
         simulatedSystemSub_ = this->create_subscription<ulisse_msgs::msg::SimulatedSystem>(ulisse_msgs::topicnames::simulated_system,
+
             1, std::bind(&NavigationFilter::GroundTruthDataCB, this, _1));
-        thrustersFkbSub_ = this->create_subscription<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data,
-            1, std::bind(&NavigationFilter::ThrustersDataCB, this, _1));
-        llcMotorsSub_ = this->create_subscription<ulisse_msgs::msg::LLCMotors>(ulisse_msgs::topicnames::llc_motors,
-            1, std::bind(&NavigationFilter::LLCMotorsCB, this, _1));
+        thrustersRefSub_ = this->create_subscription<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_reference_perc,
+            1, std::bind(&NavigationFilter::ThrustersReferenceCB, this, _1));
+        llcThrustersSub_ = this->create_subscription<ulisse_msgs::msg::LLCThrusters>(ulisse_msgs::topicnames::llc_thrusters,
+            1, std::bind(&NavigationFilter::LLCThrustersCB, this, _1));
 
         simulatedVelocitySub_ = this->create_subscription<ulisse_msgs::msg::SimulatedVelocitySensor>(ulisse_msgs::topicnames::simulated_velocity_sensor,
             1, std::bind(&NavigationFilter::SimulatedVelocitySensorCB, this, _1));
@@ -248,7 +249,8 @@ namespace nav {
 
         //Filter Update
         extendedKalmanFilter_->Update(Eigen::Vector2d { thrustersFbk_.motor_percentage.left, thrustersFbk_.motor_percentage.right });
-        //extendedKalmanFilter_->Update(Eigen::Vector2d { llcMotorsData_.left.motor_speed*6.0/5.0, llcMotorsData_.right.motor_speed*6.0/5.0 });
+        //extendedKalmanFilter_->Update(Eigen::Vector2d { llcThrustersData_.left.motor_speed, llcThrustersData_.right.motor_speed });
+
 
         state_ = extendedKalmanFilter_->StateVector();
 
@@ -411,7 +413,7 @@ namespace nav {
         // Read conf file
         libconfig::Config confObj;
 
-        //I nizialization
+        //Inizialization
         try {
             confObj.readFile(confPath_.c_str());
         } catch (const libconfig::FileIOException& fioex) {
@@ -601,26 +603,12 @@ namespace nav {
             ret = CommandAnswer::fail;
             break;
         case static_cast<uint16_t>(CommandType::reset):
-            if (filterParams_.mode == FilterMode::LuenbergerObserver) {
-                obs_.Reset();
-                RCLCPP_INFO(this->get_logger(), "Reset Luenberger observer");
-            } else {
-                extendedKalmanFilter_->Reset();
-                //sample the current gps data anfd yaw
-                Eigen::VectorXd initialState = Eigen::VectorXd::Zero(stateDim_);
-                Eigen::Vector3d NED_currentPosition;
-                ctb::LatLong2LocalNED(ctb::LatLong(gpsData_.latitude, gpsData_.longitude), gpsData_.altitude, centroidLocation_, NED_currentPosition);
-                initialState.segment(0, 2) = NED_currentPosition.segment(0, 2);
-
-                initialState[5] = -atan2(magnetometerData_.orthogonalstrength[1] * cos(state_[3]) - magnetometerData_.orthogonalstrength[2] * sin(state_[3]), magnetometerData_.orthogonalstrength[0] * cos(state_[4]) + magnetometerData_.orthogonalstrength[2] * cos(state_[3]) * sin(state_[4]) + magnetometerData_.orthogonalstrength[1] * sin(state_[4]) * sin(state_[3]));
-
-                extendedKalmanFilter_->Init(initialState);
-                RCLCPP_INFO(this->get_logger(), "Reset EKF");
-            }
+            //ResetFilter();
+            LoadConfiguration(filterParams_);
             break;
         case static_cast<uint16_t>(CommandType::reloadconfig): {
-            auto previousFilterParams = filterParams_;
-            LoadConfiguration(previousFilterParams);
+            //auto previousFilterParams = filterParams_;
+            LoadConfiguration(filterParams_);
             break;
         }
         default:
@@ -634,6 +622,31 @@ namespace nav {
         }
     }
 
+    void NavigationFilter::ResetFilter(){
+        if (filterParams_.mode == FilterMode::LuenbergerObserver) {
+            obs_.Reset();
+            RCLCPP_INFO(this->get_logger(), "Reset Luenberger observer");
+        } else {
+            extendedKalmanFilter_->Reset();
+            //sample the current gps data and yaw
+            Eigen::VectorXd initialState = Eigen::VectorXd::Zero(stateDim_);
+            Eigen::Vector3d NED_currentPosition;
+            ctb::LatLong2LocalNED(ctb::LatLong(gpsData_.latitude, gpsData_.longitude), gpsData_.altitude, centroidLocation_, NED_currentPosition);
+            initialState.segment(0, 2) = NED_currentPosition.segment(0, 2);
+            initialState[5] = -atan2(magnetometerData_.orthogonalstrength[1]
+                        * cos(state_[3]) - magnetometerData_.orthogonalstrength[2]
+                        * sin(state_[3]), magnetometerData_.orthogonalstrength[0]
+                        * cos(state_[4]) + magnetometerData_.orthogonalstrength[2]
+                        * cos(state_[3])
+                        * sin(state_[4]) + magnetometerData_.orthogonalstrength[1]
+                        * sin(state_[4])
+                        * sin(state_[3]));
+
+            extendedKalmanFilter_->Init(initialState);
+            RCLCPP_INFO(this->get_logger(), "Reset EKF");
+        }
+    }
+
     void NavigationFilter::CompassDataCB(const ulisse_msgs::msg::Compass::SharedPtr msg) { compassData_ = *msg; }
 
     void NavigationFilter::GPSDataCB(const ulisse_msgs::msg::GPSData::SharedPtr msg) { gpsData_ = *msg; }
@@ -644,11 +657,11 @@ namespace nav {
 
     void NavigationFilter::SimulatedVelocitySensorCB(const ulisse_msgs::msg::SimulatedVelocitySensor::SharedPtr msg) { simulatedVelocitySensor_ = *msg; }
 
-    void NavigationFilter::ThrustersDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg) { thrustersFbk_ = *msg; }
+    void NavigationFilter::ThrustersReferenceCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg) { thrustersFbk_ = *msg; }
 
     void NavigationFilter::GroundTruthDataCB(const ulisse_msgs::msg::SimulatedSystem::SharedPtr msg) { simulatedData_ = *msg; }
 
-    void NavigationFilter::LLCMotorsCB(const ulisse_msgs::msg::LLCMotors::SharedPtr msg) { llcMotorsData_ = *msg; }
+    void NavigationFilter::LLCThrustersCB(const ulisse_msgs::msg::LLCThrusters::SharedPtr msg) { llcThrustersData_ = *msg; }
 
 }
 }

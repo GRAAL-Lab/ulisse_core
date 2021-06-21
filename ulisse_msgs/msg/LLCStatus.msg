@@ -1,5 +1,5 @@
 Time stamp
-uint16 status
+LLCStatusFlags flags
 uint16 commdataerrorcount
 int16 i2cdatastate
 uint16 misseddeadlines

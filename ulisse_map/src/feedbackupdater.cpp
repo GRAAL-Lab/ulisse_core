@@ -92,14 +92,14 @@ void FeedbackUpdater::LoadQmlEngine(QQmlApplicationEngine* engine)
         10, std::bind(&FeedbackUpdater::IMUDataCB, this, _1) /*custom_qos_profile*/);
     magnetometer_sub_ = this->create_subscription<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer,
         10, std::bind(&FeedbackUpdater::MagnetometerCB, this, _1) /*custom_qos_profile*/);
-    llc_motors_sub_ = this->create_subscription<ulisse_msgs::msg::LLCMotors>(ulisse_msgs::topicnames::llc_motors,
+    llc_motors_sub_ = this->create_subscription<ulisse_msgs::msg::LLCThrusters>(ulisse_msgs::topicnames::llc_thrusters,
         10, std::bind(&FeedbackUpdater::LLCMotorsCB, this, _1) /*custom_qos_profile*/);
 
     battery_left_sub_ = this->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_left,
         0, std::bind(&FeedbackUpdater::LLCBatteryLeftCB, this, _1) /*custom_qos_profile*/);
     battery_right_sub_ = this->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_right,
         10, std::bind(&FeedbackUpdater::LLCBatteryRightCB, this, _1) /*custom_qos_profile*/);
-    thruster_data_sub_ = this->create_subscription<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data,
+    thruster_reference_sub_ = this->create_subscription<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_reference_perc,
         10, std::bind(&FeedbackUpdater::ThrusterDataCB, this, _1) /*custom_qos_profile*/);
     sw485_status_sub_ = this->create_subscription<ulisse_msgs::msg::LLCSw485Status>(ulisse_msgs::topicnames::llc_sw485status,
         10, std::bind(&FeedbackUpdater::LLCSw485StatusCB, this, _1));
@@ -210,7 +210,7 @@ void FeedbackUpdater::MagnetometerCB(const ulisse_msgs::msg::Magnetometer::Share
         + QString::number(msg->orthogonalstrength[2], 'f', 2);
 }
 
-void FeedbackUpdater::LLCMotorsCB(const ulisse_msgs::msg::LLCMotors::SharedPtr msg)
+void FeedbackUpdater::LLCMotorsCB(const ulisse_msgs::msg::LLCThrusters::SharedPtr msg)
 {
     motor_speed_L_ = (msg->left.motor_speed);
     motor_speed_R_ = (msg->right.motor_speed);
@@ -226,10 +226,10 @@ void FeedbackUpdater::LLCBatteryRightCB(const ulisse_msgs::msg::LLCBattery::Shar
     q_battery_perc_R_ = msg->charge_percent;
 }
 
-void FeedbackUpdater::ThrusterDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg)
+void FeedbackUpdater::ThrusterDataCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg)
 {
-    q_thrust_ref_left_ = msg->motor_percentage.left;
-    q_thrust_ref_right_ = msg->motor_percentage.right;
+    q_thrust_ref_left_ = msg->left_percentage;
+    q_thrust_ref_right_ = msg->right_percentage;
 }
 
 void FeedbackUpdater::LLCSw485StatusCB(const ulisse_msgs::msg::LLCSw485Status::SharedPtr msg)

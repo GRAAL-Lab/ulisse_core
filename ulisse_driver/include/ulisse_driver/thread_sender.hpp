@@ -13,7 +13,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
 
-#include "ulisse_msgs/msg/thrusters_data.hpp"
+#include "ulisse_msgs/msg/thrusters_reference.hpp"
 #include "ulisse_msgs/srv/llc_command.hpp"
 
 #include "ulisse_driver/LLCHelper.h"
@@ -32,7 +32,7 @@ namespace llc {
             const std::shared_ptr<ulisse_msgs::srv::LLCCommand::Request> request,
             std::shared_ptr<ulisse_msgs::srv::LLCCommand::Response> response);
         void LoadConfigFile();
-        void ThrustersDataCB(const ulisse_msgs::msg::ThrustersData::SharedPtr msg);
+        void ThrustersReferenceCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg);
         void CopyConfigMsg2LLCStruct(const std::shared_ptr<ulisse_msgs::srv::LLCCommand::Request> request);
 
         std::string confPath_;
@@ -44,7 +44,7 @@ namespace llc {
 
         rclcpp::AsyncParametersClient::SharedPtr par_client_;
         rclcpp::Service<ulisse_msgs::srv::LLCCommand>::SharedPtr srv_;
-        rclcpp::Subscription<ulisse_msgs::msg::ThrustersData>::SharedPtr thruster_data_sub_;
+        rclcpp::Subscription<ulisse_msgs::msg::ThrustersReference>::SharedPtr thruster_data_sub_;
         rclcpp::TimerBase::SharedPtr timer_;
     };
 }

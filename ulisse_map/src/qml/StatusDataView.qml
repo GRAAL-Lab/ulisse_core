@@ -21,7 +21,7 @@ Rectangle {
         columnSpacing: 0
         rowSpacing: 1
         rows: 2
-        columns: 1
+        columns: 2
 
         Pane {
             id: statusPane
@@ -77,6 +77,33 @@ Rectangle {
                               fbkUpdater.gps_pos.longitude.toFixed(8))
                     lsize: labelsize
                     tsize: textsize
+                }
+            }
+        }
+
+
+        Pane {
+            id: navFilterPane
+            Layout.rowSpan: 1
+            Layout.columnSpan: 1
+            Layout.fillWidth: true
+            Layout.preferredWidth: gridView.width / 2
+            Layout.leftMargin: 20
+
+            ColumnLayout {
+                id: navFilterData
+                width: parent.width
+                Layout.fillHeight: true
+                spacing: 8
+
+
+                Label {
+                    Layout.fillHeight: true
+                    Layout.alignment: Qt.AlignHCenter
+                    font.pointSize: 18
+                    font.weight: Font.DemiBold
+                    color: blue
+                    text: "Navigation Filter"
                 }
 
 
@@ -204,7 +231,6 @@ Rectangle {
 
         Pane {
             id: lowLevelPane
-
             Layout.rowSpan: 1
             Layout.columnSpan: 1
             Layout.fillWidth: true
