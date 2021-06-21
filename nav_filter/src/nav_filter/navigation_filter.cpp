@@ -248,7 +248,7 @@ namespace nav {
         }
 
         //Filter Update
-        extendedKalmanFilter_->Update(Eigen::Vector2d { thrustersFbk_.motor_percentage.left, thrustersFbk_.motor_percentage.right });
+        extendedKalmanFilter_->Update(Eigen::Vector2d { thrustersFbk_.left_percentage, thrustersFbk_.right_percentage });
         //extendedKalmanFilter_->Update(Eigen::Vector2d { llcThrustersData_.left.motor_speed, llcThrustersData_.right.motor_speed });
 
 
