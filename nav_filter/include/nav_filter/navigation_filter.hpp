@@ -10,7 +10,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <std_msgs/msg/string.hpp>
-
+#include <std_msgs/msg/float64.hpp>
 #include "ulisse_msgs/msg/compass.hpp"
 #include "ulisse_msgs/msg/gps_data.hpp"
 #include "ulisse_msgs/msg/imu_data.hpp"
@@ -48,6 +48,10 @@ namespace nav {
         PosVelObserver obs_;
 
         rclcpp::Publisher<ulisse_msgs::msg::NavFilterData>::SharedPtr navDataPub_;
+        rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr rqtAbsSurgePub_;
+        rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr rqtRelSurgePub_;
+        rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr rqtWaterCurrentXPub_;
+        rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr rqtWaterCurrentYPub_;
 
         rclcpp::Subscription<ulisse_msgs::msg::Compass>::SharedPtr compassSub_;
         rclcpp::Subscription<ulisse_msgs::msg::GPSData>::SharedPtr gpsdataSub_;

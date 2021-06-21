@@ -31,26 +31,30 @@ namespace nav {
         }
 
         //Publisher of nav data structure
-        navDataPub_ = this->create_publisher<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 10);
+        navDataPub_ = this->create_publisher<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 1);
+        rqtAbsSurgePub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/abs_surge", 1);
+        rqtRelSurgePub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/rel_surge", 1);
+        rqtWaterCurrentXPub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/water_current_x", 1);
+        rqtWaterCurrentYPub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/water_current_y", 1);
 
         //Subscribes to data sensors
         compassSub_ = this->create_subscription<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass,
-            10, std::bind(&NavigationFilter::CompassDataCB, this, _1));
+            1, std::bind(&NavigationFilter::CompassDataCB, this, _1));
         gpsdataSub_ = this->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data,
-            10, std::bind(&NavigationFilter::GPSDataCB, this, _1));
+            1, std::bind(&NavigationFilter::GPSDataCB, this, _1));
         imudataSub_ = this->create_subscription<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu,
-            10, std::bind(&NavigationFilter::IMUDataCB, this, _1));
+            1, std::bind(&NavigationFilter::IMUDataCB, this, _1));
         magnetometerSub_ = this->create_subscription<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer,
-            10, std::bind(&NavigationFilter::MagnetometerDataCB, this, _1));
+            1, std::bind(&NavigationFilter::MagnetometerDataCB, this, _1));
         simulatedSystemSub_ = this->create_subscription<ulisse_msgs::msg::SimulatedSystem>(ulisse_msgs::topicnames::simulated_system,
-            10, std::bind(&NavigationFilter::GroundTruthDataCB, this, _1));
+            1, std::bind(&NavigationFilter::GroundTruthDataCB, this, _1));
         thrustersFkbSub_ = this->create_subscription<ulisse_msgs::msg::ThrustersData>(ulisse_msgs::topicnames::thrusters_data,
-            10, std::bind(&NavigationFilter::ThrustersDataCB, this, _1));
+            1, std::bind(&NavigationFilter::ThrustersDataCB, this, _1));
         llcMotorsSub_ = this->create_subscription<ulisse_msgs::msg::LLCMotors>(ulisse_msgs::topicnames::llc_motors,
-            10, std::bind(&NavigationFilter::LLCMotorsCB, this, _1));
+            1, std::bind(&NavigationFilter::LLCMotorsCB, this, _1));
 
         simulatedVelocitySub_ = this->create_subscription<ulisse_msgs::msg::SimulatedVelocitySensor>(ulisse_msgs::topicnames::simulated_velocity_sensor,
-            10, std::bind(&NavigationFilter::SimulatedVelocitySensorCB, this, _1));
+            1, std::bind(&NavigationFilter::SimulatedVelocitySensorCB, this, _1));
 
         lastValidGPSTime_ = 0.0;
         lastValidImuTime_ = 0.0;
@@ -105,6 +109,33 @@ namespace nav {
         }
 
         navDataPub_->publish(filterData_);
+
+
+        auto tNow = std::chrono::system_clock::now();
+        long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(tNow.time_since_epoch())).count();
+        auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
+        auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
+         std_msgs::msg::Float64 msg;
+        //msg.stamp.sec = now_stamp_secs;
+        //msg.stamp.nanosec = now_stamp_nanosecs;
+        
+        Eigen::Vector3d bodyframe_velocity = { filterData_.bodyframe_linear_velocity[0], filterData_.bodyframe_linear_velocity[1], filterData_.bodyframe_linear_velocity[2]};
+        Eigen::Vector3d inertialframe_current = { filterData_.inertialframe_water_current[0], filterData_.inertialframe_water_current[1], 0};
+		rml::EulerRPY rpy { filterData_.bodyframe_angular_position.roll, filterData_.bodyframe_angular_position.pitch, filterData_.bodyframe_angular_position.yaw };
+        Eigen::Vector3d bodyF_absVelocity = rpy.ToRotationMatrix().transpose() * inertialframe_current + bodyframe_velocity;
+
+        msg.data = bodyF_absVelocity[0];
+        rqtAbsSurgePub_->publish(msg);
+
+        msg.data =filterData_.bodyframe_linear_velocity[0];
+        rqtRelSurgePub_->publish(msg);
+
+        msg.data =filterData_.inertialframe_water_current[0];
+        rqtWaterCurrentXPub_->publish(msg);
+
+        msg.data =filterData_.inertialframe_water_current[1];
+        rqtWaterCurrentYPub_->publish(msg);
+
     }
 
     void NavigationFilter::LuenbergerObserverFilter(){
@@ -216,8 +247,8 @@ namespace nav {
         }
 
         //Filter Update
-        //extendedKalmanFilter_->Update(Eigen::Vector2d { thrustersFbk_.motor_percentage.left, thrustersFbk_.motor_percentage.right });
-        extendedKalmanFilter_->Update(Eigen::Vector2d { llcMotorsData_.left.motor_speed, llcMotorsData_.right.motor_speed });
+        extendedKalmanFilter_->Update(Eigen::Vector2d { thrustersFbk_.motor_percentage.left, thrustersFbk_.motor_percentage.right });
+        //extendedKalmanFilter_->Update(Eigen::Vector2d { llcMotorsData_.left.motor_speed*6.0/5.0, llcMotorsData_.right.motor_speed*6.0/5.0 });
 
         state_ = extendedKalmanFilter_->StateVector();
 
