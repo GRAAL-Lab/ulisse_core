@@ -137,6 +137,8 @@ namespace nav {
         msg.data =filterData_.inertialframe_water_current[1];
         rqtWaterCurrentYPub_->publish(msg);
 
+
+
     }
 
     void NavigationFilter::LuenbergerObserverFilter(){
@@ -343,9 +345,13 @@ namespace nav {
             imuValid_ = true;
             filterData_.imu_received = true;
             lastValidImuTime_ = imuData_.stamp.sec + (imuData_.stamp.nanosec * 1e-9);
+
         } else {
             imuValid_ = false;
         }
+
+        RCLCPP_INFO(this->get_logger(), "SensorsValidityCheck(): imuValid=%d, stamp:%lf, lastValid:%lf",
+            imuValid_, imuData_.stamp.sec + (imuData_.stamp.nanosec * 1e-9), lastValidImuTime_);
 
         if (compassData_.stamp.sec + (compassData_.stamp.nanosec * 1e-9) > lastValidCompassTime_) {
             compassValid_ = true;
@@ -653,7 +659,7 @@ namespace nav {
 
     void NavigationFilter::GPSDataCB(const ulisse_msgs::msg::GPSData::SharedPtr msg) { gpsData_ = *msg; }
 
-    void NavigationFilter::IMUDataCB(const ulisse_msgs::msg::IMUData::SharedPtr msg) { imuData_ = *msg; }
+    void NavigationFilter::IMUDataCB(const ulisse_msgs::msg::IMUData::SharedPtr msg) { imuData_ = *msg; RCLCPP_INFO(this->get_logger(), "IMU Callback()"); }
 
     void NavigationFilter::MagnetometerDataCB(const ulisse_msgs::msg::Magnetometer::SharedPtr msg) { magnetometerData_ = *msg; }
 

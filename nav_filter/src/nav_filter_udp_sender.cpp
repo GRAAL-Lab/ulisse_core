@@ -79,7 +79,7 @@ int main(int argc, char* argv[])
 
     std::string ip(argv[1]);
     std::string port_nav_filter("8880"), port_gps("8881"), port_imu("8882"), port_compass("8883"), port_magnetometer("8884");
-    std::cout << "UDP Configuration IP:port = " << ip << ":" << port_nav_filter << std::endl;
+    std::cout << "UDP Configuration IP:ports = " << ip << ":" << port_nav_filter << "-" << port_magnetometer << std::endl;
 
     rclcpp::init(argc, argv);
     auto node = rclcpp::Node::make_shared("nav_filter_udp_sender");
