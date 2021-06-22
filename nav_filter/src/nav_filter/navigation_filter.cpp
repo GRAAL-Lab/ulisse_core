@@ -247,6 +247,8 @@ namespace nav {
             extendedKalmanFilter_->AddMeasurement(zMeterMeasurement_);
         }
 
+        RCLCPP_INFO(this->get_logger(), "EFK measurement: imu %d - gps %d - magnetometer %d", imuValid_, gpsValid_, magnetometerValid_);
+
         //Filter Update
         extendedKalmanFilter_->Update(Eigen::Vector2d { thrustersFbk_.left_percentage, thrustersFbk_.right_percentage });
         //extendedKalmanFilter_->Update(Eigen::Vector2d { llcThrustersData_.left.motor_speed, llcThrustersData_.right.motor_speed });
