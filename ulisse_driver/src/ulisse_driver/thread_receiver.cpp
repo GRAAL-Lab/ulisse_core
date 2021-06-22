@@ -199,7 +199,7 @@ namespace llc {
                 llc_status_msg_.flags.ppm_need_zero_check = (llcData_.status.status & EMB_STSMASK_PPM_NEEDZEROCHECK);
                 llc_status_msg_.flags.ppm_channel = (llcData_.status.status & EMB_STSMASK_PPM_CHANNEL);
                 llc_status_msg_.flags.ppm_secondary_valid = (llcData_.status.status & EMB_STSMASK_PPM_SECONDARY_VALID);
-                
+
                 llc_status_pub_->publish(llc_status_msg_);
                 break;
             case MessageType::set_config:
