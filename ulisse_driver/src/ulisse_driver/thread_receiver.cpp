@@ -186,33 +186,20 @@ namespace llc {
                 llc_status_msg_.overflowcount232 = llcData_.status.overflowCount232; // overflow buffer rs232
                 llc_status_msg_.overflowcount485 = llcData_.status.overflowCount485; // overflow buffer rs485
 
-                if (llcData_.status.status & EMB_STSMASK_ENABLE_ACCELEROMETER){
-                    llc_status_msg_.flags.enable_accelerometer = true; }
-                if (llcData_.status.status & EMB_STSMASK_ENABLE_COMPASS){
-                    llc_status_msg_.flags.enable_compass = true; }
-                if (llcData_.status.status & EMB_STSMASK_ENABLE_MAGNETOMETER){
-                    llc_status_msg_.flags.enable_magnetometer = true; }
-                if (llcData_.status.status & EMB_STSMASK_ENABLE_I2C){
-                    llc_status_msg_.flags.enable_i2c = true; }
-                if (llcData_.status.status & EMB_STSMASK_ENABLE_ANALOG){
-                    llc_status_msg_.flags.enable_analog = true; }
-                if (llcData_.status.status & EMB_STSMASK_MAGNETOMETERCALIBRATION){
-                    llc_status_msg_.flags.mag_calibration = true; }
-                if (llcData_.status.status & EMB_STSMASK_ENABLE_REFERENCE){
-                    llc_status_msg_.flags.enable_reference = true; }
-                if (llcData_.status.status & EMB_STSMASK_TIMEOUT_REFERENCE){
-                    llc_status_msg_.flags.timeout_reference = true; }
-                if (llcData_.status.status & EMB_STSMASK_PPM_MAIN_VALID){
-                    llc_status_msg_.flags.ppm_main_valid = true; }
-                if (llcData_.status.status & EMB_STSMASK_PPM_ENABLED){
-                    llc_status_msg_.flags.ppm_remote_enabled  = true; }
-                if (llcData_.status.status & EMB_STSMASK_PPM_NEEDZEROCHECK){
-                    llc_status_msg_.flags.ppm_need_zero_check = true; }
-                if (llcData_.status.status & EMB_STSMASK_PPM_CHANNEL){
-                    llc_status_msg_.flags.ppm_channel = true; }
-                if (llcData_.status.status & EMB_STSMASK_PPM_SECONDARY_VALID){
-                    llc_status_msg_.flags.ppm_secondary_valid = true; }
-
+                llc_status_msg_.flags.enable_accelerometer = (llcData_.status.status & EMB_STSMASK_ENABLE_ACCELEROMETER);
+                llc_status_msg_.flags.enable_compass = (llcData_.status.status & EMB_STSMASK_ENABLE_COMPASS);
+                llc_status_msg_.flags.enable_magnetometer = (llcData_.status.status & EMB_STSMASK_ENABLE_MAGNETOMETER);
+                llc_status_msg_.flags.enable_i2c = (llcData_.status.status & EMB_STSMASK_ENABLE_I2C);
+                llc_status_msg_.flags.enable_analog = (llcData_.status.status & EMB_STSMASK_ENABLE_ANALOG);
+                llc_status_msg_.flags.mag_calibration = (llcData_.status.status & EMB_STSMASK_MAGNETOMETERCALIBRATION);
+                llc_status_msg_.flags.enable_reference = (llcData_.status.status & EMB_STSMASK_ENABLE_REFERENCE);
+                llc_status_msg_.flags.timeout_reference = (llcData_.status.status & EMB_STSMASK_TIMEOUT_REFERENCE);
+                llc_status_msg_.flags.ppm_main_valid = (llcData_.status.status & EMB_STSMASK_PPM_MAIN_VALID);
+                llc_status_msg_.flags.ppm_remote_enabled = (llcData_.status.status & EMB_STSMASK_PPM_ENABLED);
+                llc_status_msg_.flags.ppm_need_zero_check = (llcData_.status.status & EMB_STSMASK_PPM_NEEDZEROCHECK);
+                llc_status_msg_.flags.ppm_channel = (llcData_.status.status & EMB_STSMASK_PPM_CHANNEL);
+                llc_status_msg_.flags.ppm_secondary_valid = (llcData_.status.status & EMB_STSMASK_PPM_SECONDARY_VALID);
+                
                 llc_status_pub_->publish(llc_status_msg_);
                 break;
             case MessageType::set_config:
