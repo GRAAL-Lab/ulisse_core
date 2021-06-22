@@ -91,14 +91,16 @@ namespace llc {
         while (rclcpp::ok()) {
 
             t_now_ = std::chrono::system_clock::now();
-            long epoch_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
-            //auto fraction_nanosecs = static_cast<unsigned int>(epoch_nanosecs % (int)1E9);
+
+            long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
+            auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
+            auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
 
             llcHlp_.CollectValidMessage(llcData_);
             
             ulisse_msgs::msg::Time time_msg;
-            time_msg.sec = static_cast<unsigned int>(epoch_nanosecs / (int)1E9);
-            unsigned int stepsnanosecs = static_cast<unsigned int>(llcData_.sensors.stepsSincePPS * 1E9 / 200.0);
+            time_msg.sec = now_stamp_secs;
+            time_msg.nanosec = now_stamp_nanosecs;
 
             // TEMPORARILY DISABLED DUE TO DESYNC ISSUES
             // Assuming that the time of the control PC is synchronized with the GPS time,
@@ -110,7 +112,7 @@ namespace llc {
             //    // Data belonging to previous second
             //    time_msg.sec = time_msg.sec - 1;
             //}
-            time_msg.nanosec = stepsnanosecs;
+            //time_msg.nanosec = stepsnanosecs;
 
             // Due to how the microcontroller updates the SNSSTSMASK, the management of the
             // UPDATED bit is by now not reliable. For this reason the check on this bit
