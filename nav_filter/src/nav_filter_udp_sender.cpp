@@ -113,8 +113,8 @@ int main(int argc, char* argv[])
             navFilterData.inertialF_linearPosition[0] = navFilterMsg.inertialframe_linear_position.latlong.latitude;
             navFilterData.inertialF_linearPosition[1] = navFilterMsg.inertialframe_linear_position.latlong.longitude;
 
-            navFilterData.bodyF_angularPosition[0] = 0.0;
-            navFilterData.bodyF_angularPosition[1] = 0.0;
+            navFilterData.bodyF_angularPosition[0] = navFilterMsg.bodyframe_angular_position.roll;
+            navFilterData.bodyF_angularPosition[1] = navFilterMsg.bodyframe_angular_position.pitch;
             navFilterData.bodyF_angularPosition[2] = navFilterMsg.bodyframe_angular_position.yaw;
 
             navFilterData.bodyF_linearVelocity[0] = navFilterMsg.bodyframe_linear_velocity[0];
