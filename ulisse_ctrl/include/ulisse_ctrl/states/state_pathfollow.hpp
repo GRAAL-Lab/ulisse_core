@@ -37,7 +37,7 @@ namespace states {
         bool ConfigureStateFromFile(libconfig::Config& confObj) override;
 
         bool LoadNurbs(const ulisse_msgs::msg::Path& path);
-        const ctb::LatLong &StatePathFollow::GetNextPoint() const { return nextP_; }
+        const ctb::LatLong &GetNextPoint() const { return nextP_; }
     };
 }
 }
