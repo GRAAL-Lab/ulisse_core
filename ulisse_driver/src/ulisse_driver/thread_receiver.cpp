@@ -169,8 +169,8 @@ namespace llc {
                 ambsens_pub_->publish(ambsens_msg_);
                 //}
 
-                applied_motorref_msg_.left_percentage = llcData_.sensors.leftReference;
-                applied_motorref_msg_.right_percentage = llcData_.sensors.rightReference;
+                applied_motorref_msg_.left_percentage = llcData_.sensors.leftReference / 10.0;
+                applied_motorref_msg_.right_percentage = llcData_.sensors.rightReference / 10.0;
                 applied_motorref_pub_->publish(applied_motorref_msg_);
                 break;
             case MessageType::status:

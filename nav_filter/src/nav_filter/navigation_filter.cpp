@@ -11,7 +11,7 @@ namespace nav {
         : Node("navigation_filter_node"), confPath_(confPath)
     {
         stateDim_ = 0;
-        centroidLocation_ = ctb::LatLong(44.393, 8.945);
+        centroidLocation_ = ctb::LatLong(44.095633, 9.862705);
         ulisseModelEKF_ = std::make_shared<UlisseVehicleModel>(UlisseVehicleModel());
 
         std::vector<int> indexAngles = { 3, 4, 5 }; //rpy
@@ -49,7 +49,7 @@ namespace nav {
         simulatedSystemSub_ = this->create_subscription<ulisse_msgs::msg::SimulatedSystem>(ulisse_msgs::topicnames::simulated_system,
 
             1, std::bind(&NavigationFilter::GroundTruthDataCB, this, _1));
-        thrustersRefSub_ = this->create_subscription<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_reference_perc,
+        thrustersRefSub_ = this->create_subscription<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_applied_perc,
             1, std::bind(&NavigationFilter::ThrustersReferenceCB, this, _1));
         llcThrustersSub_ = this->create_subscription<ulisse_msgs::msg::LLCThrusters>(ulisse_msgs::topicnames::llc_thrusters,
             1, std::bind(&NavigationFilter::LLCThrustersCB, this, _1));
@@ -112,10 +112,10 @@ namespace nav {
         navDataPub_->publish(filterData_);
 
 
-        auto tNow = std::chrono::system_clock::now();
-        long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(tNow.time_since_epoch())).count();
-        auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
-        auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
+        //auto tNow = std::chrono::system_clock::now();
+        //long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(tNow.time_since_epoch())).count();
+        //auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
+        //auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
          std_msgs::msg::Float64 msg;
         //msg.stamp.sec = now_stamp_secs;
         //msg.stamp.nanosec = now_stamp_nanosecs;
@@ -199,11 +199,13 @@ namespace nav {
             if (measuresActive_.find("gps")->second) {
 
                 if (isFirst_) {
-                    Eigen::VectorXd initialState = Eigen::VectorXd::Zero(stateDim_);
-                    centroidLocation_ = { gpsData_.latitude, gpsData_.longitude };
+                    //Eigen::VectorXd initialState = Eigen::VectorXd::Zero(stateDim_);
+                    
                     ctb::LatLong2LocalNED(ctb::LatLong(gpsData_.latitude, gpsData_.longitude), gpsData_.altitude, centroidLocation_, NED_gps_cartesian_);
-
+                    
+                    auto initialState = extendedKalmanFilter_->StateVector();
                     initialState.segment(0, 2) << NED_gps_cartesian_.x(), NED_gps_cartesian_.y();
+                    extendedKalmanFilter_->Init(initialState);
                     isFirst_ = false;
                 }
 
@@ -249,7 +251,7 @@ namespace nav {
             extendedKalmanFilter_->AddMeasurement(zMeterMeasurement_);
         }
 
-        RCLCPP_INFO(this->get_logger(), "EFK measurement: imu %d - gps %d - magnetometer %d", imuValid_, gpsValid_, magnetometerValid_);
+        /*RCLCPP_INFO(this->get_logger(), "EFK measurement: imu %d - gps %d - magnetometer %d", imuValid_, gpsValid_, magnetometerValid_);*/
 
         //Filter Update
         extendedKalmanFilter_->Update(Eigen::Vector2d { thrustersFbk_.left_percentage, thrustersFbk_.right_percentage });
@@ -350,8 +352,8 @@ namespace nav {
             imuValid_ = false;
         }
 
-        /*RCLCPP_INFO(this->get_logger(), "SensorsValidityCheck(): imuValid=%d, stamp:%lf, lastValid:%lf",
-            imuValid_, imuData_.stamp.sec + (imuData_.stamp.nanosec * 1e-9), lastValidImuTime_);*/
+        /*RCLCPP_INFO(this->get_logger(), "SensorsValidityCheck(): imuValid=%d, stamp.sec:%ld, stamp.nanosec:%ld, stamp_calculated:%lf",
+            imuValid_, imuData_.stamp.sec, imuData_.stamp.nanosec, imuData_.stamp.sec + (imuData_.stamp.nanosec * 1e-9));*/
 
         if (compassData_.stamp.sec + (compassData_.stamp.nanosec * 1e-9) > lastValidCompassTime_) {
             compassValid_ = true;
@@ -612,11 +614,13 @@ namespace nav {
             break;
         case static_cast<uint16_t>(CommandType::reset):
             //ResetFilter();
-            LoadConfiguration(filterParams_);
+            //LoadConfiguration(filterParams_);
             break;
         case static_cast<uint16_t>(CommandType::reloadconfig): {
             //auto previousFilterParams = filterParams_;
             LoadConfiguration(filterParams_);
+            //ResetFilter();
+            isFirst_ = true;
             break;
         }
         default:
@@ -641,14 +645,7 @@ namespace nav {
             Eigen::Vector3d NED_currentPosition;
             ctb::LatLong2LocalNED(ctb::LatLong(gpsData_.latitude, gpsData_.longitude), gpsData_.altitude, centroidLocation_, NED_currentPosition);
             initialState.segment(0, 2) = NED_currentPosition.segment(0, 2);
-            initialState[5] = -atan2(magnetometerData_.orthogonalstrength[1]
-                        * cos(state_[3]) - magnetometerData_.orthogonalstrength[2]
-                        * sin(state_[3]), magnetometerData_.orthogonalstrength[0]
-                        * cos(state_[4]) + magnetometerData_.orthogonalstrength[2]
-                        * cos(state_[3])
-                        * sin(state_[4]) + magnetometerData_.orthogonalstrength[1]
-                        * sin(state_[4])
-                        * sin(state_[3]));
+            initialState[5] = -atan2(magnetometerData_.orthogonalstrength[1] * cos(state_[3]) - magnetometerData_.orthogonalstrength[2] * sin(state_[3]), magnetometerData_.orthogonalstrength[0] * cos(state_[4]) + magnetometerData_.orthogonalstrength[2] * cos(state_[3]) * sin(state_[4]) + magnetometerData_.orthogonalstrength[1] * sin(state_[4]) * sin(state_[3]));
 
             extendedKalmanFilter_->Init(initialState);
             RCLCPP_INFO(this->get_logger(), "Reset EKF");

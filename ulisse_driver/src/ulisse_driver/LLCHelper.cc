@@ -316,7 +316,7 @@ namespace llc {
 
                     return RetVal::complete;
                 } else {
-                    printf("LLCHelper, ERROR: message %u size %u CHECKSUM FAIL, received %u computed %u sum %u", type_, size_, recvChecksum_,
+                    fprintf(stderr,"LLCHelper, ERROR: message %u size %u CHECKSUM FAIL, received %u computed %u sum %u", type_, size_, recvChecksum_,
                         ComputeByteSum(ptr, size_), ComputeByteSum(ptr, size_) + recvChecksum_);
 
                     if (debugFailedCrc_) {
