@@ -590,6 +590,9 @@ void VehicleController::PublishControl()
         feedbackGuiMsg.goal_heading = stateLatLong_->goalHeading;
         feedbackGuiMsg.acceptance_radius = stateLatLong_->acceptanceRadius;
         feedbackGuiMsg.goal_distance = stateLatLong_->goalDistance;
+    } else if (uFsm_.GetCurrentStateName() == ulisse::states::ID::pathfollow){
+        feedbackGuiMsg.goal_position.latitude = statePathFollowing_->GetNextPoint().latitude;
+        feedbackGuiMsg.goal_position.longitude = statePathFollowing_->GetNextPoint().longitude;
     }
     feedbackGuiPub_->publish(feedbackGuiMsg);
 

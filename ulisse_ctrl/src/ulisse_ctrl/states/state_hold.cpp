@@ -123,6 +123,7 @@ namespace states {
             absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(cos(goalHeading_), sin(goalHeading_), 0.0), rml::FrameID::WorldFrame);
             double surgeReference = rml::IncreasingBellShapedFunction(minAcceptanceRadius, maxAcceptanceRadius, 0.25, maxSurgeComeback2HoldAcceptanceRadius_, goalDistance_);
             absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
+            absoluteAxisAlignmentTask_->Update();
 
             // Set a velocity to point to the circle in case of the catamaran  slips away.
             linearVelocityTask_->SetReferenceRate(Eigen::Vector3d(surgeReference, 0, 0), robotModel->BodyFrameID());
