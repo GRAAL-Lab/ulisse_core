@@ -36,6 +36,11 @@ namespace nav {
         rqtRelSurgePub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/rel_surge", 1);
         rqtWaterCurrentXPub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/water_current_x", 1);
         rqtWaterCurrentYPub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/water_current_y", 1);
+        rqtBiasXPub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/gyro_bias_x", 1);
+        rqtBiasYPub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/gyro_bias_y", 1);
+        rqtBiasZPub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/gyro_bias_z", 1);
+        rqtOmegaZPub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/omega_z", 1);
+        rqtGyroZPub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/gyro_z", 1);
 
         //Subscribes to data sensors
         compassSub_ = this->create_subscription<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass,
@@ -137,8 +142,18 @@ namespace nav {
         msg.data =filterData_.inertialframe_water_current[1];
         rqtWaterCurrentYPub_->publish(msg);
 
+        msg.data =filterData_.gyro_bias[0];
+        rqtBiasXPub_->publish(msg);
+        msg.data =filterData_.gyro_bias[1];
+        rqtBiasYPub_->publish(msg);
+        msg.data =filterData_.gyro_bias[2];
+        rqtBiasZPub_->publish(msg);
 
+        msg.data =filterData_.bodyframe_angular_velocity[2];
+        rqtOmegaZPub_->publish(msg);
 
+        msg.data =imuData_.gyro[2]- filterData_.gyro_bias[2];
+        rqtGyroZPub_->publish(msg);
     }
 
     void NavigationFilter::LuenbergerObserverFilter(){
