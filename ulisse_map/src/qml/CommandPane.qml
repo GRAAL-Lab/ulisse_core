@@ -14,13 +14,9 @@ Pane {
     property var polysec_bkp: []
     property var buttonSafety: buttonBoundBoxDefine
     property var trackComponent
-    property alias speedHeadTimeout: speedHeadTimeout
+    property alias speedHeadTimeout: commandParamsStackContainer.speedHeadTimeout
     property alias buttonSafety1: buttonBoundBoxResend
-    property alias sweepPathCmdPane: commandPathsStackContainer.pathCommandsPane
-
-    property var labelWidth: 100
-    property var sliderWidth: 130
-    property var unitsWidth: 40
+    property alias sweepPathCmdPane: commandParamsStackContainer.pathCommandsPane
 
     Component.onCompleted: {
         trackComponent = Qt.createComponent("PathButton.qml")
@@ -84,7 +80,7 @@ Pane {
                         map.pos_changed_handler = function () {}
                         text = "Redefine"
                         buttonBoundBoxResend.enabled = true
-                        commandPathsStackContainer.pathCommandsPane.check_safety_all()
+                        commandParamsStackContainer.pathCommandsPane.check_safety_all()
                         cmdWrapper.sendBoundaries(JSON.stringify(map.polysec_cur.serialize()))
                         settings.savedBoundary = JSON.stringify(map.polysec_cur.serialize())
                     }
@@ -125,180 +121,15 @@ Pane {
             }
         }
 
-        ColumnLayout {
-            Layout.topMargin: 5
-            Layout.bottomMargin: 10
-            spacing: 0
-            Label {
-                text: "Parameters"
-                color: grey
-                //Layout.bottomMargin: 10
-                Layout.topMargin: 10
-                font.weight: Font.DemiBold
-                Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                font.pointSize: 12
-            }
-
-            RowLayout {
-                id: cruiseSpeedControl
-                Layout.alignment: Qt.AlignVCenter //| Qt.AlignHCenter
-
-                Label {
-                    text: qsTr("Cruise speed  ")
-                    clip: false
-                    leftPadding: 5
-                    font.pointSize: 11
-                    width: labelWidth
-                    verticalAlignment: Text.AlignVCenter
-                    horizontalAlignment: Text.AlignLeft
-                }
-
-                Slider {
-                    id: sliderSpeed
-                    objectName: "cruiseSpeed"
-                    Layout.preferredWidth: sliderWidth
-                    to: 5
-                    from: 0.0
-                    stepSize: 0.1
-                    value: 1
-                    onPressedChanged: function() {
-                        if (sliderSpeed.pressed === false)
-                            cmdWrapper.setCruiseSpeedCommand(sliderSpeed.value)
-                    }
-                }
-
-                Text {
-                    text: sliderSpeed.value.toFixed(1) + " m/s"
-                    verticalAlignment: Text.AlignVCenter
-                    horizontalAlignment: Text.AlignLeft
-                    //Layout.leftMargin: 10
-                    Layout.preferredWidth: unitsWidth
-                    font.pointSize: 11
-                }
-            }
 
 
-            RowLayout {
-                id: cruiseHeadingControl
-                Layout.alignment: Qt.AlignVCenter //| Qt.AlignHCenter
 
-                Label {
-                    text: qsTr("Heading")
-                    leftPadding: 5
-                    font.pointSize: 11
-                    width: labelWidth
-                    //Layout.fillWidth: true
-                    horizontalAlignment: Text.AlignLeft
-                    verticalAlignment: Text.AlignBottom
-                }
-
-                Slider {
-                    id: sliderHeading
-                    value: 0
-                    Layout.preferredWidth: sliderWidth + 50
-                    Layout.leftMargin: 0
-                    stepSize: 1
-                    from: 0
-                    to: 359
-                }
-
-                Text {
-                    width: 80
-                    text: sliderHeading.value + " °"
-                    font.pointSize: 11
-                    horizontalAlignment: Text.AlignLeft
-                    verticalAlignment: Text.AlignVCenter
-                    Layout.preferredWidth: unitsWidth
-                }
-            }
-
-            RowLayout {
-                id: acceptRadControl
-                Layout.alignment: Qt.AlignVCenter //| Qt.AlignHCenter
-
-                Label {
-                    text: qsTr("Accept. radius")
-                    leftPadding: 5
-                    font.pointSize: 11
-                    width: labelWidth
-                    horizontalAlignment: Text.AlignLeft
-                    verticalAlignment: Text.AlignVCenter
-                }
-
-                Slider {
-                    id: holdRadius
-                    Layout.preferredWidth: sliderWidth
-                    Layout.leftMargin: 0
-                    value: 5
-                    stepSize: 0.1
-                    from: 0.5
-                    to: 10
-                }
-
-                Text {
-                    text: holdRadius.value.toFixed(1) + " m"
-                    Layout.preferredWidth: unitsWidth
-                    font.pointSize: 11
-                    horizontalAlignment: Text.AlignLeft
-                    verticalAlignment: Text.AlignVCenter
-                }
-            }
-
-            RowLayout {
-                id: commandDurationControl
-                //Layout.fillWidth: true
-                Layout.alignment: Qt.AlignVCenter //| Qt.AlignHCenter
-
-                Column{
-                    Layout.preferredWidth: labelWidth - 10
-                    Label {
-                        text: qsTr("Duration")
-                        font.underline: false
-                        leftPadding: 5
-                        font.pointSize: 11
-                        horizontalAlignment: Text.AlignLeft
-                        verticalAlignment: Text.AlignBottom
-                    }
-                    Label {
-                        text: qsTr("(0 = indefinite)")
-                        font.underline: false
-                        leftPadding: 5
-                        font.pointSize: 8
-                        horizontalAlignment: Text.AlignLeft
-                        verticalAlignment: Text.AlignBottom
-                    }
-                }
-
-                SpinBox {
-                    id: speedHeadTimeout
-                    objectName: "shTimeout"
-                    editable: true
-                    to: 1000
-                    value: 200
-                    Layout.preferredWidth: sliderWidth + 25
-                    onValueChanged: function(){
-                        settings.shTimeout = speedHeadTimeout.value
-                    }
-                }
-
-                Text {
-                    text: "s"
-                    font.pointSize: 11
-                    horizontalAlignment: Text.AlignLeft
-                    verticalAlignment: Text.AlignVCenter
-                    Layout.preferredWidth: unitsWidth
-                }
-            }
-        }
-        //}
-
-
-        CommandsPathsTabView {
+        CommandsParamsTabView {
             // This Item is needed to add margins to the StackLayout and make it correctly resize
-            id: commandPathsStackContainer
+            id: commandParamsStackContainer
+            Layout.topMargin: 10
             Layout.fillWidth: true
             Layout.fillHeight: true
-            //visible: false
         }
     }
 

@@ -10,8 +10,7 @@ Rectangle {
     property alias sweepPathCmdPane: commandRect.sweepPathCmdPane
     property alias commandRect: commandRect
     property alias speedHeadTimeout: commandRect.speedHeadTimeout
-    //border.width: 5
-    //border.color: lightgrey
+
     visible: true
 
     ColumnLayout {
