@@ -20,8 +20,8 @@ namespace commands {
     }
     void CommandSpeedHeading::SetTimeout(uint timeout_sec)
     {
-
         stateSpeedHeading_->timeout = timeout_sec;
+        stateSpeedHeading_->SetSpeedHeading(0.0, 0.0);
     }
 }
 }

@@ -86,6 +86,8 @@ void CommandWrapper::LoadQmlEngine(QQmlApplicationEngine* engine)
 
     feedbackGuiSub_ = this->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10, std::bind(&CommandWrapper::FeedbackGuiCB, this, _1) /*, custom_qos_profile*/);
 
+    speedHeadingPub_ = this->create_publisher<ulisse_msgs::msg::SpeedHeading>(ulisse_msgs::topicnames::speed_heading, 1);
+
     /*connect(this, &CommandWrapper::connected, []() { std::cout << "service connected" << std::endl; });
     notificator = std::async([&] {
         command_srv_->wait_for_service();

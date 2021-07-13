@@ -6,7 +6,7 @@ namespace ulisse {
 
 namespace states {
 
-    StateSpeedHeading::StateSpeedHeading()
+    StateSpeedHeading::StateSpeedHeading() : goalSurge(0.0), goalHeading (0.0)
     {
         maxHeadingError_ = M_PI / 16;
         minHeadingError_ = M_PI / 64;
