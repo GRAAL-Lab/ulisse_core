@@ -54,6 +54,7 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/CommandLatLong.msg"
   "msg/CommandSpeedHeading.msg"
   "msg/CommandNavigate.msg"
+  
   # LLC
   "msg/LLCAck.msg"
   "msg/LLCBattery.msg"
@@ -69,7 +70,9 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/LLCEnableRef.msg"
   "msg/LLCPowerButtons.msg"
   "msg/LLCPumps.msg"
+  
   # Other
+  "msg/SpeedHeading.msg"
   "msg/NavFilterData.msg"
   "msg/TaskStatus.msg"
   "msg/Curves.msg"

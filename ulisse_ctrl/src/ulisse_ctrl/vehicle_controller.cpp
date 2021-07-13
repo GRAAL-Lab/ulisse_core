@@ -11,6 +11,7 @@
 #include "ulisse_msgs/terminal_utils.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 
+
 using std::placeholders::_1;
 using std::placeholders::_2;
 using std::placeholders::_3;
@@ -38,6 +39,8 @@ VehicleController::VehicleController(int rate, std::string file_name)
     navFilterSub_ = this->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 10, std::bind(&VehicleController::NavFilterCB, this, _1));
     llcStatusSub_ = this->create_subscription<ulisse_msgs::msg::LLCStatus>(ulisse_msgs::topicnames::llc_status, 10, std::bind(&VehicleController::LLCStatusCB, this, _1));
 
+    // Data Subscriptions
+    speedHeadingSub_ = this->create_subscription<ulisse_msgs::msg::SpeedHeading>(ulisse_msgs::topicnames::speed_heading, 10, std::bind(&VehicleController::SpeedHeadingCB, this, _1));
 
     // Control Publishers
     genericLogPub_ = this->create_publisher<std_msgs::msg::String>("/ulisse/log/generic", 10);
@@ -355,9 +358,9 @@ void VehicleController::CommandsHandler(const std::shared_ptr<rmw_request_id_t> 
     } else if (request->command_type == ulisse::commands::ID::speedheading) {
 
         std::cout << "Received Command SpeedHeading" << std::endl;
-        commandSpeedHeading_.SetSpeedHeading(request->sh_cmd.speed, request->sh_cmd.heading, request->sh_cmd.timeout.sec);
+        commandSpeedHeading_.SetTimeout(request->sh_cmd.timeout.sec);
         stateSpeedHeading_->ResetTimer();
-        log << "Received Command SpeedHeading (speed: " << request->sh_cmd.speed << " , heading: " << request->sh_cmd.heading << " )";
+        log << "Received Command SpeedHeading (data read from topic)";
         PublishLog(log.str().c_str());
 
     } else if (request->command_type == ulisse::commands::ID::pathfollow) {
@@ -478,6 +481,11 @@ void VehicleController::SlowTimerCB()
         RCLCPP_INFO(this->get_logger(), "Waiting for the Safety Bounding Box");
     }
     return;
+}
+
+void VehicleController::SpeedHeadingCB(const ulisse_msgs::msg::SpeedHeading::SharedPtr msg)
+{
+    stateSpeedHeading_->SetSpeedHeading(msg->speed, msg->heading);
 }
 
 void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)

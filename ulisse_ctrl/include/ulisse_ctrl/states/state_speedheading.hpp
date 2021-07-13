@@ -24,6 +24,7 @@ namespace states {
         fsm::retval Execute() override;
         void ResetTimer();
 
+        void SetSpeedHeading(double speed, double heading);
         bool ConfigureStateFromFile(libconfig::Config& confObj) override;
     };
 } // namespace states

@@ -44,6 +44,7 @@ namespace topicnames {
     const std::string set_cruise_control_service = "/ulisse/ctrl/set_cruise_control";
     const std::string reset_kcl_conf_service = "/ulisse/ctrl/reset_kcl_configuration";
     const std::string reset_dcl_conf_service = "/ulisse/ctrl/reset_dcl_configuration";
+    const std::string speed_heading = "/ulisse/ctrl/speed_heading";
 
     // SERVICES
     const std::string rosbag_service = "/record_bag";

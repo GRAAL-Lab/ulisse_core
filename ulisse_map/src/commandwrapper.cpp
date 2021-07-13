@@ -35,12 +35,18 @@ CommandWrapper::~CommandWrapper()
 void CommandWrapper::LoadQmlEngine(QQmlApplicationEngine* engine)
 {
     appEngine_ = engine;
-    myTimer_ = new QTimer(this);
+    checkErrorTimer_.reset(new QTimer());
+    speedHeadingPubTimer_.reset(new QTimer());
+    speedHeadingTimeoutTimer_.reset(new QTimer());
+    speedHeadingTimeoutTimer_->setSingleShot(true);
 
     errorCheckInterval_ = 500;
+    speedHeadingTimerPeriod_ = 100;
     fbkReceived_ = false;
 
-    QObject::connect(myTimer_, SIGNAL(timeout()), this, SLOT(check_error_slot()));
+    QObject::connect(checkErrorTimer_.get(), SIGNAL(timeout()), this, SLOT(check_error_slot()));
+    QObject::connect(speedHeadingPubTimer_.get(), SIGNAL(timeout()), this, SLOT(publish_speed_heading()));
+    QObject::connect(speedHeadingTimeoutTimer_.get(), SIGNAL(timeout()), this, SLOT(stop_speed_heading_publisher()));
 
     QList<QObject*> root_objects = appEngine_->rootObjects();
 
@@ -64,8 +70,8 @@ void CommandWrapper::LoadQmlEngine(QQmlApplicationEngine* engine)
         qDebug("No 'cruiseSpeed' found!");
     }
 
-    speedHeadTimoutObj_ = root_objects.first()->findChild<QObject*>("shTimeout");
-    if (!speedHeadTimoutObj_) {
+    speedHeadTimeoutObj_ = root_objects.first()->findChild<QObject*>("shTimeout");
+    if (!speedHeadTimeoutObj_) {
         qDebug("No 'speedHeadTimeout' found!");
     }
 
@@ -91,7 +97,7 @@ void CommandWrapper::LoadQmlEngine(QQmlApplicationEngine* engine)
 
 void CommandWrapper::FeedbackGuiCB(const ulisse_msgs::msg::FeedbackGui::SharedPtr msg)
 {
-    feedbackGuiMsg = std::move(*msg);
+    feedbackGuiMsg_ = std::move(*msg);
     fbkReceived_ = true;
 }
 
@@ -473,6 +479,7 @@ bool CommandWrapper::SendCommandRequest(ulisse_msgs::srv::ControlCommand::Reques
             RCLCPP_INFO(this->get_logger(), result_msg.c_str());
         }
         serviceAvailable = true;
+        StopOngoingTimers();
     } else {
         result_msg = "The controller doesn't seem to be active.\n(No CommandServer available)";
         serviceAvailable = false;
@@ -480,6 +487,23 @@ bool CommandWrapper::SendCommandRequest(ulisse_msgs::srv::ControlCommand::Reques
     ShowToast(result_msg.c_str(), 2000);
     return serviceAvailable;
 }
+
+void CommandWrapper::StopOngoingTimers()
+{
+    speedHeadingPubTimer_->stop();
+    checkErrorTimer_->stop();
+}
+
+void CommandWrapper::publish_speed_heading()
+{
+    speedHeadingPub_->publish(speedHeadingMsg_);
+}
+
+void CommandWrapper::stop_speed_heading_publisher()
+{
+    speedHeadingPubTimer_->stop();
+}
+
 
 bool CommandWrapper::sendHaltCommand()
 {
@@ -510,11 +534,19 @@ bool CommandWrapper::sendSpeedHeadingCommand(double speed, double heading)
 {
     auto serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
     serviceReq->command_type = ulisse::commands::ID::speedheading;
-    serviceReq->sh_cmd.speed = speed;
-    serviceReq->sh_cmd.heading = heading * M_PI / 180.0; // Converting to radians
-    serviceReq->sh_cmd.timeout.sec = (speedHeadTimoutObj_->property("value")).toUInt();
+    speedHeadingMsg_.speed = speed;
+    speedHeadingMsg_.heading = heading * M_PI / 180.0;
+    //    serviceReq->sh_cmd.speed = speed;
+    //    serviceReq->sh_cmd.heading = heading * M_PI / 180.0; // Converting to radians
+    serviceReq->sh_cmd.timeout.sec = (speedHeadTimeoutObj_->property("value")).toUInt();
     serviceReq->sh_cmd.timeout.nanosec = 0;
-    return SendCommandRequest(serviceReq);
+    if(SendCommandRequest(serviceReq)){
+        speedHeadingPubTimer_->start(speedHeadingTimerPeriod_);
+        speedHeadingTimeoutTimer_->start((speedHeadTimeoutObj_->property("value")).toUInt() * 1000);
+        return true;
+    } else {
+        return false;
+    }
 }
 
 bool CommandWrapper::sendThrusterActivation(bool activate)
@@ -589,7 +621,7 @@ bool CommandWrapper::startPath()
     bool ret = sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), 0);
 
     if (ret) {
-        myTimer_->start(errorCheckInterval_);
+        checkErrorTimer_->start(errorCheckInterval_);
     }
 
     return ret;
@@ -597,20 +629,20 @@ bool CommandWrapper::startPath()
 
 void CommandWrapper::stopPath()
 {
-    myTimer_->stop();
+    checkErrorTimer_->stop();
     wpRadius_ = (waypointRadiusObj_->property("text")).toDouble();
     sendHoldCommand(wpRadius_);
 }
 
 void CommandWrapper::cancelPath()
 {
-    myTimer_->stop();
+    checkErrorTimer_->stop();
     sendHaltCommand();
 }
 
 void CommandWrapper::resumePath()
 {
-    myTimer_->start(errorCheckInterval_);
+    checkErrorTimer_->start(errorCheckInterval_);
     wpRadius_ = (waypointRadiusObj_->property("text")).toDouble();
 
     if (wpCurrentIndex_ < waypoint_path_.size()) {
@@ -627,7 +659,7 @@ void CommandWrapper::savePathToFile(const QString QFileName, const QString& data
     std::string::size_type extensionDotPos = filename.find_last_of(".");
     std::string filePrevExtension;
 
-     // Here we check whether the file has already an extension
+    // Here we check whether the file has already an extension
     if (extensionDotPos != std::string::npos) {
         filePrevExtension = filename.substr(extensionDotPos, filename.size());
         std::cout << "File has already extension: " + filePrevExtension << std::endl;
@@ -681,7 +713,7 @@ void CommandWrapper::check_error_slot()
     rclcpp::spin_some(this->get_node_base_interface());
 
     if (fbkReceived_) {
-        if (feedbackGuiMsg.goal_distance < wpRadius_) {
+        if (feedbackGuiMsg_.goal_distance < wpRadius_) {
             goToNextWaypoint();
         }
         //TODO: how is the client notified of the end of the path? It is necessary?
@@ -699,7 +731,7 @@ bool CommandWrapper::goToNextWaypoint()
         if ((loopPathObj_->property("checked")).toBool()) {
             ret = startPath();
         } else {
-            myTimer_->stop();
+            checkErrorTimer_->stop();
             wpCurrentIndex_ = waypoint_path_.size() - 1;
             sendHoldCommand(wpRadius_);
             ret = false;

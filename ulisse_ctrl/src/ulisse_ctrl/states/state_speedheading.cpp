@@ -6,11 +6,6 @@ namespace ulisse {
 
 namespace states {
 
-    void StateSpeedHeading::ResetTimer()
-    {
-        tStart_ = std::chrono::system_clock::now();
-    }
-
     StateSpeedHeading::StateSpeedHeading()
     {
         maxHeadingError_ = M_PI / 16;
@@ -18,6 +13,17 @@ namespace states {
     }
 
     StateSpeedHeading::~StateSpeedHeading() { }
+
+    void StateSpeedHeading::ResetTimer()
+    {
+        tStart_ = std::chrono::system_clock::now();
+    }
+
+    void StateSpeedHeading::SetSpeedHeading(double speed, double heading)
+    {
+        goalSurge = speed;
+        goalHeading = heading;
+    }
 
     bool StateSpeedHeading::ConfigureStateFromFile(libconfig::Config& confObj)
     {

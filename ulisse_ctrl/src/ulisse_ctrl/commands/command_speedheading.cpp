@@ -18,10 +18,9 @@ namespace commands {
     {
         stateSpeedHeading_ = std::dynamic_pointer_cast<states::StateSpeedHeading>(state);
     }
-    void CommandSpeedHeading::SetSpeedHeading(double surge, double heading, uint timeout_sec)
+    void CommandSpeedHeading::SetTimeout(uint timeout_sec)
     {
-        stateSpeedHeading_->goalSurge = surge;
-        stateSpeedHeading_->goalHeading = heading;
+
         stateSpeedHeading_->timeout = timeout_sec;
     }
 }
