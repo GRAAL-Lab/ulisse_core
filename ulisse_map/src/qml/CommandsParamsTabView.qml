@@ -62,17 +62,6 @@ Pane{
                 Layout.fillWidth: true
 
                 Button {
-                    text: "Halt"
-                    highlighted: true
-                    Material.background: pressed ? orange : mainColor
-                    Layout.fillHeight: false
-                    Layout.fillWidth: true
-                    onClicked: {
-                        cmdWrapper.sendHaltCommand()
-                    }
-                }
-
-                Button {
                     id: moveToButton
                     text: "Move to marker"
                     Layout.fillWidth: true
@@ -326,7 +315,6 @@ Pane{
                     }
                 }
             }
-
         }
     }
 }

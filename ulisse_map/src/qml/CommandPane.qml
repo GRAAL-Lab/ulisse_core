@@ -128,8 +128,32 @@ Pane {
             // This Item is needed to add margins to the StackLayout and make it correctly resize
             id: commandParamsStackContainer
             Layout.topMargin: 10
+            Layout.bottomMargin: 20
             Layout.fillWidth: true
             Layout.fillHeight: true
+            Material.background: Material.color(Material.BlueGrey, Material.Shade50)
+        }
+
+        Button {
+            text: "Halt"
+            highlighted: true
+            Material.background: orange//pressed ? orange : mainColor
+            Layout.fillHeight: false
+            Layout.fillWidth: true
+            onClicked: {
+                cmdWrapper.sendHaltCommand()
+            }
+        }
+
+        Text {
+            id: haltText
+            font.pointSize: 8
+            color: 'grey'
+            text: "(Shortcut: Spacebar)"
+            verticalAlignment: Text.AlignVCenter
+            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
         }
     }
 

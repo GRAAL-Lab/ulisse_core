@@ -24,6 +24,7 @@ Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: false
             Material.elevation: 0
+            Material.background: Material.color(Material.BlueGrey, Material.Shade50)
 
             ColumnLayout {
                 Layout.alignment: Qt.AlignLeft
@@ -101,7 +102,7 @@ Rectangle {
             Layout.alignment: Qt.AlignLeft | Qt.AlignTop
             Layout.fillWidth: true
             Layout.fillHeight: false
-            Material.background: Material.color(Material.BlueGrey, Material.Shade50)
+            Material.background: "white"//Material.color(Material.BlueGrey, Material.Shade50)
         }
     }
 }

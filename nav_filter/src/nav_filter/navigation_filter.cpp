@@ -25,7 +25,7 @@ namespace nav {
         zMeterMeasurement_ = std::make_shared<ulisse::nav::zMeter>(ulisse::nav::zMeter());
 
         //Load filter params
-        if (!LoadConfiguration(filterParams_)) {
+        if (!LoadConfiguration()) {
             std::cerr << "Failed to load navigation filter configuration" << std::endl;
             exit(EXIT_FAILURE);
         }
@@ -433,7 +433,7 @@ namespace nav {
         }
     }
 
-    bool NavigationFilter::LoadConfiguration(NavigationFilterParams& filterParameters)
+    bool NavigationFilter::LoadConfiguration()
     {
         libconfig::Config confObj;
 
@@ -469,24 +469,24 @@ namespace nav {
         }
 
         // Configure the filter node params
-        if (!filterParameters.ConfigureFromFile(confObj)) {
+        if (!filterParams_.ConfigureFromFile(confObj)) {
             std::cerr << "Failed to load navigation mode/rate params" << std::endl;
             return false;
         };
 
-        if (filterParameters.mode == FilterMode::LuenbergerObserver) {
+        if (filterParams_.mode == FilterMode::LuenbergerObserver) {
             if (!LuenbergerObserverConfiguration(confObj)) {
                 std::cerr << "Failed to load Luenberger Observer configuration" << std::endl;
                 return false;
             };
 
-        } else if (filterParameters.mode == FilterMode::KalmanFilter) {
+        } else if (filterParams_.mode == FilterMode::KalmanFilter) {
             if (!KalmanFilterConfiguration(confObj)) {
                 std::cerr << "Failed to load Kalman Filter configuration" << std::endl;
                 return false;
             }
             ulisseModelEKF_->ModelParameters() = ulisseModelParams;
-        } else if (filterParameters.mode == FilterMode::GroundTruth) {
+        } else if (filterParams_.mode == FilterMode::GroundTruth) {
         } else {
             std::cerr << "Type of filter not recognized" << std::endl;
             return false;
@@ -640,7 +640,7 @@ namespace nav {
             break;
         case static_cast<uint16_t>(CommandType::reloadconfig): {
             //auto previousFilterParams = filterParams_;
-            LoadConfiguration(filterParams_);
+            LoadConfiguration();
             //ResetFilter();
             isFirst_ = true;
             break;
