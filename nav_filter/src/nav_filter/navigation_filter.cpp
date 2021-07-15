@@ -1,4 +1,5 @@
 #include "nav_filter/navigation_filter.hpp"
+#include <unistd.h>
 
 using std::placeholders::_1;
 using std::placeholders::_2;
@@ -8,14 +9,13 @@ namespace ulisse {
 
 namespace nav {
     NavigationFilter::NavigationFilter(const std::string& confPath)
-        : Node("navigation_filter_node"), confPath_(confPath)
+        : Node("navigation_filter_node")
+        , confPath_(confPath)
     {
         stateDim_ = 0;
         centroidLocation_ = ctb::LatLong(44.095633, 9.862705);
-        ulisseModelEKF_ = std::make_shared<UlisseVehicleModel>(UlisseVehicleModel());
 
-        std::vector<int> indexAngles = { 3, 4, 5 }; //rpy
-        extendedKalmanFilter_ = std::make_shared<ctb::ExtendedKalmanFilter>(ctb::ExtendedKalmanFilter(stateDim_, indexAngles, ulisseModelEKF_));
+
 
         gyroMeasurement_ = std::make_shared<ulisse::nav::GyroMeasurement>(ulisse::nav::GyroMeasurement());
         compassMeasurement_ = std::make_shared<ulisse::nav::CompassMeasurement>(ulisse::nav::CompassMeasurement());
@@ -23,10 +23,16 @@ namespace nav {
         gpsMeasurement_ = std::make_shared<ulisse::nav::GpsMeasurement>(ulisse::nav::GpsMeasurement());
         magnetometerMeasurement_ = std::make_shared<ulisse::nav::MagnetometerMeasurement>(ulisse::nav::MagnetometerMeasurement());
         zMeterMeasurement_ = std::make_shared<ulisse::nav::zMeter>(ulisse::nav::zMeter());
+        portRPMMeasurement_ = std::make_shared<ulisse::nav::RPMMeasurement>(ulisse::nav::RPMMeasurement());
+        stbdRPMMeasurement_ = std::make_shared<ulisse::nav::RPMMeasurement>(ulisse::nav::RPMMeasurement());
+
+        portRPMMeasurement_->SetPortStarboard(ulisse::nav::Side::Port);
+        stbdRPMMeasurement_->SetPortStarboard(ulisse::nav::Side::Starboard);
 
         //Load filter params
         if (!LoadConfiguration(filterParams_)) {
-            std::cerr << "Failed to load navigation filter configuration" << std::endl;
+            RCLCPP_ERROR(this->get_logger(), "Failed to load navigation filter configuration");
+            sleep(1);
             exit(EXIT_FAILURE);
         }
 
@@ -39,8 +45,14 @@ namespace nav {
         rqtBiasXPub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/gyro_bias_x", 1);
         rqtBiasYPub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/gyro_bias_y", 1);
         rqtBiasZPub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/gyro_bias_z", 1);
+        rqtOmegaXPub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/omega_x", 1);
+        rqtOmegaYPub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/omega_y", 1);
         rqtOmegaZPub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/omega_z", 1);
+        rqtGyroXPub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/gyro_x", 1);
+        rqtGyroYPub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/gyro_y", 1);
         rqtGyroZPub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/gyro_z", 1);
+        rqtRPMPortPub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/n_p", 1);
+        rqtRPMStbdPub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/n_s", 1);
 
         //Subscribes to data sensors
         compassSub_ = this->create_subscription<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass,
@@ -89,20 +101,25 @@ namespace nav {
         sensorsCheckTimer_ = this->create_wall_timer(std::chrono::seconds(sensorsCheckInterval_),
             std::bind(&NavigationFilter::SensorsOnlineCB, this));
 
-        int msRunPeriod = 1.0/(filterParams_.rate) * 1000;
-        std::cout << "NavFilter Rate: " << filterParams_.rate << "Hz" << std::endl;
+        int msRunPeriod = 1.0 / (filterParams_.rate) * 1000;
+        RCLCPP_INFO(this->get_logger(), "NavFilter Rate: %d Hz", filterParams_.rate);
         runTimer_ = this->create_wall_timer(std::chrono::milliseconds(msRunPeriod), std::bind(&NavigationFilter::Run, this));
 
         // Service
         navFilterCmdService_ = this->create_service<ulisse_msgs::srv::NavFilterCommand>(ulisse_msgs::topicnames::navfilter_cmd_service,
             std::bind(&NavigationFilter::CommandHandler, this, _1, _2, _3));
 
+        RCLCPP_INFO(this->get_logger(), "Thrusters references FIFO length: %d", filterParams_.thrusterFIFOdelayLength);
+        for (unsigned int i = 0; i < filterParams_.thrusterFIFOdelayLength; i++) {
+            fifo_h_p_.push(0.0);
+            fifo_h_s_.push(0.0);
+        }
     }
 
-    NavigationFilter::~NavigationFilter(){ }
+    NavigationFilter::~NavigationFilter() { }
 
-
-    void NavigationFilter::Run(){
+    void NavigationFilter::Run()
+    {
 
         SensorsValidityCheck();
 
@@ -116,47 +133,69 @@ namespace nav {
 
         navDataPub_->publish(filterData_);
 
-
         //auto tNow = std::chrono::system_clock::now();
         //long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(tNow.time_since_epoch())).count();
         //auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
         //auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
-         std_msgs::msg::Float64 msg;
+        std_msgs::msg::Float64 msg;
         //msg.stamp.sec = now_stamp_secs;
         //msg.stamp.nanosec = now_stamp_nanosecs;
-        
-        Eigen::Vector3d bodyframe_velocity = { filterData_.bodyframe_linear_velocity[0], filterData_.bodyframe_linear_velocity[1], filterData_.bodyframe_linear_velocity[2]};
-        Eigen::Vector3d inertialframe_current = { filterData_.inertialframe_water_current[0], filterData_.inertialframe_water_current[1], 0};
-		rml::EulerRPY rpy { filterData_.bodyframe_angular_position.roll, filterData_.bodyframe_angular_position.pitch, filterData_.bodyframe_angular_position.yaw };
+
+        Eigen::Vector3d bodyframe_velocity = { filterData_.bodyframe_linear_velocity[0], filterData_.bodyframe_linear_velocity[1], filterData_.bodyframe_linear_velocity[2] };
+        Eigen::Vector3d inertialframe_current = { filterData_.inertialframe_water_current[0], filterData_.inertialframe_water_current[1], 0 };
+        //rml::EulerRPY rpy { filterData_.bodyframe_angular_position.roll, filterData_.bodyframe_angular_position.pitch, filterData_.bodyframe_angular_position.yaw };
+
+
+        rml::EulerRPY rpy;
+
+        if (ulisseModelVersion_ == UlisseVehicleModel::Version::SimplifiedCoMFrame){
+            rpy.RPY(0, 0, filterData_.bodyframe_angular_position.yaw);
+        } else {
+            rpy.RPY(filterData_.bodyframe_angular_position.roll, filterData_.bodyframe_angular_position.pitch, filterData_.bodyframe_angular_position.yaw);
+        }
+
         Eigen::Vector3d bodyF_absVelocity = rpy.ToRotationMatrix().transpose() * inertialframe_current + bodyframe_velocity;
 
         msg.data = bodyF_absVelocity[0];
         rqtAbsSurgePub_->publish(msg);
 
-        msg.data =filterData_.bodyframe_linear_velocity[0];
+        msg.data = filterData_.bodyframe_linear_velocity[0];
         rqtRelSurgePub_->publish(msg);
 
-        msg.data =filterData_.inertialframe_water_current[0];
+        msg.data = filterData_.inertialframe_water_current[0];
         rqtWaterCurrentXPub_->publish(msg);
-
-        msg.data =filterData_.inertialframe_water_current[1];
+        msg.data = filterData_.inertialframe_water_current[1];
         rqtWaterCurrentYPub_->publish(msg);
 
-        msg.data =filterData_.gyro_bias[0];
+        msg.data = filterData_.gyro_bias[0];
         rqtBiasXPub_->publish(msg);
-        msg.data =filterData_.gyro_bias[1];
+        msg.data = filterData_.gyro_bias[1];
         rqtBiasYPub_->publish(msg);
-        msg.data =filterData_.gyro_bias[2];
+        msg.data = filterData_.gyro_bias[2];
         rqtBiasZPub_->publish(msg);
 
-        msg.data =filterData_.bodyframe_angular_velocity[2];
+        msg.data = filterData_.bodyframe_angular_velocity[0];
+        rqtOmegaXPub_->publish(msg);
+        msg.data = filterData_.bodyframe_angular_velocity[1];
+        rqtOmegaYPub_->publish(msg);
+        msg.data = filterData_.bodyframe_angular_velocity[2];
         rqtOmegaZPub_->publish(msg);
 
-        msg.data =imuData_.gyro[2]- filterData_.gyro_bias[2];
+        msg.data = imuData_.gyro[0] - filterData_.gyro_bias[0];
+        rqtGyroXPub_->publish(msg);
+        msg.data = imuData_.gyro[1] - filterData_.gyro_bias[1];
+        rqtGyroYPub_->publish(msg);
+        msg.data = imuData_.gyro[2] - filterData_.gyro_bias[2];
         rqtGyroZPub_->publish(msg);
+
+        msg.data = state_[17];
+        rqtRPMPortPub_->publish(msg);
+        msg.data = state_[18];
+        rqtRPMStbdPub_->publish(msg);
     }
 
-    void NavigationFilter::LuenbergerObserverFilter(){
+    void NavigationFilter::LuenbergerObserverFilter()
+    {
         if (gpsValid_) {
 
             int zone;
@@ -209,15 +248,16 @@ namespace nav {
         }
     }
 
-    void NavigationFilter::ExtendedKalmanFilter(){
+    void NavigationFilter::ExtendedKalmanFilter()
+    {
         if (gpsValid_) {
             if (measuresActive_.find("gps")->second) {
 
                 if (isFirst_) {
                     //Eigen::VectorXd initialState = Eigen::VectorXd::Zero(stateDim_);
-                    
+
                     ctb::LatLong2LocalNED(ctb::LatLong(gpsData_.latitude, gpsData_.longitude), gpsData_.altitude, centroidLocation_, NED_gps_cartesian_);
-                    
+
                     auto initialState = extendedKalmanFilter_->StateVector();
                     initialState.segment(0, 2) << NED_gps_cartesian_.x(), NED_gps_cartesian_.y();
                     extendedKalmanFilter_->Init(initialState);
@@ -240,7 +280,6 @@ namespace nav {
                 accelerometerMeasurement_->MeasureVector() = Eigen::Vector3d { imuData_.accelerometer[0], imuData_.accelerometer[1], imuData_.accelerometer[2] };
                 extendedKalmanFilter_->AddMeasurement(accelerometerMeasurement_);
             }
-
         }
 
         if (compassValid_) {
@@ -258,8 +297,23 @@ namespace nav {
             }
         }
 
-        //Added a perfect com altitude meter to be coherent with the real data that recod 0.0 as altitude
+        if (leftRPMValid_) {
+            if (measuresActive_.find("rpm")->second) {
+                portRPMMeasurement_->MeasureVector() << llcThrustersData_.left.motor_speed;
+                extendedKalmanFilter_->AddMeasurement(portRPMMeasurement_);
+            }
+        }
 
+        if (rightRPMValid_) {
+            if (measuresActive_.find("rpm")->second) {
+                stbdRPMMeasurement_->MeasureVector() << llcThrustersData_.right.motor_speed;
+                extendedKalmanFilter_->AddMeasurement(stbdRPMMeasurement_);
+            }
+        }
+
+        //RCLCPP_INFO(this->get_logger(), "EFK measurement: left rpm %d - right rpm %d", leftRPMValid_, rightRPMValid_);
+
+        //Added a perfect com altitude meter to be coherent with the real data that recod 0.0 as altitude
         if (measuresActive_.find("zMeter")->second) {
             Eigen::Vector3d NED_p;
             zMeterMeasurement_->MeasureVector() << 0.0;
@@ -269,9 +323,18 @@ namespace nav {
         /*RCLCPP_INFO(this->get_logger(), "EFK measurement: imu %d - gps %d - magnetometer %d", imuValid_, gpsValid_, magnetometerValid_);*/
 
         //Filter Update
-        extendedKalmanFilter_->Update(Eigen::Vector2d { thrustersFbk_.left_percentage, thrustersFbk_.right_percentage });
-        //extendedKalmanFilter_->Update(Eigen::Vector2d { llcThrustersData_.left.motor_speed, llcThrustersData_.right.motor_speed });
 
+
+
+        fifo_h_p_.push(thrustersPercReference_.left_percentage);
+        fifo_h_s_.push(thrustersPercReference_.right_percentage);
+
+        //std::cerr << "GPS="<<gpsValid_<< " IMU="<<imuValid_ << " MAG="<<magnetometerValid_<< " LRPM="<<leftRPMValid_ << " RRPM="<<rightRPMValid_ << std::endl;
+        //extendedKalmanFilter_->Update(Eigen::Vector2d { thrustersFbk_.left_percentage, thrustersFbk_.right_percentage });
+        extendedKalmanFilter_->Update(Eigen::Vector2d { fifo_h_p_.front(), fifo_h_s_.front() });
+        fifo_h_p_.pop();
+        fifo_h_s_.pop();
+        //extendedKalmanFilter_->Update(Eigen::Vector2d { llcThrustersData_.left.motor_speed, llcThrustersData_.right.motor_speed });
 
         state_ = extendedKalmanFilter_->StateVector();
 
@@ -314,7 +377,8 @@ namespace nav {
         filterData_.covariance_estimation_diag = P;
     }
 
-    void NavigationFilter::GroundThruthFilter(){
+    void NavigationFilter::GroundThruthFilter()
+    {
         auto tNow = std::chrono::system_clock::now();
         long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(tNow.time_since_epoch())).count();
         auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
@@ -343,7 +407,8 @@ namespace nav {
         filterData_.gyro_bias[2] = simulatedData_.gyro_bias[2];
     }
 
-    void NavigationFilter::SensorsValidityCheck(){
+    void NavigationFilter::SensorsValidityCheck()
+    {
 
         gpsValid_ = imuValid_ = compassValid_ = magnetometerValid_ = false;
 
@@ -385,50 +450,65 @@ namespace nav {
         } else {
             magnetometerValid_ = false;
         }
+
+        if (llcThrustersData_.left.timestamp_485 > lastValidLeftRPMTime_) {
+            leftRPMValid_ = true;
+            lastValidLeftRPMTime_ = llcThrustersData_.left.timestamp_485;
+        } else {
+            leftRPMValid_ = false;
+        }
+
+        if (llcThrustersData_.right.timestamp_485 > lastValidRightRPMTime_) {
+            rightRPMValid_ = true;
+            lastValidRightRPMTime_ = llcThrustersData_.right.timestamp_485;
+        } else {
+            rightRPMValid_ = false;
+        }
     }
 
-    void NavigationFilter::SensorsOnlineCB(){
+    void NavigationFilter::SensorsOnlineCB()
+    {
 
         auto t_now = std::chrono::system_clock::now();
         auto timeNowSecs = (std::chrono::duration_cast<std::chrono::seconds>(t_now.time_since_epoch())).count();
         auto lastValidGPSSecs = static_cast<std::time_t>(lastValidGPSTime_);
 
-        if (std::abs(lastValidGPSSecs - timeNowSecs) > sensorsCheckInterval_){
+        if (std::abs(lastValidGPSSecs - timeNowSecs) > sensorsCheckInterval_) {
             RCLCPP_WARN(this->get_logger(), "GPS Data unavailable for more than %i seconds.", sensorsCheckInterval_);
             filterData_.gps_received = false;
         }
 
-        if (std::abs(imuData_.stamp.sec - timeNowSecs) > sensorsCheckInterval_){
+        if (std::abs(imuData_.stamp.sec - timeNowSecs) > sensorsCheckInterval_) {
             RCLCPP_WARN(this->get_logger(), "IMU Data unavailable for more than %i seconds.", sensorsCheckInterval_);
             filterData_.imu_received = false;
         }
 
-        if (std::abs(compassData_.stamp.sec - timeNowSecs) > sensorsCheckInterval_){
+        if (std::abs(compassData_.stamp.sec - timeNowSecs) > sensorsCheckInterval_) {
             RCLCPP_WARN(this->get_logger(), "Compass Data unavailable for more than %i seconds.", sensorsCheckInterval_);
             filterData_.compass_received = false;
         }
 
-        if (std::abs(magnetometerData_.stamp.sec - timeNowSecs) > sensorsCheckInterval_){
+        if (std::abs(magnetometerData_.stamp.sec - timeNowSecs) > sensorsCheckInterval_) {
             RCLCPP_WARN(this->get_logger(), "Magnetometer Data unavailable for more than %i seconds.", sensorsCheckInterval_);
             filterData_.magnetometer_received = false;
         }
 
         // Utility Print
-        if(!filterData_.gps_received){
+        if (!filterData_.gps_received) {
             if (std::ctime(&timeNowSecs) != nullptr) {
                 std::string timedate_cpu = std::ctime(&timeNowSecs);
                 timedate_cpu.erase(std::remove(timedate_cpu.begin(), timedate_cpu.end(), '\n'), timedate_cpu.end());
-                std::cout << "CPU Time now = " << timedate_cpu << std::endl;
-            }  else {
-                std::cerr << "CPU Time now = nullptr" << std::endl;
+                RCLCPP_INFO(this->get_logger(), "CPU Time now: %s", timedate_cpu.c_str());
+            } else {
+                RCLCPP_WARN(this->get_logger(), "CPU Time now = nullptr");
             }
 
             if (std::ctime(&lastValidGPSSecs) != nullptr) {
                 std::string timedate_gps = std::ctime(&lastValidGPSSecs);
                 timedate_gps.erase(std::remove(timedate_gps.begin(), timedate_gps.end(), '\n'), timedate_gps.end());
-                std::cout << "GPS Time now = " << timedate_gps << std::endl;
-            }  else {
-                std::cerr << "GPS Time now = nullptr" << std::endl;
+                RCLCPP_INFO(this->get_logger(), "GPS Time now: %s", timedate_gps.c_str());
+            } else {
+                RCLCPP_WARN(this->get_logger(), "GPS Time now = nullptr");
             }
         }
     }
@@ -442,34 +522,34 @@ namespace nav {
         try {
             confObj.readFile(confPath_.c_str());
         } catch (const libconfig::FileIOException& fioex) {
-            std::cerr << "I/O error while reading file: " << fioex.what() << std::endl;
+            RCLCPP_ERROR(this->get_logger(), "I/O error while reading file: %s", fioex.what());
             return false;
         } catch (libconfig::ParseException& e) {
-            std::cerr << "Parse exception when reading:" << confPath_ << std::endl;
-            std::cerr << "line: " << e.getLine() << " error: " << e.getError() << std::endl;
+            RCLCPP_ERROR(this->get_logger(), "Parse exception when reading: %s", confPath_.c_str());
+            RCLCPP_ERROR(this->get_logger(), "Line: %d - Error: %s", e.getLine(), e.getError());
             return false;
         }
 
         // Configure the filter node params
         if (!filterParameters.ConfigureFromFile(confObj)) {
-            std::cerr << "Failed to load navigation mode/rate prams" << std::endl;
+            RCLCPP_ERROR(this->get_logger(), "Failed to load navigation mode/rate params");
             return false;
         };
 
         if (filterParameters.mode == FilterMode::LuenbergerObserver) {
             if (!LuenbergerObserverConfiguration(confObj)) {
-                std::cerr << "Failed to load Luenberger Observer configuration" << std::endl;
+                RCLCPP_ERROR(this->get_logger(), "Failed to load Luenberger Observer configuration");
                 return false;
             };
 
         } else if (filterParameters.mode == FilterMode::KalmanFilter) {
             if (!KalmanFilterConfiguration(confObj)) {
-                std::cerr << "Failed to load Kalman Filter configuration" << std::endl;
+                RCLCPP_ERROR(this->get_logger(), "Failed to load Kalman Filter configuration");
                 return false;
             }
         } else if (filterParameters.mode == FilterMode::GroundTruth) {
         } else {
-            std::cerr << "Type of filter not recognized" << std::endl;
+            RCLCPP_ERROR(this->get_logger(), "Type of filter not recognized");
             return false;
         }
 
@@ -483,10 +563,28 @@ namespace nav {
 
         // Load the ulisse params
         const libconfig::Setting& ulisseModel = ekf["ulisseModel"];
+
+        int version;
+        if (!ctb::GetParam(ekf, version, "version")) {
+            RCLCPP_ERROR(this->get_logger(), "Kalman Filter: Failed to load the model version");
+            return false;
+        }
+
+        if (version == 0) {
+            ulisseModelVersion_ = UlisseVehicleModel::Version::SimplifiedCoMFrame;
+        } else if (version == 1) {
+            ulisseModelVersion_ = UlisseVehicleModel::Version::CompleteBodyFrame;
+        } else {
+            return false;
+        }
+        ulisseModelEKF_ = std::make_shared<UlisseVehicleModel>(UlisseVehicleModel(ulisseModelVersion_));
+        std::vector<int> indexAngles = { 3, 4, 5 }; //rpy
+        extendedKalmanFilter_ = std::make_shared<ctb::ExtendedKalmanFilter>(ctb::ExtendedKalmanFilter(stateDim_, indexAngles, ulisseModelEKF_));
+
         UlisseModelParameters ulisseModelParams;
 
-        if (!ulisseModelParams.ConfigureFormFile(ulisseModel)) {
-            std::cerr << "Kalman Filter: Failed to load ulisse model" << std::endl;
+        if (!ulisseModelParams.ConfigureFromFile(ulisseModel)) {
+            RCLCPP_ERROR(this->get_logger(), "Kalman Filter: Failed to load ULISSE model");
             return false;
         }
 
@@ -563,6 +661,16 @@ namespace nav {
 
         zMeterMeasurement_->Covariance().diagonal() = covarianceDiag;
 
+        const libconfig::Setting& rpmSetting = measure["rpm"];
+        if (!ctb::GetParam(rpmSetting, isActive, "enable"))
+            return false;
+
+        measuresActive_.insert(std::make_pair("rpm", isActive));
+        if (!ctb::GetParamVector(rpmSetting, covarianceDiag, "covariance"))
+            return false;
+
+        portRPMMeasurement_->Covariance().diagonal() = covarianceDiag;
+        stbdRPMMeasurement_->Covariance().diagonal() = covarianceDiag;
         // Load the initial state and covariance and the model covariance
 
         // State dimention
@@ -649,7 +757,8 @@ namespace nav {
         }
     }
 
-    void NavigationFilter::ResetFilter(){
+    void NavigationFilter::ResetFilter()
+    {
         if (filterParams_.mode == FilterMode::LuenbergerObserver) {
             obs_.Reset();
             RCLCPP_INFO(this->get_logger(), "Reset Luenberger observer");
@@ -677,7 +786,7 @@ namespace nav {
 
     void NavigationFilter::SimulatedVelocitySensorCB(const ulisse_msgs::msg::SimulatedVelocitySensor::SharedPtr msg) { simulatedVelocitySensor_ = *msg; }
 
-    void NavigationFilter::ThrustersReferenceCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg) { thrustersFbk_ = *msg; }
+    void NavigationFilter::ThrustersReferenceCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg) { thrustersPercReference_ = *msg; }
 
     void NavigationFilter::GroundTruthDataCB(const ulisse_msgs::msg::SimulatedSystem::SharedPtr msg) { simulatedData_ = *msg; }
 

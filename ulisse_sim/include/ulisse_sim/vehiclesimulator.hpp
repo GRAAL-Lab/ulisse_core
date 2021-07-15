@@ -111,7 +111,7 @@ struct SimulatorConfiguration {
         //ulisse param
         const libconfig::Setting& root = confObj.getRoot();
         const libconfig::Setting& ulisseModel = root["ulisseModel"];
-        if (!modelParams.ConfigureFormFile(ulisseModel)) {
+        if (!modelParams.ConfigureFromFile(ulisseModel)) {
             std::cerr << "Failed to load ulisse model params " << std::endl;
             return false;
         }

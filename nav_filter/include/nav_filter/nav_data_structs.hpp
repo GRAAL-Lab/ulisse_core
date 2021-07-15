@@ -19,6 +19,7 @@ namespace nav {
     struct NavigationFilterParams {
         int rate;
         FilterMode mode;
+        unsigned int thrusterFIFOdelayLength;
 
         bool ConfigureFromFile(libconfig::Config& confObj) noexcept(false)
         {
@@ -30,6 +31,10 @@ namespace nav {
             if (!ctb::GetParam(confObj, tmp, "filterMode"))
                 return false;
             mode = static_cast<FilterMode>(tmp);
+
+            if (!ctb::GetParam(confObj, thrusterFIFOdelayLength, "thrusterFIFOdelayLength"))
+                return false;
+
 
             return true;
         }

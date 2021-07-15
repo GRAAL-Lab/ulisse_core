@@ -2,6 +2,7 @@
 #define NAV_FILTER_NAVIGATION_FILTER_HPP
 
 #include <cstdlib>
+#include <queue>
 #include <rml/RML.h>
 #include <GeographicLib/Constants.hpp>
 #include <GeographicLib/Geodesic.hpp>
@@ -33,6 +34,7 @@
 #include "nav_filter/kalman_filter/measurements/gyro.hpp"
 #include "nav_filter/kalman_filter/measurements/magnetometer.hpp"
 #include "nav_filter/kalman_filter/measurements/z_meter.hpp"
+#include "nav_filter/kalman_filter/measurements/rpm.hpp"
 #include "nav_filter/kalman_filter/ulisse_vehicle_model.hpp"
 #include "nav_filter/luenberger_observer/pos_vel_observer.hpp"
 #include "surface_vehicle_model/surfacevehiclemodel.hpp"
@@ -52,11 +54,18 @@ namespace nav {
         rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr rqtRelSurgePub_;
         rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr rqtWaterCurrentXPub_;
         rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr rqtWaterCurrentYPub_;
+        rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr rqtOmegaXPub_;
+        rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr rqtOmegaYPub_;
         rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr rqtOmegaZPub_;
         rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr rqtBiasXPub_;
         rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr rqtBiasYPub_;
         rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr rqtBiasZPub_;
+        rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr rqtGyroXPub_;
+        rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr rqtGyroYPub_;
         rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr rqtGyroZPub_;
+		rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr rqtRPMPortPub_;
+		rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr rqtRPMStbdPub_;
+
 
         rclcpp::Subscription<ulisse_msgs::msg::Compass>::SharedPtr compassSub_;
         rclcpp::Subscription<ulisse_msgs::msg::GPSData>::SharedPtr gpsdataSub_;
@@ -76,7 +85,7 @@ namespace nav {
         ulisse_msgs::msg::GPSData gpsData_;
         ulisse_msgs::msg::IMUData imuData_;
         ulisse_msgs::msg::SimulatedVelocitySensor simulatedVelocitySensor_;
-        ulisse_msgs::msg::ThrustersReference thrustersFbk_;
+        ulisse_msgs::msg::ThrustersReference thrustersPercReference_;
         ulisse_msgs::msg::Magnetometer magnetometerData_;
         ulisse_msgs::msg::SimulatedSystem simulatedData_;
         ulisse_msgs::msg::LLCThrusters llcThrustersData_;
@@ -85,7 +94,9 @@ namespace nav {
         double lastValidImuTime_;
         double lastValidCompassTime_;
         double lastValidMagnetomerTime_;
-        bool gpsValid_, imuValid_, compassValid_, magnetometerValid_;
+        double lastValidLeftRPMTime_;
+        double lastValidRightRPMTime_;
+        bool gpsValid_, imuValid_, compassValid_, magnetometerValid_, leftRPMValid_, rightRPMValid_;
 
         int sensorsCheckInterval_;
 
@@ -94,6 +105,7 @@ namespace nav {
 
         // Kalman defines
         std::shared_ptr<UlisseVehicleModel> ulisseModelEKF_; //kalman filter model
+        UlisseVehicleModel::Version ulisseModelVersion_;
 
         // Measurements
         std::shared_ptr<GpsMeasurement> gpsMeasurement_;
@@ -102,6 +114,8 @@ namespace nav {
         std::shared_ptr<MagnetometerMeasurement> magnetometerMeasurement_;
         std::shared_ptr<GyroMeasurement> gyroMeasurement_;
         std::shared_ptr<zMeter> zMeterMeasurement_;
+        std::shared_ptr<RPMMeasurement> portRPMMeasurement_;
+        std::shared_ptr<RPMMeasurement> stbdRPMMeasurement_;
 
         std::shared_ptr<ctb::ExtendedKalmanFilter> extendedKalmanFilter_;
         std::unordered_map<std::string, bool> measuresActive_;
@@ -116,6 +130,8 @@ namespace nav {
 
         bool filterEnable_;
         bool isFirst_;
+        std::queue<double> fifo_h_p_;
+        std::queue<double> fifo_h_s_;
 
         ulisse_msgs::msg::NavFilterData filterData_;
         Eigen::Vector3d NED_gps_cartesian_;

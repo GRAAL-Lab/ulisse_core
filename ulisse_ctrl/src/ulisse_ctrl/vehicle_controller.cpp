@@ -1,4 +1,4 @@
-﻿#include "ulisse_ctrl/vehicle_controller.hpp"
+#include "ulisse_ctrl/vehicle_controller.hpp"
 
 #include <jsoncpp/json/json.h>
 #include <ament_index_cpp/get_package_share_directory.hpp>
@@ -445,12 +445,23 @@ void VehicleController::SetCruiseControlHandler(const std::shared_ptr<rmw_reques
     Eigen::VectorXd satMin, satMax;
     iCat_->GetSaturation(satMin, satMax);
 
+    //RCLCPP_INFO(this->get_logger(), "Set cruise control yaw rate value (value: %f)", satMax.at(5));
+    //RCLCPP_INFO(this->get_logger(), "Min value surge (value: %f)", satMin.at(0));
     satMax.at(0) = request->cruise_control;
 
-    // Set Saturation values for the iCAT (read from conf file)
-    iCat_->SetSaturation(satMin, satMax);
+    try {
+        // Set Saturation values for the iCAT (read from conf file)
+        iCat_->SetSaturation(satMax, satMin);
+    } catch (const std::invalid_argument& e) {
+        RCLCPP_WARN(this->get_logger(), "Set cruise failed, invalid saturation values: %s)", e.what());
+        response->res = "[KCL] SetCruiseControl::fail";
+        return;
+    }
+    
+    //iCat_->GetSaturation(satMin, satMax);
     //iCat_->SetSaturation(satMin, satMax);
-
+    //RCLCPP_INFO(this->get_logger(), "New set cruise control yaw rate value (value: %f)", satMax.at(5));
+    //RCLCPP_INFO(this->get_logger(), "New min value surge (value: %f)", satMin.at(0));
     response->res = "[KCL] SetCruiseControl::ok";
 }
 

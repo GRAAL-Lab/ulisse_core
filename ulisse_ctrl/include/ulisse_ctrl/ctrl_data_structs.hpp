@@ -248,7 +248,7 @@ struct DCLConfiguration {
             return false;
 
         const libconfig::Setting& ulisseModelParams = dcl["ulisseModel"];
-        if (!ulisseModel.ConfigureFormFile(ulisseModelParams))
+        if (!ulisseModel.ConfigureFromFile(ulisseModelParams))
             return false;
 
         std::cerr << "ulisseModelParams configured" << std::endl;

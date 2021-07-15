@@ -9,11 +9,15 @@ namespace ulisse {
 namespace nav {
 
     class UlisseVehicleModel : public ctb::ModelKalmanFilter {
+
     public:
+        enum class Version {
+            SimplifiedCoMFrame, CompleteBodyFrame
+        };
         /*
          * @brief Constructor
          */
-        UlisseVehicleModel();
+        UlisseVehicleModel(const Version& v);
         /*
          * @brief Destructor
          */
@@ -40,6 +44,7 @@ namespace nav {
         double sign(double x);
 
     private:
+        Version version_;
         UlisseModelParameters params_;
     };
 }

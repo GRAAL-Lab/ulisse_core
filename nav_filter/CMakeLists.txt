@@ -57,6 +57,7 @@ set(nav_filter_lib_sources
     src/${PROJECT_NAME}/kalman_filter/measurements/gyro.cpp
     src/${PROJECT_NAME}/kalman_filter/ulisse_vehicle_model.cpp
     src/${PROJECT_NAME}/kalman_filter/measurements/z_meter.cpp
+    src/${PROJECT_NAME}/kalman_filter/measurements/rpm.cpp
 )
 
 ## Libraries

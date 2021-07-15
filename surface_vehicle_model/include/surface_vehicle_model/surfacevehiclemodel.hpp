@@ -9,24 +9,35 @@
 struct UlisseModelParameters {
 
     double lambda_pos, lambda_neg;
-    double d;
+    double d; // transversal distance from main axis to the motors
+    double l; // longitudinal distance from CoM (body frame) to the motors
     Eigen::Vector3d cX;
     Eigen::Vector3d cN;
     Eigen::Vector3d cY;
     Eigen::Vector3d cNneg;
     double b1_pos, b2_pos, b1_neg, b2_neg;
+    double k_pos, k_neg;
     double hullWidth;
+    double rpmDynState;
+    double rpmDynPosPerc;
+    double rpmDynNegPerc;
     Eigen::Matrix3d Inertia;
 
     UlisseModelParameters()
         : lambda_pos(0.0)
         , lambda_neg(0.0)
         , d(0.0)
+        , l(0.0)
         , b1_pos(0.0)
         , b2_pos(0.0)
         , b1_neg(0.0)
         , b2_neg(0.0)
+        , k_pos(0.0)
+        , k_neg(0.0)
         , hullWidth(0.0)
+        , rpmDynState(0.0)
+        , rpmDynPosPerc(0.0)
+        , rpmDynNegPerc(0.0)
     {
         cX.setZero();
         cY.setZero();
@@ -39,20 +50,26 @@ struct UlisseModelParameters {
     {
         Eigen::IOFormat TabbedCleanFmt(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", " ", "\t", "\n", "", "");
         return os << "Ulisse Model Params:\n"
-                  << "tlambda_pos: " << static_cast<int>(a.lambda_pos) << "\n"
-                  << "tlambda_neg: " << a.lambda_neg << "\n"
-                  << "tmotors distance: " << a.d << "\n"
+                  << "lambda_pos: " << static_cast<int>(a.lambda_pos) << "\n"
+                  << "lambda_neg: " << a.lambda_neg << "\n"
+                  << "motors transversal distance: " << a.d << "\n"
+                  << "motors longitudinal distance: " << a.l << "\n"
                   << "hull width: " << a.hullWidth << "\n"
-                  << "tcX: " << a.cX.transpose() << "\n"
-                  << "tcY: " << a.cY.transpose() << "\n"
-                  << "tcN: " << a.cN.transpose() << "\n"
-                  << "tcN negative: " << a.cNneg.transpose() << "\n"
-                  << "tcB: " << a.b1_pos << " " << a.b2_pos << " " << a.b1_neg << " " << a.b2_neg << "\n"
-                  << "tInertia:\n"
+                  << "cX: " << a.cX.transpose() << "\n"
+                  << "cY: " << a.cY.transpose() << "\n"
+                  << "cN: " << a.cN.transpose() << "\n"
+                  << "cN negative: " << a.cNneg.transpose() << "\n"
+                  << "cB: " << a.b1_pos << " " << a.b2_pos << " " << a.b1_neg << " " << a.b2_neg << "\n"
+                  << "k_pos: " << a.k_pos << "\n"
+                  << "k_neg: " << a.k_neg << "\n"
+                  << "RPM Dynamics State coeff: " << a.rpmDynState << "\n"
+                  << "RPM Dynamics Positive coeff: " << a.rpmDynPosPerc << "\n"
+                  << "RPM Dynamics Negative coeff: " << a.rpmDynNegPerc << "\n"
+                  << "Inertia:\n"
                   << a.Inertia.format(TabbedCleanFmt);
     }
 
-    bool ConfigureFormFile(const libconfig::Setting& ulisseModel) noexcept(false)
+    bool ConfigureFromFile(const libconfig::Setting& ulisseModel) noexcept(false)
     {
         if (!ctb::GetParamVector(ulisseModel, cN, "cN"))
             return false;
@@ -75,10 +92,25 @@ struct UlisseModelParameters {
             return false;
         if (!ctb::GetParam(ulisseModel, b2_pos, "b2Pos"))
             return false;
-        if (!ctb::GetParam(ulisseModel, d, "motorsDistance"))
+        if (!ctb::GetParam(ulisseModel, d, "motorsTransversalDistance"))
             return false;
         if (!ctb::GetParam(ulisseModel, hullWidth, "hullWidth"))
             return false;
+
+        if (!ctb::GetParam(ulisseModel, l, "motorsLongitudinalDistance"))
+            return false;
+        if (!ctb::GetParam(ulisseModel, k_pos, "kPos"))
+            return false;
+        if (!ctb::GetParam(ulisseModel, k_neg, "kNeg"))
+            return false;
+
+        if (!ctb::GetParam(ulisseModel, rpmDynState, "rpmDynState"))
+            return false;
+        if (!ctb::GetParam(ulisseModel, rpmDynPosPerc, "rpmDynPosPerc"))
+            return false;
+        if (!ctb::GetParam(ulisseModel, rpmDynNegPerc, "rpmDynNegPerc"))
+            return false;
+
 
         Eigen::Vector3d tmp_Inerzia;
         tmp_Inerzia.setZero();
@@ -90,7 +122,7 @@ struct UlisseModelParameters {
         return true;
     }
 
-    bool ConfigureFormFile(const libconfig::Config& ulisseModel) noexcept(false)
+    bool ConfigureFromFile(const libconfig::Config& ulisseModel) noexcept(false)
     {
         if (!ctb::GetParamVector(ulisseModel, cN, "cN"))
             return false;
@@ -112,9 +144,21 @@ struct UlisseModelParameters {
             return false;
         if (!ctb::GetParam(ulisseModel, b2_pos, "b2Pos"))
             return false;
-        if (!ctb::GetParam(ulisseModel, d, "motorsDistance"))
+        if (!ctb::GetParam(ulisseModel, d, "motorsTransversalDistance"))
             return false;
         if (!ctb::GetParam(ulisseModel, hullWidth, "hullWidth"))
+            return false;
+        if (!ctb::GetParam(ulisseModel, l, "motorsLongitudinalDistance"))
+            return false;
+        if (!ctb::GetParam(ulisseModel, k_pos, "kPos"))
+            return false;
+        if (!ctb::GetParam(ulisseModel, k_neg, "kNeg"))
+            return false;
+        if (!ctb::GetParam(ulisseModel, rpmDynState, "rpmDynState"))
+            return false;
+        if (!ctb::GetParam(ulisseModel, rpmDynPosPerc, "rpmDynPosPerc"))
+            return false;
+        if (!ctb::GetParam(ulisseModel, rpmDynNegPerc, "rpmDynNegPerc"))
             return false;
 
         Eigen::Vector3d tmp_Inerzia;
