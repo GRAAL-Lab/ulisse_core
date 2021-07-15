@@ -96,7 +96,6 @@ void CommandWrapper::LoadQmlEngine(QQmlApplicationEngine* engine)
     });*/
 }
 
-
 void CommandWrapper::FeedbackGuiCB(const ulisse_msgs::msg::FeedbackGui::SharedPtr msg)
 {
     feedbackGuiMsg_ = std::move(*msg);

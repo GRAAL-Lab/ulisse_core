@@ -108,10 +108,8 @@ struct SimulatorConfiguration {
         if (!ctb::GetParamVector(confObj, bodyF_gps_position, "bodyF_gps_position"))
             return false;
 
-        //ulisse param
-        const libconfig::Setting& root = confObj.getRoot();
-        const libconfig::Setting& ulisseModel = root["ulisseModel"];
-        if (!modelParams.ConfigureFormFile(ulisseModel)) {
+        // Ulisse model parameters
+        if (!modelParams.LoadConfiguration(confObj)) {
             std::cerr << "Failed to load ulisse model params " << std::endl;
             return false;
         }
@@ -130,6 +128,7 @@ struct SimulatorConfiguration {
         modelParams.b1_neg *= distribution(generator);
         modelParams.b1_neg *= distribution(generator);
 
+        const libconfig::Setting& root = confObj.getRoot();
         const libconfig::Setting& sensorsnoise = root["sensorsNoise"];
         if (!sensorsNoise.ConfigureFromFile(sensorsnoise)) {
             std::cerr << "Failed to load ulisse sensors noise " << std::endl;

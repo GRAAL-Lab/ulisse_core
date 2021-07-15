@@ -121,13 +121,13 @@ namespace nav {
         //long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(tNow.time_since_epoch())).count();
         //auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
         //auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
-         std_msgs::msg::Float64 msg;
+        std_msgs::msg::Float64 msg;
         //msg.stamp.sec = now_stamp_secs;
         //msg.stamp.nanosec = now_stamp_nanosecs;
         
         Eigen::Vector3d bodyframe_velocity = { filterData_.bodyframe_linear_velocity[0], filterData_.bodyframe_linear_velocity[1], filterData_.bodyframe_linear_velocity[2]};
         Eigen::Vector3d inertialframe_current = { filterData_.inertialframe_water_current[0], filterData_.inertialframe_water_current[1], 0};
-		rml::EulerRPY rpy { filterData_.bodyframe_angular_position.roll, filterData_.bodyframe_angular_position.pitch, filterData_.bodyframe_angular_position.yaw };
+        rml::EulerRPY rpy { filterData_.bodyframe_angular_position.roll, filterData_.bodyframe_angular_position.pitch, filterData_.bodyframe_angular_position.yaw };
         Eigen::Vector3d bodyF_absVelocity = rpy.ToRotationMatrix().transpose() * inertialframe_current + bodyframe_velocity;
 
         msg.data = bodyF_absVelocity[0];
@@ -435,10 +435,28 @@ namespace nav {
 
     bool NavigationFilter::LoadConfiguration(NavigationFilterParams& filterParameters)
     {
-        // Read conf file
         libconfig::Config confObj;
 
-        //Inizialization
+        // Read the ULISSE MODEL config file
+        std::string package_share_directory = ament_index_cpp::get_package_share_directory("surface_vehicle_model");
+        std::string modelConfPath = package_share_directory + "/conf/ulisse_model.conf";
+        std::cout << "PATH TO ULISSE_MODEL CONF FILE (NAV): " << modelConfPath << std::endl;
+
+        try {
+            confObj.readFile(modelConfPath.c_str());
+        } catch (libconfig::ParseException& e) {
+            std::cerr << "Parse exception when reading:" << modelConfPath << std::endl;
+            std::cerr << "line: " << e.getLine() << " error: " << e.getError() << std::endl;
+            return false;
+        }
+
+        UlisseModelParameters ulisseModelParams;
+        if (!ulisseModelParams.LoadConfiguration(confObj)) {
+            std::cerr << "NavigationFilter: Failed to load ulisse model" << std::endl;
+            return false;
+        }
+
+        // Read the NAV_FILTER config file
         try {
             confObj.readFile(confPath_.c_str());
         } catch (const libconfig::FileIOException& fioex) {
@@ -452,7 +470,7 @@ namespace nav {
 
         // Configure the filter node params
         if (!filterParameters.ConfigureFromFile(confObj)) {
-            std::cerr << "Failed to load navigation mode/rate prams" << std::endl;
+            std::cerr << "Failed to load navigation mode/rate params" << std::endl;
             return false;
         };
 
@@ -467,6 +485,7 @@ namespace nav {
                 std::cerr << "Failed to load Kalman Filter configuration" << std::endl;
                 return false;
             }
+            ulisseModelEKF_->ModelParameters() = ulisseModelParams;
         } else if (filterParameters.mode == FilterMode::GroundTruth) {
         } else {
             std::cerr << "Type of filter not recognized" << std::endl;
@@ -478,21 +497,9 @@ namespace nav {
 
     bool NavigationFilter::KalmanFilterConfiguration(libconfig::Config& confObj) noexcept(false)
     {
+
         const libconfig::Setting& root = confObj.getRoot();
         const libconfig::Setting& ekf = root["extendedKalmanFilter"];
-
-        // Load the ulisse params
-        const libconfig::Setting& ulisseModel = ekf["ulisseModel"];
-        UlisseModelParameters ulisseModelParams;
-
-        if (!ulisseModelParams.ConfigureFormFile(ulisseModel)) {
-            std::cerr << "Kalman Filter: Failed to load ulisse model" << std::endl;
-            return false;
-        }
-
-        std::cout << ulisseModelParams << std::endl;
-
-        ulisseModelEKF_->ModelParameters() = ulisseModelParams;
 
         // Load the measures covariance
         const libconfig::Setting& measure = ekf["measures"];

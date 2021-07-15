@@ -36,6 +36,11 @@ ament_export_include_directories(include)
 ament_export_libraries(surface_vehicle_model_lib)
 
 # install artifacts
+install(DIRECTORY
+  conf
+  DESTINATION share/${PROJECT_NAME}
+)
+
 install(
   DIRECTORY include/
   DESTINATION include

@@ -158,7 +158,7 @@ Pane{
                         from: 0.0
                         to: 5
                         stepSize: 0.1
-                        value: 1
+                        value: 1.5
                         onPressedChanged: function() {
                             if (sliderSpeed.pressed === false)
                                 cmdWrapper.setCruiseSpeedCommand(sliderSpeed.value)

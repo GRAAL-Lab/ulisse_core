@@ -52,7 +52,7 @@ struct UlisseModelParameters {
                   << a.Inertia.format(TabbedCleanFmt);
     }
 
-    bool ConfigureFormFile(const libconfig::Setting& ulisseModel) noexcept(false)
+    /*bool ConfigureFromFile(const libconfig::Setting& ulisseModel) noexcept(false)
     {
         if (!ctb::GetParamVector(ulisseModel, cN, "cN"))
             return false;
@@ -88,10 +88,13 @@ struct UlisseModelParameters {
         Inertia.diagonal() = Eigen::Map<Eigen::Matrix<double, 3, 1>>(tmp_Inerzia.data());
 
         return true;
-    }
+    }*/
 
-    bool ConfigureFormFile(const libconfig::Config& ulisseModel) noexcept(false)
+    bool LoadConfiguration(const libconfig::Config& confObj) noexcept(false)
     {
+        const libconfig::Setting& root = confObj.getRoot();
+        const libconfig::Setting& ulisseModel = root["ulisseModel"];
+
         if (!ctb::GetParamVector(ulisseModel, cN, "cN"))
             return false;
         if (!ctb::GetParamVector(ulisseModel, cX, "cX"))
@@ -126,6 +129,8 @@ struct UlisseModelParameters {
 
         return true;
     }
+
+
 };
 
 /**

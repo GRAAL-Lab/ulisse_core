@@ -225,7 +225,15 @@ struct DCLConfiguration {
         return os;
     }
 
-    bool ConfigureFromFile(libconfig::Config& confObj) noexcept(false)
+    bool ConfigureUlisseModel(libconfig::Config& confObj){
+
+        if (!ulisseModel.LoadConfiguration(confObj))
+            return false;
+
+        return true;
+    }
+
+    bool LoadConfiguration(libconfig::Config& confObj) noexcept(false)
     {
         const libconfig::Setting& root = confObj.getRoot();
         const libconfig::Setting& dcl = root["dcl_ulisse"];
@@ -247,11 +255,7 @@ struct DCLConfiguration {
         if (!ctb::GetParam(dcl, yawRateMax, "yawRateMax"))
             return false;
 
-        const libconfig::Setting& ulisseModelParams = dcl["ulisseModel"];
-        if (!ulisseModel.ConfigureFormFile(ulisseModelParams))
-            return false;
-
-        std::cerr << "ulisseModelParams configured" << std::endl;
+        /**/
 
         if (ctrlMode == ControlMode::ThrusterMapping) {
             const libconfig::Setting& thrusterMap = dcl["thrusterMapping"];
