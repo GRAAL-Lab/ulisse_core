@@ -200,7 +200,7 @@ void VehicleSimulator::SimulateSensors()
     std::normal_distribution<double> gpsNoiseZ(0.0, config->sensorsNoise.gps_stdd.z());
 
     //Transform to cartesian,
-    static ctb::LatLong centroidLocation(44.393, 8.945);
+    static ctb::LatLong centroidLocation(44.0956, 9.8631);
     Eigen::Vector3d worldF_com, worldF_antenna;
     ctb::LatLong2LocalNED(ctb::LatLong(latitude_, longitude_), altitude_, centroidLocation, worldF_com);
 

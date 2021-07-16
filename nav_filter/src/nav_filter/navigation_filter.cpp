@@ -13,7 +13,7 @@ namespace nav {
         , confPath_(confPath)
     {
         stateDim_ = 0;
-        centroidLocation_ = ctb::LatLong(44.393, 8.945);
+        centroidLocation_ = ctb::LatLong(44.0956, 9.8631);
 
 
 
@@ -341,6 +341,7 @@ namespace nav {
         double altitude;
 
         ctb::LocalNED2LatLong(Eigen::Vector3d { state_.x(), state_.y(), state_.z() }, centroidLocation_, map_p, altitude);
+
 
         auto tNow = std::chrono::system_clock::now();
         long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(tNow.time_since_epoch())).count();
