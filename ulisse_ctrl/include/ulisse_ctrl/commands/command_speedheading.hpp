@@ -16,7 +16,7 @@ namespace commands {
         CommandSpeedHeading();
         virtual ~CommandSpeedHeading() override;
         virtual fsm::retval Execute(void) override;
-        void SetSpeedHeading(double surge, double heading, uint timeout_sec);
+        void SetTimeout(uint timeout_sec);
 
         void SetState(std::shared_ptr<states::GenericState> state) override;
     };

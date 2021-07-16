@@ -30,9 +30,8 @@ namespace nav {
         stbdRPMMeasurement_->SetPortStarboard(ulisse::nav::Side::Starboard);
 
         //Load filter params
-        if (!LoadConfiguration(filterParams_)) {
+        if (!LoadConfiguration()) {
             RCLCPP_ERROR(this->get_logger(), "Failed to load navigation filter configuration");
-            sleep(1);
             exit(EXIT_FAILURE);
         }
 
@@ -513,12 +512,30 @@ namespace nav {
         }
     }
 
-    bool NavigationFilter::LoadConfiguration(NavigationFilterParams& filterParameters)
+    bool NavigationFilter::LoadConfiguration()
     {
-        // Read conf file
         libconfig::Config confObj;
 
-        //Inizialization
+        // Read the ULISSE MODEL config file
+        std::string package_share_directory = ament_index_cpp::get_package_share_directory("surface_vehicle_model");
+        std::string modelConfPath = package_share_directory + "/conf/ulisse_model.conf";
+
+        RCLCPP_INFO(this->get_logger(), "PATH TO ULISSE_MODEL CONF FILE (NAV): %s", modelConfPath.c_str());
+        try {
+            confObj.readFile(modelConfPath.c_str());
+        } catch (libconfig::ParseException& e) {
+            RCLCPP_ERROR(this->get_logger(), "Parse exception when reading: %s", modelConfPath.c_str());
+            RCLCPP_ERROR(this->get_logger(), "Line: %d - Error: %s", e.getLine(), e.getError());
+            return false;
+        }
+
+        UlisseModelParameters ulisseModelParams;
+        if (!ulisseModelParams.LoadConfiguration(confObj)) {
+            RCLCPP_ERROR(this->get_logger(), "Failed to load ULISSE model");
+            return false;
+        }
+
+        // Read the NAV_FILTER config file
         try {
             confObj.readFile(confPath_.c_str());
         } catch (const libconfig::FileIOException& fioex) {
@@ -528,26 +545,30 @@ namespace nav {
             RCLCPP_ERROR(this->get_logger(), "Parse exception when reading: %s", confPath_.c_str());
             RCLCPP_ERROR(this->get_logger(), "Line: %d - Error: %s", e.getLine(), e.getError());
             return false;
+        } catch (libconfig::SettingException& e) {
+            std::cerr << "ACSADASDA" << std::endl;
+            RCLCPP_ERROR(this->get_logger(), "Setting error while reading %s: %s", e.getPath(), e.what());
         }
 
         // Configure the filter node params
-        if (!filterParameters.ConfigureFromFile(confObj)) {
+        if (!filterParams_.ConfigureFromFile(confObj)) {
             RCLCPP_ERROR(this->get_logger(), "Failed to load navigation mode/rate params");
             return false;
         };
 
-        if (filterParameters.mode == FilterMode::LuenbergerObserver) {
+        if (filterParams_.mode == FilterMode::LuenbergerObserver) {
             if (!LuenbergerObserverConfiguration(confObj)) {
                 RCLCPP_ERROR(this->get_logger(), "Failed to load Luenberger Observer configuration");
                 return false;
             };
 
-        } else if (filterParameters.mode == FilterMode::KalmanFilter) {
+        } else if (filterParams_.mode == FilterMode::KalmanFilter) {
             if (!KalmanFilterConfiguration(confObj)) {
                 RCLCPP_ERROR(this->get_logger(), "Failed to load Kalman Filter configuration");
                 return false;
             }
-        } else if (filterParameters.mode == FilterMode::GroundTruth) {
+            ulisseModelEKF_->ModelParameters() = ulisseModelParams;
+        } else if (filterParams_.mode == FilterMode::GroundTruth) {
         } else {
             RCLCPP_ERROR(this->get_logger(), "Type of filter not recognized");
             return false;
@@ -558,11 +579,9 @@ namespace nav {
 
     bool NavigationFilter::KalmanFilterConfiguration(libconfig::Config& confObj) noexcept(false)
     {
+
         const libconfig::Setting& root = confObj.getRoot();
         const libconfig::Setting& ekf = root["extendedKalmanFilter"];
-
-        // Load the ulisse params
-        const libconfig::Setting& ulisseModel = ekf["ulisseModel"];
 
         int version;
         if (!ctb::GetParam(ekf, version, "version")) {
@@ -580,17 +599,6 @@ namespace nav {
         ulisseModelEKF_ = std::make_shared<UlisseVehicleModel>(UlisseVehicleModel(ulisseModelVersion_));
         std::vector<int> indexAngles = { 3, 4, 5 }; //rpy
         extendedKalmanFilter_ = std::make_shared<ctb::ExtendedKalmanFilter>(ctb::ExtendedKalmanFilter(stateDim_, indexAngles, ulisseModelEKF_));
-
-        UlisseModelParameters ulisseModelParams;
-
-        if (!ulisseModelParams.ConfigureFromFile(ulisseModel)) {
-            RCLCPP_ERROR(this->get_logger(), "Kalman Filter: Failed to load ULISSE model");
-            return false;
-        }
-
-        std::cout << ulisseModelParams << std::endl;
-
-        ulisseModelEKF_->ModelParameters() = ulisseModelParams;
 
         // Load the measures covariance
         const libconfig::Setting& measure = ekf["measures"];
@@ -741,7 +749,7 @@ namespace nav {
             break;
         case static_cast<uint16_t>(CommandType::reloadconfig): {
             //auto previousFilterParams = filterParams_;
-            LoadConfiguration(filterParams_);
+            LoadConfiguration();
             //ResetFilter();
             isFirst_ = true;
             break;

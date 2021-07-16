@@ -168,7 +168,7 @@ namespace nav {
 
         void LLCThrustersCB(const ulisse_msgs::msg::LLCThrusters::SharedPtr msg);
 
-        bool LoadConfiguration(NavigationFilterParams& filterParameters);
+        bool LoadConfiguration();
 
         bool KalmanFilterConfiguration(libconfig::Config& confObj);
 

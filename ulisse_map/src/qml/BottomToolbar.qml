@@ -25,7 +25,7 @@ Rectangle {
             id: recenterButton
             text: "Recenter"
             highlighted: true
-            Material.background: mainColor
+            Material.background: orange
             Layout.leftMargin: 10
         }
 

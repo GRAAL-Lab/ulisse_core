@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
     auto nh = rclcpp::Node::make_shared("dynamic_control_node");
 
     //config struct
-    auto conf = std::make_shared<DCLConfiguration>();
+    auto dcl_conf = std::make_shared<DCLConfiguration>();
     // ulisse model
     SurfaceVehicleModel ulisseModel;
 
@@ -74,14 +74,15 @@ int main(int argc, char* argv[])
     std::string filename = "dcl_ulisse.conf";
 
     //Ulisse params configuration
-    if (!LoadDclConfiguration(conf, filename)) {
+
+    if (!LoadDclConfiguration(dcl_conf, filename)) {
         std::cerr << "Failed to laod DCL Configuration. Check the parameters in the conf file" << std::endl;
         return -1;
     }
 
-    std::cout << tc::brown << *conf << tc::none << std::endl;
+    std::cout << tc::brown << *dcl_conf << tc::none << std::endl;
 
-    ulisseModel.params = conf->ulisseModel;
+    ulisseModel.params = dcl_conf->ulisseModel;
 
     //local variables
     ulisse_msgs::msg::ThrusterMappingControl thrusterMappingMsg;
@@ -109,16 +110,16 @@ int main(int argc, char* argv[])
     Eigen::Vector2d tau = Eigen::Vector2d::Zero();
 
     //Controller inizialization
-    if (conf->ctrlMode == ControlMode::ThrusterMapping) {
-        ThrusterMappingInizialization(conf, sampleTime, pidSurgeTM);
-    } else if (conf->ctrlMode == ControlMode::ClassicPIDControl) {
-        ClassicPidControlInizialization(conf, sampleTime, pidSurgeCP, pidYawRateCP);
+    if (dcl_conf->ctrlMode == ControlMode::ThrusterMapping) {
+        ThrusterMappingInizialization(dcl_conf, sampleTime, pidSurgeTM);
+    } else if (dcl_conf->ctrlMode == ControlMode::ClassicPIDControl) {
+        ClassicPidControlInizialization(dcl_conf, sampleTime, pidSurgeCP, pidYawRateCP);
     } else {
-        ComputedTorqueControlInizialization(conf, sampleTime, pidSurgeCT, pidYawRateCT);
+        ComputedTorqueControlInizialization(dcl_conf, sampleTime, pidSurgeCT, pidYawRateCT);
     }
 
     // Create a callback function for when service reset configuration requests are received.
-    auto handle_reset_conf = [nh, conf, &ulisseModel, filename, &pidSurgeTM, &pidSurgeCP, &pidYawRateCP, &pidSurgeCT, &pidYawRateCT](
+    auto handle_reset_conf = [nh, dcl_conf, &ulisseModel, filename, &pidSurgeTM, &pidSurgeCP, &pidYawRateCP, &pidSurgeCT, &pidYawRateCT](
                                  const std::shared_ptr<rmw_request_id_t> request_header,
                                  const std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Request> request,
                                  std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Response> response) -> void {
@@ -126,25 +127,25 @@ int main(int argc, char* argv[])
         (void)request;
         RCLCPP_INFO(nh->get_logger(), "Incoming request for reset conf");
 
-        auto previousConf = conf;
+        auto previousConf = dcl_conf;
         //Ulisse params configuration
-        if (!LoadDclConfiguration(conf, filename)) {
+        if (!LoadDclConfiguration(dcl_conf, filename)) {
 
             //If changing the file at runtime the configuration should fail, reload the previous configuration parameters
             std::cerr << "Failed to laod new config file. Reload the last configuration" << std::endl;
             LoadDclConfiguration(previousConf, filename);
         }
 
-        ulisseModel.params = conf->ulisseModel;
+        ulisseModel.params = dcl_conf->ulisseModel;
 
         //Controller inizialization
         //Controller inizialization
-        if (conf->ctrlMode == ControlMode::ThrusterMapping) {
-            ThrusterMappingInizialization(conf, sampleTime, pidSurgeTM);
-        } else if (conf->ctrlMode == ControlMode::ClassicPIDControl) {
-            ClassicPidControlInizialization(conf, sampleTime, pidSurgeCP, pidYawRateCP);
+        if (dcl_conf->ctrlMode == ControlMode::ThrusterMapping) {
+            ThrusterMappingInizialization(dcl_conf, sampleTime, pidSurgeTM);
+        } else if (dcl_conf->ctrlMode == ControlMode::ClassicPIDControl) {
+            ClassicPidControlInizialization(dcl_conf, sampleTime, pidSurgeCP, pidYawRateCP);
         } else {
-            ComputedTorqueControlInizialization(conf, sampleTime, pidSurgeCT, pidYawRateCT);
+            ComputedTorqueControlInizialization(dcl_conf, sampleTime, pidSurgeCT, pidYawRateCT);
         }
 
         response->res = "[DCL] ReloadConfiguration::ok";
@@ -164,7 +165,7 @@ int main(int argc, char* argv[])
 
         if (vehicleStatus.vehicle_state != ulisse::states::ID::halt) {
             //ThrusterMapping mode
-            if (conf->ctrlMode == ControlMode::ThrusterMapping) {
+            if (dcl_conf->ctrlMode == ControlMode::ThrusterMapping) {
 
                 Eigen::Vector6d requestedVel;
                 requestedVel.setZero();
@@ -177,12 +178,12 @@ int main(int argc, char* argv[])
                 Eigen::Vector2d forces = ulisseModel.ThusterAllocation(tau);
 
                 //saturation
-                requestedVel(0) = ctb::clamp(requestedVel(0), conf->surgeMin, conf->surgeMax);
-                requestedVel(5) = ctb::clamp(requestedVel(5), conf->yawRateMin, conf->yawRateMax);
+                requestedVel(0) = ctb::clamp(requestedVel(0), dcl_conf->surgeMin, dcl_conf->surgeMax);
+                requestedVel(5) = ctb::clamp(requestedVel(5), dcl_conf->yawRateMin, dcl_conf->yawRateMax);
 
                 ulisseModel.InverseMotorsEquations(requestedVel, forces, motorLeft, motorRight);
 
-                ulisseModel.ThrustersSaturation(motorLeft, motorRight, -conf->thrusterPercLimit, conf->thrusterPercLimit, thrustersReference.left_percentage, thrustersReference.right_percentage);
+                ulisseModel.ThrustersSaturation(motorLeft, motorRight, -dcl_conf->thrusterPercLimit, dcl_conf->thrusterPercLimit, thrustersReference.left_percentage, thrustersReference.right_percentage);
 
                 //Fill the Thruster Mapping msg
                 auto t_now_ = std::chrono::system_clock::now();
@@ -204,7 +205,7 @@ int main(int argc, char* argv[])
                 simulatedVelocitySensor.water_relative_surge = pidSurgeTM.GetOutput();
                 simulatedVelocitySensorPub->publish(simulatedVelocitySensor);
 
-            } else if (conf->ctrlMode == ControlMode::ClassicPIDControl) {
+            } else if (dcl_conf->ctrlMode == ControlMode::ClassicPIDControl) {
                 //Dynamic Pids
                 Eigen::Vector6d feedbackVel = Eigen::Vector6d::Zero();
 
@@ -216,7 +217,7 @@ int main(int argc, char* argv[])
 
                 Eigen::Vector2d forces = ulisseModel.ThusterAllocation(tau);
                 ulisseModel.InverseMotorsEquations(feedbackVel, forces, outleft, outright);
-                ulisseModel.ThrustersSaturation(outleft, outright, -conf->thrusterPercLimit, conf->thrusterPercLimit, thrustersReference.left_percentage, thrustersReference.right_percentage);
+                ulisseModel.ThrustersSaturation(outleft, outright, -dcl_conf->thrusterPercLimit, dcl_conf->thrusterPercLimit, thrustersReference.left_percentage, thrustersReference.right_percentage);
 
                 //Fill the classic dynamic pid contol msg
                 auto t_now_ = std::chrono::system_clock::now();
@@ -240,7 +241,7 @@ int main(int argc, char* argv[])
                 simulatedVelocitySensor.water_relative_surge = referenceVelocities.desired_surge;
                 simulatedVelocitySensorPub->publish(simulatedVelocitySensor);
 
-            } else if (conf->ctrlMode == ControlMode::ComputedTorque) {
+            } else if (dcl_conf->ctrlMode == ControlMode::ComputedTorque) {
 
                 //Dynamic Pids
                 Eigen::Vector6d feedbackVel = Eigen::Vector6d::Zero();
@@ -257,7 +258,7 @@ int main(int argc, char* argv[])
 
                 Eigen::Vector2d forces = ulisseModel.ThusterAllocation(tau);
                 ulisseModel.InverseMotorsEquations(feedbackVel, forces, outLeft, outRight);
-                ulisseModel.ThrustersSaturation(outLeft, outRight, -conf->thrusterPercLimit, conf->thrusterPercLimit, thrustersReference.left_percentage, thrustersReference.right_percentage);
+                ulisseModel.ThrustersSaturation(outLeft, outRight, -dcl_conf->thrusterPercLimit, dcl_conf->thrusterPercLimit, thrustersReference.left_percentage, thrustersReference.right_percentage);
 
 
                 //Fill the classic dynamic pid contol msg
@@ -285,9 +286,9 @@ int main(int argc, char* argv[])
             thrustersReference.left_percentage = 0.0;
             thrustersReference.right_percentage = 0.0;
 
-            if (conf->ctrlMode == ControlMode::ThrusterMapping) {
+            if (dcl_conf->ctrlMode == ControlMode::ThrusterMapping) {
                 pidSurgeTM.Reset();
-            } else if (conf->ctrlMode == ControlMode::ClassicPIDControl) {
+            } else if (dcl_conf->ctrlMode == ControlMode::ClassicPIDControl) {
                 pidSurgeCP.Reset();
                 pidYawRateCP.Reset();
             } else {
@@ -313,20 +314,30 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-bool LoadDclConfiguration(std::shared_ptr<DCLConfiguration> conf, std::string filename)
+bool LoadDclConfiguration(std::shared_ptr<DCLConfiguration> dcl_conf, std::string filename)
 {
     libconfig::Config confObj;
 
-    //Inizialization
+    // Read the ULISSE_CTRL config file
     std::string package_share_directory = ament_index_cpp::get_package_share_directory("ulisse_ctrl");
-    std::stringstream conf_path;
-    conf_path << package_share_directory << "/conf/" << filename;
+    std::string confPath = package_share_directory + "/conf/" + filename;
+    std::cout << "PATH TO ULISSE_CTRL CONF FILE (DCL): " << confPath << std::endl;
 
-    std::string confPath = conf_path.str().c_str();
+    try {
+        confObj.readFile(confPath.c_str());
+    } catch (libconfig::ParseException& e) {
+        std::cerr << "Parse exception when reading:" << confPath << std::endl;
+        std::cerr << "line: " << e.getLine() << " error: " << e.getError() << std::endl;
+        return false;
+    }
+    if (!dcl_conf->LoadConfiguration(confObj))
+        return false;
 
-    std::cout << "PATH TO CONF FILE : " << confPath << std::endl;
+    // Read the ULISSE_MODEL config file
+    package_share_directory = ament_index_cpp::get_package_share_directory("surface_vehicle_model");
+    confPath = package_share_directory + "/conf/ulisse_model.conf";
+    std::cout << "PATH TO ULISSE_MODEL CONF FILE (DCL): " << confPath << std::endl;
 
-    //read the config file
     try {
         confObj.readFile(confPath.c_str());
     } catch (libconfig::ParseException& e) {
@@ -335,7 +346,7 @@ bool LoadDclConfiguration(std::shared_ptr<DCLConfiguration> conf, std::string fi
         return false;
     }
 
-    if (!conf->ConfigureFromFile(confObj))
+    if (!dcl_conf->ConfigureUlisseModel(confObj))
         return false;
 
     return true;

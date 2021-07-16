@@ -17,14 +17,15 @@
 #include "ulisse_msgs/srv/set_cruise_control.hpp"
 #include "ulisse_msgs/srv/reset_configuration.hpp"
 #include "ulisse_msgs/srv/nav_filter_command.hpp"
+#include "ulisse_msgs/msg/speed_heading.hpp"
 
 
 
 class CommandWrapper : public QObject, rclcpp::Node {
     Q_OBJECT
     QQmlApplicationEngine* appEngine_;
-    QTimer* myTimer_;
-    QObject *toastMgrObj_, *speedHeadTimoutObj_;
+    QScopedPointer<QTimer> checkErrorTimer_, speedHeadingPubTimer_, speedHeadingTimeoutTimer_;
+    QObject *toastMgrObj_, *speedHeadTimeoutObj_;
     QObject *cruiseSpeedObj_, *goalDistanceObj_, *waypointPathObj_, *waypointRadiusObj_, *loopPathObj_, *mapMouseAreaObj_;
 
     //rclcpp::Node::SharedPtr np_;
@@ -38,12 +39,15 @@ class CommandWrapper : public QObject, rclcpp::Node {
 
     rclcpp::Subscription<ulisse_msgs::msg::FeedbackGui>::SharedPtr feedbackGuiSub_;
 
-    ulisse_msgs::msg::FeedbackGui feedbackGuiMsg;
+    rclcpp::Publisher<ulisse_msgs::msg::SpeedHeading>::SharedPtr speedHeadingPub_;
+
+    ulisse_msgs::msg::FeedbackGui feedbackGuiMsg_;
+    ulisse_msgs::msg::SpeedHeading speedHeadingMsg_;
 
     QVariantList waypoint_path_;
     int wpCurrentIndex_;
     double wpRadius_;
-    int errorCheckInterval_;
+    int errorCheckInterval_, speedHeadingTimerPeriod_;
     bool fbkReceived_;
 
     void FeedbackGuiCB(const ulisse_msgs::msg::FeedbackGui::SharedPtr msg);
@@ -51,7 +55,7 @@ class CommandWrapper : public QObject, rclcpp::Node {
     bool SendBoundariesRequest(ulisse_msgs::srv::SetBoundaries::Request::SharedPtr req);
     bool SendPathRequest(ulisse_msgs::srv::ControlCommand::Request::SharedPtr req);
     bool SendCommandRequest(ulisse_msgs::srv::ControlCommand::Request::SharedPtr req);
-    //void SetupCommandClient();
+    void StopOngoingTimers();
 
 public:
     explicit CommandWrapper(QObject* parent = nullptr);
@@ -85,7 +89,8 @@ public:
 
 public slots:
     void check_error_slot();
-    //void process_callbacks_slot();
+    void publish_speed_heading();
+    void stop_speed_heading_publisher();
 
 signals:
     //void callbacks_processed();

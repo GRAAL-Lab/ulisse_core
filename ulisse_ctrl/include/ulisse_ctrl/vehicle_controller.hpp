@@ -9,6 +9,7 @@
 #include "ulisse_msgs/msg/feedback_gui.hpp"
 #include "ulisse_msgs/msg/reference_velocities.hpp"
 #include "ulisse_msgs/msg/vehicle_status.hpp"
+#include "ulisse_msgs/msg/speed_heading.hpp"
 
 #include "ulisse_msgs/srv/control_command.hpp"
 #include "ulisse_msgs/srv/get_boundaries.hpp"
@@ -53,6 +54,8 @@ class VehicleController : public rclcpp::Node {
 
     rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr navFilterSub_;
     rclcpp::Subscription<ulisse_msgs::msg::LLCStatus>::SharedPtr llcStatusSub_;
+
+    rclcpp::Subscription<ulisse_msgs::msg::SpeedHeading>::SharedPtr speedHeadingSub_;
 
     rclcpp::Publisher<ulisse_msgs::msg::ReferenceVelocities>::SharedPtr referenceVelocitiesPub_;
     rclcpp::Publisher<ulisse_msgs::msg::VehicleStatus>::SharedPtr vehicleStatusPub_;
@@ -141,6 +144,7 @@ class VehicleController : public rclcpp::Node {
         std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Response> response);
 
     void SlowTimerCB();
+    void SpeedHeadingCB(const ulisse_msgs::msg::SpeedHeading::SharedPtr msg);
     void NavFilterCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
     void LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg);
 
