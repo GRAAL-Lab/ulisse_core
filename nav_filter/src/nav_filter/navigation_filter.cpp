@@ -13,7 +13,7 @@ namespace nav {
         , confPath_(confPath)
     {
         stateDim_ = 0;
-        centroidLocation_ = ctb::LatLong(44.095633, 9.862705);
+        centroidLocation_ = ctb::LatLong(44.393, 8.945);
 
 
 
