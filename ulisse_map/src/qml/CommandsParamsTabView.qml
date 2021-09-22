@@ -62,19 +62,14 @@ Pane{
                 Layout.fillWidth: true
 
                 Button {
-                    id: moveToButton
-                    text: "Move to marker"
+                    id: holdButton
+                    text: "Hold Position"
                     Layout.fillWidth: true
-                    Material.background: pressed ? orange : mainColor
-                    enabled: Helper.coord_inside_polygon(map.marker_coords,
-                                                         map.polysec_cur.path)
-                             && (map.markerIcon.opacity > 0)
                     highlighted: true
+                    Material.background: pressed ? orange : mainColor
 
                     onClicked: {
-                        cmdWrapper.sendLatLongCommand(
-                                    map.marker_coords,
-                                    holdRadius.value)
+                        cmdWrapper.sendHoldCommand(holdRadius.value)
                     }
                 }
 
@@ -92,16 +87,22 @@ Pane{
                 }
 
                 Button {
-                    id: holdButton
-                    text: "Hold Position"
+                    id: moveToButton
+                    text: "Move to marker"
                     Layout.fillWidth: true
-                    highlighted: true
                     Material.background: pressed ? orange : mainColor
+                    enabled: Helper.coord_inside_polygon(map.marker_coords,
+                                                         map.polysec_cur.path)
+                             && (map.markerIcon.opacity > 0)
+                    highlighted: true
 
                     onClicked: {
-                        cmdWrapper.sendHoldCommand(holdRadius.value)
+                        cmdWrapper.sendLatLongCommand(
+                                    map.marker_coords,
+                                    holdRadius.value)
                     }
                 }
+
 
                 ToolSeparator {
                     orientation: Qt.Horizontal

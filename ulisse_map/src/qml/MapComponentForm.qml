@@ -101,7 +101,7 @@ Map {
         //coordinate: map.center
         z: map.z + 2
         anchorPoint.x: markerImage.width / 2
-        anchorPoint.y: markerImage.height / 2
+        anchorPoint.y: markerImage.height
         opacity: 1.0
     }
 

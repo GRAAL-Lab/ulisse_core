@@ -137,6 +137,14 @@ void FeedbackUpdater::NavFilterDataCB(const ulisse_msgs::msg::NavFilterData::Sha
     q_ulisse_yaw_deg_ = int(q_ulisse_yaw_deg_ * 1E2) / 1E2;
     q_ulisse_surge_ = int(q_ulisse_surge_ * 1E2) / 1E2;
 
+
+    msg->bodyframe_angular_position.pitch;
+    msg->bodyframe_angular_position.roll;
+
+    msg->bodyframe_angular_velocity.at();
+
+
+
     gpsOnline_ = msg->gps_received;
     imuOnline_ = msg->imu_received;
     compassOnline_ = msg->compass_received;
