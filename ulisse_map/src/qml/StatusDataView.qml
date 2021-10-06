@@ -332,5 +332,72 @@ Rectangle {
                 }
             }
         }
+
+        Pane {
+            id: dclDataPane
+            Layout.rowSpan: 1
+            Layout.columnSpan: 1
+            Layout.fillWidth: true
+            Layout.preferredWidth: gridView.width / 2
+            Layout.leftMargin: 20
+
+            ColumnLayout {
+                id: dclData
+                width: parent.width
+                Layout.fillHeight: true
+                spacing: 8
+
+
+                Label {
+                    Layout.fillHeight: true
+                    Layout.alignment: Qt.AlignHCenter
+                    font.pointSize: 18
+                    font.weight: Font.DemiBold
+                    color: blue
+                    text: "DCL"
+                }
+
+
+                GridLayout {
+                    id: dclDataGrid
+                    columns: 4
+                    rows: 3
+
+                    /// 1st ROW ///
+                    Text { }
+                    Text { text: "Feedback"; font.bold: true; }
+                    Text { text: "Reference"; font.bold: true; }
+                    Text { text: "Error"; font.bold: true; }
+
+
+                    /// 2nd ROW ///
+                    Text {
+                        Layout.alignment: Qt.AlignHCenter
+                        color: blue
+                        text: "Surge (m/s)"
+                        font.pointSize: labelsize
+                        font.bold: true
+                        Layout.preferredWidth: 140
+                    }
+                    Text { text: "%1".arg(fbkUpdater.ulisse_surge); color: grey; Layout.preferredWidth: 120 }
+                    Text { text: "%1".arg(fbkUpdater.desired_surge); color: grey; Layout.preferredWidth: 120 }
+                    Text { text: "Surge Err."; color: grey; Layout.preferredWidth: 120 }
+
+
+                    /// 3rd ROW ///
+                    Text {
+                        Layout.alignment: Qt.AlignHCenter
+                        color: blue
+                        text: "Yaw Rate (rad/s)"
+                        font.pointSize: labelsize
+                        font.bold: true
+                        Layout.preferredWidth: 140
+                    }
+                    Text { text: "%1".arg(fbkUpdater.ulisse_yawrate); color: grey; Layout.preferredWidth: 120 }
+                    Text { text: "%1".arg(fbkUpdater.desired_jog); color: grey; Layout.preferredWidth: 120 }
+                    Text { text: "Yaw Rate Err."; color: grey; Layout.preferredWidth: 120 }
+                }
+            }
+        }
     }
 }

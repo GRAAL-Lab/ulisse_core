@@ -87,6 +87,20 @@ Pane{
                 }
 
                 Button {
+                    id: surgeYawRateButton
+                    text: "Surge/YawRate"
+                    enabled: false
+                    Layout.fillWidth: true
+                    Layout.fillHeight: false
+                    highlighted: true
+                    Material.background: pressed ? orange : mainColor
+                    onClicked: {
+                        /*cmdWrapper.sendSpeedHeadingCommand(sliderSpeed.value,
+                                                           sliderHeading.value)*/
+                    }
+                }
+
+                Button {
                     id: moveToButton
                     text: "Move to marker"
                     Layout.fillWidth: true

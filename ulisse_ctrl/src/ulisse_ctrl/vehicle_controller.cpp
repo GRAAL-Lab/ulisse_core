@@ -19,7 +19,7 @@ using std::placeholders::_3;
 namespace ulisse {
 
 VehicleController::VehicleController(int rate, std::string file_name)
-    : Node("controller_node")
+    : Node("kinematic_control_node")
     , rate_(rate)
     , boundariesSet_(false)
 {
@@ -477,7 +477,7 @@ void VehicleController::ResetConfHandler(const std::shared_ptr<rmw_request_id_t>
         std::cerr << "Failed to reload KCL configuration from file. Load the previous configuration" << std::endl;
     }
 
-        response->res = "[KCL] ReloadConfiguration::ok";
+    response->res = "[KCL] ReloadConfiguration::ok";
 }
 
 void VehicleController::SlowTimerCB()
@@ -587,7 +587,9 @@ void VehicleController::PublishControl()
     referenceVelocities.desired_surge = yTpik_[0];
     referenceVelocities.desired_yaw_rate = yTpik_[5];
 
-    referenceVelocitiesPub_->publish(referenceVelocities);
+    if (uFsm_.GetCurrentStateName() != ulisse::states::ID::halt){
+        referenceVelocitiesPub_->publish(referenceVelocities);
+    }
 
     ulisse_msgs::msg::FeedbackGui feedbackGuiMsg;
     feedbackGuiMsg.stamp.sec = now_stamp_secs;

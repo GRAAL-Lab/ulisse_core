@@ -125,6 +125,7 @@ Pane {
 
 
         CommandsParamsTabView {
+            // COMMAND BUTTONS ARE INSIDE THIS QML
             // This Item is needed to add margins to the StackLayout and make it correctly resize
             id: commandParamsStackContainer
             Layout.topMargin: 10

@@ -33,6 +33,7 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     Q_PROPERTY(QString vehicle_state READ get_vehicle_state NOTIFY callbacks_processed)
     Q_PROPERTY(QGeoCoordinate ulisse_pos READ get_ulisse_pos NOTIFY callbacks_processed)
     Q_PROPERTY(double ulisse_yaw_deg READ get_ulisse_yaw NOTIFY callbacks_processed)
+    Q_PROPERTY(double ulisse_yawrate READ get_ulisse_yawrate NOTIFY callbacks_processed)
     Q_PROPERTY(double ulisse_surge READ get_ulisse_surge NOTIFY callbacks_processed)
     Q_PROPERTY(double accept_radius READ get_accept_radius NOTIFY callbacks_processed)
     Q_PROPERTY(QString gps_time READ get_gps_time NOTIFY callbacks_processed)
@@ -76,7 +77,7 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     double q_ulisse_surge_;
     double q_battery_perc_L_, q_battery_perc_R_;
     QString q_vehicle_state_, q_gps_time_;
-    double q_ulisse_yaw_deg_;
+    double q_ulisse_yaw_deg_, q_ulisse_yawrate_;
     int feedbackUpdateInterval_;
     double q_accept_radius_;
     double q_desired_surge_, q_desired_jog_;
@@ -148,6 +149,7 @@ public:
     double get_ulisse_surge();
     QGeoCoordinate get_goal_pos();
     double get_ulisse_yaw();
+    double get_ulisse_yawrate();
     QString get_vehicle_state();
     double get_goal_distance();
     double get_goal_heading();

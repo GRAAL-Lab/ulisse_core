@@ -138,12 +138,10 @@ void FeedbackUpdater::NavFilterDataCB(const ulisse_msgs::msg::NavFilterData::Sha
     q_ulisse_surge_ = int(q_ulisse_surge_ * 1E2) / 1E2;
 
 
-    msg->bodyframe_angular_position.pitch;
-    msg->bodyframe_angular_position.roll;
-
-    msg->bodyframe_angular_velocity.at();
-
-
+    //msg->bodyframe_angular_position.pitch;
+    //msg->bodyframe_angular_position.roll;
+    //
+    q_ulisse_yawrate_ = msg->bodyframe_angular_velocity.at(2);
 
     gpsOnline_ = msg->gps_received;
     imuOnline_ = msg->imu_received;
@@ -297,6 +295,11 @@ QGeoCoordinate FeedbackUpdater::get_goal_pos()
 double FeedbackUpdater::get_ulisse_yaw()
 {
     return q_ulisse_yaw_deg_;
+}
+
+double FeedbackUpdater::get_ulisse_yawrate()
+{
+    return q_ulisse_yawrate_;
 }
 
 QString FeedbackUpdater::get_vehicle_state()
