@@ -5,7 +5,7 @@
 
 #include "rml/RML.h"
 #include "feedbackupdater.h"
-#include "ulisse_ctrl/fsm_defines.hpp"
+#include "ulisse_ctrl/ulisse_defines.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 
 using std::placeholders::_1;

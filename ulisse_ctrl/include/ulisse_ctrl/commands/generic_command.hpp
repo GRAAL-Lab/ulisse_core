@@ -2,7 +2,7 @@
 #define ULISSE_CTRL_GENERICCOMMAND_HPP
 
 #include "ulisse_ctrl/ctrl_data_structs.hpp"
-#include "ulisse_ctrl/fsm_defines.hpp"
+#include "ulisse_ctrl/ulisse_defines.hpp"
 #include "ulisse_ctrl/states/generic_state.hpp"
 #include <fsm/fsm.h>
 

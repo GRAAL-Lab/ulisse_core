@@ -9,7 +9,7 @@
 #include <iostream>
 #include <rclcpp/rclcpp.hpp>
 
-#include "ulisse_ctrl/fsm_defines.hpp"
+#include "ulisse_ctrl/ulisse_defines.hpp"
 
 #include "ulisse_msgs/srv/control_command.hpp"
 #include "ulisse_msgs/topicnames.hpp"
@@ -75,7 +75,7 @@ int main(int argc, char* argv[])
             std::cin >> serviceReq->latlong_cmd.acceptance_radius;
         } break;
         case 4: {
-            serviceReq->command_type = ulisse::commands::ID::speedheading;
+            serviceReq->command_type = ulisse::commands::ID::surgeheading;
 
             std::cout << "speed ";
             std::cin >> serviceReq->sh_cmd.speed;

@@ -27,7 +27,7 @@ Pane{
 
             TabButton {
                 id: commandsTabButton
-                text: qsTr("Commands")
+                text: qsTr("Geographic")
 
                 contentItem: Text {
                     text: commandsTabButton.text
@@ -40,7 +40,7 @@ Pane{
 
             TabButton {
                 id: parametersTabButton
-                text: qsTr("Parameters")
+                text: qsTr("Parametric")
 
                 contentItem: Text {
                     text: parametersTabButton.text
@@ -73,32 +73,7 @@ Pane{
                     }
                 }
 
-                Button {
-                    id: speedHeadButton
-                    text: "Speed/Heading"
-                    Layout.fillWidth: true
-                    Layout.fillHeight: false
-                    highlighted: true
-                    Material.background: pressed ? orange : mainColor
-                    onClicked: {
-                        cmdWrapper.sendSpeedHeadingCommand(sliderSpeed.value,
-                                                           sliderHeading.value)
-                    }
-                }
 
-                Button {
-                    id: surgeYawRateButton
-                    text: "Surge/YawRate"
-                    enabled: false
-                    Layout.fillWidth: true
-                    Layout.fillHeight: false
-                    highlighted: true
-                    Material.background: pressed ? orange : mainColor
-                    onClicked: {
-                        /*cmdWrapper.sendSpeedHeadingCommand(sliderSpeed.value,
-                                                           sliderHeading.value)*/
-                    }
-                }
 
                 Button {
                     id: moveToButton
@@ -114,6 +89,39 @@ Pane{
                         cmdWrapper.sendLatLongCommand(
                                     map.marker_coords,
                                     holdRadius.value)
+                    }
+                }
+
+
+                RowLayout {
+                    id: acceptRadControl
+                    Layout.alignment: Qt.AlignVCenter //| Qt.AlignHCenter
+
+                    Label {
+                        text: qsTr("Accept. radius")
+                        leftPadding: 5
+                        font.pointSize: 11
+                        width: labelWidth
+                        horizontalAlignment: Text.AlignLeft
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    Slider {
+                        id: holdRadius
+                        Layout.preferredWidth: sliderWidth
+                        Layout.leftMargin: 0
+                        value: 5
+                        stepSize: 0.1
+                        from: 0.5
+                        to: 10
+                    }
+
+                    Text {
+                        text: holdRadius.value.toFixed(1) + " m"
+                        Layout.preferredWidth: unitsWidth
+                        font.pointSize: 11
+                        horizontalAlignment: Text.AlignLeft
+                        verticalAlignment: Text.AlignVCenter
                     }
                 }
 
@@ -141,12 +149,40 @@ Pane{
                 id: parametersTab
                 Layout.fillWidth: true
 
+
+                Button {
+                    id: speedHeadButton
+                    text: "Surge/Heading"
+                    Layout.fillWidth: true
+                    Layout.fillHeight: false
+                    highlighted: true
+                    Material.background: pressed ? orange : mainColor
+                    onClicked: {
+                        cmdWrapper.sendSurgeHeadingCommand(sliderSurge.value,
+                                                           sliderHeading.value)
+                    }
+                }
+
+                Button {
+                    id: surgeYawRateButton
+                    text: "Surge/YawRate"
+                    //enabled: false
+                    Layout.fillWidth: true
+                    Layout.fillHeight: false
+                    highlighted: true
+                    Material.background: pressed ? orange : mainColor
+                    onClicked: {
+                        cmdWrapper.sendSurgeYawRateCommand(sliderSurge.value,
+                                                           sliderYawRate.value)
+                    }
+                }
+
                 RowLayout {
-                    id: cruiseSpeedControl
+                    id: surgeControl
                     Layout.alignment: Qt.AlignVCenter //| Qt.AlignHCenter
 
                     Label {
-                        text: qsTr("Surge sat. ")
+                        text: qsTr("Surge Ref. ")
                         clip: false
                         leftPadding: 5
                         font.pointSize: 11
@@ -156,21 +192,21 @@ Pane{
                     }
 
                     Slider {
-                        id: sliderSpeed
+                        id: sliderSurge
                         objectName: "cruiseSpeed"
                         Layout.preferredWidth: sliderWidth + 20
                         from: 0.0
                         to: 5
                         stepSize: 0.1
                         value: 1.5
-                        onPressedChanged: function() {
-                            if (sliderSpeed.pressed === false)
-                                cmdWrapper.setCruiseSpeedCommand(sliderSpeed.value)
-                        }
+                        /*onPressedChanged: function() {
+                            if (sliderSurge.pressed === false)
+                                cmdWrapper.setCruiseSpeedCommand(sliderSurge.value)
+                        }*/
                     }
 
                     Text {
-                        text: sliderSpeed.value.toFixed(1) + " m/s"
+                        text: sliderSurge.value.toFixed(1) + " m/s"
                         verticalAlignment: Text.AlignVCenter
                         horizontalAlignment: Text.AlignLeft
                         //Layout.leftMargin: 10
@@ -184,7 +220,7 @@ Pane{
                     Layout.alignment: Qt.AlignVCenter //| Qt.AlignHCenter
 
                     Label {
-                        text: qsTr("YawRate sat.")
+                        text: qsTr("YawRate Ref.")
                         clip: false
                         leftPadding: 5
                         font.pointSize: 11
@@ -198,17 +234,17 @@ Pane{
                         objectName: "yawRateSat"
                         Layout.preferredWidth: sliderWidth - 5
                         from: 0.0
-                        to: 2.0
-                        stepSize: 0.1
+                        to: 1.5
+                        stepSize: 0.05
                         value: 1
-                        onPressedChanged: function() {
+                        /*onPressedChanged: function() {
                             if (sliderYawRate.pressed === false)
                                 cmdWrapper.setYawRateCommand(sliderYawRate.value)
-                        }
+                        }*/
                     }
 
                     Text {
-                        text: sliderYawRate.value.toFixed(1) + " rad/s"
+                        text: sliderYawRate.value.toFixed(2) + " rad/s"
                         verticalAlignment: Text.AlignVCenter
                         horizontalAlignment: Text.AlignLeft
                         //Layout.leftMargin: 10
@@ -249,38 +285,6 @@ Pane{
                         horizontalAlignment: Text.AlignLeft
                         verticalAlignment: Text.AlignVCenter
                         Layout.preferredWidth: unitsWidth
-                    }
-                }
-
-                RowLayout {
-                    id: acceptRadControl
-                    Layout.alignment: Qt.AlignVCenter //| Qt.AlignHCenter
-
-                    Label {
-                        text: qsTr("Accept. radius")
-                        leftPadding: 5
-                        font.pointSize: 11
-                        width: labelWidth
-                        horizontalAlignment: Text.AlignLeft
-                        verticalAlignment: Text.AlignVCenter
-                    }
-
-                    Slider {
-                        id: holdRadius
-                        Layout.preferredWidth: sliderWidth
-                        Layout.leftMargin: 0
-                        value: 5
-                        stepSize: 0.1
-                        from: 0.5
-                        to: 10
-                    }
-
-                    Text {
-                        text: holdRadius.value.toFixed(1) + " m"
-                        Layout.preferredWidth: unitsWidth
-                        font.pointSize: 11
-                        horizontalAlignment: Text.AlignLeft
-                        verticalAlignment: Text.AlignVCenter
                     }
                 }
 

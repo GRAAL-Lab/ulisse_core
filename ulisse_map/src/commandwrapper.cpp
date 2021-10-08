@@ -8,7 +8,7 @@
 #include <QJsonDocument>
 
 #include "sisl.h"
-#include "ulisse_ctrl/fsm_defines.hpp"
+#include "ulisse_ctrl/ulisse_defines.hpp"
 #include "ulisse_driver/LLCHelperDataStructs.h"
 #include "nav_filter/nav_data_structs.hpp"
 
@@ -36,17 +36,17 @@ void CommandWrapper::LoadQmlEngine(QQmlApplicationEngine* engine)
 {
     appEngine_ = engine;
     checkErrorTimer_.reset(new QTimer());
-    speedHeadingPubTimer_.reset(new QTimer());
-    speedHeadingTimeoutTimer_.reset(new QTimer());
-    speedHeadingTimeoutTimer_->setSingleShot(true);
+    surgeHeadingPubTimer_.reset(new QTimer());
+    commandTimeoutTimer_.reset(new QTimer());
+    commandTimeoutTimer_->setSingleShot(true);
 
     errorCheckInterval_ = 500;
-    speedHeadingTimerPeriod_ = 100;
+    commandTimerPeriod_ = 100;
     fbkReceived_ = false;
 
     QObject::connect(checkErrorTimer_.get(), SIGNAL(timeout()), this, SLOT(check_error_slot()));
-    QObject::connect(speedHeadingPubTimer_.get(), SIGNAL(timeout()), this, SLOT(publish_speed_heading()));
-    QObject::connect(speedHeadingTimeoutTimer_.get(), SIGNAL(timeout()), this, SLOT(stop_speed_heading_publisher()));
+    QObject::connect(surgeHeadingPubTimer_.get(), SIGNAL(timeout()), this, SLOT(publish_surge_heading()));
+    QObject::connect(commandTimeoutTimer_.get(), SIGNAL(timeout()), this, SLOT(stop_surge_heading_publisher()));
 
     QList<QObject*> root_objects = appEngine_->rootObjects();
 
@@ -65,13 +65,13 @@ void CommandWrapper::LoadQmlEngine(QQmlApplicationEngine* engine)
         qDebug("No 'goalDistance' found!");
     }
 
-    cruiseSpeedObj_ = root_objects.first()->findChild<QObject*>("cruiseSpeed");
+    /*cruiseSpeedObj_ = root_objects.first()->findChild<QObject*>("cruiseSpeed");
     if (!cruiseSpeedObj_) {
         qDebug("No 'cruiseSpeed' found!");
-    }
+    }*/
 
-    speedHeadTimeoutObj_ = root_objects.first()->findChild<QObject*>("shTimeout");
-    if (!speedHeadTimeoutObj_) {
+    cmdTimeoutObj_ = root_objects.first()->findChild<QObject*>("shTimeout");
+    if (!cmdTimeoutObj_) {
         qDebug("No 'speedHeadTimeout' found!");
     }
 
@@ -86,7 +86,7 @@ void CommandWrapper::LoadQmlEngine(QQmlApplicationEngine* engine)
 
     feedbackGuiSub_ = this->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10, std::bind(&CommandWrapper::FeedbackGuiCB, this, _1) /*, custom_qos_profile*/);
 
-    speedHeadingPub_ = this->create_publisher<ulisse_msgs::msg::SpeedHeading>(ulisse_msgs::topicnames::speed_heading, 1);
+    surgeHeadingPub_ = this->create_publisher<ulisse_msgs::msg::SurgeHeading>(ulisse_msgs::topicnames::surge_heading, 1);
 
     /*connect(this, &CommandWrapper::connected, []() { std::cout << "service connected" << std::endl; });
     notificator = std::async([&] {
@@ -491,18 +491,18 @@ bool CommandWrapper::SendCommandRequest(ulisse_msgs::srv::ControlCommand::Reques
 
 void CommandWrapper::StopOngoingTimers()
 {
-    speedHeadingPubTimer_->stop();
+    surgeHeadingPubTimer_->stop();
     checkErrorTimer_->stop();
 }
 
-void CommandWrapper::publish_speed_heading()
+void CommandWrapper::publish_surge_heading()
 {
-    speedHeadingPub_->publish(speedHeadingMsg_);
+    surgeHeadingPub_->publish(surgeHeadingMsg_);
 }
 
-void CommandWrapper::stop_speed_heading_publisher()
+void CommandWrapper::stop_surge_heading_publisher()
 {
-    speedHeadingPubTimer_->stop();
+    surgeHeadingPubTimer_->stop();
 }
 
 
@@ -531,23 +531,42 @@ bool CommandWrapper::sendLatLongCommand(const QGeoCoordinate& goal, double radiu
     return SendCommandRequest(serviceReq);
 }
 
-bool CommandWrapper::sendSpeedHeadingCommand(double speed, double heading)
+bool CommandWrapper::sendSurgeHeadingCommand(double surge, double heading)
 {
     auto serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
-    serviceReq->command_type = ulisse::commands::ID::speedheading;
-    speedHeadingMsg_.speed = speed;
-    speedHeadingMsg_.heading = heading * M_PI / 180.0;
+    serviceReq->command_type = ulisse::commands::ID::surgeheading;
+    surgeHeadingMsg_.surge = surge;
+    surgeHeadingMsg_.heading = heading * M_PI / 180.0;
     //    serviceReq->sh_cmd.speed = speed;
     //    serviceReq->sh_cmd.heading = heading * M_PI / 180.0; // Converting to radians
-    serviceReq->sh_cmd.timeout.sec = (speedHeadTimeoutObj_->property("value")).toUInt();
+    serviceReq->sh_cmd.timeout.sec = (cmdTimeoutObj_->property("value")).toUInt();
     serviceReq->sh_cmd.timeout.nanosec = 0;
     if(SendCommandRequest(serviceReq)){
-        speedHeadingPubTimer_->start(speedHeadingTimerPeriod_);
-        speedHeadingTimeoutTimer_->start((speedHeadTimeoutObj_->property("value")).toUInt() * 1000);
+        surgeHeadingPubTimer_->start(commandTimerPeriod_);
+        commandTimeoutTimer_->start((cmdTimeoutObj_->property("value")).toUInt() * 1000);
         return true;
     } else {
         return false;
     }
+}
+
+bool CommandWrapper::sendSurgeYawRateCommand(double surge, double yawrate)
+{
+    /*auto serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
+    serviceReq->command_type = ulisse::commands::ID::surgeyawrate;
+    surgeYawRateMsg_.surge = surge;
+    surgeYawRateMsg_.yawrate = yawrate;
+    //    serviceReq->sh_cmd.speed = speed;
+    //    serviceReq->sh_cmd.heading = heading * M_PI / 180.0; // Converting to radians
+    serviceReq->sh_cmd.timeout.sec = (cmdTimeoutObj_->property("value")).toUInt();
+    serviceReq->sh_cmd.timeout.nanosec = 0;
+    if(SendCommandRequest(serviceReq)){
+        commandPubTimer_->start(commandTimerPeriod_);
+        commandTimeoutTimer_->start((cmdTimeoutObj_->property("value")).toUInt() * 1000);
+        return true;
+    } else {
+        return false;
+    }*/
 }
 
 bool CommandWrapper::sendThrusterActivation(bool activate)
@@ -577,7 +596,7 @@ bool CommandWrapper::sendThrusterActivation(bool activate)
     return serviceAvailable;
 }
 
-bool CommandWrapper::setCruiseSpeedCommand(double speed)
+/*bool CommandWrapper::setCruiseSpeedCommand(double speed)
 {
     std::string result_msg;
     bool serviceAvailable;
@@ -601,7 +620,7 @@ bool CommandWrapper::setCruiseSpeedCommand(double speed)
     }
     ShowToast(result_msg.c_str(), 2000);
     return serviceAvailable;
-}
+}*/
 
 bool CommandWrapper::startPath()
 {

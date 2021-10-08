@@ -74,7 +74,7 @@ RowLayout {
     }
 
     ModalPopup {
-        id: speedHeadingDialog
+        id: surgeheadingDialog
         dialogTitle: "Insert both speed (m/s) and heading (deg)"
     }
 

@@ -9,7 +9,7 @@
 #include "ulisse_msgs/msg/feedback_gui.hpp"
 #include "ulisse_msgs/msg/reference_velocities.hpp"
 #include "ulisse_msgs/msg/vehicle_status.hpp"
-#include "ulisse_msgs/msg/speed_heading.hpp"
+#include "ulisse_msgs/msg/surge_heading.hpp"
 
 #include "ulisse_msgs/srv/control_command.hpp"
 #include "ulisse_msgs/srv/get_boundaries.hpp"
@@ -21,7 +21,7 @@
 #include "ulisse_ctrl/commands/command_hold.hpp"
 #include "ulisse_ctrl/commands/command_latlong.hpp"
 #include "ulisse_ctrl/commands/command_pathfollow.hpp"
-#include "ulisse_ctrl/commands/command_speedheading.hpp"
+#include "ulisse_ctrl/commands/command_surgeheading.hpp"
 
 #include "ulisse_ctrl/events/event_near_goal_position.hpp"
 #include "ulisse_ctrl/events/event_rc_enabled.hpp"
@@ -30,7 +30,7 @@
 #include "ulisse_ctrl/states/state_hold.hpp"
 #include "ulisse_ctrl/states/state_latlong.hpp"
 #include "ulisse_ctrl/states/state_pathfollow.hpp"
-#include "ulisse_ctrl/states/state_speedheading.hpp"
+#include "ulisse_ctrl/states/state_surgeheading.hpp"
 
 #include "ulisse_ctrl/tasks/SafetyBoundaries.hpp"
 
@@ -55,7 +55,7 @@ class VehicleController : public rclcpp::Node {
     rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr navFilterSub_;
     rclcpp::Subscription<ulisse_msgs::msg::LLCStatus>::SharedPtr llcStatusSub_;
 
-    rclcpp::Subscription<ulisse_msgs::msg::SpeedHeading>::SharedPtr speedHeadingSub_;
+    rclcpp::Subscription<ulisse_msgs::msg::SurgeHeading>::SharedPtr surgeheadingSub_;
 
     rclcpp::Publisher<ulisse_msgs::msg::ReferenceVelocities>::SharedPtr referenceVelocitiesPub_;
     rclcpp::Publisher<ulisse_msgs::msg::VehicleStatus>::SharedPtr vehicleStatusPub_;
@@ -100,13 +100,13 @@ class VehicleController : public rclcpp::Node {
     std::shared_ptr<states::StateHalt> stateHalt_;
     std::shared_ptr<states::StateHold> stateHold_;
     std::shared_ptr<states::StateLatLong> stateLatLong_;
-    std::shared_ptr<states::StateSpeedHeading> stateSpeedHeading_;
+    std::shared_ptr<states::StateSurgeHeading> statesurgeheading_;
     std::shared_ptr<states::StatePathFollow> statePathFollowing_;
 
     commands::CommandHalt commandHalt_;
     commands::CommandHold commandHold_;
     commands::CommandLatLong commandLatLong_;
-    commands::CommandSpeedHeading commandSpeedHeading_;
+    commands::CommandSurgeHeading commandsurgeheading_;
     commands::CommandPathFollow commandPathFollowing_;
 
     events::EventRCEnabled eventRcEnabled_;
@@ -136,15 +136,15 @@ class VehicleController : public rclcpp::Node {
     void GetBoundariesHandler(const std::shared_ptr<rmw_request_id_t> request_header,
         const std::shared_ptr<ulisse_msgs::srv::GetBoundaries::Request> request,
         std::shared_ptr<ulisse_msgs::srv::GetBoundaries::Response> response);
-    void SetCruiseControlHandler(const std::shared_ptr<rmw_request_id_t> request_header,
+    /*void SetCruiseControlHandler(const std::shared_ptr<rmw_request_id_t> request_header,
         const std::shared_ptr<ulisse_msgs::srv::SetCruiseControl::Request> request,
-        std::shared_ptr<ulisse_msgs::srv::SetCruiseControl::Response> response);
+        std::shared_ptr<ulisse_msgs::srv::SetCruiseControl::Response> response);*/
     void ResetConfHandler(const std::shared_ptr<rmw_request_id_t> request_header,
         const std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Request> request,
         std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Response> response);
 
     void SlowTimerCB();
-    void SpeedHeadingCB(const ulisse_msgs::msg::SpeedHeading::SharedPtr msg);
+    void SurgeHeadingCB(const ulisse_msgs::msg::SurgeHeading::SharedPtr msg);
     void NavFilterCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
     void LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg);
 

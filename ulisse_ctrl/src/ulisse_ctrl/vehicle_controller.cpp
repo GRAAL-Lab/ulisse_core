@@ -3,9 +3,8 @@
 #include <jsoncpp/json/json.h>
 #include <ament_index_cpp/get_package_share_directory.hpp>
 
-#include "ulisse_ctrl/fsm_defines.hpp"
-#include "ulisse_ctrl/configuration.hpp"
 #include "ulisse_ctrl/ulisse_defines.hpp"
+#include "ulisse_ctrl/configuration.hpp"
 #include "ulisse_ctrl/states/generic_state.hpp"
 
 #include "ulisse_msgs/terminal_utils.hpp"
@@ -33,14 +32,14 @@ VehicleController::VehicleController(int rate, std::string file_name)
     stateHold_ = std::make_shared<states::StateHold>();
     statePathFollowing_ = std::make_shared<states::StatePathFollow>();
     stateLatLong_ = std::make_shared<states::StateLatLong>();
-    stateSpeedHeading_ = std::make_shared<states::StateSpeedHeading>();
+    statesurgeheading_ = std::make_shared<states::StateSurgeHeading>();
 
     // Sensor Subscriptions
     navFilterSub_ = this->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 10, std::bind(&VehicleController::NavFilterCB, this, _1));
     llcStatusSub_ = this->create_subscription<ulisse_msgs::msg::LLCStatus>(ulisse_msgs::topicnames::llc_status, 10, std::bind(&VehicleController::LLCStatusCB, this, _1));
 
     // Data Subscriptions
-    speedHeadingSub_ = this->create_subscription<ulisse_msgs::msg::SpeedHeading>(ulisse_msgs::topicnames::speed_heading, 10, std::bind(&VehicleController::SpeedHeadingCB, this, _1));
+    surgeheadingSub_ = this->create_subscription<ulisse_msgs::msg::SurgeHeading>(ulisse_msgs::topicnames::surge_heading, 10, std::bind(&VehicleController::SurgeHeadingCB, this, _1));
 
     // Control Publishers
     genericLogPub_ = this->create_publisher<std_msgs::msg::String>("/ulisse/log/generic", 10);
@@ -145,8 +144,8 @@ VehicleController::VehicleController(int rate, std::string file_name)
     srvGetBoundaries_ = this->create_service<ulisse_msgs::srv::GetBoundaries>(ulisse_msgs::topicnames::get_boundaries_service,
         std::bind(&VehicleController::GetBoundariesHandler, this, _1, _2, _3));
 
-    srvCruise_ = this->create_service<ulisse_msgs::srv::SetCruiseControl>(ulisse_msgs::topicnames::set_cruise_control_service,
-        std::bind(&VehicleController::SetCruiseControlHandler, this, _1, _2, _3));
+    /*srvCruise_ = this->create_service<ulisse_msgs::srv::SetCruiseControl>(ulisse_msgs::topicnames::set_cruise_control_service,
+        std::bind(&VehicleController::SetCruiseControlHandler, this, _1, _2, _3));*/
 
     srvResetConf_ = this->create_service<ulisse_msgs::srv::ResetConfiguration>(ulisse_msgs::topicnames::reset_kcl_conf_service,
         std::bind(&VehicleController::ResetConfHandler, this, _1, _2, _3));
@@ -224,7 +223,7 @@ bool VehicleController::LoadConfiguration(std::shared_ptr<ControllerConfiguratio
     statesMap_.insert({ ulisse::states::ID::hold, stateHold_ });
     statesMap_.insert({ ulisse::states::ID::latlong, stateLatLong_ });
     statesMap_.insert({ ulisse::states::ID::pathfollow, statePathFollowing_ });
-    statesMap_.insert({ ulisse::states::ID::speedheading, stateSpeedHeading_ });
+    statesMap_.insert({ ulisse::states::ID::surgeheading, statesurgeheading_ });
 
     if (!ConfigureSatesFromFile(statesMap_, confObj)) {
         std::cerr << "Failed to load  States from file" << std::endl;
@@ -236,7 +235,7 @@ bool VehicleController::LoadConfiguration(std::shared_ptr<ControllerConfiguratio
     commandsMap_.insert({ ulisse::commands::ID::hold, commandHold_ });
     commandsMap_.insert({ ulisse::commands::ID::latlong, commandLatLong_ });
     commandsMap_.insert({ ulisse::commands::ID::pathfollow, commandPathFollowing_ });
-    commandsMap_.insert({ ulisse::commands::ID::speedheading, commandSpeedHeading_ });
+    commandsMap_.insert({ ulisse::commands::ID::surgeheading, commandsurgeheading_ });
 
     return true;
 }
@@ -260,8 +259,8 @@ void VehicleController::SetUpFSM()
     commandLatLong_.SetFSM(&uFsm_);
     commandLatLong_.SetState(stateLatLong_);
 
-    commandSpeedHeading_.SetFSM(&uFsm_);
-    commandSpeedHeading_.SetState(stateSpeedHeading_);
+    commandsurgeheading_.SetFSM(&uFsm_);
+    commandsurgeheading_.SetState(statesurgeheading_);
 
     commandPathFollowing_.SetFSM(&uFsm_);
     commandPathFollowing_.SetState(statePathFollowing_);
@@ -355,12 +354,12 @@ void VehicleController::CommandsHandler(const std::shared_ptr<rmw_request_id_t> 
         log << "Received Command GoTo (lat: " << request->latlong_cmd.goal.latitude << " , long: " << request->latlong_cmd.goal.longitude << " )";
         PublishLog(log.str().c_str());
 
-    } else if (request->command_type == ulisse::commands::ID::speedheading) {
+    } else if (request->command_type == ulisse::commands::ID::surgeheading) {
 
-        std::cout << "Received Command SpeedHeading" << std::endl;
-        commandSpeedHeading_.SetTimeout(request->sh_cmd.timeout.sec);
-        stateSpeedHeading_->ResetTimer();
-        log << "Received Command SpeedHeading (data read from topic)";
+        std::cout << "Received Command surgeheading" << std::endl;
+        commandsurgeheading_.SetTimeout(request->sh_cmd.timeout.sec);
+        statesurgeheading_->ResetTimer();
+        log << "Received Command surgeheading (data read from topic)";
         PublishLog(log.str().c_str());
 
     } else if (request->command_type == ulisse::commands::ID::pathfollow) {
@@ -434,7 +433,8 @@ void VehicleController::GetBoundariesHandler(const std::shared_ptr<rmw_request_i
     }
 }
 
-void VehicleController::SetCruiseControlHandler(const std::shared_ptr<rmw_request_id_t> request_header,
+// TODO: DELETE
+/*void VehicleController::SetCruiseControlHandler(const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<ulisse_msgs::srv::SetCruiseControl::Request> request,
     std::shared_ptr<ulisse_msgs::srv::SetCruiseControl::Response> response)
 {
@@ -460,7 +460,7 @@ void VehicleController::SetCruiseControlHandler(const std::shared_ptr<rmw_reques
     }
 
     response->res = "[KCL] SetCruiseControl::ok";
-}
+}*/
 
 void VehicleController::ResetConfHandler(const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Request> request,
@@ -488,9 +488,9 @@ void VehicleController::SlowTimerCB()
     return;
 }
 
-void VehicleController::SpeedHeadingCB(const ulisse_msgs::msg::SpeedHeading::SharedPtr msg)
+void VehicleController::SurgeHeadingCB(const ulisse_msgs::msg::SurgeHeading::SharedPtr msg)
 {
-    stateSpeedHeading_->SetSpeedHeading(msg->speed, msg->heading);
+    statesurgeheading_->SetSurgeHeading(msg->surge, msg->heading);
 }
 
 void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)

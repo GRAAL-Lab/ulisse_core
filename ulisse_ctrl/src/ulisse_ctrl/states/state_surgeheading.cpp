@@ -1,36 +1,35 @@
-#include "ulisse_ctrl/states/state_speedheading.hpp"
-#include "ulisse_ctrl/fsm_defines.hpp"
+#include "ulisse_ctrl/states/state_surgeheading.hpp"
 #include "ulisse_ctrl/ulisse_defines.hpp"
 
 namespace ulisse {
 
 namespace states {
 
-    StateSpeedHeading::StateSpeedHeading() : goalSurge(0.0), goalHeading (0.0)
+    StateSurgeHeading::StateSurgeHeading() : goalSurge(0.0), goalHeading (0.0)
     {
         maxHeadingError_ = M_PI / 16;
         minHeadingError_ = M_PI / 64;
     }
 
-    StateSpeedHeading::~StateSpeedHeading() { }
+    StateSurgeHeading::~StateSurgeHeading() { }
 
-    void StateSpeedHeading::ResetTimer()
+    void StateSurgeHeading::ResetTimer()
     {
         tStart_ = std::chrono::system_clock::now();
     }
 
-    void StateSpeedHeading::SetSpeedHeading(double speed, double heading)
+    void StateSurgeHeading::SetSurgeHeading(double speed, double heading)
     {
         goalSurge = speed;
         goalHeading = heading;
     }
 
-    bool StateSpeedHeading::ConfigureStateFromFile(libconfig::Config& confObj)
+    bool StateSurgeHeading::ConfigureStateFromFile(libconfig::Config& confObj)
     {
         const libconfig::Setting& root = confObj.getRoot();
         const libconfig::Setting& states = root["states"];
 
-        const libconfig::Setting& state = states.lookup(ulisse::states::ID::speedheading);
+        const libconfig::Setting& state = states.lookup(ulisse::states::ID::surgeheading);
 
         if (!ctb::GetParam(state, maxHeadingError_, "maxHeadingError"))
             return false;
@@ -39,7 +38,7 @@ namespace states {
         return true;
     }
 
-    fsm::retval StateSpeedHeading::OnEntry()
+    fsm::retval StateSurgeHeading::OnEntry()
     {
         // Set tasks
         safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
@@ -47,12 +46,12 @@ namespace states {
         linearVelocityTask_ = std::dynamic_pointer_cast<ikcl::LinearVelocity>(tasksMap.find(ulisse::task::asvLinearVelocity)->second.task);
         absoluteAxisAlignmentTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignment)->second.task);
 
-        actionManager->SetAction(ulisse::action::speed_heading, true);
+        actionManager->SetAction(ulisse::action::surge_heading, true);
 
         return fsm::ok;
     }
 
-    fsm::retval StateSpeedHeading::Execute()
+    fsm::retval StateSurgeHeading::Execute()
     {
         CheckRadioController();
 
@@ -96,7 +95,7 @@ namespace states {
         safetyBoundariesTask_->TaskParameter().gain = taskGainSafety * safetyBoundariesTask_->TaskParameter().conf_gain;
 
 
-        //////     SpeedHeading task     /////////
+        //////     surgeheading task     /////////
         absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
         absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(
                                           cos(goalHeading), sin(goalHeading), 0), rml::FrameID::WorldFrame);

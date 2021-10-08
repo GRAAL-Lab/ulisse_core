@@ -72,7 +72,8 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/LLCPumps.msg"
   
   # Other
-  "msg/SpeedHeading.msg"
+  "msg/SurgeHeading.msg"
+  "msg/SurgeYawRate.msg"
   "msg/NavFilterData.msg"
   "msg/TaskStatus.msg"
   "msg/Curves.msg"

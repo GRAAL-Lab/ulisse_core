@@ -381,7 +381,7 @@ Rectangle {
                     }
                     Text { text: "%1".arg(fbkUpdater.ulisse_surge); color: grey; Layout.preferredWidth: 120 }
                     Text { text: "%1".arg(fbkUpdater.desired_surge); color: grey; Layout.preferredWidth: 120 }
-                    Text { text: "Surge Err."; color: grey; Layout.preferredWidth: 120 }
+                    Text { text: "%1".arg((fbkUpdater.desired_surge - fbkUpdater.ulisse_surge)); color: grey; Layout.preferredWidth: 120 }
 
 
                     /// 3rd ROW ///
@@ -395,7 +395,7 @@ Rectangle {
                     }
                     Text { text: "%1".arg(fbkUpdater.ulisse_yawrate); color: grey; Layout.preferredWidth: 120 }
                     Text { text: "%1".arg(fbkUpdater.desired_jog); color: grey; Layout.preferredWidth: 120 }
-                    Text { text: "Yaw Rate Err."; color: grey; Layout.preferredWidth: 120 }
+                    Text { text: "%1".arg((fbkUpdater.desired_jog - fbkUpdater.ulisse_yawrate)); color: grey; Layout.preferredWidth: 120 }
                 }
             }
         }

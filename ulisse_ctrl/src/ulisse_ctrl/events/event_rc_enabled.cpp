@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "ulisse_ctrl/events/event_rc_enabled.hpp"
-#include "ulisse_ctrl/fsm_defines.hpp"
+#include "ulisse_ctrl/ulisse_defines.hpp"
 
 namespace ulisse {
 

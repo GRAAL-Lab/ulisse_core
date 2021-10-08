@@ -1,5 +1,5 @@
-#ifndef ULISSE_CTRL_STATESPEEDHEADING_HPP
-#define ULISSE_CTRL_STATESPEEDHEADING_HPP
+#ifndef ULISSE_CTRL_STATEsurgeheading_HPP
+#define ULISSE_CTRL_STATEsurgeheading_HPP
 
 #include "ulisse_ctrl/states/generic_state.hpp"
 
@@ -7,7 +7,7 @@ namespace ulisse {
 
 namespace states {
 
-    class StateSpeedHeading : public GenericState {
+    class StateSurgeHeading : public GenericState {
         std::chrono::system_clock::time_point tStart_, tNow_;
         std::chrono::seconds totalElapsed_;
 
@@ -18,13 +18,13 @@ namespace states {
     public:
         double goalSurge, goalHeading, timeout;
 
-        StateSpeedHeading();
-        ~StateSpeedHeading() override;
+        StateSurgeHeading();
+        ~StateSurgeHeading() override;
         fsm::retval OnEntry() override;
         fsm::retval Execute() override;
         void ResetTimer();
 
-        void SetSpeedHeading(double speed, double heading);
+        void SetSurgeHeading(double speed, double heading);
         bool ConfigureStateFromFile(libconfig::Config& confObj) override;
     };
 } // namespace states

@@ -17,15 +17,16 @@
 #include "ulisse_msgs/srv/set_cruise_control.hpp"
 #include "ulisse_msgs/srv/reset_configuration.hpp"
 #include "ulisse_msgs/srv/nav_filter_command.hpp"
-#include "ulisse_msgs/msg/speed_heading.hpp"
+#include "ulisse_msgs/msg/surge_heading.hpp"
+#include "ulisse_msgs/msg/surge_yaw_rate.hpp"
 
 
 
 class CommandWrapper : public QObject, rclcpp::Node {
     Q_OBJECT
     QQmlApplicationEngine* appEngine_;
-    QScopedPointer<QTimer> checkErrorTimer_, speedHeadingPubTimer_, speedHeadingTimeoutTimer_;
-    QObject *toastMgrObj_, *speedHeadTimeoutObj_;
+    QScopedPointer<QTimer> checkErrorTimer_, surgeHeadingPubTimer_, commandTimeoutTimer_;
+    QObject *toastMgrObj_, *cmdTimeoutObj_;
     QObject *cruiseSpeedObj_, *goalDistanceObj_, *waypointPathObj_, *waypointRadiusObj_, *loopPathObj_, *mapMouseAreaObj_;
 
     //rclcpp::Node::SharedPtr np_;
@@ -39,15 +40,16 @@ class CommandWrapper : public QObject, rclcpp::Node {
 
     rclcpp::Subscription<ulisse_msgs::msg::FeedbackGui>::SharedPtr feedbackGuiSub_;
 
-    rclcpp::Publisher<ulisse_msgs::msg::SpeedHeading>::SharedPtr speedHeadingPub_;
+    rclcpp::Publisher<ulisse_msgs::msg::SurgeHeading>::SharedPtr surgeHeadingPub_;
 
     ulisse_msgs::msg::FeedbackGui feedbackGuiMsg_;
-    ulisse_msgs::msg::SpeedHeading speedHeadingMsg_;
+    ulisse_msgs::msg::SurgeHeading surgeHeadingMsg_;
+    ulisse_msgs::msg::SurgeYawRate surgeYawRateMsg_;
 
     QVariantList waypoint_path_;
     int wpCurrentIndex_;
     double wpRadius_;
-    int errorCheckInterval_, speedHeadingTimerPeriod_;
+    int errorCheckInterval_, commandTimerPeriod_;
     bool fbkReceived_;
 
     void FeedbackGuiCB(const ulisse_msgs::msg::FeedbackGui::SharedPtr msg);
@@ -69,8 +71,9 @@ public:
     Q_INVOKABLE bool sendHaltCommand();
     Q_INVOKABLE bool sendHoldCommand(double radius);
     Q_INVOKABLE bool sendLatLongCommand(const QGeoCoordinate& goal, double radius);
-    Q_INVOKABLE bool sendSpeedHeadingCommand(double speed, double heading);
-    Q_INVOKABLE bool setCruiseSpeedCommand(double speed);
+    Q_INVOKABLE bool sendSurgeHeadingCommand(double surge, double heading);
+    Q_INVOKABLE bool sendSurgeYawRateCommand(double surge, double yawrate);
+    //Q_INVOKABLE bool setCruiseSpeedCommand(double speed);
     Q_INVOKABLE bool sendThrusterActivation(bool activate);
     Q_INVOKABLE bool startPath();
     Q_INVOKABLE void stopPath();
@@ -89,8 +92,8 @@ public:
 
 public slots:
     void check_error_slot();
-    void publish_speed_heading();
-    void stop_speed_heading_publisher();
+    void publish_surge_heading();
+    void stop_surge_heading_publisher();
 
 signals:
     //void callbacks_processed();

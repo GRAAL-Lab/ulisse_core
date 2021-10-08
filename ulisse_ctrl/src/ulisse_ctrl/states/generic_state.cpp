@@ -1,5 +1,5 @@
 #include "ulisse_ctrl/states/generic_state.hpp"
-#include "ulisse_ctrl/fsm_defines.hpp"
+#include "ulisse_ctrl/ulisse_defines.hpp"
 
 namespace ulisse {
 

@@ -1,3 +1,3 @@
 Time stamp
-float64 speed
+float64 surge
 float64 heading

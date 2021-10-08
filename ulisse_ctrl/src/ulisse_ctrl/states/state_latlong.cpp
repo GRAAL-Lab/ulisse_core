@@ -1,6 +1,5 @@
 #include "ulisse_ctrl/states/state_latlong.hpp"
 
-#include "ulisse_ctrl/fsm_defines.hpp"
 #include "ulisse_ctrl/ulisse_defines.hpp"
 
 namespace ulisse {

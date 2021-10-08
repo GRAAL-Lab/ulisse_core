@@ -21,7 +21,7 @@
 #include "ctrl_toolbox/HelperFunctions.h"
 
 #include "ulisse_ctrl/ctrl_data_structs.hpp"
-#include "ulisse_ctrl/fsm_defines.hpp"
+#include "ulisse_ctrl/ulisse_defines.hpp"
 
 #include "surface_vehicle_model/surfacevehiclemodel.hpp"
 
@@ -250,6 +250,7 @@ int main(int argc, char* argv[])
 
                 tau = { pidSurgeCT.Compute(referenceVelocities.desired_surge, surgeFbk), pidYawRateCT.Compute(referenceVelocities.desired_yaw_rate, yawRateFbk) };
 
+                // PRINT TAU
 
                 Eigen::Vector3d tauDrag = ulisseModel.ComputeCoriolisAndDragForces(feedbackVel);
 
