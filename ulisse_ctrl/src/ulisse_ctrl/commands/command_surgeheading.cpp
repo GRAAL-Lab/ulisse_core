@@ -16,12 +16,12 @@ namespace commands {
 
     void CommandSurgeHeading::SetState(std::shared_ptr<states::GenericState> state)
     {
-        statesurgeheading_ = std::dynamic_pointer_cast<states::StateSurgeHeading>(state);
+        stateSurgeHeading_ = std::dynamic_pointer_cast<states::StateSurgeHeading>(state);
     }
     void CommandSurgeHeading::SetTimeout(uint timeout_sec)
     {
-        statesurgeheading_->timeout = timeout_sec;
-        statesurgeheading_->SetSurgeHeading(0.0, 0.0);
+        stateSurgeHeading_->timeout = timeout_sec;
+        stateSurgeHeading_->SetSurgeHeading(0.0, 0.0);
     }
 }
 }

@@ -66,7 +66,7 @@ namespace events {
 namespace names {
 const char* const neargoalposition = "NEARGOALPOSITION";
 const char* const switchstate = "SWITCHSTATE";
-const char* const surgeheadingtimeout = "surgeheadingTIMEOUT";
+const char* const surgeheadingtimeout = "SURGEHEADINGTIMEOUT";
 const char* const rcenabled = "RCENABLED";
 }
 

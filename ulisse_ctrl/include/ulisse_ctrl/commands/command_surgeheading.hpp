@@ -1,5 +1,5 @@
-#ifndef ULISSE_CTRL_COMMANDsurgeheading_HPP
-#define ULISSE_CTRL_COMMANDsurgeheading_HPP
+#ifndef ULISSE_CTRL_COMMANDSURGEHEADING_HPP
+#define ULISSE_CTRL_COMMANDSURGEHEADING_HPP
 
 #include "ulisse_ctrl/commands/generic_command.hpp"
 #include "ulisse_ctrl/states/state_surgeheading.hpp"
@@ -10,7 +10,7 @@ namespace commands {
 
     class CommandSurgeHeading : public GenericCommand {
 
-        std::shared_ptr<states::StateSurgeHeading> statesurgeheading_;
+        std::shared_ptr<states::StateSurgeHeading> stateSurgeHeading_;
 
     public:
         CommandSurgeHeading();
@@ -22,4 +22,4 @@ namespace commands {
     };
 }
 }
-#endif // ULISSE_CTRL_COMMANDsurgeheading_HPP
+#endif // ULISSE_CTRL_COMMANDSURGEHEADING_HPP

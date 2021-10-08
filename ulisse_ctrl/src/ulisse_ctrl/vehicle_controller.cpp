@@ -32,14 +32,14 @@ VehicleController::VehicleController(int rate, std::string file_name)
     stateHold_ = std::make_shared<states::StateHold>();
     statePathFollowing_ = std::make_shared<states::StatePathFollow>();
     stateLatLong_ = std::make_shared<states::StateLatLong>();
-    statesurgeheading_ = std::make_shared<states::StateSurgeHeading>();
+    stateSurgeHeading_ = std::make_shared<states::StateSurgeHeading>();
 
     // Sensor Subscriptions
     navFilterSub_ = this->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 10, std::bind(&VehicleController::NavFilterCB, this, _1));
     llcStatusSub_ = this->create_subscription<ulisse_msgs::msg::LLCStatus>(ulisse_msgs::topicnames::llc_status, 10, std::bind(&VehicleController::LLCStatusCB, this, _1));
 
     // Data Subscriptions
-    surgeheadingSub_ = this->create_subscription<ulisse_msgs::msg::SurgeHeading>(ulisse_msgs::topicnames::surge_heading, 10, std::bind(&VehicleController::SurgeHeadingCB, this, _1));
+    surgeHeadingSub_ = this->create_subscription<ulisse_msgs::msg::SurgeHeading>(ulisse_msgs::topicnames::surge_heading, 10, std::bind(&VehicleController::SurgeHeadingCB, this, _1));
 
     // Control Publishers
     genericLogPub_ = this->create_publisher<std_msgs::msg::String>("/ulisse/log/generic", 10);
@@ -223,7 +223,7 @@ bool VehicleController::LoadConfiguration(std::shared_ptr<ControllerConfiguratio
     statesMap_.insert({ ulisse::states::ID::hold, stateHold_ });
     statesMap_.insert({ ulisse::states::ID::latlong, stateLatLong_ });
     statesMap_.insert({ ulisse::states::ID::pathfollow, statePathFollowing_ });
-    statesMap_.insert({ ulisse::states::ID::surgeheading, statesurgeheading_ });
+    statesMap_.insert({ ulisse::states::ID::surgeheading, stateSurgeHeading_ });
 
     if (!ConfigureSatesFromFile(statesMap_, confObj)) {
         std::cerr << "Failed to load  States from file" << std::endl;
@@ -235,7 +235,7 @@ bool VehicleController::LoadConfiguration(std::shared_ptr<ControllerConfiguratio
     commandsMap_.insert({ ulisse::commands::ID::hold, commandHold_ });
     commandsMap_.insert({ ulisse::commands::ID::latlong, commandLatLong_ });
     commandsMap_.insert({ ulisse::commands::ID::pathfollow, commandPathFollowing_ });
-    commandsMap_.insert({ ulisse::commands::ID::surgeheading, commandsurgeheading_ });
+    commandsMap_.insert({ ulisse::commands::ID::surgeheading, commandSurgeHeading_ });
 
     return true;
 }
@@ -259,8 +259,8 @@ void VehicleController::SetUpFSM()
     commandLatLong_.SetFSM(&uFsm_);
     commandLatLong_.SetState(stateLatLong_);
 
-    commandsurgeheading_.SetFSM(&uFsm_);
-    commandsurgeheading_.SetState(statesurgeheading_);
+    commandSurgeHeading_.SetFSM(&uFsm_);
+    commandSurgeHeading_.SetState(stateSurgeHeading_);
 
     commandPathFollowing_.SetFSM(&uFsm_);
     commandPathFollowing_.SetState(statePathFollowing_);
@@ -357,8 +357,8 @@ void VehicleController::CommandsHandler(const std::shared_ptr<rmw_request_id_t> 
     } else if (request->command_type == ulisse::commands::ID::surgeheading) {
 
         std::cout << "Received Command surgeheading" << std::endl;
-        commandsurgeheading_.SetTimeout(request->sh_cmd.timeout.sec);
-        statesurgeheading_->ResetTimer();
+        commandSurgeHeading_.SetTimeout(request->sh_cmd.timeout.sec);
+        stateSurgeHeading_->ResetTimer();
         log << "Received Command surgeheading (data read from topic)";
         PublishLog(log.str().c_str());
 
@@ -490,7 +490,7 @@ void VehicleController::SlowTimerCB()
 
 void VehicleController::SurgeHeadingCB(const ulisse_msgs::msg::SurgeHeading::SharedPtr msg)
 {
-    statesurgeheading_->SetSurgeHeading(msg->surge, msg->heading);
+    stateSurgeHeading_->SetSurgeHeading(msg->surge, msg->heading);
 }
 
 void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)

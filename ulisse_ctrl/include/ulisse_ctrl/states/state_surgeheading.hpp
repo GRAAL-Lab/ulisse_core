@@ -1,5 +1,5 @@
-#ifndef ULISSE_CTRL_STATEsurgeheading_HPP
-#define ULISSE_CTRL_STATEsurgeheading_HPP
+#ifndef ULISSE_CTRL_STATESURGEHEADING_HPP
+#define ULISSE_CTRL_STATESURGEHEADING_HPP
 
 #include "ulisse_ctrl/states/generic_state.hpp"
 

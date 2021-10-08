@@ -55,7 +55,7 @@ class VehicleController : public rclcpp::Node {
     rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr navFilterSub_;
     rclcpp::Subscription<ulisse_msgs::msg::LLCStatus>::SharedPtr llcStatusSub_;
 
-    rclcpp::Subscription<ulisse_msgs::msg::SurgeHeading>::SharedPtr surgeheadingSub_;
+    rclcpp::Subscription<ulisse_msgs::msg::SurgeHeading>::SharedPtr surgeHeadingSub_;
 
     rclcpp::Publisher<ulisse_msgs::msg::ReferenceVelocities>::SharedPtr referenceVelocitiesPub_;
     rclcpp::Publisher<ulisse_msgs::msg::VehicleStatus>::SharedPtr vehicleStatusPub_;
@@ -100,13 +100,13 @@ class VehicleController : public rclcpp::Node {
     std::shared_ptr<states::StateHalt> stateHalt_;
     std::shared_ptr<states::StateHold> stateHold_;
     std::shared_ptr<states::StateLatLong> stateLatLong_;
-    std::shared_ptr<states::StateSurgeHeading> statesurgeheading_;
+    std::shared_ptr<states::StateSurgeHeading> stateSurgeHeading_;
     std::shared_ptr<states::StatePathFollow> statePathFollowing_;
 
     commands::CommandHalt commandHalt_;
     commands::CommandHold commandHold_;
     commands::CommandLatLong commandLatLong_;
-    commands::CommandSurgeHeading commandsurgeheading_;
+    commands::CommandSurgeHeading commandSurgeHeading_;
     commands::CommandPathFollow commandPathFollowing_;
 
     events::EventRCEnabled eventRcEnabled_;
