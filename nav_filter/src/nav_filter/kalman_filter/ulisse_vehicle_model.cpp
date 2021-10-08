@@ -6,7 +6,7 @@ namespace nav {
         : ctb::ModelKalmanFilter()
     {
         last_comp_time_ = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
-        covariance_ = Eigen::MatrixXd::Zero(19, 19);
+        covariance_ = Eigen::MatrixXd::Zero(21, 21);
         version_ = v;
     }
 
@@ -59,7 +59,7 @@ namespace nav {
         //double z = state[2];
         double roll = state[3];
         double pitch = state[4];
-        double yaw = state[5];
+        double yaw_LF = state[5];
         double x_dot = state[6];
         double y_dot = state[7];
         double z_dot = state[8];
@@ -73,6 +73,13 @@ namespace nav {
         //double bias_z = state[16];
         double n_p = state[17];
         double n_s = state[18];
+        double yaw_wave = state[19];
+        double yaw_wave_dot = state[20];
+
+        double lambda_y = 0.1;
+        double w_0_y = 2*M_PI/1.3;
+
+        double yaw = state[5];
 
         //Transform the input form percentage to RPM
         //double n_p = (input[0] < 0) ? input[0] * params_.lambda_neg : input[0] * params_.lambda_pos;
@@ -154,7 +161,7 @@ namespace nav {
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, rpm_A_coeff, 0,
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, rpm_A_coeff;
         } else if (version_ == Version::CompleteBodyFrame) {
-            F << 1, 0, 0, delta_t * y_dot * (sin(roll) * sin(yaw) + cos(roll) * cos(yaw) * sin(pitch)) + delta_t * z_dot * (cos(roll) * sin(yaw) - cos(yaw) * sin(pitch) * sin(roll)), delta_t * cos(yaw) * (z_dot * cos(pitch) * cos(roll) - x_dot * sin(pitch) + y_dot * cos(pitch) * sin(roll)), delta_t * z_dot * (cos(yaw) * sin(roll) - cos(roll) * sin(pitch) * sin(yaw)) - delta_t * y_dot * (cos(roll) * cos(yaw) + sin(pitch) * sin(roll) * sin(yaw)) - delta_t * x_dot * cos(pitch) * sin(yaw), delta_t * cos(pitch) * cos(yaw), delta_t * cos(yaw) * sin(pitch) * sin(roll) - delta_t * cos(roll) * sin(yaw), delta_t * sin(roll) * sin(yaw) + delta_t * cos(roll) * cos(yaw) * sin(pitch), 0, 0, 0, delta_t, 0, 0, 0, 0, 0, 0,
+           /* F << 1, 0, 0, delta_t * y_dot * (sin(roll) * sin(yaw) + cos(roll) * cos(yaw) * sin(pitch)) + delta_t * z_dot * (cos(roll) * sin(yaw) - cos(yaw) * sin(pitch) * sin(roll)), delta_t * cos(yaw) * (z_dot * cos(pitch) * cos(roll) - x_dot * sin(pitch) + y_dot * cos(pitch) * sin(roll)), delta_t * z_dot * (cos(yaw) * sin(roll) - cos(roll) * sin(pitch) * sin(yaw)) - delta_t * y_dot * (cos(roll) * cos(yaw) + sin(pitch) * sin(roll) * sin(yaw)) - delta_t * x_dot * cos(pitch) * sin(yaw), delta_t * cos(pitch) * cos(yaw), delta_t * cos(yaw) * sin(pitch) * sin(roll) - delta_t * cos(roll) * sin(yaw), delta_t * sin(roll) * sin(yaw) + delta_t * cos(roll) * cos(yaw) * sin(pitch), 0, 0, 0, delta_t, 0, 0, 0, 0, 0, 0,
                 0, 1, 0, -delta_t * y_dot * (cos(yaw) * sin(roll) - cos(roll) * sin(pitch) * sin(yaw)) - delta_t * z_dot * (cos(roll) * cos(yaw) + sin(pitch) * sin(roll) * sin(yaw)), delta_t * sin(yaw) * (z_dot * cos(pitch) * cos(roll) - x_dot * sin(pitch) + y_dot * cos(pitch) * sin(roll)), delta_t * z_dot * (sin(roll) * sin(yaw) + cos(roll) * cos(yaw) * sin(pitch)) - delta_t * y_dot * (cos(roll) * sin(yaw) - cos(yaw) * sin(pitch) * sin(roll)) + delta_t * x_dot * cos(pitch) * cos(yaw), delta_t * cos(pitch) * sin(yaw), delta_t * cos(roll) * cos(yaw) + delta_t * sin(pitch) * sin(roll) * sin(yaw), delta_t * cos(roll) * sin(pitch) * sin(yaw) - delta_t * cos(yaw) * sin(roll), 0, 0, 0, 0, delta_t, 0, 0, 0, 0, 0,
                 0, 0, 1, delta_t * cos(pitch) * (y_dot * cos(roll) - z_dot * sin(roll)), -delta_t * (x_dot * cos(pitch) + z_dot * cos(roll) * sin(pitch) + y_dot * sin(pitch) * sin(roll)), 0, -delta_t * sin(pitch), delta_t * cos(pitch) * sin(roll), delta_t * cos(pitch) * cos(roll), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, delta_t * w_y * cos(roll) * tan(pitch) - delta_t * w_z * tan(pitch) * sin(roll) + 1, (delta_t * (w_z * cos(roll) + w_y * sin(roll))) / cpq, 0, 0, 0, 0, delta_t, delta_t * tan(pitch) * sin(roll), delta_t * cos(roll) * tan(pitch), 0, 0, 0, 0, 0, 0, 0,
@@ -172,7 +179,28 @@ namespace nav {
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, rpm_A_coeff, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, rpm_A_coeff;
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, rpm_A_coeff;*/
+            F << 1, 0, 0, delta_t*y_dot*(sin(yaw_LF + yaw_wave)*sin(roll) + cos(yaw_LF + yaw_wave)*cos(roll)*sin(pitch)) + delta_t*z_dot*(sin(yaw_LF + yaw_wave)*cos(roll) - cos(yaw_LF + yaw_wave)*sin(pitch)*sin(roll)), delta_t*cos(yaw_LF + yaw_wave)*(z_dot*cos(pitch)*cos(roll) - x_dot*sin(pitch) + y_dot*cos(pitch)*sin(roll)), delta_t*z_dot*(cos(yaw_LF + yaw_wave)*sin(roll) - sin(yaw_LF + yaw_wave)*cos(roll)*sin(pitch)) - delta_t*y_dot*(cos(yaw_LF + yaw_wave)*cos(roll) + sin(yaw_LF + yaw_wave)*sin(pitch)*sin(roll)) - delta_t*x_dot*sin(yaw_LF + yaw_wave)*cos(pitch), delta_t*cos(yaw_LF + yaw_wave)*cos(pitch), delta_t*cos(yaw_LF + yaw_wave)*sin(pitch)*sin(roll) - delta_t*sin(yaw_LF + yaw_wave)*cos(roll), delta_t*sin(yaw_LF + yaw_wave)*sin(roll) + delta_t*cos(yaw_LF + yaw_wave)*cos(roll)*sin(pitch), 0, 0, 0, delta_t, 0, 0, 0, 0, 0, 0, delta_t*z_dot*(cos(yaw_LF + yaw_wave)*sin(roll) - sin(yaw_LF + yaw_wave)*cos(roll)*sin(pitch)) - delta_t*y_dot*(cos(yaw_LF + yaw_wave)*cos(roll) + sin(yaw_LF + yaw_wave)*sin(pitch)*sin(roll)) - delta_t*x_dot*sin(yaw_LF + yaw_wave)*cos(pitch), 0,
+            0, 1, 0, - delta_t*y_dot*(cos(yaw_LF + yaw_wave)*sin(roll) - sin(yaw_LF + yaw_wave)*cos(roll)*sin(pitch)) - delta_t*z_dot*(cos(yaw_LF + yaw_wave)*cos(roll) + sin(yaw_LF + yaw_wave)*sin(pitch)*sin(roll)), delta_t*sin(yaw_LF + yaw_wave)*(z_dot*cos(pitch)*cos(roll) - x_dot*sin(pitch) + y_dot*cos(pitch)*sin(roll)), delta_t*z_dot*(sin(yaw_LF + yaw_wave)*sin(roll) + cos(yaw_LF + yaw_wave)*cos(roll)*sin(pitch)) - delta_t*y_dot*(sin(yaw_LF + yaw_wave)*cos(roll) - cos(yaw_LF + yaw_wave)*sin(pitch)*sin(roll)) + delta_t*x_dot*cos(yaw_LF + yaw_wave)*cos(pitch), delta_t*sin(yaw_LF + yaw_wave)*cos(pitch), delta_t*cos(yaw_LF + yaw_wave)*cos(roll) + delta_t*sin(yaw_LF + yaw_wave)*sin(pitch)*sin(roll), delta_t*sin(yaw_LF + yaw_wave)*cos(roll)*sin(pitch) - delta_t*cos(yaw_LF + yaw_wave)*sin(roll), 0, 0, 0, 0, delta_t, 0, 0, 0, 0, 0, delta_t*z_dot*(sin(yaw_LF + yaw_wave)*sin(roll) + cos(yaw_LF + yaw_wave)*cos(roll)*sin(pitch)) - delta_t*y_dot*(sin(yaw_LF + yaw_wave)*cos(roll) - cos(yaw_LF + yaw_wave)*sin(pitch)*sin(roll)) + delta_t*x_dot*cos(yaw_LF + yaw_wave)*cos(pitch), 0,
+            0, 0, 1, delta_t*cos(pitch)*(y_dot*cos(roll) - z_dot*sin(roll)), -delta_t*(x_dot*cos(pitch) + z_dot*cos(roll)*sin(pitch) + y_dot*sin(pitch)*sin(roll)), 0, -delta_t*sin(pitch), delta_t*cos(pitch)*sin(roll), delta_t*cos(pitch)*cos(roll), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, delta_t*w_y*cos(roll)*tan(pitch) - delta_t*w_z*tan(pitch)*sin(roll) + 1, (delta_t*(w_z*cos(roll) + w_y*sin(roll)))/cpq, 0, 0, 0, 0, delta_t, delta_t*tan(pitch)*sin(roll), delta_t*cos(roll)*tan(pitch), 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, -delta_t*(w_z*cos(roll) + w_y*sin(roll)), 1, 0, 0, 0, 0, 0, delta_t*cos(roll), -delta_t*sin(roll), 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, (delta_t*(w_y*cos(roll) - w_z*sin(roll)))/cos(pitch), -(delta_t*sin(pitch)*(w_z*cos(roll) + w_y*sin(roll)))/(spq - 1), 1, 0, 0, 0, 0, (delta_t*sin(roll))/cos(pitch), (delta_t*cos(roll))/cos(pitch), 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, (sin(2*pitch)*(y_dot*cos(roll) - z_dot*sin(roll)))/2 - (sin(2*pitch)*(c_Y1*delta_t*w_zq*cos(roll) + c_Y2*delta_t*y_dot*cos(roll) + c_Y3*delta_t*y_dot*cos(roll)*abs(y_dot) - b1_p*delta_t*k_p*n_p*abs(n_p)*cos(roll) - b1_s*delta_t*k_s*n_s*abs(n_s)*cos(roll) + b2_p*delta_t*k_p*x_dot*abs(n_p)*cos(roll) + b2_s*delta_t*k_s*x_dot*abs(n_s)*cos(roll) + b2_p*d*delta_t*k_p*w_z*abs(n_p)*cos(roll) - b2_s*d*delta_t*k_s*w_z*abs(n_s)*cos(roll)))/(2*m), (2*cpq*m*z_dot*cos(roll) - m*y_dot*sin(roll) - m*x_dot*sin(2*pitch) - m*z_dot*cos(roll) + c_Y1*delta_t*w_zq*sin(roll) + c_Y2*delta_t*y_dot*sin(roll) + 2*cpq*m*y_dot*sin(roll) + c_X1*delta_t*w_zq*sin(2*pitch) + c_X2*delta_t*x_dot*sin(2*pitch) + c_Y3*delta_t*y_dot*abs(y_dot)*sin(roll) - b1_p*delta_t*n_p*sin(2*pitch)*abs(n_p) - b1_s*delta_t*n_s*sin(2*pitch)*abs(n_s) + b2_p*delta_t*x_dot*sin(2*pitch)*abs(n_p) + b2_s*delta_t*x_dot*sin(2*pitch)*abs(n_s) + c_X3*delta_t*x_dot*sin(2*pitch)*abs(x_dot) - 2*c_Y1*cpq*delta_t*w_zq*sin(roll) - 2*c_Y2*cpq*delta_t*y_dot*sin(roll) + b2_p*d*delta_t*w_z*sin(2*pitch)*abs(n_p) - b2_s*d*delta_t*w_z*sin(2*pitch)*abs(n_s) - b1_p*delta_t*k_p*n_p*abs(n_p)*sin(roll) - b1_s*delta_t*k_s*n_s*abs(n_s)*sin(roll) + b2_p*delta_t*k_p*x_dot*abs(n_p)*sin(roll) + b2_s*delta_t*k_s*x_dot*abs(n_s)*sin(roll) - 2*c_Y3*cpq*delta_t*y_dot*abs(y_dot)*sin(roll) + 2*b1_p*cpq*delta_t*k_p*n_p*abs(n_p)*sin(roll) + 2*b1_s*cpq*delta_t*k_s*n_s*abs(n_s)*sin(roll) + b2_p*d*delta_t*k_p*w_z*abs(n_p)*sin(roll) - b2_s*d*delta_t*k_s*w_z*abs(n_s)*sin(roll) - 2*b2_p*cpq*delta_t*k_p*x_dot*abs(n_p)*sin(roll) - 2*b2_s*cpq*delta_t*k_s*x_dot*abs(n_s)*sin(roll) - 2*b2_p*cpq*d*delta_t*k_p*w_z*abs(n_p)*sin(roll) + 2*b2_s*cpq*d*delta_t*k_s*w_z*abs(n_s)*sin(roll))/m, 0, cpq - (cos(pitch)*sign(n_p)*sign(n_s)*sign(x_dot)*(b2_p*delta_t*n_p*cos(pitch)*sign(n_s)*sign(x_dot) + b2_s*delta_t*n_s*cos(pitch)*sign(n_p)*sign(x_dot) + 2*c_X3*delta_t*x_dot*cos(pitch)*sign(n_p)*sign(n_s) + c_X2*delta_t*cos(pitch)*sign(n_p)*sign(n_s)*sign(x_dot) + b2_p*delta_t*k_p*n_p*sign(n_s)*sin(pitch)*sin(roll)*sign(x_dot) + b2_s*delta_t*k_s*n_s*sign(n_p)*sin(pitch)*sin(roll)*sign(x_dot)))/m, -(cos(pitch)*sin(pitch)*sin(roll)*sign(y_dot)*(c_Y2*delta_t*sign(y_dot) - m*sign(y_dot) + 2*c_Y3*delta_t*y_dot))/m, cos(pitch)*cos(roll)*sin(pitch), 0, 0, -(delta_t*cos(pitch)*(2*c_X1*w_z*cos(pitch) + 2*c_Y1*w_z*sin(pitch)*sin(roll) + b2_p*d*abs(n_p)*cos(pitch) - b2_s*d*abs(n_s)*cos(pitch) + b2_p*d*k_p*abs(n_p)*sin(pitch)*sin(roll) - b2_s*d*k_s*abs(n_s)*sin(pitch)*sin(roll)))/m, 0, 0, 0, 0, 0, -(delta_t*cos(pitch)*sign(n_p)*(cos(pitch) + k_p*sin(pitch)*sin(roll))*(b2_p*x_dot - 2*b1_p*n_p + b2_p*d*w_z))/m, (delta_t*cos(pitch)*sign(n_s)*(cos(pitch) + k_s*sin(pitch)*sin(roll))*(2*b1_s*n_s - b2_s*x_dot + b2_s*d*w_z))/m, 0, 0,
+            0, 0, 0, cos(pitch)*(z_dot*cos(pitch) - 2*crq*z_dot*cos(pitch) + x_dot*cos(roll)*sin(pitch) - 2*y_dot*cos(pitch)*cos(roll)*sin(roll)) - (delta_t*cos(pitch)*cos(roll)*(c_X1*w_zq*sin(pitch) + c_X2*x_dot*sin(pitch) - b1_p*n_p*abs(n_p)*sin(pitch) - b1_s*n_s*abs(n_s)*sin(pitch) + b2_p*x_dot*abs(n_p)*sin(pitch) + b2_s*x_dot*abs(n_s)*sin(pitch) - 2*c_Y1*w_zq*cos(pitch)*sin(roll) - 2*c_Y2*y_dot*cos(pitch)*sin(roll) + c_X3*x_dot*abs(x_dot)*sin(pitch) + b2_p*d*w_z*abs(n_p)*sin(pitch) - b2_s*d*w_z*abs(n_s)*sin(pitch) - 2*c_Y3*y_dot*cos(pitch)*abs(y_dot)*sin(roll) + 2*b1_p*k_p*n_p*abs(n_p)*cos(pitch)*sin(roll) + 2*b1_s*k_s*n_s*abs(n_s)*cos(pitch)*sin(roll) - 2*b2_p*k_p*x_dot*abs(n_p)*cos(pitch)*sin(roll) - 2*b2_s*k_s*x_dot*abs(n_s)*cos(pitch)*sin(roll) - 2*b2_p*d*k_p*w_z*abs(n_p)*cos(pitch)*sin(roll) + 2*b2_s*d*k_s*w_z*abs(n_s)*cos(pitch)*sin(roll)))/m, (m*y_dot*sin(2*pitch) - m*x_dot*sin(roll) + c_X1*delta_t*w_zq*sin(roll) + c_X2*delta_t*x_dot*sin(roll) + 2*cpq*m*x_dot*sin(roll) - c_Y1*delta_t*w_zq*sin(2*pitch) - c_Y2*delta_t*y_dot*sin(2*pitch) - b1_p*delta_t*n_p*abs(n_p)*sin(roll) - b1_s*delta_t*n_s*abs(n_s)*sin(roll) + b2_p*delta_t*x_dot*abs(n_p)*sin(roll) + b2_s*delta_t*x_dot*abs(n_s)*sin(roll) + c_X3*delta_t*x_dot*abs(x_dot)*sin(roll) - 2*crq*m*y_dot*cos(pitch)*sin(pitch) - c_Y3*delta_t*y_dot*sin(2*pitch)*abs(y_dot) - 2*c_X1*cpq*delta_t*w_zq*sin(roll) - 2*c_X2*cpq*delta_t*x_dot*sin(roll) + b1_p*delta_t*k_p*n_p*sin(2*pitch)*abs(n_p) + b1_s*delta_t*k_s*n_s*sin(2*pitch)*abs(n_s) - b2_p*delta_t*k_p*x_dot*sin(2*pitch)*abs(n_p) - b2_s*delta_t*k_s*x_dot*sin(2*pitch)*abs(n_s) + 2*b1_p*cpq*delta_t*n_p*abs(n_p)*sin(roll) + 2*b1_s*cpq*delta_t*n_s*abs(n_s)*sin(roll) + b2_p*d*delta_t*w_z*abs(n_p)*sin(roll) - b2_s*d*delta_t*w_z*abs(n_s)*sin(roll) - 2*b2_p*cpq*delta_t*x_dot*abs(n_p)*sin(roll) - 2*b2_s*cpq*delta_t*x_dot*abs(n_s)*sin(roll) + 2*c_Y1*crq*delta_t*w_zq*cos(pitch)*sin(pitch) + 2*m*z_dot*cos(pitch)*cos(roll)*sin(pitch)*sin(roll) + 2*c_Y2*crq*delta_t*y_dot*cos(pitch)*sin(pitch) - 2*c_X3*cpq*delta_t*x_dot*abs(x_dot)*sin(roll) - 2*b2_p*cpq*d*delta_t*w_z*abs(n_p)*sin(roll) + 2*b2_s*cpq*d*delta_t*w_z*abs(n_s)*sin(roll) - b2_p*d*delta_t*k_p*w_z*sin(2*pitch)*abs(n_p) + b2_s*d*delta_t*k_s*w_z*sin(2*pitch)*abs(n_s) + 2*c_Y3*crq*delta_t*y_dot*cos(pitch)*abs(y_dot)*sin(pitch) - 2*b1_p*crq*delta_t*k_p*n_p*abs(n_p)*cos(pitch)*sin(pitch) - 2*b1_s*crq*delta_t*k_s*n_s*abs(n_s)*cos(pitch)*sin(pitch) + 2*b2_p*crq*delta_t*k_p*x_dot*abs(n_p)*cos(pitch)*sin(pitch) + 2*b2_s*crq*delta_t*k_s*x_dot*abs(n_s)*cos(pitch)*sin(pitch) + 2*b2_p*crq*d*delta_t*k_p*w_z*abs(n_p)*cos(pitch)*sin(pitch) - 2*b2_s*crq*d*delta_t*k_s*w_z*abs(n_s)*cos(pitch)*sin(pitch))/m, 0, cos(pitch)*sin(pitch)*sin(roll) - (delta_t*(b2_p*k_p*abs(n_p) + b2_s*k_s*abs(n_s) + c_X2*cos(pitch)*sin(pitch)*sin(roll) + b2_p*abs(n_p)*cos(pitch)*sin(pitch)*sin(roll) + b2_s*abs(n_s)*cos(pitch)*sin(pitch)*sin(roll) + 2*c_X3*cos(pitch)*abs(x_dot)*sin(pitch)*sin(roll) - b2_p*cpq*k_p*srq*abs(n_p) - b2_s*cpq*k_s*srq*abs(n_s)))/m, (sign(y_dot)*(cpq*srq - 1)*(c_Y2*delta_t*sign(y_dot) - m*sign(y_dot) + 2*c_Y3*delta_t*y_dot))/m, -cpq*cos(roll)*sin(roll), 0, 0, -(delta_t*(2*c_Y1*w_z - 2*c_Y1*cpq*srq*w_z + b2_p*d*k_p*abs(n_p) - b2_s*d*k_s*abs(n_s) + 2*c_X1*w_z*cos(pitch)*sin(pitch)*sin(roll) - b2_p*cpq*d*k_p*srq*abs(n_p) + b2_s*cpq*d*k_s*srq*abs(n_s) + b2_p*d*abs(n_p)*cos(pitch)*sin(pitch)*sin(roll) - b2_s*d*abs(n_s)*cos(pitch)*sin(pitch)*sin(roll)))/m, 0, 0, 0, 0, 0, -(delta_t*sign(n_p)*(b2_p*x_dot - 2*b1_p*n_p + b2_p*d*w_z)*(k_p - cpq*k_p*srq + cos(pitch)*sin(pitch)*sin(roll)))/m, (delta_t*sign(n_s)*(2*b1_s*n_s - b2_s*x_dot + b2_s*d*w_z)*(k_s - cpq*k_s*srq + cos(pitch)*sin(pitch)*sin(roll)))/m, 0, 0,
+            0, 0, 0, cos(pitch)*(y_dot*cos(pitch) - 2*crq*y_dot*cos(pitch) - x_dot*sin(pitch)*sin(roll) + 2*z_dot*cos(pitch)*cos(roll)*sin(roll)) + (cos(pitch)*(c_X1*delta_t*w_zq*sin(pitch)*sin(roll) - c_Y2*delta_t*y_dot*cos(pitch) - c_Y3*delta_t*y_dot*cos(pitch)*abs(y_dot) - c_Y1*delta_t*w_zq*cos(pitch) + c_X2*delta_t*x_dot*sin(pitch)*sin(roll) + 2*c_Y1*crq*delta_t*w_zq*cos(pitch) + 2*c_Y2*crq*delta_t*y_dot*cos(pitch) - b1_p*delta_t*n_p*abs(n_p)*sin(pitch)*sin(roll) - b1_s*delta_t*n_s*abs(n_s)*sin(pitch)*sin(roll) + b2_p*delta_t*x_dot*abs(n_p)*sin(pitch)*sin(roll) + b2_s*delta_t*x_dot*abs(n_s)*sin(pitch)*sin(roll) + c_X3*delta_t*x_dot*abs(x_dot)*sin(pitch)*sin(roll) + b1_p*delta_t*k_p*n_p*abs(n_p)*cos(pitch) + b1_s*delta_t*k_s*n_s*abs(n_s)*cos(pitch) - b2_p*delta_t*k_p*x_dot*abs(n_p)*cos(pitch) - b2_s*delta_t*k_s*x_dot*abs(n_s)*cos(pitch) + 2*c_Y3*crq*delta_t*y_dot*cos(pitch)*abs(y_dot) - 2*b1_p*crq*delta_t*k_p*n_p*abs(n_p)*cos(pitch) - 2*b1_s*crq*delta_t*k_s*n_s*abs(n_s)*cos(pitch) - b2_p*d*delta_t*k_p*w_z*abs(n_p)*cos(pitch) + b2_s*d*delta_t*k_s*w_z*abs(n_s)*cos(pitch) + 2*b2_p*crq*delta_t*k_p*x_dot*abs(n_p)*cos(pitch) + 2*b2_s*crq*delta_t*k_s*x_dot*abs(n_s)*cos(pitch) + b2_p*d*delta_t*w_z*abs(n_p)*sin(pitch)*sin(roll) - b2_s*d*delta_t*w_z*abs(n_s)*sin(pitch)*sin(roll) + 2*b2_p*crq*d*delta_t*k_p*w_z*abs(n_p)*cos(pitch) - 2*b2_s*crq*d*delta_t*k_s*w_z*abs(n_s)*cos(pitch)))/m, cos(roll)*(2*cpq*x_dot - x_dot + 2*z_dot*cos(pitch)*cos(roll)*sin(pitch) + 2*y_dot*cos(pitch)*sin(pitch)*sin(roll)) - (cos(roll)*(2*c_X1*cpq*delta_t*w_zq - c_X2*delta_t*x_dot - c_X1*delta_t*w_zq + 2*c_X2*cpq*delta_t*x_dot + b1_p*delta_t*n_p*abs(n_p) + b1_s*delta_t*n_s*abs(n_s) - b2_p*delta_t*x_dot*abs(n_p) - b2_s*delta_t*x_dot*abs(n_s) - c_X3*delta_t*x_dot*abs(x_dot) - 2*b1_p*cpq*delta_t*n_p*abs(n_p) - 2*b1_s*cpq*delta_t*n_s*abs(n_s) - b2_p*d*delta_t*w_z*abs(n_p) + b2_s*d*delta_t*w_z*abs(n_s) + 2*b2_p*cpq*delta_t*x_dot*abs(n_p) + 2*b2_s*cpq*delta_t*x_dot*abs(n_s) + 2*c_X3*cpq*delta_t*x_dot*abs(x_dot) + 2*b2_p*cpq*d*delta_t*w_z*abs(n_p) - 2*b2_s*cpq*d*delta_t*w_z*abs(n_s) + 2*c_Y1*delta_t*w_zq*cos(pitch)*sin(pitch)*sin(roll) + 2*c_Y2*delta_t*y_dot*cos(pitch)*sin(pitch)*sin(roll) + 2*c_Y3*delta_t*y_dot*cos(pitch)*abs(y_dot)*sin(pitch)*sin(roll) - 2*b1_p*delta_t*k_p*n_p*abs(n_p)*cos(pitch)*sin(pitch)*sin(roll) - 2*b1_s*delta_t*k_s*n_s*abs(n_s)*cos(pitch)*sin(pitch)*sin(roll) + 2*b2_p*delta_t*k_p*x_dot*abs(n_p)*cos(pitch)*sin(pitch)*sin(roll) + 2*b2_s*delta_t*k_s*x_dot*abs(n_s)*cos(pitch)*sin(pitch)*sin(roll) + 2*b2_p*d*delta_t*k_p*w_z*abs(n_p)*cos(pitch)*sin(pitch)*sin(roll) - 2*b2_s*d*delta_t*k_s*w_z*abs(n_s)*cos(pitch)*sin(pitch)*sin(roll)))/m, 0, -(cos(pitch)*cos(roll)*sign(n_p)*sign(n_s)*sign(x_dot)*(b2_p*delta_t*n_p*sign(n_s)*sin(pitch)*sign(x_dot) - m*sign(n_p)*sign(n_s)*sin(pitch)*sign(x_dot) + b2_s*delta_t*n_s*sign(n_p)*sin(pitch)*sign(x_dot) + 2*c_X3*delta_t*x_dot*sign(n_p)*sign(n_s)*sin(pitch) + c_X2*delta_t*sign(n_p)*sign(n_s)*sin(pitch)*sign(x_dot) - b2_p*delta_t*k_p*n_p*cos(pitch)*sign(n_s)*sin(roll)*sign(x_dot) - b2_s*delta_t*k_s*n_s*cos(pitch)*sign(n_p)*sin(roll)*sign(x_dot)))/m, (cpq*cos(roll)*sin(roll)*sign(y_dot)*(c_Y2*delta_t*sign(y_dot) - m*sign(y_dot) + 2*c_Y3*delta_t*y_dot))/m, 1 - cpq*crq, 0, 0, -(delta_t*cos(pitch)*cos(roll)*(2*c_X1*w_z*sin(pitch) + b2_p*d*abs(n_p)*sin(pitch) - b2_s*d*abs(n_s)*sin(pitch) - 2*c_Y1*w_z*cos(pitch)*sin(roll) - b2_p*d*k_p*abs(n_p)*cos(pitch)*sin(roll) + b2_s*d*k_s*abs(n_s)*cos(pitch)*sin(roll)))/m, 0, 0, 0, 0, 0, -(delta_t*cos(pitch)*cos(roll)*sign(n_p)*(sin(pitch) - k_p*cos(pitch)*sin(roll))*(b2_p*x_dot - 2*b1_p*n_p + b2_p*d*w_z))/m, (delta_t*cos(pitch)*cos(roll)*sign(n_s)*(sin(pitch) - k_s*cos(pitch)*sin(roll))*(2*b1_s*n_s - b2_s*x_dot + b2_s*d*w_z))/m, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, -(delta_t*(c_N1*w_z + b2_p*d*abs(n_p) - b2_s*d*abs(n_s) + b2_p*k_p*l*abs(n_p) + b2_s*k_s*l*abs(n_s)))/Izz, 0, 0, 0, 0, 1 - (delta_t*(c_N2 + c_N1*x_dot + 2*c_N3*abs(w_z) + b2_p*dq*abs(n_p) + b2_s*dq*abs(n_s) + b2_p*d*k_p*l*abs(n_p) - b2_s*d*k_s*l*abs(n_s)))/Izz, 0, 0, 0, 0, 0, -(delta_t*sign(n_p)*(d + k_p*l)*(b2_p*x_dot - 2*b1_p*n_p + b2_p*d*w_z))/Izz, -(delta_t*sign(n_s)*(d - k_s*l)*(2*b1_s*n_s - b2_s*x_dot + b2_s*d*w_z))/Izz, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, rpm_A_coeff, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, rpm_A_coeff, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, delta_t,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -delta_t*w_0_y*w_0_y, 1 - 2*delta_t*lambda_y*w_0_y;
         }
 
         /* //transverse thrust - no rpm dynamics
@@ -226,7 +254,7 @@ namespace nav {
         double z = state[2];
         double roll = state[3];
         double pitch = state[4];
-        double yaw = state[5];
+        double yaw_LF = state[5];
         double x_dot = state[6];
         double y_dot = state[7];
         double z_dot = state[8];
@@ -240,6 +268,13 @@ namespace nav {
         double bias_z = state[16];
         double n_p = state[17];
         double n_s = state[18];
+        double yaw_wave = state[19];
+        double yaw_wave_dot = state[20];
+
+        double lambda_y = 0.1;
+        double w_0_y = 2*M_PI/1.3;
+
+        double yaw = state[5];
 
         double h_p = input[0];
         double h_s = input[1];
@@ -328,7 +363,7 @@ namespace nav {
             newState(17) = h_p * rpm_gain_p + n_p * rpm_A_coeff;
             newState(18) = h_s * rpm_gain_s + n_s * rpm_A_coeff;
         } else if (version_ == Version::CompleteBodyFrame) {
-            newState(0) = x + delta_t * (v_cx - y_dot * (cos(roll) * sin(yaw) - cos(yaw) * sin(pitch) * sin(roll)) + z_dot * (sin(roll) * sin(yaw) + cos(roll) * cos(yaw) * sin(pitch)) + x_dot * cos(pitch) * cos(yaw));
+            /*newState(0) = x + delta_t * (v_cx - y_dot * (cos(roll) * sin(yaw) - cos(yaw) * sin(pitch) * sin(roll)) + z_dot * (sin(roll) * sin(yaw) + cos(roll) * cos(yaw) * sin(pitch)) + x_dot * cos(pitch) * cos(yaw));
             newState(1) = y + delta_t * (v_cy + y_dot * (cos(roll) * cos(yaw) + sin(pitch) * sin(roll) * sin(yaw)) - z_dot * (cos(yaw) * sin(roll) - cos(roll) * sin(pitch) * sin(yaw)) + x_dot * cos(pitch) * sin(yaw));
             newState(2) = z + delta_t * (z_dot * cos(pitch) * cos(roll) - x_dot * sin(pitch) + y_dot * cos(pitch) * sin(roll));
             newState(3) = roll + delta_t * (w_x + (w_z * cos(roll) * sin(pitch)) / cos(pitch) + (w_y * sin(pitch) * sin(roll)) / cos(pitch));
@@ -346,7 +381,29 @@ namespace nav {
             newState(15) = bias_y;
             newState(16) = bias_z;
             newState(17) = h_p * rpm_gain_p + n_p * rpm_A_coeff;
-            newState(18) = h_s * rpm_gain_s + n_s * rpm_A_coeff;
+            newState(18) = h_s * rpm_gain_s + n_s * rpm_A_coeff;*/
+
+            newState(0) = x + delta_t*(v_cx - y_dot*(sin(yaw_LF + yaw_wave)*cos(roll) - cos(yaw_LF + yaw_wave)*sin(pitch)*sin(roll)) + z_dot*(sin(yaw_LF + yaw_wave)*sin(roll) + cos(yaw_LF + yaw_wave)*cos(roll)*sin(pitch)) + x_dot*cos(yaw_LF + yaw_wave)*cos(pitch));
+            newState(1) = y + delta_t*(v_cy + y_dot*(cos(yaw_LF + yaw_wave)*cos(roll) + sin(yaw_LF + yaw_wave)*sin(pitch)*sin(roll)) - z_dot*(cos(yaw_LF + yaw_wave)*sin(roll) - sin(yaw_LF + yaw_wave)*cos(roll)*sin(pitch)) + x_dot*sin(yaw_LF + yaw_wave)*cos(pitch));
+            newState(2) = z + delta_t*(z_dot*cos(pitch)*cos(roll) - x_dot*sin(pitch) + y_dot*cos(pitch)*sin(roll));
+            newState(3) = roll + delta_t*(w_x + (w_z*cos(roll)*sin(pitch))/cos(pitch) + (w_y*sin(pitch)*sin(roll))/cos(pitch));
+            newState(4) = pitch + delta_t*(w_y*cos(roll) - w_z*sin(roll));
+            newState(5) = yaw_LF + delta_t*((w_z*(cpq*cos(roll) + spq*cos(roll)))/cos(pitch) + (w_y*(cpq*sin(roll) + spq*sin(roll)))/cos(pitch));
+            newState(6) = z_dot*cos(pitch)*cos(roll)*sin(pitch) - (delta_t*(c_X1*w_zq + c_X2*x_dot + b2_p*x_dot*abs(n_p) + b2_s*x_dot*abs(n_s) + c_X3*x_dot*abs(x_dot) - c_X1*spq*w_zq - c_X2*spq*x_dot - b1_p*n_p*abs(n_p) - b1_s*n_s*abs(n_s) + b2_p*d*w_z*abs(n_p) - b2_s*d*w_z*abs(n_s) + b1_p*n_p*spq*abs(n_p) + b1_s*n_s*spq*abs(n_s) - b2_p*spq*x_dot*abs(n_p) - b2_s*spq*x_dot*abs(n_s) - c_X3*spq*x_dot*abs(x_dot) + c_Y1*w_zq*cos(pitch)*sin(pitch)*sin(roll) + c_Y2*y_dot*cos(pitch)*sin(pitch)*sin(roll) - b2_p*d*spq*w_z*abs(n_p) + b2_s*d*spq*w_z*abs(n_s) + c_Y3*y_dot*cos(pitch)*abs(y_dot)*sin(pitch)*sin(roll) - b1_p*k_p*n_p*abs(n_p)*cos(pitch)*sin(pitch)*sin(roll) - b1_s*k_s*n_s*abs(n_s)*cos(pitch)*sin(pitch)*sin(roll) + b2_p*k_p*x_dot*abs(n_p)*cos(pitch)*sin(pitch)*sin(roll) + b2_s*k_s*x_dot*abs(n_s)*cos(pitch)*sin(pitch)*sin(roll) + b2_p*d*k_p*w_z*abs(n_p)*cos(pitch)*sin(pitch)*sin(roll) - b2_s*d*k_s*w_z*abs(n_s)*cos(pitch)*sin(pitch)*sin(roll)))/m - x_dot*(spq - 1) + y_dot*cos(pitch)*sin(pitch)*sin(roll);
+            newState(7) = x_dot*cos(pitch)*sin(pitch)*sin(roll) - (delta_t*(c_Y1*w_zq + c_Y2*y_dot + c_Y3*y_dot*abs(y_dot) - c_Y1*cpq*srq*w_zq - c_Y2*cpq*srq*y_dot - b1_p*k_p*n_p*abs(n_p) - b1_s*k_s*n_s*abs(n_s) + b2_p*k_p*x_dot*abs(n_p) + b2_s*k_s*x_dot*abs(n_s) + c_X1*w_zq*cos(pitch)*sin(pitch)*sin(roll) + b2_p*d*k_p*w_z*abs(n_p) - b2_s*d*k_s*w_z*abs(n_s) + c_X2*x_dot*cos(pitch)*sin(pitch)*sin(roll) - c_Y3*cpq*srq*y_dot*abs(y_dot) + b1_p*cpq*k_p*n_p*srq*abs(n_p) + b1_s*cpq*k_s*n_s*srq*abs(n_s) - b2_p*cpq*k_p*srq*x_dot*abs(n_p) - b2_s*cpq*k_s*srq*x_dot*abs(n_s) - b1_p*n_p*abs(n_p)*cos(pitch)*sin(pitch)*sin(roll) - b1_s*n_s*abs(n_s)*cos(pitch)*sin(pitch)*sin(roll) + b2_p*x_dot*abs(n_p)*cos(pitch)*sin(pitch)*sin(roll) + b2_s*x_dot*abs(n_s)*cos(pitch)*sin(pitch)*sin(roll) + c_X3*x_dot*cos(pitch)*abs(x_dot)*sin(pitch)*sin(roll) + b2_p*d*w_z*abs(n_p)*cos(pitch)*sin(pitch)*sin(roll) - b2_s*d*w_z*abs(n_s)*cos(pitch)*sin(pitch)*sin(roll) - b2_p*cpq*d*k_p*srq*w_z*abs(n_p) + b2_s*cpq*d*k_s*srq*w_z*abs(n_s)))/m - y_dot*(cpq*srq - 1) - cpq*z_dot*cos(roll)*sin(roll);
+            newState(8) = (delta_t*(c_Y1*cpq*w_zq*cos(roll)*sin(roll) + c_Y2*cpq*y_dot*cos(roll)*sin(roll) - c_X1*w_zq*cos(pitch)*cos(roll)*sin(pitch) - c_X2*x_dot*cos(pitch)*cos(roll)*sin(pitch) + c_Y3*cpq*y_dot*cos(roll)*abs(y_dot)*sin(roll) + b1_p*n_p*abs(n_p)*cos(pitch)*cos(roll)*sin(pitch) + b1_s*n_s*abs(n_s)*cos(pitch)*cos(roll)*sin(pitch) - b2_p*x_dot*abs(n_p)*cos(pitch)*cos(roll)*sin(pitch) - b2_s*x_dot*abs(n_s)*cos(pitch)*cos(roll)*sin(pitch) - c_X3*x_dot*cos(pitch)*cos(roll)*abs(x_dot)*sin(pitch) - b1_p*cpq*k_p*n_p*abs(n_p)*cos(roll)*sin(roll) - b1_s*cpq*k_s*n_s*abs(n_s)*cos(roll)*sin(roll) + b2_p*cpq*k_p*x_dot*abs(n_p)*cos(roll)*sin(roll) + b2_s*cpq*k_s*x_dot*abs(n_s)*cos(roll)*sin(roll) - b2_p*d*w_z*abs(n_p)*cos(pitch)*cos(roll)*sin(pitch) + b2_s*d*w_z*abs(n_s)*cos(pitch)*cos(roll)*sin(pitch) + b2_p*cpq*d*k_p*w_z*abs(n_p)*cos(roll)*sin(roll) - b2_s*cpq*d*k_s*w_z*abs(n_s)*cos(roll)*sin(roll)))/m - z_dot*(cpq*crq - 1) + x_dot*cos(pitch)*cos(roll)*sin(pitch) - cpq*y_dot*cos(roll)*sin(roll);
+            newState(9) = w_x;
+            newState(10) = w_y;
+            newState(11) = w_z - (delta_t*(c_N2*w_z + c_N3*w_z*abs(w_z) + c_N1*w_z*x_dot - b1_p*d*n_p*abs(n_p) + b1_s*d*n_s*abs(n_s) + b2_p*dq*w_z*abs(n_p) + b2_s*dq*w_z*abs(n_s) + b2_p*d*x_dot*abs(n_p) - b2_s*d*x_dot*abs(n_s) - b1_p*k_p*l*n_p*abs(n_p) - b1_s*k_s*l*n_s*abs(n_s) + b2_p*k_p*l*x_dot*abs(n_p) + b2_s*k_s*l*x_dot*abs(n_s) + b2_p*d*k_p*l*w_z*abs(n_p) - b2_s*d*k_s*l*w_z*abs(n_s)))/Izz;
+            newState(12) = v_cx;
+            newState(13) = v_cy;
+            newState(14) = bias_x;
+            newState(15) = bias_y;
+            newState(16) = bias_z;
+            newState(17) = h_p*rpm_gain_p + n_p*rpm_A_coeff;
+            newState(18) = h_s*rpm_gain_s + n_s*rpm_A_coeff;
+            newState(19) = yaw_wave + delta_t*yaw_wave_dot;
+            newState(20) = yaw_wave_dot - delta_t*(w_0_y*w_0_y*yaw_wave + 2*lambda_y*w_0_y*yaw_wave_dot);
         }
 
         /* transverse thrust - no rpm dynamics

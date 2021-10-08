@@ -65,7 +65,11 @@ namespace nav {
         rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr rqtGyroZPub_;
 		rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr rqtRPMPortPub_;
 		rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr rqtRPMStbdPub_;
-
+        rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr rqtYawPub_;
+        rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr rqtWave1Pub_;
+        rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr rqtWave2Pub_;
+        rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr rqtWave3Pub_;
+        rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr rqtWave4Pub_;
 
         rclcpp::Subscription<ulisse_msgs::msg::Compass>::SharedPtr compassSub_;
         rclcpp::Subscription<ulisse_msgs::msg::GPSData>::SharedPtr gpsdataSub_;

@@ -52,6 +52,11 @@ namespace nav {
         rqtGyroZPub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/gyro_z", 1);
         rqtRPMPortPub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/n_p", 1);
         rqtRPMStbdPub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/n_s", 1);
+        rqtYawPub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/yaw", 1);
+        rqtWave1Pub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/wave1", 1);
+        rqtWave2Pub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/wave2", 1);
+        rqtWave3Pub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/wave3", 1);
+        rqtWave4Pub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/wave4", 1);
 
         //Subscribes to data sensors
         compassSub_ = this->create_subscription<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass,
@@ -180,9 +185,9 @@ namespace nav {
         msg.data = filterData_.bodyframe_angular_velocity[2];
         rqtOmegaZPub_->publish(msg);
 
-        msg.data = imuData_.gyro[0] - filterData_.gyro_bias[0];
+        msg.data = imuData_.gyro4x[0] - filterData_.gyro_bias[0];
         rqtGyroXPub_->publish(msg);
-        msg.data = imuData_.gyro[1] - filterData_.gyro_bias[1];
+        msg.data = imuData_.gyro4x[1] - filterData_.gyro_bias[1];
         rqtGyroYPub_->publish(msg);
         msg.data = imuData_.gyro[2] - filterData_.gyro_bias[2];
         rqtGyroZPub_->publish(msg);
@@ -191,6 +196,28 @@ namespace nav {
         rqtRPMPortPub_->publish(msg);
         msg.data = state_[18];
         rqtRPMStbdPub_->publish(msg);
+
+        double lambda_y = 0.1;
+        double w_0_y = 2*M_PI/1.3;
+
+        msg.data = state_[20];
+        rqtWave1Pub_->publish(msg);
+        msg.data = -w_0_y*w_0_y*state_[19] -2*lambda_y*w_0_y*state_[20];
+        rqtWave2Pub_->publish(msg);
+
+        double yaw = state_[20] + state_[5];
+        ctb::NormalizeAngle(yaw);
+        msg.data = yaw; //yaw
+        rqtWave3Pub_->publish(msg);
+        msg.data = -w_0_y*w_0_y*state_[19] -2*lambda_y*w_0_y*state_[20] + filterData_.bodyframe_angular_velocity[2]; //yawrate
+        rqtWave4Pub_->publish(msg);
+
+        //yaw = compassData_.orientation.yaw;
+        //ctb::NormalizeAngle(yaw);
+        //msg.data = yaw; //yaw
+        msg.data = -atan2(magnetometerData_.orthogonalstrength[1] * cos(state_[3]) - magnetometerData_.orthogonalstrength[2] * sin(state_[3]), magnetometerData_.orthogonalstrength[0] * cos(state_[4]) + magnetometerData_.orthogonalstrength[2] * cos(state_[3]) * sin(state_[4]) + magnetometerData_.orthogonalstrength[1] * sin(state_[4]) * sin(state_[3]));
+        rqtYawPub_->publish(msg);
+
     }
 
     void NavigationFilter::LuenbergerObserverFilter()
@@ -272,7 +299,7 @@ namespace nav {
 
         if (imuValid_) {
             if (measuresActive_.find("gyro")->second) {
-                gyroMeasurement_->MeasureVector() = Eigen::Vector3d { imuData_.gyro[0], imuData_.gyro[1], imuData_.gyro[2] };
+                gyroMeasurement_->MeasureVector() = Eigen::Vector3d { imuData_.gyro4x[0], imuData_.gyro4x[1], imuData_.gyro[2] };
                 extendedKalmanFilter_->AddMeasurement(gyroMeasurement_);
             }
             if (measuresActive_.find("accelerometer")->second) {
