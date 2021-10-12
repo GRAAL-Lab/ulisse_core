@@ -38,7 +38,18 @@ void FeedbackUpdater::LoadQmlEngine(QQmlApplicationEngine* engine)
 
     q_ulisse_pos_.setLatitude(44.392);
     q_ulisse_pos_.setLongitude(8.945);
-    q_goal_heading_deg_ = q_ulisse_yaw_deg_ = 0.0;
+    q_ulisse_pos_.setAltitude(0.0);
+    /*q_ulisse_linear_vel_ = {0.0, 0.0, 0.0};
+    q_ulisse_rpy_deg_ = {0.0, 0.0, 0.0};
+    q_ulisse_rpy_rate_deg_ = {0.0, 0.0, 0.0};*/
+
+    q_goal_heading_deg_ = 0.0;
+
+    //for (int i = 0; i < 3 ; i++ ) {
+    //q_ulisse_linear_pos_ = {0.0, 0.0, 0.0};
+
+    //}
+
     q_vehicle_state_ = "undefined";
     q_goal_distance_ = 0.0;
     q_ulisse_surge_ = 0.0;
@@ -55,7 +66,7 @@ void FeedbackUpdater::LoadQmlEngine(QQmlApplicationEngine* engine)
     q_gps_pos_ = q_goal_pos_ = q_ulisse_pos_;
     q_gps_time_ = "undefined";
 
-    gpsOnline_ = imuOnline_ = compassOnline_ = magnetometerOnline_ = false;
+    gpsReceived_ = imuReceived_ = compassReceived_ = magnetometerReceived_ = false;
 
     water_current_deg = 0;
     water_current_norm = 0;
@@ -64,7 +75,7 @@ void FeedbackUpdater::LoadQmlEngine(QQmlApplicationEngine* engine)
     if (!goalFlagObj_) {
         qDebug() << "goalFlagObj_ Object NOT found!";
     }
-    qDebug() << "INITIAL POS: LatLong = " << q_ulisse_pos_ << "- Compass = " << q_ulisse_yaw_deg_;
+    qDebug() << "INITIAL POS: LatLong = " << q_ulisse_pos_ << "- Compass = " << q_ulisse_rpy_deg_[2];
 
     // Set the QoS. ROS 2 will provide QoS profiles based on the following use cases:
     // Default QoS settings for publishers and subscriptions (rmw_qos_profile_default).
@@ -123,30 +134,37 @@ void FeedbackUpdater::NavFilterDataCB(const ulisse_msgs::msg::NavFilterData::Sha
 
     q_ulisse_pos_.setLatitude(msg->inertialframe_linear_position.latlong.latitude);
     q_ulisse_pos_.setLongitude(msg->inertialframe_linear_position.latlong.longitude);
-    // Converting the -pi/pi yaw value to a 0/360° range.
-    q_ulisse_yaw_deg_ = RadiansToCompassDegrees(msg->bodyframe_angular_position.yaw);
+    q_ulisse_pos_.setAltitude(msg->inertialframe_linear_position.altitude);
+
+    q_ulisse_linear_vel_.setX(msg->bodyframe_linear_velocity.at(0));
+    q_ulisse_linear_vel_.setY(msg->bodyframe_linear_velocity.at(1));
+    q_ulisse_linear_vel_.setZ(msg->bodyframe_linear_velocity.at(2));
+
+    q_ulisse_rpy_deg_.setX(RadiansToDegrees(msg->bodyframe_angular_position.roll, false));
+    q_ulisse_rpy_deg_.setY(RadiansToDegrees(msg->bodyframe_angular_position.pitch, false));
+    q_ulisse_rpy_deg_.setZ(RadiansToDegrees(msg->bodyframe_angular_position.yaw, true));
 
     //double theta = atan2(catamaran_rel_vel_b.y(), catamaran_rel_vel_b.x());
     Eigen::Rotation2D<double> wRb = Eigen::Rotation2D<double>(msg->bodyframe_angular_position.yaw);
     Eigen::Vector2d water_current_b = wRb.inverse() * water_current_w;
 
     q_ulisse_surge_ = catamaran_rel_vel_b.x() + water_current_b.x();
-    // freccia surge assoluto
+    // TODO (?): freccia surge assoluto
 
     // Rounding surge and heading to 2 decimal places
-    q_ulisse_yaw_deg_ = int(q_ulisse_yaw_deg_ * 1E2) / 1E2;
+    q_ulisse_rpy_deg_[2] = int(q_ulisse_rpy_deg_[2] * 1E2) / 1E2;
     q_ulisse_surge_ = int(q_ulisse_surge_ * 1E2) / 1E2;
 
 
-    //msg->bodyframe_angular_position.pitch;
-    //msg->bodyframe_angular_position.roll;
-    //
-    q_ulisse_yawrate_ = msg->bodyframe_angular_velocity.at(2);
+    q_ulisse_rpy_rate_deg_.setX(msg->bodyframe_angular_velocity.at(0));
+    q_ulisse_rpy_rate_deg_.setY(msg->bodyframe_angular_velocity.at(1));
+    q_ulisse_rpy_rate_deg_.setZ(msg->bodyframe_angular_velocity.at(2));
 
-    gpsOnline_ = msg->gps_received;
-    imuOnline_ = msg->imu_received;
-    compassOnline_ = msg->compass_received;
-    magnetometerOnline_ = msg->magnetometer_received;
+    // SENSORS STATUS
+    gpsReceived_ = msg->gps_received;
+    imuReceived_ = msg->imu_received;
+    compassReceived_ = msg->compass_received;
+    magnetometerReceived_ = msg->magnetometer_received;
 
 }
 
@@ -155,11 +173,13 @@ void FeedbackUpdater::NavFilterDataCB(const ulisse_msgs::msg::NavFilterData::Sha
     this = np;
 }
 */
-double FeedbackUpdater::RadiansToCompassDegrees(const double angle_rad)
+double FeedbackUpdater::RadiansToDegrees(const double angle_rad, const bool wraparound360)
 {
-    double angle_compass = angle_rad * 180.0 / M_PI;
-    if (angle_compass < 0) {angle_compass += 360.0;}
-    return angle_compass;
+    double angle_deg = angle_rad * 180.0 / M_PI;
+    if (wraparound360){
+        if (angle_deg < 0) {angle_deg += 360.0;}
+    }
+    return angle_deg;
 }
 
 void FeedbackUpdater::GPSDataCB(const ulisse_msgs::msg::GPSData::SharedPtr msg)
@@ -282,6 +302,11 @@ QGeoCoordinate FeedbackUpdater::get_ulisse_pos()
     return q_ulisse_pos_;
 }
 
+QVector3D FeedbackUpdater::get_ulisse_linear_vel()
+{
+    return q_ulisse_linear_vel_;
+}
+
 double FeedbackUpdater::get_ulisse_surge()
 {
     return q_ulisse_surge_;
@@ -292,14 +317,14 @@ QGeoCoordinate FeedbackUpdater::get_goal_pos()
     return q_goal_pos_;
 }
 
-double FeedbackUpdater::get_ulisse_yaw()
+QVector3D FeedbackUpdater::get_ulisse_rpy()
 {
-    return q_ulisse_yaw_deg_;
+    return q_ulisse_rpy_deg_;
 }
 
-double FeedbackUpdater::get_ulisse_yawrate()
+QVector3D FeedbackUpdater::get_ulisse_rpy_rate_deg()
 {
-    return q_ulisse_yawrate_;
+    return q_ulisse_rpy_rate_deg_;
 }
 
 QString FeedbackUpdater::get_vehicle_state()
@@ -344,22 +369,22 @@ QGeoCoordinate FeedbackUpdater::get_gps_pos()
 
 bool FeedbackUpdater::get_gps_online()
 {
-    return gpsOnline_;
+    return gpsReceived_;
 }
 
 bool FeedbackUpdater::get_imu_online()
 {
-    return imuOnline_;
+    return imuReceived_;
 }
 
 bool FeedbackUpdater::get_compass_online()
 {
-    return compassOnline_;
+    return compassReceived_;
 }
 
 bool FeedbackUpdater::get_magnetometer_online()
 {
-    return magnetometerOnline_;
+    return magnetometerReceived_;
 }
 
 double FeedbackUpdater::get_desired_surge()

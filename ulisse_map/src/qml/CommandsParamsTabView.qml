@@ -19,6 +19,18 @@ Pane{
     ColumnLayout {
         width: parent.width
 
+        Label {
+            font.pointSize: 12
+            font.weight: Font.DemiBold
+            color: mainColor
+            text: "Commands"
+            verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: Text.AlignHCenter
+            Layout.topMargin: 15
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+        }
+
         TabBar {
             id: commandPathsBar
             Layout.fillWidth: true

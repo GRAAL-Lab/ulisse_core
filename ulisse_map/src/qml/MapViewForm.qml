@@ -68,7 +68,7 @@ RowLayout {
         property int stopped: 3
     }
 
-    ModalPopup {
+    /*ModalPopup {
         id: acceptRadDialog
         dialogTitle: "Insert an acceptance radius"
     }
@@ -76,7 +76,7 @@ RowLayout {
     ModalPopup {
         id: surgeheadingDialog
         dialogTitle: "Insert both speed (m/s) and heading (deg)"
-    }
+    }*/
 
     MapSidebar {
         id: mapsidebar

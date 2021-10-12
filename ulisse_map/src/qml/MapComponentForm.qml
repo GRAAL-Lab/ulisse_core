@@ -172,7 +172,7 @@ Map {
         sourceItem: Text {
             color: 'darkslategrey'
             text: "Surge: " + fbkUpdater.ulisse_surge + " m/s\nHeading: "
-                  + fbkUpdater.ulisse_yaw_deg + "°"
+                  + fbkUpdater.ulisse_rpy_deg.z.toFixed(2) + "°"
         }
         coordinate: fbkUpdater.ulisse_pos
         anchorPoint.x: -ulisseImage.width / 2

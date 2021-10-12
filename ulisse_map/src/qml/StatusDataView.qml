@@ -110,10 +110,10 @@ Rectangle {
                 LabelledText {
                     Layout.alignment: Qt.AlignHCenter
                     labelColor: blue
-                    label: "Filtered Position"
+                    label: "Position"
                     textColor: 'grey'
-                    text: "%1, %2".arg(fbkUpdater.ulisse_pos.latitude.toFixed(8)).arg(
-                              fbkUpdater.ulisse_pos.longitude.toFixed(8))
+                    text: "%1, %2, %3".arg(fbkUpdater.ulisse_pos.latitude.toFixed(8)).arg(
+                              fbkUpdater.ulisse_pos.longitude.toFixed(8)).arg(fbkUpdater.ulisse_pos.altitude.toFixed(8))
                     lsize: labelsize
                     tsize: textsize
                 }
@@ -122,9 +122,10 @@ Rectangle {
                 LabelledText {
                     Layout.alignment: Qt.AlignHCenter
                     labelColor: blue
-                    label: "Surge"
+                    label: "Linear Vel. (m/s)"
                     textColor: 'grey'
-                    text: "%1 m/s".arg(fbkUpdater.ulisse_surge)
+                    text: "%1, %2, %3".arg(fbkUpdater.ulisse_linear_vel.x.toFixed(2)).arg(
+                            fbkUpdater.ulisse_linear_vel.y.toFixed(2)).arg(fbkUpdater.ulisse_linear_vel.z.toFixed(2))
                     lsize: labelsize
                     tsize: textsize
                 }
@@ -132,9 +133,21 @@ Rectangle {
                 LabelledText {
                     Layout.alignment: Qt.AlignHCenter
                     labelColor: blue
-                    label: "Heading"
+                    label: "Orientation (°)"
                     textColor: 'grey'
-                    text: "%1°".arg(fbkUpdater.ulisse_yaw_deg)
+                    text: "%1, %2, %3".arg(fbkUpdater.ulisse_rpy_deg.x.toFixed(2)).arg(
+                              fbkUpdater.ulisse_rpy_deg.y.toFixed(2)).arg(fbkUpdater.ulisse_rpy_deg.z.toFixed(2))
+                    lsize: labelsize
+                    tsize: textsize
+                }
+
+                LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
+                    labelColor: blue
+                    label: "Angular Vel. (°/s)"
+                    textColor: 'grey'
+                    text: "%1, %2, %3".arg(fbkUpdater.ulisse_rpy_rate_deg.x.toFixed(2)).arg(
+                              fbkUpdater.ulisse_rpy_rate_deg.y.toFixed(2)).arg(fbkUpdater.ulisse_rpy_rate_deg.z.toFixed(2))
                     lsize: labelsize
                     tsize: textsize
                 }
@@ -167,7 +180,7 @@ Rectangle {
                                 anchors.fill:parent
                                 font.pointSize: 8
                                 color: fbkUpdater.gps_online ? "green" : "red"
-                                text:  fbkUpdater.gps_online ? qsTr("GPS Online") : qsTr("GPS Offline")
+                                text:  fbkUpdater.gps_online ? qsTr("GPS") : qsTr("GPS Offline")
                             }
                         }
 
@@ -185,7 +198,7 @@ Rectangle {
                                 anchors.fill:parent
                                 font.pointSize: 8
                                 color: fbkUpdater.compass_online ? "green" : "red"
-                                text:  fbkUpdater.compass_online ? qsTr("Compass Online") : qsTr("Compass Offline")
+                                text:  fbkUpdater.compass_online ? qsTr("Compass") : qsTr("Compass Offline")
                             }
                         }
 
@@ -203,7 +216,7 @@ Rectangle {
                                 anchors.fill:parent
                                 font.pointSize: 8
                                 color: fbkUpdater.imu_online ? "green" : "red"
-                                text:  fbkUpdater.imu_online ? qsTr("IMU Online") : qsTr("IMU Offline")
+                                text:  fbkUpdater.imu_online ? qsTr("IMU") : qsTr("IMU Offline")
                             }
                         }
 
@@ -221,7 +234,7 @@ Rectangle {
                                 anchors.fill:parent
                                 font.pointSize: 8
                                 color: fbkUpdater.magnetometer_online ? "green" : "red"
-                                text:  fbkUpdater.magnetometer_online ? qsTr("Magnetometer Online") : qsTr("Magnetometer Offline")
+                                text:  fbkUpdater.magnetometer_online ? qsTr("Magnetometer") : qsTr("Magnetometer Offline")
                             }
                         }
                     }
@@ -393,9 +406,9 @@ Rectangle {
                         font.bold: true
                         Layout.preferredWidth: 140
                     }
-                    Text { text: "%1".arg(fbkUpdater.ulisse_yawrate); color: grey; Layout.preferredWidth: 120 }
+                    Text { text: "%1".arg(fbkUpdater.ulisse_rpy_rate_deg[2]); color: grey; Layout.preferredWidth: 120 }
                     Text { text: "%1".arg(fbkUpdater.desired_jog); color: grey; Layout.preferredWidth: 120 }
-                    Text { text: "%1".arg((fbkUpdater.desired_jog - fbkUpdater.ulisse_yawrate)); color: grey; Layout.preferredWidth: 120 }
+                    Text { text: "%1".arg((fbkUpdater.desired_jog - fbkUpdater.ulisse_rpy_rate_deg[2])); color: grey; Layout.preferredWidth: 120 }
                 }
             }
         }

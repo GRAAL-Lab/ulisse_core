@@ -118,7 +118,7 @@ MapComponentForm {
         Rotation {
             origin.x: ulisseIcon.sourceItem.width / 2
             origin.y: ulisseIcon.sourceItem.height / 2
-            angle: fbkUpdater.ulisse_yaw_deg - map.bearing
+            angle: fbkUpdater.ulisse_rpy_deg.z - map.bearing
         },
         Rotation {
             origin.x: ulisseIcon.sourceItem.width / 2
@@ -134,7 +134,7 @@ MapComponentForm {
         Rotation {
             origin.x: ulisseIcon.sourceItem.width / 2
             origin.y: ulisseIcon.sourceItem.height / 2
-            angle: fbkUpdater.ulisse_yaw_deg - map.bearing
+            angle: fbkUpdater.ulisse_rpy_deg.z - map.bearing
         },
         Rotation {
             origin.x: ulisseIcon.sourceItem.width / 2

@@ -32,8 +32,9 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
 
     Q_PROPERTY(QString vehicle_state READ get_vehicle_state NOTIFY callbacks_processed)
     Q_PROPERTY(QGeoCoordinate ulisse_pos READ get_ulisse_pos NOTIFY callbacks_processed)
-    Q_PROPERTY(double ulisse_yaw_deg READ get_ulisse_yaw NOTIFY callbacks_processed)
-    Q_PROPERTY(double ulisse_yawrate READ get_ulisse_yawrate NOTIFY callbacks_processed)
+    Q_PROPERTY(QVector3D ulisse_linear_vel READ get_ulisse_linear_vel NOTIFY callbacks_processed)
+    Q_PROPERTY(QVector3D ulisse_rpy_deg READ get_ulisse_rpy NOTIFY callbacks_processed)
+    Q_PROPERTY(QVector3D ulisse_rpy_rate_deg READ get_ulisse_rpy_rate_deg NOTIFY callbacks_processed)
     Q_PROPERTY(double ulisse_surge READ get_ulisse_surge NOTIFY callbacks_processed)
     Q_PROPERTY(double accept_radius READ get_accept_radius NOTIFY callbacks_processed)
     Q_PROPERTY(QString gps_time READ get_gps_time NOTIFY callbacks_processed)
@@ -71,13 +72,16 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     Q_PROPERTY(float water_current_norm READ get_water_current_norm NOTIFY callbacks_processed)
     Q_PROPERTY(float water_current_deg READ get_water_current_deg NOTIFY callbacks_processed)
 
-    bool gpsOnline_, imuOnline_, compassOnline_, magnetometerOnline_;
+    bool gpsReceived_, imuReceived_, compassReceived_, magnetometerReceived_;
     QGeoCoordinate q_ulisse_pos_, q_goal_pos_, q_gps_pos_;
     double q_goal_distance_, q_goal_heading_deg_;
     double q_ulisse_surge_;
+    QVector3D q_ulisse_rpy_deg_, q_ulisse_rpy_rate_deg_;
+    QVector3D q_ulisse_linear_vel_;
     double q_battery_perc_L_, q_battery_perc_R_;
     QString q_vehicle_state_, q_gps_time_;
-    double q_ulisse_yaw_deg_, q_ulisse_yawrate_;
+
+    //double q_ulisse_yawrate_;
     int feedbackUpdateInterval_;
     double q_accept_radius_;
     double q_desired_surge_, q_desired_jog_;
@@ -124,7 +128,7 @@ public:
     virtual ~FeedbackUpdater();
     void LoadQmlEngine(QQmlApplicationEngine* engine);
     //void SetNodeHandle(const rclcpp::Node::SharedPtr& np);
-    double RadiansToCompassDegrees(const double angle_rad);
+    double RadiansToDegrees(const double angle_rad, const bool wraparound360 = false);
 
     void GPSDataCB(const ulisse_msgs::msg::GPSData::SharedPtr msg);
     void MicroLoopCountCB(const ulisse_msgs::msg::MicroLoopCount::SharedPtr msg);
@@ -146,10 +150,11 @@ public:
     Q_INVOKABLE void copyToClipboard(QString value);
 
     QGeoCoordinate get_ulisse_pos();
+    QVector3D get_ulisse_linear_vel();
     double get_ulisse_surge();
     QGeoCoordinate get_goal_pos();
-    double get_ulisse_yaw();
-    double get_ulisse_yawrate();
+    QVector3D get_ulisse_rpy();
+    QVector3D get_ulisse_rpy_rate_deg();
     QString get_vehicle_state();
     double get_goal_distance();
     double get_goal_heading();

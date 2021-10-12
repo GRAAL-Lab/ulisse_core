@@ -24,7 +24,7 @@ Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: false
             Material.elevation: 0
-            Material.background: Material.color(Material.BlueGrey, Material.Shade50)
+            //Material.background: Material.color(Material.BlueGrey, Material.Shade50)
 
             ColumnLayout {
                 Layout.alignment: Qt.AlignLeft
@@ -33,7 +33,7 @@ Rectangle {
                 Label {
                     font.pointSize: 12
                     font.weight: Font.DemiBold
-                    color: blue
+                    color: cyan
                     text: "Status"
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter
@@ -102,7 +102,7 @@ Rectangle {
             Layout.alignment: Qt.AlignLeft | Qt.AlignTop
             Layout.fillWidth: true
             Layout.fillHeight: false
-            Material.background: "white"//Material.color(Material.BlueGrey, Material.Shade50)
+            //Material.background: "white"//Material.color(Material.BlueGrey, Material.Shade50)
         }
     }
 }
