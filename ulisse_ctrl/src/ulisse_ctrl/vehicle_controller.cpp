@@ -166,13 +166,40 @@ bool VehicleController::LoadConfiguration(std::shared_ptr<ControllerConfiguratio
 {
     libconfig::Config confObj;
 
-    // Inizialization
-    std::string package_share_directory = ament_index_cpp::get_package_share_directory("ulisse_ctrl");
+    // Reading Centroid From Nav Filter
+    std::string package_share_directory = ament_index_cpp::get_package_share_directory("nav_filter");
     std::string confPath = package_share_directory;
+    confPath.append("/conf/navigation_filter.conf");
+
+    // Read the file. If there is an error, report it and exit.
+    try {
+        confObj.readFile(confPath.c_str());
+    } catch (const libconfig::FileIOException& fioex) {
+        std::cerr << "I/O error while reading file: " << fioex.what() << std::endl;
+        return -1;
+    } catch (const libconfig::ParseException& pex) {
+        std::cerr << "Parse error at " << pex.getFile() << ":" << pex.getLine() << " - " << pex.getError() << std::endl;
+        return -1;
+    }
+
+    Eigen::VectorXd centroidLocationTmp;
+    if (!ctb::GetParamVector(confObj, centroidLocationTmp, "centroidLocation")) {
+        std::cerr << "Failed to load centroidLocation from file" << std::endl;
+        return false;
+    };
+
+    centroidLocation_.latitude = centroidLocationTmp[0];
+    centroidLocation_.longitude = centroidLocationTmp[1];
+
+    std::cout << "Centroid: " << centroidLocation_.latitude << ", " << centroidLocation_.longitude << std::endl;
+
+    // Inizialization
+    package_share_directory = ament_index_cpp::get_package_share_directory("ulisse_ctrl");
+    confPath = package_share_directory;
     confPath.append("/conf/");
     confPath.append(fileName_);
 
-    std::cout << "PATH TO CONF FILE : " << confPath << std::endl;
+    std::cout << "PATH TO KCL CONF FILE : " << confPath << std::endl;
 
     // Read the file. If there is an error, report it and exit.
     try {
@@ -192,14 +219,14 @@ bool VehicleController::LoadConfiguration(std::shared_ptr<ControllerConfiguratio
 
     std::cout << tc::brown << *conf << tc::none << std::endl;
 
-    //acquired the centroid location
-    Eigen::VectorXd centroidLocationTmp;
+
+    /*Eigen::VectorXd centroidLocationTmp;
     if (!ctb::GetParamVector(confObj, centroidLocationTmp, "centroidLocation")) {
         std::cerr << "Failed to load centroidLocation from file" << std::endl;
         return false;
     };
     centroidLocation_.latitude = centroidLocationTmp[0];
-    centroidLocation_.longitude = centroidLocationTmp[1];
+    centroidLocation_.longitude = centroidLocationTmp[1];*/
 
     if (!ConfigureTaskFromFile(tasksMap_, confObj)) {
         std::cerr << "Failed to load Tasks from file" << std::endl;

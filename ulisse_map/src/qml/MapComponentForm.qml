@@ -106,6 +106,22 @@ Map {
     }
 
     MapQuickItem {
+        id: centroidIcon
+        sourceItem: Text {
+            id: centroidText
+            color: grey
+            text: "+ centroid"
+            font.family: "Courier New"
+        }
+
+        coordinate: fbkUpdater.centroid
+        z: map.z + 1
+        /*anchorPoint.x: centroidText.width / 2
+        anchorPoint.y: centroidText.height*/
+        opacity: 0.4
+    }
+
+    MapQuickItem {
         id: ulisseIcon
         sourceItem: Image {
             id: ulisseImage

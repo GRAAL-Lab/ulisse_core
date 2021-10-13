@@ -24,6 +24,7 @@ find_package(ulisse_msgs REQUIRED)
 find_package(ulisse_driver REQUIRED)
 find_package(ulisse_ctrl REQUIRED)
 find_package(nav_filter REQUIRED)
+find_package(ament_index_cpp REQUIRED)
 
 
 find_package(PkgConfig REQUIRED)
@@ -65,6 +66,7 @@ ament_target_dependencies(${PROJECT_NAME}_node
         ulisse_msgs
         rmw_implementation
         nav_filter
+        ament_index_cpp
         )
 target_link_libraries(${PROJECT_NAME}_node
         Qt5::Core
@@ -76,6 +78,7 @@ target_link_libraries(${PROJECT_NAME}_node
         ${ulisse_msgs_LIBRARIES}
         ${JSONCPP_LIBRARIES}
         Geographic
+        config++
         )
 
 

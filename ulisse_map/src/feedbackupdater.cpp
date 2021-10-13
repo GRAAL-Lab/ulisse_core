@@ -5,6 +5,7 @@
 
 #include "rml/RML.h"
 #include "feedbackupdater.h"
+#include "ctrl_toolbox/HelperFunctions.h"
 #include "ulisse_ctrl/ulisse_defines.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 
@@ -36,14 +37,10 @@ void FeedbackUpdater::LoadQmlEngine(QQmlApplicationEngine* engine)
     myTimer_->start(feedbackUpdateInterval_);
     QObject::connect(myTimer_, SIGNAL(timeout()), this, SLOT(process_callbacks_slot()));
 
+    if(LoadConfiguration()) emit startup_info_read();
+
     q_ulisse_pos_ = QGeoCoordinate(44.0956, 9.8631, 0.0); // Porto Lotti, La Spezia
-
     q_goal_heading_deg_ = 0.0;
-
-    //for (int i = 0; i < 3 ; i++ ) {
-    //q_ulisse_linear_pos_ = {0.0, 0.0, 0.0};
-
-    //}
 
     q_vehicle_state_ = "undefined";
     q_goal_distance_ = 0.0;
@@ -117,9 +114,44 @@ void FeedbackUpdater::LoadQmlEngine(QQmlApplicationEngine* engine)
         10, std::bind(&FeedbackUpdater::FeedbackGuiCB, this, _1) /*custom_qos_profile*/);
 }
 
+bool FeedbackUpdater::LoadConfiguration()
+{
+    libconfig::Config confObj;
+
+    // Inizialization
+    std::string package_share_directory = ament_index_cpp::get_package_share_directory("nav_filter");
+    std::string confPath = package_share_directory;
+    confPath.append("/conf/navigation_filter.conf");
+
+    std::cout << "PATH TO CONF FILE : " << confPath << std::endl;
+
+    // Read the file. If there is an error, report it and exit.
+    try {
+        confObj.readFile(confPath.c_str());
+    } catch (const libconfig::FileIOException& fioex) {
+        std::cerr << "I/O error while reading file: " << fioex.what() << std::endl;
+        return -1;
+    } catch (const libconfig::ParseException& pex) {
+        std::cerr << "Parse error at " << pex.getFile() << ":" << pex.getLine() << " - " << pex.getError() << std::endl;
+        return -1;
+    }
+
+    //acquired the centroid location
+    Eigen::VectorXd centroidLocationTmp;
+    if (!ctb::GetParamVector(confObj, centroidLocationTmp, "centroidLocation")) {
+        std::cerr << "Failed to load centroidLocation from file" << std::endl;
+        return false;
+    };
+    q_centroid.setLatitude(centroidLocationTmp[0]);
+    q_centroid.setLongitude(centroidLocationTmp[1]);
+
+    qDebug() << "centroid Location: " << q_centroid;
+
+    return true;
+}
+
 void FeedbackUpdater::NavFilterDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)
 {
-
     Eigen::Vector2d water_current_w(msg->inertialframe_water_current[0], msg->inertialframe_water_current[1]);
     Eigen::Vector2d catamaran_rel_vel_b(msg->bodyframe_linear_velocity[0], msg->bodyframe_linear_velocity[1]);
 
@@ -298,6 +330,11 @@ void FeedbackUpdater::copyToClipboard(QString newText)
 {
     QClipboard* clipboard = QGuiApplication::clipboard();
     clipboard->setText(newText);
+}
+
+QGeoCoordinate FeedbackUpdater::get_centroid()
+{
+    return q_centroid;
 }
 
 QGeoCoordinate FeedbackUpdater::get_ulisse_pos()

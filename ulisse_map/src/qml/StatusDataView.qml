@@ -124,7 +124,7 @@ Rectangle {
                     labelColor: blue
                     label: "Linear Vel. (m/s)"
                     textColor: 'grey'
-                    text: "%1, %2, %3".arg(fbkUpdater.ulisse_linear_vel.x.toFixed(2)).arg(
+                    text: "%1,  %2,  %3".arg(fbkUpdater.ulisse_linear_vel.x.toFixed(2)).arg(
                             fbkUpdater.ulisse_linear_vel.y.toFixed(2)).arg(fbkUpdater.ulisse_linear_vel.z.toFixed(2))
                     lsize: labelsize
                     tsize: textsize
@@ -135,7 +135,7 @@ Rectangle {
                     labelColor: blue
                     label: "Orientation (°)"
                     textColor: 'grey'
-                    text: "%1, %2, %3".arg(fbkUpdater.ulisse_rpy_deg.x.toFixed(2)).arg(
+                    text: "%1,  %2,  %3".arg(fbkUpdater.ulisse_rpy_deg.x.toFixed(2)).arg(
                               fbkUpdater.ulisse_rpy_deg.y.toFixed(2)).arg(fbkUpdater.ulisse_rpy_deg.z.toFixed(2))
                     lsize: labelsize
                     tsize: textsize
@@ -146,7 +146,7 @@ Rectangle {
                     labelColor: blue
                     label: "Angular Vel. (°/s)"
                     textColor: 'grey'
-                    text: "%1, %2, %3".arg(fbkUpdater.ulisse_rpy_rate_deg.x.toFixed(2)).arg(
+                    text: "%1,  %2,  %3".arg(fbkUpdater.ulisse_rpy_rate_deg.x.toFixed(2)).arg(
                               fbkUpdater.ulisse_rpy_rate_deg.y.toFixed(2)).arg(fbkUpdater.ulisse_rpy_rate_deg.z.toFixed(2))
                     lsize: labelsize
                     tsize: textsize

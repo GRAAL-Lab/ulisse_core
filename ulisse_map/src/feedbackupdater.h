@@ -7,6 +7,9 @@
 #include <QtGui>
 #include <QtPositioning/QtPositioning>
 
+#include <ament_index_cpp/get_package_share_directory.hpp>
+#include <libconfig.h++>
+
 #include "rclcpp/rclcpp.hpp"
 
 #include "ulisse_msgs/msg/feedback_gui.hpp"
@@ -29,6 +32,8 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     QQmlApplicationEngine* appEngine_;
     QTimer* myTimer_;
     QObject* goalFlagObj_;
+
+    Q_PROPERTY(QGeoCoordinate centroid READ get_centroid NOTIFY startup_info_read)
 
     Q_PROPERTY(QString vehicle_state READ get_vehicle_state NOTIFY callbacks_processed)
     Q_PROPERTY(QGeoCoordinate ulisse_pos READ get_ulisse_pos NOTIFY callbacks_processed)
@@ -75,7 +80,7 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     Q_PROPERTY(float water_current_deg READ get_water_current_deg NOTIFY callbacks_processed)
 
     bool gpsReceived_, imuReceived_, compassReceived_, magnetometerReceived_;
-    QGeoCoordinate q_ulisse_pos_, q_goal_pos_, q_gps_pos_;
+    QGeoCoordinate q_centroid, q_ulisse_pos_, q_goal_pos_, q_gps_pos_;
     double q_goal_distance_, q_goal_heading_deg_;
     double q_ulisse_surge_;
     QVector3D q_ulisse_rpy_deg_, q_ulisse_rpy_rate_deg_;
@@ -132,6 +137,7 @@ public:
     explicit FeedbackUpdater(QQmlApplicationEngine* engine, QObject* parent = nullptr);
     virtual ~FeedbackUpdater();
     void LoadQmlEngine(QQmlApplicationEngine* engine);
+    bool LoadConfiguration();
     //void SetNodeHandle(const rclcpp::Node::SharedPtr& np);
     double RadiansToDegrees(const double angle_rad, const bool wraparound360 = false);
 
@@ -155,6 +161,7 @@ public:
 
     Q_INVOKABLE void copyToClipboard(QString value);
 
+    QGeoCoordinate get_centroid();
     QGeoCoordinate get_ulisse_pos();
     QVector3D get_ulisse_linear_vel();
     double get_ulisse_surge();
@@ -200,6 +207,7 @@ public:
 
 signals:
     void callbacks_processed();
+    void startup_info_read();
 
 public slots:
     void process_callbacks_slot();
