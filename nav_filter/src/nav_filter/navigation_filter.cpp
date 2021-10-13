@@ -63,10 +63,9 @@ namespace nav {
         magnetometerSub_ = this->create_subscription<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer,
             1, std::bind(&NavigationFilter::MagnetometerDataCB, this, _1));
         simulatedSystemSub_ = this->create_subscription<ulisse_msgs::msg::SimulatedSystem>(ulisse_msgs::topicnames::simulated_system,
-
             1, std::bind(&NavigationFilter::GroundTruthDataCB, this, _1));
-        thrustersRefSub_ = this->create_subscription<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_applied_perc,
-            1, std::bind(&NavigationFilter::ThrustersReferenceCB, this, _1));
+        thrustersAppliedRefSub_ = this->create_subscription<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_applied_perc,
+            1, std::bind(&NavigationFilter::ThrustersAppliedReferenceCB, this, _1));
         llcThrustersSub_ = this->create_subscription<ulisse_msgs::msg::LLCThrusters>(ulisse_msgs::topicnames::llc_thrusters,
             1, std::bind(&NavigationFilter::LLCThrustersCB, this, _1));
 
@@ -795,7 +794,7 @@ namespace nav {
 
     void NavigationFilter::SimulatedVelocitySensorCB(const ulisse_msgs::msg::SimulatedVelocitySensor::SharedPtr msg) { simulatedVelocitySensor_ = *msg; }
 
-    void NavigationFilter::ThrustersReferenceCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg) { thrustersPercReference_ = *msg; }
+    void NavigationFilter::ThrustersAppliedReferenceCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg) { thrustersPercReference_ = *msg; }
 
     void NavigationFilter::GroundTruthDataCB(const ulisse_msgs::msg::SimulatedSystem::SharedPtr msg) { simulatedData_ = *msg; }
 

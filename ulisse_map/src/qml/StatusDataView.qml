@@ -277,7 +277,7 @@ Rectangle {
                     labelColor: darkgrey
                     label: "Battery"
                     textColor: 'grey'
-                    text: "Left: %1 \% - Right: %2 \%"
+                    text: "Left: %1 \%, Right: %2 \%"
                     .arg(fbkUpdater.battery_perc_L).arg(fbkUpdater.battery_perc_R)
                     lsize: labelsize
                     tsize: textsize
@@ -339,7 +339,7 @@ Rectangle {
                     labelColor: darkgrey
                     label: "Motors Speed"
                     textColor: 'grey'
-                    text: "Left: %1 , Right: %2 (rpm)".arg(fbkUpdater.motor_speed_L).arg(fbkUpdater.motor_speed_R)
+                    text: "Left: %1, Right: %2 (rpm)".arg(fbkUpdater.motor_speed_L).arg(fbkUpdater.motor_speed_R)
                     lsize: labelsize
                     tsize: textsize
                 }
@@ -406,9 +406,31 @@ Rectangle {
                         font.bold: true
                         Layout.preferredWidth: 140
                     }
-                    Text { text: "%1".arg(fbkUpdater.ulisse_rpy_rate_deg[2]); color: grey; Layout.preferredWidth: 120 }
+                    Text { text: "%1".arg(fbkUpdater.ulisse_rpy_rate_deg.z); color: grey; Layout.preferredWidth: 120 }
                     Text { text: "%1".arg(fbkUpdater.desired_jog); color: grey; Layout.preferredWidth: 120 }
-                    Text { text: "%1".arg((fbkUpdater.desired_jog - fbkUpdater.ulisse_rpy_rate_deg[2])); color: grey; Layout.preferredWidth: 120 }
+                    Text { text: "%1".arg((fbkUpdater.desired_jog - fbkUpdater.ulisse_rpy_rate_deg.z)); color: grey; Layout.preferredWidth: 120 }
+                }
+
+                LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
+                    labelColor: blue
+                    label: "Thrust. Ref."
+                    textColor: 'grey'
+                    text: "Left: %1 \%, Right: %2 \%"
+                    .arg(fbkUpdater.thrust_ref_left).arg(fbkUpdater.thrust_ref_right)
+                    lsize: labelsize
+                    tsize: textsize
+                }
+
+                LabelledText {
+                    Layout.alignment: Qt.AlignHCenter
+                    labelColor: blue
+                    label: "Thr. Applied Ref."
+                    textColor: 'grey'
+                    text: "Left: %1 \%, Right: %2 \%"
+                    .arg(fbkUpdater.thrust_applied_ref_left).arg(fbkUpdater.thrust_applied_ref_right)
+                    lsize: labelsize
+                    tsize: textsize
                 }
             }
         }

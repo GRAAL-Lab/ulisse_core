@@ -48,11 +48,13 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     Q_PROPERTY(QGeoCoordinate goal_pos READ get_goal_pos NOTIFY callbacks_processed)
     Q_PROPERTY(double goal_distance READ get_goal_distance NOTIFY callbacks_processed)
     Q_PROPERTY(double goal_heading READ get_goal_heading NOTIFY callbacks_processed)
-
     Q_PROPERTY(double desired_surge READ get_desired_surge NOTIFY callbacks_processed)
     Q_PROPERTY(double desired_jog READ get_desired_jog NOTIFY callbacks_processed)
+
     Q_PROPERTY(double thrust_ref_left READ get_thrust_ref_left NOTIFY callbacks_processed)
     Q_PROPERTY(double thrust_ref_right READ get_thrust_ref_right NOTIFY callbacks_processed)
+    Q_PROPERTY(double thrust_applied_ref_left  READ get_thrust_applied_ref_left NOTIFY callbacks_processed)
+    Q_PROPERTY(double thrust_applied_ref_right READ get_thrust_applied_ref_right NOTIFY callbacks_processed)
 
     Q_PROPERTY(double battery_perc_L READ get_battery_perc_L NOTIFY callbacks_processed)
     Q_PROPERTY(double battery_perc_R READ get_battery_perc_R NOTIFY callbacks_processed)
@@ -86,6 +88,7 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     double q_accept_radius_;
     double q_desired_surge_, q_desired_jog_;
     double q_thrust_ref_left_, q_thrust_ref_right_;
+    double q_thrust_applied_ref_left_, q_thrust_applied_ref_right_;
 
     uint micro_loop_count_t_; //Y
     double ambient_temperature_; //Y
@@ -111,9 +114,11 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     rclcpp::Subscription<ulisse_msgs::msg::Magnetometer>::SharedPtr magnetometer_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::LLCThrusters>::SharedPtr llc_motors_sub_;
 
+
     rclcpp::Subscription<ulisse_msgs::msg::LLCBattery>::SharedPtr battery_left_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::LLCBattery>::SharedPtr battery_right_sub_;
-    rclcpp::Subscription<ulisse_msgs::msg::ThrustersReference>::SharedPtr thruster_reference_sub_;
+    rclcpp::Subscription<ulisse_msgs::msg::ThrustersReference>::SharedPtr thrusters_reference_sub_;
+    rclcpp::Subscription<ulisse_msgs::msg::ThrustersReference>::SharedPtr thrusters_applied_ref_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::LLCSw485Status>::SharedPtr sw485_status_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr current_status_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::ReferenceVelocities>::SharedPtr referenceVelocitieSub_;
@@ -140,7 +145,8 @@ public:
 
     void LLCBatteryLeftCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg);
     void LLCBatteryRightCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg);
-    void ThrusterDataCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg);
+    void ThrustersReferenceCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg);
+    void ThrustersAppliedReferenceCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg);
     void LLCSw485StatusCB(const ulisse_msgs::msg::LLCSw485Status::SharedPtr msg);
     void ReferenceVelocitiesCB(const ulisse_msgs::msg::ReferenceVelocities::SharedPtr msg);
     void VehicleStatusCB(const ulisse_msgs::msg::VehicleStatus::SharedPtr msg);
@@ -174,6 +180,8 @@ public:
 
     double get_thrust_ref_left();
     double get_thrust_ref_right();
+    double get_thrust_applied_ref_left();
+    double get_thrust_applied_ref_right();
 
     uint get_micro_loop_count();
     double get_ambient_temperature();

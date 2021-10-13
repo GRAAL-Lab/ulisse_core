@@ -72,7 +72,7 @@ namespace nav {
         rclcpp::Subscription<ulisse_msgs::msg::IMUData>::SharedPtr imudataSub_;
         rclcpp::Subscription<ulisse_msgs::msg::Magnetometer>::SharedPtr magnetometerSub_;
         rclcpp::Subscription<ulisse_msgs::msg::SimulatedSystem>::SharedPtr simulatedSystemSub_;
-        rclcpp::Subscription<ulisse_msgs::msg::ThrustersReference>::SharedPtr thrustersRefSub_;
+        rclcpp::Subscription<ulisse_msgs::msg::ThrustersReference>::SharedPtr thrustersAppliedRefSub_;
         rclcpp::Subscription<ulisse_msgs::msg::LLCThrusters>::SharedPtr llcThrustersSub_;
         rclcpp::Subscription<ulisse_msgs::msg::SimulatedVelocitySensor>::SharedPtr simulatedVelocitySub_;
 
@@ -162,7 +162,7 @@ namespace nav {
 
         void SimulatedVelocitySensorCB(const ulisse_msgs::msg::SimulatedVelocitySensor::SharedPtr msg);
 
-        void ThrustersReferenceCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg);
+        void ThrustersAppliedReferenceCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg);
 
         void GroundTruthDataCB(const ulisse_msgs::msg::SimulatedSystem::SharedPtr msg);
 

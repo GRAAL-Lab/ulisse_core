@@ -36,12 +36,7 @@ void FeedbackUpdater::LoadQmlEngine(QQmlApplicationEngine* engine)
     myTimer_->start(feedbackUpdateInterval_);
     QObject::connect(myTimer_, SIGNAL(timeout()), this, SLOT(process_callbacks_slot()));
 
-    q_ulisse_pos_.setLatitude(44.392);
-    q_ulisse_pos_.setLongitude(8.945);
-    q_ulisse_pos_.setAltitude(0.0);
-    /*q_ulisse_linear_vel_ = {0.0, 0.0, 0.0};
-    q_ulisse_rpy_deg_ = {0.0, 0.0, 0.0};
-    q_ulisse_rpy_rate_deg_ = {0.0, 0.0, 0.0};*/
+    q_ulisse_pos_ = QGeoCoordinate(44.0956, 9.8631, 0.0); // Porto Lotti, La Spezia
 
     q_goal_heading_deg_ = 0.0;
 
@@ -110,8 +105,10 @@ void FeedbackUpdater::LoadQmlEngine(QQmlApplicationEngine* engine)
         0, std::bind(&FeedbackUpdater::LLCBatteryLeftCB, this, _1) /*custom_qos_profile*/);
     battery_right_sub_ = this->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_right,
         10, std::bind(&FeedbackUpdater::LLCBatteryRightCB, this, _1) /*custom_qos_profile*/);
-    thruster_reference_sub_ = this->create_subscription<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_reference_perc,
-        10, std::bind(&FeedbackUpdater::ThrusterDataCB, this, _1) /*custom_qos_profile*/);
+    thrusters_reference_sub_ = this->create_subscription<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_reference_perc,
+        10, std::bind(&FeedbackUpdater::ThrustersReferenceCB, this, _1) /*custom_qos_profile*/);
+    thrusters_applied_ref_sub_ = this->create_subscription<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_applied_perc,
+        1, std::bind(&FeedbackUpdater::ThrustersAppliedReferenceCB, this, _1));
     sw485_status_sub_ = this->create_subscription<ulisse_msgs::msg::LLCSw485Status>(ulisse_msgs::topicnames::llc_sw485status,
         10, std::bind(&FeedbackUpdater::LLCSw485StatusCB, this, _1));
     current_status_sub_ = this->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data,
@@ -252,10 +249,16 @@ void FeedbackUpdater::LLCBatteryRightCB(const ulisse_msgs::msg::LLCBattery::Shar
     q_battery_perc_R_ = msg->charge_percent;
 }
 
-void FeedbackUpdater::ThrusterDataCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg)
+void FeedbackUpdater::ThrustersReferenceCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg)
 {
     q_thrust_ref_left_ = msg->left_percentage;
     q_thrust_ref_right_ = msg->right_percentage;
+}
+
+void FeedbackUpdater::ThrustersAppliedReferenceCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg)
+{
+    q_thrust_applied_ref_left_ = msg->left_percentage;
+    q_thrust_applied_ref_right_ = msg->right_percentage;
 }
 
 void FeedbackUpdater::LLCSw485StatusCB(const ulisse_msgs::msg::LLCSw485Status::SharedPtr msg)
@@ -405,6 +408,16 @@ double FeedbackUpdater::get_thrust_ref_left()
 double FeedbackUpdater::get_thrust_ref_right()
 {
     return q_thrust_ref_right_;
+}
+
+double FeedbackUpdater::get_thrust_applied_ref_left()
+{
+    return q_thrust_applied_ref_left_;
+}
+
+double FeedbackUpdater::get_thrust_applied_ref_right()
+{
+    return q_thrust_applied_ref_right_;
 }
 
 uint FeedbackUpdater::get_micro_loop_count()

@@ -169,7 +169,8 @@ class VehicleSimulator {
     Eigen::Vector6d bodyF_relativeVelocity_, worldF_relativeVelocity_, worldF_velocity_, worldF_waterVelocity_;
     Eigen::Vector6d bodyF_relativeAcceleration_, worldF_relativeAcceleration_, bodyF_relativeAcceleration_projected_, bodyF_wavesEffects_;
 
-    double latitude_, longitude_, previousLatitude_, previousLongitude_, altitude_;
+    ctb::LatLong vehiclePos, vehiclePreviousPos, centroidLocation;
+    double altitude_;
 
     Eigen::Matrix3d P_;
     Eigen::Matrix6d bodyF_projection_;
@@ -223,9 +224,9 @@ public:
     void PublishSensors();
 
     auto WorldF_Velocity() const -> const Eigen::Vector6d& { return worldF_velocity_; }
-    auto Altitude() const -> const rml::EulerRPY& { return bodyF_orientation_; }
+    /*auto Altitude() const -> const rml::EulerRPY& { return bodyF_orientation_; }
     auto Latitude() const -> double { return latitude_; }
-    auto Longitude() const -> double { return longitude_; }
+    auto Longitude() const -> double { return longitude_; }*/
 
     std::shared_ptr<SimulatorConfiguration> config;
     SurfaceVehicleModel ulisseModel;

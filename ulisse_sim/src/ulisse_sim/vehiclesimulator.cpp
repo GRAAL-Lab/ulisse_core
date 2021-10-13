@@ -27,12 +27,16 @@ VehicleSimulator::VehicleSimulator(const rclcpp::Node::SharedPtr& nh)
     , ambientPubCounter_(0)
     , realTime_(true)
 {
-
-    latitude_ = 44.392; // Genova Harbour lat-long
-    longitude_ = 8.945;
+    // Genova Harbour lat-long
+    /*longitude_ = 8.945;
+    latitude_ = 44.392;
 
     previousLatitude_ = latitude_;
-    previousLongitude_ = longitude_;
+    previousLongitude_ = longitude_;*/
+
+    centroidLocation = vehiclePos = vehiclePreviousPos = ctb::LatLong(44.0956, 9.8631);
+
+    std::cout << "INITIAL POS: LatLong = " << vehiclePos.latitude << ", " << vehiclePos.longitude;
 
     t_start_ = t_last_ = t_now_ = std::chrono::system_clock::now();
 
@@ -94,8 +98,9 @@ void VehicleSimulator::ExecuteStep()
 
     t_last_ = t_now_;
     previous_bodyF_orientation_ = bodyF_orientation_;
-    previousLatitude_ = latitude_;
-    previousLongitude_ = longitude_;
+    vehiclePreviousPos = vehiclePos;
+    /*previousLatitude_ = latitude_;
+    previousLongitude_ = longitude_;*/
     altitude_ = 0.0;
 }
 
@@ -170,7 +175,7 @@ void VehicleSimulator::SimulateActuation()
     vehicleSpeed_ = std::sqrt(worldF_velocity_(0) * worldF_velocity_(0) + worldF_velocity_(1) * worldF_velocity_(1));
     double distance_ = vehicleSpeed_ * Ts_;
 
-    geod_.Direct(previousLatitude_, previousLongitude_, vehicleTrack_ * 180.0 / M_PI, distance_, latitude_, longitude_);
+    geod_.Direct(vehiclePreviousPos.latitude, vehiclePreviousPos.longitude, vehicleTrack_ * 180.0 / M_PI, distance_, vehiclePos.latitude, vehiclePos.longitude);
 
     // Integrating the Euler rates to get the new Euler angles and wrapping around PI
     bodyF_orientation_.Roll(std::fmod((previous_bodyF_orientation_.Roll() + rpyEulerRates(0) * Ts_) + 2 * M_PI, M_PI));
@@ -200,9 +205,8 @@ void VehicleSimulator::SimulateSensors()
     std::normal_distribution<double> gpsNoiseZ(0.0, config->sensorsNoise.gps_stdd.z());
 
     //Transform to cartesian,
-    static ctb::LatLong centroidLocation(44.0956, 9.8631);
     Eigen::Vector3d worldF_com, worldF_antenna;
-    ctb::LatLong2LocalNED(ctb::LatLong(latitude_, longitude_), altitude_, centroidLocation, worldF_com);
+    ctb::LatLong2LocalNED(vehiclePos, altitude_, centroidLocation, worldF_com);
 
     //move the gps from COM to the antenna
     worldF_antenna = worldF_com + worldF_R_bodyF_ * config->bodyF_gps_position;
@@ -293,8 +297,8 @@ void VehicleSimulator::SimulateSensors()
     //Fill the ground truth msg
     groundTruthMsg_.stamp.sec = now_stamp_secs;
     groundTruthMsg_.stamp.nanosec = now_stamp_nanosecs;
-    groundTruthMsg_.inertialframe_linear_position.latlong.latitude = latitude_;
-    groundTruthMsg_.inertialframe_linear_position.latlong.longitude = longitude_;
+    groundTruthMsg_.inertialframe_linear_position.latlong.latitude = vehiclePos.latitude;
+    groundTruthMsg_.inertialframe_linear_position.latlong.longitude = vehiclePos.longitude;
     groundTruthMsg_.inertialframe_linear_position.altitude = altitude_;
     groundTruthMsg_.bodyframe_angular_position.roll = bodyF_orientation_.Roll();
     groundTruthMsg_.bodyframe_angular_position.pitch = bodyF_orientation_.Pitch();
