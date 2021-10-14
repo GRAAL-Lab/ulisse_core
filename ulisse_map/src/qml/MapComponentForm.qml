@@ -110,7 +110,7 @@ Map {
         sourceItem: Text {
             id: centroidText
             color: grey
-            text: "+ centroid"
+            text: "+ CENTROID"
             font.family: "Courier New"
         }
 
@@ -119,6 +119,7 @@ Map {
         /*anchorPoint.x: centroidText.width / 2
         anchorPoint.y: centroidText.height*/
         opacity: 0.4
+        visible: settings.showCentroid
     }
 
     MapQuickItem {
@@ -194,7 +195,7 @@ Map {
         anchorPoint.x: -ulisseImage.width / 2
         anchorPoint.y: -ulisseImage.height / 2
         z: map.z + 3
-        opacity: 1.0
+        visible: settings.showStatusOverlay
     }
 
     MapCircle {

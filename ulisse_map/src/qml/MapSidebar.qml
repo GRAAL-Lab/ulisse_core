@@ -16,7 +16,7 @@ Rectangle {
     ColumnLayout {
         id: leftbarlayout
         width: parent.width
-        spacing: 2
+        spacing: 0
 
         Pane {
             id: statusdatarect

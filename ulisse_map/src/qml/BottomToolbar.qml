@@ -11,7 +11,7 @@ Rectangle {
     property alias recenterButton: recenterButton
     property alias clearPathButton: clearPathButton
     property alias followMeCheckbox: followMeCheckbox
-    property alias overlayStatusCbox: overlayStatusCbox
+    //property alias overlayStatusCbox: overlayStatusCbox
     property alias gpsIconCBox: gpsIconCBox
     property alias engineButton: engineButton
 
@@ -43,13 +43,6 @@ Rectangle {
             //Layout.alignment: Qt.AlignLeft
             //Material.accent: mainColor
             checked: false
-        }
-
-        CheckBox {
-            id: overlayStatusCbox
-            text: "Show Overlay"
-            //Material.accent: orange
-            checked: true
         }
 
         CheckBox {

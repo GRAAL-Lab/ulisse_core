@@ -218,6 +218,7 @@ class VehicleSimulator {
 public:
     VehicleSimulator(const rclcpp::Node::SharedPtr& nh);
 
+    bool LoadConfiguration();
     void SetSampleTime(double ts);
     void ExecuteStep();
     void SimulateSensors();

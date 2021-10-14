@@ -41,25 +41,6 @@ Dialog {
         id: settingsColumn
         spacing: 20
 
-        /*RowLayout {
-            id: mapTypesetting
-            spacing: 10
-
-            Label {
-                text: "Save current map view as center:"
-            }
-            Button {
-                id: setMapCenter
-                text: "Set Center"
-                font.pointSize: 10
-
-                onClicked: {
-                    settings.mapCenter;
-                }
-            }
-
-        }*/
-
         RowLayout {
             id: mapCacheSetting
             spacing: 10
@@ -96,6 +77,45 @@ Dialog {
 
                 onClicked: {
                     browseCacheDirDialog.open()
+                }
+            }
+        }
+
+        RowLayout {
+            id: showCentroidSetting
+            spacing: 10
+
+            Label {
+                text: "Show Centroid on Map:"
+            }
+            CheckBox {
+                id: showCentroidBox
+                text: "Show Centroid"
+                font.pointSize: 10
+                checkState: settings.showCentroid ? Qt.Checked : Qt.Unchecked
+
+                onClicked: {
+                    settings.showCentroid = !settings.showCentroid;
+                }
+            }
+        }
+
+
+        RowLayout {
+            id: showStatusOverlaySetting
+            spacing: 10
+
+            Label {
+                text: "Show Overlay on Map:"
+            }
+            CheckBox {
+                id: statusOverlayBox
+                text: "Show Overlay"
+                //Material.accent: orange
+                checked: true
+
+                onClicked: {
+                    settings.showStatusOverlay = !settings.showStatusOverlay;
                 }
             }
         }

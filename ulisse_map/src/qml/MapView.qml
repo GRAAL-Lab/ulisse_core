@@ -51,9 +51,9 @@ MapViewForm {
         followMeCheckbox.checked ? followMeTimer.start() : followMeTimer.stop()
     }
 
-    overlayStatusCbox.onCheckStateChanged: {
+    /*overlayStatusCbox.onCheckStateChanged: {
         map.overlayTextOpacity = overlayStatusCbox.checked ? 1.0 : 0.0
-    }
+    }*/
 
 
     Timer {

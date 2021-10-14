@@ -53,7 +53,8 @@ Rectangle {
                     labelColor: blue
                     textColor: 'grey'
                     text: fbkUpdater.vehicle_state
-                    label: qsTr("Vehicle State")
+                    textBoldness: Font.Bold
+                    label: "Vehicle State"
                     lsize: labelsize
                     tsize: textsize
                 }
@@ -389,7 +390,7 @@ Rectangle {
                         color: blue
                         text: "Surge (m/s)"
                         font.pointSize: labelsize
-                        font.bold: true
+                        font.weight: Font.DemiBold
                         Layout.preferredWidth: 140
                     }
                     Text { text: "%1".arg(fbkUpdater.ulisse_surge); color: grey; Layout.preferredWidth: 120 }
@@ -403,7 +404,7 @@ Rectangle {
                         color: blue
                         text: "Yaw Rate (rad/s)"
                         font.pointSize: labelsize
-                        font.bold: true
+                        font.weight: Font.DemiBold
                         Layout.preferredWidth: 140
                     }
                     Text { text: "%1".arg(fbkUpdater.ulisse_rpy_rate_deg.z); color: grey; Layout.preferredWidth: 120 }

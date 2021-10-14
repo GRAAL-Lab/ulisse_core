@@ -49,14 +49,7 @@ bool SafetyBoundaries::ConfigFromFile(libconfig::Config& confObj)
     //std::cout << "== decreasingBellShapeParameter_.xmin = " << decreasingBellShapeParameter_.xmin << std::endl;
     //std::cout << "== decreasingBellShapeParameter_.xmax = " << decreasingBellShapeParameter_.xmax << std::endl;
 
-    // Read the centroid to transform a latlong point to a local cartesian one
-    Eigen::VectorXd centroidTmp;
-
-    if (!ctb::GetParamVector(confObj, centroidTmp, "centroidLocation"))
-        return false;
-
-    centroid_.latitude = centroidTmp[0];
-    centroid_.longitude = centroidTmp[1];
+    std::cout << "ASV_SB Centroid: " << centroid_.latitude << ", " << centroid_.longitude << std::endl;
 
     return true;
 }

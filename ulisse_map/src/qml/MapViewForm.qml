@@ -20,7 +20,7 @@ RowLayout {
     property var mapCircles: []
     property alias recenterButton: bottomToolbar.recenterButton
     property alias followMeCheckbox: bottomToolbar.followMeCheckbox
-    property alias overlayStatusCbox: bottomToolbar.overlayStatusCbox
+    //property alias overlayStatusCbox: bottomToolbar.overlayStatusCbox
     property alias clearPathButton: bottomToolbar.clearPathButton
     property alias gpsIconCBox: bottomToolbar.gpsIconCBox
     property alias engineButton: bottomToolbar.engineButton

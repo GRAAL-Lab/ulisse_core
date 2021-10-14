@@ -166,7 +166,7 @@ bool VehicleController::LoadConfiguration(std::shared_ptr<ControllerConfiguratio
 {
     libconfig::Config confObj;
 
-    // Reading Centroid From Nav Filter
+    // LOAD CONFIGURATION FROM NAV FILTER TO READ CENTROID
     std::string package_share_directory = ament_index_cpp::get_package_share_directory("nav_filter");
     std::string confPath = package_share_directory;
     confPath.append("/conf/navigation_filter.conf");
@@ -193,7 +193,10 @@ bool VehicleController::LoadConfiguration(std::shared_ptr<ControllerConfiguratio
 
     std::cout << "Centroid: " << centroidLocation_.latitude << ", " << centroidLocation_.longitude << std::endl;
 
-    // Inizialization
+    asvSafetyBoundaries_->Centroid() = centroidLocation_;
+
+    ///////////////////////////////////////////////////////
+    // LOAD KCL CONFIGURATION
     package_share_directory = ament_index_cpp::get_package_share_directory("ulisse_ctrl");
     confPath = package_share_directory;
     confPath.append("/conf/");
@@ -228,7 +231,9 @@ bool VehicleController::LoadConfiguration(std::shared_ptr<ControllerConfiguratio
     centroidLocation_.latitude = centroidLocationTmp[0];
     centroidLocation_.longitude = centroidLocationTmp[1];*/
 
-    if (!ConfigureTaskFromFile(tasksMap_, confObj)) {
+
+
+    if (!ConfigureTasksFromFile(tasksMap_, confObj)) {
         std::cerr << "Failed to load Tasks from file" << std::endl;
         return false;
     };
@@ -276,7 +281,7 @@ void VehicleController::PublishLog(std::string log)
 
 void VehicleController::SetUpFSM()
 {
-    // ***** COMMANDS *****
+    // ***** COMMANDS ***** //
     commandHalt_.SetFSM(&uFsm_);
     commandHalt_.SetState(stateHalt_);
 
@@ -292,7 +297,7 @@ void VehicleController::SetUpFSM()
     commandPathFollowing_.SetFSM(&uFsm_);
     commandPathFollowing_.SetState(statePathFollowing_);
 
-    // ***** STATES *****
+    // ***** STATES ***** //
     //Set the fsm and the structure that the states need.
     for (auto& state : statesMap_) {
         state.second->actionManager = actionManager_;
@@ -302,14 +307,14 @@ void VehicleController::SetUpFSM()
         state.second->SetFSM(&uFsm_);
     }
 
-    // ***** EVENTS *****
+    // ***** EVENTS ***** //
     eventRcEnabled_.SetFSM(&uFsm_);
     eventNearGoalPosition_.SetFSM(&uFsm_);
     eventNearGoalPosition_.ControlData() = ctrlData_;
     eventNearGoalPosition_.GoToHoldAfterMove(conf_->goToHoldAfterMove);
     eventNearGoalPosition_.StateHold() = std::dynamic_pointer_cast<ulisse::states::StateHold>(statesMap_.find(ulisse::states::ID::hold)->second);
 
-    // ***** CONFIGURE FSM *****
+    // ***** CONFIGURE FSM ***** //
     // ADD COMMANDS
     for (auto& command : commandsMap_) {
         uFsm_.AddCommand(command.first, &command.second);
@@ -460,38 +465,9 @@ void VehicleController::GetBoundariesHandler(const std::shared_ptr<rmw_request_i
     }
 }
 
-// TODO: DELETE
-/*void VehicleController::SetCruiseControlHandler(const std::shared_ptr<rmw_request_id_t> request_header,
-    const std::shared_ptr<ulisse_msgs::srv::SetCruiseControl::Request> request,
-    std::shared_ptr<ulisse_msgs::srv::SetCruiseControl::Response> response)
-{
-    (void)request_header;
-    RCLCPP_INFO(this->get_logger(), "Incoming request for set cruise control. (value: %f)", request->cruise_control);
-
-    std::stringstream log;
-    log << "Cruise Control set to: " << request->cruise_control;
-    PublishLog(log.str().c_str());
-
-    Eigen::VectorXd satMin, satMax;
-    iCat_->GetSaturation(satMin, satMax);
-
-    satMax.at(0) = request->cruise_control;
-
-    try {
-        // Set Saturation values for the iCAT (read from conf file)
-        iCat_->SetSaturation(satMin, satMax);
-    } catch (const std::invalid_argument& e) {
-        RCLCPP_WARN(this->get_logger(), "Set cruise failed, invalid saturation values: %s)", e.what());
-        response->res = "[KCL] SetCruiseControl::fail";
-        return;
-    }
-
-    response->res = "[KCL] SetCruiseControl::ok";
-}*/
-
 void VehicleController::ResetConfHandler(const std::shared_ptr<rmw_request_id_t> request_header,
-    const std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Request> request,
-    std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Response> response)
+        const std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Request> request,
+        std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Response> response)
 {
     (void)request_header;
     (void)request;

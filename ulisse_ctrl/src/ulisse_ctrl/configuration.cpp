@@ -2,7 +2,7 @@
 #include "ulisse_ctrl/configuration.hpp"
 #include "ulisse_ctrl/ulisse_defines.hpp"
 
-bool ConfigureTaskFromFile(std::unordered_map<std::string, ulisse::TasksInfo>& tasksMap, libconfig::Config& confObj)
+bool ConfigureTasksFromFile(std::unordered_map<std::string, ulisse::TasksInfo>& tasksMap, libconfig::Config& confObj)
 {
     for (auto& map : tasksMap) {
         if (!map.second.task->ConfigFromFile(confObj)) {

@@ -1,5 +1,7 @@
 #include <cmath>
 #include <iomanip>
+#include <ament_index_cpp/get_package_share_directory.hpp>
+#include <libconfig.h++>
 
 #include "GeographicLib/UTMUPS.hpp"
 #include "ulisse_msgs/topicnames.hpp"
@@ -34,9 +36,11 @@ VehicleSimulator::VehicleSimulator(const rclcpp::Node::SharedPtr& nh)
     previousLatitude_ = latitude_;
     previousLongitude_ = longitude_;*/
 
-    centroidLocation = vehiclePos = vehiclePreviousPos = ctb::LatLong(44.0956, 9.8631);
+    LoadConfiguration();
 
-    std::cout << "INITIAL POS: LatLong = " << vehiclePos.latitude << ", " << vehiclePos.longitude;
+    vehiclePos = vehiclePreviousPos = centroidLocation;
+
+    std::cout << "INITIAL POS: LatLong = " << vehiclePos.latitude << ", " << vehiclePos.longitude << "\n";
 
     t_start_ = t_last_ = t_now_ = std::chrono::system_clock::now();
 
@@ -57,6 +61,42 @@ VehicleSimulator::VehicleSimulator(const rclcpp::Node::SharedPtr& nh)
     worldF_waterVelocity_(1) = 0.0;
 
     bodyF_projection_.setZero(6, 6);
+}
+
+bool VehicleSimulator::LoadConfiguration()
+{
+    libconfig::Config confObj;
+
+    // LOAD CONFIGURATION FROM NAV FILTER TO READ CENTROID
+    std::string package_share_directory = ament_index_cpp::get_package_share_directory("nav_filter");
+    std::string confPath = package_share_directory;
+    confPath.append("/conf/navigation_filter.conf");
+
+    std::cout << "PATH TO CONF FILE : " << confPath << std::endl;
+
+    // Read the file. If there is an error, report it and exit.
+    try {
+        confObj.readFile(confPath.c_str());
+    } catch (const libconfig::FileIOException& fioex) {
+        std::cerr << "I/O error while reading file: " << fioex.what() << std::endl;
+        return -1;
+    } catch (const libconfig::ParseException& pex) {
+        std::cerr << "Parse error at " << pex.getFile() << ":" << pex.getLine() << " - " << pex.getError() << std::endl;
+        return -1;
+    }
+
+    //acquired the centroid location
+    Eigen::VectorXd centroidLocationTmp;
+    if (!ctb::GetParamVector(confObj, centroidLocationTmp, "centroidLocation")) {
+        std::cerr << "Failed to load centroidLocation from file" << std::endl;
+        return false;
+    };
+
+    centroidLocation = ctb::LatLong(centroidLocationTmp[0], centroidLocationTmp[1]);
+
+    //qDebug() << "centroid Location: " << q_centroid;
+
+    return true;
 }
 
 void VehicleSimulator::SetRealtime(bool realtime)

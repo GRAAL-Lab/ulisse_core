@@ -39,7 +39,7 @@ void FeedbackUpdater::LoadQmlEngine(QQmlApplicationEngine* engine)
 
     if(LoadConfiguration()) emit startup_info_read();
 
-    q_ulisse_pos_ = QGeoCoordinate(44.0956, 9.8631, 0.0); // Porto Lotti, La Spezia
+    q_ulisse_pos_ = q_centroid; //QGeoCoordinate(44.0956, 9.8631, 0.0); // Porto Lotti, La Spezia
     q_goal_heading_deg_ = 0.0;
 
     q_vehicle_state_ = "undefined";
@@ -50,6 +50,7 @@ void FeedbackUpdater::LoadQmlEngine(QQmlApplicationEngine* engine)
 
     q_desired_jog_ = q_desired_surge_ = 0.0;
     q_thrust_ref_left_ = q_thrust_ref_right_ = 0.0;
+    q_thrust_applied_ref_left_ = q_thrust_applied_ref_right_ = 0.0;
 
     missed_deadlines_ = 0;
     micro_loop_count_t_ = 0;

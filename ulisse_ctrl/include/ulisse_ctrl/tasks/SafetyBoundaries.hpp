@@ -62,6 +62,16 @@ public:
 
     bool InitializePolygon(const ulisse_msgs::msg::Boundaries& boundaries);
 
+    /*
+     * Method that gets the centroid
+     */
+    auto Centroid() const -> const ctb::LatLong& { return centroid_; }
+
+    /*
+     * Method that sets the centroid
+     */
+    auto Centroid() -> ctb::LatLong& { return centroid_; }
+
     /**
    * @brief Overloading of the cout operator
    */
