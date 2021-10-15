@@ -281,6 +281,10 @@ void VehicleController::PublishLog(std::string log)
 
 void VehicleController::SetUpFSM()
 {
+    ///// TODO /////
+    /// CONFIGURE TO ADD YAWRATE STATE/COMMAND/ETC!!!! ////
+
+
     // ***** COMMANDS ***** //
     commandHalt_.SetFSM(&uFsm_);
     commandHalt_.SetState(stateHalt_);
@@ -496,6 +500,12 @@ void VehicleController::SurgeHeadingCB(const ulisse_msgs::msg::SurgeHeading::Sha
     stateSurgeHeading_->SetSurgeHeading(msg->surge, msg->heading);
 }
 
+void VehicleController::SurgeYawRateCB(const ulisse_msgs::msg::SurgeYawRate::SharedPtr msg)
+{
+    externalSurge_ = msg->surge;
+    externalYawRate_ = msg->yawrate;
+}
+
 void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)
 {
     ctrlData_->inertialF_linearPosition.latitude = msg->inertialframe_linear_position.latlong.latitude;
@@ -584,13 +594,25 @@ void VehicleController::PublishControl()
     auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
     auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
 
+    // Publish vehicle status
+    ulisse_msgs::msg::VehicleStatus vehicleStatusMsg;
+    vehicleStatusMsg.stamp.sec = now_stamp_secs;
+    vehicleStatusMsg.stamp.nanosec = now_stamp_nanosecs;
+    vehicleStatusMsg.vehicle_state = uFsm_.GetCurrentStateName();
+    vehicleStatusPub_->publish(vehicleStatusMsg);
+
     ulisse_msgs::msg::ReferenceVelocities referenceVelocities;
     referenceVelocities.stamp.sec = now_stamp_secs;
     referenceVelocities.stamp.nanosec = now_stamp_nanosecs;
-    referenceVelocities.desired_surge = yTpik_[0];
-    referenceVelocities.desired_yaw_rate = yTpik_[5];
 
-    if (uFsm_.GetCurrentStateName() != ulisse::states::ID::halt){
+    // Publish reference velocities
+    if (uFsm_.GetCurrentStateName() == ulisse::states::ID::surgeyawrate){
+        referenceVelocities.desired_surge = externalSurge_;
+        referenceVelocities.desired_yaw_rate = externalYawRate_;
+    }
+    else if (uFsm_.GetCurrentStateName() != ulisse::states::ID::halt){
+        referenceVelocities.desired_surge = yTpik_[0];
+        referenceVelocities.desired_yaw_rate = yTpik_[5];
         referenceVelocitiesPub_->publish(referenceVelocities);
     }
 
@@ -613,13 +635,6 @@ void VehicleController::PublishControl()
         feedbackGuiMsg.goal_position.longitude = statePathFollowing_->GetNextPoint().longitude;
     }
     feedbackGuiPub_->publish(feedbackGuiMsg);
-
-    ulisse_msgs::msg::VehicleStatus vehicleStatusMsg;
-    vehicleStatusMsg.stamp.sec = now_stamp_secs;
-    vehicleStatusMsg.stamp.nanosec = now_stamp_nanosecs;
-    vehicleStatusMsg.vehicle_state = uFsm_.GetCurrentStateName();
-
-    vehicleStatusPub_->publish(vehicleStatusMsg);
 
     for (auto& taskMap : tasksMap_) {
         try {

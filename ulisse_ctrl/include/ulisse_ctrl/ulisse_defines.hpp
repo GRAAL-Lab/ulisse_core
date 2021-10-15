@@ -57,6 +57,7 @@ const std::string halt = "Halt";
 const std::string latlong = "Go_To";
 const std::string hold = "Hold";
 const std::string surgeheading = "Surge_Heading";
+const std::string surgeyawrate = "Surge_YawRate";
 const std::string pathfollow = "Path_Following";
 }
 }
@@ -67,6 +68,7 @@ namespace names {
 const char* const neargoalposition = "NEARGOALPOSITION";
 const char* const switchstate = "SWITCHSTATE";
 const char* const surgeheadingtimeout = "SURGEHEADINGTIMEOUT";
+const char* const surgeheadingtimeout = "SURGEYAWRATETIMEOUT";
 const char* const rcenabled = "RCENABLED";
 }
 

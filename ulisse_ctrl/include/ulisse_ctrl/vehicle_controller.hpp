@@ -10,6 +10,7 @@
 #include "ulisse_msgs/msg/reference_velocities.hpp"
 #include "ulisse_msgs/msg/vehicle_status.hpp"
 #include "ulisse_msgs/msg/surge_heading.hpp"
+#include "ulisse_msgs/msg/surge_yaw_rate.hpp"
 
 #include "ulisse_msgs/srv/control_command.hpp"
 #include "ulisse_msgs/srv/get_boundaries.hpp"
@@ -74,6 +75,7 @@ class VehicleController : public rclcpp::Node {
     std::shared_ptr<tpik::iCAT> iCat_;
 
     double cruise_;
+    double externalSurge_, externalYawRate_;
     std::shared_ptr<tpik::Solver> solver_;
 
     // Solution of TPIK
@@ -145,6 +147,7 @@ class VehicleController : public rclcpp::Node {
 
     void SlowTimerCB();
     void SurgeHeadingCB(const ulisse_msgs::msg::SurgeHeading::SharedPtr msg);
+    void SurgeYawRateCB(const ulisse_msgs::msg::SurgeYawRate::SharedPtr msg);
     void NavFilterCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
     void LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg);
 

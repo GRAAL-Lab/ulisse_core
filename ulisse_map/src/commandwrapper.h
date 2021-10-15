@@ -25,7 +25,7 @@
 class CommandWrapper : public QObject, rclcpp::Node {
     Q_OBJECT
     QQmlApplicationEngine* appEngine_;
-    QScopedPointer<QTimer> checkErrorTimer_, surgeHeadingPubTimer_, commandTimeoutTimer_;
+    QScopedPointer<QTimer> checkErrorTimer_, surgeHeadingPubTimer_, surgeYawRatePubTimer_, commandTimeoutTimer_;
     QObject *toastMgrObj_, *cmdTimeoutObj_;
     QObject *cruiseSpeedObj_, *goalDistanceObj_, *waypointPathObj_, *waypointRadiusObj_, *loopPathObj_, *mapMouseAreaObj_;
 
@@ -41,6 +41,7 @@ class CommandWrapper : public QObject, rclcpp::Node {
     rclcpp::Subscription<ulisse_msgs::msg::FeedbackGui>::SharedPtr feedbackGuiSub_;
 
     rclcpp::Publisher<ulisse_msgs::msg::SurgeHeading>::SharedPtr surgeHeadingPub_;
+    rclcpp::Publisher<ulisse_msgs::msg::SurgeYawRate>::SharedPtr surgeYawRatePub_;
 
     ulisse_msgs::msg::FeedbackGui feedbackGuiMsg_;
     ulisse_msgs::msg::SurgeHeading surgeHeadingMsg_;
@@ -93,6 +94,7 @@ public:
 public slots:
     void check_error_slot();
     void publish_surge_heading();
+    void publish_surge_yawrate();
     void stop_surge_heading_publisher();
 
 signals:

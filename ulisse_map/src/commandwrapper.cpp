@@ -46,6 +46,7 @@ void CommandWrapper::LoadQmlEngine(QQmlApplicationEngine* engine)
 
     QObject::connect(checkErrorTimer_.get(), SIGNAL(timeout()), this, SLOT(check_error_slot()));
     QObject::connect(surgeHeadingPubTimer_.get(), SIGNAL(timeout()), this, SLOT(publish_surge_heading()));
+    QObject::connect(surgeYawRatePubTimer_.get(), SIGNAL(timeout()), this, SLOT(publish_surge_yawrate()));
     QObject::connect(commandTimeoutTimer_.get(), SIGNAL(timeout()), this, SLOT(stop_surge_heading_publisher()));
 
     QList<QObject*> root_objects = appEngine_->rootObjects();
@@ -87,6 +88,7 @@ void CommandWrapper::LoadQmlEngine(QQmlApplicationEngine* engine)
     feedbackGuiSub_ = this->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10, std::bind(&CommandWrapper::FeedbackGuiCB, this, _1) /*, custom_qos_profile*/);
 
     surgeHeadingPub_ = this->create_publisher<ulisse_msgs::msg::SurgeHeading>(ulisse_msgs::topicnames::surge_heading, 1);
+    surgeYawRatePub_ = this->create_publisher<ulisse_msgs::msg::SurgeHeading>(ulisse_msgs::topicnames::surge_yawrate, 1);
 
     /*connect(this, &CommandWrapper::connected, []() { std::cout << "service connected" << std::endl; });
     notificator = std::async([&] {
@@ -500,6 +502,11 @@ void CommandWrapper::publish_surge_heading()
     surgeHeadingPub_->publish(surgeHeadingMsg_);
 }
 
+void CommandWrapper::publish_surge_yawrate()
+{
+    surgeYawRatePub_->publish(surgeYawRateMsg_);
+}
+
 void CommandWrapper::stop_surge_heading_publisher()
 {
     surgeHeadingPubTimer_->stop();
@@ -552,7 +559,7 @@ bool CommandWrapper::sendSurgeHeadingCommand(double surge, double heading)
 
 bool CommandWrapper::sendSurgeYawRateCommand(double surge, double yawrate)
 {
-    /*auto serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
+    auto serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
     serviceReq->command_type = ulisse::commands::ID::surgeyawrate;
     surgeYawRateMsg_.surge = surge;
     surgeYawRateMsg_.yawrate = yawrate;
@@ -561,12 +568,12 @@ bool CommandWrapper::sendSurgeYawRateCommand(double surge, double yawrate)
     serviceReq->sh_cmd.timeout.sec = (cmdTimeoutObj_->property("value")).toUInt();
     serviceReq->sh_cmd.timeout.nanosec = 0;
     if(SendCommandRequest(serviceReq)){
-        commandPubTimer_->start(commandTimerPeriod_);
+        surgeYawRatePubTimer_->start(commandTimerPeriod_);
         commandTimeoutTimer_->start((cmdTimeoutObj_->property("value")).toUInt() * 1000);
         return true;
     } else {
         return false;
-    }*/
+    }
 }
 
 bool CommandWrapper::sendThrusterActivation(bool activate)
