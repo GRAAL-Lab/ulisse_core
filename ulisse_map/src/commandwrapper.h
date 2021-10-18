@@ -95,10 +95,9 @@ public slots:
     void check_error_slot();
     void publish_surge_heading();
     void publish_surge_yawrate();
-    void stop_surge_heading_publisher();
+    void stop_command_publisher();
 
 signals:
-    //void callbacks_processed();
     void connected();
 };
 

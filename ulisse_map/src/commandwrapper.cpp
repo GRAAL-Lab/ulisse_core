@@ -37,6 +37,7 @@ void CommandWrapper::LoadQmlEngine(QQmlApplicationEngine* engine)
     appEngine_ = engine;
     checkErrorTimer_.reset(new QTimer());
     surgeHeadingPubTimer_.reset(new QTimer());
+    surgeYawRatePubTimer_.reset(new QTimer());
     commandTimeoutTimer_.reset(new QTimer());
     commandTimeoutTimer_->setSingleShot(true);
 
@@ -47,7 +48,7 @@ void CommandWrapper::LoadQmlEngine(QQmlApplicationEngine* engine)
     QObject::connect(checkErrorTimer_.get(), SIGNAL(timeout()), this, SLOT(check_error_slot()));
     QObject::connect(surgeHeadingPubTimer_.get(), SIGNAL(timeout()), this, SLOT(publish_surge_heading()));
     QObject::connect(surgeYawRatePubTimer_.get(), SIGNAL(timeout()), this, SLOT(publish_surge_yawrate()));
-    QObject::connect(commandTimeoutTimer_.get(), SIGNAL(timeout()), this, SLOT(stop_surge_heading_publisher()));
+    QObject::connect(commandTimeoutTimer_.get(), SIGNAL(timeout()), this, SLOT(stop_command_publisher()));
 
     QList<QObject*> root_objects = appEngine_->rootObjects();
 
@@ -88,7 +89,7 @@ void CommandWrapper::LoadQmlEngine(QQmlApplicationEngine* engine)
     feedbackGuiSub_ = this->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10, std::bind(&CommandWrapper::FeedbackGuiCB, this, _1) /*, custom_qos_profile*/);
 
     surgeHeadingPub_ = this->create_publisher<ulisse_msgs::msg::SurgeHeading>(ulisse_msgs::topicnames::surge_heading, 1);
-    surgeYawRatePub_ = this->create_publisher<ulisse_msgs::msg::SurgeHeading>(ulisse_msgs::topicnames::surge_yawrate, 1);
+    surgeYawRatePub_ = this->create_publisher<ulisse_msgs::msg::SurgeYawRate>(ulisse_msgs::topicnames::surge_yawrate, 1);
 
     /*connect(this, &CommandWrapper::connected, []() { std::cout << "service connected" << std::endl; });
     notificator = std::async([&] {
@@ -507,14 +508,18 @@ void CommandWrapper::publish_surge_yawrate()
     surgeYawRatePub_->publish(surgeYawRateMsg_);
 }
 
-void CommandWrapper::stop_surge_heading_publisher()
+void CommandWrapper::stop_command_publisher()
 {
     surgeHeadingPubTimer_->stop();
+    surgeYawRatePubTimer_->stop();
 }
 
 
 bool CommandWrapper::sendHaltCommand()
 {
+    StopOngoingTimers();
+    stop_command_publisher();
+
     auto serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
     serviceReq->command_type = ulisse::commands::ID::halt;
     return SendCommandRequest(serviceReq);

@@ -33,6 +33,7 @@ VehicleController::VehicleController(int rate, std::string file_name)
     statePathFollowing_ = std::make_shared<states::StatePathFollow>();
     stateLatLong_ = std::make_shared<states::StateLatLong>();
     stateSurgeHeading_ = std::make_shared<states::StateSurgeHeading>();
+    stateSurgeYawRate_ = std::make_shared<states::StateSurgeYawRate>();
 
     // Sensor Subscriptions
     navFilterSub_ = this->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 10, std::bind(&VehicleController::NavFilterCB, this, _1));
@@ -40,6 +41,7 @@ VehicleController::VehicleController(int rate, std::string file_name)
 
     // Data Subscriptions
     surgeHeadingSub_ = this->create_subscription<ulisse_msgs::msg::SurgeHeading>(ulisse_msgs::topicnames::surge_heading, 10, std::bind(&VehicleController::SurgeHeadingCB, this, _1));
+    surgeYawRateSub_ = this->create_subscription<ulisse_msgs::msg::SurgeYawRate>(ulisse_msgs::topicnames::surge_yawrate, 10, std::bind(&VehicleController::SurgeYawRateCB, this, _1));
 
     // Control Publishers
     genericLogPub_ = this->create_publisher<std_msgs::msg::String>("/ulisse/log/generic", 10);
@@ -256,6 +258,7 @@ bool VehicleController::LoadConfiguration(std::shared_ptr<ControllerConfiguratio
     statesMap_.insert({ ulisse::states::ID::latlong, stateLatLong_ });
     statesMap_.insert({ ulisse::states::ID::pathfollow, statePathFollowing_ });
     statesMap_.insert({ ulisse::states::ID::surgeheading, stateSurgeHeading_ });
+    statesMap_.insert({ ulisse::states::ID::surgeyawrate, stateSurgeYawRate_ });
 
     if (!ConfigureSatesFromFile(statesMap_, confObj)) {
         std::cerr << "Failed to load  States from file" << std::endl;
@@ -268,6 +271,7 @@ bool VehicleController::LoadConfiguration(std::shared_ptr<ControllerConfiguratio
     commandsMap_.insert({ ulisse::commands::ID::latlong, commandLatLong_ });
     commandsMap_.insert({ ulisse::commands::ID::pathfollow, commandPathFollowing_ });
     commandsMap_.insert({ ulisse::commands::ID::surgeheading, commandSurgeHeading_ });
+    commandsMap_.insert({ ulisse::commands::ID::surgeyawrate, commandSurgeYawRate_ });
 
     return true;
 }
@@ -282,7 +286,7 @@ void VehicleController::PublishLog(std::string log)
 void VehicleController::SetUpFSM()
 {
     ///// TODO /////
-    /// CONFIGURE TO ADD YAWRATE STATE/COMMAND/ETC!!!! ////
+    /// CONFIGURE TO ADD SURGEYAWRATE STATE/COMMAND/ETC!!!! ////
 
 
     // ***** COMMANDS ***** //
@@ -297,6 +301,9 @@ void VehicleController::SetUpFSM()
 
     commandSurgeHeading_.SetFSM(&uFsm_);
     commandSurgeHeading_.SetState(stateSurgeHeading_);
+
+    commandSurgeYawRate_.SetFSM(&uFsm_);
+    commandSurgeYawRate_.SetState(stateSurgeYawRate_);
 
     commandPathFollowing_.SetFSM(&uFsm_);
     commandPathFollowing_.SetState(statePathFollowing_);
@@ -398,6 +405,14 @@ void VehicleController::CommandsHandler(const std::shared_ptr<rmw_request_id_t> 
         log << "Received Command surgeheading (data read from topic)";
         PublishLog(log.str().c_str());
 
+    } else if (request->command_type == ulisse::commands::ID::surgeyawrate) {
+
+        std::cout << "Received Command surgeyawrate" << std::endl;
+        commandSurgeYawRate_.SetTimeout(request->sh_cmd.timeout.sec);
+        stateSurgeYawRate_->ResetTimer();
+        log << "Received Command surgeyawrate (data read from topic)";
+        PublishLog(log.str().c_str());
+
     } else if (request->command_type == ulisse::commands::ID::pathfollow) {
 
         std::cout << "Received Command Path Following" << std::endl;
@@ -470,8 +485,8 @@ void VehicleController::GetBoundariesHandler(const std::shared_ptr<rmw_request_i
 }
 
 void VehicleController::ResetConfHandler(const std::shared_ptr<rmw_request_id_t> request_header,
-        const std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Request> request,
-        std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Response> response)
+    const std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Request> request,
+    std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Response> response)
 {
     (void)request_header;
     (void)request;
@@ -502,8 +517,7 @@ void VehicleController::SurgeHeadingCB(const ulisse_msgs::msg::SurgeHeading::Sha
 
 void VehicleController::SurgeYawRateCB(const ulisse_msgs::msg::SurgeYawRate::SharedPtr msg)
 {
-    externalSurge_ = msg->surge;
-    externalYawRate_ = msg->yawrate;
+    stateSurgeYawRate_->SetSurgeYawRate(msg->surge, msg->yawrate);
 }
 
 void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)
@@ -619,6 +633,7 @@ void VehicleController::PublishControl()
     ulisse_msgs::msg::FeedbackGui feedbackGuiMsg;
     feedbackGuiMsg.stamp.sec = now_stamp_secs;
     feedbackGuiMsg.stamp.nanosec = now_stamp_nanosecs;
+
     if (uFsm_.GetCurrentStateName() == ulisse::states::ID::hold){
         feedbackGuiMsg.goal_position.latitude = stateHold_->positionToHold.latitude;
         feedbackGuiMsg.goal_position.longitude = stateHold_->positionToHold.longitude;

@@ -62,6 +62,7 @@ set(ulisse_ctrl_lib_sources
     src/ulisse_ctrl/states/state_latlong.cpp
     src/ulisse_ctrl/states/state_hold.cpp
     src/ulisse_ctrl/states/state_surgeheading.cpp
+    src/ulisse_ctrl/states/state_surgeyawrate.cpp
     src/ulisse_ctrl/states/state_pathfollow.cpp
     # Commands
     src/ulisse_ctrl/commands/generic_command.cpp
@@ -69,6 +70,7 @@ set(ulisse_ctrl_lib_sources
     src/ulisse_ctrl/commands/command_hold.cpp
     src/ulisse_ctrl/commands/command_latlong.cpp
     src/ulisse_ctrl/commands/command_surgeheading.cpp
+    src/ulisse_ctrl/commands/command_surgeyawrate.cpp
     src/ulisse_ctrl/commands/command_pathfollow.cpp
     # Events
     #src/ulisse_ctrl/events/generic_event.cpp

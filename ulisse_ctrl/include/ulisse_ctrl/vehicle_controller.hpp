@@ -23,6 +23,7 @@
 #include "ulisse_ctrl/commands/command_latlong.hpp"
 #include "ulisse_ctrl/commands/command_pathfollow.hpp"
 #include "ulisse_ctrl/commands/command_surgeheading.hpp"
+#include "ulisse_ctrl/commands/command_surgeyawrate.hpp"
 
 #include "ulisse_ctrl/events/event_near_goal_position.hpp"
 #include "ulisse_ctrl/events/event_rc_enabled.hpp"
@@ -32,6 +33,7 @@
 #include "ulisse_ctrl/states/state_latlong.hpp"
 #include "ulisse_ctrl/states/state_pathfollow.hpp"
 #include "ulisse_ctrl/states/state_surgeheading.hpp"
+#include "ulisse_ctrl/states/state_surgeyawrate.hpp"
 
 #include "ulisse_ctrl/tasks/SafetyBoundaries.hpp"
 
@@ -57,6 +59,7 @@ class VehicleController : public rclcpp::Node {
     rclcpp::Subscription<ulisse_msgs::msg::LLCStatus>::SharedPtr llcStatusSub_;
 
     rclcpp::Subscription<ulisse_msgs::msg::SurgeHeading>::SharedPtr surgeHeadingSub_;
+    rclcpp::Subscription<ulisse_msgs::msg::SurgeYawRate>::SharedPtr surgeYawRateSub_;
 
     rclcpp::Publisher<ulisse_msgs::msg::ReferenceVelocities>::SharedPtr referenceVelocitiesPub_;
     rclcpp::Publisher<ulisse_msgs::msg::VehicleStatus>::SharedPtr vehicleStatusPub_;
@@ -103,12 +106,14 @@ class VehicleController : public rclcpp::Node {
     std::shared_ptr<states::StateHold> stateHold_;
     std::shared_ptr<states::StateLatLong> stateLatLong_;
     std::shared_ptr<states::StateSurgeHeading> stateSurgeHeading_;
+    std::shared_ptr<states::StateSurgeYawRate> stateSurgeYawRate_;
     std::shared_ptr<states::StatePathFollow> statePathFollowing_;
 
     commands::CommandHalt commandHalt_;
     commands::CommandHold commandHold_;
     commands::CommandLatLong commandLatLong_;
     commands::CommandSurgeHeading commandSurgeHeading_;
+    commands::CommandSurgeYawRate commandSurgeYawRate_;
     commands::CommandPathFollow commandPathFollowing_;
 
     events::EventRCEnabled eventRcEnabled_;
