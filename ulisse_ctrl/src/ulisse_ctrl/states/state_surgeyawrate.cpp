@@ -40,9 +40,9 @@ namespace states {
     fsm::retval StateSurgeYawRate::OnEntry()
     {
         // Set tasks
-        safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
+        /*safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
         absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
-
+*/
         actionManager->SetAction(ulisse::action::surge_yawrate, true);
 
         return fsm::ok;
@@ -64,32 +64,32 @@ namespace states {
         // a desired escape directon and to generate a desired velocity. To do this we use the task AbsoluteAxisAlignment to cope with
         // the align behavior activated in function of the internal activation function of the safety task.
 
-        safetyBoundariesTask_->VehiclePosition() = ctrlData->inertialF_linearPosition;
+//        safetyBoundariesTask_->VehiclePosition() = ctrlData->inertialF_linearPosition;
 
-        Eigen::MatrixXd Aexternal;
+//        Eigen::MatrixXd Aexternal;
 
-        Aexternal = safetyBoundariesTask_->InternalActivationFunction().maxCoeff()* Aexternal.setIdentity(
-                        absoluteAxisAlignmentSafetyTask_->TaskSpace(), absoluteAxisAlignmentSafetyTask_->TaskSpace());
-        absoluteAxisAlignmentSafetyTask_->ExternalActivationFunction() = Aexternal;
+//        Aexternal = safetyBoundariesTask_->InternalActivationFunction().maxCoeff()* Aexternal.setIdentity(
+//                        absoluteAxisAlignmentSafetyTask_->TaskSpace(), absoluteAxisAlignmentSafetyTask_->TaskSpace());
+//        absoluteAxisAlignmentSafetyTask_->ExternalActivationFunction() = Aexternal;
 
-        safetyBoundariesTask_->ExternalActivationFunction() = 1.0 * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(),
-                                                                  safetyBoundariesTask_->TaskSpace());
+//        safetyBoundariesTask_->ExternalActivationFunction() = 1.0 * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(),
+//                                                                  safetyBoundariesTask_->TaskSpace());
 
-        absoluteAxisAlignmentSafetyTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
-        absoluteAxisAlignmentSafetyTask_->SetDirectionAlignment(safetyBoundariesTask_->GetAlignVector(rml::FrameID::WorldFrame),
-                                                                                                   rml::FrameID::WorldFrame);
+//        absoluteAxisAlignmentSafetyTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
+//        absoluteAxisAlignmentSafetyTask_->SetDirectionAlignment(safetyBoundariesTask_->GetAlignVector(rml::FrameID::WorldFrame),
+//                                                                                                   rml::FrameID::WorldFrame);
 
         // To avoid the case in which the error between the goal heading and the current heading is too big
         // we activate the the cartesian distance through the gain based on a bell-shaped function on the heading error
 
         // Compute the heading error
-        double headingErrorsafety = absoluteAxisAlignmentSafetyTask_->ControlVariable().norm();
+//        double headingErrorsafety = absoluteAxisAlignmentSafetyTask_->ControlVariable().norm();
 
-        // Compute the gain of the safety task
-        double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingErrorsafety);
+//        // Compute the gain of the safety task
+//        double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingErrorsafety);
 
-        // Set the gain of the cartesian distance task
-        safetyBoundariesTask_->TaskParameter().gain = taskGainSafety * safetyBoundariesTask_->TaskParameter().conf_gain;
+//        // Set the gain of the cartesian distance task
+//        safetyBoundariesTask_->TaskParameter().gain = taskGainSafety * safetyBoundariesTask_->TaskParameter().conf_gain;
 
 
 

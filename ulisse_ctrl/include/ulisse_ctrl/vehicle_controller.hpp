@@ -78,7 +78,7 @@ class VehicleController : public rclcpp::Node {
     std::shared_ptr<tpik::iCAT> iCat_;
 
     double cruise_;
-    double externalSurge_, externalYawRate_;
+    //double externalSurge_, externalYawRate_;
     std::shared_ptr<tpik::Solver> solver_;
 
     // Solution of TPIK

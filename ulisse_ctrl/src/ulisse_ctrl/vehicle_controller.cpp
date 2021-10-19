@@ -285,9 +285,6 @@ void VehicleController::PublishLog(std::string log)
 
 void VehicleController::SetUpFSM()
 {
-    ///// TODO /////
-    /// CONFIGURE TO ADD SURGEYAWRATE STATE/COMMAND/ETC!!!! ////
-
 
     // ***** COMMANDS ***** //
     commandHalt_.SetFSM(&uFsm_);
@@ -619,14 +616,16 @@ void VehicleController::PublishControl()
     referenceVelocities.stamp.sec = now_stamp_secs;
     referenceVelocities.stamp.nanosec = now_stamp_nanosecs;
 
-    // Publish reference velocities
-    if (uFsm_.GetCurrentStateName() == ulisse::states::ID::surgeyawrate){
-        referenceVelocities.desired_surge = externalSurge_;
-        referenceVelocities.desired_yaw_rate = externalYawRate_;
-    }
-    else if (uFsm_.GetCurrentStateName() != ulisse::states::ID::halt){
-        referenceVelocities.desired_surge = yTpik_[0];
-        referenceVelocities.desired_yaw_rate = yTpik_[5];
+    // Publish reference velocities for the DCL only if we are not in HALT state
+    if (uFsm_.GetCurrentStateName() != ulisse::states::ID::halt){
+        // If we are in SURGEYAWRATE state we bypass the Tpik solutions
+        if (uFsm_.GetCurrentStateName() == ulisse::states::ID::surgeyawrate){
+            referenceVelocities.desired_surge = stateSurgeYawRate_->goalSurge;
+            referenceVelocities.desired_yaw_rate = stateSurgeYawRate_->goalYawRate;
+        } else {
+            referenceVelocities.desired_surge = yTpik_[0];
+            referenceVelocities.desired_yaw_rate = yTpik_[5];
+        }
         referenceVelocitiesPub_->publish(referenceVelocities);
     }
 
