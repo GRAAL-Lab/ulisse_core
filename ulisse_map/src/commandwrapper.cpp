@@ -495,6 +495,7 @@ bool CommandWrapper::SendCommandRequest(ulisse_msgs::srv::ControlCommand::Reques
 void CommandWrapper::StopOngoingTimers()
 {
     surgeHeadingPubTimer_->stop();
+    surgeYawRatePubTimer_->stop();
     checkErrorTimer_->stop();
 }
 
@@ -518,7 +519,6 @@ void CommandWrapper::stop_command_publisher()
 bool CommandWrapper::sendHaltCommand()
 {
     StopOngoingTimers();
-    stop_command_publisher();
 
     auto serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
     serviceReq->command_type = ulisse::commands::ID::halt;

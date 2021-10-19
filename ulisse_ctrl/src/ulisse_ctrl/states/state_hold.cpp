@@ -6,8 +6,7 @@ namespace ulisse {
 namespace states {
 
     StateHold::StateHold()
-        : goalDistance_ { 0.0 },
-        hysteresisState_ { HysteresisState::Align }
+        : hysteresisState_ { HysteresisState::Align }, goalDistance { 0.0 }
     {
     }
 
@@ -93,13 +92,13 @@ namespace states {
         std::cout << "-----------------------" << std::endl;*/
 
         //hold task
-        ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, positionToHold, goalDistance_, goalHeading_); //compute the distanza between the current position and the position to hold
+        ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, positionToHold, goalDistance, goalHeading); //compute the distanza between the current position and the position to hold
 
         // If the robot is inside the circle put the catamaran countercurrent, otherwise
         // point to the hold circle defined by maxAcceptanceRadius and minAcceptanceRadiuos
-        if (goalDistance_ < minAcceptanceRadius) {
+        if (goalDistance < minAcceptanceRadius) {
             hysteresisState_ = HysteresisState::Align;
-        } else if (goalDistance_ > maxAcceptanceRadius) {
+        } else if (goalDistance > maxAcceptanceRadius) {
             hysteresisState_ = HysteresisState::ComeBack;
         }
 
@@ -118,8 +117,8 @@ namespace states {
 
         } else if (hysteresisState_ == HysteresisState::ComeBack) {
             // If the previos action was comeback to the hold acceptance radius, keep do it until d < minAcceptanceRadius.
-            absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(cos(goalHeading_), sin(goalHeading_), 0.0), rml::FrameID::WorldFrame);
-            double surgeReference = rml::IncreasingBellShapedFunction(minAcceptanceRadius, maxAcceptanceRadius, 0.25, maxSurgeComeback2HoldAcceptanceRadius_, goalDistance_);
+            absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(cos(goalHeading), sin(goalHeading), 0.0), rml::FrameID::WorldFrame);
+            double surgeReference = rml::IncreasingBellShapedFunction(minAcceptanceRadius, maxAcceptanceRadius, 0.25, maxSurgeComeback2HoldAcceptanceRadius_, goalDistance);
             absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
             absoluteAxisAlignmentTask_->Update();
 

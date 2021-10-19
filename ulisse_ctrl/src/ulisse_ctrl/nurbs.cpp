@@ -8,7 +8,7 @@ Nurbs::Nurbs(int dim)
     , parvalue_ { 0.0 }
     , centroid_ { 0.0, 0.0 }
 {
-    //default initialization of Nurbs.cpp param
+    // Default initialization of Nurbs.cpp param
     nurbsParam.aepsge = 0.001;
     nurbsParam.aepsco = 0.000001;
     nurbsParam.maxLookupParvalue = 0.5;
@@ -16,8 +16,9 @@ Nurbs::Nurbs(int dim)
     nurbsParam.deltaMax = 5.0;
     nurbsParam.directionError = 0.436; //25 gradi
 
-    //Default initialization of the currentDelta
+    // Default initialization of the currentDelta
     currentDelta_ = nurbsParam.deltaMax;
+    nurbsParam.deltaStep = 0.05;
 }
 
 Nurbs::~Nurbs() { nurbs_.clear(); }
@@ -220,8 +221,8 @@ bool Nurbs::ComputeNextPoint(const ctb::LatLong& currentP, ctb::LatLong& nextP)
             }
             break;
         } else {
-            //otherwise decrease the delta by a 0.05 meter factor
-            currentDelta_ -= 0.05;
+            //otherwise decrease the delta by a factor (default 0.05m)
+            currentDelta_ -= nurbsParam.deltaStep;
             //compute the next parvalue with this delta increment
             if (!ComputePossibleNextPoint(nextDir, possibleNextP)) {
                 std::cerr << "ComputeNextPossiblePoint fails" << std::endl;
@@ -401,7 +402,7 @@ bool Nurbs::ComputeParameterValue(const Eigen::VectorXd& epoint)
         // To pick one part of a curve and make a new curve of the part
         s1713(curve, decMinParvalue, decMaxParvalue, &newCurve, &stat);
         if (stat < 0) {
-            std::cerr << "ComputesParameterValue: 1713 fails" << std::endl;
+            std::cerr << "ComputesParameterValue: s1713 fails" << std::endl;
             return false;
         }
 

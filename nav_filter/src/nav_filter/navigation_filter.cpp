@@ -15,8 +15,6 @@ namespace nav {
         stateDim_ = 0;
         centroidLocation_ = ctb::LatLong(44.0956, 9.8631);
 
-
-
         gyroMeasurement_ = std::make_shared<ulisse::nav::GyroMeasurement>(ulisse::nav::GyroMeasurement());
         compassMeasurement_ = std::make_shared<ulisse::nav::CompassMeasurement>(ulisse::nav::CompassMeasurement());
         accelerometerMeasurement_ = std::make_shared<ulisse::nav::AccelerometerMeasurement>(ulisse::nav::AccelerometerMeasurement());
@@ -467,29 +465,28 @@ namespace nav {
 
     void NavigationFilter::SensorsOnlineCB()
     {
-
         auto t_now = std::chrono::system_clock::now();
         auto timeNowSecs = (std::chrono::duration_cast<std::chrono::seconds>(t_now.time_since_epoch())).count();
         auto lastValidGPSSecs = static_cast<std::time_t>(lastValidGPSTime_);
 
         if (std::abs(lastValidGPSSecs - timeNowSecs) > sensorsCheckInterval_) {
             RCLCPP_WARN(this->get_logger(), "GPS Data unavailable for more than %i seconds.", sensorsCheckInterval_);
-            filterData_.gps_received = false;
+            //filterData_.gps_received = false;
         }
 
         if (std::abs(imuData_.stamp.sec - timeNowSecs) > sensorsCheckInterval_) {
             RCLCPP_WARN(this->get_logger(), "IMU Data unavailable for more than %i seconds.", sensorsCheckInterval_);
-            filterData_.imu_received = false;
+            //filterData_.imu_received = false;
         }
 
         if (std::abs(compassData_.stamp.sec - timeNowSecs) > sensorsCheckInterval_) {
             RCLCPP_WARN(this->get_logger(), "Compass Data unavailable for more than %i seconds.", sensorsCheckInterval_);
-            filterData_.compass_received = false;
+            //filterData_.compass_received = false;
         }
 
         if (std::abs(magnetometerData_.stamp.sec - timeNowSecs) > sensorsCheckInterval_) {
             RCLCPP_WARN(this->get_logger(), "Magnetometer Data unavailable for more than %i seconds.", sensorsCheckInterval_);
-            filterData_.magnetometer_received = false;
+            //filterData_.magnetometer_received = false;
         }
 
         // Utility Print

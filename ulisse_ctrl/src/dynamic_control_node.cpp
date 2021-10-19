@@ -370,8 +370,7 @@ void ComputedTorqueControlInizialization(std::shared_ptr<DCLConfiguration> conf,
     pidYawRate.Initialize(conf->computedTorqueControl.pidGainsYawRate, sampleTime, conf->computedTorqueControl.pidSatYawRate);
 }
 
-void ReferenceVelocitiesCB(const ulisse_msgs::msg::ReferenceVelocities::SharedPtr msg) { referenceVelocities = *msg;
-    std::cout << "REF READ" << std::endl;}
+void ReferenceVelocitiesCB(const ulisse_msgs::msg::ReferenceVelocities::SharedPtr msg) { referenceVelocities = *msg; }
 
 void VehicleStatusCB(const ulisse_msgs::msg::VehicleStatus::SharedPtr msg) { vehicleStatus = *msg; }
 

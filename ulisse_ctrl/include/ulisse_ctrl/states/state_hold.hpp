@@ -21,7 +21,6 @@ namespace states {
     protected:
         std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentTask_;
         std::shared_ptr<ikcl::LinearVelocity> linearVelocityTask_;
-        double goalDistance_, goalHeading_;
         double minWaterCurrent_, maxWaterCurrent_;
         double maxSurgeComeback2HoldAcceptanceRadius_;
         HysteresisState hysteresisState_;
@@ -37,6 +36,8 @@ namespace states {
 
         double maxAcceptanceRadius;
         double minAcceptanceRadius;
+        double goalHeading;
+        double goalDistance;
 
         ctb::LatLong positionToHold;
 

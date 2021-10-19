@@ -75,6 +75,7 @@ public:
     struct NurbsParam {
         double deltaMin; //the min delta increment for moving on the curves (in meters)
         double deltaMax; //the max delta increment for moving on the curves (in meters)
+        double deltaStep; //the step increment for the delta (in meters)
         double aepsge; // geometric tollerance
         double aepsco; // computational tollerance
         double maxLookupParvalue; //max delta increment for select a part of a curve for computing the current parvalue
@@ -89,6 +90,8 @@ public:
             if (!ctb::GetParam(state, deltaMin, "deltaMin"))
                 return false;
             if (!ctb::GetParam(state, deltaMax, "deltaMax"))
+                return false;
+            if (!ctb::GetParam(state, deltaStep, "deltaStep"))
                 return false;
             if (!ctb::GetParam(state, aepsge, "geometricTollerance"))
                 return false;

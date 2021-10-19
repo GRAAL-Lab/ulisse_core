@@ -637,6 +637,7 @@ void VehicleController::PublishControl()
         feedbackGuiMsg.goal_position.latitude = stateHold_->positionToHold.latitude;
         feedbackGuiMsg.goal_position.longitude = stateHold_->positionToHold.longitude;
         feedbackGuiMsg.acceptance_radius = stateHold_->maxAcceptanceRadius;
+        feedbackGuiMsg.goal_distance = stateHold_->goalDistance;
     }
     else if (uFsm_.GetCurrentStateName() == ulisse::states::ID::latlong){
         feedbackGuiMsg.goal_position.latitude = stateLatLong_->goalPosition.latitude;

@@ -246,9 +246,9 @@ Pane{
                         objectName: "yawRateSat"
                         Layout.preferredWidth: sliderWidth - 5
                         from: 0.0
-                        to: 1.5
+                        to: 1.0
                         stepSize: 0.05
-                        value: 1
+                        value: 0.5
                         /*onPressedChanged: function() {
                             if (sliderYawRate.pressed === false)
                                 cmdWrapper.setYawRateCommand(sliderYawRate.value)
