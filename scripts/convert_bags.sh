@@ -5,13 +5,13 @@ source ~/ros2_ws/install/setup.bash
 
 if [ -z "$1" ]
   then
-    echo "No argument 1 supplied: BAGS SOURCE FOLDER"
+    echo "No argument 1 supplied: BAGS SOURCE FOLDER NAME"
     exit 1
 fi
 
 if [ -z "$2" ]
   then
-    echo "No argument 2 supplied: EXPERIMENT NAME"
+    echo "No argument 2 supplied: DESTINATION CSV FOLDER NAME"
     exit 1
 fi
 
