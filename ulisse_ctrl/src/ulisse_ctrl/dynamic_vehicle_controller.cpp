@@ -71,8 +71,6 @@ DynamicVehicleController::DynamicVehicleController(int rate, std::string file_na
     runTimer_ = this->create_wall_timer(std::chrono::milliseconds(msRunPeriod), std::bind(&DynamicVehicleController::Run, this));
 
 
-
-
 }
 
 DynamicVehicleController::~DynamicVehicleController() {

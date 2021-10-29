@@ -1,7 +1,7 @@
 #include "rclcpp/rclcpp.hpp"
 
 #include "ulisse_msgs/terminal_utils.hpp"
-#include "ulisse_ctrl/vehicle_controller.hpp"
+#include "ulisse_ctrl/kinematic_vehicle_controller.hpp"
 #include "rml/RML.h"
 
 int main(int argc, char* argv[])
