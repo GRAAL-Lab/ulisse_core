@@ -37,14 +37,14 @@ enum class ControlMode : int {
     ComputedTorque
 };
 
-struct ControllerConfiguration {
+struct KCLConfiguration {
 
     bool goToHoldAfterMove;
     double posAcceptanceRadius;
     double controlLoopPeriod;
     Eigen::VectorXd saturationMin, saturationMax;
 
-    ControllerConfiguration()
+    KCLConfiguration()
         : goToHoldAfterMove(false)
     {
     }
@@ -66,7 +66,7 @@ struct ControllerConfiguration {
         return true;
     }
 
-    friend std::ostream& operator<<(std::ostream& os, ControllerConfiguration const& a)
+    friend std::ostream& operator<<(std::ostream& os, KCLConfiguration const& a)
     {
         return os << "======= CONTROLLER CONF =======\n"
                   << "ControlLoopPeriod: " << a.controlLoopPeriod << "\n"

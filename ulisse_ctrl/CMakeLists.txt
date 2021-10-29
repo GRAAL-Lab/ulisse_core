@@ -50,7 +50,7 @@ include_directories(
 set(use_SYSTEM_BOOST TRUE)
 
 ## Libraries ##
-set(ulisse_ctrl_lib_sources
+set(ulisse_kinematic_ctrl_lib_sources
     # Main Classes
     src/ulisse_ctrl/vehicle_controller.cpp
     # Helpers
@@ -81,33 +81,42 @@ set(ulisse_ctrl_lib_sources
     src/ulisse_ctrl/tasks/SafetyBoundaries.cpp
 )
 
+set(ulisse_dynamic_ctrl_lib_sources
+    # Main Class
+    src/ulisse_ctrl/dynamic_vehicle_controller.cpp
+)
+
 ## Libraries
-add_library(ulisse_ctrl_lib ${ulisse_ctrl_lib_sources})
-ament_target_dependencies(ulisse_ctrl_lib rclcpp std_msgs ulisse_msgs surface_vehicle_model ament_index_cpp)
-target_link_libraries(ulisse_ctrl_lib ${surface_vehicle_model_LIBRARIES} ${ulisse_msgs_LIBRARIES} Geographic rml fsm ctrl_toolbox)
+add_library(ulisse_kinematic_ctrl_lib ${ulisse_kinematic_ctrl_lib_sources})
+ament_target_dependencies(ulisse_kinematic_ctrl_lib rclcpp std_msgs ulisse_msgs surface_vehicle_model ament_index_cpp)
+target_link_libraries(ulisse_kinematic_ctrl_lib ${surface_vehicle_model_LIBRARIES} ${ulisse_msgs_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ikcl tpik config++ Geographic rml fsm ctrl_toolbox)
+
+add_library(ulisse_dynamic_ctrl_lib ${ulisse_dynamic_ctrl_lib_sources})
+ament_target_dependencies(ulisse_dynamic_ctrl_lib rclcpp std_msgs ulisse_msgs surface_vehicle_model ament_index_cpp)
+target_link_libraries(ulisse_dynamic_ctrl_lib ${surface_vehicle_model_LIBRARIES} ${ulisse_msgs_LIBRARIES} config++ Geographic rml fsm ctrl_toolbox)
 
 ## Executables
 add_executable(control_test test/control_test.cpp)
 ament_target_dependencies(control_test rclcpp std_msgs ulisse_msgs rml)
-target_link_libraries(control_test rml ulisse_ctrl_lib ${ulisse_driver_LIBRARIES})
+target_link_libraries(control_test rml ulisse_kinematic_ctrl_lib ${ulisse_driver_LIBRARIES})
 
 add_executable(kinematic_control_node src/kinematic_control_node.cpp)
 ament_target_dependencies(kinematic_control_node rclcpp std_msgs ulisse_msgs rml)
-target_link_libraries(kinematic_control_node rml ulisse_ctrl_lib ${JSONCPP_LIBRARIES})
+target_link_libraries(kinematic_control_node rml ulisse_kinematic_ctrl_lib ${JSONCPP_LIBRARIES})
 
 add_executable(dynamic_control_node src/dynamic_control_node.cpp)
 ament_target_dependencies(dynamic_control_node rclcpp std_msgs ulisse_msgs rml ament_index_cpp ctrl_toolbox)
-target_link_libraries(dynamic_control_node rml ulisse_ctrl_lib)
+target_link_libraries(dynamic_control_node rml ulisse_dynamic_ctrl_lib)
 
 add_executable(controller_console_node src/controller_console_node.cpp)
 ament_target_dependencies(controller_console_node rclcpp std_msgs ulisse_msgs rml)
-target_link_libraries(controller_console_node rml ulisse_ctrl_lib)
+target_link_libraries(controller_console_node rml ulisse_kinematic_ctrl_lib)
 
 add_executable(monitor_node src/monitor_node.cpp)
 ament_target_dependencies(monitor_node rclcpp std_msgs ulisse_msgs rml)
-target_link_libraries(monitor_node rml ulisse_ctrl_lib)
+target_link_libraries(monitor_node rml ulisse_kinematic_ctrl_lib)
 
-target_link_libraries(${PROJECT_NAME}_lib ${catkin_LIBRARIES} ${Boost_LIBRARIES} ikcl tpik rml config++ )
+
 ament_export_include_directories(include)
 
 ## Install

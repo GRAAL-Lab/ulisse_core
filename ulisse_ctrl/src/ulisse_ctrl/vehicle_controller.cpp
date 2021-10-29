@@ -22,7 +22,7 @@ VehicleController::VehicleController(int rate, std::string file_name)
     , rate_(rate)
     , boundariesSet_(false)
 {
-    conf_ = std::make_shared<ControllerConfiguration>();
+    conf_ = std::make_shared<KCLConfiguration>();
 
     ctrlData_ = std::make_shared<ControlData>();
 
@@ -164,7 +164,7 @@ VehicleController::VehicleController(int rate, std::string file_name)
 
 VehicleController::~VehicleController() { }
 
-bool VehicleController::LoadConfiguration(std::shared_ptr<ControllerConfiguration>& conf)
+bool VehicleController::LoadConfiguration(std::shared_ptr<KCLConfiguration>& conf)
 {
     libconfig::Config confObj;
 

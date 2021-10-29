@@ -61,7 +61,7 @@ class VehicleController : public rclcpp::Node {
     rclcpp::Subscription<ulisse_msgs::msg::SurgeHeading>::SharedPtr surgeHeadingSub_;
     rclcpp::Subscription<ulisse_msgs::msg::SurgeYawRate>::SharedPtr surgeYawRateSub_;
 
-    rclcpp::Publisher<ulisse_msgs::msg::ReferenceVelocities>::SharedPtr referenceVelocitiesPub_;
+    rclcpp::Publisher<ulisse_msgs::msg::ReferenceVelocities>::SharedPtr  referenceVelocitiesPub_;
     rclcpp::Publisher<ulisse_msgs::msg::VehicleStatus>::SharedPtr vehicleStatusPub_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr genericLogPub_;
     rclcpp::Publisher<ulisse_msgs::msg::FeedbackGui>::SharedPtr feedbackGuiPub_;
@@ -119,7 +119,7 @@ class VehicleController : public rclcpp::Node {
     events::EventRCEnabled eventRcEnabled_;
     events::EventNearGoalPosition eventNearGoalPosition_;
 
-    std::shared_ptr<ControllerConfiguration> conf_;
+    std::shared_ptr<KCLConfiguration> conf_;
 
     std::chrono::system_clock::time_point tNow_;
 
@@ -131,7 +131,7 @@ class VehicleController : public rclcpp::Node {
     //std::shared_ptr<ctb::LatLong> vehiclePosition_;
     //std::shared_ptr<Eigen::Vector2d> inertialF_waterCurrent_;
 
-    bool LoadConfiguration(std::shared_ptr<ControllerConfiguration>& conf);
+    bool LoadConfiguration(std::shared_ptr<KCLConfiguration>& conf);
     void SetUpFSM();
 
     void CommandsHandler(const std::shared_ptr<rmw_request_id_t> request_header,
