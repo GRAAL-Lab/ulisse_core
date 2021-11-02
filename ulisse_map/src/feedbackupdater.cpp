@@ -4,7 +4,7 @@
 #include <sstream>
 
 #include "rml/RML.h"
-#include "feedbackupdater.h"
+#include "feedbackupdater.hpp"
 #include "ctrl_toolbox/HelperFunctions.h"
 #include "ulisse_ctrl/ulisse_defines.hpp"
 #include "ulisse_msgs/topicnames.hpp"
@@ -70,10 +70,53 @@ void FeedbackUpdater::LoadQmlEngine(QQmlApplicationEngine* engine)
     }
     qDebug() << "INITIAL POS: LatLong = " << q_ulisse_pos_ << "- Compass = " << q_ulisse_rpy_deg_[2];
 
+    RegisterPublishersAndSubscribers();
+
+}
+
+
+bool FeedbackUpdater::LoadConfiguration()
+{
+    libconfig::Config confObj;
+
+    // Inizialization
+    std::string package_share_directory = ament_index_cpp::get_package_share_directory("nav_filter");
+    std::string confPath = package_share_directory;
+    confPath.append("/conf/navigation_filter.conf");
+
+    std::cout << "PATH TO CONF FILE : " << confPath << std::endl;
+
+    // Read the file. If there is an error, report it and exit.
+    try {
+        confObj.readFile(confPath.c_str());
+    } catch (const libconfig::FileIOException& fioex) {
+        std::cerr << "I/O error while reading file: " << fioex.what() << std::endl;
+        return -1;
+    } catch (const libconfig::ParseException& pex) {
+        std::cerr << "Parse error at " << pex.getFile() << ":" << pex.getLine() << " - " << pex.getError() << std::endl;
+        return -1;
+    }
+
+    //acquired the centroid location
+    Eigen::VectorXd centroidLocationTmp;
+    if (!ctb::GetParamVector(confObj, centroidLocationTmp, "centroidLocation")) {
+        std::cerr << "Failed to load centroidLocation from file" << std::endl;
+        return false;
+    };
+    q_centroid.setLatitude(centroidLocationTmp[0]);
+    q_centroid.setLongitude(centroidLocationTmp[1]);
+
+    qDebug() << "centroid Location: " << q_centroid;
+
+    return true;
+}
+
+// Initial is not uppercase due to QML-invokable functions restrictions
+void FeedbackUpdater::RegisterPublishersAndSubscribers()
+{
     // Set the QoS. ROS 2 will provide QoS profiles based on the following use cases:
     // Default QoS settings for publishers and subscriptions (rmw_qos_profile_default).
     // Services (rmw_qos_profile_services_default).
-
 
     //rmw_qos_profile_sensor_data
     auto qos_sensor = rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_sensor_data);
@@ -113,42 +156,6 @@ void FeedbackUpdater::LoadQmlEngine(QQmlApplicationEngine* engine)
         10, std::bind(&FeedbackUpdater::NavFilterDataCB, this, _1) /*custom_qos_profile*/);
     feedbackGuiSub_ = this->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui,
         10, std::bind(&FeedbackUpdater::FeedbackGuiCB, this, _1) /*custom_qos_profile*/);
-}
-
-bool FeedbackUpdater::LoadConfiguration()
-{
-    libconfig::Config confObj;
-
-    // Inizialization
-    std::string package_share_directory = ament_index_cpp::get_package_share_directory("nav_filter");
-    std::string confPath = package_share_directory;
-    confPath.append("/conf/navigation_filter.conf");
-
-    std::cout << "PATH TO CONF FILE : " << confPath << std::endl;
-
-    // Read the file. If there is an error, report it and exit.
-    try {
-        confObj.readFile(confPath.c_str());
-    } catch (const libconfig::FileIOException& fioex) {
-        std::cerr << "I/O error while reading file: " << fioex.what() << std::endl;
-        return -1;
-    } catch (const libconfig::ParseException& pex) {
-        std::cerr << "Parse error at " << pex.getFile() << ":" << pex.getLine() << " - " << pex.getError() << std::endl;
-        return -1;
-    }
-
-    //acquired the centroid location
-    Eigen::VectorXd centroidLocationTmp;
-    if (!ctb::GetParamVector(confObj, centroidLocationTmp, "centroidLocation")) {
-        std::cerr << "Failed to load centroidLocation from file" << std::endl;
-        return false;
-    };
-    q_centroid.setLatitude(centroidLocationTmp[0]);
-    q_centroid.setLongitude(centroidLocationTmp[1]);
-
-    qDebug() << "centroid Location: " << q_centroid;
-
-    return true;
 }
 
 void FeedbackUpdater::NavFilterDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)
@@ -333,6 +340,30 @@ void FeedbackUpdater::copyToClipboard(QString newText)
     clipboard->setText(newText);
 }
 
+void FeedbackUpdater::resetPublishersAndSubscribers()
+{
+    vehicleStatusSub_.reset();
+    referenceVelocitieSub_.reset();
+    gps_data_sub_.reset();
+
+    micro_loop_count_sub_.reset();
+    ambient_sensors_sub_.reset();
+    compass_sub_.reset();
+    imu_data_sub_.reset();
+    magnetometer_sub_.reset();
+    llc_motors_sub_.reset();
+
+    battery_left_sub_.reset();
+    battery_right_sub_.reset();
+    thrusters_reference_sub_.reset();
+    thrusters_applied_ref_sub_.reset();
+    sw485_status_sub_.reset();
+    current_status_sub_.reset();
+    feedbackGuiSub_.reset();
+
+    RegisterPublishersAndSubscribers();
+}
+
 QGeoCoordinate FeedbackUpdater::get_centroid()
 {
     return q_centroid;
@@ -502,8 +533,6 @@ int FeedbackUpdater::get_motor_speed_R()
 {
     return motor_speed_R_;
 }
-
-
 
 int FeedbackUpdater::get_missed_deadlines()
 {

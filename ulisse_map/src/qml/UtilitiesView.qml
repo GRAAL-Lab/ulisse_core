@@ -27,6 +27,15 @@ Rectangle {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
 
+                Label {
+                    Layout.fillHeight: true
+                    Layout.alignment: Qt.AlignHCenter
+                    font.pointSize: 18
+                    font.weight: Font.DemiBold
+                    color: blue
+                    text: "Reload Configurations"
+                }
+
                 Button {
                     id: kclReconfButton
                     text: "  Reload KCL Conf  "
@@ -60,6 +69,37 @@ Rectangle {
 
                     onClicked: {
                         cmdWrapper.reloadNavFilterConf()
+                    }
+                }
+
+                ToolSeparator {
+                    orientation: Qt.Horizontal
+                    Layout.fillWidth: true
+
+                    contentItem: Rectangle {
+                        implicitHeight: 1
+                        color: "#c3c3c3"
+                    }
+                }
+
+                Label {
+                    Layout.fillHeight: true
+                    Layout.alignment: Qt.AlignHCenter
+                    font.pointSize: 18
+                    font.weight: Font.DemiBold
+                    color: blue
+                    text: "Reset ROS"
+                }
+
+                Button {
+                    id: reloadPubsAndSubsButton
+                    text: "  Reload Pub/Sub "
+                    Layout.alignment: Qt.AlignCenter
+                    highlighted: true
+                    Material.background: pressed ? orange : mainColor
+
+                    onClicked: {
+                        fbkUpdater.resetPublishersAndSubscribers()
                     }
                 }
             }

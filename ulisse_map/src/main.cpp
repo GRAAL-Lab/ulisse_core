@@ -10,8 +10,8 @@
 #include <QQuickStyle>
 #include <QSettings>
 
-#include "commandwrapper.h"
-#include "feedbackupdater.h"
+#include "commandwrapper.hpp"
+#include "feedbackupdater.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 #include <QQmlDebuggingEnabler>

@@ -138,7 +138,8 @@ public:
     virtual ~FeedbackUpdater();
     void LoadQmlEngine(QQmlApplicationEngine* engine);
     bool LoadConfiguration();
-    //void SetNodeHandle(const rclcpp::Node::SharedPtr& np);
+    void RegisterPublishersAndSubscribers();
+
     double RadiansToDegrees(const double angle_rad, const bool wraparound360 = false);
 
     void GPSDataCB(const ulisse_msgs::msg::GPSData::SharedPtr msg);
@@ -160,6 +161,7 @@ public:
     void FeedbackGuiCB(const ulisse_msgs::msg::FeedbackGui::SharedPtr msg);
 
     Q_INVOKABLE void copyToClipboard(QString value);
+    Q_INVOKABLE void resetPublishersAndSubscribers();
 
     QGeoCoordinate get_centroid();
     QGeoCoordinate get_ulisse_pos();
