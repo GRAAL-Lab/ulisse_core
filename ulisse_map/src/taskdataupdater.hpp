@@ -10,14 +10,10 @@
 #include "rclcpp/rclcpp.hpp"
 
 #include "ulisse_msgs/msg/feedback_gui.hpp"
-#include "ulisse_msgs/msg/gps_data.hpp"
-#include "ulisse_msgs/msg/llc_battery.hpp"
-#include "ulisse_msgs/msg/llc_sw485_status.hpp"
-#include "ulisse_msgs/msg/nav_filter_data.hpp"
 #include "ulisse_msgs/msg/reference_velocities.hpp"
-#include "ulisse_msgs/msg/vehicle_status.hpp"
+#include "ulisse_msgs/msg/task_status.hpp"
 
-class TaskDataUpdater : public QObject {
+class TaskDataUpdater : public QObject, rclcpp::Node {
     Q_OBJECT
     QQmlApplicationEngine* appEngine_;
     QTimer* myTimer_;
@@ -32,26 +28,36 @@ class TaskDataUpdater : public QObject {
 
     Q_PROPERTY(double accept_radius READ get_accept_radius NOTIFY callbacks_processed)*/
 
-
     int taskDataUpdateInterval_;
-    //QGeoCoordinate q_ulisse_pos_, q_goal_pos_;
-    //double q_goal_distance_, q_goal_heading_deg_;
-    //double q_accept_radius_;
 
-    rclcpp::Node::SharedPtr np_;
-    rclcpp::Subscription<ulisse_msgs::msg::FeedbackGui>::SharedPtr feedbackGuiSub_;
+    rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr absoluteAxisAlignmentSub_;
+    rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr absoluteAxisAlignmentHoldSub_;
+    rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr absoluteAxisAlignmentSafetySub_;
+    rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr angularPositionSub_;
+    rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr cartesianDistanceSub_;
+    rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr cartesianDistancePathFollowingSub_;
+    rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr linearHoldSub_;
+    rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr linearVelocitySub_;
+    rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr safetyBoundariesSub_;
 
     QVector<double> GenerateRandFloatVector(int size);
 
 public:
     explicit TaskDataUpdater(QObject* parent = nullptr);
-    explicit TaskDataUpdater(QQmlApplicationEngine* engine, QObject* parent = nullptr, const rclcpp::Node::SharedPtr& np = nullptr);
+    explicit TaskDataUpdater(QQmlApplicationEngine* engine, QObject* parent = nullptr);
     virtual ~TaskDataUpdater();
-    void Init(QQmlApplicationEngine* engine, const rclcpp::Node::SharedPtr& np);
-    void SetNodeHandle(const rclcpp::Node::SharedPtr& np);
+    void Init(QQmlApplicationEngine* engine);
     double RadiansToCompassDegrees(const double angle_rad);
 
-    //void TaskDataCB(const ulisse_msgs::msg::FeedbackGui::SharedPtr msg);
+    void AbsoluteAxisAlignmentCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
+    void AbsoluteAxisAlignmentHoldCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
+    void AbsoluteAxisAlignmentSafetyCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
+    void AngularPositionCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
+    void CartesianDistanceCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
+    void CartesianDistancePathFollowingCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
+    void LinearHoldCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
+    void LinearVelocityCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
+    void SafetyBoundariesCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
 
     Q_INVOKABLE void copyToClipboard(QString value);
 
@@ -60,7 +66,6 @@ public:
     double get_goal_distance();
     double get_goal_heading();
     double get_accept_radius();*/
-
 
 signals:
     void callbacks_processed();

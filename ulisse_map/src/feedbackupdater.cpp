@@ -21,7 +21,7 @@ FeedbackUpdater::FeedbackUpdater(QQmlApplicationEngine* engine, QObject* parent)
     : QObject(parent), Node("gui_feedback_updater")
     , feedbackUpdateInterval_(200)
 {
-    LoadQmlEngine(engine);
+    Init(engine);
 }
 
 FeedbackUpdater::~FeedbackUpdater()
@@ -29,7 +29,7 @@ FeedbackUpdater::~FeedbackUpdater()
     delete myTimer_;
 }
 
-void FeedbackUpdater::LoadQmlEngine(QQmlApplicationEngine* engine)
+void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
 {
     appEngine_ = engine;
 

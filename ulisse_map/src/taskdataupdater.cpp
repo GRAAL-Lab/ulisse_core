@@ -11,16 +11,16 @@
 using std::placeholders::_1;
 
 TaskDataUpdater::TaskDataUpdater(QObject* parent)
-    : QObject(parent)
+    : QObject(parent), Node("gui_taskdata_updater")
     , taskDataUpdateInterval_(200)
 {
 }
 
-TaskDataUpdater::TaskDataUpdater(QQmlApplicationEngine* engine, QObject* parent, const rclcpp::Node::SharedPtr& np)
-    : QObject(parent)
+TaskDataUpdater::TaskDataUpdater(QQmlApplicationEngine* engine, QObject* parent)
+    : QObject(parent), Node("gui_taskdata_updater")
     , taskDataUpdateInterval_(200)
 {
-    Init(engine, np);
+    Init(engine);
 }
 
 TaskDataUpdater::~TaskDataUpdater()
@@ -28,14 +28,13 @@ TaskDataUpdater::~TaskDataUpdater()
     delete myTimer_;
 }
 
-void TaskDataUpdater::Init(QQmlApplicationEngine* engine, const rclcpp::Node::SharedPtr& np)
+void TaskDataUpdater::Init(QQmlApplicationEngine* engine)
 {
     appEngine_ = engine;
-    np_ = np;
 
     myTimer_ = new QTimer(this);
-
     QObject::connect(myTimer_, SIGNAL(timeout()), this, SLOT(process_callbacks_slot()));
+    myTimer_->start(taskDataUpdateInterval_);
 
     //qDebug() << "INITIAL POS: LatLong = " << q_ulisse_pos_ << "- Compass = " << q_ulisse_yaw_deg_;
 
@@ -47,19 +46,70 @@ void TaskDataUpdater::Init(QQmlApplicationEngine* engine, const rclcpp::Node::Sh
     // set the depth to the QoS profile
     //custom_qos_profile.depth = 7;
 
-    //feedbackGuiSub_ = np_->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10, std::bind(&TaskDataUpdater::TaskDataCB, this, _1) /*custom_qos_profile*/);
+    absoluteAxisAlignmentSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment, 10,
+        std::bind(&TaskDataUpdater::AbsoluteAxisAlignmentCB, this, _1) /*custom_qos_profile*/);
 }
 
-void TaskDataUpdater::SetNodeHandle(const rclcpp::Node::SharedPtr& np)
-{
-    np_ = np;
-}
 
 double TaskDataUpdater::RadiansToCompassDegrees(const double angle_rad)
 {
     double angle_compass = angle_rad * 180.0 / M_PI;
     if (angle_compass < 0) {angle_compass += 360.0;}
     return angle_compass;
+}
+
+void TaskDataUpdater::AbsoluteAxisAlignmentCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
+{
+    ulisse_msgs::msg::TaskStatus aaa = *msg;
+    qDebug() << "task size: " << aaa.external_activation_function.size();
+    qDebug() << "aaa.external_activation_function: " << aaa.external_activation_function;
+    qDebug() << "aaa.id: " << aaa.id.c_str();
+    qDebug() << "aaa.internal_activation_function: " << aaa.internal_activation_function;
+    qDebug() << "aaa.is_active: " << aaa.is_active;
+    qDebug() << "aaa.reference_rate: " << aaa.reference_rate;
+
+
+
+}
+
+void TaskDataUpdater::AbsoluteAxisAlignmentHoldCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
+{
+
+}
+
+void TaskDataUpdater::AbsoluteAxisAlignmentSafetyCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
+{
+
+}
+
+void TaskDataUpdater::AngularPositionCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
+{
+
+}
+
+void TaskDataUpdater::CartesianDistanceCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
+{
+
+}
+
+void TaskDataUpdater::CartesianDistancePathFollowingCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
+{
+
+}
+
+void TaskDataUpdater::LinearHoldCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
+{
+
+}
+
+void TaskDataUpdater::LinearVelocityCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
+{
+
+}
+
+void TaskDataUpdater::SafetyBoundariesCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
+{
+
 }
 
 /*void TaskDataUpdater::TaskDataCB(const ulisse_msgs::msg::FeedbackGui::SharedPtr msg)
@@ -107,7 +157,7 @@ double TaskDataUpdater::get_accept_radius()
 void TaskDataUpdater::process_callbacks_slot()
 {
 
-    rclcpp::spin_some(np_);
+    rclcpp::spin_some(this->get_node_base_interface());
 
     emit callbacks_processed();
 }

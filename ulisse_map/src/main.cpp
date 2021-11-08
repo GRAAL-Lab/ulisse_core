@@ -12,6 +12,7 @@
 
 #include "commandwrapper.hpp"
 #include "feedbackupdater.hpp"
+#include "taskdataupdater.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 #include <QQmlDebuggingEnabler>
@@ -43,9 +44,11 @@ int main(int argc, char* argv[])
     // Making the QML aware of my functions
     auto fbkUpdater = std::make_shared<FeedbackUpdater>();
     auto cmdWrapper = std::make_shared<CommandWrapper>();
+    auto taskDataUpdater = std::make_shared<TaskDataUpdater>();
 
     appEngine.rootContext()->setContextProperty("fbkUpdater", fbkUpdater.get());
     appEngine.rootContext()->setContextProperty("cmdWrapper", cmdWrapper.get());
+    appEngine.rootContext()->setContextProperty("taskdataUpdater", taskDataUpdater.get());
     appEngine.rootContext()->setContextProperty("home_dir", QDir::homePath());
 
     appEngine.load(QUrl(QStringLiteral("qrc:/main.qml")));
@@ -55,8 +58,9 @@ int main(int argc, char* argv[])
       * this has to be done ONLY AFTER -->>> appEngine.load(), otherwise the functions
       * called inside C++ such as ->findChild() will not find anything.
       */
-    fbkUpdater->LoadQmlEngine(&appEngine);
-    cmdWrapper->LoadQmlEngine(&appEngine);
+    fbkUpdater->Init(&appEngine);
+    cmdWrapper->Init(&appEngine);
+    taskDataUpdater->Init(&appEngine);
 
     if (appEngine.rootObjects().isEmpty())
         return -1;

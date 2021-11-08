@@ -136,7 +136,7 @@ public:
     explicit FeedbackUpdater(QObject* parent = nullptr);
     explicit FeedbackUpdater(QQmlApplicationEngine* engine, QObject* parent = nullptr);
     virtual ~FeedbackUpdater();
-    void LoadQmlEngine(QQmlApplicationEngine* engine);
+    void Init(QQmlApplicationEngine* engine);
     bool LoadConfiguration();
     void RegisterPublishersAndSubscribers();
 

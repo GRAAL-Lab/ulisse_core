@@ -62,7 +62,7 @@ VehicleController::VehicleController(int rate, std::string file_name)
     // Robot Model
     robotModel_ = std::make_shared<rml::RobotModel>(world_T_vehicle, ulisse::robotModelID::ASV, J_ASV);
 
-    // ***** SETUP TASKS *****
+    // ***** SETUP TASKS ***** //
 
     // ASV CONTROL VELOCITY LINEAR
     asvLinearVelocity_ = std::make_shared<ikcl::LinearVelocity>(ikcl::LinearVelocity(ulisse::task::asvLinearVelocity, robotModel_, ulisse::robotModelID::ASV));
@@ -97,7 +97,7 @@ VehicleController::VehicleController(int rate, std::string file_name)
     // ASV absolute axis alignment task
     asvAbsoluteAxisAlignment_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asvAbsoluteAxisAlignment, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvAbsoluteAxisAlignment_;
-    taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>("/ulisse/log/task/ASV_Absolute_Axis_Alignment", 1);
+    taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment, 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvAbsoluteAxisAlignment, taskInfo_));
 
     // ASV absolute axis alignment task
@@ -145,9 +145,6 @@ VehicleController::VehicleController(int rate, std::string file_name)
 
     srvGetBoundaries_ = this->create_service<ulisse_msgs::srv::GetBoundaries>(ulisse_msgs::topicnames::get_boundaries_service,
         std::bind(&VehicleController::GetBoundariesHandler, this, _1, _2, _3));
-
-    /*srvCruise_ = this->create_service<ulisse_msgs::srv::SetCruiseControl>(ulisse_msgs::topicnames::set_cruise_control_service,
-        std::bind(&VehicleController::SetCruiseControlHandler, this, _1, _2, _3));*/
 
     srvResetConf_ = this->create_service<ulisse_msgs::srv::ResetConfiguration>(ulisse_msgs::topicnames::reset_kcl_conf_service,
         std::bind(&VehicleController::ResetConfHandler, this, _1, _2, _3));

@@ -25,14 +25,14 @@ CommandWrapper::CommandWrapper(QObject* parent)
 CommandWrapper::CommandWrapper(QQmlApplicationEngine* engine, QObject* parent)
     : QObject(parent), Node("gui_commands_wrapper")
 {
-    LoadQmlEngine(engine);//, np);
+    Init(engine);//, np);
 }
 
 CommandWrapper::~CommandWrapper()
 {
 }
 
-void CommandWrapper::LoadQmlEngine(QQmlApplicationEngine* engine)
+void CommandWrapper::Init(QQmlApplicationEngine* engine)
 {
     appEngine_ = engine;
     checkErrorTimer_.reset(new QTimer());

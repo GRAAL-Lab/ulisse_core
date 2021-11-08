@@ -77,10 +77,14 @@ ApplicationWindow {
         property string savedBoundary: ""
         property bool showCentroid: true
         property bool showStatusOverlay: true
+        //property MapPolygon savedBoundary
 
         Component.onCompleted: {
             futureMapPlugin = mapPluginType
             mapViewLoader.active = true
+
+            /*var polyComponent = Qt.createComponent("MapPolygon.qml")
+            savedBoundary = polyComponent.createObject()*/
         }
     }
 

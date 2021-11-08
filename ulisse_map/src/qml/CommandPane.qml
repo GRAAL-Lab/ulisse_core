@@ -82,7 +82,7 @@ Pane {
                         buttonBoundBoxResend.enabled = true
                         commandParamsStackContainer.pathCommandsPane.check_safety_all()
                         cmdWrapper.sendBoundaries(JSON.stringify(map.polysec_cur.serialize()))
-                        settings.savedBoundary = JSON.stringify(map.polysec_cur.serialize())
+                        //settings.savedBoundary = map.polysec_cur
                     }
 
                     function reset_polysec(){

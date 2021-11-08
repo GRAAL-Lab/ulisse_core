@@ -47,6 +47,9 @@ namespace topicnames {
     const std::string surge_heading = "/ulisse/ctrl/surge_heading";
     const std::string surge_yawrate = "/ulisse/ctrl/surge_yawrate";
 
+    // TASKS
+    const std::string task_absolute_axis_alignment = "/ulisse/log/task/ASV_Absolute_Axis_Alignment";
+
     // SERVICES
     const std::string rosbag_service = "/record_bag";
     const std::string llc_cmd_service = "/ulisse/service/llc_cmd";

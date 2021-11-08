@@ -64,7 +64,7 @@ public:
     explicit CommandWrapper(QObject* parent = nullptr);
     explicit CommandWrapper(QQmlApplicationEngine* engine, QObject* parent = nullptr);//, const rclcpp::Node::SharedPtr& np = nullptr);
     virtual ~CommandWrapper();
-    void LoadQmlEngine(QQmlApplicationEngine* engine);
+    void Init(QQmlApplicationEngine* engine);
     std::future<void> notificator;
 
     Q_INVOKABLE bool sendBoundaries(const QString boundary);
