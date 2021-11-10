@@ -70,7 +70,7 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/LLCPowerButtons.msg"
   "msg/LLCPumps.msg"
   
-  # Other
+  # Control
   "msg/SurgeHeading.msg"
   "msg/SurgeYawRate.msg"
   "msg/NavFilterData.msg"
@@ -78,6 +78,8 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/Curves.msg"
   "msg/Path.msg"
   "msg/Boundaries.msg"
+  "msg/TPIKAction.msg"
+  "msg/TPIKPriorityLevel.msg"
 
   ## Services ##
   "srv/ControlCommand.srv"

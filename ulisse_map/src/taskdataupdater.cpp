@@ -61,12 +61,12 @@ double TaskDataUpdater::RadiansToCompassDegrees(const double angle_rad)
 void TaskDataUpdater::AbsoluteAxisAlignmentCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
 {
     ulisse_msgs::msg::TaskStatus aaa = *msg;
-    qDebug() << "task size: " << aaa.external_activation_function.size();
+   /* qDebug() << "task size: " << aaa.external_activation_function.size();
     qDebug() << "aaa.external_activation_function: " << aaa.external_activation_function;
     qDebug() << "aaa.id: " << aaa.id.c_str();
     qDebug() << "aaa.internal_activation_function: " << aaa.internal_activation_function;
-    qDebug() << "aaa.is_active: " << aaa.is_active;
-    qDebug() << "aaa.reference_rate: " << aaa.reference_rate;
+    qDebug() << "aaa.enabled: " << aaa.enabled;
+    qDebug() << "aaa.reference_rate: " << aaa.reference_rate;*/
 
 
 

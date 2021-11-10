@@ -11,6 +11,8 @@
 #include "ulisse_msgs/msg/vehicle_status.hpp"
 #include "ulisse_msgs/msg/surge_heading.hpp"
 #include "ulisse_msgs/msg/surge_yaw_rate.hpp"
+#include "ulisse_msgs/msg/tpik_action.hpp"
+#include "ulisse_msgs/msg/tpik_priority_level.hpp"
 
 #include "ulisse_msgs/srv/control_command.hpp"
 #include "ulisse_msgs/srv/get_boundaries.hpp"
@@ -47,7 +49,8 @@ class VehicleController : public rclcpp::Node {
     std::unordered_map<std::string, std::shared_ptr<states::GenericState>> statesMap_;
     std::unordered_map<std::string, commands::GenericCommand&> commandsMap_;
 
-    //rclcpp::Node::SharedPtr nh_;
+
+    //ulisse_msgs::msg::TaskStatus taskstatusMsg_;
     std::string fileName_;
     rclcpp::Service<ulisse_msgs::srv::ControlCommand>::SharedPtr srvCommand_;
     rclcpp::Service<ulisse_msgs::srv::SetBoundaries>::SharedPtr srvSetBoundaries_;
@@ -65,6 +68,7 @@ class VehicleController : public rclcpp::Node {
     rclcpp::Publisher<ulisse_msgs::msg::VehicleStatus>::SharedPtr vehicleStatusPub_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr genericLogPub_;
     rclcpp::Publisher<ulisse_msgs::msg::FeedbackGui>::SharedPtr feedbackGuiPub_;
+    rclcpp::Publisher<ulisse_msgs::msg::TPIKAction>::SharedPtr tpikActionPub_;
 
     rclcpp::TimerBase::SharedPtr runTimer_;
     rclcpp::TimerBase::SharedPtr slow_timer_;
@@ -133,6 +137,7 @@ class VehicleController : public rclcpp::Node {
 
     bool LoadConfiguration(std::shared_ptr<KCLConfiguration>& conf);
     void SetUpFSM();
+    bool IsTaskInCurrentAction(const std::string task_id);
 
     void CommandsHandler(const std::shared_ptr<rmw_request_id_t> request_header,
         const std::shared_ptr<ulisse_msgs::srv::ControlCommand::Request> request,
@@ -143,9 +148,6 @@ class VehicleController : public rclcpp::Node {
     void GetBoundariesHandler(const std::shared_ptr<rmw_request_id_t> request_header,
         const std::shared_ptr<ulisse_msgs::srv::GetBoundaries::Request> request,
         std::shared_ptr<ulisse_msgs::srv::GetBoundaries::Response> response);
-    /*void SetCruiseControlHandler(const std::shared_ptr<rmw_request_id_t> request_header,
-        const std::shared_ptr<ulisse_msgs::srv::SetCruiseControl::Request> request,
-        std::shared_ptr<ulisse_msgs::srv::SetCruiseControl::Response> response);*/
     void ResetConfHandler(const std::shared_ptr<rmw_request_id_t> request_header,
         const std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Request> request,
         std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Response> response);
@@ -163,6 +165,7 @@ public:
     virtual ~VehicleController();
     void Run();
     void PublishControl();
+    void PublishTasksInfo();
 };
 }
 #endif // ULISSE_CTRL_VEHICLECONTROLLER_HPP

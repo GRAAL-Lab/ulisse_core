@@ -68,7 +68,7 @@ struct KCLConfiguration {
 
     friend std::ostream& operator<<(std::ostream& os, KCLConfiguration const& a)
     {
-        return os << "======= CONTROLLER CONF =======\n"
+        return os << "======= KCL CONF =======\n"
                   << "ControlLoopPeriod: " << a.controlLoopPeriod << "\n"
                   << "PosAcceptanceRadius: " << a.posAcceptanceRadius << "\n"
                   << "GoToHoldAfterMove: " << a.goToHoldAfterMove << "\n"

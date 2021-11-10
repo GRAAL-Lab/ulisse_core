@@ -48,7 +48,17 @@ namespace topicnames {
     const std::string surge_yawrate = "/ulisse/ctrl/surge_yawrate";
 
     // TASKS
-    const std::string task_absolute_axis_alignment = "/ulisse/log/task/ASV_Absolute_Axis_Alignment";
+    const std::string task_absolute_axis_alignment = "/ulisse/task/ASV_Absolute_Axis_Alignment";
+    const std::string task_linear_velocity = "/ulisse/task/ASV_Linear_Velocity";
+    const std::string task_angular_position = "/ulisse/task/ASV_Angular_Position";
+    const std::string task_cartesian_distance = "/ulisse/task/ASV_Cartesian_Distance";
+    const std::string task_cartesian_distance_path_follow = "/ulisse/task/ASV_Cartesian_Distance_Path_Follow";
+    const std::string task_safety_boundaries = "/ulisse/task/ASV_Safety_Boundaries";
+    const std::string task_absolute_axis_alignment_safety = "/ulisse/task/ASV_Absolute_Axis_Alignment_Safety";
+    const std::string task_absolute_axis_alignment_hold = "/ulisse/task/ASV_Absolute_Axis_Alignment_Hold";
+    const std::string task_linear_velocity_hold = "/ulisse/task/ASV_Linear_Velocity_Hold";
+
+    const std::string tpik_action = "/ulisse/task/tpik_action";
 
     // SERVICES
     const std::string rosbag_service = "/record_bag";
