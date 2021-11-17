@@ -157,7 +157,7 @@ VehicleController::VehicleController(int rate, std::string file_name)
     runTimer_ = this->create_wall_timer(std::chrono::milliseconds(msRunPeriod), std::bind(&VehicleController::Run, this));
 
     // Timer for slow check operations
-    slow_timer_ = this->create_wall_timer(std::chrono::seconds(5), std::bind(&VehicleController::SlowTimerCB, this));
+    slow_timer_ = this->create_wall_timer(std::chrono::seconds(1), std::bind(&VehicleController::SlowTimerCB, this));
 }
 
 VehicleController::~VehicleController() { }
@@ -232,8 +232,6 @@ bool VehicleController::LoadConfiguration(std::shared_ptr<KCLConfiguration>& con
         std::cerr << "Failed to load Priority Levels from file" << std::endl;
         return false;
     };
-
-
 
     if (!ConfigureActionsFromFile(actionManager_, confObj)) {
         std::cerr << "Failed to load  Actions from file" << std::endl;
@@ -507,10 +505,29 @@ void VehicleController::ResetConfHandler(const std::shared_ptr<rmw_request_id_t>
 
 void VehicleController::SlowTimerCB()
 {
-    if (!boundariesSet_) {
+
+    /*if (!boundariesSet_) {
         RCLCPP_INFO(this->get_logger(), "Waiting for the Safety Bounding Box");
     }
-    return;
+    return;*/
+
+    // Publish Hierarchy Info
+    ulisse_msgs::msg::TPIKAction tpikActionMsg_;
+    tpikActionMsg_.id = actionManager_->CurrentActionID();
+    tpik::Hierarchy hierarchy = actionManager_->GetAction(tpikActionMsg_.id)->PriorityLevels();
+
+    for (size_t i=0; i < hierarchy.size(); i++) {
+
+        tpikActionMsg_.priority_levels.push_back(ulisse_msgs::msg::TPIKPriorityLevel());
+        tpikActionMsg_.priority_levels.at(i).id = hierarchy.at(i)->ID();
+        std::vector<std::shared_ptr<tpik::Task>> tasks = hierarchy.at(i)->Level();
+
+        for (size_t j=0; j < tasks.size(); j++) {
+
+            tpikActionMsg_.priority_levels.at(i).tasks_id.push_back(tasks.at(j)->ID());
+        }
+    }
+    tpikActionPub_->publish(tpikActionMsg_);
 }
 
 void VehicleController::SurgeHeadingCB(const ulisse_msgs::msg::SurgeHeading::SharedPtr msg)
@@ -683,23 +700,7 @@ void VehicleController::PublishTasksInfo()
         }
     }
 
-    // Publish Hierarchy Info
-    ulisse_msgs::msg::TPIKAction tpikActionMsg_;
-    tpikActionMsg_.id = actionManager_->CurrentActionID();
-    tpik::Hierarchy hierarchy = actionManager_->GetAction(tpikActionMsg_.id)->PriorityLevels();
 
-    for (size_t i=0; i < hierarchy.size(); i++) {
-
-        tpikActionMsg_.priority_levels.push_back(ulisse_msgs::msg::TPIKPriorityLevel());
-        tpikActionMsg_.priority_levels.at(i).id = hierarchy.at(i)->ID();
-        std::vector<std::shared_ptr<tpik::Task>> tasks = hierarchy.at(i)->Level();
-
-        for (size_t j=0; j < tasks.size(); j++) {
-
-            tpikActionMsg_.priority_levels.at(i).tasks_id.push_back(tasks.at(j)->ID());
-        }
-    }
-    tpikActionPub_->publish(tpikActionMsg_);
 
     // Publish simplified data for the ulisse_map GUI
     ulisse_msgs::msg::FeedbackGui feedbackGuiMsg;

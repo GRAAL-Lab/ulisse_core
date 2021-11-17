@@ -174,7 +174,7 @@ ApplicationWindow {
                 Layout.fillHeight: true
             }
 
-            TasksDataView {
+            ActionView {
                 id: taskDataView
                 Layout.fillWidth: true
                 Layout.fillHeight: true

@@ -54,7 +54,7 @@ ToolBar {
             }
 
             TabButton {
-                text: qsTr("Tasks Data")
+                text: qsTr("Action View")
                 height: headerLayout.height - 3
                 width: headerLayout.width / 4
 

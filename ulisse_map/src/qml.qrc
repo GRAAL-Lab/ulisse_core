@@ -60,8 +60,10 @@
         <file>qml/LabelledField.qml</file>
         <file>images/windarrow.png</file>
         <file>qml/CommandsParamsTabView.qml</file>
-        <file>qml/TasksDataView.qml</file>
+        <file>qml/ActionView.qml</file>
         <file>qml/BottomToolbar.qml</file>
         <file>qml/UtilitiesView.qml</file>
+        <file>qml/TaskData.qml</file>
+        <file>qml/PriorityLevelData.qml</file>
     </qresource>
 </RCC>

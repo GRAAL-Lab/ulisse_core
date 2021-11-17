@@ -6,18 +6,31 @@
 #include <QVector>
 #include <QtGui>
 #include <QtPositioning/QtPositioning>
+#include <QQmlComponent>
+#include <QQuickView>
+#include <QQuickItem>
 
 #include "rclcpp/rclcpp.hpp"
 
 #include "ulisse_msgs/msg/feedback_gui.hpp"
 #include "ulisse_msgs/msg/reference_velocities.hpp"
 #include "ulisse_msgs/msg/task_status.hpp"
+#include "ulisse_msgs/msg/tpik_priority_level.hpp"
+#include "ulisse_msgs/msg/tpik_action.hpp"
 
 class TaskDataUpdater : public QObject, rclcpp::Node {
     Q_OBJECT
     QQmlApplicationEngine* appEngine_;
     QTimer* myTimer_;
-    QObject* goalFlagObj_;
+    QTimer* slowTimer_;
+    QObject* actionViewObj_;
+    QObject* priorityLevelObj_;
+
+    QQmlEngine engine_;
+    QList<QObject*> qtRootOjects_;
+    QVector<QQuickItem*> plViewObject_;
+
+    //QObject *pl_object;
 
 
     /*Q_PROPERTY(QGeoCoordinate ulisse_pos READ get_ulisse_pos NOTIFY callbacks_processed)
@@ -30,6 +43,10 @@ class TaskDataUpdater : public QObject, rclcpp::Node {
 
     int taskDataUpdateInterval_;
 
+    rclcpp::Subscription<ulisse_msgs::msg::TPIKAction>::SharedPtr tpikActionSub_;
+    ulisse_msgs::msg::TPIKAction tpikActionMsg_;
+    std::map<std::string, ulisse_msgs::msg::TaskStatus> tpikTasksData_;
+
     rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr absoluteAxisAlignmentSub_;
     rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr absoluteAxisAlignmentHoldSub_;
     rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr absoluteAxisAlignmentSafetySub_;
@@ -40,6 +57,8 @@ class TaskDataUpdater : public QObject, rclcpp::Node {
     rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr linearVelocitySub_;
     rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr safetyBoundariesSub_;
 
+    void LoadAction();
+    void LoadAction2();
     QVector<double> GenerateRandFloatVector(int size);
 
 public:
@@ -49,6 +68,7 @@ public:
     void Init(QQmlApplicationEngine* engine);
     double RadiansToCompassDegrees(const double angle_rad);
 
+    void TPIKActionCB(const ulisse_msgs::msg::TPIKAction::SharedPtr msg);
     void AbsoluteAxisAlignmentCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
     void AbsoluteAxisAlignmentHoldCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
     void AbsoluteAxisAlignmentSafetyCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
@@ -69,9 +89,11 @@ public:
 
 signals:
     void callbacks_processed();
+    void action_loaded();
 
 public slots:
     void process_callbacks_slot();
+    void load_action_view();
 };
 
 #endif // TASKDATAUPDATER_H
