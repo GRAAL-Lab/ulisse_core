@@ -1,4 +1,5 @@
 #include <QQmlContext>
+#include <QMutex>
 
 #include <ctime>
 #include <iostream>
@@ -26,9 +27,10 @@ TaskDataUpdater::TaskDataUpdater(QQmlApplicationEngine* engine, QObject* parent)
 
 TaskDataUpdater::~TaskDataUpdater()
 {
-    for (QQuickItem* plView : qAsConst(plViewObject_)) {
+    /*for (std::shared_ptr<QQuickItem> plView : plViewObject_) {
         plView->deleteLater();
-    }
+    }*/
+
     myTimer_->deleteLater();
 }
 
@@ -59,12 +61,18 @@ void TaskDataUpdater::Init(QQmlApplicationEngine* engine)
     //custom_qos_profile.durability = RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL;
     // set the depth to the QoS profile
     //custom_qos_profile.depth = 7;
+    tpikActionSub_ = this->create_subscription<ulisse_msgs::msg::TPIKAction>(ulisse_msgs::topicnames::tpik_action, 10,
+        std::bind(&TaskDataUpdater::TPIKActionCB, this, _1) /*custom_qos_profile*/);
+
+
 
     absoluteAxisAlignmentSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment, 10,
         std::bind(&TaskDataUpdater::AbsoluteAxisAlignmentCB, this, _1) /*custom_qos_profile*/);
 
-    tpikActionSub_ = this->create_subscription<ulisse_msgs::msg::TPIKAction>(ulisse_msgs::topicnames::tpik_action, 10,
-        std::bind(&TaskDataUpdater::TPIKActionCB, this, _1) /*custom_qos_profile*/);
+
+    tasksSubscribersMap_.insert({ulisse_msgs::topicnames::task_absolute_axis_alignment, absoluteAxisAlignmentSub_});
+
+
 
     LoadAction();
 }
@@ -87,26 +95,31 @@ void TaskDataUpdater::TPIKActionCB(const ulisse_msgs::msg::TPIKAction::SharedPtr
 
         /// TODO FIX OBJECT DELETION
 
-        /*for (QQuickItem* plView : qAsConst(plViewObject_)) {
-            plView->deleteLater();
-        }*/
-        plViewObject_.clear();
+        /*QMutex deleteMutex;
 
-        LoadAction2();
+        for (QQuickItem* plView : plViewObject_) {
+            deleteMutex.lock();
+            metaObject()->invokeMethod(plView, "deleteLater", Qt::QueuedConnection);
+            deleteMutex.unlock();
+        }*/
+
+
+
+        LoadAction();
     }
 
 }
 
 void TaskDataUpdater::AbsoluteAxisAlignmentCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
 {
-//    ulisse_msgs::msg::TaskStatus aaa = *msg;
+    //    ulisse_msgs::msg::TaskStatus aaa = *msg;
     //qDebug() << "task size: " << aaa.external_activation_function.size();
-//    qDebug() << "aaa.external_activation_function: " << aaa.external_activation_function;
-//    qDebug() << "aaa.id: " << aaa.id.c_str();
-//    qDebug() << "aaa.internal_activation_function: " << aaa.internal_activation_function;
-//    qDebug() << "aaa.enabled: " << aaa.enabled;
-//    //qDebug() << "aaa.in_current_action: " << aaa.in_current_action;
-//    qDebug() << "aaa.reference_rate: " << aaa.reference_rate;
+    //    qDebug() << "aaa.external_activation_function: " << aaa.external_activation_function;
+    //    qDebug() << "aaa.id: " << aaa.id.c_str();
+    //    qDebug() << "aaa.internal_activation_function: " << aaa.internal_activation_function;
+    //    qDebug() << "aaa.enabled: " << aaa.enabled;
+    //    //qDebug() << "aaa.in_current_action: " << aaa.in_current_action;
+    //    qDebug() << "aaa.reference_rate: " << aaa.reference_rate;
 
 
 }
@@ -201,32 +214,36 @@ void TaskDataUpdater::load_action_view()
 
 void TaskDataUpdater::LoadAction()
 {
+    QMetaObject::invokeMethod(actionViewObj_, "clearActionView", Qt::QueuedConnection);
+    //plViewObjects_.clear();
 
     auto actionLabelObj = qtRootOjects_.first()->findChild<QObject*>("actionLabelObj");
-    actionLabelObj->setProperty("text", "Action ID (C++)");
+    actionLabelObj->setProperty("text", QVariant(tpikActionMsg_.id.c_str()));
 
-    QVariant plName1 = QString("Custom PL 1 (C++)");
-    QVariant tasksName1(QStringList({"Task 1 (C++)", "Task 2 (C++)"}));
-    QQmlComponent component1(&engine_, QUrl("qrc:/qml/PriorityLevelData.qml"));
-    plViewObject_.push_back(qobject_cast<QQuickItem*>(component1.create()));
-    QQmlEngine::setObjectOwnership(plViewObject_.last(), QQmlEngine::CppOwnership);
-    plViewObject_.last()->setParentItem(qobject_cast<QQuickItem*>(actionViewObj_));
-    plViewObject_.last()->setParent(qtRootOjects_.first());
-    plViewObject_.last()->setProperty("priorityID", plName1);
-    plViewObject_.last()->setProperty("taskIDs", tasksName1);
+    /*for(int i = 0; i < tpikActionMsg_.priority_levels.size(); i++ ){
+        QMetaObject::invokeMethod(actionViewObj_, "generatePriorityLevel", Qt::QueuedConnection);
+    }*/
 
-    QVariant plName2 = QString("Custom PL 2 (C++)");
-    QVariant tasksName2(QStringList({"Task 3 (C++)", "Task 4 (C++)"}));
-    QQmlComponent component2(&engine_, QUrl("qrc:/qml/PriorityLevelData.qml"));
-    plViewObject_.push_back(qobject_cast<QQuickItem*>(component2.create()));
-    QQmlEngine::setObjectOwnership(plViewObject_.last(), QQmlEngine::CppOwnership);
-    plViewObject_.last()->setParentItem(qobject_cast<QQuickItem*>(actionViewObj_));
-    plViewObject_.last()->setParent(qtRootOjects_.first());
-    plViewObject_.last()->setProperty("priorityID", plName2);
-    plViewObject_.last()->setProperty("taskIDs", tasksName2);
+    //auto plViewTempObjects_ = qtRootOjects_.first()->findChildren<QObject*>("actionColumnViewObj", Qt::FindDirectChildrenOnly);
 
+    //for(int i = 0; i < plViewTempObjects_.size(); i++ ){
+    //    qDebug() << "Found PL " << plViewTempObjects_.at(i)->objectName();
+    //}
 
-    qDebug() << "LoadAction() completed.";
+    /*for(int i = 0; i < tpikActionMsg_.priority_levels.size(); i++ ){
+        QVariant plName = QString(tpikActionMsg_.priority_levels.at(i).id.c_str());
+        QStringList taskIDs;
+        for (const auto &taskID : tpikActionMsg_.priority_levels.at(i).tasks_id) {
+            taskIDs << taskID.c_str();
+        }
+        QVariant tasksName(taskIDs);
+
+        plViewObjects_.push_back(plViewTempObjects_.at(i));
+
+        //plViewObjects_.at(i)->setParent(qtRootOjects_.first());
+        plViewObjects_.at(i)->setProperty("priorityID", plName);
+        plViewObjects_.at(i)->setProperty("taskIDs", tasksName);
+    }*/
 }
 
 void TaskDataUpdater::LoadAction2()
@@ -234,22 +251,22 @@ void TaskDataUpdater::LoadAction2()
     auto actionLabelObj = qtRootOjects_.first()->findChild<QObject*>("actionLabelObj");
     actionLabelObj->setProperty("text", QVariant(tpikActionMsg_.id.c_str()));
 
-    for( ulisse_msgs::msg::TPIKPriorityLevel pl : tpikActionMsg_.priority_levels ){
+    for( const ulisse_msgs::msg::TPIKPriorityLevel &pl : tpikActionMsg_.priority_levels ){
 
         QVariant plName = QString(pl.id.c_str());
         QStringList taskIDs;
-        for (auto taskID : pl.tasks_id) {
+        for (const auto &taskID : pl.tasks_id) {
             taskIDs << taskID.c_str();
         }
         QVariant tasksName(taskIDs);
 
         QQmlComponent component1(&engine_, QUrl("qrc:/qml/PriorityLevelData.qml"));
-        plViewObject_.push_back(qobject_cast<QQuickItem*>(component1.create()));
-        QQmlEngine::setObjectOwnership(plViewObject_.last(), QQmlEngine::CppOwnership);
-        plViewObject_.last()->setParentItem(qobject_cast<QQuickItem*>(actionViewObj_));
-        plViewObject_.last()->setParent(qtRootOjects_.first());
-        plViewObject_.last()->setProperty("priorityID", plName);
-        plViewObject_.last()->setProperty("taskIDs", tasksName);
+        plViewQuickItems_.push_back(qobject_cast<QQuickItem*>(component1.create()));
+        QQmlEngine::setObjectOwnership(plViewQuickItems_.back(), QQmlEngine::CppOwnership);
+        plViewQuickItems_.back()->setParentItem(qobject_cast<QQuickItem*>(actionViewObj_));
+        plViewQuickItems_.back()->setParent(qtRootOjects_.first());
+        plViewQuickItems_.back()->setProperty("priorityID", plName);
+        plViewQuickItems_.back()->setProperty("taskIDs", tasksName);
     }
 }
 

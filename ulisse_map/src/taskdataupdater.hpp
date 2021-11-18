@@ -28,7 +28,8 @@ class TaskDataUpdater : public QObject, rclcpp::Node {
 
     QQmlEngine engine_;
     QList<QObject*> qtRootOjects_;
-    QVector<QQuickItem*> plViewObject_;
+    std::vector<QQuickItem*> plViewQuickItems_;
+    std::vector<QObject*> plViewObjects_;
 
     //QObject *pl_object;
 
@@ -41,11 +42,13 @@ class TaskDataUpdater : public QObject, rclcpp::Node {
 
     Q_PROPERTY(double accept_radius READ get_accept_radius NOTIFY callbacks_processed)*/
 
-    int taskDataUpdateInterval_;
+        int taskDataUpdateInterval_;
 
     rclcpp::Subscription<ulisse_msgs::msg::TPIKAction>::SharedPtr tpikActionSub_;
     ulisse_msgs::msg::TPIKAction tpikActionMsg_;
     std::map<std::string, ulisse_msgs::msg::TaskStatus> tpikTasksData_;
+
+    std::map<std::string, rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr> tasksSubscribersMap_;
 
     rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr absoluteAxisAlignmentSub_;
     rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr absoluteAxisAlignmentHoldSub_;

@@ -19,9 +19,6 @@ Rectangle {
         anchors.fill: parent
         anchors.margins: 20
 
-
-
-
         ColumnLayout {
             id: actionColumnView
             spacing: 25
@@ -33,11 +30,40 @@ Rectangle {
                 font.weight: Font.DemiBold
                 color: darkgrey
                 text: "Action ID"
-                Layout.preferredWidth: 100
+                width: parent.width
+                height: 100
             }
 
 
+            function generatePriorityLevel(){
+
+                var component = Qt.createComponent("PriorityLevelData.qml")
+                var componentObject
+
+                function finishCreation() {
+                    componentObject = component.createObject( actionColumnView);
+                }
+
+                if (component.status === Component.Ready) {
+                    finishCreation()
+                } else {
+                    component.statusChanged.connect( finishCreation );
+                }
+
+                console.log("createPriorityLevel");
+                return "PL View Created"
+            }
+
+
+            function clearActionView(){
+                for(var i = 1; i < actionColumnView.children.length ; i++) {
+                    console.log("ActionView destroying: " + (i).toString())
+                    actionColumnView.children[i].destroy()
+                }
+            }
         }
+
+
 
         /*function generatePriorityLevel(plName, tasksName){
 
