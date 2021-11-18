@@ -64,15 +64,10 @@ void TaskDataUpdater::Init(QQmlApplicationEngine* engine)
     tpikActionSub_ = this->create_subscription<ulisse_msgs::msg::TPIKAction>(ulisse_msgs::topicnames::tpik_action, 10,
         std::bind(&TaskDataUpdater::TPIKActionCB, this, _1) /*custom_qos_profile*/);
 
-
-
     absoluteAxisAlignmentSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment, 10,
         std::bind(&TaskDataUpdater::AbsoluteAxisAlignmentCB, this, _1) /*custom_qos_profile*/);
 
-
     tasksSubscribersMap_.insert({ulisse_msgs::topicnames::task_absolute_axis_alignment, absoluteAxisAlignmentSub_});
-
-
 
     LoadAction();
 }
@@ -112,6 +107,7 @@ void TaskDataUpdater::TPIKActionCB(const ulisse_msgs::msg::TPIKAction::SharedPtr
 
 void TaskDataUpdater::AbsoluteAxisAlignmentCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
 {
+    (void)msg;
     //    ulisse_msgs::msg::TaskStatus aaa = *msg;
     //qDebug() << "task size: " << aaa.external_activation_function.size();
     //    qDebug() << "aaa.external_activation_function: " << aaa.external_activation_function;
@@ -126,42 +122,42 @@ void TaskDataUpdater::AbsoluteAxisAlignmentCB(const ulisse_msgs::msg::TaskStatus
 
 void TaskDataUpdater::AbsoluteAxisAlignmentHoldCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
 {
-
+    (void)msg;
 }
 
 void TaskDataUpdater::AbsoluteAxisAlignmentSafetyCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
 {
-
+    (void)msg;
 }
 
 void TaskDataUpdater::AngularPositionCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
 {
-
+    (void)msg;
 }
 
 void TaskDataUpdater::CartesianDistanceCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
 {
-
+    (void)msg;
 }
 
 void TaskDataUpdater::CartesianDistancePathFollowingCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
 {
-
+    (void)msg;
 }
 
 void TaskDataUpdater::LinearHoldCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
 {
-
+    (void)msg;
 }
 
 void TaskDataUpdater::LinearVelocityCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
 {
-
+    (void)msg;
 }
 
 void TaskDataUpdater::SafetyBoundariesCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
 {
-
+    (void)msg;
 }
 
 
@@ -214,21 +210,30 @@ void TaskDataUpdater::load_action_view()
 
 void TaskDataUpdater::LoadAction()
 {
-    QMetaObject::invokeMethod(actionViewObj_, "clearActionView", Qt::QueuedConnection);
+    //QMetaObject::invokeMethod(actionViewObj_, "clearActionView", Qt::QueuedConnection);
     //plViewObjects_.clear();
 
     auto actionLabelObj = qtRootOjects_.first()->findChild<QObject*>("actionLabelObj");
     actionLabelObj->setProperty("text", QVariant(tpikActionMsg_.id.c_str()));
 
-    /*for(int i = 0; i < tpikActionMsg_.priority_levels.size(); i++ ){
-        QMetaObject::invokeMethod(actionViewObj_, "generatePriorityLevel", Qt::QueuedConnection);
-    }*/
-
-    //auto plViewTempObjects_ = qtRootOjects_.first()->findChildren<QObject*>("actionColumnViewObj", Qt::FindDirectChildrenOnly);
-
-    //for(int i = 0; i < plViewTempObjects_.size(); i++ ){
-    //    qDebug() << "Found PL " << plViewTempObjects_.at(i)->objectName();
+    //qtRootOjects_ = appEngine_->rootObjects();
+    //actionViewObj_ = qtRootOjects_.first()->findChild<QObject*>("actionColumnViewObj");
+    //if (!actionViewObj_) {
+    //    qDebug() << "actionColumnViewObj Object NOT found!";
     //}
+
+    for(size_t i = 0; i < tpikActionMsg_.priority_levels.size(); i++ ){
+        QMetaObject::invokeMethod(actionViewObj_, "generatePriorityLevel", Qt::QueuedConnection);
+    }
+
+    //qtRootOjects_ = appEngine_->rootObjects();
+    QList<QObject*> plViewTempObjects_ = actionViewObj_->findChildren<QObject*>();
+
+    qDebug() << "plViewTempObjects: " << plViewTempObjects_.size();
+
+    for(int i = 0; i < plViewTempObjects_.size(); i++ ){
+        qDebug() << "Found PL " << plViewTempObjects_.at(i)->objectName();
+    }
 
     /*for(int i = 0; i < tpikActionMsg_.priority_levels.size(); i++ ){
         QVariant plName = QString(tpikActionMsg_.priority_levels.at(i).id.c_str());
@@ -267,6 +272,15 @@ void TaskDataUpdater::LoadAction2()
         plViewQuickItems_.back()->setParent(qtRootOjects_.first());
         plViewQuickItems_.back()->setProperty("priorityID", plName);
         plViewQuickItems_.back()->setProperty("taskIDs", tasksName);
+    }
+
+    qtRootOjects_ = appEngine_->rootObjects();
+    QList<QObject*> plViewTempObjects_ = qtRootOjects_.first()->findChildren<QObject*>("actionColumnViewObj");
+
+    qDebug() << "plViewTempObjects: " << plViewTempObjects_.size();
+
+    for(int i = 0; i < plViewTempObjects_.size(); i++ ){
+        qDebug() << "Found PL " << plViewTempObjects_.at(i)->objectName();
     }
 }
 

@@ -8,6 +8,8 @@ import "."
 
 Item {
 
+    objectName: "taskDataObj"
+
     Layout.preferredHeight: taskDataColumn.implicitHeight
     Layout.fillWidth: true
     property var labelsize: 12

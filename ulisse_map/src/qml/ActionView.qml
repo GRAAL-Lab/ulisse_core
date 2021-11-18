@@ -41,7 +41,7 @@ Rectangle {
                 var componentObject
 
                 function finishCreation() {
-                    componentObject = component.createObject( actionColumnView);
+                    componentObject = component.createObject(actionColumnView);
                 }
 
                 if (component.status === Component.Ready) {

@@ -13,6 +13,7 @@ RowLayout {
     property var taskIDs: ["Task_1", "Task_2"]
 
     id: priorityLevelData
+    objectName: "priorityLevelDataObj"
 
     spacing: 15
 
