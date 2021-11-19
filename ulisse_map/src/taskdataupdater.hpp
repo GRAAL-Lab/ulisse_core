@@ -23,13 +23,18 @@ class TaskDataUpdater : public QObject, rclcpp::Node {
     QQmlApplicationEngine* appEngine_;
     QTimer* myTimer_;
     QTimer* slowTimer_;
-    QObject* actionViewObj_;
+    QObject* actionLabelObj_;
+    QObject* actionColumnViewObj_;
     QObject* priorityLevelObj_;
 
     QQmlEngine engine_;
     QList<QObject*> qtRootOjects_;
-    std::vector<QQuickItem*> plViewQuickItems_;
-    std::vector<QObject*> plViewObjects_;
+    QList<QObject*> tasksColumnListObj_;
+    QList<QQuickItem*> plViewQuickItems_;
+    std::map<std::string, QList<QQuickItem*>> tasksItemsMap_;
+    //QList<QObject*> plViewObjects_;
+
+    std::atomic<bool> newIncomingAction_, actionLoaded_;
 
     //QObject *pl_object;
 
@@ -69,7 +74,6 @@ public:
     explicit TaskDataUpdater(QQmlApplicationEngine* engine, QObject* parent = nullptr);
     virtual ~TaskDataUpdater();
     void Init(QQmlApplicationEngine* engine);
-    double RadiansToCompassDegrees(const double angle_rad);
 
     void TPIKActionCB(const ulisse_msgs::msg::TPIKAction::SharedPtr msg);
     void AbsoluteAxisAlignmentCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
@@ -96,7 +100,7 @@ signals:
 
 public slots:
     void process_callbacks_slot();
-    void load_action_view();
+    void update_action_view();
 };
 
 #endif // TASKDATAUPDATER_H

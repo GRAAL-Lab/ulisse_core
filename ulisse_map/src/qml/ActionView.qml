@@ -9,8 +9,6 @@ import "."
 Rectangle {
 
     id: actionView
-    objectName: "actionViewObj"
-
     property var titlesize: 15
     property var labelsize: 13
     color: Material.background
@@ -20,9 +18,6 @@ Rectangle {
         anchors.margins: 20
 
         ColumnLayout {
-            id: actionColumnView
-            spacing: 25
-            objectName: "actionColumnViewObj"
 
             Label {
                 objectName: "actionLabelObj"
@@ -34,35 +29,40 @@ Rectangle {
                 height: 100
             }
 
+            ColumnLayout {
+                id: actionColumnView
+                spacing: 25
+                objectName: "actionColumnViewObj"
 
-            function generatePriorityLevel(){
 
-                var component = Qt.createComponent("PriorityLevelData.qml")
-                var componentObject
+                function generatePriorityLevel(){
 
-                function finishCreation() {
-                    componentObject = component.createObject(actionColumnView);
+                    var component = Qt.createComponent("PriorityLevelData.qml")
+                    var componentObject
+
+                    function finishCreation() {
+                        componentObject = component.createObject(actionColumnView);
+                    }
+
+                    if (component.status === Component.Ready) {
+                        finishCreation()
+                    } else {
+                        component.statusChanged.connect( finishCreation );
+                    }
+
+                    console.log("createPriorityLevel");
+                    return "PL View Created"
                 }
 
-                if (component.status === Component.Ready) {
-                    finishCreation()
-                } else {
-                    component.statusChanged.connect( finishCreation );
-                }
 
-                console.log("createPriorityLevel");
-                return "PL View Created"
-            }
-
-
-            function clearActionView(){
-                for(var i = 1; i < actionColumnView.children.length ; i++) {
-                    console.log("ActionView destroying: " + (i).toString())
-                    actionColumnView.children[i].destroy()
-                }
+                /*function clearActionView(){
+                    for(var i = 1; i < actionColumnView.children.length ; i++) {
+                        console.log("ActionView destroying: " + (i).toString())
+                        actionColumnView.children[i].destroy()
+                    }
+                }*/
             }
         }
-
 
 
         /*function generatePriorityLevel(plName, tasksName){
