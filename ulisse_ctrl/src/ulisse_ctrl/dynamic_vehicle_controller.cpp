@@ -210,8 +210,8 @@ void DynamicVehicleController::Run()
 
             Eigen::Vector3d tauDrag = ulisseModel.ComputeCoriolisAndDragForces(feedbackVel);
             
-            std::cerr << "tau PID:  F = " << tau[0] << " | N = " << tau[1] << std::endl;
-            std::cerr << "tau CT :  F = " << tauDrag[0] << " | N = " << tauDrag[2] << std::endl;
+            //std::cerr << "tau PID:  F = " << tau[0] << " | N = " << tau[1] << std::endl;
+            //std::cerr << "tau CT :  F = " << tauDrag[0] << " | N = " << tauDrag[2] << std::endl;
 
             tau += Eigen::Vector2d(tauDrag[0], tauDrag[2]);
             double outLeft, outRight;
