@@ -60,6 +60,9 @@ VehicleSimulator::VehicleSimulator(const rclcpp::Node::SharedPtr& nh)
     worldF_waterVelocity_(0) = 0.0;
     worldF_waterVelocity_(1) = 0.0;
 
+    n_p_ = 0;
+    n_s_ = 0;
+
     bodyF_projection_.setZero(6, 6);
 }
 
@@ -147,7 +150,7 @@ void VehicleSimulator::ExecuteStep()
 void VehicleSimulator::SimulateActuation()
 {
     // Computing vehicle acceleration
-    ulisseModel.DirectDynamics(hp_, hs_, bodyF_relativeVelocity_, bodyF_relativeAcceleration_);
+    ulisseModel.DirectDynamics(hp_, hs_, n_p_, n_s_, bodyF_relativeVelocity_, bodyF_relativeAcceleration_);
 
     //Compute the worldF_R_bodyF
     Eigen::RotationMatrix Rz, Ry, Rx;
@@ -354,6 +357,8 @@ void VehicleSimulator::SimulateSensors()
     groundTruthMsg_.gyro_bias[0] = bx;
     groundTruthMsg_.gyro_bias[1] = by;
     groundTruthMsg_.gyro_bias[2] = bz;
+    //groundTruthMsg_.n_p = n_p_;
+    //groundTruthMsg_.n_s = n_s_;
 
     //motor ref
     appliedMotorRefMsg_.left_percentage = hp_;
@@ -361,8 +366,8 @@ void VehicleSimulator::SimulateSensors()
     
     motorsDataMsg_.stamp.sec = now_stamp_secs;
     motorsDataMsg_.stamp.nanosec = now_stamp_nanosecs;
-    motorsDataMsg_.left.motor_speed = ulisseModel.PercentageToRPM(hp_);
-    motorsDataMsg_.right.motor_speed = ulisseModel.PercentageToRPM(hs_);
+    motorsDataMsg_.left.motor_speed = n_p_; //ulisseModel.PercentageToRPM(hp_);
+    motorsDataMsg_.right.motor_speed = n_s_; //ulisseModel.PercentageToRPM(hs_);
 }
 
 void VehicleSimulator::PublishSensors()

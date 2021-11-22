@@ -120,13 +120,27 @@ struct SimulatorConfiguration {
         std::default_random_engine generator(seed);
         std::uniform_real_distribution<double> distribution(1.0 - modelErrorPercentage / 100, 1 + modelErrorPercentage / 100);
 
-        modelParams.Inertia *= distribution(generator);
-        modelParams.cN *= distribution(generator);
-        modelParams.cX *= distribution(generator);
+        modelParams.Inertia(0,0) *= distribution(generator);
+        modelParams.Inertia(1,1) *= distribution(generator);
+        modelParams.Inertia(2,2) *= distribution(generator);
+        modelParams.cN[0] *= distribution(generator);
+        modelParams.cN[1] *= distribution(generator);
+        modelParams.cN[2] *= distribution(generator);
+        modelParams.cNneg[0] *= distribution(generator);
+        modelParams.cNneg[1] *= distribution(generator);
+        modelParams.cNneg[2] *= distribution(generator);
+        modelParams.cX[0] *= distribution(generator);
+        modelParams.cX[1] *= distribution(generator);
+        modelParams.cX[2] *= distribution(generator);
+        modelParams.cY[0] *= distribution(generator);
+        modelParams.cY[1] *= distribution(generator);
+        modelParams.cY[2] *= distribution(generator);
         modelParams.b1_pos *= distribution(generator);
         modelParams.b2_pos *= distribution(generator);
         modelParams.b1_neg *= distribution(generator);
         modelParams.b1_neg *= distribution(generator);
+        modelParams.k_pos *= distribution(generator);
+        modelParams.k_neg *= distribution(generator);
 
         const libconfig::Setting& root = confObj.getRoot();
         const libconfig::Setting& sensorsnoise = root["sensorsNoise"];
@@ -178,6 +192,8 @@ class VehicleSimulator {
     Eigen::Vector3d bodyF_wFk_;
 
     double vehicleTrack_, vehicleSpeed_;
+
+    double n_p_, n_s_;
 
     uint32_t timestamp_count_; // [200Hz counter]
     uint32_t stepssincepps_count_;

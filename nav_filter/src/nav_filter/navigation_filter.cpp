@@ -365,6 +365,8 @@ namespace nav {
         filterData_.gyro_bias[0] = state_[14];
         filterData_.gyro_bias[1] = state_[15];
         filterData_.gyro_bias[2] = state_[16];
+        filterData_.n_p = state_[17];
+        filterData_.n_s = state_[18];
 
         std::vector<double> P;
         for (unsigned int i = 0; i < extendedKalmanFilter_->PropagationError().rows(); i++) {

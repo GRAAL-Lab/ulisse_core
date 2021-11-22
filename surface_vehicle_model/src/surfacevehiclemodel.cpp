@@ -53,7 +53,7 @@ double SurfaceVehicleModel::RPMToPercentage(double rpm)
     return h;
 }
 
-void SurfaceVehicleModel::DirectDynamics(double h_p, double h_s, const Eigen::Vector6d& linAngVel, Eigen::Vector6d& linAngAcc)
+void SurfaceVehicleModel::DirectDynamics(double h_p, double h_s, double& n_p, double& n_s, const Eigen::Vector6d& linAngVel, Eigen::Vector6d& linAngAcc)
 {
     Eigen::Vector3d nir, tauStar;
     nir.setZero();
@@ -68,16 +68,25 @@ void SurfaceVehicleModel::DirectDynamics(double h_p, double h_s, const Eigen::Ve
     double motorlinearXVel_p = linAngVel(0) + linAngVel(5) * params.d;
     double motorlinearXVel_s = linAngVel(0) - linAngVel(5) * params.d;
 
-    double n_p = PercentageToRPM(h_p);
-    double n_s = PercentageToRPM(h_s);
+    //double n_p = PercentageToRPM(h_p);
+    //double n_s = PercentageToRPM(h_s);
+
+    // thruster dynamics
+    double rpm_gain_p = (n_p < 0) ? params.rpmDynNegPerc : params.rpmDynPosPerc;
+    double rpm_gain_s = (n_s < 0) ? params.rpmDynNegPerc : params.rpmDynPosPerc;
+    n_p = params.rpmDynState * n_p + rpm_gain_p * h_p;
+    n_s = params.rpmDynState * n_s + rpm_gain_s * h_s;
 
     double thrust_force_p = GetThrusterForce(n_p, motorlinearXVel_p);
     double thrust_force_s = GetThrusterForce(n_s, motorlinearXVel_s);
 
+    double k_p = (n_p >= 0) ? params.k_pos : params.k_neg;
+    double k_s = (n_s >= 0) ? params.k_pos : params.k_neg;
+
     Eigen::Vector3d tauC;
     tauC(0) = thrust_force_p + thrust_force_s;
-    tauC(1) = 0.0;
-    tauC(2) = (thrust_force_p - thrust_force_s) * params.d;
+    tauC(1) = k_p * thrust_force_p + k_s * thrust_force_s;
+    tauC(2) = (params.d + params.l * k_p) * thrust_force_p + (-params.d + params.l * k_s) * thrust_force_s;
 
     rml::RegularizationData regData;
     regData.params.lambda = 0.001;
@@ -128,11 +137,40 @@ Eigen::Vector2d SurfaceVehicleModel::ThusterAllocation(Eigen::Vector2d& tau)
 {
     double forceP;
     double forceS;
+    double k_p;
+    double k_s;
 
-    forceP = 0.5 * (tau[0] + tau[1] / params.d);
-    forceS = 0.5 * (tau[0] - tau[1] / params.d);
+    k_p = params.k_pos;
+    k_s = params.k_pos;
+    forceP = ((params.d - k_s * params.l) * tau[0] + tau[1]) / (2 * params.d + k_p * params.l - k_s * params.l);
+    forceS = ((params.d + k_p * params.l) * tau[0] - tau[1]) / (2 * params.d + k_p * params.l - k_s * params.l);
+    if (forceP >= 0 && forceS >= 0)
+        return { forceP, forceS };
 
-    return { forceP, forceS };
+    k_p = params.k_pos;
+    k_s = params.k_neg;
+    forceP = ((params.d - k_s * params.l) * tau[0] + tau[1]) / (2 * params.d + k_p * params.l - k_s * params.l);
+    forceS = ((params.d + k_p * params.l) * tau[0] - tau[1]) / (2 * params.d + k_p * params.l - k_s * params.l);
+    if (forceP >= 0 && forceS <= 0)
+        return { forceP, forceS };
+
+    k_p = params.k_neg;
+    k_s = params.k_neg;
+    forceP = ((params.d - k_s * params.l) * tau[0] + tau[1]) / (2 * params.d + k_p * params.l - k_s * params.l);
+    forceS = ((params.d + k_p * params.l) * tau[0] - tau[1]) / (2 * params.d + k_p * params.l - k_s * params.l);
+    if (forceP <= 0 && forceS <= 0)
+        return { forceP, forceS };
+
+    k_p = params.k_neg;
+    k_s = params.k_pos;
+    forceP = ((params.d - k_s * params.l) * tau[0] + tau[1]) / (2 * params.d + k_p * params.l - k_s * params.l);
+    forceS = ((params.d + k_p * params.l) * tau[0] - tau[1]) / (2 * params.d + k_p * params.l - k_s * params.l);
+    if (forceP <= 0 && forceS >= 0)
+        return { forceP, forceS };
+
+    return {0, 0};
+    //forceP = 0.5 * (tau[0] + tau[1] / params.d);
+    //forceS = 0.5 * (tau[0] - tau[1] / params.d);
 }
 
 void SurfaceVehicleModel::InverseMotorsEquations(const Eigen::Vector6d& linAngVel, Eigen::Vector2d thrust_force, double& h_p, double& h_s)
