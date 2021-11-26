@@ -63,8 +63,8 @@ class DynamicVehicleController : public rclcpp::Node {
     ulisse_msgs::msg::SimulatedVelocitySensor simulatedVelocitySensor;
 
     //feedback from nav filter
-    double surgeFbk = 0.0;
-    double yawRateFbk = 0.0;
+    //double surgeFbk = 0.0;
+    //double yawRateFbk = 0.0;
 
     double motorLeft = 0.0, motorRight = 0.0;
 

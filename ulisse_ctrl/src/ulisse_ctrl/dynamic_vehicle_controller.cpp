@@ -116,9 +116,9 @@ void DynamicVehicleController::Run()
     Eigen::Rotation2D<double> wRb = Eigen::Rotation2D<double>(filterData.bodyframe_angular_position.yaw);
     Eigen::Vector2d water_current_b = wRb.inverse() * Eigen::Vector2d(filterData.inertialframe_water_current.data());
 
-    surgeFbk = filterData.bodyframe_linear_velocity[0] + water_current_b[0];   // ?! è la velocità relativa all'acqua?
-
-    yawRateFbk = filterData.bodyframe_angular_velocity[2];
+    double absSurgeFbk = filterData.bodyframe_linear_velocity[0] + water_current_b[0];   // ?! è la velocità relativa all'acqua?
+    double relSurgeFbk = filterData.bodyframe_linear_velocity[0];
+    double yawRateFbk = filterData.bodyframe_angular_velocity[2];
 
     if (vehicleStatus.vehicle_state != ulisse::states::ID::halt) {
         //ThrusterMapping mode
@@ -127,7 +127,7 @@ void DynamicVehicleController::Run()
             Eigen::Vector6d requestedVel;
             requestedVel.setZero();
 
-            requestedVel(0) = pidSurgeTM.Compute(referenceVelocities.desired_surge, surgeFbk);
+            requestedVel(0) = pidSurgeTM.Compute(referenceVelocities.desired_surge, absSurgeFbk);
             requestedVel(5) = referenceVelocities.desired_yaw_rate;
 
             Eigen::Vector3d tauDrag = ulisseModel.ComputeCoriolisAndDragForces(requestedVel);
@@ -149,7 +149,7 @@ void DynamicVehicleController::Run()
             thrusterMappingMsg.stamp.nanosec = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
 
             thrusterMappingMsg.desired_surge = referenceVelocities.desired_surge;
-            thrusterMappingMsg.feedback_surge = surgeFbk;
+            thrusterMappingMsg.feedback_surge = absSurgeFbk;
             thrusterMappingMsg.out_pid_surge = pidSurgeTM.GetOutput();
             thrusterMappingMsg.desired_yaw_rate = referenceVelocities.desired_yaw_rate;
             thrusterMappingMsg.feedback_yaw_rate = yawRateFbk;
@@ -166,9 +166,9 @@ void DynamicVehicleController::Run()
             //Dynamic Pids
             Eigen::Vector6d feedbackVel = Eigen::Vector6d::Zero();
 
-            tau = { pidSurgeCP.Compute(referenceVelocities.desired_surge, surgeFbk), pidYawRateCP.Compute(referenceVelocities.desired_yaw_rate, yawRateFbk) };
+            tau = { pidSurgeCP.Compute(referenceVelocities.desired_surge, absSurgeFbk), pidYawRateCP.Compute(referenceVelocities.desired_yaw_rate, yawRateFbk) };
 
-            feedbackVel(0) = surgeFbk;
+            feedbackVel(0) = absSurgeFbk;
             feedbackVel(5) = yawRateFbk;
             double outleft, outright;
 
@@ -182,7 +182,7 @@ void DynamicVehicleController::Run()
             classicPidControlMsg.stamp.sec = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
             classicPidControlMsg.stamp.nanosec = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
             classicPidControlMsg.desired_surge = referenceVelocities.desired_surge;
-            classicPidControlMsg.feedback_surge = surgeFbk;
+            classicPidControlMsg.feedback_surge = absSurgeFbk;
             classicPidControlMsg.out_pid_surge = pidSurgeCP.GetOutput();
             classicPidControlMsg.desired_yaw_rate = referenceVelocities.desired_yaw_rate;
             classicPidControlMsg.feedback_yaw_rate = yawRateFbk;
@@ -200,16 +200,18 @@ void DynamicVehicleController::Run()
 
         } else if (dcl_conf->ctrlMode == ControlMode::ComputedTorque) {
 
-            //Dynamic Pids
+
+            tau = { pidSurgeCT.Compute(referenceVelocities.desired_surge, absSurgeFbk), pidYawRateCT.Compute(referenceVelocities.desired_yaw_rate, yawRateFbk) };
+
+            // using relative surge velocity for the feedforward term
             Eigen::Vector6d feedbackVel = Eigen::Vector6d::Zero();
-            feedbackVel(0) = surgeFbk;
+            feedbackVel(0) = relSurgeFbk;
             feedbackVel(5) = yawRateFbk;
 
-            tau = { pidSurgeCT.Compute(referenceVelocities.desired_surge, surgeFbk), pidYawRateCT.Compute(referenceVelocities.desired_yaw_rate, yawRateFbk) };
-
-            // PRINT TAU
-
             Eigen::Vector3d tauDrag = ulisseModel.ComputeCoriolisAndDragForces(feedbackVel);
+            
+            //std::cerr << "tau PID:  F = " << tau[0] << " | N = " << tau[1] << std::endl;
+            //std::cerr << "tau CT :  F = " << tauDrag[0] << " | N = " << tauDrag[2] << std::endl;
 
             tau += Eigen::Vector2d(tauDrag[0], tauDrag[2]);
             double outLeft, outRight;
@@ -225,7 +227,7 @@ void DynamicVehicleController::Run()
             computedTorqueMsg.stamp.sec = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
             computedTorqueMsg.stamp.nanosec = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
             computedTorqueMsg.desired_surge = referenceVelocities.desired_surge;
-            computedTorqueMsg.feedback_surge = surgeFbk;
+            computedTorqueMsg.feedback_surge = absSurgeFbk;
             computedTorqueMsg.out_pid_surge = pidSurgeCP.GetOutput();
             computedTorqueMsg.desired_yaw_rate = referenceVelocities.desired_yaw_rate;
             computedTorqueMsg.feedback_yaw_rate = yawRateFbk;
