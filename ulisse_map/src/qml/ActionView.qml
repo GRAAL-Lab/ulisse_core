@@ -27,6 +27,7 @@ Rectangle {
                 text: "Action ID"
                 width: parent.width
                 height: 100
+                Layout.bottomMargin: 20
             }
 
             ColumnLayout {
@@ -35,7 +36,7 @@ Rectangle {
                 objectName: "actionColumnViewObj"
 
 
-                function generatePriorityLevel(){
+                /*function generatePriorityLevel(){
 
                     var component = Qt.createComponent("PriorityLevelData.qml")
                     var componentObject
@@ -52,7 +53,7 @@ Rectangle {
 
                     console.log("createPriorityLevel");
                     return "PL View Created"
-                }
+                }*/
 
 
                 /*function clearActionView(){
@@ -64,26 +65,6 @@ Rectangle {
             }
         }
 
-
-        /*function generatePriorityLevel(plName, tasksName){
-
-        var component = Qt.createComponent("PriorityLevelData.qml")
-        var componentObject
-
-        function finishCreation() {
-            componentObject = component.createObject( taskColumnView, {priorityID: plName, tasks: tasksName} );
-        }
-
-        if (component.status === Component.Ready) {
-            finishCreation()
-        } else {
-            component.statusChanged.connect( finishCreation );
-        }
-
-        console.log("createPriorityLevel: ".concat(plName));
-        return "PL View Created"
-    }
-*/
     }
 
 }

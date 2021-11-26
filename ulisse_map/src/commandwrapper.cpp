@@ -67,11 +67,6 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
         qDebug("No 'goalDistance' found!");
     }
 
-    /*cruiseSpeedObj_ = root_objects.first()->findChild<QObject*>("cruiseSpeed");
-    if (!cruiseSpeedObj_) {
-        qDebug("No 'cruiseSpeed' found!");
-    }*/
-
     cmdTimeoutObj_ = root_objects.first()->findChild<QObject*>("shTimeout");
     if (!cmdTimeoutObj_) {
         qDebug("No 'speedHeadTimeout' found!");

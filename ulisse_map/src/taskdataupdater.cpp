@@ -29,9 +29,17 @@ TaskDataUpdater::TaskDataUpdater(QQmlApplicationEngine* engine, QObject* parent)
 
 TaskDataUpdater::~TaskDataUpdater()
 {
-    /*for (std::shared_ptr<QQuickItem> plView : plViewObject_) {
-        plView->deleteLater();
-    }*/
+    for(auto const& pl: tasksItemsMap_){
+        for(auto const& taskQuickItem: pl.second){
+            taskQuickItem->deleteLater();
+        }
+    }
+
+    for(auto const& pl: qAsConst(plViewQuickItems_)){
+        //qDebug() << "Deleting old PL View: " << pl->property("priorityID");
+        pl->deleteLater();
+    }
+
     slowTimer_->deleteLater();
     myTimer_->deleteLater();
 }
@@ -44,10 +52,10 @@ void TaskDataUpdater::Init(QQmlApplicationEngine* engine)
     QObject::connect(myTimer_, SIGNAL(timeout()), this, SLOT(process_callbacks_slot()));
     myTimer_->start(taskDataUpdateInterval_);
 
-    slowTimer_ = new QTimer(this);
+    /*slowTimer_ = new QTimer(this);
     QObject::connect(slowTimer_, SIGNAL(timeout()), this, SLOT(update_action_view()));
-    int slowInterval = 1000;
-    slowTimer_->start(slowInterval);
+    int slowInterval = taskDataUpdateInterval_;
+    slowTimer_->start(slowInterval);*/
 
     qtRootOjects_ = appEngine_->rootObjects();
 
@@ -76,7 +84,7 @@ void TaskDataUpdater::Init(QQmlApplicationEngine* engine)
     absoluteAxisAlignmentSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment, 10,
         std::bind(&TaskDataUpdater::AbsoluteAxisAlignmentCB, this, _1) /*custom_qos_profile*/);
 
-    tasksSubscribersMap_.insert({ulisse_msgs::topicnames::task_absolute_axis_alignment, absoluteAxisAlignmentSub_});
+    //tasksSubscribersMap_.insert({ulisse_msgs::topicnames::task_absolute_axis_alignment, absoluteAxisAlignmentSub_});
 
     //LoadAction();
 }
@@ -88,7 +96,7 @@ void TaskDataUpdater::TPIKActionCB(const ulisse_msgs::msg::TPIKAction::SharedPtr
 
         tpikActionMsg_ = *msg;
 
-        qDebug() << "New Incoming Action: " << tpikActionMsg_.id.c_str();
+        //qDebug() << "New Incoming Action: " << tpikActionMsg_.id.c_str();
         newIncomingAction_ = true;
     }
 
@@ -150,11 +158,6 @@ void TaskDataUpdater::SafetyBoundariesCB(const ulisse_msgs::msg::TaskStatus::Sha
 }
 
 
-void TaskDataUpdater::copyToClipboard(QString newText)
-{
-    QClipboard* clipboard = QGuiApplication::clipboard();
-    clipboard->setText(newText);
-}
 
 /*QGeoCoordinate TaskDataUpdater::get_ulisse_pos()
 {
@@ -187,15 +190,9 @@ double TaskDataUpdater::get_accept_radius()
 {
     rclcpp::spin_some(this->get_node_base_interface());
 
-    emit callbacks_processed();
-}
-
-void TaskDataUpdater::update_action_view()
-{
     if(newIncomingAction_){
 
         newIncomingAction_ = false;
-        actionLoaded_ = false;
 
         for(auto const& pl: tasksItemsMap_){
             for(auto const& taskQuickItem: pl.second){
@@ -203,131 +200,74 @@ void TaskDataUpdater::update_action_view()
             }
         }
 
-        for(auto const& pl: plViewQuickItems_){
-            qDebug() << "Deleting old PL View: " << pl->property("priorityID");
+        for(auto const& pl: qAsConst(plViewQuickItems_)){
+            //qDebug() << "Deleting old PL View: " << pl->property("priorityID");
             pl->deleteLater();
         }
 
-        /*for(int i = 0; i < plViewQuickItems_.size(); i++ ){
-            qDebug() << "Deleting old PL View: " << plViewQuickItems_.at(i)->property("priorityID");
-            plViewQuickItems_.at(i)->deleteLater();
-        }*/
+        LoadAction();
     }
 
-    if(!actionLoaded_){
-        LoadAction2();
-    }
+
+    emit callbacks_processed();
+}
+
+/*void TaskDataUpdater::update_action_view()
+{
 
     emit action_loaded();
-}
+}*/
+
 
 
 void TaskDataUpdater::LoadAction()
 {
-    //QMetaObject::invokeMethod(actionColumnViewObj_, "clearActionView", Qt::QueuedConnection);
-    //plViewObjects_.clear();
+    actionLabelObj_->setProperty("text", QVariant(QString(tpikActionMsg_.id.c_str()).replace("_", " ")));
 
-    auto actionLabelObj = qtRootOjects_.first()->findChild<QObject*>("actionLabelObj");
-    actionLabelObj->setProperty("text", QVariant(tpikActionMsg_.id.c_str()));
+    plViewQuickItems_.clear();
+    tasksItemsMap_.clear();
+    tasksColumnListObj_.clear();
 
-    //qtRootOjects_ = appEngine_->rootObjects();
-    //actionColumnViewObj_ = qtRootOjects_.first()->findChild<QObject*>("actionColumnViewObj");
-    //if (!actionColumnViewObj_) {
-    //    qDebug() << "actionColumnViewObj_ Object NOT found!";
-    //}
+    //qDebug() << "Recreating new PL Views...";
 
-    for(size_t i = 0; i < tpikActionMsg_.priority_levels.size(); i++ ){
-        QMetaObject::invokeMethod(actionColumnViewObj_, "generatePriorityLevel", Qt::QueuedConnection);
-    }
+    for( const ulisse_msgs::msg::TPIKPriorityLevel &pl : tpikActionMsg_.priority_levels ){
 
-    //qtRootOjects_ = appEngine_->rootObjects();
-    QList<QObject*> plViewTempObjects_ = actionColumnViewObj_->findChildren<QObject*>();
+        QVariant qPlName = QString(pl.id.c_str()).replace("_", " ");
 
-    qDebug() << "plViewTempObjects: " << plViewTempObjects_.size();
+        QQmlComponent plComponent(&engine_, QUrl("qrc:/qml/PriorityLevelData.qml"));
+        plViewQuickItems_.push_back(qobject_cast<QQuickItem*>(plComponent.create()));
+        QQmlEngine::setObjectOwnership(plViewQuickItems_.back(), QQmlEngine::CppOwnership);
+        plViewQuickItems_.back()->setParentItem(qobject_cast<QQuickItem*>(actionColumnViewObj_));
+        plViewQuickItems_.back()->setParent(actionColumnViewObj_);
+        plViewQuickItems_.back()->setProperty("priorityID", qPlName);
 
-    for(int i = 0; i < plViewTempObjects_.size(); i++ ){
-        qDebug() << "Found PL " << plViewTempObjects_.at(i)->objectName();
-    }
+        //qDebug() << "Created PL: " << plViewQuickItems_.back()->property("priorityID").toString();
 
-    /*for(int i = 0; i < tpikActionMsg_.priority_levels.size(); i++ ){
-        QVariant plName = QString(tpikActionMsg_.priority_levels.at(i).id.c_str());
-        QStringList taskIDs;
-        for (const auto &taskID : tpikActionMsg_.priority_levels.at(i).tasks_id) {
-            taskIDs << taskID.c_str();
-        }
-        QVariant tasksName(taskIDs);
+        tasksItemsMap_.insert( { pl.id, QList<QQuickItem*>() } );
 
-    plViewObjects_.push_back(plViewTempObjects_.at(i));
+        tasksColumnListObj_.push_back(qtRootOjects_.first()->findChildren<QObject*>("taskDataColumnObj").back());
 
-    //plViewObjects_.at(i)->setParent(qtRootOjects_.first());
-    plViewObjects_.at(i)->setProperty("priorityID", plName);
-    plViewObjects_.at(i)->setProperty("taskIDs", tasksName);
-}*/
-}
+        //QStringList taskIDs;
+        for (const auto &taskID : pl.tasks_id) {
 
-void TaskDataUpdater::LoadAction2()
-{
-    actionLabelObj_->setProperty("text", QVariant(tpikActionMsg_.id.c_str()));
+            QVariant qTaskID = QString(taskID.c_str()).replace("_", " ");;
 
-    bool waitForDeletion = false;
-    //qDebug() << "Checking waitForDeletion";
-    //qDebug() << "plViewQuickItems_.size(): " << plViewQuickItems_.size();
-    //for(int i = 0; i < plViewQuickItems_.size(); i++ ){
-    //
-    //    if(plViewQuickItems_.at(i)) waitForDeletion = true;
-    //}
+            QQmlComponent taskComponent(&engine_, QUrl("qrc:/qml/TaskData.qml"));
+            tasksItemsMap_.at(pl.id).push_back((qobject_cast<QQuickItem*>(taskComponent.create())));
+            QQmlEngine::setObjectOwnership(tasksItemsMap_.at(pl.id).back(), QQmlEngine::CppOwnership);
+            tasksItemsMap_.at(pl.id).back()->setParentItem(qobject_cast<QQuickItem*>(tasksColumnListObj_.back()));
+            tasksItemsMap_.at(pl.id).back()->setParent(tasksColumnListObj_.back());
+            tasksItemsMap_.at(pl.id).back()->setProperty("taskName", qTaskID);
 
-    if(!waitForDeletion || true){
-
-        //qDebug() << "waitForDeletion: false";
-        plViewQuickItems_.clear();
-        tasksItemsMap_.clear();
-        tasksColumnListObj_.clear();
-
-        qDebug() << "Recreating new PL Views...";
-
-        for( const ulisse_msgs::msg::TPIKPriorityLevel &pl : tpikActionMsg_.priority_levels ){
-
-            QVariant qPlName = QString(pl.id.c_str());
-
-            QQmlComponent plComponent(&engine_, QUrl("qrc:/qml/PriorityLevelData.qml"));
-            plViewQuickItems_.push_back(qobject_cast<QQuickItem*>(plComponent.create()));
-            QQmlEngine::setObjectOwnership(plViewQuickItems_.back(), QQmlEngine::CppOwnership);
-            plViewQuickItems_.back()->setParentItem(qobject_cast<QQuickItem*>(actionColumnViewObj_));
-            plViewQuickItems_.back()->setParent(actionColumnViewObj_);
-            plViewQuickItems_.back()->setProperty("priorityID", qPlName);
-
-            qDebug() << "Created PL: " << plViewQuickItems_.back()->property("priorityID").toString();
-
-            tasksItemsMap_.insert( { pl.id, QList<QQuickItem*>() } );
-
-            tasksColumnListObj_.push_back(qtRootOjects_.first()->findChildren<QObject*>("taskDataColumnObj").back());
-
-            QStringList taskIDs;
-            for (const auto &taskID : pl.tasks_id) {
-
-                QVariant qTaskID = QString(taskID.c_str());
-
-                QQmlComponent taskComponent(&engine_, QUrl("qrc:/qml/TaskData.qml"));
-                tasksItemsMap_.at(pl.id).push_back((qobject_cast<QQuickItem*>(taskComponent.create())));
-                QQmlEngine::setObjectOwnership(tasksItemsMap_.at(pl.id).back(), QQmlEngine::CppOwnership);
-                tasksItemsMap_.at(pl.id).back()->setParentItem(qobject_cast<QQuickItem*>(tasksColumnListObj_.back()));
-                tasksItemsMap_.at(pl.id).back()->setParent(tasksColumnListObj_.back());
-                tasksItemsMap_.at(pl.id).back()->setProperty("taskName", qTaskID);
-
-                qDebug() << "Created Task: " << tasksItemsMap_.at(pl.id).back()->property("taskName").toString();
-
-            }
-
-            //QVariant tasksName(taskIDs);
-            //plViewQuickItems_.back()->setProperty("taskIDs", tasksName);
-        }
-
-        actionLoaded_ = true;
-
-        for(int i = 0; i < plViewQuickItems_.size(); i++ ){
+            //qDebug() << "Created Task: " << tasksItemsMap_.at(pl.id).back()->property("taskName").toString();
         }
     }
+
+    actionLoaded_ = true;
+
+    for(int i = 0; i < plViewQuickItems_.size(); i++ ){
+    }
+
 }
 
 QVector<double> TaskDataUpdater::GenerateRandFloatVector(int size)

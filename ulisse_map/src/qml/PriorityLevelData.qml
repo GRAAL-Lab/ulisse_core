@@ -42,11 +42,11 @@ RowLayout {
 
     }
 
-    Component.onDestruction: {
+    /*Component.onDestruction: {
 
         //taskIDs = []
         console.log("ReadyToDie: " + priorityID)
-    }
+    }*/
 
 }
 

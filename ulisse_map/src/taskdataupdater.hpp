@@ -66,7 +66,6 @@ class TaskDataUpdater : public QObject, rclcpp::Node {
     rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr safetyBoundariesSub_;
 
     void LoadAction();
-    void LoadAction2();
     QVector<double> GenerateRandFloatVector(int size);
 
 public:
@@ -86,8 +85,6 @@ public:
     void LinearVelocityCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
     void SafetyBoundariesCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
 
-    Q_INVOKABLE void copyToClipboard(QString value);
-
     /*QGeoCoordinate get_ulisse_pos();
     QGeoCoordinate get_goal_pos();
     double get_goal_distance();
@@ -96,11 +93,11 @@ public:
 
 signals:
     void callbacks_processed();
-    void action_loaded();
+    //void action_loaded();
 
 public slots:
     void process_callbacks_slot();
-    void update_action_view();
+    //void update_action_view();
 };
 
 #endif // TASKDATAUPDATER_H
