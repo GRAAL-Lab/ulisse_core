@@ -31,10 +31,10 @@ class TaskDataUpdater : public QObject, rclcpp::Node {
     QList<QObject*> qtRootOjects_;
     QList<QObject*> tasksColumnListObj_;
     QList<QQuickItem*> plViewQuickItems_;
-    std::map<std::string, QList<QQuickItem*>> tasksItemsMap_;
+    std::unordered_map<std::string, QQuickItem*> tasksItemsMap_;
     //QList<QObject*> plViewObjects_;
 
-    std::atomic<bool> newIncomingAction_, actionLoaded_;
+    std::atomic<bool> newIncomingAction_;
 
     //QObject *pl_object;
 
@@ -53,7 +53,7 @@ class TaskDataUpdater : public QObject, rclcpp::Node {
     ulisse_msgs::msg::TPIKAction tpikActionMsg_;
     std::map<std::string, ulisse_msgs::msg::TaskStatus> tpikTasksData_;
 
-    std::map<std::string, rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr> tasksSubscribersMap_;
+    std::map<std::string, ulisse_msgs::msg::TaskStatus> tasksMessageMap_;
 
     rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr absoluteAxisAlignmentSub_;
     rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr absoluteAxisAlignmentHoldSub_;
@@ -61,11 +61,23 @@ class TaskDataUpdater : public QObject, rclcpp::Node {
     rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr angularPositionSub_;
     rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr cartesianDistanceSub_;
     rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr cartesianDistancePathFollowingSub_;
-    rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr linearHoldSub_;
+    rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr linearVelocityHoldSub_;
     rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr linearVelocitySub_;
     rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr safetyBoundariesSub_;
 
+    /*ulisse_msgs::msg::TaskStatus absoluteAxisAlignmentMsg_;
+    ulisse_msgs::msg::TaskStatus absoluteAxisAlignmentHoldMsg_;
+    ulisse_msgs::msg::TaskStatus absoluteAxisAlignmentSafetyMsg_;
+    ulisse_msgs::msg::TaskStatus angularPositionMsg_;
+    ulisse_msgs::msg::TaskStatus cartesianDistanceMsg_;
+    ulisse_msgs::msg::TaskStatus cartesianDistancePathFollowingMsg_;
+    ulisse_msgs::msg::TaskStatus linearVelocityHoldMsg_;
+    ulisse_msgs::msg::TaskStatus linearVelocityMsg_;
+    ulisse_msgs::msg::TaskStatus safetyBoundariesMsg_;*/
+
     void LoadAction();
+    //void ActivateTaskSubscribers();
+    void UpdateView();
     QVector<double> GenerateRandFloatVector(int size);
 
 public:
@@ -81,8 +93,8 @@ public:
     void AngularPositionCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
     void CartesianDistanceCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
     void CartesianDistancePathFollowingCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
-    void LinearHoldCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
     void LinearVelocityCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
+    void LinearVelocityHoldCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
     void SafetyBoundariesCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
 
     /*QGeoCoordinate get_ulisse_pos();

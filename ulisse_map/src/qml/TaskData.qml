@@ -13,6 +13,9 @@ Item {
     property var titlesize: 10
 
     property var taskName: "Undefined"
+    property var reference: " "
+    property var internalAct: " "
+    property var externalAct: " "
 
     ColumnLayout {
         id: taskDataColumn
@@ -33,7 +36,7 @@ Item {
             labelColor: 'dodgerblue'
             textColor: 'grey'
             label: qsTr("Reference")
-            text: " "//.arg(fbkUpdater.ulisse_yaw_deg)
+            text: reference
 
         }
 
@@ -43,7 +46,7 @@ Item {
             labelColor: 'dodgerblue'
             textColor: 'grey'
             label: qsTr("Internal Act.")
-            text: " "//fbkUpdater.vehicle_state
+            text: internalAct
         }
 
         LabelledText {
@@ -52,7 +55,7 @@ Item {
 
             textColor: 'grey'
             label: qsTr("External Act.")
-            text: " "//fbkUpdater.gps_time
+            text: externalAct
 
         }
     }
