@@ -18,6 +18,7 @@
 #include "ulisse_msgs/msg/tpik_priority_level.hpp"
 #include "ulisse_msgs/msg/tpik_action.hpp"
 
+
 class TaskDataUpdater : public QObject, rclcpp::Node {
     Q_OBJECT
     QQmlApplicationEngine* appEngine_;

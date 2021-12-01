@@ -14,11 +14,11 @@
 
 using std::placeholders::_1;
 
-std::string Topic2TaskName(const std::string topicname){
+/*std::string Topic2TaskName(const std::string topicname){
     QString qtopicname(QString::fromStdString(topicname));
     qtopicname.replace("/ulisse/task/", "");
     return qtopicname.toStdString();
-}
+}*/
 
 TaskDataUpdater::TaskDataUpdater(QObject* parent)
     : QObject(parent), Node("gui_taskdata_updater")
@@ -107,25 +107,25 @@ void TaskDataUpdater::Init(QQmlApplicationEngine* engine)
     cartesianDistancePathFollowingSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_cartesian_distance_path_follow, 10,
         std::bind(&TaskDataUpdater::CartesianDistancePathFollowingCB, this, _1) /*custom_qos_profile*/);
 
-    linearVelocityHoldSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_linear_velocity_hold, 10,
-        std::bind(&TaskDataUpdater::LinearVelocityHoldCB, this, _1) /*custom_qos_profile*/);
-
     linearVelocitySub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_linear_velocity, 10,
         std::bind(&TaskDataUpdater::LinearVelocityCB, this, _1) /*custom_qos_profile*/);
+
+    linearVelocityHoldSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_linear_velocity_hold, 10,
+        std::bind(&TaskDataUpdater::LinearVelocityHoldCB, this, _1) /*custom_qos_profile*/);
 
     safetyBoundariesSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_safety_boundaries, 10,
         std::bind(&TaskDataUpdater::SafetyBoundariesCB, this, _1) /*custom_qos_profile*/);
 
 
-    tasksMessageMap_.insert( { Topic2TaskName(ulisse_msgs::topicnames::task_absolute_axis_alignment), ulisse_msgs::msg::TaskStatus() } );
-    tasksMessageMap_.insert( { Topic2TaskName(ulisse_msgs::topicnames::task_absolute_axis_alignment_hold), ulisse_msgs::msg::TaskStatus() } );
-    tasksMessageMap_.insert( { Topic2TaskName(ulisse_msgs::topicnames::task_absolute_axis_alignment_safety), ulisse_msgs::msg::TaskStatus() } );
-    tasksMessageMap_.insert( { Topic2TaskName(ulisse_msgs::topicnames::task_angular_position), ulisse_msgs::msg::TaskStatus()});
-    tasksMessageMap_.insert( { Topic2TaskName(ulisse_msgs::topicnames::task_cartesian_distance), ulisse_msgs::msg::TaskStatus()});
-    tasksMessageMap_.insert( { Topic2TaskName(ulisse_msgs::topicnames::task_cartesian_distance_path_follow), ulisse_msgs::msg::TaskStatus()});
-    tasksMessageMap_.insert( { Topic2TaskName(ulisse_msgs::topicnames::task_linear_velocity), ulisse_msgs::msg::TaskStatus()});
-    tasksMessageMap_.insert( { Topic2TaskName(ulisse_msgs::topicnames::task_linear_velocity_hold), ulisse_msgs::msg::TaskStatus()});
-    tasksMessageMap_.insert( { Topic2TaskName(ulisse_msgs::topicnames::task_safety_boundaries), ulisse_msgs::msg::TaskStatus()});
+    tasksMessageMap_.insert( { ulisse::task::asvAbsoluteAxisAlignment, ulisse_msgs::msg::TaskStatus() } );
+    tasksMessageMap_.insert( { ulisse::task::asvAbsoluteAxisAlignmentHold, ulisse_msgs::msg::TaskStatus() } );
+    tasksMessageMap_.insert( { ulisse::task::asvAbsoluteAxisAlignmentSafety, ulisse_msgs::msg::TaskStatus() } );
+    tasksMessageMap_.insert( { ulisse::task::asvAngularPosition, ulisse_msgs::msg::TaskStatus()});
+    tasksMessageMap_.insert( { ulisse::task::asvCartesianDistance, ulisse_msgs::msg::TaskStatus()});
+    tasksMessageMap_.insert( { ulisse::task::asvCartesianDistancePathFollowing, ulisse_msgs::msg::TaskStatus()});
+    tasksMessageMap_.insert( { ulisse::task::asvLinearVelocity, ulisse_msgs::msg::TaskStatus()});
+    tasksMessageMap_.insert( { ulisse::task::asvLinearVelocityHold, ulisse_msgs::msg::TaskStatus()});
+    tasksMessageMap_.insert( { ulisse::task::asvSafetyBoundaries, ulisse_msgs::msg::TaskStatus()});
 
 
 }
@@ -144,47 +144,47 @@ void TaskDataUpdater::TPIKActionCB(const ulisse_msgs::msg::TPIKAction::SharedPtr
 
 void TaskDataUpdater::AbsoluteAxisAlignmentCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
 {
-    tasksMessageMap_.at(Topic2TaskName(ulisse_msgs::topicnames::task_absolute_axis_alignment)) = *msg;
+    tasksMessageMap_.at(ulisse::task::asvAbsoluteAxisAlignment) = *msg;
 }
 
 void TaskDataUpdater::AbsoluteAxisAlignmentHoldCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
 {
-    tasksMessageMap_.at(Topic2TaskName(ulisse_msgs::topicnames::task_absolute_axis_alignment_hold)) = *msg;
+    tasksMessageMap_.at(ulisse::task::asvAbsoluteAxisAlignmentHold) = *msg;
 }
 
 void TaskDataUpdater::AbsoluteAxisAlignmentSafetyCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
 {
-    tasksMessageMap_.at(Topic2TaskName(ulisse_msgs::topicnames::task_absolute_axis_alignment_safety)) = *msg;
+    tasksMessageMap_.at(ulisse::task::asvAbsoluteAxisAlignmentSafety) = *msg;
 }
 
 void TaskDataUpdater::AngularPositionCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
 {
-    tasksMessageMap_.at(Topic2TaskName(ulisse_msgs::topicnames::task_angular_position)) = *msg;
+    tasksMessageMap_.at(ulisse::task::asvAngularPosition) = *msg;
 }
 
 void TaskDataUpdater::CartesianDistanceCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
 {
-    tasksMessageMap_.at(Topic2TaskName(ulisse_msgs::topicnames::task_cartesian_distance)) = *msg;
+    tasksMessageMap_.at(ulisse::task::asvCartesianDistance) = *msg;
 }
 
 void TaskDataUpdater::CartesianDistancePathFollowingCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
 {
-    tasksMessageMap_.at(Topic2TaskName(ulisse_msgs::topicnames::task_cartesian_distance_path_follow)) = *msg;
+    tasksMessageMap_.at(ulisse::task::asvCartesianDistancePathFollowing) = *msg;
 }
 
 void TaskDataUpdater::LinearVelocityCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
 {
-    tasksMessageMap_.at(Topic2TaskName(ulisse_msgs::topicnames::task_linear_velocity)) = *msg;
+    tasksMessageMap_.at(ulisse::task::asvLinearVelocity) = *msg;
 }
 
 void TaskDataUpdater::LinearVelocityHoldCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
 {
-    tasksMessageMap_.at(Topic2TaskName(ulisse_msgs::topicnames::task_linear_velocity_hold)) = *msg;
+    tasksMessageMap_.at(ulisse::task::asvLinearVelocityHold) = *msg;
 }
 
 void TaskDataUpdater::SafetyBoundariesCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
 {
-    tasksMessageMap_.at(Topic2TaskName(ulisse_msgs::topicnames::task_safety_boundaries)) = *msg;
+    tasksMessageMap_.at(ulisse::task::asvSafetyBoundaries) = *msg;
 }
 
 void TaskDataUpdater::process_callbacks_slot()
