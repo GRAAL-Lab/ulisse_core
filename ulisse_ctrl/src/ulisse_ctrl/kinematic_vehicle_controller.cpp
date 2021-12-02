@@ -17,16 +17,15 @@ using std::placeholders::_3;
 
 namespace ulisse {
 
-VehicleController::VehicleController(int rate, std::string file_name)
+VehicleController::VehicleController(std::string conf_filename)
     : Node("kinematic_control_node")
-    , rate_(rate)
     , boundariesSet_(false)
 {
     conf_ = std::make_shared<KCLConfiguration>();
 
     ctrlData_ = std::make_shared<ControlData>();
 
-    fileName_ = file_name;
+    fileName_ = conf_filename;
 
     stateHalt_ = std::make_shared<states::StateHalt>();
     stateHold_ = std::make_shared<states::StateHold>();
@@ -151,9 +150,9 @@ VehicleController::VehicleController(int rate, std::string file_name)
         std::bind(&VehicleController::ResetConfHandler, this, _1, _2, _3));
 
 
-    int msRunPeriod = 1.0/(rate_) * 1000;
-    std::cout << "Controller Rate: " << rate_ << "Hz" << std::endl;
     // Main function timer
+    int msRunPeriod = 1.0/(conf_->controlLoopRate) * 1000;
+    //std::cout << "Controller Rate: " << conf_->controlLoopRate << "Hz" << std::endl;
     runTimer_ = this->create_wall_timer(std::chrono::milliseconds(msRunPeriod), std::bind(&VehicleController::Run, this));
 
     // Timer for slow check operations
@@ -166,7 +165,9 @@ bool VehicleController::LoadConfiguration(std::shared_ptr<KCLConfiguration>& con
 {
     libconfig::Config confObj;
 
-    // LOAD CONFIGURATION FROM NAV FILTER TO READ CENTROID
+    ///////////////////////////////////////////////////////////////////////////////
+    /////       LOAD CONFIGURATION FROM NAV FILTER TO READ CENTROID
+    ///
     std::string package_share_directory = ament_index_cpp::get_package_share_directory("nav_filter");
     std::string confPath = package_share_directory;
     confPath.append("/conf/navigation_filter.conf");
@@ -195,8 +196,9 @@ bool VehicleController::LoadConfiguration(std::shared_ptr<KCLConfiguration>& con
 
     asvSafetyBoundaries_->Centroid() = centroidLocation_;
 
-    ///////////////////////////////////////////////////////
-    // LOAD KCL CONFIGURATION
+    ///////////////////////////////////////////////////////////////////////////
+    /////        LOAD KCL CONFIGURATION
+    ///
     package_share_directory = ament_index_cpp::get_package_share_directory("ulisse_ctrl");
     confPath = package_share_directory;
     confPath.append("/conf/");

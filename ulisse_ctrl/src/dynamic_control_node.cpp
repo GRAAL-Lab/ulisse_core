@@ -8,11 +8,9 @@ int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
 
-    int rate = 10;
-
     // Name of conf file
     std::string filename = "dcl_ulisse.conf";
-    auto dynamicController = std::make_shared<ulisse::DynamicVehicleController>(rate, filename);
+    auto dynamicController = std::make_shared<ulisse::DynamicVehicleController>(filename);
 
     rclcpp::executors::SingleThreadedExecutor exe;
     exe.add_node(dynamicController);

@@ -100,7 +100,6 @@ class VehicleController : public rclcpp::Node {
     std::shared_ptr<ikcl::CartesianDistance> asvCartesianDistancePathFollowing_;
 
     double timestamp_;
-    double rate_;
     bool boundariesSet_;
 
     // FSM
@@ -161,7 +160,7 @@ class VehicleController : public rclcpp::Node {
     void PublishLog(std::string log);
 
 public:
-    VehicleController(int rate, std::string file_name);
+    VehicleController(std::string conf_filename);
     virtual ~VehicleController();
     void Run();
     void PublishControl();

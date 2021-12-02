@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.5)
 project(ulisse_sim)
 
-# Default to C++14
+# Default to C++17
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD 17)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -36,8 +36,8 @@ include_directories(
 )
 
 ## Libraries
-add_library(VehicleSimulatorClass src/ulisse_sim/vehiclesimulator.cpp)
-ament_target_dependencies(VehicleSimulatorClass rclcpp ulisse_msgs)
+add_library(VehicleSimulatorClass src/ulisse_sim/vehicle_simulator.cpp)
+ament_target_dependencies(VehicleSimulatorClass rclcpp ulisse_msgs ament_index_cpp)
 target_link_libraries(VehicleSimulatorClass ${surface_vehicle_model_LIBRARIES} Geographic rml)
 
 ## Executables

@@ -8,9 +8,8 @@ int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
 
-    int rate = 10;
     std::string filename = "kcl_ulisse.conf";
-    auto vehicleController = std::make_shared<ulisse::VehicleController>(rate, filename);
+    auto vehicleController = std::make_shared<ulisse::VehicleController>(filename);
 
     rclcpp::executors::SingleThreadedExecutor exe;
     exe.add_node(vehicleController);

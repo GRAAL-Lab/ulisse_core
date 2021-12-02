@@ -97,7 +97,7 @@ class DynamicVehicleController : public rclcpp::Node {
 
 
 public:
-    DynamicVehicleController(int rate, std::string file_name);
+    DynamicVehicleController(std::string file_name);
     virtual ~DynamicVehicleController();
 
     void Run();

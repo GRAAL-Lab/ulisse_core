@@ -16,12 +16,11 @@ using std::placeholders::_3;
 
 namespace ulisse {
 
-DynamicVehicleController::DynamicVehicleController(int rate, std::string file_name)
+DynamicVehicleController::DynamicVehicleController(std::string file_name)
     : Node("dynamic_control_node")
 {
 
-    //rate = 10;
-    sampleTime_ = 1.0 / rate;
+
     confFileName_ = file_name;
 
     //Subscribers
@@ -65,12 +64,10 @@ DynamicVehicleController::DynamicVehicleController(int rate, std::string file_na
         std::bind(&DynamicVehicleController::ResetConfHandler, this, _1, _2, _3));
 
 
-    int msRunPeriod = sampleTime_ * 1000;
-    std::cout << "Controller Rate: " << rate << "Hz" << std::endl;
     // Main function timer
+    int msRunPeriod = 1.0/(dcl_conf->controlLoopRate) * 1000;
+    //std::cout << "Controller Rate: " << rate << "Hz" << std::endl;
     runTimer_ = this->create_wall_timer(std::chrono::milliseconds(msRunPeriod), std::bind(&DynamicVehicleController::Run, this));
-
-
 }
 
 DynamicVehicleController::~DynamicVehicleController() {

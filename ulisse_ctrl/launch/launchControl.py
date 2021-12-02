@@ -33,6 +33,6 @@ def generate_launch_description():
         dcl_node,
         kcl_node,
         nav_filter_node,
-        nav_filter_udp_sender
+        # nav_filter_udp_sender
         # more nodes can be added here
     ])

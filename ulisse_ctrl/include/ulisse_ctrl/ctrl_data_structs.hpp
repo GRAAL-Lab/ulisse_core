@@ -41,7 +41,7 @@ struct KCLConfiguration {
 
     bool goToHoldAfterMove;
     double posAcceptanceRadius;
-    double controlLoopPeriod;
+    double controlLoopRate;
     Eigen::VectorXd saturationMin, saturationMax;
 
     KCLConfiguration()
@@ -54,7 +54,7 @@ struct KCLConfiguration {
 
         if (!ctb::GetParam(confObj, goToHoldAfterMove, "goToHoldAfterMove"))
             return false;
-        if (!ctb::GetParam(confObj, controlLoopPeriod, "controlLoopPeriod"))
+        if (!ctb::GetParam(confObj, controlLoopRate, "controlLoopRate"))
             return false;
         if (!ctb::GetParam(confObj, posAcceptanceRadius, "posAcceptanceRadius"))
             return false;
@@ -69,7 +69,7 @@ struct KCLConfiguration {
     friend std::ostream& operator<<(std::ostream& os, KCLConfiguration const& a)
     {
         return os << "======= KCL CONF =======\n"
-                  << "ControlLoopPeriod: " << a.controlLoopPeriod << "\n"
+                  << "ControlLoopRate: " << a.controlLoopRate << "\n"
                   << "PosAcceptanceRadius: " << a.posAcceptanceRadius << "\n"
                   << "GoToHoldAfterMove: " << a.goToHoldAfterMove << "\n"
                   << "SaturationMin: " << a.saturationMin.transpose() << "\n"
@@ -193,6 +193,7 @@ struct DynamicPid {
 
 struct DCLConfiguration {
 
+    double controlLoopRate;
     bool enableThrusters;
     double thrusterPercLimit;
     ControlMode ctrlMode;
@@ -207,6 +208,7 @@ struct DCLConfiguration {
     friend std::ostream& operator<<(std::ostream& os, DCLConfiguration const& a)
     {
         os << "======= DCL CONF =======\n"
+           << "ControlLoopRate: " << a.controlLoopRate << "\n"
            << "CtrlMode: " << static_cast<int>(a.ctrlMode) << "\n"
            << "EnableThrusters: " << a.enableThrusters << "\n"
            << "ThrusterPercLimit: " << a.thrusterPercLimit << "\n"
@@ -236,37 +238,39 @@ struct DCLConfiguration {
     bool LoadConfiguration(libconfig::Config& confObj) noexcept(false)
     {
         const libconfig::Setting& root = confObj.getRoot();
-        const libconfig::Setting& dcl = root["dcl_ulisse"];
+
         // Load DCL Config
+        if (!ctb::GetParam(confObj, controlLoopRate, "controlLoopRate"))
+            return false;
         int tmpCtrlMode;
-        if (!ctb::GetParam(dcl, tmpCtrlMode, "ctrlMode"))
+        if (!ctb::GetParam(confObj, tmpCtrlMode, "ctrlMode"))
             return false;
         ctrlMode = static_cast<ControlMode>(tmpCtrlMode);
-        if (!ctb::GetParam(dcl, enableThrusters, "enableThrusters"))
+        if (!ctb::GetParam(confObj, enableThrusters, "enableThrusters"))
             return false;
-        if (!ctb::GetParam(dcl, thrusterPercLimit, "thrusterPercLimit"))
+        if (!ctb::GetParam(confObj, thrusterPercLimit, "thrusterPercLimit"))
             return false;
-        if (!ctb::GetParam(dcl, surgeMin, "surgeMin"))
+        if (!ctb::GetParam(confObj, surgeMin, "surgeMin"))
             return false;
-        if (!ctb::GetParam(dcl, surgeMax, "surgeMax"))
+        if (!ctb::GetParam(confObj, surgeMax, "surgeMax"))
             return false;
-        if (!ctb::GetParam(dcl, yawRateMin, "yawRateMin"))
+        if (!ctb::GetParam(confObj, yawRateMin, "yawRateMin"))
             return false;
-        if (!ctb::GetParam(dcl, yawRateMax, "yawRateMax"))
+        if (!ctb::GetParam(confObj, yawRateMax, "yawRateMax"))
             return false;
 
         if (ctrlMode == ControlMode::ThrusterMapping) {
-            const libconfig::Setting& thrusterMap = dcl["thrusterMapping"];
+            const libconfig::Setting& thrusterMap = root["thrusterMapping"];
             if (!thrusterMapping.ConfigureFromFile(thrusterMap))
                 return false;
             std::cerr << "ThrusterMapping configured" << std::endl;
         } else if (ctrlMode == ControlMode::ClassicPIDControl) {
-            const libconfig::Setting& classicPidCtr = dcl["classicPidControl"];
+            const libconfig::Setting& classicPidCtr = root["classicPidControl"];
             if (!classicPidControl.ConfigureFromFile(classicPidCtr))
                 return false;
             std::cerr << "ClassicPIDControl configured" << std::endl;
         } else if (ctrlMode == ControlMode::ComputedTorque) {
-            const libconfig::Setting& computedTorqueCtr = dcl["computedTorqueControl"];
+            const libconfig::Setting& computedTorqueCtr = root["computedTorqueControl"];
             if (!computedTorqueControl.ConfigureFromFile(computedTorqueCtr))
                 return false;
 
