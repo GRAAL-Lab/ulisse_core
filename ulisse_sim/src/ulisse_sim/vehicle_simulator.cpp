@@ -19,6 +19,9 @@ VehicleSimulator::VehicleSimulator(const std::string file_name)
     , imuPubCounter_(0)
     , magnetometerPubCounter_(0)
     , ambientPubCounter_(0)
+    , orientusPubCounter_(0)
+    , dvlPubCounter_(0)
+    , fogPubCounter_(0)
     , realTime_(true)
 {
 
@@ -42,6 +45,9 @@ VehicleSimulator::VehicleSimulator(const std::string file_name)
     imuPub_ = this->create_publisher<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu, 1);
     ambsensPub_ = this->create_publisher<ulisse_msgs::msg::AmbientSensors>(ulisse_msgs::topicnames::sensor_ambient, 1);
     magnetometerPub_ = this->create_publisher<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer, 1);
+    orientusPub_ = this->create_publisher<ulisse_msgs::msg::AHRSData>(ulisse_msgs::topicnames::sensor_orientus, 1);
+    dvlPub_ = this->create_publisher<ulisse_msgs::msg::DVLData>(ulisse_msgs::topicnames::sensor_dvl, 1);
+    fogPub_ = this->create_publisher<ulisse_msgs::msg::FOGData>(ulisse_msgs::topicnames::sensor_fog, 1);
     appliedMotorRefPub_ = this->create_publisher<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_applied_perc, 1);
     simulatedSystemPub_ = this->create_publisher<ulisse_msgs::msg::SimulatedSystem>(ulisse_msgs::topicnames::simulated_system, 1);
     motorsDataPub_ = this->create_publisher<ulisse_msgs::msg::LLCThrusters>(ulisse_msgs::topicnames::llc_thrusters, 1);
@@ -68,7 +74,10 @@ bool VehicleSimulator::LoadConfiguration(const std::string file_name)
 {
     libconfig::Config confObj;
 
-    // LOAD CONFIGURATION FROM NAV_FILTER TO READ CENTROID
+
+    ///////////////////////////////////////////////////////////////////////////////
+    /////       LOAD CONFIGURATION FROM NAV FILTER TO READ CENTROID
+    ///
     std::string package_share_directory = ament_index_cpp::get_package_share_directory("nav_filter");
     std::string confPath = package_share_directory;
     confPath.append("/conf/navigation_filter.conf");
@@ -95,7 +104,9 @@ bool VehicleSimulator::LoadConfiguration(const std::string file_name)
 
     centroidLocation = ctb::LatLong(centroidLocationTmp[0], centroidLocationTmp[1]);
 
-    // LOAD SIMULATOR CONFIGURATION
+    ///////////////////////////////////////////////////////////////////////////////
+    /////       LOAD SIMULATOR CONFIGURATION
+    ///
     libconfig::Config confObjSim;
     confPath = (ament_index_cpp::get_package_share_directory("ulisse_sim")).append("/conf/").append(file_name);
 
@@ -137,7 +148,6 @@ void VehicleSimulator::Run()
     SimulateSensors();
     PublishSensors();
 }
-
 
 
 void VehicleSimulator::ExecuteStep()
@@ -221,7 +231,13 @@ void VehicleSimulator::SimulateActuation()
     auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
     double t = now_stamp_secs + (now_stamp_nanosecs * 1e-9);
 
-    bodyF_wavesEffects_ << 0.0, 0.0, 0.0, config_->wx.A * sin(2 * M_PI * config_->wx.f * t) + config_->wx.C, config_->wy.A * sin(2 * M_PI * config_->wy.f * t) + config_->wy.C, 0.0;
+    bodyF_wavesEffects_ <<
+        0.0,
+        0.0,
+        0.0,
+        config_->wx.A * sin(2 * M_PI * config_->wx.f * t) + config_->wx.C,
+        config_->wy.A * sin(2 * M_PI * config_->wy.f * t) + config_->wy.C,
+        0.0;
     worldF_relativeAcceleration_ = bodyF_orientation_.ToRotationMatrix().CartesianRotationMatrix() * bodyF_relativeAcceleration_projected_;
     worldF_relativeVelocity_ = bodyF_orientation_.ToRotationMatrix().CartesianRotationMatrix() * (bodyF_relativeVelocity_ + bodyF_wavesEffects_);
 
@@ -269,6 +285,7 @@ void VehicleSimulator::SimulateSensors()
     auto seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
 
+    /////   GPS   /////
     std::normal_distribution<double> gpsNoiseX(0.0, config_->sensorsNoise.gps_stdd.x());
     std::normal_distribution<double> gpsNoiseY(0.0, config_->sensorsNoise.gps_stdd.y());
     std::normal_distribution<double> gpsNoiseZ(0.0, config_->sensorsNoise.gps_stdd.z());
@@ -278,7 +295,7 @@ void VehicleSimulator::SimulateSensors()
     ctb::LatLong2LocalNED(vehiclePos, altitude_, centroidLocation, worldF_com);
 
     //move the gps from COM to the antenna
-    worldF_antenna = worldF_com + worldF_R_bodyF_ * config_->bodyF_gps_position;
+    worldF_antenna = worldF_com + worldF_R_bodyF_ * config_->bodyF_gps_sensor_position;
 
     //add noise and come back to map coordinates
     worldF_antenna.x() += gpsNoiseX(generator);
@@ -297,17 +314,18 @@ void VehicleSimulator::SimulateSensors()
     gpsMsg_.altitude = gpsAltitude;
     gpsMsg_.gpsfixmode = ulisse_msgs::msg::GPSData::MODE3D; //3u
 
+    /////   COMPASS   /////
     std::normal_distribution<double> compassNoiseR(0.0, config_->sensorsNoise.compass_stdd.x());
     std::normal_distribution<double> compassNoiseP(0.0, config_->sensorsNoise.compass_stdd.y());
     std::normal_distribution<double> compassNoiseY(0.0, config_->sensorsNoise.compass_stdd.z());
 
-    //Compass
     compassMsg_.stamp.sec = now_stamp_secs;
     compassMsg_.stamp.nanosec = now_stamp_nanosecs;
     compassMsg_.orientation.roll = bodyF_orientation_.Roll() + compassNoiseR(generator);
     compassMsg_.orientation.pitch = bodyF_orientation_.Pitch() + compassNoiseP(generator);
     compassMsg_.orientation.yaw = bodyF_orientation_.Yaw() + compassNoiseY(generator);
 
+    /////   IMU   /////
     std::normal_distribution<double> accelerometerNoiseX(0.0, config_->sensorsNoise.accelerometer_stdd.x());
     std::normal_distribution<double> accelerometerNoiseY(0.0, config_->sensorsNoise.accelerometer_stdd.y());
     std::normal_distribution<double> accelerometerNoiseZ(0.0, config_->sensorsNoise.accelerometer_stdd.z());
@@ -321,7 +339,7 @@ void VehicleSimulator::SimulateSensors()
     imuMsg_.accelerometer[1] = bodyF_linearAcceleration.y() + accelerometerNoiseY(generator);
     imuMsg_.accelerometer[2] = bodyF_linearAcceleration.z() + accelerometerNoiseZ(generator);
 
-    //gyro noise
+    /////   GYRO   /////
     std::normal_distribution<double> gyroNoiseX(0.0, config_->sensorsNoise.gyro_stdd.x());
     std::normal_distribution<double> gyroNoiseY(0.0, config_->sensorsNoise.gyro_stdd.y());
     std::normal_distribution<double> gyroNoiseZ(0.0, config_->sensorsNoise.gyro_stdd.z());
@@ -342,13 +360,13 @@ void VehicleSimulator::SimulateSensors()
     imuMsg_.gyro[1] = bodyF_relativeAngularVelocity(1) + gyroNoiseY(generator) + by;
     imuMsg_.gyro[2] = bodyF_relativeAngularVelocity(2) + gyroNoiseZ(generator) + bz;
 
-    //ambient sensor
+    /////   AMBIENT   /////
     ambsensMsg_.stamp.sec = now_stamp_secs;
     ambsensMsg_.stamp.nanosec = now_stamp_nanosecs;
     ambsensMsg_.temperaturectrlbox = 23.0 + (rand() / static_cast<double>(RAND_MAX)) * 2.0;
     ambsensMsg_.humidityctrlbox = 50.0 + (rand() / static_cast<double>(RAND_MAX)) * 2.0;
 
-    //magnetometer
+    /////   MAGNETOMETER   /////
     Eigen::Vector3d m = { 23186.6 * 1E-9, 0.0 * 1E-9, 41122.0 * 1E-9 };  // Example of magnetic field at lat long: 44.4056° N, 8.9463° E
 
     Eigen::Vector3d ned_m = worldF_R_bodyF_.transpose() * m;
@@ -363,7 +381,42 @@ void VehicleSimulator::SimulateSensors()
     magnetometerMsg_.orthogonalstrength[1] = ned_m.y() + magnetometerNoiseY(generator);
     magnetometerMsg_.orthogonalstrength[2] = ned_m.z() + magnetometerNoiseZ(generator);
 
-    //Fill the ground truth msg
+
+    /////   DVL   /////
+    std::normal_distribution<double> dvlNoiseX(0.0, config_->sensorsNoise.dvl_stdd.x());
+    std::normal_distribution<double> dvlNoiseY(0.0, config_->sensorsNoise.dvl_stdd.y());
+    std::normal_distribution<double> dvlNoiseZ(0.0, config_->sensorsNoise.dvl_stdd.z());
+
+    dvlMsg_.stamp.sec = now_stamp_secs;
+    dvlMsg_.stamp.nanosec = now_stamp_nanosecs;
+    Eigen::Vector3d bodyF_relativeLinearVelocity;
+    dvlMsg_.bottom_velocity[0] = bodyF_relativeVelocity_(0) + dvlNoiseX(generator);
+    dvlMsg_.bottom_velocity[1] = bodyF_relativeVelocity_(1) + dvlNoiseY(generator);
+    dvlMsg_.bottom_velocity[2] = bodyF_relativeVelocity_(2) + dvlNoiseZ(generator);
+
+
+    /////   IMU ORIENTUS   /////
+    std::normal_distribution<double> orientusNoiseX(0.0, config_->sensorsNoise.orientus_stdd.x());
+    std::normal_distribution<double> orientusNoiseY(0.0, config_->sensorsNoise.orientus_stdd.y());
+    std::normal_distribution<double> orientusNoiseZ(0.0, config_->sensorsNoise.orientus_stdd.z());
+
+    orientusMgs_.stamp.sec = now_stamp_secs;
+    orientusMgs_.stamp.nanosec = now_stamp_nanosecs;
+    orientusMgs_.orientation.roll = bodyF_orientation_.Roll() + orientusNoiseX(generator);
+    orientusMgs_.orientation.pitch = bodyF_orientation_.Pitch() + orientusNoiseX(generator);
+    orientusMgs_.orientation.yaw = bodyF_orientation_.Yaw() + orientusNoiseX(generator);
+
+    /////   FOG   /////
+    std::normal_distribution<double> fogNoise(0.0, config_->sensorsNoise.fog_stdd);
+
+    fogMsg_.stamp.sec = now_stamp_secs;
+    fogMsg_.stamp.nanosec = now_stamp_nanosecs;
+    fogMsg_.angular_velocity = bodyF_relativeAngularVelocity[2] + fogNoise(generator);
+
+
+
+
+    // Fill the ground truth msg
     groundTruthMsg_.stamp.sec = now_stamp_secs;
     groundTruthMsg_.stamp.nanosec = now_stamp_nanosecs;
     groundTruthMsg_.inertialframe_linear_position.latlong.latitude = vehiclePos.latitude;
@@ -383,8 +436,8 @@ void VehicleSimulator::SimulateSensors()
     groundTruthMsg_.gyro_bias[0] = bx;
     groundTruthMsg_.gyro_bias[1] = by;
     groundTruthMsg_.gyro_bias[2] = bz;
-    //groundTruthMsg_.n_p = n_p_;
-    //groundTruthMsg_.n_s = n_s_;
+    groundTruthMsg_.n_p = n_p_;
+    groundTruthMsg_.n_s = n_s_;
 
     //motor ref
     appliedMotorRefMsg_.left_percentage = hp_;
@@ -426,6 +479,11 @@ void VehicleSimulator::PublishSensors()
     if (static_cast<int>(timestamp_count_ / 20) > magnetometerPubCounter_) {
         magnetometerPubCounter_ = static_cast<int>(timestamp_count_ / 20);
         magnetometerPub_->publish(magnetometerMsg_);
+    }
+
+    if (static_cast<int>(timestamp_count_ / 20) > dvlPubCounter_) {
+        dvlPubCounter_ = static_cast<int>(timestamp_count_ / 20);
+        dvlPub_->publish(dvlMsg_);
     }
 }
 

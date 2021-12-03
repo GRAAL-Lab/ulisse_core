@@ -37,6 +37,10 @@ struct SensorsNoise {
     Eigen::Vector3d magnetometer_stdd;
     Eigen::Vector3d gyro_stdd;
     Eigen::Vector3d accelerometer_stdd;
+    Eigen::Vector3d dvl_stdd;
+    Eigen::Vector3d orientus_stdd;
+    double fog_stdd;
+
     SinusoidalWave bx, by, bz;
 
     bool ConfigureFromFile(const libconfig::Setting& confObj) noexcept(false)
@@ -50,6 +54,12 @@ struct SensorsNoise {
         if (!ctb::GetParamVector(confObj, gyro_stdd, "gyro_stdd"))
             return false;
         if (!ctb::GetParamVector(confObj, accelerometer_stdd, "accelerometer_stdd"))
+            return false;
+        if (!ctb::GetParamVector(confObj, dvl_stdd, "dvl_stdd"))
+            return false;
+        if (!ctb::GetParamVector(confObj, orientus_stdd, "imu_orientus_stdd"))
+            return false;
+        if (!ctb::GetParam(confObj, fog_stdd, "fog_stdd"))
             return false;
 
         const libconfig::Setting& gyro_bias = confObj["gyro_bias"];
@@ -82,8 +92,10 @@ struct SimulatorConfiguration {
     double modelErrorPercentage;
     UlisseModelParameters modelParams;
     Eigen::Vector2d inertialF_waterCurrent;
-    Eigen::Vector3d bodyF_gps_position;
-    //Eigen::TransformationMatrix bodyF_dvl_pose,
+    Eigen::Vector3d bodyF_gps_sensor_position;
+    Eigen::Vector6d bodyF_dvl_sensor_pose;
+    Eigen::Vector6d bodyF_imu_sensor_pose;
+    Eigen::Vector6d bodyF_fog_sensor_pose;
     SinusoidalWave wx, wy;
 
     bool ConfigureFromFile(libconfig::Config& confObj) noexcept(false)
@@ -94,7 +106,13 @@ struct SimulatorConfiguration {
             return false;
         if (!ctb::GetParamVector(confObj, inertialF_waterCurrent, "inertialF_waterCurrent"))
             return false;
-        if (!ctb::GetParamVector(confObj, bodyF_gps_position, "bodyF_gps_position"))
+        if (!ctb::GetParamVector(confObj, bodyF_gps_sensor_position, "bodyF_gps_position"))
+            return false;
+        if (!ctb::GetParamVector(confObj, bodyF_dvl_sensor_pose, "bodyF_dvl_sensor_pose"))
+            return false;
+        if (!ctb::GetParamVector(confObj, bodyF_imu_sensor_pose, "bodyF_imu_sensor_pose"))
+            return false;
+        if (!ctb::GetParamVector(confObj, bodyF_fog_sensor_pose, "bodyF_fog_sensor_pose"))
             return false;
 
         // Ulisse model parameters

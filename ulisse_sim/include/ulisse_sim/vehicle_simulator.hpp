@@ -11,6 +11,9 @@
 #include "ulisse_msgs/msg/compass.hpp"
 #include "ulisse_msgs/msg/gps_data.hpp"
 #include "ulisse_msgs/msg/imu_data.hpp"
+#include "ulisse_msgs/msg/ahrs_data.hpp"
+#include "ulisse_msgs/msg/dvl_data.hpp"
+#include "ulisse_msgs/msg/fog_data.hpp"
 #include "ulisse_msgs/msg/magnetometer.hpp"
 #include "ulisse_msgs/msg/micro_loop_count.hpp"
 #include "ulisse_msgs/msg/simulated_system.hpp"
@@ -59,6 +62,9 @@ class VehicleSimulator : public rclcpp::Node {
     ulisse_msgs::msg::GPSData gpsMsg_;
     ulisse_msgs::msg::Compass compassMsg_;
     ulisse_msgs::msg::IMUData imuMsg_;
+    ulisse_msgs::msg::AHRSData orientusMgs_;
+    ulisse_msgs::msg::DVLData dvlMsg_;
+    ulisse_msgs::msg::FOGData fogMsg_;
     ulisse_msgs::msg::AmbientSensors ambsensMsg_;
     ulisse_msgs::msg::Magnetometer magnetometerMsg_;
     ulisse_msgs::msg::ThrustersReference appliedMotorRefMsg_;
@@ -69,6 +75,9 @@ class VehicleSimulator : public rclcpp::Node {
     rclcpp::Publisher<ulisse_msgs::msg::GPSData>::SharedPtr gpsPub_;
     rclcpp::Publisher<ulisse_msgs::msg::Compass>::SharedPtr compassPub_;
     rclcpp::Publisher<ulisse_msgs::msg::IMUData>::SharedPtr imuPub_;
+    rclcpp::Publisher<ulisse_msgs::msg::AHRSData>::SharedPtr orientusPub_;
+    rclcpp::Publisher<ulisse_msgs::msg::DVLData>::SharedPtr dvlPub_;
+    rclcpp::Publisher<ulisse_msgs::msg::FOGData>::SharedPtr fogPub_;
     rclcpp::Publisher<ulisse_msgs::msg::AmbientSensors>::SharedPtr ambsensPub_;
     rclcpp::Publisher<ulisse_msgs::msg::Magnetometer>::SharedPtr magnetometerPub_;
     rclcpp::Publisher<ulisse_msgs::msg::ThrustersReference>::SharedPtr appliedMotorRefPub_;
@@ -78,6 +87,7 @@ class VehicleSimulator : public rclcpp::Node {
     rclcpp::Subscription<ulisse_msgs::msg::ThrustersReference>::SharedPtr thrustersSub_;
 
     int gpsPubCounter_, compassPubCounter_, imuPubCounter_, magnetometerPubCounter_, ambientPubCounter_;
+    int orientusPubCounter_, dvlPubCounter_, fogPubCounter_;
 
     futils::Timer motorTimeout_;
     double hp_, hs_;
@@ -105,8 +115,6 @@ public:
     /*auto Altitude() const -> const rml::EulerRPY& { return bodyF_orientation_; }
     auto Latitude() const -> double { return latitude_; }
     auto Longitude() const -> double { return longitude_; }*/
-
-
 
     /**
      * @brief Set if simulation should run in Realtime or not
