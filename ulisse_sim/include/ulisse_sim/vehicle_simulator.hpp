@@ -11,7 +11,6 @@
 #include "ulisse_msgs/msg/compass.hpp"
 #include "ulisse_msgs/msg/gps_data.hpp"
 #include "ulisse_msgs/msg/imu_data.hpp"
-#include "ulisse_msgs/msg/ahrs_data.hpp"
 #include "ulisse_msgs/msg/dvl_data.hpp"
 #include "ulisse_msgs/msg/fog_data.hpp"
 #include "ulisse_msgs/msg/magnetometer.hpp"
@@ -62,7 +61,7 @@ class VehicleSimulator : public rclcpp::Node {
     ulisse_msgs::msg::GPSData gpsMsg_;
     ulisse_msgs::msg::Compass compassMsg_;
     ulisse_msgs::msg::IMUData imuMsg_;
-    ulisse_msgs::msg::AHRSData orientusMgs_;
+    //ulisse_msgs::msg::IMUData orientusMgs_;
     ulisse_msgs::msg::DVLData dvlMsg_;
     ulisse_msgs::msg::FOGData fogMsg_;
     ulisse_msgs::msg::AmbientSensors ambsensMsg_;
@@ -75,7 +74,6 @@ class VehicleSimulator : public rclcpp::Node {
     rclcpp::Publisher<ulisse_msgs::msg::GPSData>::SharedPtr gpsPub_;
     rclcpp::Publisher<ulisse_msgs::msg::Compass>::SharedPtr compassPub_;
     rclcpp::Publisher<ulisse_msgs::msg::IMUData>::SharedPtr imuPub_;
-    rclcpp::Publisher<ulisse_msgs::msg::AHRSData>::SharedPtr orientusPub_;
     rclcpp::Publisher<ulisse_msgs::msg::DVLData>::SharedPtr dvlPub_;
     rclcpp::Publisher<ulisse_msgs::msg::FOGData>::SharedPtr fogPub_;
     rclcpp::Publisher<ulisse_msgs::msg::AmbientSensors>::SharedPtr ambsensPub_;

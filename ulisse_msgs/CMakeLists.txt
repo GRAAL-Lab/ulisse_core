@@ -34,7 +34,6 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/IMUData.msg"
   "msg/DVLData.msg"
   "msg/FOGData.msg"
-  "msg/AHRSData.msg"
   "msg/AmbientSensors.msg"
   "msg/Compass.msg"
   "msg/Magnetometer.msg"

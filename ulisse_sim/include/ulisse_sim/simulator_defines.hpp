@@ -106,7 +106,7 @@ struct SimulatorConfiguration {
             return false;
         if (!ctb::GetParamVector(confObj, inertialF_waterCurrent, "inertialF_waterCurrent"))
             return false;
-        if (!ctb::GetParamVector(confObj, bodyF_gps_sensor_position, "bodyF_gps_position"))
+        if (!ctb::GetParamVector(confObj, bodyF_gps_sensor_position, "bodyF_gps_sensor_position"))
             return false;
         if (!ctb::GetParamVector(confObj, bodyF_dvl_sensor_pose, "bodyF_dvl_sensor_pose"))
             return false;
