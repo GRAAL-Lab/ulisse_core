@@ -72,6 +72,16 @@ bool OfflineBagConverter::ConvertToCSV()
             rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
             serialization.deserialize_message(&extracted_serialized_msg, &magnetometerData_);
             sensorReceived = true;
+        } else if (bag_message->topic_name == ulisse_msgs::topicnames::sensor_dvl) {
+            rclcpp::Serialization<ulisse_msgs::msg::DVLData> serialization;
+            rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
+            serialization.deserialize_message(&extracted_serialized_msg, &dvlData_);
+            sensorReceived = true;
+        } else if (bag_message->topic_name == ulisse_msgs::topicnames::sensor_fog) {
+            rclcpp::Serialization<ulisse_msgs::msg::FOGData> serialization;
+            rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
+            serialization.deserialize_message(&extracted_serialized_msg, &fogData_);
+            sensorReceived = true;
         } else if (bag_message->topic_name == ulisse_msgs::topicnames::llc_thrusters) {
             rclcpp::Serialization<ulisse_msgs::msg::LLCThrusters> serialization;
             rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
@@ -131,6 +141,8 @@ bool OfflineBagConverter::ConvertToCSV()
                          << compassData_.orientation.roll << ", " << compassData_.orientation.pitch << ", " << compassData_.orientation.yaw << ", "
                          << magnetometerData_.stamp.sec + (magnetometerData_.stamp.nanosec * 1e-9) << ", "
                          << magnetometerData_.orthogonalstrength[0] << ", " << magnetometerData_.orthogonalstrength[1] << ", " << magnetometerData_.orthogonalstrength[2]
+                         << dvlData_.bottom_velocity[0] << ", " << dvlData_.bottom_velocity[1] << ", " << dvlData_.bottom_velocity[2] << ", "
+                         << fogData_.angular_velocity
                          << "\n";
         }
     }
@@ -143,17 +155,8 @@ bool OfflineBagConverter::OpenFiles()
     gpsFile_          .open(std::string(saveFolder_ + "/gps.txt"));
     gpsFile_ << "ros_time, gps_time, lat, long, alt, speed, track\n";
 
-    /*imuFile_          .open(std::string(saveFolder_ + "/imu.txt"));
-    imuFile_ << "time, acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z\n";
-
-    compassFile_      .open(std::string(saveFolder_ + "/compass.txt"));
-    compassFile_ << "time, roll, pitch, yaw\n";
-
-    magnetometerFile_ .open(std::string(saveFolder_ + "/magnetometer.txt"));
-    magnetometerFile_ << "time, orth_x, orth_y, orth_z\n";*/
-
     sensorsFile_      .open(std::string(saveFolder_ + "/sensors.txt"));
-    sensorsFile_ << "ros_time, imu_time, acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z, time_compass, compass_R, compass_P, compass_Y, time_magn, magn_x, magn_y, magn_z\n";
+    sensorsFile_ << "ros_time, imu_time, acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z, time_compass, compass_R, compass_P, compass_Y, time_magn, magn_x, magn_y, magn_z, dvl_vel_x, dvl_vel_y, dvl_vel_z, fog_w\n";
 
     motorsFile_       .open(std::string(saveFolder_ + "/motors.txt"));
     motorsFile_ << "ros_time, time, rpm_L, rpm_R\n";

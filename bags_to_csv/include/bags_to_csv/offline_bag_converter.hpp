@@ -22,6 +22,8 @@
 #include "ulisse_msgs/msg/ambient_sensors.hpp"
 #include "ulisse_msgs/msg/compass.hpp"
 #include "ulisse_msgs/msg/imu_data.hpp"
+#include "ulisse_msgs/msg/dvl_data.hpp"
+#include "ulisse_msgs/msg/fog_data.hpp"
 #include "ulisse_msgs/msg/magnetometer.hpp"
 #include "ulisse_msgs/msg/llc_thrusters.hpp"
 #include "ulisse_msgs/msg/llc_battery.hpp"
@@ -47,6 +49,8 @@ private:
     //ulisse_msgs::msg::AmbientSensors ambientSensors_;
     ulisse_msgs::msg::Compass compassData_;
     ulisse_msgs::msg::IMUData imuData_;
+    ulisse_msgs::msg::DVLData dvlData_;
+    ulisse_msgs::msg::FOGData fogData_;
     ulisse_msgs::msg::Magnetometer magnetometerData_;
     ulisse_msgs::msg::LLCThrusters llcThrustersData_;
     //ulisse_msgs::msg::LLCBattery llcBattery_;

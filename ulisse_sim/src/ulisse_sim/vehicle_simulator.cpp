@@ -341,17 +341,17 @@ void VehicleSimulator::SimulateSensors()
 
     /////   IMU   /////
     /// Imu: Orientation
-    std::normal_distribution<double> orientusNoiseX(0.0, config_->sensorsNoise.orientus_stdd.x());
-    std::normal_distribution<double> orientusNoiseY(0.0, config_->sensorsNoise.orientus_stdd.y());
-    std::normal_distribution<double> orientusNoiseZ(0.0, config_->sensorsNoise.orientus_stdd.z());
+    //std::normal_distribution<double> orientusNoiseX(0.0, config_->sensorsNoise.orientus_stdd.x());
+    //std::normal_distribution<double> orientusNoiseY(0.0, config_->sensorsNoise.orientus_stdd.y());
+    //std::normal_distribution<double> orientusNoiseZ(0.0, config_->sensorsNoise.orientus_stdd.z());
 
     imuMsg_.stamp.sec = now_stamp_secs;
     imuMsg_.stamp.nanosec = now_stamp_nanosecs;
     Eigen::RotationMatrix bodyF_R_orientus = rml::EulerRPY(config_->bodyF_imu_sensor_pose.AngularVector()).ToRotationMatrix();
-    Eigen::Vector3d imuF_orientation = bodyF_R_orientus.transpose() * bodyF_orientation_.ToVector();
-    imuMsg_.orientation.roll = imuF_orientation.x() + orientusNoiseX(generator);
-    imuMsg_.orientation.pitch = imuF_orientation.y() + orientusNoiseY(generator);
-    imuMsg_.orientation.yaw = imuF_orientation.z() + orientusNoiseZ(generator);
+    rml::EulerRPY imuF_orientation = Eigen::RotationMatrix(bodyF_orientation_.ToRotationMatrix() * bodyF_R_orientus).ToEulerRPY();
+    imuMsg_.orientation.roll = imuF_orientation.Roll() + compassNoiseR(generator);
+    imuMsg_.orientation.pitch = imuF_orientation.Pitch() + compassNoiseP(generator);
+    imuMsg_.orientation.yaw = imuF_orientation.Yaw() + compassNoiseY(generator);
 
     /// Imu: Linear Velocity
     ///
@@ -435,8 +435,6 @@ void VehicleSimulator::SimulateSensors()
     fogMsg_.stamp.sec = now_stamp_secs;
     fogMsg_.stamp.nanosec = now_stamp_nanosecs;
     fogMsg_.angular_velocity = bodyF_relativeAngularVelocity(2) + fogNoise(generator);
-
-
 
 
     /////   AMBIENT   /////
