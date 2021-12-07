@@ -203,7 +203,7 @@ void VehicleSimulator::SimulateActuation()
 
     worldF_R_bodyF_ = Rz * Ry * Rx;
 
-    //Compute the projection of the velocity on the plane (non "vola")
+    // Compute the projection of the velocity on the plane (non "vola")
     Eigen::Vector3d worldF_wFk = { 0.0, 0.0, 1.0 };
 
     bodyF_wFk_ = worldF_R_bodyF_.transpose() * worldF_wFk;

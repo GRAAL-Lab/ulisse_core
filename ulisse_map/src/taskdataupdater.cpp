@@ -75,6 +75,22 @@ void TaskDataUpdater::Init(QQmlApplicationEngine* engine)
         qDebug() << "actionColumnViewObj_ Object NOT found!";
     }
 
+    RegisterSubscribers();
+
+    tasksMessageMap_.insert( { ulisse::task::asvAbsoluteAxisAlignment, ulisse_msgs::msg::TaskStatus() } );
+    tasksMessageMap_.insert( { ulisse::task::asvAbsoluteAxisAlignmentHold, ulisse_msgs::msg::TaskStatus() } );
+    tasksMessageMap_.insert( { ulisse::task::asvAbsoluteAxisAlignmentSafety, ulisse_msgs::msg::TaskStatus() } );
+    tasksMessageMap_.insert( { ulisse::task::asvAngularPosition, ulisse_msgs::msg::TaskStatus()});
+    tasksMessageMap_.insert( { ulisse::task::asvCartesianDistance, ulisse_msgs::msg::TaskStatus()});
+    tasksMessageMap_.insert( { ulisse::task::asvCartesianDistancePathFollowing, ulisse_msgs::msg::TaskStatus()});
+    tasksMessageMap_.insert( { ulisse::task::asvLinearVelocity, ulisse_msgs::msg::TaskStatus()});
+    tasksMessageMap_.insert( { ulisse::task::asvLinearVelocityHold, ulisse_msgs::msg::TaskStatus()});
+    tasksMessageMap_.insert( { ulisse::task::asvSafetyBoundaries, ulisse_msgs::msg::TaskStatus()});
+
+
+}
+
+void TaskDataUpdater::RegisterSubscribers(){
 
 
     // Set the QoS. ROS 2 will provide QoS profiles based on the following use cases:
@@ -87,7 +103,6 @@ void TaskDataUpdater::Init(QQmlApplicationEngine* engine)
 
     tpikActionSub_ = this->create_subscription<ulisse_msgs::msg::TPIKAction>(ulisse_msgs::topicnames::tpik_action, 10,
         std::bind(&TaskDataUpdater::TPIKActionCB, this, _1) /*custom_qos_profile*/);
-
 
     absoluteAxisAlignmentSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment, 10,
         std::bind(&TaskDataUpdater::AbsoluteAxisAlignmentCB, this, _1) /*custom_qos_profile*/);
@@ -116,27 +131,29 @@ void TaskDataUpdater::Init(QQmlApplicationEngine* engine)
     safetyBoundariesSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_safety_boundaries, 10,
         std::bind(&TaskDataUpdater::SafetyBoundariesCB, this, _1) /*custom_qos_profile*/);
 
+}
 
-    tasksMessageMap_.insert( { ulisse::task::asvAbsoluteAxisAlignment, ulisse_msgs::msg::TaskStatus() } );
-    tasksMessageMap_.insert( { ulisse::task::asvAbsoluteAxisAlignmentHold, ulisse_msgs::msg::TaskStatus() } );
-    tasksMessageMap_.insert( { ulisse::task::asvAbsoluteAxisAlignmentSafety, ulisse_msgs::msg::TaskStatus() } );
-    tasksMessageMap_.insert( { ulisse::task::asvAngularPosition, ulisse_msgs::msg::TaskStatus()});
-    tasksMessageMap_.insert( { ulisse::task::asvCartesianDistance, ulisse_msgs::msg::TaskStatus()});
-    tasksMessageMap_.insert( { ulisse::task::asvCartesianDistancePathFollowing, ulisse_msgs::msg::TaskStatus()});
-    tasksMessageMap_.insert( { ulisse::task::asvLinearVelocity, ulisse_msgs::msg::TaskStatus()});
-    tasksMessageMap_.insert( { ulisse::task::asvLinearVelocityHold, ulisse_msgs::msg::TaskStatus()});
-    tasksMessageMap_.insert( { ulisse::task::asvSafetyBoundaries, ulisse_msgs::msg::TaskStatus()});
+void TaskDataUpdater::resetPublishersAndSubscribers()
+{
+    tpikActionSub_.reset();
 
+    absoluteAxisAlignmentSub_         .reset();
+    absoluteAxisAlignmentHoldSub_     .reset();
+    absoluteAxisAlignmentSafetySub_   .reset();
+    angularPositionSub_               .reset();
+    cartesianDistanceSub_             .reset();
+    cartesianDistancePathFollowingSub_.reset();
+    linearVelocityHoldSub_            .reset();
+    linearVelocitySub_                .reset();
+    safetyBoundariesSub_              .reset();
 
+    RegisterSubscribers();
 }
 
 void TaskDataUpdater::TPIKActionCB(const ulisse_msgs::msg::TPIKAction::SharedPtr msg)
 {
     if(tpikActionMsg_.id != msg->id ){
-
         tpikActionMsg_ = *msg;
-
-        //qDebug() << "New Incoming Action: " << tpikActionMsg_.id.c_str();
         newIncomingAction_ = true;
     }
 
@@ -209,7 +226,6 @@ void TaskDataUpdater::process_callbacks_slot()
         UpdateView();
     }
 
-
     emit callbacks_processed();
 }
 
@@ -235,12 +251,10 @@ void TaskDataUpdater::LoadAction()
         plViewQuickItems_.back()->setParentItem(qobject_cast<QQuickItem*>(actionColumnViewObj_));
         plViewQuickItems_.back()->setParent(actionColumnViewObj_);
         plViewQuickItems_.back()->setProperty("priorityID", qPlName);
-
         //qDebug() << "Created PL: " << plViewQuickItems_.back()->property("priorityID").toString();
 
         tasksColumnListObj_.push_back(qtRootOjects_.first()->findChildren<QObject*>("taskDataColumnObj").back());
 
-        //QStringList taskIDs;
         for (const auto &taskID : pl.tasks_id) {
 
             QVariant qTaskID = QString::fromStdString(taskID);//.replace("_", " ");;
@@ -251,15 +265,9 @@ void TaskDataUpdater::LoadAction()
             tasksItemsMap_.at(taskID)->setParentItem(qobject_cast<QQuickItem*>(tasksColumnListObj_.back()));
             tasksItemsMap_.at(taskID)->setParent(tasksColumnListObj_.back());
             tasksItemsMap_.at(taskID)->setProperty("taskName", qTaskID);
-
             //qDebug() << "Created Task: " << tasksItemsMap_.at(pl.id).back()->property("taskName").toString();
         }
     }
-
-
-    //for(int i = 0; i < plViewQuickItems_.size(); i++ ){
-    //}
-
 }
 
 void TaskDataUpdater::UpdateView()
@@ -280,16 +288,5 @@ void TaskDataUpdater::UpdateView()
             }
         }
     }
-
-}
-
-QVector<double> TaskDataUpdater::GenerateRandFloatVector(int size)
-{
-    QVector<double> randVect(size);
-
-    for (int i = 0; i < randVect.size(); i++) {
-        randVect[i] = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-    }
-    return randVect;
 }
 

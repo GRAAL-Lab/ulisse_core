@@ -375,7 +375,7 @@ void VehicleController::CommandsHandler(const std::shared_ptr<rmw_request_id_t> 
 
     // Check if Boundaries are set before accepting commands
     if (!boundariesSet_) {
-        response->res = "CommandAnswer::NoBoundSet";
+        response->res = "[KCL] No SafetyBound Set!";
         return;
     }
 

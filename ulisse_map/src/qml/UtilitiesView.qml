@@ -99,7 +99,9 @@ Rectangle {
                     Material.background: pressed ? orange : mainColor
 
                     onClicked: {
+                        cmdWrapper.resetPublishersAndSubscribers()
                         fbkUpdater.resetPublishersAndSubscribers()
+                        taskdataUpdater.resetPublishersAndSubscribers()
                     }
                 }
             }

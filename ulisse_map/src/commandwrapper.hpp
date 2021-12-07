@@ -59,6 +59,7 @@ class CommandWrapper : public QObject, rclcpp::Node {
     bool SendPathRequest(ulisse_msgs::srv::ControlCommand::Request::SharedPtr req);
     bool SendCommandRequest(ulisse_msgs::srv::ControlCommand::Request::SharedPtr req);
     void StopOngoingTimers();
+    void RegisterPublishersAndSubscribers();
 
 public:
     explicit CommandWrapper(QObject* parent = nullptr);
@@ -67,6 +68,7 @@ public:
     void Init(QQmlApplicationEngine* engine);
     std::future<void> notificator;
 
+    Q_INVOKABLE void resetPublishersAndSubscribers();
     Q_INVOKABLE bool sendBoundaries(const QString boundary);
     Q_INVOKABLE bool sendPath(const QString path);
     Q_INVOKABLE bool sendHaltCommand();

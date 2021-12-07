@@ -557,7 +557,6 @@ double FeedbackUpdater::get_water_current_norm()
 void FeedbackUpdater::process_callbacks_slot()
 {
     rclcpp::spin_some(this->get_node_base_interface());
-    //qDebug("FeedbackUpdater::process_callbacks_slot()");
     emit callbacks_processed();
 }
 

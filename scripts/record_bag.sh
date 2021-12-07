@@ -20,16 +20,17 @@ cd ${HOME}/logs/$1
 ros2 bag record -a
 
 ## Identify the bag just recorded (aka: the last created folder)
-lastBag=$(ls -td -- */ | head -n 1 | cut -d'/' -f1)
-echo $lastBag
+lastBagFolder=$(ls -td -- */ | head -n 1 | cut -d'/' -f1)
+echo $lastBagFolder
 
 DIR="${HOME}/ros2_ws/src/ulisse_core"
 if [ -d "$DIR" ]; then
   ### Take action if $DIR exists ###
   echo "Copying config files from ${DIR}..."
-  cp ~/ros2_ws/src/ulisse_core/nav_filter/conf/navigation_filter.conf $lastBag
-  cp ~/ros2_ws/src/ulisse_core/ulisse_ctrl/conf/dcl_ulisse.conf $lastBag
-  cp ~/ros2_ws/src/ulisse_core/ulisse_ctrl/conf/kcl_ulisse.conf $lastBag
+  cp ~/ros2_ws/src/ulisse_core/nav_filter/conf/navigation_filter.conf $lastBagFolder
+  cp ~/ros2_ws/src/ulisse_core/ulisse_ctrl/conf/dcl_ulisse.conf $lastBagFolder
+  cp ~/ros2_ws/src/ulisse_core/ulisse_ctrl/conf/kcl_ulisse.conf $lastBagFolder
+  cp ~/ros2_ws/src/ulisse_core/ulisse_sim/conf/simulator_ulisse.conf $lastBagFolder
 else
   ###  Control will jump here if $DIR does NOT exists ###
   echo "Error: ${DIR} not found. Can not continue."

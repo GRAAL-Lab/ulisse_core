@@ -24,16 +24,18 @@ Rectangle {
         Button {
             id: recenterButton
             text: "Recenter"
+            font.pointSize: 9
             highlighted: true
-            Material.background: orange
+            Material.background: grey
             Layout.leftMargin: 10
         }
 
         Button {
             id: clearPathButton
             text: "Clear trace"
+            font.pointSize: 9
             highlighted: true
-            Material.accent: orange
+            Material.accent: grey
             Layout.alignment: Qt.AlignLeft
         }
 
@@ -41,13 +43,14 @@ Rectangle {
             id: followMeCheckbox
             text: "Follow vehicle"
             //Layout.alignment: Qt.AlignLeft
-            //Material.accent: mainColor
+            Material.accent: grey
             checked: false
         }
 
         CheckBox {
             id: gpsIconCBox
             text: "Show GPS"
+            Material.accent: grey
             checked: false
         }
 

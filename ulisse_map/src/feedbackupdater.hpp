@@ -131,15 +131,8 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     rclcpp::Subscription<ulisse_msgs::msg::FeedbackGui>::SharedPtr feedbackGuiSub_;
 
     QVector<double> GenerateRandFloatVector(int size);
-
-public:
-    explicit FeedbackUpdater(QObject* parent = nullptr);
-    explicit FeedbackUpdater(QQmlApplicationEngine* engine, QObject* parent = nullptr);
-    virtual ~FeedbackUpdater();
-    void Init(QQmlApplicationEngine* engine);
     bool LoadConfiguration();
     void RegisterPublishersAndSubscribers();
-
     double RadiansToDegrees(const double angle_rad, const bool wraparound360 = false);
 
     void GPSDataCB(const ulisse_msgs::msg::GPSData::SharedPtr msg);
@@ -159,6 +152,12 @@ public:
     void VehicleStatusCB(const ulisse_msgs::msg::VehicleStatus::SharedPtr msg);
     void NavFilterDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
     void FeedbackGuiCB(const ulisse_msgs::msg::FeedbackGui::SharedPtr msg);
+
+public:
+    explicit FeedbackUpdater(QObject* parent = nullptr);
+    explicit FeedbackUpdater(QQmlApplicationEngine* engine, QObject* parent = nullptr);
+    virtual ~FeedbackUpdater();
+    void Init(QQmlApplicationEngine* engine);
 
     Q_INVOKABLE void copyToClipboard(QString value);
     Q_INVOKABLE void resetPublishersAndSubscribers();

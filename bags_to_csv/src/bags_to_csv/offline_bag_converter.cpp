@@ -125,6 +125,33 @@ bool OfflineBagConverter::ConvertToCSV()
                            << thrustersReference_.stamp.sec + (thrustersReference_.stamp.nanosec * 1e-9) << ", "
                            << thrustersReference_.left_percentage << ", " << thrustersReference_.right_percentage
                            << "\n";
+        } else if (bag_message->topic_name == ulisse_msgs::topicnames::simulated_system) {
+            rclcpp::Serialization<ulisse_msgs::msg::SimulatedSystem> serialization;
+            rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
+            serialization.deserialize_message(&extracted_serialized_msg, &groundtruth_);
+            groundtruthFile_ << std::fixed << std::setprecision(6)
+                           << bag_message->time_stamp  * 1e-9 << ", "
+                           << groundtruth_.stamp.sec + (groundtruth_.stamp.nanosec * 1e-9) << ", "
+                           << groundtruth_.inertialframe_linear_position.latlong.latitude  << ", "
+                           << groundtruth_.inertialframe_linear_position.latlong.longitude << ", "
+                           << groundtruth_.inertialframe_linear_position.altitude          << ", "
+                           << groundtruth_.bodyframe_angular_position.roll                 << ", "
+                           << groundtruth_.bodyframe_angular_position.pitch                << ", "
+                           << groundtruth_.bodyframe_angular_position.yaw                  << ", "
+                           << groundtruth_.bodyframe_linear_velocity[0]                    << ", "
+                           << groundtruth_.bodyframe_linear_velocity[1]                    << ", "
+                           << groundtruth_.bodyframe_linear_velocity[2]                    << ", "
+                           << groundtruth_.bodyframe_angular_velocity[0]                   << ", "
+                           << groundtruth_.bodyframe_angular_velocity[1]                   << ", "
+                           << groundtruth_.bodyframe_angular_velocity[2]                   << ", "
+                           << groundtruth_.inertialframe_water_current[0]                  << ", "
+                           << groundtruth_.inertialframe_water_current[1]                  << ", "
+                           << groundtruth_.gyro_bias[0]                                    << ", "
+                           << groundtruth_.gyro_bias[1]                                    << ", "
+                           << groundtruth_.gyro_bias[2]                                    << ", "
+                           << groundtruth_.n_p                                             << ", "
+                           << groundtruth_.n_s                                             << ", "
+                           << "\n";
         }
         // else if (bag_message->topic_name == ulisse_msgs::topicnames::llc_battery_left) {
         //    batteryFile_ << batteryLeft_.stamp.sec + (batteryLeft_.stamp.nanosec * 1e-9) << ", " << batteryLeft_.charge_percent  << "\n";
@@ -153,10 +180,12 @@ bool OfflineBagConverter::ConvertToCSV()
 bool OfflineBagConverter::OpenFiles()
 {
     gpsFile_          .open(std::string(saveFolder_ + "/gps.txt"));
-    gpsFile_ << "ros_time, gps_time, lat, long, alt, speed, track\n";
+    gpsFile_     << "ros_time, gps_time, lat, long, alt, speed, track\n";
 
     sensorsFile_      .open(std::string(saveFolder_ + "/sensors.txt"));
-    sensorsFile_ << "ros_time, imu_time, acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z, time_compass, compass_R, compass_P, compass_Y, time_magn, magn_x, magn_y, magn_z, dvl_vel_x, dvl_vel_y, dvl_vel_z, fog_w\n";
+    sensorsFile_ << "ros_time, imu_time, acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z, "
+                    "time_compass, compass_R, compass_P, compass_Y, time_magn,"
+                    "magn_x, magn_y, magn_z, dvl_vel_x, dvl_vel_y, dvl_vel_z, fog_w\n";
 
     motorsFile_       .open(std::string(saveFolder_ + "/motors.txt"));
     motorsFile_ << "ros_time, time, rpm_L, rpm_R\n";
@@ -166,10 +195,16 @@ bool OfflineBagConverter::OpenFiles()
                    << "rRate, pRate, yRate, cx, cy, bx, by, bz\n";
 
     refVelFile_      .open(std::string(saveFolder_ + "/reference_vel.txt"));
-    refVelFile_ << "ros_time, time, surge, yawrate\n";
+    refVelFile_   << "ros_time, time, surge, yawrate\n";
 
     thrustersFile_   .open(std::string(saveFolder_ + "/thrusters.txt"));
     thrustersFile_ << "ros_time, time, time485_L, perc_L, time485_R, perc_R\n";
+
+    groundtruthFile_  .open(std::string(saveFolder_ + "/groundtruth.txt"));
+    groundtruthFile_ << "ros_time, time, lat, long, alt, b_roll, b_pitch, b_yaw,"
+                        "b_lin_vel_x, b_lin_vel_y, b_lin_vel_z, b_ang_vel_x, b_ang_vel_y, b_ang_vel_z,"
+                        "i_wat_vel_x, i_wat_vel_y, gyro_bias_x, gyro_bias_y, gyro_bias_z, n_p, n_s \n";
+
     //vehicleStatusFile_.open(std::string(saveFolder_ + "/vehicle_status.txt"));
 
     return true;

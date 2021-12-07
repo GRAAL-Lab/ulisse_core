@@ -72,19 +72,7 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
         qDebug("No 'speedHeadTimeout' found!");
     }
 
-    command_srv_ = this->create_client<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service);
-    cruise_srv_ = this->create_client<ulisse_msgs::srv::SetCruiseControl>(ulisse_msgs::topicnames::set_cruise_control_service);
-    boundary_srv_ = this->create_client<ulisse_msgs::srv::SetBoundaries>(ulisse_msgs::topicnames::set_boundaries_service);
-    llc_srv_ = this->create_client<ulisse_msgs::srv::LLCCommand>(ulisse_msgs::topicnames::llc_cmd_service);
-
-    kcl_conf_srv_ = this->create_client<ulisse_msgs::srv::ResetConfiguration>(ulisse_msgs::topicnames::reset_kcl_conf_service);
-    dcl_conf_srv_ = this->create_client<ulisse_msgs::srv::ResetConfiguration>(ulisse_msgs::topicnames::reset_dcl_conf_service);
-    nav_filter_srv_ = this->create_client<ulisse_msgs::srv::NavFilterCommand>(ulisse_msgs::topicnames::navfilter_cmd_service);
-
-    feedbackGuiSub_ = this->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10, std::bind(&CommandWrapper::FeedbackGuiCB, this, _1) /*, custom_qos_profile*/);
-
-    surgeHeadingPub_ = this->create_publisher<ulisse_msgs::msg::SurgeHeading>(ulisse_msgs::topicnames::surge_heading, 1);
-    surgeYawRatePub_ = this->create_publisher<ulisse_msgs::msg::SurgeYawRate>(ulisse_msgs::topicnames::surge_yawrate, 1);
+    RegisterPublishersAndSubscribers();
 
     /*connect(this, &CommandWrapper::connected, []() { std::cout << "service connected" << std::endl; });
     notificator = std::async([&] {
@@ -92,6 +80,25 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
         emit connected();
         setCruiseSpeedCommand(cruiseSpeedObj_->property("value").toUInt());
     });*/
+}
+
+void CommandWrapper::resetPublishersAndSubscribers()
+{
+    command_srv_     .reset();
+    cruise_srv_      .reset();
+    boundary_srv_    .reset();
+    llc_srv_         .reset();
+
+    kcl_conf_srv_    .reset();
+    dcl_conf_srv_    .reset();
+    nav_filter_srv_  .reset();
+
+    feedbackGuiSub_  .reset();
+
+    surgeHeadingPub_ .reset();
+    surgeYawRatePub_ .reset();
+
+    RegisterPublishersAndSubscribers();
 }
 
 void CommandWrapper::FeedbackGuiCB(const ulisse_msgs::msg::FeedbackGui::SharedPtr msg)
@@ -492,6 +499,23 @@ void CommandWrapper::StopOngoingTimers()
     surgeHeadingPubTimer_->stop();
     surgeYawRatePubTimer_->stop();
     checkErrorTimer_->stop();
+}
+
+void CommandWrapper::RegisterPublishersAndSubscribers()
+{
+    command_srv_ = this->create_client<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service);
+    cruise_srv_ = this->create_client<ulisse_msgs::srv::SetCruiseControl>(ulisse_msgs::topicnames::set_cruise_control_service);
+    boundary_srv_ = this->create_client<ulisse_msgs::srv::SetBoundaries>(ulisse_msgs::topicnames::set_boundaries_service);
+    llc_srv_ = this->create_client<ulisse_msgs::srv::LLCCommand>(ulisse_msgs::topicnames::llc_cmd_service);
+
+    kcl_conf_srv_ = this->create_client<ulisse_msgs::srv::ResetConfiguration>(ulisse_msgs::topicnames::reset_kcl_conf_service);
+    dcl_conf_srv_ = this->create_client<ulisse_msgs::srv::ResetConfiguration>(ulisse_msgs::topicnames::reset_dcl_conf_service);
+    nav_filter_srv_ = this->create_client<ulisse_msgs::srv::NavFilterCommand>(ulisse_msgs::topicnames::navfilter_cmd_service);
+
+    feedbackGuiSub_ = this->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10, std::bind(&CommandWrapper::FeedbackGuiCB, this, _1) /*, custom_qos_profile*/);
+
+    surgeHeadingPub_ = this->create_publisher<ulisse_msgs::msg::SurgeHeading>(ulisse_msgs::topicnames::surge_heading, 1);
+    surgeYawRatePub_ = this->create_publisher<ulisse_msgs::msg::SurgeYawRate>(ulisse_msgs::topicnames::surge_yawrate, 1);
 }
 
 void CommandWrapper::publish_surge_heading()

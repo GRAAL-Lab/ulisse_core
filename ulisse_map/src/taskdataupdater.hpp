@@ -36,19 +36,7 @@ class TaskDataUpdater : public QObject, rclcpp::Node {
     //QList<QObject*> plViewObjects_;
 
     std::atomic<bool> newIncomingAction_;
-
-    //QObject *pl_object;
-
-
-    /*Q_PROPERTY(QGeoCoordinate ulisse_pos READ get_ulisse_pos NOTIFY callbacks_processed)
-    Q_PROPERTY(QGeoCoordinate goal_pos READ get_goal_pos NOTIFY callbacks_processed)
-
-    Q_PROPERTY(double goal_distance READ get_goal_distance NOTIFY callbacks_processed)
-    Q_PROPERTY(double goal_heading READ get_goal_heading NOTIFY callbacks_processed)
-
-    Q_PROPERTY(double accept_radius READ get_accept_radius NOTIFY callbacks_processed)*/
-
-        int taskDataUpdateInterval_;
+    int taskDataUpdateInterval_;
 
     rclcpp::Subscription<ulisse_msgs::msg::TPIKAction>::SharedPtr tpikActionSub_;
     ulisse_msgs::msg::TPIKAction tpikActionMsg_;
@@ -66,26 +54,10 @@ class TaskDataUpdater : public QObject, rclcpp::Node {
     rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr linearVelocitySub_;
     rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr safetyBoundariesSub_;
 
-    /*ulisse_msgs::msg::TaskStatus absoluteAxisAlignmentMsg_;
-    ulisse_msgs::msg::TaskStatus absoluteAxisAlignmentHoldMsg_;
-    ulisse_msgs::msg::TaskStatus absoluteAxisAlignmentSafetyMsg_;
-    ulisse_msgs::msg::TaskStatus angularPositionMsg_;
-    ulisse_msgs::msg::TaskStatus cartesianDistanceMsg_;
-    ulisse_msgs::msg::TaskStatus cartesianDistancePathFollowingMsg_;
-    ulisse_msgs::msg::TaskStatus linearVelocityHoldMsg_;
-    ulisse_msgs::msg::TaskStatus linearVelocityMsg_;
-    ulisse_msgs::msg::TaskStatus safetyBoundariesMsg_;*/
 
     void LoadAction();
-    //void ActivateTaskSubscribers();
     void UpdateView();
-    QVector<double> GenerateRandFloatVector(int size);
-
-public:
-    explicit TaskDataUpdater(QObject* parent = nullptr);
-    explicit TaskDataUpdater(QQmlApplicationEngine* engine, QObject* parent = nullptr);
-    virtual ~TaskDataUpdater();
-    void Init(QQmlApplicationEngine* engine);
+    void RegisterSubscribers();
 
     void TPIKActionCB(const ulisse_msgs::msg::TPIKAction::SharedPtr msg);
     void AbsoluteAxisAlignmentCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
@@ -98,11 +70,14 @@ public:
     void LinearVelocityHoldCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
     void SafetyBoundariesCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
 
-    /*QGeoCoordinate get_ulisse_pos();
-    QGeoCoordinate get_goal_pos();
-    double get_goal_distance();
-    double get_goal_heading();
-    double get_accept_radius();*/
+
+public:
+    explicit TaskDataUpdater(QObject* parent = nullptr);
+    explicit TaskDataUpdater(QQmlApplicationEngine* engine, QObject* parent = nullptr);
+    virtual ~TaskDataUpdater();
+    void Init(QQmlApplicationEngine* engine);
+
+    Q_INVOKABLE void resetPublishersAndSubscribers();
 
 signals:
     void callbacks_processed();
