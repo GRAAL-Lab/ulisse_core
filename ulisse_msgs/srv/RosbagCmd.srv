@@ -1,3 +1,4 @@
-string cmd
+bool record
+string save_folder
 ---
 string res

@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
     }
     if (bagClient->service_is_ready()) {
         auto bagRequest = std::make_shared<ulisse_msgs::srv::RosbagCmd::Request>();
-        bagRequest->cmd = "stop";
+        bagRequest->record = 0;
         auto result_future_bag = bagClient->async_send_request(bagRequest);
         if (rclcpp::spin_until_future_complete(node, result_future_bag) != rclcpp::executor::FutureReturnCode::SUCCESS) {
             RCLCPP_ERROR(node->get_logger(), "service call failed :(");
