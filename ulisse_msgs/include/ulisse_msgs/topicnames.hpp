@@ -64,7 +64,7 @@ const std::string task_linear_velocity_hold = "/ulisse/task/ASV_Linear_Velocity_
 const std::string tpik_action = "/ulisse/task/tpik_action";
 
 // SERVICES
-const std::string rosbag_service = "/record_bag";
+const std::string rosbag_service = "/bag_recorder_client";
 const std::string llc_cmd_service = "/ulisse/service/llc_cmd";
 const std::string control_cmd_service = "/ulisse/service/control_cmd";
 const std::string navfilter_cmd_service = "/ulisse/service/navfilter_cmd";

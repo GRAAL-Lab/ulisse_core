@@ -15,7 +15,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rosbag2_cpp REQUIRED)
 find_package(example_interfaces REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
+
 find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(ulisse_msgs REQUIRED)
@@ -24,19 +24,20 @@ include_directories(
   include
 )
 
-rosidl_generate_interfaces(${PROJECT_NAME}
-   "srv/BagRecord.srv"
-)
+
+add_library(RosbagRecorder src/bag_recorder/rosbag_recorder.cpp)
+ament_target_dependencies(RosbagRecorder rclcpp rosbag2_cpp ulisse_msgs)
 
 add_executable(simple_bag_recorder src/simple_bag_recorder.cpp)
 ament_target_dependencies(simple_bag_recorder rclcpp rosbag2_cpp)
 
-add_executable(bag_recorder_wrapper src/bag_recorder_wrapper.cpp)
-ament_target_dependencies(bag_recorder_wrapper rclcpp rosbag2_cpp std_srvs ulisse_msgs)
+add_executable(bag_recorder_node src/bag_recorder_node.cpp)
+ament_target_dependencies(bag_recorder_node rclcpp rosbag2_cpp std_srvs ulisse_msgs)
+target_link_libraries(bag_recorder_node RosbagRecorder)
 
 install(TARGETS
   simple_bag_recorder
-  bag_recorder_wrapper
+  bag_recorder_node
   DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -51,6 +52,6 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-ament_export_dependencies(rosidl_default_runtime)
+
 
 ament_package()

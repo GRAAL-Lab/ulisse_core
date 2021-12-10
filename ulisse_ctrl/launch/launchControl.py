@@ -28,11 +28,17 @@ def generate_launch_description():
             executable='nav_filter_udp_sender',
             output='screen',
             arguments=["192.168.1.153"])
+    bag_recorder_node = launch_ros.actions.Node(
+            package='bag_recorder',
+            executable='bag_recorder_node',
+            output='screen',
+            arguments=[])
     
     return LaunchDescription([
         dcl_node,
         kcl_node,
         nav_filter_node,
+        bag_recorder_node,
         # nav_filter_udp_sender
         # more nodes can be added here
     ])

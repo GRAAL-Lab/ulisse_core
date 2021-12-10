@@ -27,6 +27,7 @@
 #include "ulisse_msgs/msg/thrusters_reference.hpp"
 #include "ulisse_msgs/msg/vehicle_status.hpp"
 
+
 class FeedbackUpdater : public QObject, rclcpp::Node {
     Q_OBJECT
     QQmlApplicationEngine* appEngine_;
@@ -110,7 +111,6 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     double water_current_deg;
     double water_current_norm;
 
-    //rclcpp::Node::SharedPtr np_;
     rclcpp::Subscription<ulisse_msgs::msg::GPSData>::SharedPtr gps_data_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::MicroLoopCount>::SharedPtr micro_loop_count_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::AmbientSensors>::SharedPtr ambient_sensors_sub_;
@@ -118,7 +118,6 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     rclcpp::Subscription<ulisse_msgs::msg::IMUData>::SharedPtr imu_data_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::Magnetometer>::SharedPtr magnetometer_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::LLCThrusters>::SharedPtr llc_motors_sub_;
-
 
     rclcpp::Subscription<ulisse_msgs::msg::LLCBattery>::SharedPtr battery_left_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::LLCBattery>::SharedPtr battery_right_sub_;

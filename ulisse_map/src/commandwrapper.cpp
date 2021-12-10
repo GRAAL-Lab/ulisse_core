@@ -84,6 +84,8 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
 
 void CommandWrapper::resetPublishersAndSubscribers()
 {
+    bag_recorder_client_.reset();
+
     command_srv_     .reset();
     cruise_srv_      .reset();
     boundary_srv_    .reset();
@@ -503,8 +505,11 @@ void CommandWrapper::StopOngoingTimers()
 
 void CommandWrapper::RegisterPublishersAndSubscribers()
 {
+
+    bag_recorder_client_ = this->create_client<ulisse_msgs::srv::RosbagCmd>(ulisse_msgs::topicnames::rosbag_service);
+
     command_srv_ = this->create_client<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service);
-    cruise_srv_ = this->create_client<ulisse_msgs::srv::SetCruiseControl>(ulisse_msgs::topicnames::set_cruise_control_service);
+    //cruise_srv_ = this->create_client<ulisse_msgs::srv::SetCruiseControl>(ulisse_msgs::topicnames::set_cruise_control_service);
     boundary_srv_ = this->create_client<ulisse_msgs::srv::SetBoundaries>(ulisse_msgs::topicnames::set_boundaries_service);
     llc_srv_ = this->create_client<ulisse_msgs::srv::LLCCommand>(ulisse_msgs::topicnames::llc_cmd_service);
 
@@ -512,7 +517,7 @@ void CommandWrapper::RegisterPublishersAndSubscribers()
     dcl_conf_srv_ = this->create_client<ulisse_msgs::srv::ResetConfiguration>(ulisse_msgs::topicnames::reset_dcl_conf_service);
     nav_filter_srv_ = this->create_client<ulisse_msgs::srv::NavFilterCommand>(ulisse_msgs::topicnames::navfilter_cmd_service);
 
-    feedbackGuiSub_ = this->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10, std::bind(&CommandWrapper::FeedbackGuiCB, this, _1) /*, custom_qos_profile*/);
+    feedbackGuiSub_ = this->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10, std::bind(&CommandWrapper::FeedbackGuiCB, this, _1) );
 
     surgeHeadingPub_ = this->create_publisher<ulisse_msgs::msg::SurgeHeading>(ulisse_msgs::topicnames::surge_heading, 1);
     surgeYawRatePub_ = this->create_publisher<ulisse_msgs::msg::SurgeYawRate>(ulisse_msgs::topicnames::surge_yawrate, 1);
@@ -625,6 +630,36 @@ bool CommandWrapper::sendThrusterActivation(bool activate)
     }
     ShowToast(result_msg.c_str(), 2000);
     return serviceAvailable;
+}
+
+bool CommandWrapper::sendRosbagRecordCommand(int record_cmd, const QString folder_path){
+
+    auto request = std::make_shared<ulisse_msgs::srv::RosbagCmd::Request>();
+    request->record_cmd = record_cmd;
+    request->save_folder = folder_path.toStdString();
+
+    static std::string result_msg;
+    bool rec_status = false;
+    bool serviceAvailable;
+    if (bag_recorder_client_->service_is_ready()) {
+        auto result_future = bag_recorder_client_->async_send_request(request);
+        std::cout << "Sent Request to controller" << std::endl;
+        if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
+            result_msg = "service call failed :(";
+            RCLCPP_ERROR(this->get_logger(), result_msg.c_str());
+        } else {
+            auto result = result_future.get();
+            result_msg = "Service returned: " + result->res;
+            rec_status = result->record_status;
+            RCLCPP_INFO(this->get_logger(), result_msg.c_str());
+        }
+        serviceAvailable = true;
+    } else {
+        result_msg = "The bag recorder doesn't seem to be active.\n(No BagRecord Server available)";
+        serviceAvailable = false;
+    }
+    ShowToast(result_msg.c_str(), 2000);
+    return rec_status;
 }
 
 /*bool CommandWrapper::setCruiseSpeedCommand(double speed)

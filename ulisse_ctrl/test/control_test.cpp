@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
     }
     if (bagClient->service_is_ready()) {
         auto bagRequest = std::make_shared<ulisse_msgs::srv::RosbagCmd::Request>();
-        bagRequest->record = 0;
+        bagRequest->record_cmd = 0;
         auto result_future_bag = bagClient->async_send_request(bagRequest);
         if (rclcpp::spin_until_future_complete(node, result_future_bag) != rclcpp::executor::FutureReturnCode::SUCCESS) {
             RCLCPP_ERROR(node->get_logger(), "service call failed :(");
@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
         auto llcRequest = std::make_shared<ulisse_msgs::srv::LLCCommand::Request>();
         llcRequest->command_type = static_cast<uint16_t>(CommandType::reloadconfig);
         auto result_future_llc = llcClient->async_send_request(llcRequest);
-        if (rclcpp::spin_until_future_complete(node, result_future_llc) != rclcpp::executor::FutureReturnCode::SUCCESS) {
+        if (rclcpp::spin_until_future_complete(node, result_future_llc) != rclcpp::FutureReturnCode::SUCCESS) {
             RCLCPP_ERROR(node->get_logger(), "service call failed :(");
             return 1;
         }

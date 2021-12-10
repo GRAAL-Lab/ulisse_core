@@ -19,7 +19,7 @@
 #include "ulisse_msgs/srv/nav_filter_command.hpp"
 #include "ulisse_msgs/msg/surge_heading.hpp"
 #include "ulisse_msgs/msg/surge_yaw_rate.hpp"
-
+#include "ulisse_msgs/srv/rosbag_cmd.hpp"
 
 
 class CommandWrapper : public QObject, rclcpp::Node {
@@ -29,7 +29,7 @@ class CommandWrapper : public QObject, rclcpp::Node {
     QObject *toastMgrObj_, *cmdTimeoutObj_;
     QObject *cruiseSpeedObj_, *goalDistanceObj_, *waypointPathObj_, *waypointRadiusObj_, *loopPathObj_, *mapMouseAreaObj_;
 
-    //rclcpp::Node::SharedPtr np_;
+    rclcpp::Client<ulisse_msgs::srv::RosbagCmd>::SharedPtr bag_recorder_client_;
     rclcpp::Client<ulisse_msgs::srv::ControlCommand>::SharedPtr command_srv_;
     rclcpp::Client<ulisse_msgs::srv::SetCruiseControl>::SharedPtr cruise_srv_;
     rclcpp::Client<ulisse_msgs::srv::SetBoundaries>::SharedPtr boundary_srv_;
@@ -78,6 +78,7 @@ public:
     Q_INVOKABLE bool sendSurgeYawRateCommand(double surge, double yawrate);
     //Q_INVOKABLE bool setCruiseSpeedCommand(double speed);
     Q_INVOKABLE bool sendThrusterActivation(bool activate);
+    Q_INVOKABLE bool sendRosbagRecordCommand(int record_cmd, const QString save_folder);
     Q_INVOKABLE bool startPath();
     Q_INVOKABLE void stopPath();
     Q_INVOKABLE void cancelPath();
