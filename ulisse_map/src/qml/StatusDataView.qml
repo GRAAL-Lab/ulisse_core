@@ -181,7 +181,7 @@ Rectangle {
                                 anchors.fill:parent
                                 font.pointSize: 8
                                 color: fbkUpdater.gps_online ? "green" : "red"
-                                text:  fbkUpdater.gps_online ? qsTr("GPS") : qsTr("GPS Offline")
+                                text:  fbkUpdater.gps_online ? qsTr("GPS") : qsTr("GPS N/A")
                             }
                         }
 
@@ -199,7 +199,7 @@ Rectangle {
                                 anchors.fill:parent
                                 font.pointSize: 8
                                 color: fbkUpdater.compass_online ? "green" : "red"
-                                text:  fbkUpdater.compass_online ? qsTr("Compass") : qsTr("Compass Offline")
+                                text:  fbkUpdater.compass_online ? qsTr("Compass") : qsTr("Compass N/A")
                             }
                         }
 
@@ -217,7 +217,7 @@ Rectangle {
                                 anchors.fill:parent
                                 font.pointSize: 8
                                 color: fbkUpdater.imu_online ? "green" : "red"
-                                text:  fbkUpdater.imu_online ? qsTr("IMU") : qsTr("IMU Offline")
+                                text:  fbkUpdater.imu_online ? qsTr("IMU") : qsTr("IMU N/A")
                             }
                         }
 
@@ -235,7 +235,7 @@ Rectangle {
                                 anchors.fill:parent
                                 font.pointSize: 8
                                 color: fbkUpdater.magnetometer_online ? "green" : "red"
-                                text:  fbkUpdater.magnetometer_online ? qsTr("Magnetometer") : qsTr("Magnetometer Offline")
+                                text:  fbkUpdater.magnetometer_online ? qsTr("Magnetometer") : qsTr("Magnetometer N/A")
                             }
                         }
                     }

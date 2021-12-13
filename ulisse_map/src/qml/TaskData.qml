@@ -10,7 +10,7 @@ Item {
     Layout.preferredHeight: taskDataColumn.implicitHeight
     Layout.fillWidth: true
     property var labelsize: 12
-    property var titlesize: 10
+    property var textsize: 11
 
     property var taskName: "Undefined"
     property var reference: " "
@@ -35,8 +35,10 @@ Item {
             Layout.alignment: Qt.AlignHCenter
             labelColor: 'dodgerblue'
             textColor: 'grey'
+            tsize: textsize
             label: qsTr("Reference")
             text: reference
+
 
         }
 
@@ -45,6 +47,7 @@ Item {
             Layout.alignment: Qt.AlignHCenter
             labelColor: 'dodgerblue'
             textColor: 'grey'
+            tsize: textsize
             label: qsTr("Internal Act.")
             text: internalAct
         }
@@ -52,7 +55,7 @@ Item {
         LabelledText {
             Layout.alignment: Qt.AlignHCenter
             labelColor: 'dodgerblue'
-
+            tsize: textsize
             textColor: 'grey'
             label: qsTr("External Act.")
             text: externalAct

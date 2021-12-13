@@ -659,7 +659,7 @@ bool CommandWrapper::sendRosbagRecordCommand(int record_cmd, const QString folde
         serviceAvailable = false;
     }
     ShowToast(result_msg.c_str(), 2000);
-    return rec_status;
+    return (serviceAvailable && rec_status);
 }
 
 /*bool CommandWrapper::setCruiseSpeedCommand(double speed)

@@ -77,6 +77,7 @@ ApplicationWindow {
         property string savedBoundary: ""
         property bool showCentroid: true
         property bool showStatusOverlay: true
+        property string bagSaveFolder: home_dir + "/logs/"
         //property MapPolygon savedBoundary
 
         Component.onCompleted: {

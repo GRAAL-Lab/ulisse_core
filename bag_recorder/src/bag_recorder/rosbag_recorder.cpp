@@ -1,5 +1,6 @@
 #include "bag_recorder/rosbag_recorder.hpp"
 #include "bag_recorder/futils.hpp"
+#include "ulisse_msgs/topicnames.hpp"
 
 using std::placeholders::_1;
 using std::placeholders::_2;
@@ -9,7 +10,8 @@ RosbagRecorder::RosbagRecorder() :
     recording_(false)
 {
 
-    trigger_srv_ = this->create_service<ulisse_msgs::srv::RosbagCmd>("record_bag_service", std::bind(&RosbagRecorder::ServiceHandler, this, _1, _2));
+    trigger_srv_ = this->create_service<ulisse_msgs::srv::RosbagCmd>(ulisse_msgs::topicnames::rosbag_service,
+        std::bind(&RosbagRecorder::ServiceHandler, this, _1, _2));
     RCLCPP_INFO(this->get_logger(), "%sReady to record Bag.%s", tc::cyan, tc::none);
 }
 
@@ -38,7 +40,7 @@ void RosbagRecorder::ServiceHandler(const std::shared_ptr<ulisse_msgs::srv::Rosb
                 sys_folder = request->save_folder;
             } else {
                 sys_folder = home_path + "/logs/bag_recorder/";
-                RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "No save_folder provided, defaulting to: %s", sys_folder.c_str());
+                RCLCPP_INFO(this->get_logger(), "No save_folder provided, defaulting to: %s", sys_folder.c_str());
             }
 
             std::string bag_folder = sys_folder + "rosbag2_" + current_date;
@@ -73,8 +75,8 @@ void RosbagRecorder::ServiceHandler(const std::shared_ptr<ulisse_msgs::srv::Rosb
                     exit(1);
                 }
 
-                RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Bag Folder: %s", bag_folder.c_str());
-                RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Recording started.");
+                RCLCPP_INFO(this->get_logger(), "Bag Folder: %s", bag_folder.c_str());
+                RCLCPP_INFO(this->get_logger(), "Recording started.");
             } else {
                 response->res = "Save folder does not exist. No bag will be recorded.";
             }
@@ -94,5 +96,5 @@ void RosbagRecorder::ServiceHandler(const std::shared_ptr<ulisse_msgs::srv::Rosb
     }
 
     response->record_status = recording_;
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "sending back response: [%s]", response->res.c_str());
+    RCLCPP_INFO(this->get_logger(), "sending back response: [%s]", response->res.c_str());
 }

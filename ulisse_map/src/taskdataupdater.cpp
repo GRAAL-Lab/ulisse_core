@@ -46,7 +46,7 @@ TaskDataUpdater::~TaskDataUpdater()
         pl->deleteLater();
     }
 
-    slowTimer_->deleteLater();
+    //slowTimer_->deleteLater();
     myTimer_->deleteLater();
 }
 

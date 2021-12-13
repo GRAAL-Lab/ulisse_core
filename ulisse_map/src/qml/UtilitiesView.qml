@@ -8,6 +8,7 @@ import "."
 
 Rectangle {
 
+    property bool recording: false
     property var titlesize: 15
     property var labelsize: 13
     color: Material.background
@@ -124,9 +125,35 @@ Rectangle {
                     text: "Record Bag"
                 }
 
-                Button {
-                    property bool recording: false
+                RowLayout {
+                    spacing: 10
 
+                    Layout.alignment: Qt.AlignHCenter
+
+                    Label {
+                        id: saveFolderLabel
+                        text: qsTr("Save folder: ")
+                        font.pointSize: 11
+                        font.weight: Font.DemiBold
+                        color: recording ? grey : 'black'
+                    }
+
+                    TextField {
+                        id: saveFolderPath
+                        placeholderText: "Enter save folder path..."
+                        text: settings.bagSaveFolder
+                        Layout.preferredWidth: 350
+                        font.pointSize: 11
+                        selectByMouse: true
+                        enabled: !recording
+
+                        onTextChanged: {
+                            settings.bagSaveFolder = saveFolderPath.text
+                        }
+                    }
+                }
+
+                Button {
                     id: recordBagButton
                     text: recording ? "  Stop Bag  " : "  Record Bag  "
                     Layout.alignment: Qt.AlignCenter
@@ -135,11 +162,23 @@ Rectangle {
 
                     onClicked: {
                         if (!recording){
-                           recording = cmdWrapper.resetPublishersAndSubscribers(true, "")
+                            recording = cmdWrapper.sendRosbagRecordCommand(true, saveFolderPath.text)
                         } else {
-                            recording = cmdWrapper.resetPublishersAndSubscribers(false, "")
+                            recording = cmdWrapper.sendRosbagRecordCommand(false, saveFolderPath.text)
                         }
                     }
+                }
+
+                Label {
+                    id: bagRecordInProgress
+                    text: "Rosbag recording in progress..."
+                    color: red
+                    opacity: recording ? 1.0 : 0.0
+                    font.weight: Font.DemiBold
+                    horizontalAlignment: Label.AlignHCenter
+                    verticalAlignment: Label.AlignVCenter
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
                 }
             }
         }
