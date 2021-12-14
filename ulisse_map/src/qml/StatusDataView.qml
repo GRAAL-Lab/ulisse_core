@@ -82,7 +82,6 @@ Rectangle {
             }
         }
 
-
         Pane {
             id: navFilterPane
             Layout.rowSpan: 1
@@ -107,7 +106,6 @@ Rectangle {
                     text: "Navigation Filter"
                 }
 
-
                 LabelledText {
                     Layout.alignment: Qt.AlignHCenter
                     labelColor: blue
@@ -118,7 +116,6 @@ Rectangle {
                     lsize: labelsize
                     tsize: textsize
                 }
-
 
                 LabelledText {
                     Layout.alignment: Qt.AlignHCenter
