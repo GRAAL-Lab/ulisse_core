@@ -640,7 +640,7 @@ bool CommandWrapper::sendRosbagRecordCommand(int record_cmd, const QString folde
 
     static std::string result_msg;
     bool rec_status = false;
-    bool serviceAvailable;
+    bool serviceAvailable = false;
     if (bag_recorder_client_->service_is_ready()) {
         auto result_future = bag_recorder_client_->async_send_request(request);
         std::cout << "Sent Request to controller" << std::endl;
