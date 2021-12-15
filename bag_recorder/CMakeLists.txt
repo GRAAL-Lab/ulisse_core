@@ -15,7 +15,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rosbag2_cpp REQUIRED)
 find_package(example_interfaces REQUIRED)
-
+find_package(ament_index_cpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(ulisse_msgs REQUIRED)
@@ -24,10 +24,11 @@ include_directories(
   include
 )
 
-
+# Libraries
 add_library(RosbagRecorder src/bag_recorder/rosbag_recorder.cpp)
-ament_target_dependencies(RosbagRecorder rclcpp rosbag2_cpp ulisse_msgs)
+ament_target_dependencies(RosbagRecorder rclcpp rosbag2_cpp ulisse_msgs ament_index_cpp)
 
+# Executables
 add_executable(simple_bag_recorder src/simple_bag_recorder.cpp)
 ament_target_dependencies(simple_bag_recorder rclcpp rosbag2_cpp)
 

@@ -1,3 +1,5 @@
+#include <ament_index_cpp/get_package_share_directory.hpp>
+
 #include "bag_recorder/rosbag_recorder.hpp"
 #include "bag_recorder/futils.hpp"
 #include "ulisse_msgs/topicnames.hpp"
@@ -9,6 +11,20 @@ RosbagRecorder::RosbagRecorder() :
     Node("rosbag_recorder"),
     recording_(false)
 {
+
+    std::string ulisse_ctrl_dir = ament_index_cpp::get_package_share_directory("ulisse_ctrl");
+    ulisse_ctrl_kcl_conf_ = ulisse_ctrl_dir;
+    ulisse_ctrl_kcl_conf_.append("/conf/kcl_ulisse.conf");
+    ulisse_ctrl_dcl_conf_ = ulisse_ctrl_dir;
+    ulisse_ctrl_dcl_conf_.append("/conf/dcl_ulisse.conf");
+
+    std::string nav_filter_dir = ament_index_cpp::get_package_share_directory("nav_filter");
+    nav_filter_conf_ = nav_filter_dir;
+    nav_filter_conf_.append("/conf/navigation_filter.conf");
+
+    std::string ulisse_sim_dir = ament_index_cpp::get_package_share_directory("ulisse_sim");
+    ulisse_sim_conf_ = ulisse_sim_dir;
+    ulisse_sim_conf_.append("/conf/simulator_ulisse.conf");
 
     trigger_srv_ = this->create_service<ulisse_msgs::srv::RosbagCmd>(ulisse_msgs::topicnames::rosbag_service,
         std::bind(&RosbagRecorder::ServiceHandler, this, _1, _2));
@@ -28,6 +44,7 @@ RosbagRecorder::~RosbagRecorder()
 void RosbagRecorder::ServiceHandler(const std::shared_ptr<ulisse_msgs::srv::RosbagCmd::Request> request,
     std::shared_ptr<ulisse_msgs::srv::RosbagCmd::Response> response)
 {
+    std::string bag_folder;
 
     // We start recording only if there is no actual recording
     if (request->record_cmd == 1) {
@@ -43,7 +60,7 @@ void RosbagRecorder::ServiceHandler(const std::shared_ptr<ulisse_msgs::srv::Rosb
                 RCLCPP_INFO(this->get_logger(), "No save_folder provided, defaulting to: %s", sys_folder.c_str());
             }
 
-            std::string bag_folder = sys_folder + "rosbag2_" + current_date;
+            bag_folder = sys_folder + "rosbag2_" + current_date;
 
             if (futils::does_file_exists(sys_folder)) {
                 recording_ = true;
@@ -75,6 +92,9 @@ void RosbagRecorder::ServiceHandler(const std::shared_ptr<ulisse_msgs::srv::Rosb
                     exit(1);
                 }
 
+
+
+
                 RCLCPP_INFO(this->get_logger(), "Bag Folder: %s", bag_folder.c_str());
                 RCLCPP_INFO(this->get_logger(), "Recording started.");
             } else {
@@ -88,6 +108,12 @@ void RosbagRecorder::ServiceHandler(const std::shared_ptr<ulisse_msgs::srv::Rosb
         if (recording_ == true) {
             recording_ = false;
             response->res = "Recording Stopped.";
+
+            futils::CopyFile(ulisse_ctrl_kcl_conf_, bag_folder.append("/kcl_ulisse.conf"));
+            futils::CopyFile(ulisse_ctrl_dcl_conf_, bag_folder.append("/dcl_ulisse.conf"));
+            futils::CopyFile(nav_filter_conf_, bag_folder.append("/navigation_filter.conf"));
+            futils::CopyFile(ulisse_sim_conf_, bag_folder.append("/simulator_ulisse.conf"));
+
             delete[] argv_new_;
             kill(PID_, 15);  //Sends the SIGINT Signal to the process, telling it to stop.
         } else {

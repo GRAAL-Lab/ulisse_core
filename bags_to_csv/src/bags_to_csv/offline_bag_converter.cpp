@@ -167,7 +167,7 @@ bool OfflineBagConverter::ConvertToCSV()
                          << compassData_.stamp.sec + (compassData_.stamp.nanosec * 1e-9) << ", "
                          << compassData_.orientation.roll << ", " << compassData_.orientation.pitch << ", " << compassData_.orientation.yaw << ", "
                          << magnetometerData_.stamp.sec + (magnetometerData_.stamp.nanosec * 1e-9) << ", "
-                         << magnetometerData_.orthogonalstrength[0] << ", " << magnetometerData_.orthogonalstrength[1] << ", " << magnetometerData_.orthogonalstrength[2]
+                         << magnetometerData_.orthogonalstrength[0] << ", " << magnetometerData_.orthogonalstrength[1] << ", " << magnetometerData_.orthogonalstrength[2] << ", "
                          << dvlData_.bottom_velocity[0] << ", " << dvlData_.bottom_velocity[1] << ", " << dvlData_.bottom_velocity[2] << ", "
                          << fogData_.angular_velocity
                          << "\n";
@@ -184,7 +184,7 @@ bool OfflineBagConverter::OpenFiles()
 
     sensorsFile_      .open(std::string(saveFolder_ + "/sensors.txt"));
     sensorsFile_ << "ros_time, imu_time, acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z, "
-                    "time_compass, compass_R, compass_P, compass_Y, time_magn,"
+                    "time_compass, compass_R, compass_P, compass_Y, time_magn, "
                     "magn_x, magn_y, magn_z, dvl_vel_x, dvl_vel_y, dvl_vel_z, fog_w\n";
 
     motorsFile_       .open(std::string(saveFolder_ + "/motors.txt"));
