@@ -24,6 +24,14 @@ class RosbagRecorder : public rclcpp::Node
     char **argv_new_;
     rclcpp::Service<ulisse_msgs::srv::RosbagCmd>::SharedPtr trigger_srv_;
 
+    std::string bag_folder_;
+    std::string bag_info_;
+    std::string ulisse_ctrl_kcl_conf_;
+    std::string ulisse_ctrl_dcl_conf_;
+    std::string nav_filter_conf_;
+    std::string ulisse_sim_conf_;
+
+
     void ServiceHandler(const std::shared_ptr<ulisse_msgs::srv::RosbagCmd::Request> request,
         std::shared_ptr<ulisse_msgs::srv::RosbagCmd::Response> response);
 public:

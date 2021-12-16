@@ -419,7 +419,7 @@ void VehicleSimulator::SimulateSensors()
     dvlMsg_.stamp.sec = now_stamp_secs;
     dvlMsg_.stamp.nanosec = now_stamp_nanosecs;
 
-    Eigen::Matrix6d bodyF_RBM_dvl = config_->bodyF_dvl_sensor_pose.LinearVector().GetRigidBodyMatrix();
+    Eigen::Matrix6d bodyF_RBM_dvl = rml::RigidBodyMatrix(config_->bodyF_dvl_sensor_pose.LinearVector());
     Eigen::Vector6d bodyF_relativeVelocity_dvl = bodyF_RBM_dvl * bodyF_relativeVelocity_;
     Eigen::RotationMatrix bodyF_R_dvl = rml::EulerRPY(config_->bodyF_dvl_sensor_pose.AngularVector()).ToRotationMatrix();
     Eigen::Vector3d dvlF_relativeLinearVelocity = bodyF_R_dvl.transpose() * bodyF_relativeVelocity_dvl.LinearVector();

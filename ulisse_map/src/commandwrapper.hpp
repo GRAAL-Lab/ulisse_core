@@ -76,9 +76,8 @@ public:
     Q_INVOKABLE bool sendLatLongCommand(const QGeoCoordinate& goal, double radius);
     Q_INVOKABLE bool sendSurgeHeadingCommand(double surge, double heading);
     Q_INVOKABLE bool sendSurgeYawRateCommand(double surge, double yawrate);
-    //Q_INVOKABLE bool setCruiseSpeedCommand(double speed);
     Q_INVOKABLE bool sendThrusterActivation(bool activate);
-    Q_INVOKABLE bool sendRosbagRecordCommand(int record_cmd, const QString save_folder);
+    Q_INVOKABLE bool sendRosbagRecordCommand(int record_cmd, const QString folder_path = "", const QString bag_info = "");
     Q_INVOKABLE bool startPath();
     Q_INVOKABLE void stopPath();
     Q_INVOKABLE void cancelPath();
