@@ -5,12 +5,18 @@
 
 
 OfflineBagConverter::OfflineBagConverter(const std::string& bagPath, const std::string& saveFolder)
-    : Node("offline_bag2csv_node"), bagPath_(bagPath), saveFolder_(saveFolder)
+    : Node("offline_bag2csv_node")
+    , bagPath_(bagPath)
+    , saveFolder_(saveFolder)
 {
+
+    RCLCPP_INFO(this->get_logger(), "Converting: %s", bagPath_.c_str());
+    RCLCPP_INFO(this->get_logger(), "CSV path: %s", saveFolder_.c_str());
 
     OpenFiles();
     ConvertToCSV();
-    std::cout << "Conversion Successful." << std::endl;
+
+    RCLCPP_INFO(this->get_logger(), "Conversion Successful.");
     CloseFiles();
 
     rclcpp::shutdown();

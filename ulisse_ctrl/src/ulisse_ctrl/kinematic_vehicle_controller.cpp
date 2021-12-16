@@ -376,80 +376,75 @@ void VehicleController::CommandsHandler(const std::shared_ptr<rmw_request_id_t> 
     // Check if Boundaries are set before accepting commands
     if (!boundariesSet_) {
         response->res = "[KCL] No SafetyBound Set!";
-        return;
-    }
+    } else {
 
-    std::stringstream log;
-    if (request->command_type == ulisse::commands::ID::halt) {
-        std::cout << "Received Command Halt" << std::endl;
-        PublishLog("Received Command Halt");
+        std::stringstream log;
+        if (request->command_type == ulisse::commands::ID::halt) {
+            std::cout << "Received Command Halt" << std::endl;
+            PublishLog("Received Command Halt");
 
-    } else if (request->command_type == ulisse::commands::ID::hold) {
-        commandHold_.SetPositionToHold(ctrlData_->inertialF_linearPosition);
-        std::cout << "Received Command Hold" << std::endl;
-        PublishLog("Received Command Hold");
+        } else if (request->command_type == ulisse::commands::ID::hold) {
+            commandHold_.SetPositionToHold(ctrlData_->inertialF_linearPosition);
+            std::cout << "Received Command Hold" << std::endl;
+            PublishLog("Received Command Hold");
 
-    } else if (request->command_type == ulisse::commands::ID::latlong) {
+        } else if (request->command_type == ulisse::commands::ID::latlong) {
 
-        std::cout << "Received Command LatLong" << std::endl;
-        commandLatLong_.SetGoTo(LatLong(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude), request->latlong_cmd.acceptance_radius);
+            std::cout << "Received Command LatLong" << std::endl;
+            commandLatLong_.SetGoTo(LatLong(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude), request->latlong_cmd.acceptance_radius);
 
-        log << "Received Command GoTo (lat: " << request->latlong_cmd.goal.latitude << " , long: " << request->latlong_cmd.goal.longitude << " )";
-        PublishLog(log.str().c_str());
+            log << "Received Command GoTo (lat: " << request->latlong_cmd.goal.latitude << " , long: " << request->latlong_cmd.goal.longitude << " )";
+            PublishLog(log.str().c_str());
 
-    } else if (request->command_type == ulisse::commands::ID::surgeheading) {
+        } else if (request->command_type == ulisse::commands::ID::surgeheading) {
 
-        std::cout << "Received Command surgeheading" << std::endl;
-        commandSurgeHeading_.SetTimeout(request->sh_cmd.timeout.sec);
-        stateSurgeHeading_->ResetTimer();
-        log << "Received Command surgeheading (data read from topic)";
-        PublishLog(log.str().c_str());
+            std::cout << "Received Command surgeheading" << std::endl;
+            commandSurgeHeading_.SetTimeout(request->sh_cmd.timeout.sec);
+            stateSurgeHeading_->ResetTimer();
+            log << "Received Command surgeheading (data read from topic)";
+            PublishLog(log.str().c_str());
 
-    } else if (request->command_type == ulisse::commands::ID::surgeyawrate) {
+        } else if (request->command_type == ulisse::commands::ID::surgeyawrate) {
 
-        std::cout << "Received Command surgeyawrate" << std::endl;
-        commandSurgeYawRate_.SetTimeout(request->sh_cmd.timeout.sec);
-        stateSurgeYawRate_->ResetTimer();
-        log << "Received Command surgeyawrate (data read from topic)";
-        PublishLog(log.str().c_str());
+            std::cout << "Received Command surgeyawrate" << std::endl;
+            commandSurgeYawRate_.SetTimeout(request->sh_cmd.timeout.sec);
+            stateSurgeYawRate_->ResetTimer();
+            log << "Received Command surgeyawrate (data read from topic)";
+            PublishLog(log.str().c_str());
 
-    } else if (request->command_type == ulisse::commands::ID::pathfollow) {
+        } else if (request->command_type == ulisse::commands::ID::pathfollow) {
 
-        std::cout << "Received Command Path Following" << std::endl;
+            std::cout << "Received Command Path Following" << std::endl;
 
-        if (!statePathFollowing_->LoadNurbs(request->nav_cmd.path)) {
+            if (!statePathFollowing_->LoadNurbs(request->nav_cmd.path)) {
+                response->res = "CommandAnswer::fail - Malformed Path Message.";
+                ret = fsm::retval::fail;
+            }
+
+            log << "Received Command PathFollowing (nurbs: " << request->nav_cmd.path.nurbs_string << " )";
+            PublishLog(log.str().c_str());
+
+        } else {
+            response->res = "CommandAnswer::fail - Unsupported command: " + request->command_type;
             ret = fsm::retval::fail;
         }
 
-        log << "Received Command PathFollowing (nurbs: " << request->nav_cmd.path.nurbs_string << " )";
-        PublishLog(log.str().c_str());
-
-    } else {
-        RCLCPP_INFO(this->get_logger(), "Unsupported command: %s", request->command_type.c_str());
-        ret = fsm::retval::fail;
-    }
-
-    if (ret != fsm::retval::ok) {
-
-        response->res = "CommandAnswer::fail";
-        RCLCPP_INFO(this->get_logger(), "SendAnswer returned %s", response->res.c_str());
-    } else {
-        //task update
-        for (auto& taskMap : tasksMap_) {
-            try {
-                taskMap.second.task->Update();
-            } catch (tpik::ExceptionWithHow& e) {
-                std::cerr << "UPDATE TASK EXCEPTION" << std::endl;
-                std::cerr << "who " << e.what() << " how: " << e.how() << std::endl;
+        if (ret == fsm::retval::ok) {
+            //task update
+            for (auto& taskMap : tasksMap_) {
+                try {
+                    taskMap.second.task->Update();
+                } catch (tpik::ExceptionWithHow& e) {
+                    std::cerr << "UPDATE TASK EXCEPTION" << std::endl;
+                    std::cerr << "who " << e.what() << " how: " << e.how() << std::endl;
+                }
             }
+
+            uFsm_.ExecuteCommand(request->command_type);
+            response->res = "[KCL] CommandAnswer::ok";
         }
-
-        uFsm_.ExecuteCommand(request->command_type);
-
-
-
-        response->res = "[KCL] CommandAnswer::ok";
     }
+    RCLCPP_INFO(this->get_logger(), "Service Response: %s", response->res.c_str());
 }
 
 void VehicleController::SetBoundariesHandler(const std::shared_ptr<rmw_request_id_t> request_header,

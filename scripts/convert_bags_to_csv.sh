@@ -8,26 +8,28 @@ if [ -z "$1" ]
     echo "No argument 1 supplied: BAGS SOURCE_FOLDER NAME"
     exit 1
 fi
+srcFolder=$1
+
 
 if [ -z "$2" ]
   then
     echo "No argument 2 supplied: CSV DESTINATION_FOLDER NAME"
     exit 1
 fi
+dstFolder=$2
 
-for file in $1/*  
+#echo "SRC: $srcFolder"
+#echo "DST: $dstFolder"
+
+for element in $srcFolder/*
     do
-        if [[ "$file" == *"rosbag2"* ]]; then
-          echo "Converting: $file"
-          ros2 run bags_to_csv offline_bag2csv_node "$file" "$2"
+        bag_folder=$(echo "$element" | tr -s / /)
+        if [[ "$bag_folder" == *"rosbag2"* ]]; then
+#          echo "Bag_SRC: $bag_folder"
+          ros2 run bags_to_csv offline_bag2csv_node "$bag_folder" "$dstFolder"
         fi
-        echo "Copying configuration files..."
-        cp ~/ros2_ws/src/ulisse_core/nav_filter/conf/navigation_filter.conf $lastBagFolder
-        cp ~/ros2_ws/src/ulisse_core/ulisse_ctrl/conf/dcl_ulisse.conf $lastBagFolder
-        cp ~/ros2_ws/src/ulisse_core/ulisse_ctrl/conf/kcl_ulisse.conf $lastBagFolder
-        cp ~/ros2_ws/src/ulisse_core/ulisse_sim/conf/simulator_ulisse.conf $lastBagFolder
 done
 
-echo "Done."
+#echo "Done."
 
 

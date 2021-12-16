@@ -11,8 +11,6 @@ int main(int argc, char* argv[])
     rclcpp::init(argc, argv);
 
     std::string homePath = futils::get_homepath();
-    std::string csvPath = homePath + "/logs/csv";
-    fs::create_directories(csvPath);
 
     if(argc < 2){
         std::cerr << "argv[1] missing: No input bag provided" << std::endl;
@@ -21,35 +19,39 @@ int main(int argc, char* argv[])
     }
 
     if(argc < 3){
-        std::cerr << "argv[2] missing: Provide Experiment name" << std::endl;
+        std::cerr << "argv[2] missing: Provide csv folder name" << std::endl;
         rclcpp::shutdown();
         exit(EXIT_FAILURE);
     }
 
     std::string bagPath(argv[1]);
-    std::cout << "Path to BAG folder: " << bagPath << std::endl;
-    std::string bagName = bagPath;
-    const size_t last_slash_idx = bagName.find_last_of("/");
-
-    if((bagName.length() - 1) == last_slash_idx)
-    {
-        bagName.erase(last_slash_idx, last_slash_idx + 1);
-    }
-    bagName = bagName.substr(bagName.find_last_of("/") + 1);
+    //std::cout << "Path to BAG folder: " << bagPath << std::endl;
 
     if(!futils::does_file_exists(bagPath)){
         std::cerr << "Bag file does not exists!" << std::endl;
         exit(EXIT_FAILURE);
     }
 
-    std::string experimentName(argv[2]);
-    std::string saveFolder = csvPath + "/" + experimentName + "/" + bagName;
-    std::cout << "Save Folder: " << saveFolder << std::endl;
-    fs::create_directories(saveFolder);
+    // Extract Bag Name to create destination csv folder
+    std::string bagName = bagPath;
+    const size_t last_slash_idx = bagName.find_last_of("/");
+    if((bagName.length() - 1) == last_slash_idx)
+    {
+        bagName.erase(last_slash_idx, last_slash_idx + 1);
+    }
+    bagName = bagName.substr(bagName.find_last_of("/") + 1);
 
+    std::string csvPath(argv[2]);
+    std::string csvSaveFolder = csvPath + "/" + bagName;
+    //std::cout << "Save Folder: " << csvSaveFolder << std::endl;
+    fs::create_directories(csvSaveFolder);
+
+    if(fs::exists(bagPath + "/conf")){
+        fs::copy(bagPath + "/conf", csvSaveFolder + "/conf");
+    }
 
     rclcpp::executors::SingleThreadedExecutor exe;
-    auto bag2csv_node = std::make_shared<OfflineBagConverter>(bagPath, saveFolder);
+    auto bag2csv_node = std::make_shared<OfflineBagConverter>(bagPath, csvSaveFolder);
     exe.add_node(bag2csv_node);
     exe.spin();
 
