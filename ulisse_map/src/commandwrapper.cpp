@@ -632,11 +632,12 @@ bool CommandWrapper::sendThrusterActivation(bool activate)
     return serviceAvailable;
 }
 
-bool CommandWrapper::sendRosbagRecordCommand(int record_cmd, const QString folder_path){
+bool CommandWrapper::sendRosbagRecordCommand(int record_cmd, const QString folder_path, const QString bag_info){
 
     auto request = std::make_shared<ulisse_msgs::srv::RosbagCmd::Request>();
     request->record_cmd = record_cmd;
     request->save_folder = folder_path.toStdString();
+    request->bag_info = bag_info.toStdString();
 
     static std::string result_msg;
     bool rec_status = false;
@@ -658,7 +659,7 @@ bool CommandWrapper::sendRosbagRecordCommand(int record_cmd, const QString folde
         result_msg = "The bag recorder doesn't seem to be active.\n(No BagRecord Server available)";
         serviceAvailable = false;
     }
-    ShowToast(result_msg.c_str(), 2000);
+    ShowToast(result_msg.c_str(), 4000);
     return (serviceAvailable && rec_status);
 }
 
