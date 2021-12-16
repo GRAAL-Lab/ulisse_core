@@ -17,7 +17,7 @@ ToolBar {
     Material.foreground: lightergrey
     Material.background: (settings.theme == "Light" ? cyan : lightred)
     Material.accent: "white"
-    Material.elevation: 4
+    Material.elevation: 3
     Layout.alignment: Qt.AlignLeft
     width: parent.width
 
@@ -32,10 +32,12 @@ ToolBar {
             id: headerBar
             width: headerLayout.width
             height: headerLayout.height
+            Layout.topMargin: 2
+            Layout.alignment: Qt.AlignTop
 
             TabButton {
                 text: qsTr("Map")
-                height: headerLayout.height - 3
+                height: headerLayout.height
                 width: headerLayout.width / 4
 
                 background: Rectangle {
@@ -45,7 +47,7 @@ ToolBar {
 
             TabButton {
                 text: qsTr("Status Data")
-                height: headerLayout.height - 3
+                height: headerLayout.height
                 width: headerLayout.width / 4
 
                 background: Rectangle {
@@ -55,7 +57,7 @@ ToolBar {
 
             TabButton {
                 text: qsTr("Action View")
-                height: headerLayout.height - 3
+                height: headerLayout.height
                 width: headerLayout.width / 4
 
                 background: Rectangle {
@@ -65,7 +67,7 @@ ToolBar {
 
             TabButton {
                 text: qsTr("Utilities")
-                height: headerLayout.height - 3
+                height: headerLayout.height
                 width: headerLayout.width / 4
 
                 background: Rectangle {
@@ -83,6 +85,7 @@ ToolBar {
         font.weight: Font.Bold
         Material.background: grey
         Material.accent: "white"
+        height: headerLayout.height
 
         onClicked: optionsMenu.open()
         Menu {
