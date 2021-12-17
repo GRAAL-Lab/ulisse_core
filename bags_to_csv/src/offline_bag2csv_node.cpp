@@ -50,6 +50,10 @@ int main(int argc, char* argv[])
         fs::copy(bagPath + "/conf", csvSaveFolder + "/conf");
     }
 
+    if(fs::exists(bagPath + "/bag_info.txt")){
+        fs::copy(bagPath + "/bag_info.txt", csvSaveFolder);
+    }
+
     rclcpp::executors::SingleThreadedExecutor exe;
     auto bag2csv_node = std::make_shared<OfflineBagConverter>(bagPath, csvSaveFolder);
     exe.add_node(bag2csv_node);
