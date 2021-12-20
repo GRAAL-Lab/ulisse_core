@@ -7,7 +7,7 @@
 
 #include "rml/RML.h"
 #include "taskdataupdater.hpp"
-#include "futils.hpp"
+#include "ulisse_msgs/futils.hpp"
 #include "ulisse_ctrl/ulisse_defines.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 

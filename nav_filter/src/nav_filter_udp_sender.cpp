@@ -7,7 +7,7 @@
 #include "ulisse_msgs/msg/compass.hpp"
 #include "ulisse_msgs/msg/magnetometer.hpp"
 
-#include "nav_filter/futils.hpp"
+#include "ulisse_msgs/futils.hpp"
 
 struct NavFilterData {
     double inertialF_linearPosition[2];

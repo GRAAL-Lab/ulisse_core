@@ -1,7 +1,7 @@
 #include <ament_index_cpp/get_package_share_directory.hpp>
 
 #include "bag_recorder/rosbag_recorder.hpp"
-#include "bag_recorder/futils.hpp"
+#include "ulisse_msgs/futils.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 
 using std::placeholders::_1;

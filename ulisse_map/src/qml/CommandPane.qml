@@ -15,8 +15,8 @@ Pane {
     property var buttonSafety: buttonBoundBoxDefine
     property var trackComponent
     property alias speedHeadTimeout: commandParamsStackContainer.speedHeadTimeout
-    property alias buttonSafety1: buttonBoundBoxResend
-    property alias sweepPathCmdPane: commandParamsStackContainer.pathCommandsPane
+    //property alias buttonSafety1: buttonBoundBoxResend
+    property alias pathCmdPane: commandParamsStackContainer.pathCommandsPane
 
     Component.onCompleted: {
         trackComponent = Qt.createComponent("PathButton.qml")

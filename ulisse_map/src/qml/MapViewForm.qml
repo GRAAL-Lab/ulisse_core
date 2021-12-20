@@ -28,7 +28,7 @@ RowLayout {
     property alias map: map
     property alias mapsidebar: mapsidebar
     property alias pathState: pathState
-    property alias sweepPathCmdPane: mapsidebar.sweepPathCmdPane
+    property alias pathCmdPane: mapsidebar.pathCmdPane
 
     spacing: 0
     width: window.width

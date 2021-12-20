@@ -6,8 +6,7 @@
 #include <random>
 
 #include "surface_vehicle_model/surfacevehiclemodel.hpp"
-
-#include "ulisse_sim/futils.h"
+#include "ulisse_msgs/futils.hpp"
 
 #include "GeographicLib/Geodesic.hpp"
 #include "eigen3/Eigen/Dense"

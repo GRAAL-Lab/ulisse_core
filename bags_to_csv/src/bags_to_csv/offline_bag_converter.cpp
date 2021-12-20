@@ -156,7 +156,8 @@ bool OfflineBagConverter::ConvertToCSV()
                            << groundtruth_.gyro_bias[1]                                    << ", "
                            << groundtruth_.gyro_bias[2]                                    << ", "
                            << groundtruth_.n_p                                             << ", "
-                           << groundtruth_.n_s                                             << "\n";
+                           << groundtruth_.n_s
+                           << "\n";
         }
         // else if (bag_message->topic_name == ulisse_msgs::topicnames::llc_battery_left) {
         //    batteryFile_ << batteryLeft_.stamp.sec + (batteryLeft_.stamp.nanosec * 1e-9) << ", " << batteryLeft_.charge_percent  << "\n";
