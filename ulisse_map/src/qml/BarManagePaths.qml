@@ -20,8 +20,8 @@ BarManagePathsForm {
     }
 
     cancelPathChoice.onClicked: function () {
-        sweepPathCmdPane.deselect_all()
-        sweepPathCmdPane.enableBtns(true)
+        pathCmdPane.deselect_all()
+        pathCmdPane.enableBtns(true)
         hide_all()
     }
 
@@ -32,7 +32,7 @@ BarManagePathsForm {
     }
 
     buttonDeselectAll.onClicked: function () {
-        sweepPathCmdPane.deselect_all()
+        pathCmdPane.deselect_all()
         hide_all()
     }
 
@@ -96,7 +96,7 @@ BarManagePathsForm {
     function abort_h(){
         map.click_handler = map.click_goto_handler
         map.pos_changed_handler = function () {}
-        sweepPathCmdPane.enableBtns(true)
+        pathCmdPane.enableBtns(true)
         hide_all()
         cur_managed.deregister_map_items()
         map.removeMapItem(cur_managed)
@@ -108,7 +108,7 @@ BarManagePathsForm {
     function edit() {
         if (cur_managed === null)
             return
-        sweepPathCmdPane.enableBtns(false)
+        pathCmdPane.enableBtns(false)
         var cur_val = cur_managed.get_params()
         console.log("Type: " + cur_managed.type)
         switch (cur_managed.type) {
@@ -131,15 +131,15 @@ BarManagePathsForm {
         window.sig_escape.disconnect(abort_h)
         cur_managed.end.disconnect(end)
         confirm()
-        var v = trackComponent.createObject(sweepPathCmdPane.columnTrack)
+        var v = trackComponent.createObject(pathCmdPane.columnTrack)
         v.managed_path = cur_managed
         v.ntrack = ++n
         v.selected.connect(function (path) {
-            sweepPathCmdPane.update_selection(path)
+            pathCmdPane.update_selection(path)
             manage(path)
         })
         cur_managed.check_safe(map.polysec_cur)
-        sweepPathCmdPane.update_selection(cur_managed)
+        pathCmdPane.update_selection(cur_managed)
         manage(cur_managed)
     }
 
@@ -150,7 +150,7 @@ BarManagePathsForm {
         cur_managed.enable_ab_markers()
         cur_managed.confirm_edit(params_panel.nameTrack, p)
         cur_managed.check_safe(map.polysec_cur)
-        sweepPathCmdPane.enableBtns(true)
+        pathCmdPane.enableBtns(true)
         show_manage()
     }
 
@@ -160,7 +160,7 @@ BarManagePathsForm {
         cur_managed.enable_ab_markers()
         cur_managed.discard_edit()
         cur_managed.check_safe(map.polysec_cur)
-        sweepPathCmdPane.enableBtns(true)
+        pathCmdPane.enableBtns(true)
         show_manage()
     }
 
@@ -168,8 +168,8 @@ BarManagePathsForm {
 
     /*------------------ PATH MANAGEMENT ------------------------*/
     function manage(path) {
-        for (var e in sweepPathCmdPane.columnTrack.children)
-            sweepPathCmdPane.columnTrack.children[e].managed_path.disable_ab_markers()
+        for (var e in pathCmdPane.columnTrack.children)
+            pathCmdPane.columnTrack.children[e].managed_path.disable_ab_markers()
         path.enable_ab_markers()
         if (inhibit) return
         cur_managed = path
@@ -180,7 +180,7 @@ BarManagePathsForm {
         if (cur_managed === null)
             return
         edit()
-        sweepPathCmdPane.enableBtns(false)
+        pathCmdPane.enableBtns(false)
     }
 
     buttonPlay.onClicked: function () {
@@ -218,8 +218,8 @@ BarManagePathsForm {
     }
 
     function hide_all() {
-        for (var i in sweepPathCmdPane.columnTrack.children)
-            sweepPathCmdPane.columnTrack.children[i].managed_path.disable_ab_markers()
+        for (var i in pathCmdPane.columnTrack.children)
+            pathCmdPane.columnTrack.children[i].managed_path.disable_ab_markers()
         for (var i in panels)
             panels[i].visible = false
         pathManageToolbar.visible = false

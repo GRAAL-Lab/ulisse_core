@@ -1,17 +1,17 @@
 /**
-* @author Francesco Wanderlingh
-* @date Year 2018
-*
-* @brief A set of useful C++ utilities ironically called "futils".
-*
-* @details The utilities implemented, for Linux-based OS, include:\n
-* 			- Elapsing Spinner Command-Line Animation\n
-* 			- Waiting Dotter Command-Line Animation\n
-* 			- Executable file self path retrieval for path-safe file saving, loading\n
-* 			- STL Vector Printing\n
-* 			- Debug print macro\n
-* 			- UDP Sender/Receiver Sockets
-*/
+ * @author Francesco Wanderlingh
+ * @date Year 2018
+ *
+ * @brief A set of useful C++ utilities ironically called "futils".
+ *
+ * @details The utilities implemented, for Linux-based OS, include:\n
+ * 			- Elapsing Spinner Command-Line Animation\n
+ * 			- Waiting Dotter Command-Line Animation\n
+ * 			- Executable file self path retrieval for path-safe file saving, loading\n
+ * 			- STL Vector Printing\n
+ * 			- Debug print macro\n
+ * 			- UDP Sender/Receiver Sockets
+ */
 
 #ifndef FUTILS_H_
 #define FUTILS_H_
@@ -49,35 +49,35 @@
 #endif
 
 /** Escape sequence
-*  \033[<code>m or \e[<code>m
-*
-*  color : \[\033[ <code>m\] \]
-*
-*  e.g.
-*   bg=Blue, Bold, fg=Red
-*    1. \033[44;1;31m
-*    2. \033[44m\033[1;31m
-*
-*
-* Text attributes
-*  0  All attributes off
-*  1  Bold on
-*  4  Underscore (on monochrome display adapter only)
-*  5  Blink on
-*  7  Reverse video on
-*  8  Concealed on
-*
-*
-* Foreground colors
-*  0;30   Black          1;30   Dark Gray
-*  0;31   Red            1;31   Light Red
-*  0;32   Green          1;32   Light Green
-*  0;33   Brown          1;33   Yellow
-*  0;34   Blue           1;34   Light Blue
-*  0;35   Purple         1;35   Light Purple
-*  0;36   Cyan           1;36   Light Cyan
-*  0;37   Light Gray     1;37   White
-*/
+ *  \033[<code>m or \e[<code>m
+ *
+ *  color : \[\033[ <code>m\] \]
+ *
+ *  e.g.
+ *   bg=Blue, Bold, fg=Red
+ *    1. \033[44;1;31m
+ *    2. \033[44m\033[1;31m
+ *
+ *
+ * Text attributes
+ *  0  All attributes off
+ *  1  Bold on
+ *  4  Underscore (on monochrome display adapter only)
+ *  5  Blink on
+ *  7  Reverse video on
+ *  8  Concealed on
+ *
+ *
+ * Foreground colors
+ *  0;30   Black          1;30   Dark Gray
+ *  0;31   Red            1;31   Light Red
+ *  0;32   Green          1;32   Light Green
+ *  0;33   Brown          1;33   Yellow
+ *  0;34   Blue           1;34   Light Blue
+ *  0;35   Purple         1;35   Light Purple
+ *  0;36   Cyan           1;36   Light Cyan
+ *  0;37   Light Gray     1;37   White
+ */
 
 #if defined(__linux__) || defined(linux)
 
@@ -103,38 +103,7 @@ const char* const white = "\033[1;37m";
 }
 #endif
 
-/*enum class LogEntities {
-Controller, Driver, Logger, UDPReceiver, UDPSender, Generic
-};
 
-inline std::string DebugMsg(const LogEntities entity, const std::string inputMsg, const std::string generic = "") {
-std::stringstream strstr;
-switch (entity) {
-case LogEntities::Controller:
-    strstr << tc::cyanL << "[controller] ";
-    break;
-case LogEntities::Driver:
-    strstr << tc::magL << "[driver] ";
-    break;
-case LogEntities::Logger:
-    strstr << tc::grnL << "[logger] ";
-    break;
-case LogEntities::UDPReceiver:
-    strstr << tc::bluL << "[udpReceiver] ";
-    break;
-case LogEntities::UDPSender:
-    strstr << tc::bluL << "[udpSender] ";
-    break;
-case LogEntities::Generic:
-    std::string fillerString;
-    if (generic == "")
-        fillerString = "generic";
-    strstr << tc::white << "[" << generic << fillerString << "] ";
-    break;
-}
-strstr << tc::none << inputMsg;
-return strstr.str();
-}*/
 
 namespace futils
 {
@@ -146,23 +115,20 @@ void PrettyPrint(const Object& A, std::string name, const char* color = tc::whit
 }
 
 /**
-* @brief Create folder if not existing
-*
-* @param path of the folder
-* @return 0 if success (or folder exists) -1 otherwise (sets errno)
-*/
-inline int MakeDir(const char *path)
+ * @brief Create folder if not existing
+ *
+ * @param path of the folder
+ * @return 0 if success (or folder exists) -1 otherwise (sets errno)
+ */
+inline int MakeDir(const std::string path)
 {
     /**
-     *  S_IRWXU | S_IRWXG | S_IRWXO
-     *  Read/write/search permissions for owner and group and others. Since mkdir() masks
-     *  the mode with umask(), a further chmod() is needed.
-     */
+	 *  S_IRWXU | S_IRWXG | S_IRWXO
+	 *  Read/write/search permissions for owner and group and others. Since mkdir() masks
+	 *  the mode with umask(), a further chmod() is needed.
+         */
     int ret;
-    //struct stat buf;
-    //std::string file(path);
-    //if (stat(path, &buf) == 0){
-    ret = mkdir(path, S_IRWXU | S_IRWXG | S_IRWXO);
+    ret = mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
     if (ret != 0) {
         if (errno != EEXIST) {
             std::cerr << tc::redL << "Could not create directory " << path << " (error: " << strerror(errno) << ")\n";
@@ -171,7 +137,7 @@ inline int MakeDir(const char *path)
             return true;
         }
     }
-    chmod(path, S_IRWXU | S_IRWXG | S_IRWXO);
+    chmod(path.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
     return true;
     //}
 }
@@ -179,11 +145,11 @@ inline int MakeDir(const char *path)
 /// My first functor!!! :D
 
 /**
-* Prints a spinner that, put in a while loop with negligible execution time,
-* spins at a given frequency.
-*
-* @param freq Animation update frequency
-*/
+ * Prints a spinner that, put in a while loop with negligible execution time,
+ * spins at a given frequency.
+ *
+ * @param freq Animation update frequency
+ */
 struct Spinner
 {
     Spinner(int frequency) :
@@ -224,11 +190,11 @@ private:
 };
 
 /**
-* Prints a classic dot animation that, put in a while loop with negligible execution time,
-* plays at a given frequency.
-*
-* @param freq Animation update frequency
-*/
+ * Prints a classic dot animation that, put in a while loop with negligible execution time,
+ * plays at a given frequency.
+ *
+ * @param freq Animation update frequency
+ */
 struct Dotter
 {
     Dotter(int freq) :
@@ -271,9 +237,9 @@ private:
 };
 
 /**
-* Simple timer for getting time elapsed and intermediate laps.
-* All values are returned in seconds, with nanosecond precision.
-*/
+ * Simple timer for getting time elapsed and intermediate laps.
+ * All values are returned in seconds, with nanosecond precision.
+ */
 struct Timer
 {
     Timer() :
@@ -297,8 +263,8 @@ struct Timer
     }
 
     /**
-     * @return elapsed time since start in seconds, with nanosecond precision (if timer is running)
-     */
+	 * @return elapsed time since start in seconds, with nanosecond precision (if timer is running)
+         */
     double Elapsed()
     {
         if (running) {
@@ -311,8 +277,8 @@ struct Timer
     }
 
     /**
-     * @return elapsed time since last Lap in seconds, with nanosecond precision
-     */
+	 * @return elapsed time since last Lap in seconds, with nanosecond precision
+         */
     double Lap()
     {
         clock_gettime(CLOCK_MONOTONIC, &now);
@@ -366,20 +332,20 @@ inline std::string toStringPointDecimal(T val)
 }
 
 /*
-template<typename T>
-inline std::string toStringPointDecimal(T val,  const int precision = 0){
-std::streamsize defaultPrecision = std::cout.precision();
-if(precision != 0){
-std::setprecision(static_cast<std::streamsize>(precision));
-}
-std::ostringstream oss;
-oss << std::setprecision(precision) << val;
-std::string s = oss.str();
-std::replace(s.begin(), s.end(), ',', '.');
-std::setprecision(defaultPrecision);
-return s;
-}
-*/
+ template<typename T>
+ inline std::string toStringPointDecimal(T val,  const int precision = 0){
+ std::streamsize defaultPrecision = std::cout.precision();
+ if(precision != 0){
+ std::setprecision(static_cast<std::streamsize>(precision));
+ }
+ std::ostringstream oss;
+ oss << std::setprecision(precision) << val;
+ std::string s = oss.str();
+ std::replace(s.begin(), s.end(), ',', '.');
+ std::setprecision(defaultPrecision);
+ return s;
+ }
+ */
 template<typename T>
 void PrintArray(T arr, const int size, const char delimiter)
 {
@@ -465,10 +431,10 @@ void PrintSTLVectOfVects(T vecObj, const char delimiter)
 }
 
 /**
-* Returns the current date and time formatted as %Y-%m-%d_%H.%M.%S
-*
-* @return Current date
-*/
+ * Returns the current date and time formatted as %Y-%m-%d_%H.%M.%S
+ *
+ * @return Current date
+ */
 inline std::string GetCurrentDateFormatted()
 {
     std::time_t t = std::time(NULL);
@@ -509,10 +475,10 @@ struct square
 
 #if defined(__linux__) || defined(linux)
 /**
-* Returns the path of the folder containing executable that calls this functions
-*
-* @return String with the folder path
-*/
+ * Returns the path of the folder containing executable that calls this functions
+ *
+ * @return String with the folder path
+ */
 inline std::string get_selfpath()
 {
     char buff[2048];
@@ -530,8 +496,8 @@ inline std::string get_selfpath()
 }
 
 /**
-* Return user "home" directory
-*/
+ * Return user "home" directory
+ */
 inline std::string get_homepath()
 {
     const char *homedir;
@@ -616,7 +582,7 @@ public:
     }
 
 private:
-    bool ConfigureSenderSocket(struct sockaddr_in &si_out, const char *ip, const uint16_t port)
+    bool ConfigureSenderSocket(struct sockaddr_in &si_out, const char *ip, uint16_t port)
     {
 
         // zero out the structure
@@ -646,13 +612,13 @@ public:
         slen_ = sizeof(si_client_);
     }
 
-    UPDReceiverSocket(const char port[], const bool nonBlocking) :
+    UPDReceiverSocket(char port[], bool nonBlocking) :
         UPDReceiverSocket()
     {
         Configure(port, nonBlocking);
     }
 
-    void Configure(const char port[], const bool nonBlocking)
+    void Configure(char port[], bool nonBlocking)
     {
         uint16_t port_ = static_cast<uint16_t>(stod(std::string(port)));
         ConfigureReceiverSocket(sockfd_, si_client_, port_, nonBlocking);
@@ -712,32 +678,31 @@ inline bool CopyFile(const std::string& inputFile, const std::string& outputFile
 
     if (does_file_exists(inputFile)) {
         std::ifstream src(inputFile, std::ios::binary);
-        std::ofstream dst;
-        dst.open(outputFile, std::ios::binary);
+        std::ofstream dst(outputFile, std::ios::binary);
         chmod(outputFile.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
         dst << src.rdbuf();
         dst.close();
         ret = true;
     } else {
-        std::cout << "Error in FUTILS::CopyFile(), file='" << inputFile << "' does not exist!" << std::endl;
+        std::cout << "Error in futils::CopyFile(), file='" << inputFile << "' does not exist!" << std::endl;
     }
 
     return ret;
 }
 
 /**
-     * This function performs a simple 1D filtering over an array of data. The
-     * result is the output of the following function:
-     * y(i) = alpha * x(i) + ( 1 - alpha ) * y(i-1)
-     *
-     * alpha is the 'b' output parameter of the 'ellip' MATLAB function:
-     * [b, a] = ellip(filterOrder, passbandRipple, stopbandAtt, radPerSample)
-     *
-     * @param array
-     * @param size
-     * @param alpha
-     * @return
-     */
+	 * This function performs a simple 1D filtering over an array of data. The
+	 * result is the output of the following function:
+	 * y(i) = alpha * x(i) + ( 1 - alpha ) * y(i-1)
+	 *
+	 * alpha is the 'b' output parameter of the 'ellip' MATLAB function:
+	 * [b, a] = ellip(filterOrder, passbandRipple, stopbandAtt, radPerSample)
+	 *
+	 * @param array
+	 * @param size
+	 * @param alpha
+	 * @return
+         */
 struct FirstOrderFilter
 {
     std::vector<double> prevState_;

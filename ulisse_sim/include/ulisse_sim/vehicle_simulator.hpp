@@ -20,7 +20,6 @@
 #include "ulisse_msgs/msg/thrusters_reference.hpp"
 
 #include "ulisse_sim/simulator_defines.hpp"
-#include "ulisse_sim/futils.h"
 
 #include "GeographicLib/Geodesic.hpp"
 #include "eigen3/Eigen/Dense"

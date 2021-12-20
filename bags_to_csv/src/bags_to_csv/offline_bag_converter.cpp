@@ -156,7 +156,7 @@ bool OfflineBagConverter::ConvertToCSV()
                            << groundtruth_.gyro_bias[1]                                    << ", "
                            << groundtruth_.gyro_bias[2]                                    << ", "
                            << groundtruth_.n_p                                             << ", "
-                           << groundtruth_.n_s                                             << ", "
+                           << groundtruth_.n_s
                            << "\n";
         }
         // else if (bag_message->topic_name == ulisse_msgs::topicnames::llc_battery_left) {
@@ -209,7 +209,7 @@ bool OfflineBagConverter::OpenFiles()
     groundtruthFile_  .open(std::string(saveFolder_ + "/groundtruth.txt"));
     groundtruthFile_ << "ros_time, time, lat, long, alt, b_roll, b_pitch, b_yaw,"
                         "b_lin_vel_x, b_lin_vel_y, b_lin_vel_z, b_ang_vel_x, b_ang_vel_y, b_ang_vel_z,"
-                        "i_wat_vel_x, i_wat_vel_y, gyro_bias_x, gyro_bias_y, gyro_bias_z, n_p, n_s \n";
+                        "i_wat_vel_x, i_wat_vel_y, gyro_bias_x, gyro_bias_y, gyro_bias_z, n_p, n_s\n";
 
     //vehicleStatusFile_.open(std::string(saveFolder_ + "/vehicle_status.txt"));
 

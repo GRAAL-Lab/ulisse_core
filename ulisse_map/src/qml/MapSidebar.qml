@@ -7,7 +7,7 @@ import "."
 Rectangle {
     property alias markerText: markerTextLabel.text
     property alias markerTextColor: markerTextLabel.textColor
-    property alias sweepPathCmdPane: commandRect.sweepPathCmdPane
+    property alias pathCmdPane: commandRect.pathCmdPane
     property alias commandRect: commandRect
     property alias speedHeadTimeout: commandRect.speedHeadTimeout
 
