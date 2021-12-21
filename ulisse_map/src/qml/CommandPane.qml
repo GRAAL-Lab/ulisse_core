@@ -78,12 +78,17 @@ Pane {
                         map.click_handler = map.safety_polygon.click_handler
                         map.pos_changed_handler = map.safety_polygon.pos_changed_handler
                         enabled = false
+
+                        map.mapTextOverlay.text = "Press ESC to cancel"
+                        map.mapTextOverlay.visible = true
+
                         window.sig_escape.connect(reset_safetypoly)
                         map.safety_polygon.end.connect(end)
                     }
 
                     function end() {
                         enabled = true
+                        map.mapTextOverlay.visible = false
                         map.safety_polygon.end.disconnect(end)
                         window.sig_escape.disconnect(reset_safetypoly)
                         map.click_handler = map.click_goto_handler
@@ -97,6 +102,7 @@ Pane {
 
                     function reset_safetypoly(){
                         enabled = true
+                        map.mapTextOverlay.visible = false
                         map.safety_polygon.end.disconnect(end)
                         window.sig_escape.disconnect(reset_safetypoly)
                         map.safety_polygon.path = safetyPoly_bkp
@@ -120,20 +126,7 @@ Pane {
             }
         }
 
-        Text {
-            id: markerText
-            font.pointSize: 9
-            color: 'grey'
-            text: "(Press ESC to cancel)"
-            verticalAlignment: Text.AlignVCenter
-            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-            Layout.fillWidth: true
-            horizontalAlignment: Text.AlignHCenter
-            visible: !buttonBoundBoxDefine.enabled
-        }
-
-
-        CommandsParamsTabView {
+        CommandsTabView {
             // COMMAND BUTTONS ARE INSIDE THIS QML
 
             // This Item is needed to add margins to the StackLayout and make it correctly resize

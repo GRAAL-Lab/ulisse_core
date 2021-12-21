@@ -6,8 +6,8 @@ import "."
 
 MapPolyline {
     id: root
-    //line.color: red
-    //line.width: 2
+    //line.color: "black"
+    //line.width: 5
     opacity: 1
     z: map.z + 2
 

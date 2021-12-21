@@ -10,13 +10,17 @@ MapQuickItem {
     property var canvasAngle: 0
     property var multiplier: 0
     property alias _canvas: _c
+
     function requestPaint() {
         _c.requestPaint()
     }
+
     signal ctx_ready
+
     sourceItem: Canvas {
         id: _c
-        antialiasing: true
+        //antialiasing:true
+        //smooth: true
         property var _ctx
         onAvailableChanged: {
             _ctx = _c.getContext("2d")

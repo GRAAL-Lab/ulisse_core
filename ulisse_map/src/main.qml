@@ -32,7 +32,8 @@ ApplicationWindow {
     property color lightgrey: Material.color(Material.Grey, Material.Shade400)
     property color lightergrey: Material.color(Material.Grey, Material.Shade100)
 
-    property color mainColor: (settings.theme == "Light" ? cyan : red)
+    property color mainColor: green
+    property color mainColorLight: lightgreen
 
     property string futureMapPlugin: ""
 
@@ -86,8 +87,8 @@ ApplicationWindow {
             futureMapPlugin = mapPluginType
             mapViewLoader.active = true
 
-            /*var polyComponent = Qt.createComponent("MapPolygon.qml")
-            savedBoundary = polyComponent.createObject()*/
+            /*var polygonComponent = Qt.createComponent("MapPolygon.qml")
+            savedBoundary = polygonComponent.createObject()*/
         }
     }
 

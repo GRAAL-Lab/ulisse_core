@@ -34,6 +34,9 @@ RowLayout {
                 onClicked: function () {
                     bar_manage.show_shape_choice()
                     enableBtns(false)
+                    window.sig_escape.connect(cancelPathCreation)
+                    map.mapTextOverlay.text = "Press ESC to cancel"
+                    map.mapTextOverlay.visible = true
                 }
             }
 
@@ -64,7 +67,7 @@ RowLayout {
             visible: false
             Button {
                 id: abort
-                text:"Back"
+                text: "Back"
                 Layout.fillWidth: true
                 Layout.fillHeight: false
                 highlighted: true
@@ -240,6 +243,11 @@ RowLayout {
         toast.show("Path loaded", 2000)
     }
 
+    function cancelPathCreation() {
+        deselect_all()
+        enableBtns(true)
+        bar_manage.hide_all()
+    }
 
     function enableBtns(y) {
         addTracks.enabled = y

@@ -15,6 +15,7 @@ MapComponentForm {
 
     id: map_component
 
+    //property alias mapTextOverlay: mapTextOverlay
     property var marker_coords: markerIcon.coordinate
 
     function click_goto_handler(mouse) {
@@ -34,35 +35,34 @@ MapComponentForm {
         pos_changed_handler(mouse)
     }
 
-    property MapPolygon safety_polygon
-
-    property Component polyComponent
+    property MapPolygon2 safety_polygon
+    property Component polygonComponent
     property Component pathComponent
     property Component pathButtonComponent
 
     property var path_file: home_dir + "/Ulisse_Data/Path_Files/"
 
     Component.onCompleted: {
-        polyComponent = Qt.createComponent("MapPolygon.qml")
+        polygonComponent = Qt.createComponent("MapPolygon2.qml")
         pathComponent = Qt.createComponent("MapPath.qml")
         pathButtonComponent = Qt.createComponent("PathButton.qml")
+        createSafetyPolygon()
+        map.center = fbkUpdater.ulisse_pos
+    }
 
-        safety_polygon = polyComponent.createObject(map_component)
+    function createSafetyPolygon() {
+        safety_polygon = polygonComponent.createObject(map_component)
         safety_polygon.click_handler = safety_polygon.click_handler_simple
         safety_polygon.pos_changed_handler = safety_polygon.pos_changed_handler_simple
+        safety_polygon._pathName = "SafetyBoundary"
+        safety_polygon._angle = 0
+        safety_polygon._offset = 0
         safety_polygon._method = null
         map.addMapItem(safety_polygon)
-
-        //poly_obj = polyComponent.createObject(map_component)
-        //map.addMapItem(poly_obj)
-        //map.removeMapItem(poly_obj)
-
-        map.center = fbkUpdater.ulisse_pos
-
     }
 
     function createPolySweepPath() {
-        var poly_cur = polyComponent.createObject(map_component)
+        var poly_cur = polygonComponent.createObject(map_component)
         map.addMapItem(poly_cur)
         return poly_cur
     }

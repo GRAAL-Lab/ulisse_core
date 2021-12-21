@@ -33,7 +33,7 @@ Rectangle {
                 Label {
                     font.pointSize: 12
                     font.weight: Font.DemiBold
-                    color: cyan
+                    color: mainColor
                     text: "Status"
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter

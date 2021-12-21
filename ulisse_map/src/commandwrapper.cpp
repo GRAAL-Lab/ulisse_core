@@ -11,11 +11,11 @@
 #include "ulisse_ctrl/ulisse_defines.hpp"
 #include "ulisse_driver/LLCHelperDataStructs.h"
 #include "nav_filter/nav_data_structs.hpp"
+#include "sisl_toolbox/sisl_toolbox.hpp"
 
 
 using namespace std::chrono_literals;
 using std::placeholders::_1;
-using namespace std;
 
 CommandWrapper::CommandWrapper(QObject* parent)
     : QObject(parent), Node("gui_commands_wrapper")
@@ -420,6 +420,11 @@ bool CommandWrapper::sendBoundaries(const QString boundary)
     auto serviceReq = std::make_shared<ulisse_msgs::srv::SetBoundaries::Request>();
     serviceReq->boundaries.boundaries_string = "" + boundary.toStdString();
 
+    // DEBUG PRINT
+    QJsonDocument doc = QJsonDocument::fromJson(boundary.toUtf8());
+    QString formattedJsonString = doc.toJson(QJsonDocument::Indented);
+    std::cout << formattedJsonString.toStdString() << std::endl;
+
     Json::Reader reader;
     Json::Value obj, obj2;
 
@@ -428,7 +433,7 @@ bool CommandWrapper::sendBoundaries(const QString boundary)
     serviceReq->boundaries.vertices.resize(obj["values"].size());
     unsigned int count = 0;
     try {
-        for (Json::Value c : obj["values"]) {
+        for (const Json::Value &c : obj["values"]) {
 
             reader.parse(c.toStyledString(), obj2);
 
@@ -439,11 +444,13 @@ bool CommandWrapper::sendBoundaries(const QString boundary)
         }
     } catch (Json::Exception& e) {
         // output exception information
-        std::cout << "Error parsing Jason" << e.what() << std::endl;
+        std::cout << "Error parsing QML Jason" << e.what() << std::endl;
     }
 
     return SendBoundariesRequest(serviceReq);
 }
+
+
 
 bool CommandWrapper::SendBoundariesRequest(ulisse_msgs::srv::SetBoundaries::Request::SharedPtr req)
 {

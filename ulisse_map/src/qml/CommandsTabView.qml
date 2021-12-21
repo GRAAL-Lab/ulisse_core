@@ -46,7 +46,7 @@ Pane{
                     font: commandsTabButton.font
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
-                    color: (commandPathsBar.currentIndex == 0) ? cyan : grey
+                    color: (commandPathsBar.currentIndex == 0) ? mainColor : grey
                 }
             }
 
@@ -59,7 +59,7 @@ Pane{
                     font: parametersTabButton.font
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
-                    color: (commandPathsBar.currentIndex == 1) ? cyan : grey
+                    color: (commandPathsBar.currentIndex == 1) ? mainColor : grey
                 }
             }
         }
@@ -267,7 +267,6 @@ Pane{
 
 
                 RowLayout {
-                    id: cruiseHeadingControl
                     Layout.alignment: Qt.AlignVCenter //| Qt.AlignHCenter
 
                     Label {

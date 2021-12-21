@@ -9,7 +9,7 @@ import QtQuick.Dialogs 1.2
 import "."
 
 BarManagePathsForm {
-    id: root
+    //id: root
 
     property bool inhibit: false
     property var pathButtonComponent
@@ -20,9 +20,7 @@ BarManagePathsForm {
     }
 
     cancelPathChoice.onClicked: function () {
-        pathCmdPane.deselect_all()
-        pathCmdPane.enableBtns(true)
-        hide_all()
+        pathCmdPane.cancelPathCreation()
     }
 
     buttonToggle.onClicked: function () {
@@ -60,11 +58,11 @@ BarManagePathsForm {
         start()
     }
 
-    Keys.onEscapePressed: {
+    /*Keys.onEscapePressed: {
         discard()
         console.log("escapeItem in BarManagePaths.qml is handling escape");
         // event.accepted is set to true by default for the specific key handlers
-    }
+    }*/
 
     panelParamsPolygon.onAccept: function () {
         confirm()
@@ -101,6 +99,7 @@ BarManagePathsForm {
         cur_managed.destroy()
         map.mapMouseArea.hoverEnabled = false
         window.sig_escape.disconnect(abort_h)
+        //map.mapTextOverlay.visible = false
     }
 
     function edit() {
@@ -139,6 +138,7 @@ BarManagePathsForm {
         cur_managed.check_safe(map.safety_polygon)
         pathCmdPane.update_selection(cur_managed)
         manage(cur_managed)
+        map.mapTextOverlay.visible = false
     }
 
     function confirm() {
@@ -221,6 +221,7 @@ BarManagePathsForm {
         for (var i in panels)
             panels[i].visible = false
         pathManageToolbar.visible = false
+        map.mapTextOverlay.visible = false
     }
 
     function enableBtns(y) {
