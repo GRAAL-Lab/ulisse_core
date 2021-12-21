@@ -83,6 +83,8 @@ MapPolyline {
         map.addMapItem(a_marker)
         map.addMapItem(b_marker)
         _handle.add_to_map(map)
+
+        console.log("[MapPolygon] Type: " + type)
     }
 
     function deregister_map_items() {

@@ -53,10 +53,6 @@ MapComponentForm {
         safety_polygon._method = null
         map.addMapItem(safety_polygon)
 
-        //poly_obj = polyComponent.createObject(map_component)
-        //map.addMapItem(poly_obj)
-        //map.removeMapItem(poly_obj)
-
         map.center = fbkUpdater.ulisse_pos
 
     }

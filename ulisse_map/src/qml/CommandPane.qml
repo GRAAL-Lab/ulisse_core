@@ -11,15 +11,14 @@ import "../scripts/helper.js" as Helper
 
 Pane {
 
-    property var polysec_bkp: []
+    property var safetyPoly_bkp: []
     property var buttonSafety: buttonBoundBoxDefine
-    property var trackComponent
+    property var pathButtonComponent
     property alias speedHeadTimeout: commandParamsStackContainer.speedHeadTimeout
-    //property alias buttonSafety1: buttonBoundBoxResend
     property alias pathCmdPane: commandParamsStackContainer.pathCommandsPane
 
     Component.onCompleted: {
-        trackComponent = Qt.createComponent("PathButton.qml")
+        pathButtonComponent = Qt.createComponent("PathButton.qml")
     }
 
     ColumnLayout {
@@ -57,7 +56,7 @@ Pane {
                     Material.background: green
                     //Layout.fillHeight: false
                     onClicked: {
-                        cmdWrapper.sendBoundaries(JSON.stringify(map.polysec_cur.serialize()))
+                        cmdWrapper.sendBoundaries(JSON.stringify(map.safety_polygon.serialize()))
                     }
                 }*/
 
@@ -72,37 +71,37 @@ Pane {
                     highlighted: true
                     Material.background: green
 
+                    onClicked: {
+                        safetyPoly_bkp = map.safety_polygon.path
+                        map.safety_polygon.clear_path()
+                        map.center = fbkUpdater.ulisse_pos
+                        map.click_handler = map.safety_polygon.click_handler
+                        map.pos_changed_handler = map.safety_polygon.pos_changed_handler
+                        enabled = false
+                        window.sig_escape.connect(reset_safetypoly)
+                        map.safety_polygon.end.connect(end)
+                    }
+
                     function end() {
                         enabled = true
-                        map.polysec_cur.end.disconnect(end)
-                        window.sig_escape.disconnect(reset_polysec)
+                        map.safety_polygon.end.disconnect(end)
+                        window.sig_escape.disconnect(reset_safetypoly)
                         map.click_handler = map.click_goto_handler
                         map.pos_changed_handler = function () {}
                         text = "Redefine"
                         buttonBoundBoxResend.enabled = true
                         commandParamsStackContainer.pathCommandsPane.check_safety_all()
-                        cmdWrapper.sendBoundaries(JSON.stringify(map.polysec_cur.serialize()))
-                        //settings.savedBoundary = map.polysec_cur
+                        cmdWrapper.sendBoundaries(JSON.stringify(map.safety_polygon.serialize()))
+                        //settings.savedBoundary = map.safety_polygon
                     }
 
-                    function reset_polysec(){
+                    function reset_safetypoly(){
                         enabled = true
-                        map.polysec_cur.end.disconnect(end)
-                        window.sig_escape.disconnect(reset_polysec)
-                        map.polysec_cur.path = polysec_bkp
+                        map.safety_polygon.end.disconnect(end)
+                        window.sig_escape.disconnect(reset_safetypoly)
+                        map.safety_polygon.path = safetyPoly_bkp
                         map.click_handler = map.click_goto_handler
                         map.pos_changed_handler = function () {}
-                    }
-
-                    onClicked: {
-                        polysec_bkp = map.polysec_cur.path
-                        map.polysec_cur.clear_path()
-                        map.center = fbkUpdater.ulisse_pos
-                        map.click_handler = map.polysec_cur.click_handler
-                        map.pos_changed_handler = map.polysec_cur.pos_changed_handler
-                        enabled = false
-                        window.sig_escape.connect(reset_polysec)
-                        map.polysec_cur.end.connect(end)
                     }
                 }
 
@@ -116,12 +115,22 @@ Pane {
                     Layout.fillWidth: true
                     highlighted: true
                     //Layout.fillHeight: false
-                    onClicked: cmdWrapper.sendBoundaries(JSON.stringify(map.polysec_cur.serialize()))
+                    onClicked: cmdWrapper.sendBoundaries(JSON.stringify(map.safety_polygon.serialize()))
                 }
             }
         }
 
-
+        Text {
+            id: markerText
+            font.pointSize: 9
+            color: 'grey'
+            text: "(Press ESC to cancel)"
+            verticalAlignment: Text.AlignVCenter
+            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
+            visible: !buttonBoundBoxDefine.enabled
+        }
 
 
         CommandsParamsTabView {
@@ -151,7 +160,7 @@ Pane {
             id: haltText
             font.pointSize: 8
             color: 'grey'
-            text: "(Shortcut: Spacebar)"
+            text: "(Shortcut: Return)"
             verticalAlignment: Text.AlignVCenter
             Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
             Layout.fillWidth: true

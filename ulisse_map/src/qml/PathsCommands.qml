@@ -8,7 +8,7 @@ import "."
 
 RowLayout {
 
-    property alias columnTrack: pathButtonsColumn
+    property alias pathButtonsColumn: pathButtonsColumn
     property real fontSize: 14
     property int defheigth: 42
     property bool multichoice: false
@@ -174,7 +174,7 @@ RowLayout {
     }
 
     function savePaths(filePath) {
-        if (pathCommandsPane.columnTrack.children.length === 0) {
+        if (pathCommandsPane.pathButtonsColumn.children.length === 0) {
             toast.show("There is nothing to save!")
             return
         }
@@ -185,9 +185,9 @@ RowLayout {
             : []
         }
 
-        for (var i = 0; i < pathCommandsPane.columnTrack.children.length; i++) {
+        for (var i = 0; i < pathCommandsPane.pathButtonsColumn.children.length; i++) {
             all_paths.paths.push(
-                        pathCommandsPane.columnTrack.children[i].managed_path.serialize())
+                        pathCommandsPane.pathButtonsColumn.children[i].managed_path.serialize())
         }
 
         cmdWrapper.savePathToFile(filePath, JSON.stringify(all_paths))
@@ -203,37 +203,37 @@ RowLayout {
         for (i = 0; i < data.paths.length; i++) {
             switch (data.paths[i].type) {
             case "PolyPath":
-                var cur_managed = map.createPoly()
+                var cur_managed = map.createPolySweepPath()
                 cur_managed.deserialize(data.paths[i])
                 cur_managed.type = "PolyPath"
-                var v = trackComponent.createObject(pathCommandsPane.columnTrack)
+                var v = pathButtonComponent.createObject(pathCommandsPane.pathButtonsColumn)
                 v.managed_path = cur_managed
-                v.ntrack = pathCommandsPane.columnTrack.children.length
+                v.ntrack = pathCommandsPane.pathButtonsColumn.children.length
                 v.selected.connect(function (path) {
                     pathCommandsPane.update_selection(path)
                     bar_manage.manage(path)
                 })
-                cur_managed.check_safe(map.polysec_cur)
+                cur_managed.check_safe(map.safety_polygon)
                 cur_managed.draw_deferred()
                 break
             case "PointPath":
-                var cur_managed = map.createPath()
+                var cur_managed = map.createPolylinePath()
                 cur_managed.deserialize(data.paths[i])
                 cur_managed.type = "PointPath"
-                var v = trackComponent.createObject(pathCommandsPane.columnTrack)
+                var v = pathButtonComponent.createObject(pathCommandsPane.pathButtonsColumn)
                 v.managed_path = cur_managed
-                v.ntrack = pathCommandsPane.columnTrack.children.length
+                v.ntrack = pathCommandsPane.pathButtonsColumn.children.length
                 v.selected.connect(function (path) {
                     pathCommandsPane.update_selection(path)
                     bar_manage.manage(path)
                 })
-                cur_managed.check_safe(map.polysec_cur)
+                cur_managed.check_safe(map.safety_polygon)
                 cur_managed.draw_deferred()
                 break
             case "SecurityPoly":
-                map.polysec_cur.clear_path()
-                polysec_cur.deserialize(data.paths[i])
-                polysec_cur.draw_deferred()
+                map.safety_polygon.clear_path()
+                safety_polygon.deserialize(data.paths[i])
+                safety_polygon.draw_deferred()
                 break
             }
         }
@@ -255,7 +255,7 @@ RowLayout {
 
     function check_safety_all() {
         for (var i = 0; i < pathButtonsColumn.children.length; i++) {
-            pathButtonsColumn.children[i].managed_path.check_safe(map.polysec_cur)
+            pathButtonsColumn.children[i].managed_path.check_safe(map.safety_polygon)
         }
     }
 

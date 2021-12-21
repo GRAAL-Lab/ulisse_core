@@ -12,11 +12,11 @@ BarManagePathsForm {
     id: root
 
     property bool inhibit: false
-    property var trackComponent
+    property var pathButtonComponent
 
     Component.onCompleted: function () {
         hide_all()
-        trackComponent = Qt.createComponent("PathButton.qml")
+        pathButtonComponent = Qt.createComponent("PathButton.qml")
     }
 
     cancelPathChoice.onClicked: function () {
@@ -42,30 +42,28 @@ BarManagePathsForm {
     property var cur_managed
     property var params_panel
 
-    b_poly.onClicked: function () {
-        cur_managed = map.createPoly()
+    b_polySweep.onClicked: function () {
+        cur_managed = map.createPolySweepPath()
         params_panel = panelParamsPolygon
         start()
     }
 
-    b_rect.onClicked: function () {
-        cur_managed = map.createRect()
+    b_rectSweep.onClicked: function () {
+        cur_managed = map.createRectSweepPath()
         params_panel = panelParamsPolygon
         start()
+    }
 
-
+    b_polyline.onClicked: function () {
+        cur_managed = map.createPolylinePath()
+        params_panel = panelParamsPolyline
+        start()
     }
 
     Keys.onEscapePressed: {
         discard()
         console.log("escapeItem in BarManagePaths.qml is handling escape");
         // event.accepted is set to true by default for the specific key handlers
-    }
-
-    b_path.onClicked: function () {
-        cur_managed = map.createPath()
-        params_panel = panelParamsPolyline
-        start()
     }
 
     panelParamsPolygon.onAccept: function () {
@@ -131,14 +129,14 @@ BarManagePathsForm {
         window.sig_escape.disconnect(abort_h)
         cur_managed.end.disconnect(end)
         confirm()
-        var v = trackComponent.createObject(pathCmdPane.columnTrack)
+        var v = pathButtonComponent.createObject(pathCmdPane.pathButtonsColumn)
         v.managed_path = cur_managed
         v.ntrack = ++n
         v.selected.connect(function (path) {
             pathCmdPane.update_selection(path)
             manage(path)
         })
-        cur_managed.check_safe(map.polysec_cur)
+        cur_managed.check_safe(map.safety_polygon)
         pathCmdPane.update_selection(cur_managed)
         manage(cur_managed)
     }
@@ -149,7 +147,7 @@ BarManagePathsForm {
         var p = params_panel.getParams()
         cur_managed.enable_ab_markers()
         cur_managed.confirm_edit(params_panel.nameTrack, p)
-        cur_managed.check_safe(map.polysec_cur)
+        cur_managed.check_safe(map.safety_polygon)
         pathCmdPane.enableBtns(true)
         show_manage()
     }
@@ -159,7 +157,7 @@ BarManagePathsForm {
         map.pos_changed_handler = function () {}
         cur_managed.enable_ab_markers()
         cur_managed.discard_edit()
-        cur_managed.check_safe(map.polysec_cur)
+        cur_managed.check_safe(map.safety_polygon)
         pathCmdPane.enableBtns(true)
         show_manage()
     }
@@ -168,8 +166,8 @@ BarManagePathsForm {
 
     /*------------------ PATH MANAGEMENT ------------------------*/
     function manage(path) {
-        for (var e in pathCmdPane.columnTrack.children)
-            pathCmdPane.columnTrack.children[e].managed_path.disable_ab_markers()
+        for (var e in pathCmdPane.pathButtonsColumn.children)
+            pathCmdPane.pathButtonsColumn.children[e].managed_path.disable_ab_markers()
         path.enable_ab_markers()
         if (inhibit) return
         cur_managed = path
@@ -218,8 +216,8 @@ BarManagePathsForm {
     }
 
     function hide_all() {
-        for (var i in pathCmdPane.columnTrack.children)
-            pathCmdPane.columnTrack.children[i].managed_path.disable_ab_markers()
+        for (var i in pathCmdPane.pathButtonsColumn.children)
+            pathCmdPane.pathButtonsColumn.children[i].managed_path.disable_ab_markers()
         for (var i in panels)
             panels[i].visible = false
         pathManageToolbar.visible = false

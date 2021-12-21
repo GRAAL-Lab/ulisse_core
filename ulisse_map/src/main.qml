@@ -36,6 +36,8 @@ ApplicationWindow {
 
     property string futureMapPlugin: ""
 
+    signal sig_escape
+
     Material.theme: settings.theme
     Material.accent: mainColor
 
@@ -47,8 +49,9 @@ ApplicationWindow {
     }
 
     Shortcut {
-        // Halting catamaran when space is pressed
-        sequence: " "
+        // Halting catamaran when Return is pressed
+        sequence: "Return"
+        context: Qt.ApplicationShortcut
         onActivated: {
             toast.show("Sent Halt Command")
             cmdWrapper.sendHaltCommand()
@@ -56,14 +59,13 @@ ApplicationWindow {
     }
 
     Shortcut {
-        sequence: Qt.Key_Escape
+        sequence: StandardKey.Cancel  // Escape Key
         context: Qt.ApplicationShortcut
         onActivated: {
-            toast.show("Escape.", 2000)//sig_escape()
+            sig_escape()
         }
     }
 
-    signal sig_escape
 
     Settings {
         id: settings

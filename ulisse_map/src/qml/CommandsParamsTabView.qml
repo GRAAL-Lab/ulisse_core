@@ -93,7 +93,7 @@ Pane{
                     Layout.fillWidth: true
                     Material.background: pressed ? orange : mainColor
                     enabled: Helper.coord_inside_polygon(map.marker_coords,
-                                                         map.polysec_cur.path)
+                                                         map.safety_polygon.path)
                              && (map.markerIcon.opacity > 0)
                     highlighted: true
 
