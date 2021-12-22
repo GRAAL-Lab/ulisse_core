@@ -85,13 +85,13 @@ BarManagePathsForm {
         params_panel.fill_cur_values(cur_val)
         cur_managed.end.connect(end)
         window.sig_escape.connect(abort_h)
-        map.click_handler = cur_managed.click_handler
-        map.pos_changed_handler = cur_managed.pos_changed_handler
+        map.clickHandler = cur_managed.clickHandler
+        map.posChangedHandler = cur_managed.posChangedHandler
     }
 
     function abort_h(){
-        map.click_handler = map.click_goto_handler
-        map.pos_changed_handler = function () {}
+        map.clickHandler = map.click_goto_handler
+        map.posChangedHandler = function () {}
         pathCmdPane.enableBtns(true)
         hide_all()
         cur_managed.deregister_map_items()
@@ -109,22 +109,23 @@ BarManagePathsForm {
         var cur_val = cur_managed.get_params()
         console.log("Type: " + cur_managed.type)
         switch (cur_managed.type) {
-             case "PolyPath":
-                 params_panel = panelParamsPolygon
-                 break
-             case "PointPath":
-                 params_panel = panelParamsPolyline
-                 break
+        case "PolyPath":
+            params_panel = panelParamsPolygon
+            break
+        case "PointPath":
+            params_panel = panelParamsPolyline
+            break
         }
         params_panel.fill_cur_values(cur_val)
         show_edit()
         cur_managed.begin_edit()
-        map.click_handler = cur_managed.click_mod_handler
-        map.pos_changed_handler = cur_managed.pos_changed_mod_handler
+        map.clickHandler = cur_managed.click_mod_handler
+        map.posChangedHandler = cur_managed.pos_changed_mod_handler
     }
 
     property int n: 0
     function end() {
+        console.log("[BarManagePaths] end()")
         window.sig_escape.disconnect(abort_h)
         cur_managed.end.disconnect(end)
         confirm()
@@ -142,8 +143,9 @@ BarManagePathsForm {
     }
 
     function confirm() {
-        map.click_handler = map.click_goto_handler
-        map.pos_changed_handler = function () {}
+        console.log("[BarManagePaths] confirm()")
+        map.clickHandler = map.click_goto_handler
+        map.posChangedHandler = function () {}
         var p = params_panel.getParams()
         cur_managed.enable_ab_markers()
         cur_managed.confirm_edit(params_panel.nameTrack, p)
@@ -153,8 +155,8 @@ BarManagePathsForm {
     }
 
     function discard() {
-        map.click_handler = map.click_goto_handler
-        map.pos_changed_handler = function () {}
+        map.clickHandler = map.click_goto_handler
+        map.posChangedHandler = function () {}
         cur_managed.enable_ab_markers()
         cur_managed.discard_edit()
         cur_managed.check_safe(map.safety_polygon)
@@ -192,10 +194,12 @@ BarManagePathsForm {
 
     /*------------------------------------------------------------*/
     function show_shape_choice() {
+        // KEEP
         show_panel(panelPathChoice)
     }
 
     function show_panel(panel) {
+        // KEEP
         pathManageToolbar.visible = true
         for (var i in panels)
             panels[i].visible = (panel === panels[i])

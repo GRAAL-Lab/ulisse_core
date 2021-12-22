@@ -25,14 +25,14 @@ MapComponentForm {
         }
     }
 
-    property var click_handler: click_goto_handler
-    property var pos_changed_handler: function () {}
+    property var clickHandler: click_goto_handler
+    property var posChangedHandler: function () {}
 
     mapMouseArea.onClicked: {
-        click_handler(mouse)
+        clickHandler(mouse)
     }
     mapMouseArea.onPositionChanged: {
-        pos_changed_handler(mouse)
+        posChangedHandler(mouse)
     }
 
     property MapPolygon2 safety_polygon
@@ -40,7 +40,7 @@ MapComponentForm {
     property Component pathComponent
     property Component pathButtonComponent
 
-    property var path_file: home_dir + "/Ulisse_Data/Path_Files/"
+    //property var path_file: home_dir + "/Ulisse_Data/Path_Files/"
 
     Component.onCompleted: {
         polygonComponent = Qt.createComponent("MapPolygon2.qml")
@@ -52,12 +52,12 @@ MapComponentForm {
 
     function createSafetyPolygon() {
         safety_polygon = polygonComponent.createObject(map_component)
-        safety_polygon.click_handler = safety_polygon.click_handler_simple
-        safety_polygon.pos_changed_handler = safety_polygon.pos_changed_handler_simple
+        safety_polygon.clickHandler = safety_polygon.click_handler_non_intersecting
+        safety_polygon.posChangedHandler = safety_polygon.pos_changed_handler_simple
         safety_polygon._pathName = "SafetyBoundary"
         safety_polygon._angle = 0
         safety_polygon._offset = 0
-        safety_polygon._method = null
+        safety_polygon._method = "single_winding"
         map.addMapItem(safety_polygon)
     }
 
@@ -69,8 +69,8 @@ MapComponentForm {
 
     function createRectSweepPath() {
         var poly_cur = createPolySweepPath()
-        poly_cur.click_handler = poly_cur.click_handler_rect
-        poly_cur.pos_changed_handler = poly_cur.pos_changed_handler_rect
+        poly_cur.clickHandler = poly_cur.click_handler_rect
+        poly_cur.posChangedHandler = poly_cur.pos_changed_handler_rect
         return poly_cur
     }
 

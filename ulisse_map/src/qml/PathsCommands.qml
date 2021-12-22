@@ -247,6 +247,7 @@ RowLayout {
         deselect_all()
         enableBtns(true)
         bar_manage.hide_all()
+        bar_manage.discard()
     }
 
     function enableBtns(y) {

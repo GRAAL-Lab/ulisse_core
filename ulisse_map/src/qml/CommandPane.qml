@@ -72,11 +72,15 @@ Pane {
                     Material.background: green
 
                     onClicked: {
+                        /*if(map.safety_polygon == undefined){
+                            map.createSafetyPolygon()
+                        }*/
+
                         safetyPoly_bkp = map.safety_polygon.path
                         map.safety_polygon.clear_path()
                         map.center = fbkUpdater.ulisse_pos
-                        map.click_handler = map.safety_polygon.click_handler
-                        map.pos_changed_handler = map.safety_polygon.pos_changed_handler
+                        map.clickHandler = map.safety_polygon.clickHandler
+                        map.posChangedHandler = map.safety_polygon.posChangedHandler
                         enabled = false
 
                         map.mapTextOverlay.text = "Press ESC to cancel"
@@ -91,8 +95,8 @@ Pane {
                         map.mapTextOverlay.visible = false
                         map.safety_polygon.end.disconnect(end)
                         window.sig_escape.disconnect(reset_safetypoly)
-                        map.click_handler = map.click_goto_handler
-                        map.pos_changed_handler = function () {}
+                        map.clickHandler = map.click_goto_handler
+                        map.posChangedHandler = function () {}
                         text = "Redefine"
                         buttonBoundBoxResend.enabled = true
                         commandParamsStackContainer.pathCommandsPane.check_safety_all()
@@ -106,8 +110,8 @@ Pane {
                         map.safety_polygon.end.disconnect(end)
                         window.sig_escape.disconnect(reset_safetypoly)
                         map.safety_polygon.path = safetyPoly_bkp
-                        map.click_handler = map.click_goto_handler
-                        map.pos_changed_handler = function () {}
+                        map.clickHandler = map.click_goto_handler
+                        map.posChangedHandler = function () {}
                     }
                 }
 

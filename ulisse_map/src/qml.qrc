@@ -37,7 +37,6 @@
         <file>qml/MapComponentForm.qml</file>
         <file>qml/BarManagePaths.qml</file>
         <file>qml/BarManagePathsForm.qml</file>
-        <file>qml/MapPolygon.qml</file>
         <file>qml/MapPath.qml</file>
         <file>qml/MapCanvas.qml</file>
         <file>qml/MapMarker.qml</file>

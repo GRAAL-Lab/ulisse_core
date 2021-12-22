@@ -7,7 +7,7 @@ import "../scripts/helper.js" as Helper
 
 
 MapPolyline {
-
+    id: root
     line.width: 2
     opacity: 1.0
     z: map.z + 5
@@ -16,8 +16,8 @@ MapPolyline {
 
     signal end
 
-    property var click_handler: click_handler_convex
-    property var pos_changed_handler: pos_changed_handler_convex
+    property var clickHandler: click_handler_convex
+    property var posChangedHandler: pos_changed_handler_convex
 
     property Component mapCanvasComponent
     property Component mapMarkerComponent
@@ -309,11 +309,11 @@ MapPolyline {
     function nearest_than(p, d1, n1, p2, n2) {
         var d2 = Helper.distance(p, p2)
         return (d1 < d2) ? {
-                 nearest: n1,
-                 distance: d1
-                 } : {
-                 nearest: n2,
-                 distance: d2
+                               nearest: n1,
+                               distance: d1
+                           } : {
+            nearest: n2,
+            distance: d2
         }
     }
 
@@ -355,7 +355,7 @@ MapPolyline {
 
     //////////////////////////////////////////////
     // Event handlers for definition of simple, non-intersecting polygon
-    function click_handler_simple(mouse) {
+    function click_handler_non_intersecting(mouse) {
         var m = Qt.point(mouse.x, mouse.y)
         var p = map.toCoordinate(m)
         if (mouse.button & Qt.LeftButton) {
@@ -379,6 +379,8 @@ MapPolyline {
                 pp.push(pp[0])
                 if (!Helper.coord_inside_polygon(fbkUpdater.ulisse_pos, pp))
                     return
+                console.log("[MapPolygon.click_handler_non_intersecting] close_polygon()")
+
                 close_polygon()
                 update_centroid()
                 generate_markers()
@@ -532,10 +534,12 @@ MapPolyline {
                 addCoordinate(p)
                 polygonal_phase = 3
             } else if (polygonal_phase === 3) {
-                if (map_polygon_point_admissibility(m))
+                if (map_polygon_point_admissibility(m)){
                     addCoordinate(p)
-                else
+                } else {
+                    console.log("[MapPolygon.click_handler_convex] close_polygon()")
                     close_polygon()
+                }
             }
         } else if (mouse.button & Qt.RightButton) {
             close_polygon()
@@ -770,6 +774,7 @@ MapPolyline {
             _method = params.method
         }
         moving_idx = -1
+        console.log("[MapPolygon.confirm_edit] about to _draw()")
         _draw()
     }
 
@@ -789,6 +794,8 @@ MapPolyline {
     // Draw utilities
     function _draw() {
         if (_method != null || _method !== undefined) {
+            // For the security poly the method is null
+            console.log("[MapPolygon] generate_path()")
             generate_path()
             draw_path()
         }

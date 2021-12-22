@@ -421,9 +421,9 @@ bool CommandWrapper::sendBoundaries(const QString boundary)
     serviceReq->boundaries.boundaries_string = "" + boundary.toStdString();
 
     // DEBUG PRINT
-    QJsonDocument doc = QJsonDocument::fromJson(boundary.toUtf8());
+    /*QJsonDocument doc = QJsonDocument::fromJson(boundary.toUtf8());
     QString formattedJsonString = doc.toJson(QJsonDocument::Indented);
-    std::cout << formattedJsonString.toStdString() << std::endl;
+    std::cout << formattedJsonString.toStdString() << std::endl;*/
 
     Json::Reader reader;
     Json::Value obj, obj2;
