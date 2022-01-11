@@ -419,14 +419,29 @@ void VehicleSimulator::SimulateSensors()
     dvlMsg_.stamp.sec = now_stamp_secs;
     dvlMsg_.stamp.nanosec = now_stamp_nanosecs;
 
+    // Evaluating the rigid body matrix of the DVL w.r.t. the bodyFrame
     Eigen::Matrix6d bodyF_RBM_dvl = rml::RigidBodyMatrix(config_->bodyF_dvl_sensor_pose.LinearVector());
+    // Evaluating the components of the velocity, in the DVL frame
     Eigen::Vector6d bodyF_relativeVelocity_dvl = bodyF_RBM_dvl * bodyF_relativeVelocity_;
+    // Evaluating the rotation matrix of the DVL w.r.t to the bodyFrame
     Eigen::RotationMatrix bodyF_R_dvl = rml::EulerRPY(config_->bodyF_dvl_sensor_pose.AngularVector()).ToRotationMatrix();
+    // Rotating the components according to the sensor positioning
     Eigen::Vector3d dvlF_relativeLinearVelocity = bodyF_R_dvl.transpose() * bodyF_relativeVelocity_dvl.LinearVector();
-    //std::cout << "dvlF_relativeVelocity: " << dvlF_relativeLinearVelocity << std::endl;
-    dvlMsg_.bottom_velocity[0] = dvlF_relativeLinearVelocity(0) + dvlNoiseX(generator);
-    dvlMsg_.bottom_velocity[1] = dvlF_relativeLinearVelocity(1) + dvlNoiseY(generator);
-    dvlMsg_.bottom_velocity[2] = dvlF_relativeLinearVelocity(2) + dvlNoiseZ(generator);
+
+    dvlMsg_.water_tracking[0] = dvlF_relativeLinearVelocity(0) + dvlNoiseX(generator);
+    dvlMsg_.water_tracking[1] = dvlF_relativeLinearVelocity(1) + dvlNoiseY(generator);
+    dvlMsg_.water_tracking[2] = dvlF_relativeLinearVelocity(2) + dvlNoiseZ(generator);
+
+    // Projecting back the absolute vehicle velocity in worldFrame onto the bodyFrame
+    Eigen::Vector6d bodyF_absoluteVelocity_ = bodyF_orientation_.ToRotationMatrix().CartesianRotationMatrix().transpose() * worldF_velocity_;
+    // Evaluating the components of the velocity, in the DVL frame
+    Eigen::Vector6d bodyF_absoluteVelocity_dvl = bodyF_RBM_dvl * bodyF_absoluteVelocity_;
+    // Rotating the components according to the sensor positioning
+    Eigen::Vector3d dvlF_absoluteLinearVelocity = bodyF_R_dvl.transpose() * bodyF_absoluteVelocity_dvl.LinearVector();
+
+    dvlMsg_.bottom_velocity[0] = dvlF_absoluteLinearVelocity(0) + dvlNoiseX(generator);
+    dvlMsg_.bottom_velocity[1] = dvlF_absoluteLinearVelocity(1) + dvlNoiseY(generator);
+    dvlMsg_.bottom_velocity[2] = dvlF_absoluteLinearVelocity(2) + dvlNoiseZ(generator);
 
 
     /////   FOG   /////
