@@ -354,7 +354,7 @@ MapPolyline {
     }
 
     //////////////////////////////////////////////
-    // Event handlers for definition of simple, non-intersecting polygon
+    // Event handlers for definition of simple, non-intersecting polygon (safety polygon)
     function click_handler_non_intersecting(mouse) {
         var m = Qt.point(mouse.x, mouse.y)
         var p = map.toCoordinate(m)
@@ -374,7 +374,7 @@ MapPolyline {
                 var closing_side = [ppp[0], ppp[ppp.length - 1]]
                 if (!Helper.polylines_disjoint(closing_side, ppp))
                     return
-                var p1 = map.fromCoordinate(coordinateAt(0))
+                //var p1 = map.fromCoordinate(coordinateAt(0)) // (serve a qualcosa?)
                 var pp = path
                 pp.push(pp[0])
                 if (!Helper.coord_inside_polygon(fbkUpdater.ulisse_pos, pp))
@@ -774,8 +774,7 @@ MapPolyline {
             _method = params.method
         }
         moving_idx = -1
-        console.log("[MapPolygon.confirm_edit] about to _draw()")
-        _draw()
+        _generate_and_draw()
     }
 
     function get_params() {
@@ -792,11 +791,13 @@ MapPolyline {
 
     //////////////////////////////////////////////////////////
     // Draw utilities
-    function _draw() {
+    function _generate_and_draw() {
         if (_method != null || _method !== undefined) {
             // For the security poly the method is null
             console.log("[MapPolygon] generate_path()")
+            //cmdWrapper.generatePath
             generate_path()
+            console.log("[MapPolygon] draw_path()")
             draw_path()
         }
         generate_markers()
@@ -807,7 +808,7 @@ MapPolyline {
 
     function draw_deferred() {
         if (_canvas.canvasCtx !== null && _canvas.canvasCtx !== undefined)
-            _draw()
+            _generate_and_draw()
         else
             _canvas.canvasCtxChanged.connect(_draw)
     }
@@ -821,6 +822,7 @@ MapPolyline {
 
     ////////////////////////////////////////////////////////
     function generate_nurbs() {
+        // This function will be replaced since the sisl_toolbox will generate the curve
         var nurb_l = []
         var nurb_c = []
         for (var i = 0; i < intersections_cartesian.length; i++) {

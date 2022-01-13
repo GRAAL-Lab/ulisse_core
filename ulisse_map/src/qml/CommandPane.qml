@@ -100,8 +100,9 @@ Pane {
                         text = "Redefine"
                         buttonBoundBoxResend.enabled = true
                         commandParamsStackContainer.pathCommandsPane.check_safety_all()
+
                         cmdWrapper.sendBoundaries(JSON.stringify(map.safety_polygon.serialize()))
-                        //settings.savedBoundary = map.safety_polygon
+                        settings.savedBoundary = JSON.stringify(map.safety_polygon.serialize())
                     }
 
                     function reset_safetypoly(){

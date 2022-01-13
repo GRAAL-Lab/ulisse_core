@@ -43,6 +43,7 @@ MapComponentForm {
     //property var path_file: home_dir + "/Ulisse_Data/Path_Files/"
 
     Component.onCompleted: {
+        // These components will create all the dynamic objects
         polygonComponent = Qt.createComponent("MapPolygon2.qml")
         pathComponent = Qt.createComponent("MapPath.qml")
         pathButtonComponent = Qt.createComponent("PathButton.qml")
@@ -57,7 +58,8 @@ MapComponentForm {
         safety_polygon._pathName = "SafetyBoundary"
         safety_polygon._angle = 0
         safety_polygon._offset = 0
-        safety_polygon._method = "single_winding"
+        //if (settings.savedBoundary.path.length > 0) { safety_polygon.path = settings.savedBoundary.path }
+        safety_polygon._method = ""
         map.addMapItem(safety_polygon)
     }
 

@@ -455,7 +455,7 @@ void VehicleController::SetBoundariesHandler(const std::shared_ptr<rmw_request_i
     RCLCPP_INFO(this->get_logger(), "Incoming request for set boundaries");
 
     if (asvSafetyBoundaries_->InitializePolygon(request->boundaries)) {
-        boundariesJson_ = request->boundaries.boundaries_string;
+        boundariesJson_ = request->boundaries.info_string;
         response->res = "SetBound::ok";
         boundariesSet_ = true;
     } else {
@@ -463,7 +463,7 @@ void VehicleController::SetBoundariesHandler(const std::shared_ptr<rmw_request_i
     }
 
     std::stringstream log;
-    log << "Setting Bounding Box: " << request->boundaries.boundaries_string;
+    log << "Setting Bounding Box: " << request->boundaries.info_string;
     PublishLog(log.str().c_str());
 }
 

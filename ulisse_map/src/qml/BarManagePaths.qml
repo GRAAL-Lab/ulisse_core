@@ -78,6 +78,7 @@ BarManagePathsForm {
     }
 
     function start() {
+        // Here the click handlers are assigned and the parameters are shown
         if (cur_managed === null)
             return
         show_create()
@@ -186,10 +187,12 @@ BarManagePathsForm {
     buttonPlay.onClicked: function () {
         if (cur_managed === null)
             return
-        if (!cur_managed.safe)
+        if (!cur_managed.safe) {
             toast.show("Unsafe path due to operational space limits.", 2000)
-        else
+        } else {
+            // The path is recreated when sent?
             cmdWrapper.sendPath(JSON.stringify(cur_managed.generate_nurbs()))
+        }
     }
 
     /*------------------------------------------------------------*/

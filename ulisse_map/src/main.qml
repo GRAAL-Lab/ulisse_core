@@ -32,8 +32,8 @@ ApplicationWindow {
     property color lightgrey: Material.color(Material.Grey, Material.Shade400)
     property color lightergrey: Material.color(Material.Grey, Material.Shade100)
 
-    property color mainColor: green
-    property color mainColorLight: lightgreen
+    property color mainColor: cyan
+    property color mainColorLight: lightcyan
 
     property string futureMapPlugin: ""
 
