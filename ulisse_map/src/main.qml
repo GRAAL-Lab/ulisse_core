@@ -32,9 +32,12 @@ ApplicationWindow {
     property color lightgrey: Material.color(Material.Grey, Material.Shade400)
     property color lightergrey: Material.color(Material.Grey, Material.Shade100)
 
-    property color mainColor: (settings.theme == "Light" ? cyan : red)
+    property color mainColor: cyan
+    property color mainColorLight: lightcyan
 
     property string futureMapPlugin: ""
+
+    signal sig_escape
 
     Material.theme: settings.theme
     Material.accent: mainColor
@@ -47,8 +50,9 @@ ApplicationWindow {
     }
 
     Shortcut {
-        // Halting catamaran when space is pressed
-        sequence: " "
+        // Halting catamaran when Return is pressed
+        sequence: "Return"
+        context: Qt.ApplicationShortcut
         onActivated: {
             toast.show("Sent Halt Command")
             cmdWrapper.sendHaltCommand()
@@ -56,14 +60,13 @@ ApplicationWindow {
     }
 
     Shortcut {
-        sequence: Qt.Key_Escape
+        sequence: StandardKey.Cancel  // Escape Key
         context: Qt.ApplicationShortcut
         onActivated: {
-            toast.show("Escape.", 2000)//sig_escape()
+            sig_escape()
         }
     }
 
-    signal sig_escape
 
     Settings {
         id: settings
@@ -84,8 +87,8 @@ ApplicationWindow {
             futureMapPlugin = mapPluginType
             mapViewLoader.active = true
 
-            /*var polyComponent = Qt.createComponent("MapPolygon.qml")
-            savedBoundary = polyComponent.createObject()*/
+            /*var polygonComponent = Qt.createComponent("MapPolygon.qml")
+            savedBoundary = polygonComponent.createObject()*/
         }
     }
 

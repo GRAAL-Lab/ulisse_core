@@ -9,9 +9,10 @@ import QtQuick.Dialogs 1.2
 import "."
 
 RowLayout {
-    property alias b_path: b_path
-    property alias b_rect: b_rect
-    property alias b_poly: b_poly
+    property alias b_polySweep: b_polySweep
+    property alias b_rectSweep: b_rectSweep
+    property alias b_polyline: b_polyline
+
 
     property alias cancelPathChoice: cancelPathChoice
 
@@ -35,18 +36,18 @@ RowLayout {
         visible: false
 
         Button {
-            id: b_poly
-            text: qsTr("Polygon")
+            id: b_polySweep
+            text: qsTr("Polygon Sweep")
         }
 
         Button {
-            id: b_rect
-            text: qsTr("Rectangle")
+            id: b_rectSweep
+            text: qsTr("Rectangle Sweep")
         }
 
         Button {
-            id: b_path
-            text: qsTr("Path")
+            id: b_polyline
+            text: qsTr("Polyline")
         }
 
         Button {

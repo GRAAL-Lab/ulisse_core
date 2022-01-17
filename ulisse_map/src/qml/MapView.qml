@@ -51,10 +51,6 @@ MapViewForm {
         followMeCheckbox.checked ? followMeTimer.start() : followMeTimer.stop()
     }
 
-    /*overlayStatusCbox.onCheckStateChanged: {
-        map.overlayTextOpacity = overlayStatusCbox.checked ? 1.0 : 0.0
-    }*/
-
 
     Timer {
         // A Timer to center the catamaran in the screen at application startup

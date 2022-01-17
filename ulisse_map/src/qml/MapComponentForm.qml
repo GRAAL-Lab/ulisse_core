@@ -12,11 +12,10 @@ import "."
 Map {
     id: map_component
     property real markerIconOpacity: markerIcon.opacity
-    property alias overlayTextOpacity: overlayText.opacity
+    property alias ulisseOverlayTextOpacity: ulisseOverlayText.opacity
     property alias markerIcon: markerIcon
     property alias mapMouseArea: mapMouseArea
     property alias ulissePath: ulissePath
-    property alias marker: marker
     property alias compass: compass
     property alias currentArrow: currentArrow
     property alias currentLabel: currentLabel
@@ -27,13 +26,23 @@ Map {
     property alias greenFlag: greenFlag
     property alias editCircle: editCircle
     property alias sliderz: sliders.z
+    property alias mapTextOverlay: mapTextOverlay
 
-    ColorOverlay {
-        id: marker
-        anchors.fill: map
-        source: map
-        //Qt.rgba(1.0, 0.2, 0, 0.1)
-        color: (settings.theme === "Light") ? "transparent" : Qt.rgba(1.0, 0.2, 0, 0.1)
+    Text {
+        id: mapTextOverlay
+
+        font.pointSize: 12
+        style: Text.Outline
+        styleColor: "white"
+        color: grey
+        horizontalAlignment: Text.AlignHCenter
+        width: parent.width
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 110
+        text: "Overlay Text"
+        font.weight: Font.DemiBold
+        z: map.z + 4
+        visible: false
     }
 
     MapRuler {
@@ -185,7 +194,7 @@ Map {
     }
 
     MapQuickItem {
-        id: overlayText
+        id: ulisseOverlayText
         sourceItem: Text {
             color: 'darkslategrey'
             text: "Surge: " + fbkUpdater.ulisse_surge + " m/s\nHeading: "

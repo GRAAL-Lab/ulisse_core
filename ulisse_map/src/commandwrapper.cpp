@@ -11,11 +11,11 @@
 #include "ulisse_ctrl/ulisse_defines.hpp"
 #include "ulisse_driver/LLCHelperDataStructs.h"
 #include "nav_filter/nav_data_structs.hpp"
+#include "sisl_toolbox/sisl_toolbox.hpp"
 
 
 using namespace std::chrono_literals;
 using std::placeholders::_1;
-using namespace std;
 
 CommandWrapper::CommandWrapper(QObject* parent)
     : QObject(parent), Node("gui_commands_wrapper")
@@ -193,6 +193,13 @@ QVector<double> CommandWrapper::createNurbs(const QString& pointForNurbs)
     //parse the jason
     reader.parse(pointForNurbs.toStdString(), objMaster);
 
+
+    std::string pathJason = pointForNurbs.toStdString();
+    //std::cout << "JSON:\n" << pathJason;
+    QJsonDocument doc = QJsonDocument::fromJson(pathJason.c_str());
+    QString formattedJsonString = doc.toJson(QJsonDocument::Indented);
+    std::cout << "JSON Indented:\n" << formattedJsonString.toStdString();
+
     // check whatever the path has beeen reverse
     reverse = objMaster["direction"].asInt() ? true : false;
 
@@ -320,6 +327,20 @@ QVector<double> CommandWrapper::createNurbs(const QString& pointForNurbs)
     return nurbsDiscretize;
 }
 
+QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonData)
+{
+    QVector<double> pathPoints;
+
+    Json::Reader reader;
+    Json::Value obj, obj2;
+
+    reader.parse(pathJsonData.toStdString(), obj);
+
+    // USE SISL TOOLBOX FUNCTIONS TO CREATE CURVE
+
+    return pathPoints;
+}
+
 QPoint CommandWrapper::latLong2LocalUTM(QGeoCoordinate latlong, QGeoCoordinate centroid)
 {
 
@@ -415,20 +436,35 @@ bool CommandWrapper::reloadNavFilterConf()
     return serviceAvailable;
 }
 
-bool CommandWrapper::sendBoundaries(const QString boundary)
+bool CommandWrapper::sendBoundaries(const QString& boundary_json_data)
 {
     auto serviceReq = std::make_shared<ulisse_msgs::srv::SetBoundaries::Request>();
-    serviceReq->boundaries.boundaries_string = "" + boundary.toStdString();
+    serviceReq->boundaries.info_string = "GUI Set Boundary";// + boundary.toStdString();
+
+    /*serviceReq->boundaries.vertices.resize(boundary.size());
+
+    for (int i = 0; i < boundary.size(); i++) {
+        serviceReq->boundaries.vertices.at(i).latitude = boundary.at(i).latitude();
+        serviceReq->boundaries.vertices.at(i).longitude = boundary.at(i).longitude();
+
+        std::cout << "LatLong: " << serviceReq->boundaries.vertices.at(i).latitude << "," << serviceReq->boundaries.vertices.at(i).longitude << std::endl;
+    }
+*/
+
+    // DEBUG PRINT
+    /*QJsonDocument doc = QJsonDocument::fromJson(boundary_json_data.toUtf8());
+    QString formattedJsonString = doc.toJson(QJsonDocument::Indented);
+    std::cout << formattedJsonString.toStdString() << std::endl;*/
 
     Json::Reader reader;
     Json::Value obj, obj2;
 
-    reader.parse(serviceReq->boundaries.boundaries_string, obj);
+    reader.parse(boundary_json_data.toStdString(), obj);
 
     serviceReq->boundaries.vertices.resize(obj["values"].size());
     unsigned int count = 0;
     try {
-        for (Json::Value c : obj["values"]) {
+        for (const Json::Value &c : obj["values"]) {
 
             reader.parse(c.toStyledString(), obj2);
 
@@ -439,11 +475,15 @@ bool CommandWrapper::sendBoundaries(const QString boundary)
         }
     } catch (Json::Exception& e) {
         // output exception information
-        std::cout << "Error parsing Jason" << e.what() << std::endl;
+        std::cout << "Error parsing QML Jason" << e.what() << std::endl;
     }
+
+
 
     return SendBoundariesRequest(serviceReq);
 }
+
+
 
 bool CommandWrapper::SendBoundariesRequest(ulisse_msgs::srv::SetBoundaries::Request::SharedPtr req)
 {

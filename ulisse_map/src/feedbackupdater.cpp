@@ -145,7 +145,7 @@ void FeedbackUpdater::RegisterPublishersAndSubscribers()
         qos_sensor, std::bind(&FeedbackUpdater::LLCMotorsCB, this, _1));
 
     battery_left_sub_ = this->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_left,
-        0, std::bind(&FeedbackUpdater::LLCBatteryLeftCB, this, _1));
+        10, std::bind(&FeedbackUpdater::LLCBatteryLeftCB, this, _1));
     battery_right_sub_ = this->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_right,
         10, std::bind(&FeedbackUpdater::LLCBatteryRightCB, this, _1));
     thrusters_reference_sub_ = this->create_subscription<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_reference_perc,

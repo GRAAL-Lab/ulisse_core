@@ -29,6 +29,7 @@ RowLayout {
     property alias mapsidebar: mapsidebar
     property alias pathState: pathState
     property alias pathCmdPane: mapsidebar.pathCmdPane
+    //property alias mapTextOverlay: map.mapTextOverlay
 
     spacing: 0
     width: window.width
@@ -68,15 +69,6 @@ RowLayout {
         property int stopped: 3
     }
 
-    /*ModalPopup {
-        id: acceptRadDialog
-        dialogTitle: "Insert an acceptance radius"
-    }
-
-    ModalPopup {
-        id: surgeheadingDialog
-        dialogTitle: "Insert both speed (m/s) and heading (deg)"
-    }*/
 
     MapSidebar {
         id: mapsidebar
@@ -107,7 +99,6 @@ RowLayout {
             center: settings.mapCenter
             zoomLevel: settings.mapZoom
             bearing: settings.mapBearing
-
         }
 
         Rectangle {

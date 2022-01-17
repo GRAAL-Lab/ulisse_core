@@ -9,20 +9,18 @@ import QtQuick.Dialogs 1.2
 import "."
 
 BarManagePathsForm {
-    id: root
+    //id: root
 
     property bool inhibit: false
-    property var trackComponent
+    property var pathButtonComponent
 
     Component.onCompleted: function () {
         hide_all()
-        trackComponent = Qt.createComponent("PathButton.qml")
+        pathButtonComponent = Qt.createComponent("PathButton.qml")
     }
 
     cancelPathChoice.onClicked: function () {
-        pathCmdPane.deselect_all()
-        pathCmdPane.enableBtns(true)
-        hide_all()
+        pathCmdPane.cancelPathCreation()
     }
 
     buttonToggle.onClicked: function () {
@@ -42,31 +40,29 @@ BarManagePathsForm {
     property var cur_managed
     property var params_panel
 
-    b_poly.onClicked: function () {
-        cur_managed = map.createPoly()
+    b_polySweep.onClicked: function () {
+        cur_managed = map.createPolySweepPath()
         params_panel = panelParamsPolygon
         start()
     }
 
-    b_rect.onClicked: function () {
-        cur_managed = map.createRect()
+    b_rectSweep.onClicked: function () {
+        cur_managed = map.createRectSweepPath()
         params_panel = panelParamsPolygon
         start()
-
-
     }
 
-    Keys.onEscapePressed: {
-        discard()
-        console.log("escapeItem in BarManagePaths.qml is handling escape");
-        // event.accepted is set to true by default for the specific key handlers
-    }
-
-    b_path.onClicked: function () {
-        cur_managed = map.createPath()
+    b_polyline.onClicked: function () {
+        cur_managed = map.createPolylinePath()
         params_panel = panelParamsPolyline
         start()
     }
+
+    /*Keys.onEscapePressed: {
+        discard()
+        console.log("escapeItem in BarManagePaths.qml is handling escape");
+        // event.accepted is set to true by default for the specific key handlers
+    }*/
 
     panelParamsPolygon.onAccept: function () {
         confirm()
@@ -82,6 +78,7 @@ BarManagePathsForm {
     }
 
     function start() {
+        // Here the click handlers are assigned and the parameters are shown
         if (cur_managed === null)
             return
         show_create()
@@ -89,13 +86,13 @@ BarManagePathsForm {
         params_panel.fill_cur_values(cur_val)
         cur_managed.end.connect(end)
         window.sig_escape.connect(abort_h)
-        map.click_handler = cur_managed.click_handler
-        map.pos_changed_handler = cur_managed.pos_changed_handler
+        map.clickHandler = cur_managed.clickHandler
+        map.posChangedHandler = cur_managed.posChangedHandler
     }
 
     function abort_h(){
-        map.click_handler = map.click_goto_handler
-        map.pos_changed_handler = function () {}
+        map.clickHandler = map.click_goto_handler
+        map.posChangedHandler = function () {}
         pathCmdPane.enableBtns(true)
         hide_all()
         cur_managed.deregister_map_items()
@@ -103,6 +100,7 @@ BarManagePathsForm {
         cur_managed.destroy()
         map.mapMouseArea.hoverEnabled = false
         window.sig_escape.disconnect(abort_h)
+        //map.mapTextOverlay.visible = false
     }
 
     function edit() {
@@ -112,54 +110,57 @@ BarManagePathsForm {
         var cur_val = cur_managed.get_params()
         console.log("Type: " + cur_managed.type)
         switch (cur_managed.type) {
-             case "PolyPath":
-                 params_panel = panelParamsPolygon
-                 break
-             case "PointPath":
-                 params_panel = panelParamsPolyline
-                 break
+        case "PolyPath":
+            params_panel = panelParamsPolygon
+            break
+        case "PointPath":
+            params_panel = panelParamsPolyline
+            break
         }
         params_panel.fill_cur_values(cur_val)
         show_edit()
         cur_managed.begin_edit()
-        map.click_handler = cur_managed.click_mod_handler
-        map.pos_changed_handler = cur_managed.pos_changed_mod_handler
+        map.clickHandler = cur_managed.click_mod_handler
+        map.posChangedHandler = cur_managed.pos_changed_mod_handler
     }
 
     property int n: 0
     function end() {
+        console.log("[BarManagePaths] end()")
         window.sig_escape.disconnect(abort_h)
         cur_managed.end.disconnect(end)
         confirm()
-        var v = trackComponent.createObject(pathCmdPane.columnTrack)
+        var v = pathButtonComponent.createObject(pathCmdPane.pathButtonsColumn)
         v.managed_path = cur_managed
         v.ntrack = ++n
         v.selected.connect(function (path) {
             pathCmdPane.update_selection(path)
             manage(path)
         })
-        cur_managed.check_safe(map.polysec_cur)
+        cur_managed.check_safe(map.safety_polygon)
         pathCmdPane.update_selection(cur_managed)
         manage(cur_managed)
+        map.mapTextOverlay.visible = false
     }
 
     function confirm() {
-        map.click_handler = map.click_goto_handler
-        map.pos_changed_handler = function () {}
+        console.log("[BarManagePaths] confirm()")
+        map.clickHandler = map.click_goto_handler
+        map.posChangedHandler = function () {}
         var p = params_panel.getParams()
         cur_managed.enable_ab_markers()
         cur_managed.confirm_edit(params_panel.nameTrack, p)
-        cur_managed.check_safe(map.polysec_cur)
+        cur_managed.check_safe(map.safety_polygon)
         pathCmdPane.enableBtns(true)
         show_manage()
     }
 
     function discard() {
-        map.click_handler = map.click_goto_handler
-        map.pos_changed_handler = function () {}
+        map.clickHandler = map.click_goto_handler
+        map.posChangedHandler = function () {}
         cur_managed.enable_ab_markers()
         cur_managed.discard_edit()
-        cur_managed.check_safe(map.polysec_cur)
+        cur_managed.check_safe(map.safety_polygon)
         pathCmdPane.enableBtns(true)
         show_manage()
     }
@@ -168,8 +169,8 @@ BarManagePathsForm {
 
     /*------------------ PATH MANAGEMENT ------------------------*/
     function manage(path) {
-        for (var e in pathCmdPane.columnTrack.children)
-            pathCmdPane.columnTrack.children[e].managed_path.disable_ab_markers()
+        for (var e in pathCmdPane.pathButtonsColumn.children)
+            pathCmdPane.pathButtonsColumn.children[e].managed_path.disable_ab_markers()
         path.enable_ab_markers()
         if (inhibit) return
         cur_managed = path
@@ -186,18 +187,22 @@ BarManagePathsForm {
     buttonPlay.onClicked: function () {
         if (cur_managed === null)
             return
-        if (!cur_managed.safe)
+        if (!cur_managed.safe) {
             toast.show("Unsafe path due to operational space limits.", 2000)
-        else
+        } else {
+            // The path is recreated when sent?
             cmdWrapper.sendPath(JSON.stringify(cur_managed.generate_nurbs()))
+        }
     }
 
     /*------------------------------------------------------------*/
     function show_shape_choice() {
+        // KEEP
         show_panel(panelPathChoice)
     }
 
     function show_panel(panel) {
+        // KEEP
         pathManageToolbar.visible = true
         for (var i in panels)
             panels[i].visible = (panel === panels[i])
@@ -218,11 +223,12 @@ BarManagePathsForm {
     }
 
     function hide_all() {
-        for (var i in pathCmdPane.columnTrack.children)
-            pathCmdPane.columnTrack.children[i].managed_path.disable_ab_markers()
+        for (var i in pathCmdPane.pathButtonsColumn.children)
+            pathCmdPane.pathButtonsColumn.children[i].managed_path.disable_ab_markers()
         for (var i in panels)
             panels[i].visible = false
         pathManageToolbar.visible = false
+        map.mapTextOverlay.visible = false
     }
 
     function enableBtns(y) {

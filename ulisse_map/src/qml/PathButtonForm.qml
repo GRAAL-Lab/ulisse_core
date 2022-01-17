@@ -13,14 +13,12 @@ import "."
 import "../scripts/helper.js" as Helper
 
 RowLayout {
-    id: tracklistlayout
-    //elementi che definiscono l'elemento
+    //id: tracklistlayout
     property int ntrack: -1
     property var managed_path
     property alias name: pathButton
-    property alias tracklistlayout: tracklistlayout
+    //property alias tracklistlayout: tracklistlayout
     property bool toggled: false
-    //property bool expanded: false
 
     signal selected(var path)
     signal edit(var path)

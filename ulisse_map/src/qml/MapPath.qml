@@ -81,7 +81,7 @@ MapPolyline {
         _handle.deregister_map_items(map)
     }
 
-    function _draw() {
+    function _generate_and_draw() {
         generate_nurbs()
         generate_markers()
         reposition_markers()
@@ -90,7 +90,7 @@ MapPolyline {
     }
 
     function draw_deferred() {
-        _draw()
+        _generate_and_draw()
     }
 
     function get_path() {
@@ -510,7 +510,7 @@ MapPolyline {
         _pathName = name
         mapMouseArea.hoverEnabled = false
         moving_idx = -1
-        _draw()
+        _generate_and_draw()
         enable_ab_markers()
     }
 

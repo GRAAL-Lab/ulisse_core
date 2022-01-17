@@ -37,7 +37,6 @@
         <file>qml/MapComponentForm.qml</file>
         <file>qml/BarManagePaths.qml</file>
         <file>qml/BarManagePathsForm.qml</file>
-        <file>qml/MapPolygon.qml</file>
         <file>qml/MapPath.qml</file>
         <file>qml/MapCanvas.qml</file>
         <file>qml/MapMarker.qml</file>
@@ -59,11 +58,12 @@
         <file>images/alpha.svg</file>
         <file>qml/LabelledField.qml</file>
         <file>images/windarrow.png</file>
-        <file>qml/CommandsParamsTabView.qml</file>
+        <file>qml/CommandsTabView.qml</file>
         <file>qml/ActionView.qml</file>
         <file>qml/BottomToolbar.qml</file>
         <file>qml/UtilitiesView.qml</file>
         <file>qml/TaskData.qml</file>
         <file>qml/PriorityLevelData.qml</file>
+        <file>qml/MapPolygon2.qml</file>
     </qresource>
 </RCC>

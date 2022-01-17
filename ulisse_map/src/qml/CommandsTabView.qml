@@ -46,7 +46,7 @@ Pane{
                     font: commandsTabButton.font
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
-                    color: (commandPathsBar.currentIndex == 0) ? cyan : grey
+                    color: (commandPathsBar.currentIndex == 0) ? mainColor : grey
                 }
             }
 
@@ -59,7 +59,7 @@ Pane{
                     font: parametersTabButton.font
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
-                    color: (commandPathsBar.currentIndex == 1) ? cyan : grey
+                    color: (commandPathsBar.currentIndex == 1) ? mainColor : grey
                 }
             }
         }
@@ -93,7 +93,7 @@ Pane{
                     Layout.fillWidth: true
                     Material.background: pressed ? orange : mainColor
                     enabled: Helper.coord_inside_polygon(map.marker_coords,
-                                                         map.polysec_cur.path)
+                                                         map.safety_polygon.path)
                              && (map.markerIcon.opacity > 0)
                     highlighted: true
 
@@ -267,7 +267,6 @@ Pane{
 
 
                 RowLayout {
-                    id: cruiseHeadingControl
                     Layout.alignment: Qt.AlignVCenter //| Qt.AlignHCenter
 
                     Label {

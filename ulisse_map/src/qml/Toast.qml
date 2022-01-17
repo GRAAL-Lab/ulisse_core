@@ -1,6 +1,5 @@
 import QtQuick 2.0
 
-
 /**
 * @brief An Android-like timed message text in a box that selfdestroys when finished if desired
 */

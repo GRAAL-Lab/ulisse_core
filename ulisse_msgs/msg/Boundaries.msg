@@ -1,3 +1,3 @@
-string boundaries_string
+string info_string
 
 LatLong[] vertices

@@ -36,7 +36,7 @@ Dialog {
 
         Text {
             font.pointSize: 11
-            text: "<b>Spacebar</b>: Send a Halt Command"
+            text: "<b>Return</b>: Send a Halt Command"
             color: Material.foreground
             wrapMode: Text.Wrap
             Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter

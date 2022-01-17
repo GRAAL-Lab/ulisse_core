@@ -15,6 +15,7 @@ MapComponentForm {
 
     id: map_component
 
+    //property alias mapTextOverlay: mapTextOverlay
     property var marker_coords: markerIcon.coordinate
 
     function click_goto_handler(mouse) {
@@ -24,57 +25,58 @@ MapComponentForm {
         }
     }
 
-    property var click_handler: click_goto_handler
-    property var pos_changed_handler: function () {}
+    property var clickHandler: click_goto_handler
+    property var posChangedHandler: function () {}
 
     mapMouseArea.onClicked: {
-        click_handler(mouse)
+        clickHandler(mouse)
     }
     mapMouseArea.onPositionChanged: {
-        pos_changed_handler(mouse)
+        posChangedHandler(mouse)
     }
 
-    property MapPolygon poly_obj
-
-    property MapPolygon polysec_cur
-
-    property Component polyComponent
-    property Component polysecComponent
+    property MapPolygon2 safety_polygon
+    property Component polygonComponent
     property Component pathComponent
-    property Component trackComponent
+    property Component pathButtonComponent
 
-    property var path_file: home_dir + "/Ulisse_Data/Path_Files/"
+    //property var path_file: home_dir + "/Ulisse_Data/Path_Files/"
 
     Component.onCompleted: {
-        polyComponent = Qt.createComponent("MapPolygon.qml")
+        // These components will create all the dynamic objects
+        polygonComponent = Qt.createComponent("MapPolygon2.qml")
         pathComponent = Qt.createComponent("MapPath.qml")
-        trackComponent = Qt.createComponent("PathButton.qml")
-
-        polysec_cur = polyComponent.createObject(map_component)
-        polysec_cur.click_handler = polysec_cur.click_handler_simple
-        polysec_cur.pos_changed_handler = polysec_cur.pos_changed_handler_simple
-        polysec_cur._method = null
-        map.addMapItem(polysec_cur)
-        poly_obj = polyComponent.createObject(map_component)
-        map.addMapItem(poly_obj)
-        map.removeMapItem(poly_obj)
+        pathButtonComponent = Qt.createComponent("PathButton.qml")
+        createSafetyPolygon()
         map.center = fbkUpdater.ulisse_pos
     }
 
-    function createPoly() {
-        var poly_cur = polyComponent.createObject(map_component)
+    function createSafetyPolygon() {
+        safety_polygon = polygonComponent.createObject(map_component)
+        safety_polygon.clickHandler = safety_polygon.click_handler_non_intersecting
+        safety_polygon.posChangedHandler = safety_polygon.pos_changed_handler_simple
+        safety_polygon._pathName = "SafetyBoundary"
+        safety_polygon._angle = 0
+        safety_polygon._offset = 0
+        //if (settings.savedBoundary.path.length > 0) { safety_polygon.path = settings.savedBoundary.path }
+        safety_polygon._method = ""
+        map.addMapItem(safety_polygon)
+    }
+
+    function createPolySweepPath() {
+        var poly_cur = polygonComponent.createObject(map_component)
         map.addMapItem(poly_cur)
         return poly_cur
     }
 
-    function createRect() {
-        var poly_cur = createPoly()
-        poly_cur.click_handler = poly_cur.click_handler_rect
-        poly_cur.pos_changed_handler = poly_cur.pos_changed_handler_rect
+    function createRectSweepPath() {
+        var poly_cur = createPolySweepPath()
+        poly_cur.clickHandler = poly_cur.click_handler_rect
+        poly_cur.posChangedHandler = poly_cur.pos_changed_handler_rect
         return poly_cur
     }
 
-    function createPath() {
+    function createPolylinePath() {
         var path_cur = pathComponent.createObject(map_component)
         map.addMapItem(path_cur)
         return path_cur
