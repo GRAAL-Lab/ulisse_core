@@ -94,6 +94,8 @@ public:
     Q_INVOKABLE bool reloadDCLConf();
     Q_INVOKABLE bool reloadNavFilterConf();
 
+
+
 public slots:
     void check_error_slot();
     void publish_surge_heading();
@@ -103,5 +105,7 @@ public slots:
 signals:
     void connected();
 };
+
+//Q_DECLARE_METATYPE(QGeoCoordinate)
 
 #endif // COMMANDWRAPPER_H

@@ -84,7 +84,7 @@ MapPolyline {
         map.addMapItem(b_marker)
         _handle.add_to_map(map)
 
-        console.log("[MapPolygon] Type: " + type)
+        console.log("[MapPolygon] PathName: " + _pathName)
     }
 
     function deregister_map_items() {

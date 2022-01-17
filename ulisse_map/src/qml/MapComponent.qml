@@ -40,6 +40,8 @@ MapComponentForm {
     property Component pathComponent
     property Component pathButtonComponent
 
+    property Component obstacleComponent
+
     //property var path_file: home_dir + "/Ulisse_Data/Path_Files/"
 
     Component.onCompleted: {
@@ -47,15 +49,20 @@ MapComponentForm {
         polygonComponent = Qt.createComponent("MapPolygon2.qml")
         pathComponent = Qt.createComponent("MapPath.qml")
         pathButtonComponent = Qt.createComponent("PathButton.qml")
+
+        obstacleComponent = Qt.createComponent("MapObstacle.qml")
+
         createSafetyPolygon()
-        map.center = fbkUpdater.ulisse_pos
+
+        createObstacle("QML_Obstacle_1", QtPositioning.coordinate(44.0957, 9.8632), 0, 20, 10)
+        createObstacle("QML_Obstacle_2", QtPositioning.coordinate(44.0955, 9.8630), 90, 10, 5)
     }
 
     function createSafetyPolygon() {
-        safety_polygon = polygonComponent.createObject(map_component)
+        safety_polygon = polygonComponent.createObject(map_component, {_pathName: "SafetyBoundary"})
         safety_polygon.clickHandler = safety_polygon.click_handler_non_intersecting
         safety_polygon.posChangedHandler = safety_polygon.pos_changed_handler_simple
-        safety_polygon._pathName = "SafetyBoundary"
+        //safety_polygon.
         safety_polygon._angle = 0
         safety_polygon._offset = 0
         //if (settings.savedBoundary.path.length > 0) { safety_polygon.path = settings.savedBoundary.path }
@@ -80,6 +87,20 @@ MapComponentForm {
         var path_cur = pathComponent.createObject(map_component)
         map.addMapItem(path_cur)
         return path_cur
+    }
+
+    function createObstacle(obsID, obsCoords, obsHeading, obsBBoxX, obsBBoxY) {
+
+        var obstacle = obstacleComponent.createObject(map_component,
+                       {id: obsID, coordinate: obsCoords, heading: obsHeading, bBoxX: obsBBoxX, bBoxY: obsBBoxY})
+
+        if( obstacleComponent.status != Component.Ready )
+        {
+            if( obstacleComponent.status == Component.Error )
+                console.debug("Error:"+ obstacleComponent.errorString() );
+            return; // or maybe throw
+        }
+        map.addMapItem(obstacle)
     }
 
     compass.transform: [
@@ -171,6 +192,7 @@ MapComponentForm {
                     marker_coords.longitude.toFixed(8))
     }
 
+    // This timer centers the map on the vehicle at startup and then draws the trace of the vehicle
     Timer {
         interval: 500
         running: true

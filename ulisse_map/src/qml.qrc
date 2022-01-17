@@ -65,5 +65,6 @@
         <file>qml/TaskData.qml</file>
         <file>qml/PriorityLevelData.qml</file>
         <file>qml/MapPolygon2.qml</file>
+        <file>qml/MapObstacle.qml</file>
     </qresource>
 </RCC>
