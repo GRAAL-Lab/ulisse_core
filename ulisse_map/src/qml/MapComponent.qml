@@ -40,9 +40,7 @@ MapComponentForm {
     property Component pathComponent
     property Component pathButtonComponent
 
-    property Component obstacleComponent
 
-    //property var path_file: home_dir + "/Ulisse_Data/Path_Files/"
 
     Component.onCompleted: {
         // These components will create all the dynamic objects
@@ -50,12 +48,11 @@ MapComponentForm {
         pathComponent = Qt.createComponent("MapPath.qml")
         pathButtonComponent = Qt.createComponent("PathButton.qml")
 
-        obstacleComponent = Qt.createComponent("MapObstacle.qml")
+
 
         createSafetyPolygon()
 
-        createObstacle("QML_Obstacle_1", QtPositioning.coordinate(44.0957, 9.8632), 0, 20, 10)
-        createObstacle("QML_Obstacle_2", QtPositioning.coordinate(44.0955, 9.8630), 90, 10, 5)
+
     }
 
     function createSafetyPolygon() {
@@ -89,19 +86,10 @@ MapComponentForm {
         return path_cur
     }
 
-    function createObstacle(obsID, obsCoords, obsHeading, obsBBoxX, obsBBoxY) {
-
-        var obstacle = obstacleComponent.createObject(map_component,
-                       {id: obsID, coordinate: obsCoords, heading: obsHeading, bBoxX: obsBBoxX, bBoxY: obsBBoxY})
-
-        if( obstacleComponent.status != Component.Ready )
-        {
-            if( obstacleComponent.status == Component.Error )
-                console.debug("Error:"+ obstacleComponent.errorString() );
-            return; // or maybe throw
-        }
-        map.addMapItem(obstacle)
+    MapObstacleManager {
     }
+
+
 
     compass.transform: [
         Rotation {

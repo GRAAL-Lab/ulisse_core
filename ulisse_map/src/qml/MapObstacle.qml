@@ -6,13 +6,15 @@ import "."
 
 MapPolygon {
     id: obstacle
-    opacity: 1.0
+    opacity: obstacleOpacity
     z: map.z + 4
 
     property real markerRadius: 1
     property color obstacleColor: 'red'
     property real lineWidth: 2
     property var coordinate: QtPositioning.coordinate(44.0956, 9.8631)
+    property var timeoutSeconds: 30
+    property int countDownTimer: timeoutSeconds
 
     color: 'transparent'
     border.width: lineWidth
@@ -25,6 +27,7 @@ MapPolygon {
     property double bBoxY: 0
 
     property int objectTimeout: 30
+    property real obstacleOpacity: 1.0
 
     Component {
         id: obstacleMarkerComponent
@@ -34,34 +37,28 @@ MapPolygon {
             border.color: obstacleColor
             center: coords;
             radius: markerRadius;
+            opacity: obstacleOpacity
         }
     }
 
     Component {
         id: obstacleTextOverlayComponent
         MapQuickItem {
-            opacity: 0
             z: map.z + 5
+            coordinate: coords
+            visible: settings.showObstacleID
             sourceItem: Item {
                 Text {
                     id: osbtacleText
                     text: id
-                    font.family: "Helvetica"
-                    font.pointSize: 12
+                    font.family: "Courier New"
+                    font.pointSize: 10
                     color: obstacleColor
+                    opacity: Math.min(0.6, obstacleOpacity)
                 }
-
-                transform: [
-                    Rotation {
-                        origin.x: osbtacleText.width / 2
-                        origin.y: osbtacleText.height / 2
-                        angle: map.bearing
-                    }
-                ]
             }
-            anchorPoint.x: 5 //map_marker_letter.sourceItem.width / 2
-            anchorPoint.y: 5 //map_marker_letter.sourceItem.height / 2
-
+            anchorPoint.x: osbtacleText.width / 2
+            anchorPoint.y: osbtacleText.height / 2 - 15
         }
     }
 
@@ -69,17 +66,28 @@ MapPolygon {
     // Initializazion / deinitialization
     Component.onCompleted: {
 
-        console.log("[MapObstacle] Adding Obstacle")
-        console.log("ID: " + id + ", coords: (" + coords.latitude + "," + coords.longitude + "), heading: " + heading
-                    + ", size: (" + bBoxX + ", " + bBoxY + ")")
-
         var obstacleMarker = obstacleMarkerComponent.createObject(map);
         map.addMapItem(obstacleMarker);
 
         var obstacleTextOverlay = obstacleTextOverlayComponent.createObject(map);
         map.addMapItem(obstacleTextOverlay);
 
-        var obsCorners = [];
+        _internalUpdate()
+
+    }
+
+    function update(obsCoords, obsHeading, obsBBoxX, obsBBoxY) {
+        coords = obsCoords
+        heading = obsHeading
+        bBoxX = obsBBoxX
+        bBoxY = obsBBoxY
+
+        countDownTimer = timeoutSeconds
+        _internalUpdate()
+    }
+
+    function _internalUpdate(){
+        var obsCorners = []
         var _top = coords.atDistanceAndAzimuth(bBoxX/2.0, heading)
         //var _right = coords.atDistanceAndAzimuth(bBoxY/2.0, heading + 90)
         var _bottom = coords.atDistanceAndAzimuth(bBoxX/2.0, heading + 180)
@@ -90,25 +98,33 @@ MapPolygon {
         obsCorners.push(_bottom.atDistanceAndAzimuth(bBoxY/2.0, heading + 90))  // _bottomRight
         obsCorners.push(_bottom.atDistanceAndAzimuth(bBoxY/2.0, heading + 270)) // _bottomLeft
 
+        obstacle.path = []
         for (var i = 0; i < obsCorners.length; i++){
             obstacle.addCoordinate(obsCorners[i])
         }
 
-        //obstacle.addCoordinate(QtPositioning.coordinate(44.0957, 9.8630));
-        //obstacle.addCoordinate(QtPositioning.coordinate(44.0957, 9.8630));
-        //obstacle.addCoordinate(QtPositioning.coordinate(44.0955, 9.8630));
-        //obstacle.addCoordinate(QtPositioning.coordinate(44.0955, 9.8632));
-
-    }
-
-    function add_to_map() {
-        /*id = obsID;
-        heading = obsHeading;*/
-        //map.addMapItem(obstacleMarker);
+        console.log("[MapObstacle] Obstacle Update")
+        console.log("ID: " + id + ", coords: (" + coords.latitude + "," + coords.longitude + "), heading: " + heading
+                    + ", size: (" + bBoxX + ", " + bBoxY + ")")
     }
 
     function deregister_map_items() {
         //map.removeMapItem(_canvas)
     }
 
+
+    Timer {
+        id: selfDestroyingTimer
+        interval: 1000 // milliseconds
+        running: true;
+        repeat: true
+        onTriggered: {
+            countDownTimer = countDownTimer - 1;
+            obstacleOpacity = countDownTimer/timeoutSeconds;
+            if(countDownTimer == 0){
+                console.log("Obstacle '" + id + "' reached timeout.")
+                obstacle.visible = 0;
+            }
+        }
+    }
 }

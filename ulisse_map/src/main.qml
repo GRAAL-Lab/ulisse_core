@@ -78,6 +78,7 @@ ApplicationWindow {
         property var mapZoom: 19.0
         property var mapCenter: QtPositioning.coordinate(44.392, 8.945)
         property string savedBoundary: ""
+        property bool showObstacleID: true
         property bool showCentroid: true
         property bool showStatusOverlay: true
         property string bagSaveFolder: home_dir + "/logs/"

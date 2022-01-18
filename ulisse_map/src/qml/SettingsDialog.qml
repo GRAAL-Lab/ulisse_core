@@ -82,6 +82,26 @@ Dialog {
         }
 
         RowLayout {
+            id: showStatusOverlaySetting
+            spacing: 10
+
+            Label {
+                text: "Show Overlay on Map:"
+            }
+            CheckBox {
+                id: statusOverlayBox
+                text: "Show Overlay"
+                //Material.accent: orange
+                checked: true
+
+                onClicked: {
+                    settings.showStatusOverlay = !settings.showStatusOverlay;
+                }
+            }
+        }
+
+
+        RowLayout {
             id: showCentroidSetting
             spacing: 10
 
@@ -100,22 +120,21 @@ Dialog {
             }
         }
 
-
         RowLayout {
-            id: showStatusOverlaySetting
+            id: showObstacleIDSetting
             spacing: 10
 
             Label {
-                text: "Show Overlay on Map:"
+                text: "Show obstacles ID on map:"
             }
             CheckBox {
-                id: statusOverlayBox
-                text: "Show Overlay"
-                //Material.accent: orange
-                checked: true
+                id: showObstacleIDBox
+                text: "Show IDs"
+                font.pointSize: 10
+                checkState: settings.showObstacleID ? Qt.Checked : Qt.Unchecked
 
                 onClicked: {
-                    settings.showStatusOverlay = !settings.showStatusOverlay;
+                    settings.showObstacleID = !settings.showObstacleID;
                 }
             }
         }
