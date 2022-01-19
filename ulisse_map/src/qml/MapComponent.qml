@@ -36,33 +36,34 @@ MapComponentForm {
     }
 
     property MapPolygon2 safety_polygon
+
+    // These components will create all the dynamic objects
     property Component polygonComponent
     property Component pathComponent
     property Component pathButtonComponent
 
-
-
     Component.onCompleted: {
-        // These components will create all the dynamic objects
+
         polygonComponent = Qt.createComponent("MapPolygon2.qml")
         pathComponent = Qt.createComponent("MapPath.qml")
         pathButtonComponent = Qt.createComponent("PathButton.qml")
 
-
-
         createSafetyPolygon()
-
-
     }
 
     function createSafetyPolygon() {
         safety_polygon = polygonComponent.createObject(map_component, {_pathName: "SafetyBoundary"})
         safety_polygon.clickHandler = safety_polygon.click_handler_non_intersecting
         safety_polygon.posChangedHandler = safety_polygon.pos_changed_handler_simple
-        //safety_polygon.
         safety_polygon._angle = 0
         safety_polygon._offset = 0
-        //if (settings.savedBoundary.path.length > 0) { safety_polygon.path = settings.savedBoundary.path }
+
+        if (settings.savedBoundary != "null") {
+            var data = JSON.parse(settings.savedBoundary)
+            safety_polygon.deserialize(data)
+            safety_polygon.close_polygon()
+        }
+
         safety_polygon._method = ""
         map.addMapItem(safety_polygon)
     }
@@ -87,9 +88,8 @@ MapComponentForm {
     }
 
     MapObstacleManager {
+        id: mapObstacleManager
     }
-
-
 
     compass.transform: [
         Rotation {

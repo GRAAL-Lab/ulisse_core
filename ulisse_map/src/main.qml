@@ -77,12 +77,12 @@ ApplicationWindow {
         property var mapBearing: 0.0
         property var mapZoom: 19.0
         property var mapCenter: QtPositioning.coordinate(44.392, 8.945)
-        property string savedBoundary: ""
+        property string savedBoundary: "null"
         property bool showObstacleID: true
         property bool showCentroid: true
         property bool showStatusOverlay: true
         property string bagSaveFolder: home_dir + "/logs/"
-        //property MapPolygon savedBoundary
+        property int obstacleTimeout: 30
 
         Component.onCompleted: {
             futureMapPlugin = mapPluginType

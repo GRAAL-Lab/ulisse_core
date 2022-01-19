@@ -118,7 +118,7 @@ Pane {
 
                 Button {
                     id: buttonBoundBoxResend
-                    enabled: false
+                    enabled: settings.savedBoundary == "null" ? false : true
                     text: qsTr("Resend")
                     font.pointSize: 9
                     padding: 5

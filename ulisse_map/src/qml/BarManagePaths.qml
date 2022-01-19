@@ -125,6 +125,7 @@ BarManagePathsForm {
     }
 
     property int n: 0
+
     function end() {
         console.log("[BarManagePaths] end()")
         window.sig_escape.disconnect(abort_h)

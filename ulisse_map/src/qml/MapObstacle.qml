@@ -13,7 +13,7 @@ MapPolygon {
     property color obstacleColor: 'red'
     property real lineWidth: 2
     property var coordinate: QtPositioning.coordinate(44.0956, 9.8631)
-    property var timeoutSeconds: 30
+    property int timeoutSeconds: settings.obstacleTimeout
     property int countDownTimer: timeoutSeconds
 
     color: 'transparent'
@@ -28,6 +28,9 @@ MapPolygon {
 
     property int objectTimeout: 30
     property real obstacleOpacity: 1.0
+
+    property var obstacleMarker
+    property var obstacleTextOverlay
 
     Component {
         id: obstacleMarkerComponent
@@ -66,10 +69,10 @@ MapPolygon {
     // Initializazion / deinitialization
     Component.onCompleted: {
 
-        var obstacleMarker = obstacleMarkerComponent.createObject(map);
+        obstacleMarker = obstacleMarkerComponent.createObject(map);
         map.addMapItem(obstacleMarker);
 
-        var obstacleTextOverlay = obstacleTextOverlayComponent.createObject(map);
+        obstacleTextOverlay = obstacleTextOverlayComponent.createObject(map);
         map.addMapItem(obstacleTextOverlay);
 
         _internalUpdate()
@@ -103,13 +106,14 @@ MapPolygon {
             obstacle.addCoordinate(obsCorners[i])
         }
 
-        console.log("[MapObstacle] Obstacle Update")
+        // console.log("[MapObstacle] Obstacle Update (timeout: " + timeoutSeconds + " s)")
         console.log("ID: " + id + ", coords: (" + coords.latitude + "," + coords.longitude + "), heading: " + heading
                     + ", size: (" + bBoxX + ", " + bBoxY + ")")
     }
 
     function deregister_map_items() {
-        //map.removeMapItem(_canvas)
+        map.removeMapItem(obstacleMarker)
+        map.removeMapItem(obstacleTextOverlay)
     }
 
 
@@ -122,8 +126,10 @@ MapPolygon {
             countDownTimer = countDownTimer - 1;
             obstacleOpacity = countDownTimer/timeoutSeconds;
             if(countDownTimer == 0){
-                console.log("Obstacle '" + id + "' reached timeout.")
-                obstacle.visible = 0;
+                //console.log("Obstacle '" + id + "' reached timeout.")
+                obstacleList[i].deregister_map_items();
+                mapObstacleManager.deleteObstacle(id)
+                //obstacle.visible = 0;
             }
         }
     }

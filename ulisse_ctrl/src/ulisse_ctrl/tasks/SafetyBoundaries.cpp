@@ -54,7 +54,7 @@ bool SafetyBoundaries::ConfigFromFile(libconfig::Config& confObj)
     return true;
 }
 
-bool SafetyBoundaries::InitializePolygon(const ulisse_msgs::msg::Boundaries& boundaries)
+bool SafetyBoundaries::InitializePolygon(const ulisse_msgs::msg::CoordinateList& boundaries)
 {
     segments_.clear();
     segment_t seg;

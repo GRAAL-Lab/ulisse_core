@@ -57,6 +57,7 @@ add_library(ulissemap_lib
     src/feedbackupdater.cpp
     src/taskdataupdater.cpp
     src/commandwrapper.cpp
+    src/addonsbridge.cpp
 )
 
 add_executable(${PROJECT_NAME}_node ${SOURCE_FILES} "src/qml.qrc")

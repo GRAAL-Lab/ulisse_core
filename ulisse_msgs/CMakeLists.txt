@@ -79,9 +79,10 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/TaskStatus.msg"
   "msg/Curves.msg"
   "msg/Path.msg"
-  "msg/Boundaries.msg"
+  "msg/CoordinateList.msg"
   "msg/TPIKAction.msg"
   "msg/TPIKPriorityLevel.msg"
+  "msg/Obstacle.msg"
 
   ## Services ##
   "srv/ControlCommand.srv"
@@ -93,6 +94,9 @@ rosidl_generate_interfaces(ulisse_msgs
   "srv/SetCruiseControl.srv"
   "srv/ResetConfiguration.srv"
   "srv/MinSrv.srv"
+  
+  ## Other ##
+
 )
 
 ament_export_include_directories(include)

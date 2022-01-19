@@ -3,7 +3,7 @@
 
 #include "tpik/TPIKDefines.h"
 #include "ulisse_ctrl/ctrl_data_structs.hpp"
-#include "ulisse_msgs/msg/boundaries.hpp"
+#include "ulisse_msgs/msg/coordinate_list.hpp"
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/point_xy.hpp>
 #include <tpik/TPIKlib.h>
@@ -60,7 +60,7 @@ public:
    */
     void Update() noexcept(false) override;
 
-    bool InitializePolygon(const ulisse_msgs::msg::Boundaries& boundaries);
+    bool InitializePolygon(const ulisse_msgs::msg::CoordinateList& boundaries);
 
     /*
      * Method that gets the centroid

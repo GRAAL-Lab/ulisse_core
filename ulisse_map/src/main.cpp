@@ -13,6 +13,7 @@
 #include "commandwrapper.hpp"
 #include "feedbackupdater.hpp"
 #include "taskdataupdater.hpp"
+#include "addonsbridge.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 #include <QQmlDebuggingEnabler>
@@ -45,10 +46,13 @@ int main(int argc, char* argv[])
     auto fbkUpdater = std::make_shared<FeedbackUpdater>();
     auto cmdWrapper = std::make_shared<CommandWrapper>();
     auto taskDataUpdater = std::make_shared<TaskDataUpdater>();
+    auto addonsBridge = std::make_shared<AddonsBridge>();
 
     appEngine.rootContext()->setContextProperty("fbkUpdater", fbkUpdater.get());
     appEngine.rootContext()->setContextProperty("cmdWrapper", cmdWrapper.get());
     appEngine.rootContext()->setContextProperty("taskdataUpdater", taskDataUpdater.get());
+    appEngine.rootContext()->setContextProperty("addonsBridge", addonsBridge.get());
+
     appEngine.rootContext()->setContextProperty("home_dir", QDir::homePath());
 
     appEngine.load(QUrl(QStringLiteral("qrc:/main.qml")));
@@ -61,6 +65,7 @@ int main(int argc, char* argv[])
     fbkUpdater->Init(&appEngine);
     cmdWrapper->Init(&appEngine);
     taskDataUpdater->Init(&appEngine);
+    addonsBridge->Init(&appEngine);
 
     if (appEngine.rootObjects().isEmpty())
         return -1;

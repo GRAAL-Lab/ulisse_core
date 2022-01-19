@@ -23,7 +23,8 @@ Dialog {
             toast.show("Changes will take effect on restart...", 2000)
         }
 
-        //settings.theme = styleBox.displayText
+        settings.obstacleTimeout = obstacleTimeoutSeconds.value * 1
+        console.log("Setting obstacle timeout to " + settings.obstacleTimeout + " s")
 
         close()
         stackViewContainer.forceActiveFocus()
@@ -139,6 +140,31 @@ Dialog {
             }
         }
 
+        RowLayout {
+            id: osbtacleTimeoutSetting
+            spacing: 10
+
+            Label {
+                text: "Osbtacle deletion timeout (s):"
+            }
+
+            SpinBox {
+                id: obstacleTimeoutSeconds
+                from: 1
+                to: 1000
+                stepSize: 1
+                Layout.maximumWidth: 150
+                Layout.fillWidth: true
+                font.pointSize: 10
+                editable: true
+                inputMethodHints: Qt.ImhDigitsOnly //Only digits are allowed.
+
+                Component.onCompleted: {
+                    value = settings.obstacleTimeout
+                }
+            }
+        }
+
         /*RowLayout {
             id: appStyleSetting
             spacing: 10
@@ -171,4 +197,5 @@ Dialog {
             Layout.fillHeight: true
         }
     }
+
 }
