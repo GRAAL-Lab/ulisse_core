@@ -14,7 +14,7 @@ MapPolyline {
     property bool multichoice: false
 
     property string type: "polyline"
-    property string _pathName: "Path"
+    property string pathName: "Path"
 
     signal end
 
@@ -89,7 +89,7 @@ MapPolyline {
         disable_handle()
     }
 
-    function draw_deferred() {
+    function generate_and_draw_deferred() {
         _generate_and_draw()
     }
 
@@ -507,7 +507,7 @@ MapPolyline {
     }
 
     function confirm_edit(name, params) {
-        _pathName = name
+        pathName = name
         mapMouseArea.hoverEnabled = false
         moving_idx = -1
         _generate_and_draw()
@@ -588,7 +588,7 @@ MapPolyline {
         }
         return {
             type: 'PointPath',
-            name: _pathName,
+            name: pathName,
             params: {
 
             },
@@ -598,7 +598,7 @@ MapPolyline {
 
     function deserialize(data) {
         var lat, lon
-        _pathName = data.name
+        pathName = data.name
         for (var j = 0; j < data.values.length; j++) {
             lat = data.values[j].latitude
             lon = data.values[j].longitude
@@ -608,7 +608,7 @@ MapPolyline {
 
     function get_params() {
         return {
-            name: _pathName,
+            name: pathName,
             params: {
 
             }

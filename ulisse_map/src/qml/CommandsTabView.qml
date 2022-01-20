@@ -7,6 +7,7 @@ import "../scripts/helper.js" as Helper
 
 Pane{
     property alias pathCommandsPane: pathCommandsPane
+    //property alias pathButtonsColumn: pathCommandsPane.pathButtonsColumn
     property alias speedHeadTimeout: speedHeadTimeout
 
     property var labelWidth: 100

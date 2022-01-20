@@ -35,7 +35,7 @@ MapPolyline {
     property var a_marker
     property var b_marker
 
-    property string _pathName: "Path"
+    property string pathName: "Path"
     property real _angle: 30
     property real _offset: 30
     property var _method: "single_winding" // "simple"
@@ -84,7 +84,10 @@ MapPolyline {
         map.addMapItem(b_marker)
         _handle.add_to_map(map)
 
-        console.log("[MapPolygon] PathName: " + _pathName)
+    }
+
+    onPathNameChanged: {
+        console.log("[MapPolygon] PathName: " + pathName)
     }
 
     function deregister_map_items() {
@@ -758,6 +761,7 @@ MapPolyline {
         disable_markers()
         disable_handle()
         if (_method !== null || _method !== undefined) {
+            // Insert C++ generation also here
             generate_path()
             generate_nurbs()
             draw_path()
@@ -767,7 +771,7 @@ MapPolyline {
 
     function confirm_edit(name, params) {
         mapMouseArea.hoverEnabled = false
-        _pathName = name
+        pathName = name
         if (params !== null || params !== undefined) {
             _angle = params.angle
             _offset = params.offset
@@ -779,7 +783,7 @@ MapPolyline {
 
     function get_params() {
         return {
-            name: _pathName,
+            name: pathName,
             params: {
                 angle: _angle,
                 offset: _offset,
@@ -793,9 +797,10 @@ MapPolyline {
     // Draw utilities
     function _generate_and_draw() {
         if (_method != null || _method !== undefined) {
-            // For the security poly the method is null
+            // For the SafetyBoundary the _method is null
+
             console.log("[MapPolygon] generate_path()")
-            //cmdWrapper.generatePath
+            //cmdWrapper.generatePath <----
             generate_path()
             console.log("[MapPolygon] draw_path()")
             draw_path()
@@ -806,11 +811,14 @@ MapPolyline {
         disable_handle()
     }
 
-    function draw_deferred() {
-        if (_canvas.canvasCtx !== null && _canvas.canvasCtx !== undefined)
+    function generate_and_draw_deferred() {
+        if (_canvas.canvasCtx !== null && _canvas.canvasCtx !== undefined){
             _generate_and_draw()
-        else
-            _canvas.canvasCtxChanged.connect(_draw)
+        }
+        else {
+            //console.log("[MapPolygon] generate_and_draw_deferred() - canvasCtx Undefined")
+            _canvas.contextReady.connect(_generate_and_draw)
+        }
     }
 
     function draw_path() {
@@ -867,7 +875,7 @@ MapPolyline {
         }
         return {
             type: 'PolyPath',
-            name: _pathName,
+            name: pathName,
             params: {
                 offset: _offset,
                 angle: _angle,
@@ -884,7 +892,7 @@ MapPolyline {
             lon = data.values[j].longitude
             addCoordinate(QtPositioning.coordinate(lat, lon))
         }
-        _pathName = data.name
+        pathName = data.name
         _angle = data.params.angle
         _offset = data.params.offset
         _method = data.params.method

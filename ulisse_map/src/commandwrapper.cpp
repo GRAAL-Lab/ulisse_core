@@ -7,12 +7,11 @@
 #include <jsoncpp/json/json.h>
 #include <QJsonDocument>
 
-#include "sisl.h"
 #include "ulisse_ctrl/ulisse_defines.hpp"
 #include "ulisse_driver/LLCHelperDataStructs.h"
 #include "nav_filter/nav_data_structs.hpp"
 #include "sisl_toolbox/sisl_toolbox.hpp"
-
+#include "sisl.h"
 
 using namespace std::chrono_literals;
 using std::placeholders::_1;
@@ -198,7 +197,7 @@ QVector<double> CommandWrapper::createNurbs(const QString& pointForNurbs)
     //std::cout << "JSON:\n" << pathJason;
     QJsonDocument doc = QJsonDocument::fromJson(pathJason.c_str());
     QString formattedJsonString = doc.toJson(QJsonDocument::Indented);
-    std::cout << "JSON Indented:\n" << formattedJsonString.toStdString();
+    //std::cout << "JSON Indented:\n" << formattedJsonString.toStdString();
 
     // check whatever the path has beeen reverse
     reverse = objMaster["direction"].asInt() ? true : false;
@@ -316,8 +315,8 @@ QVector<double> CommandWrapper::createNurbs(const QString& pointForNurbs)
                 }
             }
 
-            ctb::LocalUTM2LatLong(derive, centroid, map_point, altitude);
 
+            ctb::LocalUTM2LatLong(derive, centroid, map_point, altitude);
             //std::cout << "crateNurbs map point: " << map_point.latitude << ", " << map_point.longitude << std::endl;
 
             nurbsDiscretize << map_point.latitude << map_point.longitude;
@@ -336,9 +335,50 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
 
     reader.parse(pathJsonData.toStdString(), obj);
 
+    std::vector<Eigen::Vector3d> polygonVerteces {
+        Eigen::Vector3d {-78, 44, 0}, Eigen::Vector3d {-47, 99, 0}, Eigen::Vector3d {46, 80, 0},
+        Eigen::Vector3d {79, -43, 0}, Eigen::Vector3d {-23, -99, 0}, Eigen::Vector3d{-110, -71, 0} };
+
+    //ctb::LatLong2LocalUTM(point, 0.0, centroid, pointC);
+
+
+    double angle{150.0};
+    double offsetPath{30.0};
+
+    std::shared_ptr<Path> serpentine;
+
+    try {
+        serpentine = PathFactory::NewSerpentine(angle, RIGHT, offsetPath, polygonVerteces);
+        std::cout << *serpentine << std::endl;
+
+        // std::cout << std::endl << serpentine->Name() << " is composed by: " << std::endl;
+        // for(int i = 0; i < serpentine->CurvesNumber(); ++i) {
+        //     std::cout << i << ". " << *serpentine->Curves()[i] << std::endl;
+        // }
+
+    }
+    catch(std::runtime_error const& exception) {
+        std::cout << "Received exception from --> " << exception.what() << std::endl;
+    }
+
+
+    //ctb::LocalUTM2LatLong(derive, centroid, map_point, altitude);
     // USE SISL TOOLBOX FUNCTIONS TO CREATE CURVE
 
-    return pathPoints;
+    /*
+    QGeoPath geopath;
+    geopath.addCoordinate(QGeoCoordinate(56.006355, 92.860984));
+    geopath.addCoordinate(QGeoCoordinate(56.1, 93));
+    geopath.addCoordinate(QGeoCoordinate(56.1, 92.777));
+
+    QQmlApplicationEngine engine;
+    engine.rootContext()->setContextProperty("geopath", QVariant::fromValue(geopath));
+
+    */
+
+
+
+        return pathPoints;
 }
 
 QPoint CommandWrapper::latLong2LocalUTM(QGeoCoordinate latlong, QGeoCoordinate centroid)
@@ -449,14 +489,14 @@ bool CommandWrapper::sendBoundaries(const QString& boundary_json_data)
 
         std::cout << "LatLong: " << serviceReq->boundaries.vertices.at(i).latitude << "," << serviceReq->boundaries.vertices.at(i).longitude << std::endl;
     }
-*/
+    */
 
-    // DEBUG PRINT
-    /*QJsonDocument doc = QJsonDocument::fromJson(boundary_json_data.toUtf8());
+        // DEBUG PRINT
+        /*QJsonDocument doc = QJsonDocument::fromJson(boundary_json_data.toUtf8());
     QString formattedJsonString = doc.toJson(QJsonDocument::Indented);
     std::cout << formattedJsonString.toStdString() << std::endl;*/
 
-    Json::Reader reader;
+        Json::Reader reader;
     Json::Value obj, obj2;
 
     reader.parse(boundary_json_data.toStdString(), obj);

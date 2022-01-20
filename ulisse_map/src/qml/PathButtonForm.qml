@@ -15,8 +15,8 @@ import "../scripts/helper.js" as Helper
 RowLayout {
     //id: tracklistlayout
     property int ntrack: -1
-    property var managed_path
-    property alias name: pathButton
+    property var managedPath
+    property alias pathButton: pathButton
     //property alias tracklistlayout: tracklistlayout
     property bool toggled: false
 
@@ -29,12 +29,17 @@ RowLayout {
 
     Button {
         id: pathButton
-        text: "Path " + ntrack // managed_path._pathName
+        text: "Path"
         Layout.fillHeight: true
         Layout.fillWidth: true
         antialiasing: false
         enabled: true
     }
+
+    onManagedPathChanged: {
+        pathButton.text = managedPath.pathName;
+    }
+
     states: [
         State {
             name: "editmode"

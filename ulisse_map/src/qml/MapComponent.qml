@@ -52,7 +52,7 @@ MapComponentForm {
     }
 
     function createSafetyPolygon() {
-        safety_polygon = polygonComponent.createObject(map_component, {_pathName: "SafetyBoundary"})
+        safety_polygon = polygonComponent.createObject(map_component, {pathName: "SafetyBoundary"})
         safety_polygon.clickHandler = safety_polygon.click_handler_non_intersecting
         safety_polygon.posChangedHandler = safety_polygon.pos_changed_handler_simple
         safety_polygon._angle = 0
@@ -64,7 +64,7 @@ MapComponentForm {
             safety_polygon.close_polygon()
         }
 
-        safety_polygon._method = ""
+        safety_polygon._method = null
         map.addMapItem(safety_polygon)
     }
 

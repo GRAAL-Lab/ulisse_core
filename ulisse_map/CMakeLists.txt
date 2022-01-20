@@ -80,6 +80,7 @@ target_link_libraries(${PROJECT_NAME}_node
         ${JSONCPP_LIBRARIES}
         Geographic
         config++
+        sisl_toolbox
         )
 
 #ament_export_include_directories(include)

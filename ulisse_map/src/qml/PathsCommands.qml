@@ -3,7 +3,7 @@ import QtQuick.Layouts 1.3
 import QtQuick.Controls 2.2
 import QtQml.Models 2.1
 import QtQuick.Controls.Material 2.1
-import QtQuick.Dialogs 1.2
+
 import "."
 
 RowLayout {
@@ -123,7 +123,12 @@ RowLayout {
                 enabled: true
 
                 onClicked: {
-                    savePathDialog.open()
+                    if (pathButtonsColumn.children.length === 0) {
+                        toast.show("There is nothing to save!")
+                        return
+                    } else {
+                        savePathDialog.open()
+                    }
                 }
             }
 
@@ -148,100 +153,9 @@ RowLayout {
         }
     }
 
-    FileDialog {
-        id: loadPathDialog
-        title: "Please choose a file"
-        folder: shortcuts.home
-        nameFilters: ["Path Files (*.path)"]
 
-        onAccepted: {
-            var path = loadPathDialog.fileUrl.toString()
-            path = path.replace(/^(file:\/{2})/, "")
-            loadPaths(path)
-        }
-    }
 
-    FileDialog {
-        id: savePathDialog
-        title: "Saving path..."
-        folder: shortcuts.home
-        selectExisting: false
-        nameFilters: ["Path Files (*.path)"]
 
-        onAccepted: {
-            var path = savePathDialog.fileUrl.toString()
-            path = path.replace(/^(file:\/{2})/, "") // remove prefixed "file://"
-            path = decodeURIComponent(path) // unescape html codes like '%23' for '#'
-            savePaths(path)
-        }
-    }
-
-    function savePaths(filePath) {
-        if (pathCommandsPane.pathButtonsColumn.children.length === 0) {
-            toast.show("There is nothing to save!")
-            return
-        }
-
-        var all_paths = {
-            //security_box: null,
-            paths//TODO security box
-            : []
-        }
-
-        for (var i = 0; i < pathCommandsPane.pathButtonsColumn.children.length; i++) {
-            all_paths.paths.push(
-                        pathCommandsPane.pathButtonsColumn.children[i].managed_path.serialize())
-        }
-
-        cmdWrapper.savePathToFile(filePath, JSON.stringify(all_paths))
-        toast.show("Mission saved", 2000)
-    }
-
-    function loadPaths(filePath) {
-        var jsondata = cmdWrapper.loadPathFromFile(filePath)
-        var data = JSON.parse(jsondata)
-
-        var i, j, lat, lon, p
-
-        for (i = 0; i < data.paths.length; i++) {
-            switch (data.paths[i].type) {
-            case "PolyPath":
-                var cur_managed = map.createPolySweepPath()
-                cur_managed.deserialize(data.paths[i])
-                cur_managed.type = "PolyPath"
-                var v = pathButtonComponent.createObject(pathCommandsPane.pathButtonsColumn)
-                v.managed_path = cur_managed
-                v.ntrack = pathCommandsPane.pathButtonsColumn.children.length
-                v.selected.connect(function (path) {
-                    pathCommandsPane.update_selection(path)
-                    bar_manage.manage(path)
-                })
-                cur_managed.check_safe(map.safety_polygon)
-                cur_managed.draw_deferred()
-                break
-            case "PointPath":
-                var cur_managed = map.createPolylinePath()
-                cur_managed.deserialize(data.paths[i])
-                cur_managed.type = "PointPath"
-                var v = pathButtonComponent.createObject(pathCommandsPane.pathButtonsColumn)
-                v.managed_path = cur_managed
-                v.ntrack = pathCommandsPane.pathButtonsColumn.children.length
-                v.selected.connect(function (path) {
-                    pathCommandsPane.update_selection(path)
-                    bar_manage.manage(path)
-                })
-                cur_managed.check_safe(map.safety_polygon)
-                cur_managed.draw_deferred()
-                break
-            case "SecurityPoly":
-                map.safety_polygon.clear_path()
-                safety_polygon.deserialize(data.paths[i])
-                safety_polygon.draw_deferred()
-                break
-            }
-        }
-        toast.show("Path loaded", 2000)
-    }
 
     function cancelPathCreation() {
         deselect_all()
@@ -264,7 +178,7 @@ RowLayout {
 
     function check_safety_all() {
         for (var i = 0; i < pathButtonsColumn.children.length; i++) {
-            pathButtonsColumn.children[i].managed_path.check_safe(map.safety_polygon)
+            pathButtonsColumn.children[i].managedPath.check_safe(map.safety_polygon)
         }
     }
 
@@ -278,20 +192,20 @@ RowLayout {
         if (!multichoice) {
             for (var i = 0; i < pathButtonsColumn.children.length; i++) {
                 var c = pathButtonsColumn.children[i]
-                c.highlight(poly === c.managed_path)
+                c.highlight(poly === c.managedPath)
             }
         } else {
             for (i = 0; i < pathButtonsColumn.children.length; i++) {
                 c = pathButtonsColumn.children[i]
-                if (poly === c.managed_path)
+                if (poly === c.managedPath)
                     c.toggle()
             }
         }
     }
 
     function delete_item(c){
-        c.managed_path.deregister_map_items()
-        map.removeMapItem(c.managed_path)
+        c.managedPath.deregister_map_items()
+        map.removeMapItem(c.managedPath)
         c.destroy()
         bar_manage.n--
     }

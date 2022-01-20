@@ -13,7 +13,12 @@ MapQuickItem {
             id: letter
             text: ""
             font.family: "Helvetica"
-            font.pointSize: 26
+            font.pointSize: 20
+        }
+
+        Component.onCompleted: {
+            map_marker_letter.anchorPoint.x = 0
+            map_marker_letter.anchorPoint.y = 5 // letter.height / 4
         }
 
         transform: [
@@ -24,7 +29,7 @@ MapQuickItem {
                 }
             ]
     }
-    anchorPoint.x: 20 //map_marker_letter.sourceItem.width / 2
-    anchorPoint.y: 20 //map_marker_letter.sourceItem.height / 2
+
+
 
 }

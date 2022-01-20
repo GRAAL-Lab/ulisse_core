@@ -13,20 +13,20 @@ import "."
 import "../scripts/helper.js" as Helper
 
 PathButtonForm {
-    name.onClicked: function () {
-        selected(managed_path)
+    pathButton.onClicked: function () {
+        selected(managedPath)
     }
 
     function toggle() {
         toggled = !toggled
-        name.Material.background = toggled ? orange : lightgrey
-        managed_path.highlighted(toggled)
+        pathButton.Material.background = toggled ? orange : lightgrey
+        managedPath.highlighted(toggled)
     }
 
     function highlight(yes) {
         toggled = yes
-        name.Material.background = yes ? orange : lightgrey
-        managed_path.highlighted(yes)
+        pathButton.Material.background = yes ? orange : lightgrey
+        managedPath.highlighted(yes)
     }
 
     Material.background: green

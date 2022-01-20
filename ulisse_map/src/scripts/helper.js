@@ -492,7 +492,8 @@ function draw_bounding_rect(map, canvas, w, h) {
     canvas.requestPaint()
 }
 
-function ctx_draw_path_lines(ctx, pp,map) {
+// Lines are drawed using a vector of subsequent pairs that defines the points of the path
+function ctx_draw_path_lines(ctx, pp, map) {
     var i=0
     while(i < pp.length - 4){
         var p0 = point_map2canvas(QtPositioning.coordinate(pp[i], pp[i+1]), map, ctx)

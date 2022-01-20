@@ -15,17 +15,21 @@ MapQuickItem {
         _c.requestPaint()
     }
 
-    signal ctx_ready
+    signal contextReady
 
     sourceItem: Canvas {
         id: _c
         //antialiasing:true
         //smooth: true
         property var _ctx
+
         onAvailableChanged: {
+            // QML Canvas: Unable to use getContext() at this time, please wait for available: true
             _ctx = _c.getContext("2d")
-            ctx_ready()
+            contextReady()
+            //console.log("[Map Canvas] onAvailableChanged triggered")
         }
+
         transform: [
             Rotation {
                 origin.x: 0
@@ -39,4 +43,5 @@ MapQuickItem {
         canvasCtx.clearRect(0, 0, canvasWidth, canvasHeight)
         _c.requestPaint()
     }
+
 }

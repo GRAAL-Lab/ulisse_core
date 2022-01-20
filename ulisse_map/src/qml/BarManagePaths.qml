@@ -34,8 +34,6 @@ BarManagePathsForm {
         hide_all()
     }
 
-
-
     /*-------------- POLY CREATION/EDITING ----------------*/
     property var cur_managed
     property var params_panel
@@ -108,7 +106,7 @@ BarManagePathsForm {
             return
         pathCmdPane.enableBtns(false)
         var cur_val = cur_managed.get_params()
-        console.log("Type: " + cur_managed.type)
+        //console.log("Type: " + cur_managed.type)
         switch (cur_managed.type) {
         case "PolyPath":
             params_panel = panelParamsPolygon
@@ -132,7 +130,7 @@ BarManagePathsForm {
         cur_managed.end.disconnect(end)
         confirm()
         var v = pathButtonComponent.createObject(pathCmdPane.pathButtonsColumn)
-        v.managed_path = cur_managed
+        v.managedPath = cur_managed
         v.ntrack = ++n
         v.selected.connect(function (path) {
             pathCmdPane.update_selection(path)
@@ -159,11 +157,14 @@ BarManagePathsForm {
     function discard() {
         map.clickHandler = map.click_goto_handler
         map.posChangedHandler = function () {}
-        cur_managed.enable_ab_markers()
-        cur_managed.discard_edit()
-        cur_managed.check_safe(map.safety_polygon)
-        pathCmdPane.enableBtns(true)
-        show_manage()
+
+        if (cur_managed !== undefined) {
+            cur_managed.enable_ab_markers()
+            cur_managed.discard_edit()
+            cur_managed.check_safe(map.safety_polygon)
+            pathCmdPane.enableBtns(true)
+            show_manage()
+        }
     }
 
     /*-----------------------------------------------------------*/
@@ -171,7 +172,7 @@ BarManagePathsForm {
     /*------------------ PATH MANAGEMENT ------------------------*/
     function manage(path) {
         for (var e in pathCmdPane.pathButtonsColumn.children)
-            pathCmdPane.pathButtonsColumn.children[e].managed_path.disable_ab_markers()
+            pathCmdPane.pathButtonsColumn.children[e].managedPath.disable_ab_markers()
         path.enable_ab_markers()
         if (inhibit) return
         cur_managed = path
@@ -225,7 +226,7 @@ BarManagePathsForm {
 
     function hide_all() {
         for (var i in pathCmdPane.pathButtonsColumn.children)
-            pathCmdPane.pathButtonsColumn.children[i].managed_path.disable_ab_markers()
+            pathCmdPane.pathButtonsColumn.children[i].managedPath.disable_ab_markers()
         for (var i in panels)
             panels[i].visible = false
         pathManageToolbar.visible = false
