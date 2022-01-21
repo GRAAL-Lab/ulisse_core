@@ -35,7 +35,7 @@ MapComponentForm {
         posChangedHandler(mouse)
     }
 
-    property MapPolygon2 safety_polygon
+    property MapCustomPolygon safety_polygon
 
     // These components will create all the dynamic objects
     property Component polygonComponent
@@ -44,8 +44,8 @@ MapComponentForm {
 
     Component.onCompleted: {
 
-        polygonComponent = Qt.createComponent("MapPolygon2.qml")
-        pathComponent = Qt.createComponent("MapPath.qml")
+        polygonComponent = Qt.createComponent("MapCustomPolygon.qml")
+        pathComponent = Qt.createComponent("MapCustomPath.qml")
         pathButtonComponent = Qt.createComponent("PathButton.qml")
 
         createSafetyPolygon()
@@ -87,8 +87,8 @@ MapComponentForm {
         return path_cur
     }
 
-    MapObstacleManager {
-        id: mapObstacleManager
+    AddonsBridgeVisualizer {
+        id: addonsBridgeVisualizer
     }
 
     compass.transform: [

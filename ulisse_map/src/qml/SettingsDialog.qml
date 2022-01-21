@@ -7,25 +7,46 @@ import "."
 Dialog {
 
     property alias mapCacheDirText: mapCacheDirectory.text
+    //property var mapTypes: []
+    property var mapTypesDescription: []
 
     modal: true
     focus: true
     title: "Settings"
-
     standardButtons: Dialog.Ok | Dialog.Cancel
+
+
+    /*Timer {
+        interval: 1000; running: true; repeat: false
+        onTriggered: updateMapOptions()
+    }
+
+    function updateMapOptions () {
+
+        console.log("map.supportedMapTypes")
+        for(var i=0; i< mapViewItem.map.supportedMapTypes.length; i++){
+            //console.log(mapViewItem.map.supportedMapTypes[i].description)
+            model.append({text: mapViewItem.map.supportedMapTypes[i].description})
+        }
+
+        mapTypeComboBox.currentIndex = settings.esriMapType
+    }*/
+
     onAccepted: {
         /*if (mapTypeBox.displayText != futureMapPlugin) {
             futureMapPlugin = mapTypeBox.displayText
             toast.show("Changes will take effect on restart...", 2000)
         }*/
 
-        if (mapCacheDirectory.displayText != settings.esriMapCacheDir) {
+        if (mapCacheDirectory.changed) {
             settings.esriMapCacheDir = mapCacheDirectory.displayText
             toast.show("Changes will take effect on restart...", 2000)
         }
 
-        settings.obstacleTimeout = obstacleTimeoutSeconds.value * 1
-        console.log("Setting obstacle timeout to " + settings.obstacleTimeout + " s")
+        if (visualizerTimeoutSeconds.value != settings.visualizerTimeout) {
+            settings.visualizerTimeout = visualizerTimeoutSeconds.value
+            console.log("Setting obstacle timeout to " + settings.visualizerTimeout + " s")
+        }
 
         close()
         stackViewContainer.forceActiveFocus()
@@ -41,10 +62,15 @@ Dialog {
 
     contentItem: ColumnLayout {
         id: settingsColumn
-        spacing: 15
+        spacing: 3
+
+        SettingsSectionLabel {
+            text: "Map Plugin"
+        }
 
         RowLayout {
             id: mapTypeSetting
+
             spacing: 10
             enabled: settings.mapPluginType === "esri" ? true : false
 
@@ -52,40 +78,53 @@ Dialog {
                 text: "Map Type:"
             }
 
-            ComboBox {
+            ComboBox{
+                model: mapViewItem.map.supportedMapTypes
+                Layout.fillWidth: true
+                textRole:"description"
+
+                onCurrentIndexChanged: {
+                    mapViewItem.map.activeMapType = mapViewItem.map.supportedMapTypes[currentIndex]
+                    settings.esriMapTypeIndex = currentIndex
+                }
+            }
+
+            /*ComboBox {
                 id: mapTypeComboBox
-
                 property bool changed: false
+                Layout.fillWidth: true
 
-                model: ["A", "B", "C"]/*ListModel {
+                textRole: "text"
+                model: ListModel {
                     id: model
-                    ListElement { text: "MapType.StreetMap";         color: "Brown" } // A street map.
-                    ListElement { text: "MapType.SatelliteMapDay";   color: "Brown" } // A map with day-time satellite imagery.
-                    ListElement { text: "MapType.SatelliteMapNight"; color: "Brown" } // A map with night-time satellite imagery.
-                    ListElement { text: "MapType.TerrainMap";        color: "Brown" } // A terrain map.
-                    ListElement { text: "MapType.HybridMap";         color: "Brown" } // A map with satellite imagery and street information.
-                    ListElement { text: "MapType.GrayStreetMap";     color: "Brown" } // A gray-shaded street map.
-                }*/
+                    //                qml: ArcGIS Online World Street Map
+                    //                qml:
+                    //                qml: ArcGIS Online World Terrain Base
+                    //                qml: ArcGIS Online World Topography
+                    //                qml: This map presents land cover and detailed topographic maps for the United States.
+                    //                qml: National Geographic World Map
+                    //                qml: Thematic content providing a neutral background with minimal colors
+                    //                qml: Natural Earth physical map for the world
+                    //                qml: Portrays surface elevation as shaded relief
+                    //                qml: This map is designed to be used as a basemap by marine GIS professionals and as a reference map by anyone interested in ocean data
+                    //                qml: Thematic content providing a neutral background with minimal colors
+                    //                qml: DeLorme’s topographic basemap is a seamless global data set that portrays transportation, hydrography, jurisdiction boundaries, and major geographic features
 
-                onAccepted: {
-                    if (currentText !== settings.esriMapType) {
+                }
+
+                onCurrentTextChanged: {
+                    console.log("settings.esriMapType: " + settings.esriMapType)
+                    //var mapCurrentType = mapViewItem.map.supportedMapTypes[currentIndex]
+                    console.log("mapCurrentType: " + currentIndex)
+
+                    if (currentIndex  !== settings.esriMapType ) {
                         changed = true
                     } else {
                         changed = false
                     }
                 }
 
-                Component.onCompleted: {
-                    var types = []
-
-                    /*console.log("map.supportedMapTypes")
-                    for(var i=0; i< map.supportedMapTypes.length; i++){
-                        console.log(map.supportedMapTypes[i].description)
-                    }*/
-                }
-
-
-            }
+            }*/
         }
 
         //        MapType.StreetMap - A street map.
@@ -136,26 +175,6 @@ Dialog {
         }
 
         RowLayout {
-            id: showStatusOverlaySetting
-            spacing: 10
-
-            Label {
-                text: "Show Overlay on Map:"
-            }
-            CheckBox {
-                id: statusOverlayBox
-                text: "Show Overlay"
-                //Material.accent: orange
-                checked: true
-
-                onClicked: {
-                    settings.showStatusOverlay = !settings.showStatusOverlay;
-                }
-            }
-        }
-
-
-        RowLayout {
             id: showCentroidSetting
             spacing: 10
 
@@ -170,6 +189,52 @@ Dialog {
 
                 onClicked: {
                     settings.showCentroid = !settings.showCentroid;
+                }
+            }
+        }
+
+        SettingsSectionLabel {
+            text: "Catamaran Options"
+        }
+
+        RowLayout {
+            id: showStatusOverlaySetting
+            spacing: 10
+
+            Label {
+                text: "Show status overlay on Map:"
+            }
+            CheckBox {
+                id: statusOverlayBox
+                text: "Show Overlay"
+                //Material.accent: orange
+                checked: true
+
+                onClicked: {
+                    settings.showStatusOverlay = !settings.showStatusOverlay;
+                }
+            }
+        }
+
+        SettingsSectionLabel {
+            text: "Other Options"
+        }
+
+        RowLayout {
+            id: showPolylineIDSetting
+            spacing: 10
+
+            Label {
+                text: "Show polylines ID on map:"
+            }
+            CheckBox {
+                id: showPolylineIDBox
+                text: "Show IDs"
+                font.pointSize: 10
+                checkState: settings.showPolylineID ? Qt.Checked : Qt.Unchecked
+
+                onClicked: {
+                    settings.showPolylineID = !settings.showPolylineID;
                 }
             }
         }
@@ -198,11 +263,11 @@ Dialog {
             spacing: 10
 
             Label {
-                text: "Osbtacle deletion timeout (s):"
+                text: "Object visualizer deletion timeout (s):"
             }
 
             SpinBox {
-                id: obstacleTimeoutSeconds
+                id: visualizerTimeoutSeconds
                 from: 1
                 to: 1000
                 stepSize: 1
@@ -213,7 +278,7 @@ Dialog {
                 inputMethodHints: Qt.ImhDigitsOnly //Only digits are allowed.
 
                 Component.onCompleted: {
-                    value = settings.obstacleTimeout
+                    value = settings.visualizerTimeout
                 }
             }
         }
@@ -242,7 +307,7 @@ Dialog {
             id: restartText
             text: "Restart required!"
             color: "#e41e25"
-            opacity: (mapCacheDirectory.cacheDirChanged || mapTypeSetting.changed) ? 1.0 : 0.0
+            opacity: (mapCacheDirectory.changed) ? 1.0 : 0.0
             font.weight: Font.DemiBold
             horizontalAlignment: Label.AlignHCenter
             verticalAlignment: Label.AlignVCenter

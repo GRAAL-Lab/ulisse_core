@@ -4,50 +4,30 @@ import QtPositioning 5.9
 import QtQuick.Controls.Material 2.1
 import "."
 
-MapPolygon {
-    id: obstacle
-    opacity: objectOpacity
+MapPolyline {
+    id: polyline
+    opacity: polylineOpacity
     z: map.z + 4
 
+    property string id: "polylineID"
+    property var coordinate: QtPositioning.coordinate(44.0956, 9.8631)
     property real markerRadius: 1
     property color objectColor: 'red'
-    property real objectOpacity: 1.0
-    property var obstacleMarker
-    property var objectTextOverlay
-    property real lineWidth: 2
-    property var coordinate: QtPositioning.coordinate(44.0956, 9.8631)
+    property real lineWidth: 1
     property int timeoutSeconds: settings.visualizerTimeout
     property int countDownTimer: timeoutSeconds
+    property real objectOpacity: 1.0
+    property var objectTextOverlay
 
-    color: 'transparent'
-    border.width: lineWidth
-    border.color: objectColor
-
-    property string id: "obstacleID"
-    property alias coords: obstacle.coordinate
-    property double heading: 0
-    property double bBoxX: 0
-    property double bBoxY: 0
-
-
-    Component {
-        id: obstacleMarkerComponent
-        MapCircle {
-            color: 'transparent'
-            border.width: lineWidth
-            border.color: objectColor
-            center: coords;
-            radius: markerRadius;
-            opacity: objectOpacity
-        }
-    }
+    line.width: lineWidth
+    line.color: objectColor
 
     Component {
         id: objectTextOverlayComponent
         MapQuickItem {
             z: map.z + 5
             coordinate: coords
-            visible: settings.showObstacleID
+            visible: settings.showPolylineID
             sourceItem: Item {
                 Text {
                     id: overlayText
@@ -67,21 +47,13 @@ MapPolygon {
     // Initializazion / deinitialization
     Component.onCompleted: {
 
-        obstacleMarker = obstacleMarkerComponent.createObject(map);
-        map.addMapItem(obstacleMarker);
-
         objectTextOverlay = objectTextOverlayComponent.createObject(map);
         map.addMapItem(objectTextOverlay);
 
         _internalUpdate()
-
     }
 
-    function update(obsCoords, obsHeading, obsBBoxX, obsBBoxY) {
-        coords = obsCoords
-        heading = obsHeading
-        bBoxX = obsBBoxX
-        bBoxY = obsBBoxY
+    function update(coordslist) {
 
         countDownTimer = timeoutSeconds
         _internalUpdate()

@@ -12,7 +12,6 @@ import "."
 
 MapViewForm {
 
-    //property alias map: map
 
     Timer {
         // A Timer to center the catamaran in the screen when "Follow Vehicle"
@@ -22,7 +21,10 @@ MapViewForm {
         running: false
         repeat: true
 
-        onTriggered: { map.center = fbkUpdater.ulisse_pos }
+        onTriggered: {
+            map.center = fbkUpdater.ulisse_pos
+            map.activeMapType = map.supportedMapTypes[settings.esriMapTypeIndex]
+        }
     }
 
     Component {

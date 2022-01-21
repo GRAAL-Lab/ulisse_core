@@ -5,21 +5,20 @@ import QtQuick.Controls.Material 2.1
 import "."
 
 Item {
-    objectName: "obstacleManager"
-    //id: mapObstacleManager
+    objectName: "addonsBridgeVisualizer"
 
     property Component obstacleComponent
-    //property Component avoidancePath
+    property Component polylineComponent
 
     property var obstacleList: []
 
     Component.onCompleted: {
         obstacleComponent = Qt.createComponent("MapObstacle.qml")
-        //avoidancePath = Qt.createComponent("")
-        //visualizeObstacle("QML_Obstacle_1", QtPositioning.coordinate(44.0957, 9.8632), 0, 20, 10)
+        polylineComponent = Qt.createComponent("")
+        //drawObstacle("QML_Obstacle_1", QtPositioning.coordinate(44.0957, 9.8632), 0, 20, 10)
     }
 
-    function visualizeObstacle(obsID, obsCoords, obsHeading, obsBBoxX, obsBBoxY) {
+    function drawObstacle(obsID, obsCoords, obsHeading, obsBBoxX, obsBBoxY) {
 
         for (var i = 0; i < obstacleList.length; i++) {
             if (obstacleList[i].id === obsID) {
@@ -30,7 +29,6 @@ Item {
         }
 
         //console.log("New Obstacle, creating...")
-
         obstacleList.push(obstacleComponent.createObject(map_component, {
                                                              id: obsID,
                                                              coordinate: obsCoords,
@@ -63,7 +61,7 @@ Item {
     }
 
 
-    function visualizeAvoidancePath(){
+    function drawPolyline(){
 
     }
 

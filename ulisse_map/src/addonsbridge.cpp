@@ -42,14 +42,14 @@ void AddonsBridge::Init(QQmlApplicationEngine* engine)
     //
     //water_current_norm = 0;
     //
-    qmlObstacleManager_ = appEngine_->rootObjects().first()->findChild<QObject*>("obstacleManager");
+    qmlObstacleManager_ = appEngine_->rootObjects().first()->findChild<QObject*>("addonsBridgeVisualizer");
     if (!qmlObstacleManager_) {
-        qDebug() << "obstacleManager Object NOT found!";
+        qDebug() << "addonsBridgeVisualizer Object NOT found!";
     }
 
     RegisterPublishersAndSubscribers();
 
-    //VisualizeObstacle("C++_Obstacle_1", QVariant::fromValue(QGeoCoordinate(44.0956, 9.8636)), 45, 15, 5);
+    //DrawObstacle("C++_Obstacle_1", QVariant::fromValue(QGeoCoordinate(44.0956, 9.8636)), 45, 15, 5);
 
 }
 
@@ -68,9 +68,9 @@ void AddonsBridge::RegisterPublishersAndSubscribers()
 
 }
 
-void AddonsBridge::VisualizeObstacle(const QVariant obsID, const QVariant obsCoords, const QVariant obsHeading, const QVariant obsBBoxX, const QVariant obsBBoxY)
+void AddonsBridge::DrawObstacle(const QVariant obsID, const QVariant obsCoords, const QVariant obsHeading, const QVariant obsBBoxX, const QVariant obsBBoxY)
 {
-    QMetaObject::invokeMethod(qmlObstacleManager_, "visualizeObstacle",
+    QMetaObject::invokeMethod(qmlObstacleManager_, "drawObstacle",
         Qt::QueuedConnection, Q_ARG(QVariant, obsID), Q_ARG(QVariant, obsCoords), Q_ARG(QVariant, obsHeading), Q_ARG(QVariant, obsBBoxX), Q_ARG(QVariant, obsBBoxY));
 }
 
@@ -79,7 +79,7 @@ void AddonsBridge::ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr msg)
     QString id = QString::fromStdString(msg->id);
     QGeoCoordinate center(msg->center.latitude, msg->center.longitude);
 
-    VisualizeObstacle(id, QVariant::fromValue(center), msg->heading, msg->b_box_dim_x, msg->b_box_dim_y);
+    DrawObstacle(id, QVariant::fromValue(center), msg->heading, msg->b_box_dim_x, msg->b_box_dim_y);
 }
 
 void AddonsBridge::process_callbacks_slot()

@@ -37,8 +37,9 @@ ApplicationWindow {
 
     property string futureMapPlugin: ""
 
-    //property alias map: mapView.map
+    property alias mapViewItem: mapViewLoader.item
 
+    signal mapPluginReady
     signal sig_escape
 
     Material.theme: settings.theme
@@ -70,29 +71,29 @@ ApplicationWindow {
     }
 
 
+    // The reasons why "esri" has been chosen as the map plugin is due to the fact
+    // that it enables a high level of zoom-in (>18), differently from "osm".
     Settings {
         id: settings
         property int shTimeout: 120
         property string mapPluginType: "esri"
         property string esriMapCacheDir: home_dir + "/.map_offline_tiles/esri/"
-        property string  esriMapType: MapType.StreetMap
+        property var esriMapTypeIndex: 0
         property string theme: "Light"
         property var mapBearing: 0.0
         property var mapZoom: 19.0
         property var mapCenter: QtPositioning.coordinate(44.392, 8.945)
         property string savedBoundary: "null"
-        property bool showObstacleID: true
         property bool showCentroid: true
         property bool showStatusOverlay: true
+        property bool showObstacleID: true
+        property bool showPolylineID: true
         property string bagSaveFolder: home_dir + "/logs/"
-        property int obstacleTimeout: 30
+        property int visualizerTimeout: 30
 
         Component.onCompleted: {
             futureMapPlugin = mapPluginType
             mapViewLoader.active = true
-
-            /*var polygonComponent = Qt.createComponent("MapPolygon.qml")
-            savedBoundary = polygonComponent.createObject()*/
         }
     }
 
@@ -105,8 +106,13 @@ ApplicationWindow {
     SettingsDialog {
         id: settingsDialog
         x: Math.round((window.width - width) / 2)
-        y: Math.round(window.height / 6)
+        y: Math.round(window.height / 8)
         width: Math.round(Math.min(window.width, window.height) / 4 * 3)
+    }
+
+    onMapPluginReady: {
+        console.log("onMapPluginReady")
+        settingsDialog.updateMapOtions()
     }
 
     HelpDialog {
@@ -172,8 +178,8 @@ ApplicationWindow {
                 id: mapViewLoader
                 sourceComponent: mapViewComponent
                 active: false
-                //Layout.fillHeight: true
                 Layout.fillWidth: true
+
             }
 
             StatusDataView {

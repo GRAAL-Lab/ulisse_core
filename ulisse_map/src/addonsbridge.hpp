@@ -25,7 +25,7 @@ class AddonsBridge : public QObject, rclcpp::Node {
     rclcpp::Subscription<ulisse_msgs::msg::Obstacle>::SharedPtr obstacleSub_;
 
     void RegisterPublishersAndSubscribers();
-    void VisualizeObstacle(const QVariant obsID, const QVariant obsCoords, const QVariant obsHeading, const QVariant obsBBoxX, const QVariant obsBBoxY);
+    void DrawObstacle(const QVariant obsID, const QVariant obsCoords, const QVariant obsHeading, const QVariant obsBBoxX, const QVariant obsBBoxY);
     void ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr msg);
 
 public:
