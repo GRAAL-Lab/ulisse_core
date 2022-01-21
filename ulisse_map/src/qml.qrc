@@ -67,5 +67,6 @@
         <file>qml/MapPolygon2.qml</file>
         <file>qml/MapObstacle.qml</file>
         <file>qml/MapObstacleManager.qml</file>
+        <file>fonts/fontello-icons/fontello.ttf</file>
     </qresource>
 </RCC>

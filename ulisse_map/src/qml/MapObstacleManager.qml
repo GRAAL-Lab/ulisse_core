@@ -6,6 +6,7 @@ import "."
 
 Item {
     objectName: "obstacleManager"
+    //id: mapObstacleManager
 
     property Component obstacleComponent
     //property Component avoidancePath

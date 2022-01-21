@@ -1,6 +1,7 @@
 import QtQuick 2.5
-import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.1
+import QtQuick.Controls 2.5
+import QtQuick.Controls.Material 2.5
 import "."
 
 Dialog {
@@ -40,7 +41,59 @@ Dialog {
 
     contentItem: ColumnLayout {
         id: settingsColumn
-        spacing: 20
+        spacing: 15
+
+        RowLayout {
+            id: mapTypeSetting
+            spacing: 10
+            enabled: settings.mapPluginType === "esri" ? true : false
+
+            Label {
+                text: "Map Type:"
+            }
+
+            ComboBox {
+                id: mapTypeComboBox
+
+                property bool changed: false
+
+                model: ["A", "B", "C"]/*ListModel {
+                    id: model
+                    ListElement { text: "MapType.StreetMap";         color: "Brown" } // A street map.
+                    ListElement { text: "MapType.SatelliteMapDay";   color: "Brown" } // A map with day-time satellite imagery.
+                    ListElement { text: "MapType.SatelliteMapNight"; color: "Brown" } // A map with night-time satellite imagery.
+                    ListElement { text: "MapType.TerrainMap";        color: "Brown" } // A terrain map.
+                    ListElement { text: "MapType.HybridMap";         color: "Brown" } // A map with satellite imagery and street information.
+                    ListElement { text: "MapType.GrayStreetMap";     color: "Brown" } // A gray-shaded street map.
+                }*/
+
+                onAccepted: {
+                    if (currentText !== settings.esriMapType) {
+                        changed = true
+                    } else {
+                        changed = false
+                    }
+                }
+
+                Component.onCompleted: {
+                    var types = []
+
+                    /*console.log("map.supportedMapTypes")
+                    for(var i=0; i< map.supportedMapTypes.length; i++){
+                        console.log(map.supportedMapTypes[i].description)
+                    }*/
+                }
+
+
+            }
+        }
+
+        //        MapType.StreetMap - A street map.
+        //        MapType.SatelliteMapDay - A map with day-time satellite imagery.
+        //        MapType.SatelliteMapNight - A map with night-time satellite imagery.
+        //        MapType.TerrainMap - A terrain map.
+        //        MapType.HybridMap - A map with satellite imagery and street information.
+        //        MapType.GrayStreetMap - A gray-shaded street map.
 
         RowLayout {
             id: mapCacheSetting
@@ -52,7 +105,7 @@ Dialog {
             }
 
             TextField {
-                property bool cacheDirChanged: false
+                property bool changed: false
 
                 id: mapCacheDirectory
                 Layout.preferredWidth: 45
@@ -64,9 +117,9 @@ Dialog {
 
                 onTextChanged: {
                     if (text != settings.esriMapCacheDir) {
-                        cacheDirChanged = true
+                        changed = true
                     } else {
-                        cacheDirChanged = false
+                        changed = false
                     }
                 }
             }
@@ -189,7 +242,7 @@ Dialog {
             id: restartText
             text: "Restart required!"
             color: "#e41e25"
-            opacity: mapCacheDirectory.cacheDirChanged ? 1.0 : 0.0
+            opacity: (mapCacheDirectory.cacheDirChanged || mapTypeSetting.changed) ? 1.0 : 0.0
             font.weight: Font.DemiBold
             horizontalAlignment: Label.AlignHCenter
             verticalAlignment: Label.AlignVCenter

@@ -37,6 +37,8 @@ ApplicationWindow {
 
     property string futureMapPlugin: ""
 
+    //property alias map: mapView.map
+
     signal sig_escape
 
     Material.theme: settings.theme
@@ -73,6 +75,7 @@ ApplicationWindow {
         property int shTimeout: 120
         property string mapPluginType: "esri"
         property string esriMapCacheDir: home_dir + "/.map_offline_tiles/esri/"
+        property string  esriMapType: MapType.StreetMap
         property string theme: "Light"
         property var mapBearing: 0.0
         property var mapZoom: 19.0

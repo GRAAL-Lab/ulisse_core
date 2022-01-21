@@ -14,7 +14,7 @@ import "../scripts/helper.js" as Helper
 
 RowLayout {
     //id: tracklistlayout
-    property int ntrack: -1
+    //property int ntrack: -1
     property var managedPath
     property alias pathButton: pathButton
     //property alias tracklistlayout: tracklistlayout

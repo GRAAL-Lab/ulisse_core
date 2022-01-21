@@ -10,7 +10,7 @@ RowLayout {
 
     property alias pathButtonsColumn: pathButtonsColumn
     property real fontSize: 14
-    property int defheigth: 42
+    property real pathButtonWidthRatio: 0.6
     property bool multichoice: false
 
     ColumnLayout {
@@ -34,9 +34,9 @@ RowLayout {
                 onClicked: function () {
                     bar_manage.show_shape_choice()
                     enableBtns(false)
-                    window.sig_escape.connect(cancelPathCreation)
-                    map.mapTextOverlay.text = "Press ESC to cancel"
-                    map.mapTextOverlay.visible = true
+                    //window.sig_escape.connect(cancelPathCreation)
+                    //map.mapTextOverlay.text = "Press ESC to cancel"
+                    //map.mapTextOverlay.visible = true
                 }
             }
 
@@ -63,7 +63,7 @@ RowLayout {
 
         RowLayout {
             id: confirm_btns
-            width: defheigth + 120
+            width: parent.fillWidth
             visible: false
             Button {
                 id: abort
@@ -101,8 +101,14 @@ RowLayout {
         Column {
             // Space for the Paths buttons
             id: pathButtonsColumn
-            width: defheigth + 120
-            y: 96
+            Layout.preferredWidth: parent.width * pathButtonWidthRatio
+
+            /*onVisibleChildrenChanged: {
+                console.log("bar_manage.n: " + bar_manage.n)
+            }*/
+
+            //width: 160
+            //y: 96
         }
 
 
@@ -152,9 +158,6 @@ RowLayout {
             }
         }
     }
-
-
-
 
 
     function cancelPathCreation() {
@@ -207,7 +210,7 @@ RowLayout {
         c.managedPath.deregister_map_items()
         map.removeMapItem(c.managedPath)
         c.destroy()
-        bar_manage.n--
+        //bar_manage.n--
     }
 
     function delete_item_at_idx(idx){
@@ -230,6 +233,7 @@ RowLayout {
         }
         restoreBtns()
         deselect_all()
+
     }
 
     /*Keys.onEscapePressed: {

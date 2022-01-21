@@ -10,58 +10,58 @@ import "."
 
 BarManagePathsForm {
     //id: root
-
+    
     property bool inhibit: false
     property var pathButtonComponent
-
+    
     Component.onCompleted: function () {
         hide_all()
         pathButtonComponent = Qt.createComponent("PathButton.qml")
     }
-
+    
     cancelPathChoice.onClicked: function () {
         pathCmdPane.cancelPathCreation()
     }
-
+    
     buttonToggle.onClicked: function () {
         if (cur_managed === null)
             return
         cur_managed.toggle_dir()
     }
-
+    
     buttonDeselectAll.onClicked: function () {
         pathCmdPane.deselect_all()
         hide_all()
     }
-
+    
     /*-------------- POLY CREATION/EDITING ----------------*/
     property var cur_managed
     property var params_panel
-
+    
     b_polySweep.onClicked: function () {
         cur_managed = map.createPolySweepPath()
         params_panel = panelParamsPolygon
         start()
     }
-
+    
     b_rectSweep.onClicked: function () {
         cur_managed = map.createRectSweepPath()
         params_panel = panelParamsPolygon
         start()
     }
-
+    
     b_polyline.onClicked: function () {
         cur_managed = map.createPolylinePath()
         params_panel = panelParamsPolyline
         start()
     }
-
+    
     /*Keys.onEscapePressed: {
         discard()
         console.log("escapeItem in BarManagePaths.qml is handling escape");
         // event.accepted is set to true by default for the specific key handlers
     }*/
-
+    
     panelParamsPolygon.onAccept: function () {
         confirm()
     }
@@ -74,7 +74,7 @@ BarManagePathsForm {
     panelParamsPolyline.onDiscard: function () {
         discard()
     }
-
+    
     function start() {
         // Here the click handlers are assigned and the parameters are shown
         if (cur_managed === null)
@@ -87,16 +87,20 @@ BarManagePathsForm {
         map.clickHandler = cur_managed.clickHandler
         map.posChangedHandler = cur_managed.posChangedHandler
     }
-
+    
     function abort_h(){
+        console.log("[BarManagePaths] abort_h()")
         map.clickHandler = map.click_goto_handler
         map.posChangedHandler = function () {}
         pathCmdPane.enableBtns(true)
-        hide_all()
-        cur_managed.deregister_map_items()
-        map.removeMapItem(cur_managed)
-        cur_managed.destroy()
         map.mapMouseArea.hoverEnabled = false
+        hide_all()
+        if (cur_managed !== undefined) {
+            console.log("[BarManagePaths] abort_h() - cur_managed !== undefined")
+            cur_managed.deregister_map_items()
+            map.removeMapItem(cur_managed)
+            cur_managed.destroy()
+        }
         window.sig_escape.disconnect(abort_h)
         //map.mapTextOverlay.visible = false
     }
@@ -122,7 +126,7 @@ BarManagePathsForm {
         map.posChangedHandler = cur_managed.pos_changed_mod_handler
     }
 
-    property int n: 0
+    //property int n: 0
 
     function end() {
         console.log("[BarManagePaths] end()")
@@ -130,8 +134,9 @@ BarManagePathsForm {
         cur_managed.end.disconnect(end)
         confirm()
         var v = pathButtonComponent.createObject(pathCmdPane.pathButtonsColumn)
+
         v.managedPath = cur_managed
-        v.ntrack = ++n
+        //v.ntrack = ++n
         v.selected.connect(function (path) {
             pathCmdPane.update_selection(path)
             manage(path)
@@ -155,16 +160,19 @@ BarManagePathsForm {
     }
 
     function discard() {
+        console.log("[BarManagePaths] discard()")
         map.clickHandler = map.click_goto_handler
         map.posChangedHandler = function () {}
-
-        if (cur_managed !== undefined) {
+        /*if (cur_managed !== undefined) {
+            console.log("[BarManagePaths] discard() - cur_managed !== undefined")
+            console.log("cur_managed: " + cur_managed.pathName)
             cur_managed.enable_ab_markers()
             cur_managed.discard_edit()
             cur_managed.check_safe(map.safety_polygon)
-            pathCmdPane.enableBtns(true)
-            show_manage()
-        }
+
+        }*/
+        pathCmdPane.enableBtns(true)
+        //show_manage()
     }
 
     /*-----------------------------------------------------------*/

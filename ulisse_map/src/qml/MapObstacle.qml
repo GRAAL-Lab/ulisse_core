@@ -127,7 +127,7 @@ MapPolygon {
             obstacleOpacity = countDownTimer/timeoutSeconds;
             if(countDownTimer == 0){
                 //console.log("Obstacle '" + id + "' reached timeout.")
-                obstacleList[i].deregister_map_items();
+                deregister_map_items();
                 mapObstacleManager.deleteObstacle(id)
                 //obstacle.visible = 0;
             }

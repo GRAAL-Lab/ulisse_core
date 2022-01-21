@@ -125,6 +125,30 @@ Pane {
                     //Layout.fillHeight: false
                     onClicked: cmdWrapper.sendBoundaries(JSON.stringify(map.safety_polygon.serialize()))
                 }
+
+                /*ToolButton {
+                    id: openButton
+                    text: "\uF115" // icon-folder-open-empty
+                    font.family: "fontello"
+                    onClicked: save.open()
+                }*/
+
+                Button {
+                    id: buttonBoundBoxGet
+                    //text: "\uF115" // icon-folder-open-empty
+                    text: "\uE816" // save-icon
+                    font.family: "fontello"
+                    font.pointSize: 10
+                    padding: 5
+                    antialiasing: false
+                    Layout.maximumWidth: 30
+                    highlighted: true
+                    Material.background: grey
+                    //Layout.fillHeight: false
+                    onClicked: {
+                        save.open()
+                    }
+                }
             }
         }
 
@@ -162,6 +186,8 @@ Pane {
             horizontalAlignment: Text.AlignHCenter
         }
     }
+
+
 
     FileDialog {
         id: loadPathDialog
@@ -223,7 +249,7 @@ Pane {
                 cur_managed.type = "PolyPath"
                 var v = pathButtonComponent.createObject(pathCmdPane.pathButtonsColumn)
                 v.managedPath = cur_managed
-                v.ntrack = pathCmdPane.pathButtonsColumn.children.length
+                //v.ntrack = pathCmdPane.pathButtonsColumn.children.length
                 v.selected.connect(function (path) {
                     pathCmdPane.update_selection(path)
                     bar_manage.manage(path)
@@ -238,7 +264,7 @@ Pane {
                 cur_managed.type = "PointPath"
                 var v = pathButtonComponent.createObject(pathCmdPane.pathButtonsColumn)
                 v.managedPath = cur_managed
-                v.ntrack = pathCmdPane.pathButtonsColumn.children.length
+                //v.ntrack = pathCmdPane.pathButtonsColumn.children.length
                 v.selected.connect(function (path) {
                     pathCmdPane.update_selection(path)
                     bar_manage.manage(path)

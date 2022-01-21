@@ -12,6 +12,8 @@ import "."
 
 MapViewForm {
 
+    //property alias map: map
+
     Timer {
         // A Timer to center the catamaran in the screen when "Follow Vehicle"
         // option is enabled.

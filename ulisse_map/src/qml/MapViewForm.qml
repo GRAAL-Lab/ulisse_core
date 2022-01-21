@@ -29,7 +29,8 @@ RowLayout {
     property alias mapsidebar: mapsidebar
     property alias pathState: pathState
     property alias pathCmdPane: mapsidebar.pathCmdPane
-    //property alias mapTextOverlay: map.mapTextOverlay
+
+
 
     spacing: 0
     width: window.width
@@ -48,6 +49,10 @@ RowLayout {
             name: "esri.mapping.maximumZoomLevel"
             value: 19.9
         }
+
+        //PluginParameter { name: "osm.useragent"; value: "GraalLab - UNIGE" }
+        //PluginParameter { name: "osm.mapping.copyright"; value: "All mine" }
+
     }
 
     QtObject {
@@ -94,11 +99,20 @@ RowLayout {
         MapComponent {
             id: map
             width: parent.width
-            height: parent.height - bottomToolbar.height
+            height: parent.height// - bottomToolbar.height
             plugin: mapPlugin
             center: settings.mapCenter
             zoomLevel: settings.mapZoom
             bearing: settings.mapBearing
+            //maximumZoomLevel: 20
+            //style: Map.StreetMap
+
+            Component.onCompleted: {
+                console.log("map.supportedMapTypes")
+                for(var i=0; i< map.supportedMapTypes.length; i++){
+                    console.log(map.supportedMapTypes[i].description)
+                }
+            }
         }
 
         Rectangle {

@@ -37,6 +37,12 @@ int main(int argc, char* argv[])
     QIcon icon(":/images/ulisse_icon-48.png");
     app.setWindowIcon(icon);
 
+    // Font with icons. See the fontello-icons folder for more info.
+    QFontDatabase fontDatabase;
+    if (fontDatabase.addApplicationFont(":/fonts/fontello-icons/fontello.ttf") == -1){
+        qWarning() << "Failed to load fontello.ttf";
+    }
+
     //QSettings settings("folderName", "fileName");
     //qDebug() << "Settings file: " << settings.fileName();
 
