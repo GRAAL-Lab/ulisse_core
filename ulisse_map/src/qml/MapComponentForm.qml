@@ -88,14 +88,36 @@ Map {
             mipmap: true
             antialiasing: true
             source: 'qrc:/images/windarrow.png'
+
+            layer.enabled: true
+            layer.effect: DropShadow {
+                //horizontalOffset: 3
+                //verticalOffset: 3
+                radius: 5.0
+                samples: 10
+                color: "#cccccc"
+                spread: 0
+            }
         }
-        Label{
+
+        Label {
             id: currentLabel
             color: "#004EAE"
             width: parent.width
             horizontalAlignment: Text.AlignHCenter
-            anchors.left:currentArrow.left
-            anchors.top:currentArrow.bottom
+            anchors.left: currentArrow.left
+            anchors.top: currentArrow.bottom
+
+            style: Text.Outline
+            styleColor: "white"
+
+            layer.enabled: true
+            layer.effect: DropShadow {
+                radius: 5.0
+                samples: 10
+                color: "#cccccc"
+                spread: 0
+            }
         }
     }
 

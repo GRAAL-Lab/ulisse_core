@@ -455,7 +455,9 @@ void VehicleController::SetBoundariesHandler(const std::shared_ptr<rmw_request_i
     RCLCPP_INFO(this->get_logger(), "Incoming request for set boundaries");
 
     if (asvSafetyBoundaries_->InitializePolygon(request->boundaries)) {
-        boundariesJson_ = request->boundaries.info_string;
+        boundariesJson_ = request->boundaries.id;
+        // TODO: The string "info_string" with all the vertices is now the "id"
+        // When migrating to sisl_toolbox the points will be in "vertices" as a vector of LatLong
         response->res = "SetBound::ok";
         boundariesSet_ = true;
     } else {
@@ -463,7 +465,7 @@ void VehicleController::SetBoundariesHandler(const std::shared_ptr<rmw_request_i
     }
 
     std::stringstream log;
-    log << "Setting Bounding Box: " << request->boundaries.info_string;
+    log << "Setting Bounding Box: " << request->boundaries.id;
     PublishLog(log.str().c_str());
 }
 

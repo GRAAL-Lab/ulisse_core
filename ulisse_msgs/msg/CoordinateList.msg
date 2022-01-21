@@ -1,2 +1,2 @@
-string info_string
+string id
 LatLong[] vertices

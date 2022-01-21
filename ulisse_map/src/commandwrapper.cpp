@@ -479,7 +479,7 @@ bool CommandWrapper::reloadNavFilterConf()
 bool CommandWrapper::sendBoundaries(const QString& boundary_json_data)
 {
     auto serviceReq = std::make_shared<ulisse_msgs::srv::SetBoundaries::Request>();
-    serviceReq->boundaries.info_string = "GUI Set Boundary";// + boundary.toStdString();
+    serviceReq->boundaries.id = "GUI Set Boundary";// + boundary.toStdString();
 
     /*serviceReq->boundaries.vertices.resize(boundary.size());
 
@@ -518,7 +518,7 @@ bool CommandWrapper::sendBoundaries(const QString& boundary_json_data)
         std::cout << "Error parsing QML Jason" << e.what() << std::endl;
     }
 
-
+    // TODO: UPDATE THE CONTROLLER SIDE
 
     return SendBoundariesRequest(serviceReq);
 }

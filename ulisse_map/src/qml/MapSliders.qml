@@ -62,6 +62,7 @@ Row {
     property color labelBackground: "transparent"
     property int edge: Qt.RightEdge
     property color togglerColor: orange
+    property color sliderContainerColor: Qt.rgba(0.00, 0.52, 0.48, 0.4) //Qt.rgba( 0, 191 / 255.0, 255 / 255.0, 0.1)
 
     function rightEdge() {
         return (containerRow.edge === Qt.RightEdge)
@@ -138,10 +139,9 @@ Row {
         height: parent.height
         width: sliderRow.width + 10
         visible: sliderToggler.checked
-        color: Qt.rgba(0, 0, 0,
-                       0.05) //Qt.rgba( 0, 191 / 255.0, 255 / 255.0, 0.1)
+        color: sliderContainerColor
         Material.accent: orange
-        Material.foreground: grey
+        Material.foreground: "white"
 
         property real slidersHeight: sliderContainer.height - rowSliderValues.height
                                      - rowSliderLabels.height - sliderColumn.spacing * 2
@@ -287,6 +287,7 @@ Row {
                         id: labelZoom
                         text: "Zoom"
                         font.pixelSize: fontSize
+                        font.weight: Font.DemiBold
                         rotation: -90
                         anchors.centerIn: parent
                     }
@@ -301,6 +302,7 @@ Row {
                         id: labelBearing
                         text: "Bearing"
                         font.pixelSize: fontSize
+                        font.weight: Font.DemiBold
                         rotation: -90
                         anchors.centerIn: parent
                     }
@@ -314,6 +316,7 @@ Row {
                         id: labelTilt
                         text: "Tilt"
                         font.pixelSize: fontSize
+                        font.weight: Font.DemiBold
                         rotation: -90
                         anchors.centerIn: parent
                     }
@@ -327,6 +330,7 @@ Row {
                         id: labelFov
                         text: "FoV"
                         font.pixelSize: fontSize
+                        font.weight: Font.DemiBold
                         rotation: -90
                         anchors.centerIn: parent
                     }
