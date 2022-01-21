@@ -104,16 +104,14 @@ RowLayout {
             center: settings.mapCenter
             zoomLevel: settings.mapZoom
             bearing: settings.mapBearing
-            //activeMapType:
+
             //maximumZoomLevel: 20
             //style: Map.StreetMap
 
             onMapReadyChanged: {
-                /*
-                mapPluginReady()*/
-                //console.log("activeMapType: " + activeMapType)
-            }
+                //console.log("settings.mapTypeIndex: " + settings.mapTypeIndex)
 
+            }
         }
 
         Rectangle {

@@ -23,7 +23,6 @@ MapViewForm {
 
         onTriggered: {
             map.center = fbkUpdater.ulisse_pos
-            map.activeMapType = map.supportedMapTypes[settings.esriMapTypeIndex]
         }
     }
 
@@ -57,14 +56,20 @@ MapViewForm {
 
 
     Timer {
-        // A Timer to center the catamaran in the screen at application startup
+        // A Timer to perform post-startup operations
         id: centerOnStartTimer
-        interval: 150
+        interval: 200
         running: true
         repeat: false
 
         onTriggered: {
             map.center = fbkUpdater.ulisse_pos
+            //console.log("settings.unIndiceSalvatoACaso: " + settings.unIndiceSalvatoACaso)
+            //console.log("settings.mapTypeIndex: " + settings.mapTypeIndex)
+            //console.log("map.supportedMapTypes[settings]: " + map.supportedMapTypes[settings.mapTypeIndex])
+            //console.log("map.activeMapType: " + map.activeMapType)
+
+            map.activeMapType = map.supportedMapTypes[settings.mapTypeIndex]
         }
     }
 }

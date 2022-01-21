@@ -32,8 +32,8 @@ Map {
         id: mapTextOverlay
 
         font.pointSize: 12
-        style: Text.Outline
-        styleColor: "white"
+        //style: Text.Outline
+        //styleColor: "white"
         color: grey
         horizontalAlignment: Text.AlignHCenter
         width: parent.width
@@ -51,6 +51,15 @@ Map {
         anchors.top: map.top
         anchors.topMargin: 10
         anchors.leftMargin: 20
+        width: 60
+
+        layer.enabled: true
+        layer.effect: Glow {
+            radius: 4
+            samples: 10
+            color: lightergrey
+
+        }
     }
 
     MapSliders {
@@ -80,9 +89,10 @@ Map {
         anchors.top: parent.top
         anchors.rightMargin: 15
         anchors.topMargin: 20
-        width: 42
+        width: 48
         height: 42
         z: map.z + 5
+
         Image {
             id: currentArrow
             mipmap: true
@@ -90,13 +100,11 @@ Map {
             source: 'qrc:/images/windarrow.png'
 
             layer.enabled: true
-            layer.effect: DropShadow {
-                //horizontalOffset: 3
-                //verticalOffset: 3
-                radius: 5.0
+            layer.effect: Glow {
+                radius: 4
                 samples: 10
-                color: "#cccccc"
-                spread: 0
+                color: lightergrey
+
             }
         }
 
@@ -108,15 +116,16 @@ Map {
             anchors.left: currentArrow.left
             anchors.top: currentArrow.bottom
 
-            style: Text.Outline
-            styleColor: "white"
+
+            //style: Text.Outline
+            //styleColor: "white"
 
             layer.enabled: true
-            layer.effect: DropShadow {
-                radius: 5.0
+            layer.effect: Glow {
+                radius: 4
                 samples: 10
-                color: "#cccccc"
-                spread: 0
+                color: lightergrey
+
             }
         }
     }
@@ -140,9 +149,11 @@ Map {
         id: centroidIcon
         sourceItem: Text {
             id: centroidText
-            color: grey
+            color: "white"
             text: "+ CENTROID"
             font.family: "Courier New"
+            layer.enabled: true
+
         }
 
         coordinate: fbkUpdater.centroid
@@ -221,6 +232,17 @@ Map {
             color: 'darkslategrey'
             text: "Surge: " + fbkUpdater.ulisse_surge + " m/s\nHeading: "
                   + fbkUpdater.ulisse_rpy_deg.z.toFixed(2) + "°"
+            //style: Text.Outline
+            //styleColor: "white"
+            //font.weight: Font.DemiBold
+
+            layer.enabled: true
+            layer.effect: Glow {
+                radius: 4
+                samples: 10
+                color: lightergrey
+
+            }
         }
         coordinate: fbkUpdater.ulisse_pos
         anchorPoint.x: -ulisseImage.width / 2

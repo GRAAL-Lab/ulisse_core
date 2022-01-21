@@ -78,7 +78,7 @@ ApplicationWindow {
         property int shTimeout: 120
         property string mapPluginType: "esri"
         property string esriMapCacheDir: home_dir + "/.map_offline_tiles/esri/"
-        property var esriMapTypeIndex: 0
+        property int mapTypeIndex: 0
         property string theme: "Light"
         property var mapBearing: 0.0
         property var mapZoom: 19.0

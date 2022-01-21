@@ -7,8 +7,7 @@ import "."
 Dialog {
 
     property alias mapCacheDirText: mapCacheDirectory.text
-    //property var mapTypes: []
-    property var mapTypesDescription: []
+    property var mapTypesModel: []
 
     modal: true
     focus: true
@@ -16,27 +15,29 @@ Dialog {
     standardButtons: Dialog.Ok | Dialog.Cancel
 
 
-    /*Timer {
-        interval: 1000; running: true; repeat: false
-        onTriggered: updateMapOptions()
-    }
+    Timer {
+        interval: 500; running: true; repeat: false
+        onTriggered: {
+            mapTypesModel = mapViewItem.map.supportedMapTypes
+            mapTypesModel.myDescription = []
+             for(var i=0; i< mapViewItem.map.supportedMapTypes.length; i++){
+                mapTypesModel.myDescription.push(i.toString())
+            }
 
-    function updateMapOptions () {
+            //mapTypesModel[1].description = "Satellite Imagery Map"
 
-        console.log("map.supportedMapTypes")
-        for(var i=0; i< mapViewItem.map.supportedMapTypes.length; i++){
-            //console.log(mapViewItem.map.supportedMapTypes[i].description)
-            model.append({text: mapViewItem.map.supportedMapTypes[i].description})
+            mapTypeComboBox.currentIndex = settings.mapTypeIndex
         }
 
-        mapTypeComboBox.currentIndex = settings.esriMapType
-    }*/
+    }
 
     onAccepted: {
         /*if (mapTypeBox.displayText != futureMapPlugin) {
             futureMapPlugin = mapTypeBox.displayText
             toast.show("Changes will take effect on restart...", 2000)
         }*/
+
+        settings.mapTypeIndex = mapTypeComboBox.currentIndex
 
         if (mapCacheDirectory.changed) {
             settings.esriMapCacheDir = mapCacheDirectory.displayText
@@ -79,18 +80,29 @@ Dialog {
             }
 
             ComboBox{
-                model: mapViewItem.map.supportedMapTypes
+                id: mapTypeComboBox
+                model: mapTypesModel
                 Layout.fillWidth: true
-                textRole:"description"
+                textRole: "myDescription"
+
+                onPressedChanged: {
+                    /*if (currentText == ""){
+                        displayText = "Terrain Map"
+                    }*/
+                    console.log(JSON.stringify(displayText))
+                    console.log(JSON.stringify(currentText))
+                }
 
                 onCurrentIndexChanged: {
                     mapViewItem.map.activeMapType = mapViewItem.map.supportedMapTypes[currentIndex]
-                    settings.esriMapTypeIndex = currentIndex
+                    //settings.mapTypeIndex = currentIndex
+                    //settings.unIndiceSalvatoACaso = 6
+                    //console.log("[onCurrentIndexChanged] settings.mapTypeIndex: " + settings.mapTypeIndex)
                 }
             }
 
             /*ComboBox {
-                id: mapTypeComboBox
+
                 property bool changed: false
                 Layout.fillWidth: true
 
@@ -126,13 +138,6 @@ Dialog {
 
             }*/
         }
-
-        //        MapType.StreetMap - A street map.
-        //        MapType.SatelliteMapDay - A map with day-time satellite imagery.
-        //        MapType.SatelliteMapNight - A map with night-time satellite imagery.
-        //        MapType.TerrainMap - A terrain map.
-        //        MapType.HybridMap - A map with satellite imagery and street information.
-        //        MapType.GrayStreetMap - A gray-shaded street map.
 
         RowLayout {
             id: mapCacheSetting
