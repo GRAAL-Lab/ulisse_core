@@ -7,36 +7,43 @@ import "."
 Dialog {
 
     property alias mapCacheDirText: mapCacheDirectory.text
-    property var mapTypesModel: []
-
+    property var mapTypesDescription: ({})
     modal: true
     focus: true
     title: "Settings"
     standardButtons: Dialog.Ok | Dialog.Cancel
 
 
+    ListModel {
+        id: myMapTypes
+
+        /*ListElement {
+            description: "Map Type"
+        }*/
+    }
+
+
     Timer {
         interval: 500; running: true; repeat: false
         onTriggered: {
-            mapTypesModel = mapViewItem.map.supportedMapTypes
-            mapTypesModel.myDescription = []
-             for(var i=0; i< mapViewItem.map.supportedMapTypes.length; i++){
-                mapTypesModel.myDescription.push(i.toString())
+
+            myMapTypes.clear()
+
+            // The reason for creating this custom variable is a workaround
+            // for the fact that not all map types have a meaningful description
+            for(var i=0; i< mapViewItem.map.supportedMapTypes.length; i++){
+                if (i === 1) {
+                    myMapTypes.append({"description": "Satellite Imagery Map"})
+                } else {
+                    myMapTypes.append({"description": mapViewItem.map.supportedMapTypes[i].description})
+                }
             }
-
-            //mapTypesModel[1].description = "Satellite Imagery Map"
-
             mapTypeComboBox.currentIndex = settings.mapTypeIndex
         }
 
     }
 
     onAccepted: {
-        /*if (mapTypeBox.displayText != futureMapPlugin) {
-            futureMapPlugin = mapTypeBox.displayText
-            toast.show("Changes will take effect on restart...", 2000)
-        }*/
-
         settings.mapTypeIndex = mapTypeComboBox.currentIndex
 
         if (mapCacheDirectory.changed) {
@@ -53,8 +60,6 @@ Dialog {
         stackViewContainer.forceActiveFocus()
     }
     onRejected: {
-        //styleBox.currentIndex = styleBox.styleIndex
-        //mapTypeBox.currentIndex = mapTypeBox.mapTypeIndex
         mapCacheDirectory.text = settings.esriMapCacheDir
 
         close()
@@ -81,62 +86,35 @@ Dialog {
 
             ComboBox{
                 id: mapTypeComboBox
-                model: mapTypesModel
+                model: myMapTypes
                 Layout.fillWidth: true
-                textRole: "myDescription"
+                textRole: "description"
 
                 onPressedChanged: {
-                    /*if (currentText == ""){
-                        displayText = "Terrain Map"
-                    }*/
-                    console.log(JSON.stringify(displayText))
+                    //console.log(JSON.stringify(displayText))
                     console.log(JSON.stringify(currentText))
                 }
 
                 onCurrentIndexChanged: {
                     mapViewItem.map.activeMapType = mapViewItem.map.supportedMapTypes[currentIndex]
+
                     //settings.mapTypeIndex = currentIndex
                     //settings.unIndiceSalvatoACaso = 6
                     //console.log("[onCurrentIndexChanged] settings.mapTypeIndex: " + settings.mapTypeIndex)
                 }
             }
-
-            /*ComboBox {
-
-                property bool changed: false
-                Layout.fillWidth: true
-
-                textRole: "text"
-                model: ListModel {
-                    id: model
-                    //                qml: ArcGIS Online World Street Map
-                    //                qml:
-                    //                qml: ArcGIS Online World Terrain Base
-                    //                qml: ArcGIS Online World Topography
-                    //                qml: This map presents land cover and detailed topographic maps for the United States.
-                    //                qml: National Geographic World Map
-                    //                qml: Thematic content providing a neutral background with minimal colors
-                    //                qml: Natural Earth physical map for the world
-                    //                qml: Portrays surface elevation as shaded relief
-                    //                qml: This map is designed to be used as a basemap by marine GIS professionals and as a reference map by anyone interested in ocean data
-                    //                qml: Thematic content providing a neutral background with minimal colors
-                    //                qml: DeLorme’s topographic basemap is a seamless global data set that portrays transportation, hydrography, jurisdiction boundaries, and major geographic features
-
-                }
-
-                onCurrentTextChanged: {
-                    console.log("settings.esriMapType: " + settings.esriMapType)
-                    //var mapCurrentType = mapViewItem.map.supportedMapTypes[currentIndex]
-                    console.log("mapCurrentType: " + currentIndex)
-
-                    if (currentIndex  !== settings.esriMapType ) {
-                        changed = true
-                    } else {
-                        changed = false
-                    }
-                }
-
-            }*/
+            // qml: ArcGIS Online World Street Map
+            // qml:
+            // qml: ArcGIS Online World Terrain Base
+            // qml: ArcGIS Online World Topography
+            // qml: This map presents land cover and detailed topographic maps for the United States.
+            // qml: National Geographic World Map
+            // qml: Thematic content providing a neutral background with minimal colors
+            // qml: Natural Earth physical map for the world
+            // qml: Portrays surface elevation as shaded relief
+            // qml: This map is designed to be used as a basemap by marine GIS professionals and as a reference map by anyone interested in ocean data
+            // qml: Thematic content providing a neutral background with minimal colors
+            // qml: DeLorme’s topographic basemap is a seamless global data set that portrays transportation, hydrography, jurisdiction boundaries, and major geographic features
         }
 
         RowLayout {
