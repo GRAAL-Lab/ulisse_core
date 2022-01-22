@@ -11,11 +11,16 @@ Item {
     property Component polylineComponent
 
     property var obstacleList: []
+    property var polylineList: []
 
     Component.onCompleted: {
         obstacleComponent = Qt.createComponent("MapObstacle.qml")
-        polylineComponent = Qt.createComponent("")
-        //drawObstacle("QML_Obstacle_1", QtPositioning.coordinate(44.0957, 9.8632), 0, 20, 10)
+        polylineComponent = Qt.createComponent("MapCustomPolyline.qml")
+
+        drawObstacle("QML_Obstacle_1", QtPositioning.coordinate(44.0957, 9.8632), 0, 20, 10)
+        //var polypath = GeoShape.PathType;
+        //polypath.addCoordinate();
+        //drawPolyline("QML_Poly_1", )
     }
 
     function drawObstacle(obsID, obsCoords, obsHeading, obsBBoxX, obsBBoxY) {
@@ -61,8 +66,43 @@ Item {
     }
 
 
-    function drawPolyline(){
+    function drawPolyline(polyID, polypath){
+        for (var i = 0; i < polylineList.length; i++) {
+            if (polylineList[i].id === polyID) {
+                //console.log("Object alredy present, updating...")
+                polylineList[i].update(polypath);
+                return;
+            }
+        }
 
+        //console.log("New Obstacle, creating...")
+        polylineList.push(polylineComponent.createObject(map_component, {
+                                                             id: polyID,
+                                                             path: polypath
+                                                         }))
+
+        if (polylineComponent.status != Component.Ready)
+        {
+            if (polylineComponent.status == Component.Error)
+                console.debug("Error: " + polylineComponent.errorString());
+            return;
+        }
+        map.addMapItem(polylineList[polylineList.length - 1])
+    }
+
+
+    function deletePolyline(polyID) {
+
+        for (var i = 0; i < polylineList.length; i++) {
+            if (polylineList[i].id === polyID) {
+                //console.log("Deleting obstacle...")
+                map.removeMapItem(polylineList[i]);
+                polylineList[i].destroy();
+                // Removing the obstacle from the list
+                polylineList.splice(i, 1);
+                return
+            }
+        }
     }
 
 }

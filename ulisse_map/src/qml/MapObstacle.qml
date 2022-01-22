@@ -105,7 +105,7 @@ MapPolygon {
         }
 
         // console.log("[MapObstacle] Obstacle Update (timeout: " + timeoutSeconds + " s)")
-        console.log("ID: " + id + ", coords: (" + coords.latitude + "," + coords.longitude + "), heading: " + heading
+        console.log("obstacleID: " + id + ", coords: (" + coords.latitude + "," + coords.longitude + "), heading: " + heading
                     + ", size: (" + bBoxX + ", " + bBoxY + ")")
     }
 

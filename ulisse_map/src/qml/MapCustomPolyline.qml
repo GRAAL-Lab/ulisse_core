@@ -11,7 +11,6 @@ MapPolyline {
 
     property string id: "polylineID"
     property var coordinate: QtPositioning.coordinate(44.0956, 9.8631)
-    property real markerRadius: 1
     property color objectColor: 'red'
     property real lineWidth: 1
     property int timeoutSeconds: settings.visualizerTimeout
@@ -26,7 +25,7 @@ MapPolyline {
         id: objectTextOverlayComponent
         MapQuickItem {
             z: map.z + 5
-            coordinate: coords
+            coordinate: path[0]
             visible: settings.showPolylineID
             sourceItem: Item {
                 Text {
@@ -53,36 +52,21 @@ MapPolyline {
         _internalUpdate()
     }
 
-    function update(coordslist) {
+    function update(polypath) {
 
         countDownTimer = timeoutSeconds
-        _internalUpdate()
+        _internalUpdate(polypath)
     }
 
-    function _internalUpdate(){
-        var obsCorners = []
-        var _top = coords.atDistanceAndAzimuth(bBoxX/2.0, heading)
-        //var _right = coords.atDistanceAndAzimuth(bBoxY/2.0, heading + 90)
-        var _bottom = coords.atDistanceAndAzimuth(bBoxX/2.0, heading + 180)
-        //var _left = coords.atDistanceAndAzimuth(bBoxY/2.0, heading + 270)
+    function _internalUpdate(polypath){
 
-        obsCorners.push(_top.atDistanceAndAzimuth(bBoxY/2.0, heading + 270))    // _topLeft
-        obsCorners.push(_top.atDistanceAndAzimuth(bBoxY/2.0, heading + 90))     // _topRight
-        obsCorners.push(_bottom.atDistanceAndAzimuth(bBoxY/2.0, heading + 90))  // _bottomRight
-        obsCorners.push(_bottom.atDistanceAndAzimuth(bBoxY/2.0, heading + 270)) // _bottomLeft
-
-        obstacle.path = []
-        for (var i = 0; i < obsCorners.length; i++){
-            obstacle.addCoordinate(obsCorners[i])
-        }
+        setPath(polypath)
 
         // console.log("[MapObstacle] Obstacle Update (timeout: " + timeoutSeconds + " s)")
-        console.log("ID: " + id + ", coords: (" + coords.latitude + "," + coords.longitude + "), heading: " + heading
-                    + ", size: (" + bBoxX + ", " + bBoxY + ")")
+        console.log("Polyline ID: " + id)
     }
 
     function deregister_map_items() {
-        map.removeMapItem(obstacleMarker)
         map.removeMapItem(objectTextOverlay)
     }
 
@@ -98,7 +82,7 @@ MapPolyline {
             if(countDownTimer == 0){
                 //console.log("Obstacle '" + id + "' reached timeout.")
                 deregister_map_items();
-                addonsBridgeVisualizer.deleteObstacle(id)
+                addonsBridgeVisualizer.deletePolyline(id)
             }
         }
     }

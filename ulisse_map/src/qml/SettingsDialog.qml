@@ -13,34 +13,24 @@ Dialog {
     title: "Settings"
     standardButtons: Dialog.Ok | Dialog.Cancel
 
-
-    ListModel {
-        id: myMapTypes
-
-        /*ListElement {
-            description: "Map Type"
-        }*/
-    }
-
+    ListModel { id: myMapTypes }
 
     Timer {
         interval: 500; running: true; repeat: false
         onTriggered: {
-
-            myMapTypes.clear()
-
-            // The reason for creating this custom variable is a workaround
-            // for the fact that not all map types have a meaningful description
-            for(var i=0; i< mapViewItem.map.supportedMapTypes.length; i++){
-                if (i === 1) {
-                    myMapTypes.append({"description": "Satellite Imagery Map"})
-                } else {
-                    myMapTypes.append({"description": mapViewItem.map.supportedMapTypes[i].description})
+            // The reason for creating this custom variable is a workaround for the fact
+            // that not all map types have a meaningful description in the "esri" plugin.
+            if (settings.mapPluginType === "esri"){
+                for(var i=0; i< mapViewItem.map.supportedMapTypes.length; i++){
+                    if (i === 1) {
+                        myMapTypes.append({"description": "ArcGIS Satellite Imagery Map"})
+                    } else {
+                        myMapTypes.append({"description": mapViewItem.map.supportedMapTypes[i].description})
+                    }
                 }
             }
             mapTypeComboBox.currentIndex = settings.mapTypeIndex
         }
-
     }
 
     onAccepted: {
@@ -48,7 +38,7 @@ Dialog {
 
         if (mapCacheDirectory.changed) {
             settings.esriMapCacheDir = mapCacheDirectory.displayText
-            toast.show("Changes will take effect on restart...", 2000)
+            toast.show("Changes will take effect on restart...", 4000)
         }
 
         if (visualizerTimeoutSeconds.value != settings.visualizerTimeout) {
@@ -76,9 +66,7 @@ Dialog {
 
         RowLayout {
             id: mapTypeSetting
-
             spacing: 10
-            enabled: settings.mapPluginType === "esri" ? true : false
 
             Label {
                 text: "Map Type:"
@@ -90,17 +78,8 @@ Dialog {
                 Layout.fillWidth: true
                 textRole: "description"
 
-                onPressedChanged: {
-                    //console.log(JSON.stringify(displayText))
-                    console.log(JSON.stringify(currentText))
-                }
-
                 onCurrentIndexChanged: {
                     mapViewItem.map.activeMapType = mapViewItem.map.supportedMapTypes[currentIndex]
-
-                    //settings.mapTypeIndex = currentIndex
-                    //settings.unIndiceSalvatoACaso = 6
-                    //console.log("[onCurrentIndexChanged] settings.mapTypeIndex: " + settings.mapTypeIndex)
                 }
             }
             // qml: ArcGIS Online World Street Map
