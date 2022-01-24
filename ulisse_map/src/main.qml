@@ -77,7 +77,7 @@ ApplicationWindow {
         id: settings
         property int shTimeout: 120
         property string mapPluginType: "esri"
-        property string esriMapCacheDir: home_dir + "/.map_offline_tiles/esri/"
+        property string mapCachePath: home_dir + "/.map_offline_tiles/esri/"
         property int mapTypeIndex: 0
         property string theme: "Light"
         property var mapBearing: 0.0
@@ -174,7 +174,7 @@ ApplicationWindow {
             Loader {
                 // This loader is needed to dynamically load the map plugin
                 // only once the settings are loaded (so to be able to
-                // correctly read 'mapPluginType' and 'esriMapCacheDir').
+                // correctly read 'mapPluginType' and 'mapCachePath').
                 id: mapViewLoader
                 sourceComponent: mapViewComponent
                 active: false

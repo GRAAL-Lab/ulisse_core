@@ -30,8 +30,6 @@ RowLayout {
     property alias pathState: pathState
     property alias pathCmdPane: mapsidebar.pathCmdPane
 
-
-
     spacing: 0
     width: window.width
 
@@ -41,11 +39,12 @@ RowLayout {
 
         PluginParameter {
             id: mapCache
-            name: "esri.mapping.cache.directory"
-            value: settings.esriMapCacheDir
+            name: settings.mapPluginType + ".mapping.cache.directory"
+            value: settings.mapCachePath
         }
 
         PluginParameter {
+            id: maxZoomLevel
             name: "esri.mapping.maximumZoomLevel"
             value: 19.9
         }

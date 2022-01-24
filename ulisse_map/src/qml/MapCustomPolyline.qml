@@ -6,13 +6,13 @@ import "."
 
 MapPolyline {
     id: polyline
-    opacity: polylineOpacity
+    opacity: objectOpacity
     z: map.z + 4
 
     property string id: "polylineID"
-    property var coordinate: QtPositioning.coordinate(44.0956, 9.8631)
-    property color objectColor: 'red'
-    property real lineWidth: 1
+    property var start: QtPositioning.coordinate(44.0956, 9.8631)
+    property color objectColor: blue
+    property real lineWidth: 2
     property int timeoutSeconds: settings.visualizerTimeout
     property int countDownTimer: timeoutSeconds
     property real objectOpacity: 1.0
@@ -25,7 +25,7 @@ MapPolyline {
         id: objectTextOverlayComponent
         MapQuickItem {
             z: map.z + 5
-            coordinate: path[0]
+            coordinate: start
             visible: settings.showPolylineID
             sourceItem: Item {
                 Text {
@@ -34,7 +34,8 @@ MapPolyline {
                     font.family: "Courier New"
                     font.pointSize: 10
                     color: objectColor
-                    opacity: Math.min(0.6, objectOpacity)
+                    opacity: objectOpacity
+                    font.weight: Font.DemiBold
                 }
             }
             anchorPoint.x: overlayText.width / 2
@@ -55,13 +56,14 @@ MapPolyline {
     function update(polypath) {
 
         countDownTimer = timeoutSeconds
-        _internalUpdate(polypath)
+        path = polypath
+
+        _internalUpdate()
     }
 
-    function _internalUpdate(polypath){
+    function _internalUpdate(){
 
-        setPath(polypath)
-
+        start = path[0]
         // console.log("[MapObstacle] Obstacle Update (timeout: " + timeoutSeconds + " s)")
         console.log("Polyline ID: " + id)
     }

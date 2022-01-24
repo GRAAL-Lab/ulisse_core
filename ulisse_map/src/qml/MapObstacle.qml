@@ -10,7 +10,7 @@ MapPolygon {
     z: map.z + 4
 
     property real markerRadius: 1
-    property color objectColor: 'red'
+    property color objectColor: red
     property real objectOpacity: 1.0
     property var obstacleMarker
     property var objectTextOverlay
@@ -55,7 +55,9 @@ MapPolygon {
                     font.family: "Courier New"
                     font.pointSize: 10
                     color: objectColor
-                    opacity: Math.min(0.6, objectOpacity)
+                    opacity: objectOpacity
+                    font.weight: Font.DemiBold
+
                 }
             }
             anchorPoint.x: overlayText.width / 2

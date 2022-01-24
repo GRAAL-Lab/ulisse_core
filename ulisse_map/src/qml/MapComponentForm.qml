@@ -115,10 +115,8 @@ Map {
             horizontalAlignment: Text.AlignHCenter
             anchors.left: currentArrow.left
             anchors.top: currentArrow.bottom
-
-
-            //style: Text.Outline
-            //styleColor: "white"
+            font.weight: Font.DemiBold
+            antialiasing: true
 
             layer.enabled: true
             layer.effect: Glow {
@@ -152,15 +150,11 @@ Map {
             color: "white"
             text: "+ CENTROID"
             font.family: "Courier New"
-            layer.enabled: true
-
+            font.weight: Font.DemiBold
         }
-
         coordinate: fbkUpdater.centroid
         z: map.z + 1
-        /*anchorPoint.x: centroidText.width / 2
-        anchorPoint.y: centroidText.height*/
-        opacity: 0.4
+        opacity: 0.75
         visible: settings.showCentroid
     }
 
@@ -232,9 +226,8 @@ Map {
             color: 'darkslategrey'
             text: "Surge: " + fbkUpdater.ulisse_surge + " m/s\nHeading: "
                   + fbkUpdater.ulisse_rpy_deg.z.toFixed(2) + "°"
-            //style: Text.Outline
-            //styleColor: "white"
-            //font.weight: Font.DemiBold
+
+            font.weight: Font.DemiBold
 
             layer.enabled: true
             layer.effect: Glow {
@@ -247,7 +240,7 @@ Map {
         coordinate: fbkUpdater.ulisse_pos
         anchorPoint.x: -ulisseImage.width / 2
         anchorPoint.y: -ulisseImage.height / 2
-        z: map.z + 3
+        z: map.z + 6
         visible: settings.showStatusOverlay
     }
 

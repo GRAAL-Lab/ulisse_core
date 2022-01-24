@@ -13,11 +13,8 @@ import "."
 import "../scripts/helper.js" as Helper
 
 RowLayout {
-    //id: tracklistlayout
-    //property int ntrack: -1
     property var managedPath
     property alias pathButton: pathButton
-    //property alias tracklistlayout: tracklistlayout
     property bool toggled: false
 
     signal selected(var path)
@@ -29,15 +26,11 @@ RowLayout {
 
     Button {
         id: pathButton
-        text: "Path"
+        text: managedPath === undefined ? "Path" : managedPath.pathName
         Layout.fillHeight: true
         Layout.fillWidth: true
         antialiasing: false
         enabled: true
-    }
-
-    onManagedPathChanged: {
-        pathButton.text = managedPath.pathName;
     }
 
     states: [

@@ -18,15 +18,13 @@ Dialog {
     Timer {
         interval: 500; running: true; repeat: false
         onTriggered: {
-            // The reason for creating this custom variable is a workaround for the fact
-            // that not all map types have a meaningful description in the "esri" plugin.
-            if (settings.mapPluginType === "esri"){
-                for(var i=0; i< mapViewItem.map.supportedMapTypes.length; i++){
-                    if (i === 1) {
-                        myMapTypes.append({"description": "ArcGIS Satellite Imagery Map"})
-                    } else {
-                        myMapTypes.append({"description": mapViewItem.map.supportedMapTypes[i].description})
-                    }
+            for(var i=0; i< mapViewItem.map.supportedMapTypes.length; i++){
+                myMapTypes.append({"description": mapViewItem.map.supportedMapTypes[i].description})
+
+                // The reason for creating this custom variable is a workaround for the fact
+                // that, in the "esri" plugin, not all map types have a meaningful description.
+                if (i === 1 && settings.mapPluginType === "esri") {
+                    myMapTypes.set(i, {"description": "ArcGIS Satellite Imagery Map"})
                 }
             }
             mapTypeComboBox.currentIndex = settings.mapTypeIndex
@@ -36,12 +34,17 @@ Dialog {
     onAccepted: {
         settings.mapTypeIndex = mapTypeComboBox.currentIndex
 
-        if (mapCacheDirectory.changed) {
-            settings.esriMapCacheDir = mapCacheDirectory.displayText
-            toast.show("Changes will take effect on restart...", 4000)
+        if (settings.mapPluginType !== futureMapPlugin) {
+            //futureMapPlugin = mapPluginBox.displayText
+            toast.show("Map plugin change will take effect on restart...", 4000)
         }
 
-        if (visualizerTimeoutSeconds.value != settings.visualizerTimeout) {
+        if (mapCacheDirectory.changed) {
+            settings.mapCachePath = mapCacheDirectory.displayText
+            toast.show("Map cache path change will take effect on restart...", 4000)
+        }
+
+        if (visualizerTimeoutSeconds.value !== settings.visualizerTimeout) {
             settings.visualizerTimeout = visualizerTimeoutSeconds.value
             console.log("Setting obstacle timeout to " + settings.visualizerTimeout + " s")
         }
@@ -50,10 +53,14 @@ Dialog {
         stackViewContainer.forceActiveFocus()
     }
     onRejected: {
-        mapCacheDirectory.text = settings.esriMapCacheDir
+        mapCacheDirectory.text = settings.mapCachePath
 
         close()
         stackViewContainer.forceActiveFocus()
+    }
+
+    ButtonGroup {
+        id: mapPluginsButtonGroup
     }
 
     contentItem: ColumnLayout {
@@ -61,8 +68,59 @@ Dialog {
         spacing: 3
 
         SettingsSectionLabel {
-            text: "Map Plugin"
+            text: "Map Plugin [" + settings.mapPluginType + "]"
         }
+
+        RowLayout {
+            id: mapPluginSetting
+            property bool changed: false
+            spacing: 10
+
+            Label {
+                text: "Map Plugin:"
+            }
+
+            Button {
+                text: "OpenStreetMap"
+                font.capitalization: Font.MixedCase
+                checkable: true
+                highlighted: checked
+                ButtonGroup.group: mapPluginsButtonGroup
+                checked: settings.mapPluginType == "osm"
+                Material.foreground: "#54a52e"
+                Material.accent: "white"
+
+                onClicked: {
+                    futureMapPlugin = "osm"
+                    mapPluginSetting.changed = true
+                }
+            }
+
+            Button{
+                text: "Esri ArcGIS"
+                font.capitalization: Font.MixedCase
+                checkable: true
+                highlighted: checked
+                ButtonGroup.group: mapPluginsButtonGroup
+                checked: settings.mapPluginType == "esri"
+                Material.foreground: "#2e63a5"
+
+                onClicked: {
+                    futureMapPlugin = "esri"
+                    mapPluginSetting.changed = true
+                }
+
+                /*Image {
+                    anchors.fill: parent
+                    source: "qrc:/images/Esri_logo.svg.png"
+                    fillMode: Image.PreserveAspectFit
+                    mipmap: true
+
+                }*/
+            }
+
+        }
+
 
         RowLayout {
             id: mapTypeSetting
@@ -99,7 +157,7 @@ Dialog {
         RowLayout {
             id: mapCacheSetting
             spacing: 10
-            enabled: settings.mapPluginType === "esri" ? true : false
+            //enabled: settings.mapPluginType === "esri" ? true : false
 
             Label {
                 text: "Map Cache Directory:"
@@ -112,12 +170,12 @@ Dialog {
                 Layout.preferredWidth: 45
                 Layout.fillWidth: true
                 font.pointSize: 10
-                text: settings.esriMapCacheDir
+                text: settings.mapCachePath
                 placeholderText: "Folder path"
                 selectByMouse: true
 
                 onTextChanged: {
-                    if (text != settings.esriMapCacheDir) {
+                    if (text !== settings.mapCachePath) {
                         changed = true
                     } else {
                         changed = false
@@ -267,9 +325,9 @@ Dialog {
 
         Label {
             id: restartText
-            text: "Restart required!"
+            text: "Changes will take effect on restart!"
             color: "#e41e25"
-            opacity: (mapCacheDirectory.changed) ? 1.0 : 0.0
+            opacity: (mapCacheDirectory.changed || mapPluginSetting.changed) ? 1.0 : 0.0
             font.weight: Font.DemiBold
             horizontalAlignment: Label.AlignHCenter
             verticalAlignment: Label.AlignVCenter

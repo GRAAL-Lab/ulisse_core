@@ -17,23 +17,24 @@ Item {
         obstacleComponent = Qt.createComponent("MapObstacle.qml")
         polylineComponent = Qt.createComponent("MapCustomPolyline.qml")
 
-        drawObstacle("QML_Obstacle_1", QtPositioning.coordinate(44.0957, 9.8632), 0, 20, 10)
-        //var polypath = GeoShape.PathType;
-        //polypath.addCoordinate();
-        //drawPolyline("QML_Poly_1", )
+        //drawObstacle("QML_Obstacle_1", QtPositioning.coordinate(44.0957, 9.8632), 0, 20, 10)
+
+        //var sampleCoordList = [
+        //            QtPositioning.coordinate(44.0957, 9.8632),
+        //            QtPositioning.coordinate(44.0956, 9.8633) ]
+        //drawPolyline("QML_Poly_1", sampleCoordList)
     }
 
     function drawObstacle(obsID, obsCoords, obsHeading, obsBBoxX, obsBBoxY) {
-
+        // Checking if object already exists in the manager's list
         for (var i = 0; i < obstacleList.length; i++) {
             if (obstacleList[i].id === obsID) {
-                //console.log("Object alredy present, updating...")
                 obstacleList[i].update(obsCoords, obsHeading, obsBBoxX, obsBBoxY);
                 return;
             }
         }
 
-        //console.log("New Obstacle, creating...")
+        // Otherwise create it
         obstacleList.push(obstacleComponent.createObject(map_component, {
                                                              id: obsID,
                                                              coordinate: obsCoords,
@@ -58,7 +59,7 @@ Item {
                 //console.log("Deleting obstacle...")
                 map.removeMapItem(obstacleList[i]);
                 obstacleList[i].destroy();
-                // Removing the obstacle from the list
+                // Removing the obstacle from the manager list
                 obstacleList.splice(i, 1);
                 return
             }
@@ -67,15 +68,15 @@ Item {
 
 
     function drawPolyline(polyID, polypath){
+        // Checking if object already exists in the manager's list
         for (var i = 0; i < polylineList.length; i++) {
             if (polylineList[i].id === polyID) {
-                //console.log("Object alredy present, updating...")
                 polylineList[i].update(polypath);
                 return;
             }
         }
 
-        //console.log("New Obstacle, creating...")
+        // Otherwise create it
         polylineList.push(polylineComponent.createObject(map_component, {
                                                              id: polyID,
                                                              path: polypath
@@ -95,14 +96,12 @@ Item {
 
         for (var i = 0; i < polylineList.length; i++) {
             if (polylineList[i].id === polyID) {
-                //console.log("Deleting obstacle...")
                 map.removeMapItem(polylineList[i]);
                 polylineList[i].destroy();
-                // Removing the obstacle from the list
+                // Removing the polyline from manager the list
                 polylineList.splice(i, 1);
                 return
             }
         }
     }
-
 }

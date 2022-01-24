@@ -23,10 +23,13 @@ class AddonsBridge : public QObject, rclcpp::Node {
     int callbackUpdateInterval_;
 
     rclcpp::Subscription<ulisse_msgs::msg::Obstacle>::SharedPtr obstacleSub_;
+    rclcpp::Subscription<ulisse_msgs::msg::CoordinateList>::SharedPtr polylineSub_;
 
     void RegisterPublishersAndSubscribers();
     void DrawObstacle(const QVariant obsID, const QVariant obsCoords, const QVariant obsHeading, const QVariant obsBBoxX, const QVariant obsBBoxY);
     void ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr msg);
+    void DrawPolyline(const QVariant obsID, const QVariant polypath);
+    void PolylineCB(const ulisse_msgs::msg::CoordinateList::SharedPtr msg);
 
 public:
     explicit AddonsBridge(QObject* parent = nullptr);
