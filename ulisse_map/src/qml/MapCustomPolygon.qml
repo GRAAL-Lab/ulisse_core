@@ -12,7 +12,7 @@ MapPolyline {
     opacity: 1.0
     z: map.z + 5
 
-    property string type: "convex_polygon"
+    property string type: "PolyPath"
 
     signal end
 
@@ -88,7 +88,9 @@ MapPolyline {
 
     onPathNameChanged: {
         console.log("[MapPolygon] PathName: " + pathName)
+        console.log("[MapPolygon] PathType: " + type)
     }
+
 
     function deregister_map_items() {
         map.removeMapItem(_canvas)
@@ -770,6 +772,7 @@ MapPolyline {
     }
 
     function confirm_edit(name, params) {
+        console.log("[MapCustomPolygon] confirm edit")
         mapMouseArea.hoverEnabled = false
         pathName = name
         if (params !== null || params !== undefined) {
@@ -805,10 +808,13 @@ MapPolyline {
             console.log("[MapPolygon] draw_path()")
             draw_path()
         }
+
         generate_markers()
         reposition_markers()
         disable_markers()
         disable_handle()
+
+        console.log("[MapPolygon] _generate_and_draw() DONE")
     }
 
     function generate_and_draw_deferred() {
@@ -874,7 +880,7 @@ MapPolyline {
                         })
         }
         return {
-            type: 'PolyPath',
+            type: type,
             name: pathName,
             params: {
                 offset: _offset,
@@ -905,13 +911,30 @@ MapPolyline {
     ///////////////////////////////////////////////////
     // Safety
     function check_safe(box) {
+        console.log("[MapCustomPolygon] check_safe()")
         var bpp = [], ppp = []
-        for (var i in box.path)
+        for (var i in box.path) {
             bpp.push(map.fromCoordinate(box.path[i], false))
-        for (var i in path)
-            ppp.push(map.fromCoordinate(path[i], false))
-        safe = Helper.polylines_disjoint(bpp, ppp)
-                && Helper.coord_inside_polygon(path[0], box.path)
+
+        }
+
+        console.log("safety:" + bpp)
+
+        for (var j in path) {
+            ppp.push(map.fromCoordinate(path[j], false))
+        }
+
+        console.log("polypath:" + ppp)
+
+
+
+        console.log("[MapCustomPolygon] check_safe()->pd")
+        var pd = Helper.polylines_disjoint(bpp, ppp)
+        console.log("[MapCustomPolygon] check_safe()->cip")
+        var cip = Helper.coord_inside_polygon(path[0], box.path)
+
+        safe = (pd && cip)
+
         return safe
     }
 

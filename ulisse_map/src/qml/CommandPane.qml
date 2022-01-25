@@ -17,6 +17,7 @@ Pane {
     property var pathButtonComponent
     property alias speedHeadTimeout: commandParamsStackContainer.speedHeadTimeout
     property alias pathCmdPane: commandParamsStackContainer.pathCommandsPane
+    property alias savePathDialog: savePathDialog
 
     Component.onCompleted: {
         pathButtonComponent = Qt.createComponent("PathButton.qml")
@@ -126,27 +127,39 @@ Pane {
                     onClicked: cmdWrapper.sendBoundaries(JSON.stringify(map.safety_polygon.serialize()))
                 }
 
-                /*ToolButton {
-                    id: openButton
-                    text: "\uF115" // icon-folder-open-empty
-                    font.family: "fontello"
-                    onClicked: save.open()
-                }*/
-
                 Button {
-                    id: buttonBoundBoxGet
-                    //text: "\uF115" // icon-folder-open-empty
-                    text: "\uE816" // save-icon
+                    id: buttonBoundBoxLoad
+                    text: "\uf4c2" // icon-folder
+                    //text: "\uE802" // load-icon
                     font.family: "fontello"
                     font.pointSize: 10
                     padding: 5
-                    antialiasing: false
+                    //antialiasing: false
                     Layout.maximumWidth: 30
                     highlighted: true
                     Material.background: grey
                     //Layout.fillHeight: false
                     onClicked: {
-                        save.open()
+                        loadPathDialog.open()
+                    }
+                }
+
+
+
+                Button {
+                    id: buttonBoundBoxSave
+                    text: "\uE816" // save-icon
+                    font.family: "fontello"
+                    font.pointSize: 10
+                    padding: 5
+                    //antialiasing: false
+                    Layout.maximumWidth: 30
+                    highlighted: true
+                    Material.background: grey
+                    //Layout.fillHeight: false
+                    onClicked: {
+                        savePathDialog.pathToSave = map.safety_polygon
+                        savePathDialog.open()
                     }
                 }
             }
@@ -198,27 +211,29 @@ Pane {
         onAccepted: {
             var path = loadPathDialog.fileUrl.toString()
             path = path.replace(/^(file:\/{2})/, "")
-            loadPaths(path)
+            loadPath(path)
         }
     }
 
     FileDialog {
         id: savePathDialog
+        property var pathToSave
+
         title: "Saving path..."
         folder: shortcuts.home
         selectExisting: false
         nameFilters: ["Path Files (*.path)"]
 
         onAccepted: {
-            var path = savePathDialog.fileUrl.toString()
-            path = path.replace(/^(file:\/{2})/, "") // remove prefixed "file://"
-            path = decodeURIComponent(path) // unescape html codes like '%23' for '#'
-            savePaths(path)
+            var directory = savePathDialog.fileUrl.toString()
+            directory = directory.replace(/^(file:\/{2})/, "") // remove prefixed "file://"
+            directory = decodeURIComponent(directory) // unescape html codes like '%23' for '#'
+            savePath(pathToSave, directory)
         }
     }
 
 
-    function savePaths(filePath) {
+    /*function savePaths(filePath) {
 
         var all_paths = {
             //security_box: null,
@@ -227,26 +242,33 @@ Pane {
         }
 
         for (var i = 0; i < pathCmdPane.pathButtonsColumn.children.length; i++) {
-            all_paths.paths.push(
-                        pathCmdPane.pathButtonsColumn.children[i].managedPath.serialize())
+            all_paths.paths.push(pathCmdPane.pathButtonsColumn.children[i].managedPath.serialize())
         }
 
         cmdWrapper.savePathToFile(filePath, JSON.stringify(all_paths))
-        toast.show("Mission saved", 2000)
+        toast.show("Path saved")
+    }*/
+
+    function savePath(pathToSave, directory) {
+
+        var serializedPath = pathToSave.serialize();
+        cmdWrapper.savePathToFile(directory, JSON.stringify(serializedPath))
+        toast.show("Path saved")
     }
 
-    function loadPaths(filePath) {
+    function loadPath(filePath) {
         var jsondata = cmdWrapper.loadPathFromFile(filePath)
         var data = JSON.parse(jsondata)
 
         var i, j, lat, lon, p
+        var cur_managed
 
-        for (i = 0; i < data.paths.length; i++) {
-            switch (data.paths[i].type) {
+        //for (i = 0; i < data.paths.length; i++) {
+            switch (data.type) {
             case "PolyPath":
-                var cur_managed = map.createPolySweepPath()
-                cur_managed.deserialize(data.paths[i])
-                cur_managed.type = "PolyPath"
+                cur_managed = map.createPolySweepPath()
+                cur_managed.deserialize(data)
+                cur_managed.type = data.type
                 var v = pathButtonComponent.createObject(pathCmdPane.pathButtonsColumn)
                 v.managedPath = cur_managed
                 //v.ntrack = pathCmdPane.pathButtonsColumn.children.length
@@ -254,14 +276,15 @@ Pane {
                     pathCmdPane.update_selection(path)
                     bar_manage.manage(path)
                 })
-                //cur_managed.
+                //console.log("[Command Pane] loadPath - check_safe()")
                 cur_managed.check_safe(map.safety_polygon)
+                console.log("[Command Pane] loadPath - generate_and_draw_deferred()")
                 cur_managed.generate_and_draw_deferred()
                 break
             case "PointPath":
-                var cur_managed = map.createPolylinePath()
-                cur_managed.deserialize(data.paths[i])
-                cur_managed.type = "PointPath"
+                cur_managed = map.createPolylinePath()
+                cur_managed.deserialize(data)
+                cur_managed.type = data.type
                 var v = pathButtonComponent.createObject(pathCmdPane.pathButtonsColumn)
                 v.managedPath = cur_managed
                 //v.ntrack = pathCmdPane.pathButtonsColumn.children.length
@@ -276,10 +299,14 @@ Pane {
                 map.safety_polygon.clear_path()
                 map.safety_polygon.deserialize(data)
                 map.safety_polygon.close_polygon()
-                //safety_polygon.generate_and_draw_deferred()
+                buttonBoundBoxDefine.end()
+                settings.savedBoundary = JSON.stringify(map.safety_polygon.serialize())
                 break
+            default:
+                toast.show("File was not a path", 4000)
+                return
             }
-        }
+        //}
         toast.show("Path loaded", 4000)
     }
 }

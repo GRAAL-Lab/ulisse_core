@@ -42,6 +42,7 @@ RowLayout {
     LabelledField {
         id: groupBoxname
         title: qsTr("Name")
+        //Layout.preferredWidth: 150
 
         TextField {
             id: textnametrack
@@ -49,6 +50,7 @@ RowLayout {
             font.capitalization: Font.AllUppercase
             placeholderText: qsTr("insert name")
             horizontalAlignment: Text.AlignHCenter
+            //width: parent.width
         }
     }
 

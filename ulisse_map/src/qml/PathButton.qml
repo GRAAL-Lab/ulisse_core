@@ -29,7 +29,7 @@ PathButtonForm {
         managedPath.highlighted(yes)
     }
 
-    Material.background: green
+    //Material.background: green
 
     //tracklistlayout.y: tracklistlayout.height*(tracklistlayout.ntrack)
     //expanded: parent.expanded

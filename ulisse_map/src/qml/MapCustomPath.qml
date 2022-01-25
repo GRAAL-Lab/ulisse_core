@@ -13,7 +13,7 @@ MapPolyline {
 
     property bool multichoice: false
 
-    property string type: "polyline"
+    property string type: "PointPath"
     property string pathName: "Path"
 
     signal end
@@ -587,7 +587,7 @@ MapPolyline {
                         })
         }
         return {
-            type: 'PointPath',
+            type: type,
             name: pathName,
             params: {
 

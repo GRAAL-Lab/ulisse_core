@@ -803,18 +803,18 @@ void CommandWrapper::savePathToFile(const QString QFileName, const QString& data
     // Here we check whether the file has already an extension
     if (extensionDotPos != std::string::npos) {
         filePrevExtension = filename.substr(extensionDotPos, filename.size());
-        std::cout << "File has already extension: " + filePrevExtension << std::endl;
+        //std::cout << "File has already extension: " + filePrevExtension << std::endl;
     }
 
     // If the extension is not present, or if it is not ".path", we add it
     if ((extensionDotPos == std::string::npos) | (filePrevExtension != ".path")) {
         filename = filename + ".path";
-        std::cout << "Extension is not present, or it's not .path" << std::endl;
+        //std::cout << "Extension is not present, or it's not .path" << std::endl;
     }
 
     QFile file(QString::fromStdString(filename));
     if (!file.open(QFile::WriteOnly | QFile::Truncate)) {
-        std::cout << "Cannot save the file" << std::endl;
+        //std::cout << "Cannot save the file" << std::endl;
         ShowToast(std::string("Cannot save the file").c_str(), 3000);
         return;
     }

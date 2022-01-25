@@ -122,6 +122,7 @@ function polylines_disjoint(po1, po2) {
 
             var inter = segments_interserction_1(po1[i], po1[i + 1], po2[j], po2[j + 1])
 
+            
             if (inter !== null && distance(inter, po1[i]) > 0.001 && distance(
                         inter, po1[i + 1]) > 0.001 && distance(inter, po2[i]) > 0.001
                     && distance(inter, po2[i + 1]) > 0.001)

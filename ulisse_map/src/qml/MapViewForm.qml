@@ -29,6 +29,7 @@ RowLayout {
     property alias mapsidebar: mapsidebar
     property alias pathState: pathState
     property alias pathCmdPane: mapsidebar.pathCmdPane
+    property alias savePathDialog: mapsidebar.savePathDialog
 
     spacing: 0
     width: window.width

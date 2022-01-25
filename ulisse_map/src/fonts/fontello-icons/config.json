@@ -97,12 +97,6 @@
       "src": "websymbols"
     },
     {
-      "uid": "69f76f7134f721d16c28ab23f84d4882",
-      "css": "location",
-      "code": 59398,
-      "src": "websymbols"
-    },
-    {
       "uid": "41eeea14413f2539da21b4d1754bf4be",
       "css": "arrows-cw",
       "code": 59399,
@@ -118,12 +112,6 @@
       "uid": "715e1003368da5e5c41ae35190af68a1",
       "css": "right-open",
       "code": 59401,
-      "src": "websymbols"
-    },
-    {
-      "uid": "f242fed2af708c938523b0e14d9c6b07",
-      "css": "folder",
-      "code": 59402,
       "src": "websymbols"
     },
     {
@@ -371,6 +359,12 @@
       "css": "bat4",
       "code": 59438,
       "src": "typicons"
+    },
+    {
+      "uid": "8f28e6daf83e5c4f1fec8d170a7e21e7",
+      "css": "folder-open-empty",
+      "code": 62658,
+      "src": "mfglabs"
     }
   ]
 }

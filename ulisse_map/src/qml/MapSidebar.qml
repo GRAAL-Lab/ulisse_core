@@ -10,6 +10,7 @@ Rectangle {
     property alias pathCmdPane: commandRect.pathCmdPane
     property alias commandRect: commandRect
     property alias speedHeadTimeout: commandRect.speedHeadTimeout
+    property alias savePathDialog: commandRect.savePathDialog
 
     visible: true
 

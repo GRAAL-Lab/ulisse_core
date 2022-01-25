@@ -86,9 +86,9 @@ Dialog {
                 checkable: true
                 highlighted: checked
                 ButtonGroup.group: mapPluginsButtonGroup
-                checked: settings.mapPluginType == "osm"
+                checked: settings.mapPluginType === "osm"
                 Material.foreground: "#54a52e"
-                Material.accent: "white"
+                //Material.accent: "white"
 
                 onClicked: {
                     futureMapPlugin = "osm"
@@ -102,7 +102,7 @@ Dialog {
                 checkable: true
                 highlighted: checked
                 ButtonGroup.group: mapPluginsButtonGroup
-                checked: settings.mapPluginType == "esri"
+                checked: settings.mapPluginType === "esri"
                 Material.foreground: "#2e63a5"
 
                 onClicked: {
