@@ -17,6 +17,7 @@ Pane {
     property var pathButtonComponent
     property alias speedHeadTimeout: commandParamsStackContainer.speedHeadTimeout
     property alias pathCmdPane: commandParamsStackContainer.pathCommandsPane
+    property var sliderHeading: commandParamsStackContainer.sliderHeading
     property alias savePathDialog: savePathDialog
 
     Component.onCompleted: {

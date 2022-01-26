@@ -253,16 +253,28 @@ Map {
         z: map.z + 2
     }
 
-    /*MapCircle {
-        id: editCircle
-        center: goalFlag.coordinate
-        radius: 5
-        color: red
-        border.width: 1
-        border.color: grey
-        opacity: 0
-        z: map.z + 2
-    }*/
+    MapQuickItem {
+        id: headingIndicator
+        sourceItem: Image {
+            id: headingIndicatorImage
+            width: 256
+            height: 256
+            source: 'qrc:/images/compass_icon.svg'
+        }
+        coordinate: map.center
+        anchorPoint.x: headingIndicatorImage.width / 2
+        anchorPoint.y: headingIndicatorImage.height / 2
+        z: map.z + 10
+        opacity: sliderHeading.pressed ? 0.6 : 0.0
+
+        transform: [
+            Rotation {
+                origin.x: headingIndicator.sourceItem.width / 2
+                origin.y: headingIndicator.sourceItem.height / 2
+                angle: sliderHeading.value - map.bearing
+            }
+        ]
+    }
 
     MapPolyline {
         id: ulissePath

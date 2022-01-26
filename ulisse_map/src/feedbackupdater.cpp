@@ -126,7 +126,7 @@ void FeedbackUpdater::RegisterPublishersAndSubscribers()
 
     vehicleStatusSub_ = this->create_subscription<ulisse_msgs::msg::VehicleStatus>(ulisse_msgs::topicnames::vehicle_status,
         10, std::bind(&FeedbackUpdater::VehicleStatusCB, this, _1));
-    referenceVelocitieSub_ = this->create_subscription<ulisse_msgs::msg::ReferenceVelocities>(ulisse_msgs::topicnames::reference_velocities,
+    referenceVelocitiesSub_ = this->create_subscription<ulisse_msgs::msg::ReferenceVelocities>(ulisse_msgs::topicnames::reference_velocities,
         10, std::bind(&FeedbackUpdater::ReferenceVelocitiesCB, this, _1));
     gps_data_sub_ = this->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data,
         10, std::bind(&FeedbackUpdater::GPSDataCB, this, _1));
@@ -347,7 +347,7 @@ void FeedbackUpdater::copyToClipboard(QString newText)
 void FeedbackUpdater::resetPublishersAndSubscribers()
 {
     vehicleStatusSub_.reset();
-    referenceVelocitieSub_.reset();
+    referenceVelocitiesSub_.reset();
     gps_data_sub_.reset();
 
     micro_loop_count_sub_.reset();

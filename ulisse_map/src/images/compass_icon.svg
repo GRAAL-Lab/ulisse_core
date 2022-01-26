@@ -1,63 +1,152 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 viewBox="0 0 340 340" style="enable-background:new 0 0 340 340;" xml:space="preserve">
-<g id="XMLID_1117_">
-	<g id="XMLID_1118_">
-		<circle id="XMLID_1119_" style="fill:#EBEBEC;" cx="170" cy="170" r="170"/>
+
+<svg
+   version="1.1"
+   id="Capa_1"
+   x="0px"
+   y="0px"
+   viewBox="0 0 340 340"
+   style="enable-background:new 0 0 340 340;"
+   xml:space="preserve"
+   sodipodi:docname="compass_icon.svg"
+   inkscape:version="1.1.1 (1:1.1+202109281949+c3084ef5ed)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"><defs
+   id="defs53" /><sodipodi:namedview
+   id="namedview51"
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1.0"
+   inkscape:pageshadow="2"
+   inkscape:pageopacity="0.0"
+   inkscape:pagecheckerboard="0"
+   showgrid="false"
+   inkscape:zoom="1.2102941"
+   inkscape:cx="64.034022"
+   inkscape:cy="144.59295"
+   inkscape:window-width="1920"
+   inkscape:window-height="995"
+   inkscape:window-x="0"
+   inkscape:window-y="0"
+   inkscape:window-maximized="1"
+   inkscape:current-layer="XMLID_1117_" />
+<g
+   id="XMLID_1117_">
+	<g
+   id="XMLID_1118_"
+   transform="matrix(1,0,0,-1,0,340)">
+		<circle
+   id="XMLID_1119_"
+   style="fill:#ebebec"
+   cx="170"
+   cy="170"
+   r="170" />
 	</g>
-	<g id="XMLID_1120_">
-		<path id="XMLID_1121_" style="fill:#CDCDD0;" d="M170,0c93.889,0,170,76.111,170,170c0,93.888-76.111,170-170,170"/>
+	<g
+   id="XMLID_1120_"
+   transform="matrix(1,0,0,-1,0,340)">
+		<path
+   id="XMLID_1121_"
+   style="fill:#cdcdd0"
+   d="m 170,0 c 93.889,0 170,76.111 170,170 0,93.888 -76.111,170 -170,170" />
 	</g>
-	<g id="XMLID_1122_">
-		<circle id="XMLID_1123_" style="fill:#78B9EB;" cx="170" cy="170" r="140"/>
+	<g
+   id="XMLID_1122_"
+   transform="matrix(1,0,0,-1,0,340)">
+		<circle
+   id="XMLID_1123_"
+   style="fill:#78b9eb"
+   cx="170"
+   cy="170"
+   r="140" />
 	</g>
-	<g id="XMLID_1124_">
-		<path id="XMLID_1125_" style="fill:#5A8BB0;" d="M170,30c77.32,0,140,62.68,140,140c0,77.32-62.68,140-140,140"/>
+	<g
+   id="XMLID_1124_"
+   transform="matrix(1,0,0,-1,0,340)">
+		<path
+   id="XMLID_1125_"
+   style="fill:#5a8bb0"
+   d="m 170,30 c 77.32,0 140,62.68 140,140 0,77.32 -62.68,140 -140,140" />
 	</g>
-	<g id="XMLID_1126_">
-		<g id="XMLID_1127_">
-			<polygon id="XMLID_18_" style="fill:#FFFFFF;" points="130,170 210,170 170,60 			"/>
+	<g
+   id="XMLID_1126_"
+   transform="matrix(1,0,0,-1,0,340)">
+		<g
+   id="XMLID_1127_">
+			<polygon
+   id="XMLID_18_"
+   style="fill:#ffffff"
+   points="210,170 170,60 130,170 " />
 		</g>
-		<g id="XMLID_1128_">
-			<polygon id="XMLID_17_" style="fill:#DEDDE0;" points="170,170 210,170 170,60 			"/>
+		<g
+   id="XMLID_1128_">
+			<polygon
+   id="XMLID_17_"
+   style="fill:#dedde0"
+   points="210,170 170,60 170,170 " />
 		</g>
-		<g id="XMLID_1129_">
-			<polygon id="XMLID_16_" style="fill:#FF5023;" points="130,170 210,170 170,280 			"/>
+		<g
+   id="XMLID_1129_">
+			<polygon
+   id="XMLID_16_"
+   style="fill:#ff5023"
+   points="210,170 170,280 130,170 " />
 		</g>
-		<g id="XMLID_1130_">
-			<polygon id="XMLID_15_" style="fill:#BF3C1A;" points="170,170 210,170 170,280 			"/>
+		<g
+   id="XMLID_1130_">
+			<polygon
+   id="XMLID_15_"
+   style="fill:#bf3c1a"
+   points="210,170 170,280 170,170 " />
 		</g>
 	</g>
 </g>
-<g>
+<g
+   id="g20">
 </g>
-<g>
+<g
+   id="g22">
 </g>
-<g>
+<g
+   id="g24">
 </g>
-<g>
+<g
+   id="g26">
 </g>
-<g>
+<g
+   id="g28">
 </g>
-<g>
+<g
+   id="g30">
 </g>
-<g>
+<g
+   id="g32">
 </g>
-<g>
+<g
+   id="g34">
 </g>
-<g>
+<g
+   id="g36">
 </g>
-<g>
+<g
+   id="g38">
 </g>
-<g>
+<g
+   id="g40">
 </g>
-<g>
+<g
+   id="g42">
 </g>
-<g>
+<g
+   id="g44">
 </g>
-<g>
+<g
+   id="g46">
 </g>
-<g>
+<g
+   id="g48">
 </g>
 </svg>

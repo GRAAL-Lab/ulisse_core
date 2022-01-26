@@ -7,8 +7,11 @@ import "../scripts/helper.js" as Helper
 
 Pane{
     property alias pathCommandsPane: pathCommandsPane
-    //property alias pathButtonsColumn: pathCommandsPane.pathButtonsColumn
     property alias speedHeadTimeout: speedHeadTimeout
+
+    property var sliderHeading: sliderHeading
+
+
 
     property var labelWidth: 100
     property var sliderWidth: 105
@@ -288,6 +291,7 @@ Pane{
                         stepSize: 1
                         from: 0
                         to: 359
+
                     }
 
                     Text {

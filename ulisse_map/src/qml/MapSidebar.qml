@@ -11,6 +11,7 @@ Rectangle {
     property alias commandRect: commandRect
     property alias speedHeadTimeout: commandRect.speedHeadTimeout
     property alias savePathDialog: commandRect.savePathDialog
+    property alias sliderHeading: commandRect.sliderHeading
 
     visible: true
 

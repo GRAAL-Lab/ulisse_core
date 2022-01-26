@@ -95,7 +95,7 @@ MapComponentForm {
         Rotation {
             origin.x: compass.width / 2
             origin.y: compass.height / 2
-            angle: 180.0 - map.bearing
+            angle: - map.bearing
         },
         Rotation {
             origin.x: ulisseIcon.sourceItem.width / 2
