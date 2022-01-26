@@ -9,7 +9,6 @@ import QtGraphicalEffects 1.0
 import "."
 
 BarManagePathsForm {
-    //id: root
     
     property bool inhibit: false
     property var pathButtonComponent
@@ -32,7 +31,6 @@ BarManagePathsForm {
     buttonDeselectAll.onClicked: function () {
         pathCmdPane.deselect_all()
         hide_all()
-        cur_managed = undefined
     }
     
     /*-------------- POLY CREATION/EDITING ----------------*/
@@ -56,12 +54,6 @@ BarManagePathsForm {
         params_panel = panelParamsPolyline
         start()
     }
-    
-    /*Keys.onEscapePressed: {
-        discard()
-        console.log("escapeItem in BarManagePaths.qml is handling escape");
-        // event.accepted is set to true by default for the specific key handlers
-    }*/
     
     panelParamsPolygon.onAccept: function () {
         confirm()
@@ -95,15 +87,14 @@ BarManagePathsForm {
         map.posChangedHandler = function () {}
         pathCmdPane.enableBtns(true)
         map.mapMouseArea.hoverEnabled = false
-        hide_all()
         if (cur_managed !== undefined) {
             //console.log("[BarManagePaths] abort_h() - cur_managed !== undefined")
             cur_managed.deregister_map_items()
             map.removeMapItem(cur_managed)
             cur_managed.destroy()
         }
+        hide_all()
         window.sig_escape.disconnect(abort_h)
-        cur_managed = undefined
         //map.mapTextOverlay.visible = false
     }
 
@@ -128,8 +119,6 @@ BarManagePathsForm {
         map.posChangedHandler = cur_managed.pos_changed_mod_handler
     }
 
-    //property int n: 0
-
     function end() {
         console.log("[BarManagePaths] end()")
         window.sig_escape.disconnect(abort_h)
@@ -138,7 +127,6 @@ BarManagePathsForm {
         var v = pathButtonComponent.createObject(pathCmdPane.pathButtonsColumn)
 
         v.managedPath = cur_managed
-        //v.ntrack = ++n
         v.selected.connect(function (path) {
             pathCmdPane.update_selection(path)
             manage(path)
@@ -167,7 +155,7 @@ BarManagePathsForm {
         map.posChangedHandler = function () {}
         if (cur_managed !== undefined){
             if( cur_managed.path.lenght !== 0)    {
-                //console.log("[BarManagePaths] discard() - cur_managed !== undefined")
+                console.log("[BarManagePaths] discard() - cur_managed !== undefined")
                 console.log("cur_managed: " + cur_managed.pathName)
                 cur_managed.enable_ab_markers()
                 cur_managed.discard_edit()
@@ -239,10 +227,11 @@ BarManagePathsForm {
     function hide_all() {
         for (var i in pathCmdPane.pathButtonsColumn.children)
             pathCmdPane.pathButtonsColumn.children[i].managedPath.disable_ab_markers()
-        for (var i in panels)
-            panels[i].visible = false
+        for (var j in panels)
+            panels[j].visible = false
         pathManageToolbar.visible = false
         map.mapTextOverlay.visible = false
+        cur_managed = undefined; // (?)
     }
 
     function enableBtns(y) {

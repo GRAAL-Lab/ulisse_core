@@ -285,6 +285,9 @@ void TaskDataUpdater::UpdateView()
 
                 QVariant externalAct = QString::fromStdString(futils::STLVectorToString(tasksMessageMap_.at(taskID).external_activation_function, ','));
                 tasksItemsMap_.at(taskID)->setProperty("externalAct", externalAct);
+
+                QVariant enabled = tasksMessageMap_.at(taskID).enabled;
+                tasksItemsMap_.at(taskID)->setProperty("enabled", enabled);
             }
         }
     }

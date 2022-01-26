@@ -7,6 +7,7 @@ import QtQuick.Controls.Material 2.1
 import "."
 
 Item {
+    id: taskData
     Layout.preferredHeight: taskDataColumn.implicitHeight
     Layout.fillWidth: true
     property var labelsize: 12
@@ -16,19 +17,41 @@ Item {
     property var reference: " "
     property var internalAct: " "
     property var externalAct: " "
+    property bool enabled: false
 
     ColumnLayout {
         id: taskDataColumn
         width: parent.width
         Layout.fillHeight: true
 
-        Label {
-            Layout.fillHeight: true
-            //Layout.alignment: Qt.AlignHCenter
-            font.pointSize: 14
-            font.weight: Font.DemiBold
-            color: Material.color(Material.Blue, Material.Shade700)
-            text: taskName
+        RowLayout {
+            //spacing: 5
+            Label {
+                Layout.fillHeight: true
+                //Layout.alignment: Qt.AlignHCenter
+                font.pointSize: 14
+                font.weight: Font.DemiBold
+                color: Material.color(Material.Blue, Material.Shade700)
+                text: taskName
+            }
+
+            Rectangle {
+                width: taskEnableInfo.contentWidth + 6
+                height: taskEnableInfo.contentHeight + 6
+                border.color: taskData.enabled ? "green" : "red"
+                border.width: 1
+                radius: 5
+
+                Text {
+                    id: taskEnableInfo
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
+                    anchors.fill: parent
+                    font.pointSize: 8
+                    color: taskData.enabled ? "green" : "red"
+                    text:  taskData.enabled ? qsTr("Enabled") : qsTr("Disabled")
+                }
+            }
         }
 
         LabelledText {

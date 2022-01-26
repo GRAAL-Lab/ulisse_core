@@ -24,7 +24,7 @@ Map {
     property alias goalFlag: goalFlag
     property alias ruler: ruler
     property alias greenFlag: greenFlag
-    property alias editCircle: editCircle
+    //property alias editCircle: editCircle
     property alias sliderz: sliders.z
     property alias mapTextOverlay: mapTextOverlay
 
@@ -32,8 +32,6 @@ Map {
         id: mapTextOverlay
 
         font.pointSize: 12
-        //style: Text.Outline
-        //styleColor: "white"
         color: grey
         horizontalAlignment: Text.AlignHCenter
         width: parent.width
@@ -57,7 +55,7 @@ Map {
         layer.effect: Glow {
             radius: 4
             samples: 10
-            color: lightergrey
+            color: dimmedwhite
 
         }
     }
@@ -75,7 +73,7 @@ Map {
         width: 42
         height: 42
         mipmap: true
-        z: map.z + 2
+        z: map.z + 5
 
         anchors.right: sliders.left
         anchors.top: parent.top
@@ -103,7 +101,7 @@ Map {
             layer.effect: Glow {
                 radius: 4
                 samples: 10
-                color: lightergrey
+                color: dimmedwhite
 
             }
         }
@@ -122,7 +120,7 @@ Map {
             layer.effect: Glow {
                 radius: 4
                 samples: 10
-                color: lightergrey
+                color: dimmedwhite
 
             }
         }
@@ -137,7 +135,7 @@ Map {
             source: 'qrc:/images/map-marker-64.png'
         }
         //coordinate: map.center
-        z: map.z + 2
+        z: map.z + 5
         anchorPoint.x: markerImage.width / 2
         anchorPoint.y: markerImage.height
         opacity: 1.0
@@ -169,7 +167,7 @@ Map {
         coordinate: fbkUpdater.ulisse_pos
         anchorPoint.x: ulisseImage.width / 2
         anchorPoint.y: ulisseImage.height / 2
-        z: map.z + 2
+        z: map.z + 5
     }
 
     MapQuickItem {
@@ -185,7 +183,7 @@ Map {
         coordinate: fbkUpdater.gps_pos
         anchorPoint.x: ulisseImage.width / 2
         anchorPoint.y: ulisseImage.height / 2
-        z: map.z + 2
+        z: map.z + 6
     }
 
     MapQuickItem {
@@ -233,14 +231,14 @@ Map {
             layer.effect: Glow {
                 radius: 4
                 samples: 10
-                color: lightergrey
+                color: dimmedwhite
 
             }
         }
         coordinate: fbkUpdater.ulisse_pos
         anchorPoint.x: -ulisseImage.width / 2
         anchorPoint.y: -ulisseImage.height / 2
-        z: map.z + 6
+        z: map.z + 5
         visible: settings.showStatusOverlay
     }
 
@@ -255,7 +253,7 @@ Map {
         z: map.z + 2
     }
 
-    MapCircle {
+    /*MapCircle {
         id: editCircle
         center: goalFlag.coordinate
         radius: 5
@@ -264,7 +262,7 @@ Map {
         border.color: grey
         opacity: 0
         z: map.z + 2
-    }
+    }*/
 
     MapPolyline {
         id: ulissePath

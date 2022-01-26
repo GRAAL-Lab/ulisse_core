@@ -17,22 +17,12 @@ PathButtonForm {
         selected(managedPath)
     }
 
-    function toggle() {
-        toggled = !toggled
-        pathButton.Material.background = toggled ? orange : lightgrey
-        managedPath.highlighted(toggled)
-    }
-
     function highlight(yes) {
-        toggled = yes
-        pathButton.Material.background = yes ? orange : lightgrey
+        //toggled = yes
+        pathButton.Material.background = yes ? orange : lightergrey
         managedPath.highlighted(yes)
     }
 
-    //Material.background: green
-
-    //tracklistlayout.y: tracklistlayout.height*(tracklistlayout.ntrack)
-    //expanded: parent.expanded
     width: parent.width
-    //nametrack: qsTr(ntrack.toString())
+
 }

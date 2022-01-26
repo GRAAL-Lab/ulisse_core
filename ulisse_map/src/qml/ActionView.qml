@@ -30,38 +30,23 @@ Rectangle {
                 Layout.bottomMargin: 20
             }
 
+            Text {
+                id: mapTextOverlay
+
+                font.pointSize: 12
+                color: grey
+                horizontalAlignment: Text.AlignHCenter
+                width: parent.width
+                text: "When the controller is running, actions and tasks will appear here."
+                font.weight: Font.DemiBold
+                visible: actionColumnView.children.length === 0
+            }
+
             ColumnLayout {
                 id: actionColumnView
                 spacing: 25
                 objectName: "actionColumnViewObj"
 
-
-                /*function generatePriorityLevel(){
-
-                    var component = Qt.createComponent("PriorityLevelData.qml")
-                    var componentObject
-
-                    function finishCreation() {
-                        componentObject = component.createObject(actionColumnView);
-                    }
-
-                    if (component.status === Component.Ready) {
-                        finishCreation()
-                    } else {
-                        component.statusChanged.connect( finishCreation );
-                    }
-
-                    console.log("createPriorityLevel");
-                    return "PL View Created"
-                }*/
-
-
-                /*function clearActionView(){
-                    for(var i = 1; i < actionColumnView.children.length ; i++) {
-                        console.log("ActionView destroying: " + (i).toString())
-                        actionColumnView.children[i].destroy()
-                    }
-                }*/
             }
         }
 

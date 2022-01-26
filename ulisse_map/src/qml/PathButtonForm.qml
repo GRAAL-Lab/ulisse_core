@@ -15,14 +15,14 @@ RowLayout {
     id: pathButtonRoot
     property variant managedPath
     property alias pathButton: pathButton
-    property bool toggled: false
+    //property bool toggled: false
 
     signal selected(var path)
     signal edit(var path)
 
-    // modo per distanziare
+    // Modo per distanziare
     scale: 1
-    antialiasing: true
+    //antialiasing: true
 
     Button {
         id: pathButton
@@ -31,6 +31,7 @@ RowLayout {
         Layout.fillWidth: true
         antialiasing: false
         enabled: true
+        Material.background: lightergrey
     }
 
     Button {
@@ -45,6 +46,7 @@ RowLayout {
         ToolTip.timeout: 5000
         ToolTip.visible: hovered
         ToolTip.text: qsTr("Save Path")
+        Material.background: lightergrey
 
         onClicked: {
             if (managedPath === undefined){
@@ -69,19 +71,21 @@ RowLayout {
         ToolTip.timeout: 5000
         ToolTip.visible: hovered
         ToolTip.text: qsTr("Delete Path")
+        Material.background: lightergrey
 
         onClicked: {
             confirmDialog.open()
         }
 
+        onHoveredChanged: {
+            highlighted = hovered
+            Material.background = hovered ? red : lightergrey
+        }
 
         Dialog {
             id: confirmDialog
             title: "Delete Path?"
-            //icon: StandardIcon.Question
-            //text: "Delete the selected path?"
-            standardButtons: Dialog.Ok// | Dialog.Cancel
-            //Component.onCompleted: visible = true
+            standardButtons: Dialog.Ok
             onAccepted: {
                 managedPath.deregister_map_items()
                 map.removeMapItem(managedPath)
@@ -92,18 +96,8 @@ RowLayout {
     }
 
 
-    /*Component.onCompleted: {
-        pathButtonRoot.state = "reparented"
-        console.log("reparented")
-    }*/
-
 
     states: [
-        /*State {
-            name: "reparented"
-            ParentChange { target: pathButtonRoot; parent: pathCmdPane.pathButtonsColumn }
-        },*/
-
         State {
             name: "editmode"
             PropertyChanges {

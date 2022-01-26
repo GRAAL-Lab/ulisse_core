@@ -12,9 +12,9 @@ ToolBar {
     id: toolBar
 
     property alias tabBarIndex: headerLayout.tabBarIndex
-    property bool multichoice: false
+    //property bool multichoice: false
 
-    Material.foreground: lightergrey
+    Material.foreground: dimmedwhite
     Material.background: mainColor
     Material.accent: "white"
     Material.elevation: 3

@@ -12,6 +12,10 @@ import "."
 
 MapViewForm {
 
+    enum PolygonType {
+        SafetyArea,
+        Path
+    }
 
     Timer {
         // A Timer to center the catamaran in the screen when "Follow Vehicle"

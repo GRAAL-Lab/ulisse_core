@@ -36,31 +36,14 @@ Pane {
                 color: green
                 text: "Safety area"
                 antialiasing: false
-                Layout.alignment: Qt.AlignVCenter //| Qt.AlignVCenter
-                //Layout.bottomMargin: 20
+                Layout.alignment: Qt.AlignVCenter
                 font.pointSize: 11
-                //Layout.topMargin: 20
                 font.weight: Font.DemiBold
             }
 
             RowLayout {
                 id: boundingBoxButtons
                 Layout.fillWidth: true
-
-                /*Button {
-                    id: buttonBoundBoxGet
-                    text: qsTr("Get")
-                    font.pointSize: 9
-                    padding: 5
-                    antialiasing: false
-                    Layout.fillWidth: true
-                    highlighted: true
-                    Material.background: green
-                    //Layout.fillHeight: false
-                    onClicked: {
-                        cmdWrapper.sendBoundaries(JSON.stringify(map.safety_polygon.serialize()))
-                    }
-                }*/
 
                 Button {
                     id: buttonBoundBoxDefine
@@ -69,7 +52,6 @@ Pane {
                     padding: 5
                     antialiasing: false
                     Layout.fillWidth: true
-                    //Layout.fillHeight: false
                     highlighted: true
                     Material.background: green
 
@@ -80,10 +62,8 @@ Pane {
                         map.clickHandler = map.safety_polygon.clickHandler
                         map.posChangedHandler = map.safety_polygon.posChangedHandler
                         enabled = false
-
                         map.mapTextOverlay.text = "Press ESC to cancel"
                         map.mapTextOverlay.visible = true
-
                         window.sig_escape.connect(reset_safetypoly)
                         map.safety_polygon.end.connect(end)
                     }
@@ -130,20 +110,17 @@ Pane {
                 Button {
                     id: buttonBoundBoxLoad
                     text: "\uf4c2" // icon-folder
-                    //text: "\uE802" // load-icon
                     font.family: "fontello"
                     font.pointSize: 10
                     padding: 5
-                    //antialiasing: false
                     Layout.maximumWidth: 30
                     highlighted: true
                     Material.background: grey
-                    //Layout.fillHeight: false
                     onClicked: {
+                        loadPathDialog.loadType = MapView.PolygonType.SafetyArea;
                         loadPathDialog.open()
                     }
                 }
-
 
 
                 Button {
@@ -152,11 +129,9 @@ Pane {
                     font.family: "fontello"
                     font.pointSize: 10
                     padding: 5
-                    //antialiasing: false
                     Layout.maximumWidth: 30
                     highlighted: true
                     Material.background: grey
-                    //Layout.fillHeight: false
                     onClicked: {
                         savePathDialog.pathToSave = map.safety_polygon
                         savePathDialog.open()
@@ -204,14 +179,27 @@ Pane {
 
     FileDialog {
         id: loadPathDialog
+
+        property int loadType: -1
+
         title: "Please choose a file"
         folder: shortcuts.home
         nameFilters: ["Path Files (*.path)"]
 
         onAccepted: {
-            var path = loadPathDialog.fileUrl.toString()
-            path = path.replace(/^(file:\/{2})/, "")
-            loadPath(path)
+            var filepath = loadPathDialog.fileUrl.toString()
+            filepath = filepath.replace(/^(file:\/{2})/, "")
+
+            switch (loadType) {
+            case MapView.PolygonType.SafetyArea:
+                loadSafetyArea(filepath)
+                break
+            case MapView.PolygonType.Path:
+                loadPath(filepath)
+                break
+            default:
+                toast.show("Type not supported")
+            }
         }
     }
 
@@ -232,28 +220,31 @@ Pane {
         }
     }
 
-
-    /*function savePaths(filePath) {
-
-        var all_paths = {
-            //security_box: null,
-            paths//TODO security box
-            : []
-        }
-
-        for (var i = 0; i < pathCmdPane.pathButtonsColumn.children.length; i++) {
-            all_paths.paths.push(pathCmdPane.pathButtonsColumn.children[i].managedPath.serialize())
-        }
-
-        cmdWrapper.savePathToFile(filePath, JSON.stringify(all_paths))
-        toast.show("Path saved")
-    }*/
-
     function savePath(pathToSave, directory) {
 
         var serializedPath = pathToSave.serialize();
         cmdWrapper.savePathToFile(directory, JSON.stringify(serializedPath))
         toast.show("Path saved")
+    }
+
+    function loadSafetyArea(filePath) {
+        var jsondata = cmdWrapper.loadPathFromFile(filePath)
+        var data = JSON.parse(jsondata)
+
+        switch (data.type) {
+        case "SafetyBoundary":
+            map.safety_polygon.clear_path()
+            map.safety_polygon.deserialize(data)
+            map.safety_polygon.close_polygon()
+            buttonBoundBoxDefine.end()
+            settings.savedBoundary = JSON.stringify(map.safety_polygon.serialize())
+            break
+        default:
+            toast.show("File was not a safety area", 4000)
+            return
+        }
+
+        toast.show("Safety Area loaded", 4000)
     }
 
     function loadPath(filePath) {
@@ -263,50 +254,41 @@ Pane {
         var i, j, lat, lon, p
         var cur_managed
 
-        //for (i = 0; i < data.paths.length; i++) {
-            switch (data.type) {
-            case "PolyPath":
-                cur_managed = map.createPolySweepPath()
-                cur_managed.deserialize(data)
-                cur_managed.type = data.type
-                var v = pathButtonComponent.createObject(pathCmdPane.pathButtonsColumn)
-                v.managedPath = cur_managed
-                //v.ntrack = pathCmdPane.pathButtonsColumn.children.length
-                v.selected.connect(function (path) {
-                    pathCmdPane.update_selection(path)
-                    bar_manage.manage(path)
-                })
-                //console.log("[Command Pane] loadPath - check_safe()")
-                cur_managed.check_safe(map.safety_polygon)
-                console.log("[Command Pane] loadPath - generate_and_draw_deferred()")
-                cur_managed.generate_and_draw_deferred()
-                break
-            case "PointPath":
-                cur_managed = map.createPolylinePath()
-                cur_managed.deserialize(data)
-                cur_managed.type = data.type
-                var v = pathButtonComponent.createObject(pathCmdPane.pathButtonsColumn)
-                v.managedPath = cur_managed
-                //v.ntrack = pathCmdPane.pathButtonsColumn.children.length
-                v.selected.connect(function (path) {
-                    pathCmdPane.update_selection(path)
-                    bar_manage.manage(path)
-                })
-                cur_managed.check_safe(map.safety_polygon)
-                cur_managed.generate_and_draw_deferred()
-                break
-            case "SafetyBoundary":
-                map.safety_polygon.clear_path()
-                map.safety_polygon.deserialize(data)
-                map.safety_polygon.close_polygon()
-                buttonBoundBoxDefine.end()
-                settings.savedBoundary = JSON.stringify(map.safety_polygon.serialize())
-                break
-            default:
-                toast.show("File was not a path", 4000)
-                return
-            }
-        //}
+        switch (data.type) {
+        case "PolyPath":
+            cur_managed = map.createPolySweepPath()
+            cur_managed.deserialize(data)
+            cur_managed.type = data.type
+            var v = pathButtonComponent.createObject(pathCmdPane.pathButtonsColumn)
+            v.managedPath = cur_managed
+            v.selected.connect(function (path) {
+                pathCmdPane.update_selection(path)
+                bar_manage.manage(path)
+            })
+            cur_managed.check_safe(map.safety_polygon)
+            console.log("[Command Pane] loadPath - generate_and_draw_deferred()")
+            cur_managed.generate_and_draw_deferred()
+            break
+        case "PointPath":
+            cur_managed = map.createPolylinePath()
+            cur_managed.deserialize(data)
+            cur_managed.type = data.type
+            var v = pathButtonComponent.createObject(pathCmdPane.pathButtonsColumn)
+            v.managedPath = cur_managed
+            v.selected.connect(function (path) {
+                pathCmdPane.update_selection(path)
+                bar_manage.manage(path)
+            })
+            cur_managed.check_safe(map.safety_polygon)
+            cur_managed.generate_and_draw_deferred()
+            break
+        default:
+            toast.show("File was not a path", 4000)
+            return
+        }
         toast.show("Path loaded", 4000)
     }
+
+
+
 }

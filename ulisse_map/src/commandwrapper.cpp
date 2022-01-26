@@ -841,7 +841,7 @@ QString CommandWrapper::loadPathFromFile(const QString fileName)
         } while (!line.isNull());
 
         file.close();
-        ShowToast(std::string("Loaded: " + fileName.toStdString()).c_str(), 3000);
+        //ShowToast(std::string("Loaded: " + fileName.toStdString()).c_str(), 3000);
     } else {
         std::cout << "Error: Unable to open the file" << std::endl;
         return QString();

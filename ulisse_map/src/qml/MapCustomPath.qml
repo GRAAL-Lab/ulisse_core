@@ -11,7 +11,7 @@ MapPolyline {
     opacity: 1.0
     z: map.z + 5
 
-    property bool multichoice: false
+    //property bool multichoice: false
 
     property string type: "PointPath"
     property string pathName: "Path"

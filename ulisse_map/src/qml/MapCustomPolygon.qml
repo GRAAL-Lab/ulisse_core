@@ -9,8 +9,10 @@ import "../scripts/helper.js" as Helper
 MapPolyline {
     id: root
     line.width: 2
-    opacity: 1.0
-    z: map.z + 5
+    opacity: desel_line_opacity
+    z: map.z + 4
+
+    property real desel_line_opacity: 0.4
 
     property string type: "PolyPath"
 
@@ -940,7 +942,7 @@ MapPolyline {
 
 
     function highlighted(yes) {
-        var desel_line_color = safe ? lightgreen : red
-        line.color = yes ? orange : desel_line_color
+        //var desel_line_color = safe ? lightgreen : red
+        opacity = yes ? 1.0 : desel_line_opacity
     }
 }

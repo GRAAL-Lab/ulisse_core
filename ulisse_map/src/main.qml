@@ -16,11 +16,11 @@ ApplicationWindow {
     minimumWidth: 1100
     minimumHeight: 800
     visible: true
-    //visibility: "Maximized"
 
     property color blue: Material.color(Material.Blue, Material.Shade700)
     property color orange: Material.color(Material.Amber, Material.Shade700)
     property color softorange: Material.color(Material.DeepOrange, Material.Shade500)
+    //property color softorangelight: Material.color(Material.DeepOrange, Material.Shade100)
     property color red: Material.color(Material.Red, Material.Shade700)
     property color lightred: Material.color(Material.Red, Material.Shade500)
     property color green: Material.color(Material.Green, Material.Shade700)
@@ -30,7 +30,8 @@ ApplicationWindow {
     property color darkgrey: Material.color(Material.Grey, Material.Shade800)
     property color grey: Material.color(Material.Grey, Material.Shade700)
     property color lightgrey: Material.color(Material.Grey, Material.Shade400)
-    property color lightergrey: Material.color(Material.Grey, Material.Shade100)
+    property color lightergrey: Material.color(Material.Grey, Material.Shade300)
+    property color dimmedwhite: Material.color(Material.Grey, Material.Shade100)
 
     property color mainColor: cyan
     property color mainColorLight: lightcyan
