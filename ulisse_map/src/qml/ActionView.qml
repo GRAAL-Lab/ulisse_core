@@ -37,7 +37,7 @@ Rectangle {
                 color: grey
                 horizontalAlignment: Text.AlignHCenter
                 width: parent.width
-                text: "When the controller is running, actions and tasks will appear here."
+                text: "When the controller is running, priority levels and tasks will appear here."
                 font.weight: Font.DemiBold
                 visible: actionColumnView.children.length === 0
             }
