@@ -118,13 +118,11 @@ function point_in_box(p, p1, p2) {
 
 function polylines_disjoint(po1, po2) {
     for (var i = 0; i < po1.length - 1; i++)
-        for (var j = 0; j < po2.length - 1; j++) {
-
+        for (var j = 0; j < po2.length - 1; j++) {         
             var inter = segments_interserction_1(po1[i], po1[i + 1], po2[j], po2[j + 1])
-
             if (inter !== null && distance(inter, po1[i]) > 0.001 && distance(
-                        inter, po1[i + 1]) > 0.001 && distance(inter, po2[i]) > 0.001
-                    && distance(inter, po2[i + 1]) > 0.001)
+                        inter, po1[i + 1]) > 0.001 && distance(inter, po2[j]) > 0.001
+                    && distance(inter, po2[j + 1]) > 0.001)
                 return false
         }
     return true

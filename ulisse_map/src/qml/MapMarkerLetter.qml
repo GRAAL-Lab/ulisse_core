@@ -7,7 +7,7 @@ MapQuickItem {
     property alias content: letter.text
 
     opacity: 0
-    z: map.z + 3
+    z: map.z + 5
     sourceItem: Item {
         Text {
             id: letter

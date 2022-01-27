@@ -549,7 +549,11 @@ MapPolyline {
                 }
             }
         } else if (mouse.button & Qt.RightButton) {
-            close_polygon()
+            if (polygonal_phase > 2) {
+                close_polygon()
+            } else {
+                toast.show("Not enough points to close polygon")
+            }
         }
     }
 
@@ -917,26 +921,14 @@ MapPolyline {
         var bpp = [], ppp = []
         for (var i in box.path) {
             bpp.push(map.fromCoordinate(box.path[i], false))
-
         }
-
-        console.log("safety:" + bpp)
-
         for (var j in path) {
             ppp.push(map.fromCoordinate(path[j], false))
         }
 
-        console.log("polypath:" + ppp)
-
-
-
-        console.log("[MapCustomPolygon] check_safe()->pd")
         var pd = Helper.polylines_disjoint(bpp, ppp)
-        console.log("[MapCustomPolygon] check_safe()->cip")
         var cip = Helper.coord_inside_polygon(path[0], box.path)
-
         safe = (pd && cip)
-
         return safe
     }
 

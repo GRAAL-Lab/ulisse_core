@@ -253,16 +253,16 @@ Pane {
         var data = JSON.parse(jsondata)
 
         var i, j, lat, lon, p
-        var cur_managed
+        var cur_managed, pathButton
 
         switch (data.type) {
         case "PolyPath":
             cur_managed = map.createPolySweepPath()
             cur_managed.deserialize(data)
             cur_managed.type = data.type
-            var v = pathButtonComponent.createObject(pathCmdPane.pathButtonsColumn)
-            v.managedPath = cur_managed
-            v.selected.connect(function (path) {
+            pathButton = pathButtonComponent.createObject(pathCmdPane.pathButtonsColumn)
+            pathButton.managedPath = cur_managed
+            pathButton.selected.connect(function (path) {
                 pathCmdPane.update_selection(path)
                 bar_manage.manage(path)
             })
@@ -274,9 +274,9 @@ Pane {
             cur_managed = map.createPolylinePath()
             cur_managed.deserialize(data)
             cur_managed.type = data.type
-            var v = pathButtonComponent.createObject(pathCmdPane.pathButtonsColumn)
-            v.managedPath = cur_managed
-            v.selected.connect(function (path) {
+            pathButton = pathButtonComponent.createObject(pathCmdPane.pathButtonsColumn)
+            pathButton.managedPath = cur_managed
+            pathButton.selected.connect(function (path) {
                 pathCmdPane.update_selection(path)
                 bar_manage.manage(path)
             })
@@ -287,6 +287,7 @@ Pane {
             toast.show("File was not a path", 4000)
             return
         }
+        pathButton.selected(pathButton.managedPath)
         toast.show("Path loaded", 4000)
     }
 
