@@ -331,9 +331,25 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
     QVector<double> pathPoints;
 
     Json::Reader reader;
-    Json::Value obj, obj2;
+    Json::Value jvalues, obj2;
 
-    reader.parse(pathJsonData.toStdString(), obj);
+    std::string pathJason = pathJsonData.toStdString();
+    QJsonDocument doc = QJsonDocument::fromJson(pathJason.c_str());
+    QString formattedJsonString = doc.toJson(QJsonDocument::Indented);
+    std::cout << "JSON Indented:\n" << formattedJsonString.toStdString();
+
+    /////
+
+    reader.parse(pathJsonData.toStdString(), jvalues);
+
+    try {
+        for (Json::Value c : jvalues["curves"]) {
+
+        }
+    } catch (Json::Exception& e) {
+        // output exception information
+        std::cerr << "Polygon Descriptor Error: " << e.what();
+    }
 
     std::vector<Eigen::Vector3d> polygonVerteces {
         Eigen::Vector3d {-78, 44, 0}, Eigen::Vector3d {-47, 99, 0}, Eigen::Vector3d {46, 80, 0},
@@ -501,10 +517,10 @@ bool CommandWrapper::sendBoundaries(const QString& boundary_json_data)
 
     reader.parse(boundary_json_data.toStdString(), obj);
 
-    serviceReq->boundaries.vertices.resize(obj["values"].size());
+    serviceReq->boundaries.vertices.resize(obj["coordinates"].size());
     unsigned int count = 0;
     try {
-        for (const Json::Value &c : obj["values"]) {
+        for (const Json::Value &c : obj["coordinates"]) {
 
             reader.parse(c.toStyledString(), obj2);
 
@@ -792,62 +808,6 @@ void CommandWrapper::resumePath()
     // FIXME: what if resuming a loop path, and we were at the last waypoint?
 }
 
-void CommandWrapper::savePathToFile(const QString QFileName, const QString& data)
-{
-
-    // and in case it doesn't we add it
-    std::string filename = QFileName.toStdString();
-    std::string::size_type extensionDotPos = filename.find_last_of(".");
-    std::string filePrevExtension;
-
-    // Here we check whether the file has already an extension
-    if (extensionDotPos != std::string::npos) {
-        filePrevExtension = filename.substr(extensionDotPos, filename.size());
-        //std::cout << "File has already extension: " + filePrevExtension << std::endl;
-    }
-
-    // If the extension is not present, or if it is not ".path", we add it
-    if ((extensionDotPos == std::string::npos) | (filePrevExtension != ".path")) {
-        filename = filename + ".path";
-        //std::cout << "Extension is not present, or it's not .path" << std::endl;
-    }
-
-    QFile file(QString::fromStdString(filename));
-    if (!file.open(QFile::WriteOnly | QFile::Truncate)) {
-        //std::cout << "Cannot save the file" << std::endl;
-        ShowToast(std::string("Cannot save the file").c_str(), 3000);
-        return;
-    }
-
-    QTextStream out(&file);
-    out << data;
-
-    std::cout << "Saved to file: " << filename << std::endl;
-    ShowToast(std::string("Saved to file: " + filename).c_str(), 3000);
-
-    file.close();
-}
-
-QString CommandWrapper::loadPathFromFile(const QString fileName)
-{       
-    QFile file(fileName);
-    QString fileContent;
-    if (file.open(QIODevice::ReadOnly)) {
-        QString line;
-        QTextStream t(&file);
-        do {
-            line = t.readLine();
-            fileContent += line;
-        } while (!line.isNull());
-
-        file.close();
-        //ShowToast(std::string("Loaded: " + fileName.toStdString()).c_str(), 3000);
-    } else {
-        std::cout << "Error: Unable to open the file" << std::endl;
-        return QString();
-    }
-    return fileContent;
-}
 
 void CommandWrapper::check_error_slot()
 {

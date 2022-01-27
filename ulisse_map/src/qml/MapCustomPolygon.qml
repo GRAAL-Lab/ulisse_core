@@ -808,9 +808,9 @@ MapPolyline {
         if (_method != null || _method !== undefined) {
             // For the SafetyBoundary the _method is null
 
-            console.log("[MapPolygon] generate_path()")
+            console.log("[MapPolygon] generate_path() disabled")
             //cmdWrapper.generatePath <----
-            generate_path()
+            //generate_path()
             console.log("[MapPolygon] draw_path()")
             draw_path()
         }
@@ -836,11 +836,12 @@ MapPolyline {
     function draw_path() {
         // clear the canvas
         _canvas.clear_canvas()
-        Helper.draw_path_lines(_canvas, cmdWrapper.createNurbs(JSON.stringify(generate_nurbs())), map)
+        //Helper.draw_path_lines(_canvas, cmdWrapper.createNurbs(JSON.stringify(generate_nurbs())), map)
+        Helper.draw_path_lines(_canvas, cmdWrapper.createPathFromPolygon(JSON.stringify(serialize())), map)
 
     }
 
-    ////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////
     function generate_nurbs() {
         // This function will be replaced since the sisl_toolbox will generate the curve
         var nurb_l = []
@@ -877,10 +878,10 @@ MapPolyline {
     }
 
     function serialize() {
-        var values = []
+        var coordinates = []
         for (var j = 0; j < path.length; j++) {
             var p_i = path[j]
-            values.push({
+            coordinates.push({
                             latitude: p_i.latitude,
                             longitude: p_i.longitude
                         })
@@ -893,15 +894,15 @@ MapPolyline {
                 angle: _angle,
                 method: _method
             },
-            values: values
+            coordinates: coordinates
         }
     }
 
     function deserialize(data) {
         var lat, lon
-        for (var j = 0; j < data.values.length; j++) {
-            lat = data.values[j].latitude
-            lon = data.values[j].longitude
+        for (var j = 0; j < data.coordinates.length; j++) {
+            lat = data.coordinates[j].latitude
+            lon = data.coordinates[j].longitude
             addCoordinate(QtPositioning.coordinate(lat, lon))
         }
         pathName = data.name

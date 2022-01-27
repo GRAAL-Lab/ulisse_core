@@ -38,14 +38,20 @@ void AddonsBridge::Init(QQmlApplicationEngine* engine)
     myTimer_ = new QTimer(this);
     myTimer_->start(callbackUpdateInterval_);
     QObject::connect(myTimer_, SIGNAL(timeout()), this, SLOT(process_callbacks_slot()));
-    //
-    //
-    //water_current_norm = 0;
-    //
-    qmlObstacleManager_ = appEngine_->rootObjects().first()->findChild<QObject*>("addonsBridgeVisualizer");
+
+    QList<QObject*> rootObjects = appEngine_->rootObjects();
+
+    toastMgrObj_ = rootObjects.first()->findChild<QObject*>("toastManager");
+    if (!toastMgrObj_) {
+        qDebug("No 'toastManager' found!");
+    }
+
+    qmlObstacleManager_ = rootObjects.first()->findChild<QObject*>("addonsBridgeVisualizer");
     if (!qmlObstacleManager_) {
         qDebug() << "addonsBridgeVisualizer Object NOT found!";
     }
+
+
 
     RegisterPublishersAndSubscribers();
 
@@ -75,6 +81,11 @@ void AddonsBridge::RegisterPublishersAndSubscribers()
     polylineSub_ = this->create_subscription<ulisse_msgs::msg::CoordinateList>(ulisse_msgs::topicnames::avoidance_path,
         qos_sensor, std::bind(&AddonsBridge::PolylineCB, this, _1));
 
+}
+
+void AddonsBridge::ShowToast(const QVariant message, const QVariant duration)
+{
+    QMetaObject::invokeMethod(toastMgrObj_, "show", Qt::QueuedConnection, Q_ARG(QVariant, message), Q_ARG(QVariant, duration));
 }
 
 void AddonsBridge::DrawObstacle(const QVariant obsID, const QVariant obsCoords, const QVariant obsHeading, const QVariant obsBBoxX, const QVariant obsBBoxY)
@@ -108,6 +119,62 @@ void AddonsBridge::PolylineCB(const ulisse_msgs::msg::CoordinateList::SharedPtr 
 
     DrawPolyline(id, polypath.variantPath());
 }
+
+void AddonsBridge::savePathToFile(const QString QFileName, const QString& data)
+{
+
+    // and in case it doesn't we add it
+    std::string filename = QFileName.toStdString();
+    std::string::size_type extensionDotPos = filename.find_last_of(".");
+    std::string filePrevExtension;
+
+    // Here we check whether the file has already an extension
+    if (extensionDotPos != std::string::npos) {
+        filePrevExtension = filename.substr(extensionDotPos, filename.size());
+        //std::cout << "File has already extension: " + filePrevExtension << std::endl;
+    }
+
+    // If the extension is not present, or if it is not ".path", we add it
+    if ((extensionDotPos == std::string::npos) | (filePrevExtension != ".path")) {
+        filename = filename + ".path";
+        //std::cout << "Extension is not present, or it's not .path" << std::endl;
+    }
+
+    QFile file(QString::fromStdString(filename));
+    if (!file.open(QFile::WriteOnly | QFile::Truncate)) {
+        ShowToast(std::string("Cannot save the file").c_str(), 3000);
+        return;
+    }
+
+    QTextStream out(&file);
+    out << data;
+
+    std::cout << "Saved to file: " << filename << std::endl;
+    ShowToast(std::string("Saved to file: " + filename).c_str(), 3000);
+
+    file.close();
+}
+
+QString AddonsBridge::loadPathFromFile(const QString fileName)
+{
+    QFile file(fileName);
+    QString fileContent;
+    if (file.open(QIODevice::ReadOnly)) {
+        QString line;
+        QTextStream t(&file);
+        do {
+            line = t.readLine();
+            fileContent += line;
+        } while (!line.isNull());
+
+        file.close();
+    } else {
+        std::cout << "Error: Unable to open the file" << std::endl;
+        return QString();
+    }
+    return fileContent;
+}
+
 
 void AddonsBridge::process_callbacks_slot()
 {

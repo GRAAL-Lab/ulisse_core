@@ -224,12 +224,12 @@ Pane {
     function savePath(pathToSave, directory) {
 
         var serializedPath = pathToSave.serialize();
-        cmdWrapper.savePathToFile(directory, JSON.stringify(serializedPath))
+        addonsBridge.savePathToFile(directory, JSON.stringify(serializedPath))
         toast.show("Path saved")
     }
 
     function loadSafetyArea(filePath) {
-        var jsondata = cmdWrapper.loadPathFromFile(filePath)
+        var jsondata = addonsBridge.loadPathFromFile(filePath)
         var data = JSON.parse(jsondata)
 
         switch (data.type) {
@@ -249,7 +249,7 @@ Pane {
     }
 
     function loadPath(filePath) {
-        var jsondata = cmdWrapper.loadPathFromFile(filePath)
+        var jsondata = addonsBridge.loadPathFromFile(filePath)
         var data = JSON.parse(jsondata)
 
         var i, j, lat, lon, p

@@ -17,8 +17,8 @@
 class AddonsBridge : public QObject, rclcpp::Node {
     Q_OBJECT
     QQmlApplicationEngine* appEngine_;
-    QTimer* myTimer_;
-    QObject* qmlObstacleManager_;
+    QTimer *myTimer_;
+    QObject *qmlObstacleManager_, *toastMgrObj_;
 
     int callbackUpdateInterval_;
 
@@ -30,12 +30,16 @@ class AddonsBridge : public QObject, rclcpp::Node {
     void ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr msg);
     void DrawPolyline(const QVariant obsID, const QVariant polypath);
     void PolylineCB(const ulisse_msgs::msg::CoordinateList::SharedPtr msg);
+    void ShowToast(const QVariant message, const QVariant duration);
 
 public:
     explicit AddonsBridge(QObject* parent = nullptr);
     explicit AddonsBridge(QQmlApplicationEngine* engine, QObject* parent = nullptr);
     virtual ~AddonsBridge();
     void Init(QQmlApplicationEngine* engine);
+
+    Q_INVOKABLE void savePathToFile(const QString fileName, const QString& data);
+    Q_INVOKABLE QString loadPathFromFile(const QString file);
 
 signals:
     void callbacks_processed();

@@ -578,10 +578,10 @@ MapPolyline {
 
 
     function serialize() {
-        var values = []
+        var coordinates = []
         for (var j = 0; j < path.length; j++) {
             var p_i = path[j]
-            values.push({
+            coordinates.push({
                             latitude: p_i.latitude,
                             longitude: p_i.longitude
                         })
@@ -592,16 +592,16 @@ MapPolyline {
             params: {
 
             },
-            values: values
+            coordinates: coordinates
         }
     }
 
     function deserialize(data) {
         var lat, lon
         pathName = data.name
-        for (var j = 0; j < data.values.length; j++) {
-            lat = data.values[j].latitude
-            lon = data.values[j].longitude
+        for (var j = 0; j < data.coordinates.length; j++) {
+            lat = data.coordinates[j].latitude
+            lon = data.coordinates[j].longitude
             addCoordinate(QtPositioning.coordinate(lat, lon))
         }
     }
