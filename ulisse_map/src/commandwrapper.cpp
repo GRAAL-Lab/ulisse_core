@@ -357,9 +357,6 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
 
     reader.parse(pathJsonData.toStdString(), jvalues);
 
-    /*std::vector<Eigen::Vector3d> polygonVerteces {
-        Eigen::Vector3d {-78, 44, 0}, Eigen::Vector3d {-47, 99, 0}, Eigen::Vector3d {46, 80, 0},
-        Eigen::Vector3d {79, -43, 0}, Eigen::Vector3d {-23, -99, 0}, Eigen::Vector3d{-110, -71, 0} };*/
     std::vector<Eigen::Vector3d> polygonVerteces(jvalues["coordinates"].size());
     qDebug() << "Coordinates size: " << jvalues["coordinates"].size();
 
@@ -385,24 +382,32 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
 
     //double angle{150.0};
     //double offsetPath{30.0};
-    double angle = jvalues["angle"].asDouble();
-    double offsetPath = jvalues["offset"].asDouble();
-    int direction = jvalues["direction"].asInt() + 1; /// TODO, FIXME: Make direction variable uniform!!!!!
+    double angle = jvalues["params"]["angle"].asDouble();
+    double offsetPath = jvalues["params"]["offset"].asDouble();
+    int direction = jvalues["params"]["direction"].asInt() + 1; /// TODO, FIXME: Make direction variable uniform!!!!!
 
     std::shared_ptr<Path> serpentine;
 
+    polygonVerteces = std::vector<Eigen::Vector3d> ({
+        Eigen::Vector3d {-78, 44, 0}, Eigen::Vector3d {-47, 99, 0}, Eigen::Vector3d {46, 80, 0},
+        Eigen::Vector3d {79, -43, 0}, Eigen::Vector3d {-23, -99, 0}, Eigen::Vector3d{-110, -71, 0} });
+
+    qDebug() << "angle: " << angle;
+    qDebug() << "offset: " << offsetPath;
+    qDebug() << "direction: " << direction;
+
 
     try {
-        //serpentine = PathFactory::NewSerpentine(angle, direction, offsetPath, polygonVerteces);
+        serpentine = PathFactory::NewSerpentine(angle, RIGHT, offsetPath, polygonVerteces);
         std::cout << *serpentine << std::endl;
 
         std::cout << std::endl << serpentine->Name() << " is composed by: " << std::endl;
         for(int i = 0; i < serpentine->CurvesNumber(); ++i) {
             std::cout << i << ". " << *serpentine->Curves()[i] << std::endl;
 
-            /*for(int i = 0; i < serpentine->Curves()[i]->Length(); ++i) {
+            for(int i = 0; i < serpentine->Curves()[i]->Length(); ++i) {
 
-            }*/
+            }
         }
 
     }
