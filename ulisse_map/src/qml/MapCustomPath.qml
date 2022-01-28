@@ -39,7 +39,10 @@ MapPolyline {
         b_marker.coordinate = QtPositioning.coordinate(
                     a_marker.coordinate.latitude, a_marker.coordinate.longitude)
         a_marker.coordinate = t
+
     }
+
+
 
     Component.onCompleted: {
         Helper.init_lib(QtPositioning)
@@ -162,7 +165,6 @@ MapPolyline {
         a_marker.coordinate = path[0]
         b_marker.coordinate = path[path.length - 1]
         if (direction === 1) toggle_dir()
-//        direction = 1
     }
 
     function enable_handle() {
@@ -592,7 +594,10 @@ MapPolyline {
             params: {
 
             },
+            centroid: { latitude: centroid.latitude, longitude: centroid.longitude },
+            direction: direction,
             coordinates: coordinates
+
         }
     }
 

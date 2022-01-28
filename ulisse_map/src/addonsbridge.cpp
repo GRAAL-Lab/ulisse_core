@@ -142,15 +142,19 @@ void AddonsBridge::savePathToFile(const QString QFileName, const QString& data)
 
     QFile file(QString::fromStdString(filename));
     if (!file.open(QFile::WriteOnly | QFile::Truncate)) {
-        ShowToast(std::string("Cannot save the file").c_str(), 3000);
+        ShowToast(std::string("Cannot save the file").c_str(), 4000);
         return;
     }
 
     QTextStream out(&file);
-    out << data;
+
+    QJsonDocument doc = QJsonDocument::fromJson(data.toStdString().c_str());
+    QString formattedJsonString = doc.toJson(QJsonDocument::Indented);
+    //std::cout << "JSON Indented:\n" << formattedJsonString.toStdString();
+    out << formattedJsonString;
 
     std::cout << "Saved to file: " << filename << std::endl;
-    ShowToast(std::string("Saved to file: " + filename).c_str(), 3000);
+    ShowToast(std::string("Saved to file: " + filename).c_str(), 4000);
 
     file.close();
 }

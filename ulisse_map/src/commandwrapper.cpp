@@ -9,6 +9,7 @@
 
 #include "ulisse_ctrl/ulisse_defines.hpp"
 #include "ulisse_driver/LLCHelperDataStructs.h"
+#include "ulisse_msgs/futils.hpp"
 #include "nav_filter/nav_data_structs.hpp"
 #include "sisl_toolbox/sisl_toolbox.hpp"
 #include "sisl.h"
@@ -128,8 +129,6 @@ void CommandWrapper::ShowToast(const QVariant message, const QVariant duration)
 {
     QMetaObject::invokeMethod(toastMgrObj_, "show", Qt::QueuedConnection, Q_ARG(QVariant, message), Q_ARG(QVariant, duration));
 }
-
-
 
 bool CommandWrapper::sendPath(const QString path)
 {
@@ -356,39 +355,55 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
     QString formattedJsonString = doc.toJson(QJsonDocument::Indented);
     std::cout << "JSON Indented:\n" << formattedJsonString.toStdString();
 
-    /////
-
     reader.parse(pathJsonData.toStdString(), jvalues);
 
-    try {
-        for (Json::Value c : jvalues["curves"]) {
+    /*std::vector<Eigen::Vector3d> polygonVerteces {
+        Eigen::Vector3d {-78, 44, 0}, Eigen::Vector3d {-47, 99, 0}, Eigen::Vector3d {46, 80, 0},
+        Eigen::Vector3d {79, -43, 0}, Eigen::Vector3d {-23, -99, 0}, Eigen::Vector3d{-110, -71, 0} };*/
+    std::vector<Eigen::Vector3d> polygonVerteces(jvalues["coordinates"].size());
+    qDebug() << "Coordinates size: " << jvalues["coordinates"].size();
 
+    ctb::LatLong centroid(jvalues["centroid"]["latitude"].asDouble(), jvalues["centroid"]["longitude"].asDouble());
+    double altitude = 0.0;
+
+    try {
+        int i = 0;
+        for (const Json::Value &coord : jvalues["coordinates"]) {
+
+            ctb::LatLong pointGeo(coord["latitude"].asDouble(),coord["longitude"].asDouble());
+
+            ctb::LatLong2LocalUTM(pointGeo, altitude, centroid, polygonVerteces.at(i));
+            polygonVerteces.at(i)(2) = altitude;
+
+            qDebug() << QString::fromStdString(futils::ArrayToString(polygonVerteces.at(i), 3, ','));
+            i++;
         }
     } catch (Json::Exception& e) {
         // output exception information
         std::cerr << "Polygon Descriptor Error: " << e.what();
     }
 
-    std::vector<Eigen::Vector3d> polygonVerteces {
-        Eigen::Vector3d {-78, 44, 0}, Eigen::Vector3d {-47, 99, 0}, Eigen::Vector3d {46, 80, 0},
-        Eigen::Vector3d {79, -43, 0}, Eigen::Vector3d {-23, -99, 0}, Eigen::Vector3d{-110, -71, 0} };
-
-    //ctb::LatLong2LocalUTM(point, 0.0, centroid, pointC);
-
-
-    double angle{150.0};
-    double offsetPath{30.0};
+    //double angle{150.0};
+    //double offsetPath{30.0};
+    double angle = jvalues["angle"].asDouble();
+    double offsetPath = jvalues["offset"].asDouble();
+    int direction = jvalues["direction"].asInt() + 1; /// TODO, FIXME: Make direction variable uniform!!!!!
 
     std::shared_ptr<Path> serpentine;
 
+
     try {
-        serpentine = PathFactory::NewSerpentine(angle, RIGHT, offsetPath, polygonVerteces);
+        //serpentine = PathFactory::NewSerpentine(angle, direction, offsetPath, polygonVerteces);
         std::cout << *serpentine << std::endl;
 
-        // std::cout << std::endl << serpentine->Name() << " is composed by: " << std::endl;
-        // for(int i = 0; i < serpentine->CurvesNumber(); ++i) {
-        //     std::cout << i << ". " << *serpentine->Curves()[i] << std::endl;
-        // }
+        std::cout << std::endl << serpentine->Name() << " is composed by: " << std::endl;
+        for(int i = 0; i < serpentine->CurvesNumber(); ++i) {
+            std::cout << i << ". " << *serpentine->Curves()[i] << std::endl;
+
+            /*for(int i = 0; i < serpentine->Curves()[i]->Length(); ++i) {
+
+            }*/
+        }
 
     }
     catch(std::runtime_error const& exception) {
@@ -396,23 +411,13 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
     }
 
 
+
+
     //ctb::LocalUTM2LatLong(derive, centroid, map_point, altitude);
     // USE SISL TOOLBOX FUNCTIONS TO CREATE CURVE
 
-    /*
-    QGeoPath geopath;
-    geopath.addCoordinate(QGeoCoordinate(56.006355, 92.860984));
-    geopath.addCoordinate(QGeoCoordinate(56.1, 93));
-    geopath.addCoordinate(QGeoCoordinate(56.1, 92.777));
 
-    QQmlApplicationEngine engine;
-    engine.rootContext()->setContextProperty("geopath", QVariant::fromValue(geopath));
-
-    */
-
-
-
-        return pathPoints;
+    return pathPoints;
 }
 
 QPoint CommandWrapper::latLong2LocalUTM(QGeoCoordinate latlong, QGeoCoordinate centroid)
@@ -445,19 +450,18 @@ bool CommandWrapper::sendBoundaries(const QString& boundary_json_data)
     std::cout << formattedJsonString.toStdString() << std::endl;*/
 
     Json::Reader reader;
-    Json::Value obj, obj2;
+    Json::Value jObj;
 
-    reader.parse(boundary_json_data.toStdString(), obj);
+    reader.parse(boundary_json_data.toStdString(), jObj);
 
-    serviceReq->boundaries.vertices.resize(obj["coordinates"].size());
+    serviceReq->boundaries.vertices.resize(jObj["coordinates"].size());
     unsigned int count = 0;
     try {
-        for (const Json::Value &c : obj["coordinates"]) {
+        for (const Json::Value &coord : jObj["coordinates"]) {
 
-            reader.parse(c.toStyledString(), obj2);
-
-            serviceReq->boundaries.vertices.at(count).latitude = obj2["latitude"].asDouble();
-            serviceReq->boundaries.vertices.at(count).longitude = obj2["longitude"].asDouble();
+            //reader.parse(coord.toStyledString(), obj2);
+            serviceReq->boundaries.vertices.at(count).latitude = coord["latitude"].asDouble();
+            serviceReq->boundaries.vertices.at(count).longitude = coord["longitude"].asDouble();
 
             count++;
         }

@@ -41,9 +41,9 @@ MapPolyline {
     property real _angle: 30
     property real _offset: 30
     property var _method: "single_winding" // "simple"
-    property var direction: 0
+    property int direction: 0  // 0: Direct, 1: Reverse
 
-    property var centroid
+    property var centroid: QtPositioning.coordinate(0.0, 0.0)
     property var intersections_canvas: []
     property var intersections_cartesian: []
     property var intersections_geographic: []
@@ -124,7 +124,7 @@ MapPolyline {
     function clear_path() {
         while (path.length > 0)
             removeCoordinate(0)
-        centroid = null
+        centroid = QtPositioning.coordinate()
         detection_intersect = 0
     }
 
@@ -296,7 +296,12 @@ MapPolyline {
         var temp = Helper.coordinate_deep_copy(b_marker.coordinate)
         b_marker.coordinate = Helper.coordinate_deep_copy(a_marker.coordinate)
         a_marker.coordinate = temp
+
     }
+
+    /*onDirectionChanged: {
+        console.log("dir: " + direction)
+    }*/
 
     function nearest_marker(point, markers, nearest, thresh) {
         for (var i = 0; i < markers.length; i++) {
@@ -796,7 +801,8 @@ MapPolyline {
             params: {
                 angle: _angle,
                 offset: _offset,
-                method: _method
+                method: _method,
+                direction: direction
             }
         }
     }
@@ -837,7 +843,9 @@ MapPolyline {
         // clear the canvas
         _canvas.clear_canvas()
         Helper.draw_path_lines(_canvas, cmdWrapper.createNurbs(JSON.stringify(generate_nurbs())), map)
-        //Helper.draw_path_lines(_canvas, cmdWrapper.createPathFromPolygon(JSON.stringify(serialize())), map)
+        //Helper.draw_path_lines(_canvas,
+        cmdWrapper.createPathFromPolygon(JSON.stringify(serialize()));
+        //, map)
 
     }
 
@@ -882,33 +890,41 @@ MapPolyline {
         for (var j = 0; j < path.length; j++) {
             var p_i = path[j]
             coordinates.push({
-                            latitude: p_i.latitude,
-                            longitude: p_i.longitude
-                        })
+                                 latitude: p_i.latitude,
+                                 longitude: p_i.longitude
+                             })
         }
+
         return {
             type: type,
             name: pathName,
             params: {
                 offset: _offset,
                 angle: _angle,
-                method: _method
+                method: _method,
+                direction: direction
             },
+            centroid: { latitude: centroid.latitude, longitude: centroid.longitude },
             coordinates: coordinates
+
         }
     }
 
     function deserialize(data) {
+        type = data.type
+        pathName = data.name
+
+        _angle = data.params.angle
+        _offset = data.params.offset
+        _method = data.params.method
+        direction = data.params.direction
+
         var lat, lon
         for (var j = 0; j < data.coordinates.length; j++) {
             lat = data.coordinates[j].latitude
             lon = data.coordinates[j].longitude
             addCoordinate(QtPositioning.coordinate(lat, lon))
         }
-        pathName = data.name
-        _angle = data.params.angle
-        _offset = data.params.offset
-        _method = data.params.method
     }
 
     function get_nurbs(data){
