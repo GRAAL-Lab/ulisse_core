@@ -91,10 +91,19 @@ install(TARGETS
   DESTINATION lib/${PROJECT_NAME}
 )
 
-#install(
-#  DIRECTORY include/
-#  DESTINATION include
-#)
+# Install GUI Icon
+install(FILES
+  src/images/ulisse_icon.png
+  DESTINATION $ENV{HOME}/.local/share/icons
+)
+
+# Install GUI Icon
+install(FILES
+  src/scripts/ulisse_map.desktop
+  DESTINATION $ENV{HOME}/.local/share/applications
+  #DESTINATION $ENV{HOME}/Desktop
+)
+
 
 ament_package()
 

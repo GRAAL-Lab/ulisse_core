@@ -810,7 +810,7 @@ MapPolyline {
 
             console.log("[MapPolygon] generate_path() disabled")
             //cmdWrapper.generatePath <----
-            //generate_path()
+            generate_path()
             console.log("[MapPolygon] draw_path()")
             draw_path()
         }
@@ -836,8 +836,8 @@ MapPolyline {
     function draw_path() {
         // clear the canvas
         _canvas.clear_canvas()
-        //Helper.draw_path_lines(_canvas, cmdWrapper.createNurbs(JSON.stringify(generate_nurbs())), map)
-        Helper.draw_path_lines(_canvas, cmdWrapper.createPathFromPolygon(JSON.stringify(serialize())), map)
+        Helper.draw_path_lines(_canvas, cmdWrapper.createNurbs(JSON.stringify(generate_nurbs())), map)
+        //Helper.draw_path_lines(_canvas, cmdWrapper.createPathFromPolygon(JSON.stringify(serialize())), map)
 
     }
 

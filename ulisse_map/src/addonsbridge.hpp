@@ -13,14 +13,17 @@
 #include "rclcpp/rclcpp.hpp"
 #include "ulisse_msgs/msg/obstacle.hpp"
 #include "ulisse_msgs/msg/coordinate_list.hpp"
+#include "ulisse_msgs/srv/rosbag_cmd.hpp"
 
 class AddonsBridge : public QObject, rclcpp::Node {
     Q_OBJECT
     QQmlApplicationEngine* appEngine_;
     QTimer *myTimer_;
-    QObject *qmlObstacleManager_, *toastMgrObj_;
+    QObject *qmlAddonsBridgeVisualizer_, *toastMgrObj_;
 
     int callbackUpdateInterval_;
+
+    rclcpp::Client<ulisse_msgs::srv::RosbagCmd>::SharedPtr bag_recorder_client_;
 
     rclcpp::Subscription<ulisse_msgs::msg::Obstacle>::SharedPtr obstacleSub_;
     rclcpp::Subscription<ulisse_msgs::msg::CoordinateList>::SharedPtr polylineSub_;
@@ -32,6 +35,7 @@ class AddonsBridge : public QObject, rclcpp::Node {
     void PolylineCB(const ulisse_msgs::msg::CoordinateList::SharedPtr msg);
     void ShowToast(const QVariant message, const QVariant duration);
 
+
 public:
     explicit AddonsBridge(QObject* parent = nullptr);
     explicit AddonsBridge(QQmlApplicationEngine* engine, QObject* parent = nullptr);
@@ -40,6 +44,7 @@ public:
 
     Q_INVOKABLE void savePathToFile(const QString fileName, const QString& data);
     Q_INVOKABLE QString loadPathFromFile(const QString file);
+    Q_INVOKABLE bool sendRosbagRecordCommand(int record_cmd, const QString folder_path = "", const QString bag_info = "");
 
 signals:
     void callbacks_processed();

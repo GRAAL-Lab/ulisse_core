@@ -81,10 +81,26 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
     });*/
 }
 
+void CommandWrapper::RegisterPublishersAndSubscribers()
+{
+
+    command_srv_ = this->create_client<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service);
+    boundary_srv_ = this->create_client<ulisse_msgs::srv::SetBoundaries>(ulisse_msgs::topicnames::set_boundaries_service);
+    llc_srv_ = this->create_client<ulisse_msgs::srv::LLCCommand>(ulisse_msgs::topicnames::llc_cmd_service);
+
+    kcl_conf_srv_ = this->create_client<ulisse_msgs::srv::ResetConfiguration>(ulisse_msgs::topicnames::reset_kcl_conf_service);
+    dcl_conf_srv_ = this->create_client<ulisse_msgs::srv::ResetConfiguration>(ulisse_msgs::topicnames::reset_dcl_conf_service);
+    nav_filter_srv_ = this->create_client<ulisse_msgs::srv::NavFilterCommand>(ulisse_msgs::topicnames::navfilter_cmd_service);
+
+    feedbackGuiSub_ = this->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10,
+        std::bind(&CommandWrapper::FeedbackGuiCB, this, _1) );
+
+    surgeHeadingPub_ = this->create_publisher<ulisse_msgs::msg::SurgeHeading>(ulisse_msgs::topicnames::surge_heading, 1);
+    surgeYawRatePub_ = this->create_publisher<ulisse_msgs::msg::SurgeYawRate>(ulisse_msgs::topicnames::surge_yawrate, 1);
+}
+
 void CommandWrapper::resetPublishersAndSubscribers()
 {
-    bag_recorder_client_.reset();
-
     command_srv_     .reset();
     cruise_srv_      .reset();
     boundary_srv_    .reset();
@@ -112,6 +128,8 @@ void CommandWrapper::ShowToast(const QVariant message, const QVariant duration)
 {
     QMetaObject::invokeMethod(toastMgrObj_, "show", Qt::QueuedConnection, Q_ARG(QVariant, message), Q_ARG(QVariant, duration));
 }
+
+
 
 bool CommandWrapper::sendPath(const QString path)
 {
@@ -185,7 +203,7 @@ QVector<double> CommandWrapper::createNurbs(const QString& pointForNurbs)
     std::vector<SISLCurve*> nurbs;
     nurbs.clear();
     Json::Reader reader;
-    Json::Value obj, objMaster;
+    Json::Value objMaster;
     bool reverse = false;
     int count = 0;
 
@@ -219,27 +237,27 @@ QVector<double> CommandWrapper::createNurbs(const QString& pointForNurbs)
                      = 2 : Set pointer and remember to free arrays. */
 
     try {
-        for (Json::Value c : objMaster["curves"]) {
+        for (Json::Value jcurve : objMaster["curves"]) {
 
-            reader.parse(c.toStyledString(), obj);
+            //reader.parse(c.toStyledString(), obj);
 
             int order; //Order of curve.
-            order = obj["degree"].asInt();
+            order = jcurve["degree"].asInt();
 
-            std::shared_ptr<double[]> weights(new double[obj["weigths"].size()]); //whight vector of curve.
+            std::shared_ptr<double[]> weights(new double[jcurve["weigths"].size()]); //whight vector of curve.
             //Acquired the weights
-            for (Json::ArrayIndex i = 0; i < obj["weigths"].size(); i++) {
-                weights[i] = obj["weigths"][i].asDouble();
+            for (Json::ArrayIndex i = 0; i < jcurve["weigths"].size(); i++) {
+                weights[i] = jcurve["weigths"][i].asDouble();
             }
 
-            std::shared_ptr<double[]> coef(new double[obj["points"].size() * 4]); //Vertices of curve
+            std::shared_ptr<double[]> coef(new double[jcurve["points"].size() * 4]); //Vertices of curve
             // //Acquired the vertices
             count = 0;
             ctb::LatLong point;
             Eigen::Vector3d pointC;
-            for (Json::ArrayIndex i = 0; i < obj["points"].size(); i++) {
-                point.latitude = obj["points"][i][0].asDouble();
-                point.longitude = obj["points"][i][1].asDouble();
+            for (Json::ArrayIndex i = 0; i < jcurve["points"].size(); i++) {
+                point.latitude = jcurve["points"][i][0].asDouble();
+                point.longitude = jcurve["points"][i][1].asDouble();
 
                 ctb::LatLong2LocalUTM(point, 0.0, centroid, pointC);
 
@@ -251,14 +269,14 @@ QVector<double> CommandWrapper::createNurbs(const QString& pointForNurbs)
                 count += 4;
             }
 
-            std::shared_ptr<double[]> knots(new double[obj["knots"].size()]); //Knot vector of curve
+            std::shared_ptr<double[]> knots(new double[jcurve["knots"].size()]); //Knot vector of curve
             //Acquired the knots
-            for (Json::ArrayIndex i = 0; i < obj["knots"].size(); i++) {
-                knots[i] = obj["knots"][i].asDouble();
+            for (Json::ArrayIndex i = 0; i < jcurve["knots"].size(); i++) {
+                knots[i] = jcurve["knots"][i].asDouble();
             }
 
             //create the curve
-            SISLCurve* curve = newCurve(static_cast<int>(obj["points"].size()), order + 1, knots.get(), coef.get(), kind, 3, copy);
+            SISLCurve* curve = newCurve(static_cast<int>(jcurve["points"].size()), order + 1, knots.get(), coef.get(), kind, 3, copy);
 
             if (curve == nullptr) {
                 std::cout << "Something Goes Wrong in NURBS Parsing" << std::endl;
@@ -416,103 +434,17 @@ QGeoCoordinate CommandWrapper::localUTM2LatLong(QPoint UTM_point, QGeoCoordinate
     return QGeoCoordinate(tmp.latitude, tmp.longitude);
 }
 
-bool CommandWrapper::reloadKCLConf()
-{
-    std::string result_msg;
-    bool serviceAvailable;
-    auto req = std::make_shared<ulisse_msgs::srv::ResetConfiguration::Request>();
-    if (kcl_conf_srv_->service_is_ready()) {
-        auto result_future = kcl_conf_srv_->async_send_request(req);
-        std::cout << "Sent Request to controller" << std::endl;
-        if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
-            result_msg = "service call failed :(";
-            RCLCPP_ERROR(this->get_logger(), result_msg.c_str());
-        } else {
-            auto result = result_future.get();
-            result_msg = "Service returned: " + result->res;
-            RCLCPP_INFO(this->get_logger(), result_msg.c_str());
-        }
-        serviceAvailable = true;
-    } else {
-        result_msg = "No \"KCL Reload Conf\" Server Available";
-        serviceAvailable = false;
-    }
-    ShowToast(result_msg.c_str(), 2000);
-    return serviceAvailable;
-}
-
-bool CommandWrapper::reloadDCLConf()
-{
-    std::string result_msg;
-    bool serviceAvailable;
-    auto req = std::make_shared<ulisse_msgs::srv::ResetConfiguration::Request>();
-    if (dcl_conf_srv_->service_is_ready()) {
-        auto result_future = dcl_conf_srv_->async_send_request(req);
-        std::cout << "Sent Request to controller" << std::endl;
-        if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
-            result_msg = "service call failed :(";
-            RCLCPP_ERROR(this->get_logger(), result_msg.c_str());
-        } else {
-            auto result = result_future.get();
-            result_msg = "Service returned: " + result->res;
-            RCLCPP_INFO(this->get_logger(), result_msg.c_str());
-        }
-        serviceAvailable = true;
-    } else {
-        result_msg = "No \"DCL Reload Conf\" Server Available";
-        serviceAvailable = false;
-    }
-    ShowToast(result_msg.c_str(), 2000);
-    return serviceAvailable;
-}
-
-bool CommandWrapper::reloadNavFilterConf()
-{
-    std::string result_msg;
-    bool serviceAvailable;
-    auto req = std::make_shared<ulisse_msgs::srv::NavFilterCommand::Request>();
-    req->command_type = static_cast<uint16_t>(ulisse::nav::CommandType::reloadconfig);
-    if (nav_filter_srv_->service_is_ready()) {
-        auto result_future = nav_filter_srv_->async_send_request(req);
-        std::cout << "Sent Request to controller" << std::endl;
-        if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
-            result_msg = "service call failed :(";
-            RCLCPP_ERROR(this->get_logger(), result_msg.c_str());
-        } else {
-            auto result = result_future.get();
-            result_msg = "Service returned: " + std::to_string(result->res);
-            RCLCPP_INFO(this->get_logger(), result_msg.c_str());
-        }
-        serviceAvailable = true;
-    } else {
-        result_msg = "No \"DCL Reload Conf\" Server Available";
-        serviceAvailable = false;
-    }
-    ShowToast(result_msg.c_str(), 2000);
-    return serviceAvailable;
-}
-
 bool CommandWrapper::sendBoundaries(const QString& boundary_json_data)
 {
     auto serviceReq = std::make_shared<ulisse_msgs::srv::SetBoundaries::Request>();
     serviceReq->boundaries.id = "GUI Set Boundary";// + boundary.toStdString();
 
-    /*serviceReq->boundaries.vertices.resize(boundary.size());
-
-    for (int i = 0; i < boundary.size(); i++) {
-        serviceReq->boundaries.vertices.at(i).latitude = boundary.at(i).latitude();
-        serviceReq->boundaries.vertices.at(i).longitude = boundary.at(i).longitude();
-
-        std::cout << "LatLong: " << serviceReq->boundaries.vertices.at(i).latitude << "," << serviceReq->boundaries.vertices.at(i).longitude << std::endl;
-    }
-    */
-
-        // DEBUG PRINT
-        /*QJsonDocument doc = QJsonDocument::fromJson(boundary_json_data.toUtf8());
+    // DEBUG PRINT
+    /*QJsonDocument doc = QJsonDocument::fromJson(boundary_json_data.toUtf8());
     QString formattedJsonString = doc.toJson(QJsonDocument::Indented);
     std::cout << formattedJsonString.toStdString() << std::endl;*/
 
-        Json::Reader reader;
+    Json::Reader reader;
     Json::Value obj, obj2;
 
     reader.parse(boundary_json_data.toStdString(), obj);
@@ -538,8 +470,6 @@ bool CommandWrapper::sendBoundaries(const QString& boundary_json_data)
 
     return SendBoundariesRequest(serviceReq);
 }
-
-
 
 bool CommandWrapper::SendBoundariesRequest(ulisse_msgs::srv::SetBoundaries::Request::SharedPtr req)
 {
@@ -591,50 +521,6 @@ bool CommandWrapper::SendCommandRequest(ulisse_msgs::srv::ControlCommand::Reques
     ShowToast(result_msg.c_str(), 2000);
     return serviceAvailable;
 }
-
-void CommandWrapper::StopOngoingTimers()
-{
-    surgeHeadingPubTimer_->stop();
-    surgeYawRatePubTimer_->stop();
-    checkErrorTimer_->stop();
-}
-
-void CommandWrapper::RegisterPublishersAndSubscribers()
-{
-
-    bag_recorder_client_ = this->create_client<ulisse_msgs::srv::RosbagCmd>(ulisse_msgs::topicnames::rosbag_service);
-
-    command_srv_ = this->create_client<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service);
-    boundary_srv_ = this->create_client<ulisse_msgs::srv::SetBoundaries>(ulisse_msgs::topicnames::set_boundaries_service);
-    llc_srv_ = this->create_client<ulisse_msgs::srv::LLCCommand>(ulisse_msgs::topicnames::llc_cmd_service);
-
-    kcl_conf_srv_ = this->create_client<ulisse_msgs::srv::ResetConfiguration>(ulisse_msgs::topicnames::reset_kcl_conf_service);
-    dcl_conf_srv_ = this->create_client<ulisse_msgs::srv::ResetConfiguration>(ulisse_msgs::topicnames::reset_dcl_conf_service);
-    nav_filter_srv_ = this->create_client<ulisse_msgs::srv::NavFilterCommand>(ulisse_msgs::topicnames::navfilter_cmd_service);
-
-    feedbackGuiSub_ = this->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10,
-        std::bind(&CommandWrapper::FeedbackGuiCB, this, _1) );
-
-    surgeHeadingPub_ = this->create_publisher<ulisse_msgs::msg::SurgeHeading>(ulisse_msgs::topicnames::surge_heading, 1);
-    surgeYawRatePub_ = this->create_publisher<ulisse_msgs::msg::SurgeYawRate>(ulisse_msgs::topicnames::surge_yawrate, 1);
-}
-
-void CommandWrapper::publish_surge_heading()
-{
-    surgeHeadingPub_->publish(surgeHeadingMsg_);
-}
-
-void CommandWrapper::publish_surge_yawrate()
-{
-    surgeYawRatePub_->publish(surgeYawRateMsg_);
-}
-
-void CommandWrapper::stop_command_publisher()
-{
-    surgeHeadingPubTimer_->stop();
-    surgeYawRatePubTimer_->stop();
-}
-
 
 bool CommandWrapper::sendHaltCommand()
 {
@@ -728,37 +614,6 @@ bool CommandWrapper::sendThrusterActivation(bool activate)
     return serviceAvailable;
 }
 
-bool CommandWrapper::sendRosbagRecordCommand(int record_cmd, const QString folder_path, const QString bag_info){
-
-    auto request = std::make_shared<ulisse_msgs::srv::RosbagCmd::Request>();
-    request->record_cmd = record_cmd;
-    request->save_folder = folder_path.toStdString();
-    request->bag_info = bag_info.toStdString();
-
-    static std::string result_msg;
-    bool rec_status = false;
-    bool serviceAvailable = false;
-    if (bag_recorder_client_->service_is_ready()) {
-        auto result_future = bag_recorder_client_->async_send_request(request);
-        std::cout << "Sent Request to controller" << std::endl;
-        if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
-            result_msg = "service call failed :(";
-            RCLCPP_ERROR(this->get_logger(), result_msg.c_str());
-        } else {
-            auto result = result_future.get();
-            result_msg = "Service returned: " + result->res;
-            rec_status = result->record_status;
-            RCLCPP_INFO(this->get_logger(), result_msg.c_str());
-        }
-        serviceAvailable = true;
-    } else {
-        result_msg = "The bag recorder doesn't seem to be active.\n(No BagRecord Server available)";
-        serviceAvailable = false;
-    }
-    ShowToast(result_msg.c_str(), 4000);
-    return (serviceAvailable && rec_status);
-}
-
 bool CommandWrapper::startPath()
 {
     wpCurrentIndex_ = 0;
@@ -808,7 +663,6 @@ void CommandWrapper::resumePath()
     // FIXME: what if resuming a loop path, and we were at the last waypoint?
 }
 
-
 void CommandWrapper::check_error_slot()
 {
     rclcpp::spin_some(this->get_node_base_interface());
@@ -855,4 +709,103 @@ bool CommandWrapper::goToPreviousWaypoint()
     }
     std::cout << "[Prev] wpCurrentIndex: " << wpCurrentIndex_ << std::endl;
     return ret;
+}
+
+void CommandWrapper::StopOngoingTimers()
+{
+    surgeHeadingPubTimer_->stop();
+    surgeYawRatePubTimer_->stop();
+    checkErrorTimer_->stop();
+}
+
+void CommandWrapper::publish_surge_heading()
+{
+    surgeHeadingPub_->publish(surgeHeadingMsg_);
+}
+
+void CommandWrapper::publish_surge_yawrate()
+{
+    surgeYawRatePub_->publish(surgeYawRateMsg_);
+}
+
+void CommandWrapper::stop_command_publisher()
+{
+    surgeHeadingPubTimer_->stop();
+    surgeYawRatePubTimer_->stop();
+}
+
+bool CommandWrapper::reloadKCLConf()
+{
+    std::string result_msg;
+    bool serviceAvailable;
+    auto req = std::make_shared<ulisse_msgs::srv::ResetConfiguration::Request>();
+    if (kcl_conf_srv_->service_is_ready()) {
+        auto result_future = kcl_conf_srv_->async_send_request(req);
+        std::cout << "Sent Request to controller" << std::endl;
+        if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
+            result_msg = "service call failed :(";
+            RCLCPP_ERROR(this->get_logger(), result_msg.c_str());
+        } else {
+            auto result = result_future.get();
+            result_msg = "Service returned: " + result->res;
+            RCLCPP_INFO(this->get_logger(), result_msg.c_str());
+        }
+        serviceAvailable = true;
+    } else {
+        result_msg = "No \"KCL Reload Conf\" Server Available";
+        serviceAvailable = false;
+    }
+    ShowToast(result_msg.c_str(), 2000);
+    return serviceAvailable;
+}
+
+bool CommandWrapper::reloadDCLConf()
+{
+    std::string result_msg;
+    bool serviceAvailable;
+    auto req = std::make_shared<ulisse_msgs::srv::ResetConfiguration::Request>();
+    if (dcl_conf_srv_->service_is_ready()) {
+        auto result_future = dcl_conf_srv_->async_send_request(req);
+        std::cout << "Sent Request to controller" << std::endl;
+        if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
+            result_msg = "service call failed :(";
+            RCLCPP_ERROR(this->get_logger(), result_msg.c_str());
+        } else {
+            auto result = result_future.get();
+            result_msg = "Service returned: " + result->res;
+            RCLCPP_INFO(this->get_logger(), result_msg.c_str());
+        }
+        serviceAvailable = true;
+    } else {
+        result_msg = "No \"DCL Reload Conf\" Server Available";
+        serviceAvailable = false;
+    }
+    ShowToast(result_msg.c_str(), 2000);
+    return serviceAvailable;
+}
+
+bool CommandWrapper::reloadNavFilterConf()
+{
+    std::string result_msg;
+    bool serviceAvailable;
+    auto req = std::make_shared<ulisse_msgs::srv::NavFilterCommand::Request>();
+    req->command_type = static_cast<uint16_t>(ulisse::nav::CommandType::reloadconfig);
+    if (nav_filter_srv_->service_is_ready()) {
+        auto result_future = nav_filter_srv_->async_send_request(req);
+        std::cout << "Sent Request to controller" << std::endl;
+        if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
+            result_msg = "service call failed :(";
+            RCLCPP_ERROR(this->get_logger(), result_msg.c_str());
+        } else {
+            auto result = result_future.get();
+            result_msg = "Service returned: " + std::to_string(result->res);
+            RCLCPP_INFO(this->get_logger(), result_msg.c_str());
+        }
+        serviceAvailable = true;
+    } else {
+        result_msg = "No \"DCL Reload Conf\" Server Available";
+        serviceAvailable = false;
+    }
+    ShowToast(result_msg.c_str(), 2000);
+    return serviceAvailable;
 }

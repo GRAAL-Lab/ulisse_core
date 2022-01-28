@@ -46,12 +46,10 @@ void AddonsBridge::Init(QQmlApplicationEngine* engine)
         qDebug("No 'toastManager' found!");
     }
 
-    qmlObstacleManager_ = rootObjects.first()->findChild<QObject*>("addonsBridgeVisualizer");
-    if (!qmlObstacleManager_) {
+    qmlAddonsBridgeVisualizer_ = rootObjects.first()->findChild<QObject*>("addonsBridgeVisualizer");
+    if (!qmlAddonsBridgeVisualizer_) {
         qDebug() << "addonsBridgeVisualizer Object NOT found!";
     }
-
-
 
     RegisterPublishersAndSubscribers();
 
@@ -68,6 +66,8 @@ void AddonsBridge::Init(QQmlApplicationEngine* engine)
 
 void AddonsBridge::RegisterPublishersAndSubscribers()
 {
+    bag_recorder_client_ = this->create_client<ulisse_msgs::srv::RosbagCmd>(ulisse_msgs::topicnames::rosbag_service);
+
     // Set the QoS. ROS 2 will provide QoS profiles based on the following use cases:
     // Default QoS settings for publishers and subscriptions (rmw_qos_profile_default).
     // Services (rmw_qos_profile_services_default)
@@ -90,7 +90,7 @@ void AddonsBridge::ShowToast(const QVariant message, const QVariant duration)
 
 void AddonsBridge::DrawObstacle(const QVariant obsID, const QVariant obsCoords, const QVariant obsHeading, const QVariant obsBBoxX, const QVariant obsBBoxY)
 {
-    QMetaObject::invokeMethod(qmlObstacleManager_, "drawObstacle",
+    QMetaObject::invokeMethod(qmlAddonsBridgeVisualizer_, "drawObstacle",
         Qt::QueuedConnection, Q_ARG(QVariant, obsID), Q_ARG(QVariant, obsCoords), Q_ARG(QVariant, obsHeading), Q_ARG(QVariant, obsBBoxX), Q_ARG(QVariant, obsBBoxY));
 }
 
@@ -104,7 +104,7 @@ void AddonsBridge::ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr msg)
 
 void AddonsBridge::DrawPolyline(const QVariant obsID, const QVariant polypath)
 {
-    QMetaObject::invokeMethod(qmlObstacleManager_, "drawPolyline",
+    QMetaObject::invokeMethod(qmlAddonsBridgeVisualizer_, "drawPolyline",
         Qt::QueuedConnection, Q_ARG(QVariant, obsID), Q_ARG(QVariant, polypath));
 }
 
@@ -173,6 +173,38 @@ QString AddonsBridge::loadPathFromFile(const QString fileName)
         return QString();
     }
     return fileContent;
+}
+
+
+bool AddonsBridge::sendRosbagRecordCommand(int record_cmd, const QString folder_path, const QString bag_info){
+
+    auto request = std::make_shared<ulisse_msgs::srv::RosbagCmd::Request>();
+    request->record_cmd = record_cmd;
+    request->save_folder = folder_path.toStdString();
+    request->bag_info = bag_info.toStdString();
+
+    static std::string result_msg;
+    bool rec_status = false;
+    bool serviceAvailable = false;
+    if (bag_recorder_client_->service_is_ready()) {
+        auto result_future = bag_recorder_client_->async_send_request(request);
+        std::cout << "Sent Request to controller" << std::endl;
+        if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
+            result_msg = "service call failed :(";
+            RCLCPP_ERROR(this->get_logger(), result_msg.c_str());
+        } else {
+            auto result = result_future.get();
+            result_msg = "Service returned: " + result->res;
+            rec_status = result->record_status;
+            RCLCPP_INFO(this->get_logger(), result_msg.c_str());
+        }
+        serviceAvailable = true;
+    } else {
+        result_msg = "The bag recorder doesn't seem to be active.\n(No BagRecord Server available)";
+        serviceAvailable = false;
+    }
+    ShowToast(result_msg.c_str(), 4000);
+    return (serviceAvailable && rec_status);
 }
 
 

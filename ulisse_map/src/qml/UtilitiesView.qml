@@ -229,9 +229,9 @@ Rectangle {
 
                     onClicked: {
                         if (!recording){
-                            recording = cmdWrapper.sendRosbagRecordCommand(true, saveFolderPath.text, bagInfoText.text)
+                            recording = addonsBridge.sendRosbagRecordCommand(true, saveFolderPath.text, bagInfoText.text)
                         } else {
-                            recording = cmdWrapper.sendRosbagRecordCommand(false)
+                            recording = addonsBridge.sendRosbagRecordCommand(false)
                         }
                     }
                 }
