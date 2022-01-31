@@ -154,15 +154,15 @@ BarManagePathsForm {
         map.clickHandler = map.click_goto_handler
         map.posChangedHandler = function () {}
         if (cur_managed !== undefined){
-            if( cur_managed.path.lenght !== 0)    {
+            if( cur_managed.path.lenght !== 0 )    {
                 console.log("[BarManagePaths] discard() - cur_managed !== undefined")
                 console.log("cur_managed: " + cur_managed.pathName)
                 cur_managed.enable_ab_markers()
                 cur_managed.discard_edit()
+
                 cur_managed.check_safe(map.safety_polygon)
                 show_manage()
             }
-
         }
         pathCmdPane.enableBtns(true)
     }
@@ -193,7 +193,7 @@ BarManagePathsForm {
             toast.show("Unsafe path due to operational space limits.", 2000)
         } else {
             // The path is recreated when sent?
-            cmdWrapper.sendPath(JSON.stringify(cur_managed.generate_nurbs()))
+            cmdWrapper.sendPath(JSON.stringify(cur_managed))
         }
     }
 

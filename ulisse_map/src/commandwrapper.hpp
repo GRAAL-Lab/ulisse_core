@@ -67,8 +67,8 @@ public:
     std::future<void> notificator;
 
     Q_INVOKABLE void resetPublishersAndSubscribers();
-    Q_INVOKABLE bool sendBoundaries(const QString &boundary_json_data);
-    Q_INVOKABLE bool sendPath(const QString path);
+    Q_INVOKABLE bool sendBoundaries(const QString &boundaryJsonData);
+    Q_INVOKABLE bool sendPath(const QString &pathJsonData);
     Q_INVOKABLE bool sendHaltCommand();
     Q_INVOKABLE bool sendHoldCommand(double radius);
     Q_INVOKABLE bool sendLatLongCommand(const QGeoCoordinate& goal, double radius);
@@ -81,7 +81,7 @@ public:
     Q_INVOKABLE void resumePath();
     Q_INVOKABLE bool goToNextWaypoint();
     Q_INVOKABLE bool goToPreviousWaypoint();
-    Q_INVOKABLE QVector<double> createNurbs(const QString& pointForNurbs);
+    //Q_INVOKABLE QVector<double> createNurbs(const QString& pointForNurbs);
     Q_INVOKABLE QVector<double> createPathFromPolygon(const QString& pathJsonData);
     Q_INVOKABLE QPoint latLong2LocalUTM(QGeoCoordinate latlong, QGeoCoordinate centroid);
     Q_INVOKABLE QGeoCoordinate localUTM2LatLong(QPoint UTM_point, QGeoCoordinate centroid);

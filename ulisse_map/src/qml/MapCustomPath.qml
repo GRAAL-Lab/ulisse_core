@@ -85,7 +85,7 @@ MapPolyline {
     }
 
     function _generate_and_draw() {
-        generate_nurbs()
+        //generate_nurbs()
         generate_markers()
         reposition_markers()
         disable_markers()
@@ -497,6 +497,7 @@ MapPolyline {
         moving_idx = -1
         translating = false
         rotating = false
+        console.log("backup path: ", backup_path)
         path = backup_path
         vertex_markers = backup_vertex_markers
         add_markers = backup_add_markers
@@ -504,7 +505,7 @@ MapPolyline {
         reposition_markers()
         disable_markers()
         disable_handle()
-        generate_nurbs()
+        //generate_nurbs()
         enable_ab_markers()
     }
 
@@ -534,7 +535,7 @@ MapPolyline {
                     line.color = lightgreen
                     mapMouseArea.hoverEnabled = false
                     update_centroid()
-                    generate_nurbs()
+                    //generate_nurbs()
                     end()
                     return
                 }
@@ -561,7 +562,7 @@ MapPolyline {
         }
     }
 
-    function generate_nurbs() {
+    /*function generate_nurbs() {
         var centroid = Helper.coords_centroid(path)
         var points = Helper.points_map2euclidean(path, centroid)
 
@@ -576,7 +577,7 @@ MapPolyline {
             direction: direction
         }
         return result
-    }
+    }*/
 
 
     function serialize() {

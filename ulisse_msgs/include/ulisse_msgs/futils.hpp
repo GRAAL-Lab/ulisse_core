@@ -369,7 +369,7 @@ void PrintCMATArray(T arr, const int size, const char delimiter)
 }
 
 template<typename T>
-std::string ArrayToString(T arr, const int size, const char delimiter, const int precision = 0)
+std::string ArrayToString(T arr, const int size, const char delimiter)//, const int precision = 0)
 {
     std::string arrayText;
     for (int i = 0; i < size; ++i) {

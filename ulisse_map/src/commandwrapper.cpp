@@ -130,7 +130,7 @@ void CommandWrapper::ShowToast(const QVariant message, const QVariant duration)
     QMetaObject::invokeMethod(toastMgrObj_, "show", Qt::QueuedConnection, Q_ARG(QVariant, message), Q_ARG(QVariant, duration));
 }
 
-bool CommandWrapper::sendPath(const QString path)
+/*bool CommandWrapper::sendPath(const QString path)
 {
     auto serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
     serviceReq->command_type = ulisse::commands::ID::pathfollow;
@@ -138,10 +138,10 @@ bool CommandWrapper::sendPath(const QString path)
 
     std::string pathJason = path.toStdString();
 
-    /*std::cout << "JSON:\n" << pathJason;
-    QJsonDocument doc = QJsonDocument::fromJson(pathJason.c_str());
-    QString formattedJsonString = doc.toJson(QJsonDocument::Indented);
-    std::cout << "JSON Indented:\n" << formattedJsonString.toStdString();*/
+    //std::cout << "JSON:\n" << pathJason;
+    //QJsonDocument doc = QJsonDocument::fromJson(pathJason.c_str());
+    //QString formattedJsonString = doc.toJson(QJsonDocument::Indented);
+    //std::cout << "JSON Indented:\n" << formattedJsonString.toStdString();
 
     Json::Reader reader;
     Json::Value obj, objMaster;
@@ -194,9 +194,9 @@ bool CommandWrapper::sendPath(const QString path)
     }
 
     return SendCommandRequest(serviceReq);
-}
+}*/
 
-QVector<double> CommandWrapper::createNurbs(const QString& pointForNurbs)
+/*QVector<double> CommandWrapper::createNurbs(const QString& pointForNurbs)
 {
     QVector<double> nurbsDiscretize;
     std::vector<SISLCurve*> nurbs;
@@ -224,16 +224,16 @@ QVector<double> CommandWrapper::createNurbs(const QString& pointForNurbs)
     centroid.longitude = objMaster["centroid"][1].asDouble();
 
     //some param needs to create a new curve
-    int kind = 2; /* Type of curve.
-                    = 1 : Polynomial B-spline curve.
-                    = 2 : Rational B-spline (nurbs) curve.
-                    = 3 : Polynomial Bezier curve.
-                    = 4 : Rational Bezier curve*/
+    int kind = 2;  // Type of curve.
+                   // = 1 : Polynomial B-spline curve.
+                   // = 2 : Rational B-spline (nurbs) curve.
+                   // = 3 : Polynomial Bezier curve.
+                   // = 4 : Rational Bezier curve
 
-    int copy = 1; /* Flag
-                     = 0 : Set pointer to input arrays.
-                     = 1 : Copy input arrays.
-                     = 2 : Set pointer and remember to free arrays. */
+    int copy = 1; // Flag
+                  //   = 0 : Set pointer to input arrays.
+                  //   = 1 : Copy input arrays.
+                  //   = 2 : Set pointer and remember to free arrays.
 
     try {
         for (Json::Value jcurve : objMaster["curves"]) {
@@ -316,10 +316,10 @@ QVector<double> CommandWrapper::createNurbs(const QString& pointForNurbs)
 
             // S1227 is a method for computing the position and the first derivatives of the curve at  a given parameter value Evaluation from the left hand side
             int leftKnot; //Pointer to the interval in the knot vector where parvalue is located.
-            int stat; /* Status messages
-                        > 0 : warning
-                        = 0 : ok
-                        < 0 : error*/
+            int stat; // Status messages
+                      //  > 0 : warning
+                      //  = 0 : ok
+                      //  < 0 : error
             // S1227 is a method for computing the position and the first derivatives of the curve at a given parameter value Evaluation from the left hand side
             s1227(currentCurve, 0, currentParvalue, &leftKnot, deriveTmp.get(), &stat);
 
@@ -341,89 +341,7 @@ QVector<double> CommandWrapper::createNurbs(const QString& pointForNurbs)
         }
     }
     return nurbsDiscretize;
-}
-
-QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonData)
-{
-    QVector<double> pathPoints;
-
-    Json::Reader reader;
-    Json::Value jvalues, obj2;
-
-    std::string pathJason = pathJsonData.toStdString();
-    QJsonDocument doc = QJsonDocument::fromJson(pathJason.c_str());
-    QString formattedJsonString = doc.toJson(QJsonDocument::Indented);
-    std::cout << "JSON Indented:\n" << formattedJsonString.toStdString();
-
-    reader.parse(pathJsonData.toStdString(), jvalues);
-
-    std::vector<Eigen::Vector3d> polygonVerteces(jvalues["coordinates"].size());
-    qDebug() << "Coordinates size: " << jvalues["coordinates"].size();
-
-    ctb::LatLong centroid(jvalues["centroid"]["latitude"].asDouble(), jvalues["centroid"]["longitude"].asDouble());
-    double altitude = 0.0;
-
-    try {
-        int i = 0;
-        for (const Json::Value &coord : jvalues["coordinates"]) {
-
-            ctb::LatLong pointGeo(coord["latitude"].asDouble(),coord["longitude"].asDouble());
-
-            ctb::LatLong2LocalUTM(pointGeo, altitude, centroid, polygonVerteces.at(i));
-            polygonVerteces.at(i)(2) = altitude;
-
-            qDebug() << QString::fromStdString(futils::ArrayToString(polygonVerteces.at(i), 3, ','));
-            i++;
-        }
-    } catch (Json::Exception& e) {
-        // output exception information
-        std::cerr << "Polygon Descriptor Error: " << e.what();
-    }
-
-    //double angle{150.0};
-    //double offsetPath{30.0};
-    double angle = jvalues["params"]["angle"].asDouble();
-    double offsetPath = jvalues["params"]["offset"].asDouble();
-    int direction = jvalues["params"]["direction"].asInt() + 1; /// TODO, FIXME: Make direction variable uniform!!!!!
-
-    std::shared_ptr<Path> serpentine;
-
-    polygonVerteces = std::vector<Eigen::Vector3d> ({
-        Eigen::Vector3d {-78, 44, 0}, Eigen::Vector3d {-47, 99, 0}, Eigen::Vector3d {46, 80, 0},
-        Eigen::Vector3d {79, -43, 0}, Eigen::Vector3d {-23, -99, 0}, Eigen::Vector3d{-110, -71, 0} });
-
-    qDebug() << "angle: " << angle;
-    qDebug() << "offset: " << offsetPath;
-    qDebug() << "direction: " << direction;
-
-
-    try {
-        serpentine = PathFactory::NewSerpentine(angle, RIGHT, offsetPath, polygonVerteces);
-        std::cout << *serpentine << std::endl;
-
-        std::cout << std::endl << serpentine->Name() << " is composed by: " << std::endl;
-        for(int i = 0; i < serpentine->CurvesNumber(); ++i) {
-            std::cout << i << ". " << *serpentine->Curves()[i] << std::endl;
-
-            for(int i = 0; i < serpentine->Curves()[i]->Length(); ++i) {
-
-            }
-        }
-
-    }
-    catch(std::runtime_error const& exception) {
-        std::cout << "Received exception from --> " << exception.what() << std::endl;
-    }
-
-
-
-
-    //ctb::LocalUTM2LatLong(derive, centroid, map_point, altitude);
-    // USE SISL TOOLBOX FUNCTIONS TO CREATE CURVE
-
-
-    return pathPoints;
-}
+}*/
 
 QPoint CommandWrapper::latLong2LocalUTM(QGeoCoordinate latlong, QGeoCoordinate centroid)
 {
@@ -444,7 +362,100 @@ QGeoCoordinate CommandWrapper::localUTM2LatLong(QPoint UTM_point, QGeoCoordinate
     return QGeoCoordinate(tmp.latitude, tmp.longitude);
 }
 
-bool CommandWrapper::sendBoundaries(const QString& boundary_json_data)
+QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonData)
+{
+    Json::Reader reader;
+    Json::Value jvalues, obj2;
+
+    std::string pathJason = pathJsonData.toStdString();
+    QJsonDocument doc = QJsonDocument::fromJson(pathJason.c_str());
+    QString formattedJsonString = doc.toJson(QJsonDocument::Indented);
+    std::cout << "JSON Indented:\n" << formattedJsonString.toStdString();
+
+    reader.parse(pathJsonData.toStdString(), jvalues);
+
+    std::vector<Eigen::Vector3d> polyVerticesUTM(jvalues["coordinates"].size());
+    qDebug() << "Coordinates size: " << jvalues["coordinates"].size();
+
+    ctb::LatLong centroid(jvalues["centroid"]["latitude"].asDouble(), jvalues["centroid"]["longitude"].asDouble());
+    qDebug() << "Centroid: " << jvalues["centroid"]["latitude"].asDouble() << ", " << jvalues["centroid"]["longitude"].asDouble();
+
+    double altitude = 0.0;
+
+    try {
+        int i = 0;
+        for (const Json::Value &coord : jvalues["coordinates"]) {
+
+            ctb::LatLong polyVertexGeo(coord["latitude"].asDouble(), coord["longitude"].asDouble());
+            ctb::LatLong2LocalUTM(polyVertexGeo, altitude, centroid, polyVerticesUTM.at(i));
+            polyVerticesUTM.at(i)(2) = altitude;
+            i++;
+        }
+    } catch (Json::Exception& e) {
+        // output exception information
+        std::cerr << "Polygon Descriptor Error: " << e.what();
+    }
+
+    // Remove last element equal to first (fix?)
+    polyVerticesUTM.pop_back();
+
+    //double angle{150.0};
+    //double offsetPath{30.0};
+    double angle = jvalues["params"]["angle"].asDouble();
+    double offsetPath = jvalues["params"]["offset"].asDouble();
+    int direction = jvalues["params"]["direction"].asInt() + 1; /// TODO, FIXME: Make direction variable uniform!!!!!
+
+    std::shared_ptr<Path> serpentine;
+
+    /*polygonVertices = std::vector<Eigen::Vector3d> ({
+        Eigen::Vector3d {-78, 44, 0}, Eigen::Vector3d {-47, 99, 0}, Eigen::Vector3d {46, 80, 0},
+        Eigen::Vector3d {79, -43, 0}, Eigen::Vector3d {-23, -99, 0}, Eigen::Vector3d{-110, -71, 0} });*/
+
+    qDebug() << "angle: " << angle;
+    qDebug() << "offset: " << offsetPath;
+    qDebug() << "direction: " << direction;
+
+    for (const auto &vertex : polyVerticesUTM){
+        qDebug() << QString::fromStdString(futils::ArrayToString(vertex, 3, ','));
+    }
+
+    try {
+        serpentine = PathFactory::NewSerpentine(angle, RIGHT, offsetPath, polyVerticesUTM);
+        std::cout << *serpentine << std::endl;
+
+        std::cout << std::endl << serpentine->Name() << " is composed by: " << std::endl;
+        for(int i = 0; i < serpentine->CurvesNumber(); ++i) {
+            std::cout << i << ". " << *serpentine->Curves()[i] << std::endl;
+            //std::cout << i << ". Lenght: " << serpentine->Curves()[i]->Length() << std::endl;
+        }
+
+    }
+    catch(std::runtime_error const& exception) {
+        std::cout << "Received exception from --> " << exception.what() << std::endl;
+    }
+
+
+    double samplingInterval = 2.0; // meters
+    int numSamples = (int)round(serpentine->Length()/samplingInterval);
+    auto sampledPath = serpentine->Sampling(numSamples);
+
+    QVector<double> pathVectorGeo;
+
+    for(size_t i=0; i < sampledPath->size(); i++){
+        ctb::LatLong pathPointGeo;
+        ctb::LocalUTM2LatLong(sampledPath->at(i), centroid, pathPointGeo, altitude);
+        pathVectorGeo << pathPointGeo.latitude << pathPointGeo.longitude;
+    }
+
+    return pathVectorGeo;
+}
+
+bool CommandWrapper::sendPath(const QString &pathJsonData)
+{
+
+}
+
+bool CommandWrapper::sendBoundaries(const QString& boundaryJsonData)
 {
     auto serviceReq = std::make_shared<ulisse_msgs::srv::SetBoundaries::Request>();
     serviceReq->boundaries.id = "GUI Set Boundary";// + boundary.toStdString();
@@ -457,7 +468,7 @@ bool CommandWrapper::sendBoundaries(const QString& boundary_json_data)
     Json::Reader reader;
     Json::Value jObj;
 
-    reader.parse(boundary_json_data.toStdString(), jObj);
+    reader.parse(boundaryJsonData.toStdString(), jObj);
 
     serviceReq->boundaries.vertices.resize(jObj["coordinates"].size());
     unsigned int count = 0;

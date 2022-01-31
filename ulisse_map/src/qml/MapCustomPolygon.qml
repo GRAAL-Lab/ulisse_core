@@ -9,7 +9,7 @@ import "../scripts/helper.js" as Helper
 MapPolyline {
     id: root
     line.width: 2
-    opacity: desel_line_opacity
+    opacity: 1.0
     z: map.z + 4
 
     property real desel_line_opacity: 0.4
@@ -44,9 +44,12 @@ MapPolyline {
     property int direction: 0  // 0: Direct, 1: Reverse
 
     property var centroid: QtPositioning.coordinate(0.0, 0.0)
-    property var intersections_canvas: []
-    property var intersections_cartesian: []
-    property var intersections_geographic: []
+    property var startPoint: QtPositioning.coordinate(0.0, 0.0)
+    property var endPoint: QtPositioning.coordinate(0.0, 0.0)
+
+    //property var intersections_canvas: []
+    //property var intersections_cartesian: []
+    //property var intersections_geographic: []
 
     property var polygonal_phase: 0
     property var polygonal_direction: 0 //1: counterclockwise, 2: clockwise
@@ -177,6 +180,7 @@ MapPolyline {
 
     function close_polygon() {
         replaceCoordinate(pathLength() - 1, path[0])
+        //removeCoordinate(pathLength() - 1)
         mapMouseArea.hoverEnabled = false
         line.color = green
         polygonal_phase = 0
@@ -239,10 +243,8 @@ MapPolyline {
     function reposition_markers() {
         reposition_add_markers()
         reposition_vertex_markers()
-        a_marker.coordinate = intersections_geographic[0][0]
-        b_marker.coordinate = intersections_geographic[intersections_geographic.length
-                                                       - 1][(intersections_geographic.length
-                                                             % 2 === 0) ? 0 : 1]
+        a_marker.coordinate = startPoint
+        b_marker.coordinate = endPoint
         if (direction === 1) toggle_dir()
     }
 
@@ -692,60 +694,6 @@ MapPolyline {
         }
     }
 
-
-    function generate_path() {
-        if (!(_method === "simple" || _method === "single_winding"))
-            return
-
-        var orig_tilt = map.tilt
-        map.tilt = 0
-
-        var shape_coords = get_path()
-
-        centroid = Helper.coords_centroid(shape_coords)
-        var limits = Helper.shape_geo_limits(shape_coords)
-
-        var lam = Helper.lat_to_m_coeff(centroid.latitude)
-        var lom = Helper.lon_to_m_coeff(centroid.longitude)
-
-        var dim = Helper.shape_px_dimensions(limits, map)
-
-        // transform shape coordinates and work in a virtual euclidean metric system
-        var points = Helper.points_map2euclidean(shape_coords, centroid)
-        points = Helper.set_points_clockwise(points)
-        var sides = Helper.make_sides(points)
-
-        intersections_cartesian = Helper.convex_polygon_parallel_slices_intersections(_angle, _offset, sides, lam / lom)
-
-        if (_method === "simple" || _method === "single_winding")
-            intersections_cartesian = Helper.rectify_dense_winding(intersections_cartesian, lam / lom)
-
-        // transform virtual euclidean reference points in map coordinates
-        intersections_geographic = Helper.segments_euclidean2map(intersections_cartesian, centroid)
-
-        var a = map.toCoordinate(Qt.point(0, 0))
-        var b = map.toCoordinate(Qt.point(0, 1))
-        var c = map.toCoordinate(Qt.point(1, 0))
-        var p2m_h = a.distanceTo(b)
-        var p2m_v = a.distanceTo(c)
-
-        _offset *= 3
-        var o_x = _offset / p2m_h
-        var o_y = _offset / p2m_v
-
-        Helper.init_canvas(
-                    _canvas, map, dim[0] + 2 * o_x, dim[1] + 2 * o_y,
-                    limits.max_lat + _offset / lam, limits.min_lon - _offset / lom,
-                    Helper.relative_zoom_pixel_ratio(map, map.maximumZoomLevel))
-
-        _offset /= 3
-
-        // transform map coordinates in canvas pixel indexes
-        intersections_canvas = Helper.segments_map2canvas(intersections_geographic, map, _canvas)
-        map.tilt = orig_tilt
-    }
-
-
     /////////////////////////////////////////////////
     // Editing/finalization utilities
     property var backup_path
@@ -767,6 +715,7 @@ MapPolyline {
         moving_idx = -1
         translating = false
         rotating = false
+        //console.log("backup path: ", backup_path)
         path = backup_path
         update_centroid()
         generate_markers()
@@ -774,11 +723,7 @@ MapPolyline {
         disable_markers()
         disable_handle()
         if (_method !== null || _method !== undefined) {
-            // Insert C++ generation also here
-            generate_path()
-            generate_nurbs()
-            draw_path()
-
+            _generate_and_draw()
         }
     }
 
@@ -810,15 +755,61 @@ MapPolyline {
 
     //////////////////////////////////////////////////////////
     // Draw utilities
+
+    function init_canvas() {
+        var orig_tilt = map.tilt
+        //var orig_fov = map.fieldOfView
+        //var orig_bearing = map.bearing
+        map.tilt = 0
+        //map.fieldOfView = 0
+        //map.bearing = 0
+
+        var shape_coords = get_path()
+
+        centroid = Helper.coords_centroid(shape_coords)
+        var limits = Helper.shape_geo_limits(shape_coords)
+
+        var lam = Helper.lat_to_m_coeff(centroid.latitude)
+        var lom = Helper.lon_to_m_coeff(centroid.longitude)
+
+        var a = map.toCoordinate(Qt.point(0, 0))
+        var b = map.toCoordinate(Qt.point(0, 1))
+        var c = map.toCoordinate(Qt.point(1, 0))
+        var p2m_h = a.distanceTo(b)
+        var p2m_v = a.distanceTo(c)
+
+        var temp_offset = _offset * 3
+        var o_x = temp_offset / p2m_h
+        var o_y = temp_offset / p2m_v
+
+        var dim = Helper.shape_px_dimensions(limits, map)
+
+        Helper.init_canvas(
+                    _canvas, map, dim[0] + 2 * o_x, dim[1] + 2 * o_y,
+                    limits.max_lat + temp_offset / lam, limits.min_lon - temp_offset / lom,
+                    Helper.relative_zoom_pixel_ratio(map, map.maximumZoomLevel))
+
+        map.tilt = orig_tilt
+        //map.fieldOfView = orig_fov
+        //map.bearing = orig_bearing
+    }
+
     function _generate_and_draw() {
+
+        update_centroid();
+
+        var pathPoints = cmdWrapper.createPathFromPolygon(JSON.stringify(serialize()));
+        startPoint = QtPositioning.coordinate(pathPoints[0], pathPoints[1]);
+        endPoint = QtPositioning.coordinate(pathPoints[pathPoints.length - 2], pathPoints[pathPoints.length - 1]);
+
+        console.log("[MapPolygon] Number of PathPoints: " + pathPoints.length)
+
         if (_method != null || _method !== undefined) {
             // For the SafetyBoundary the _method is null
 
-            console.log("[MapPolygon] generate_path() disabled")
-            //cmdWrapper.generatePath <----
-            generate_path()
+            //generate_path()
             console.log("[MapPolygon] draw_path()")
-            draw_path()
+            draw_path(pathPoints)
         }
 
         generate_markers()
@@ -839,51 +830,15 @@ MapPolyline {
         }
     }
 
-    function draw_path() {
-        // clear the canvas
+    function draw_path(pathPoints) {
+        init_canvas()
+        // Clear the canvas
         _canvas.clear_canvas()
-        Helper.draw_path_lines(_canvas, cmdWrapper.createNurbs(JSON.stringify(generate_nurbs())), map)
-        //Helper.draw_path_lines(_canvas,
-        cmdWrapper.createPathFromPolygon(JSON.stringify(serialize()));
-        //, map)
-
+        Helper.draw_path_lines(_canvas, pathPoints, map)//cmdWrapper.createPathFromPolygon(JSON.stringify(serialize())), map)
     }
 
     ////////////////////////////////////////////////////////////////////////////////////
-    function generate_nurbs() {
-        // This function will be replaced since the sisl_toolbox will generate the curve
-        var nurb_l = []
-        var nurb_c = []
-        for (var i = 0; i < intersections_cartesian.length; i++) {
-            var p0 = intersections_cartesian[i][i % 2]
-            var p1 = intersections_cartesian[i][(i + 1) % 2]
-            nurb_l.push(Helper.generate_nurb_line(p0, p1, centroid))
-        }
-
-        for (var i = 0; i < intersections_cartesian.length - 1; i++) {
-            var dir = (i + 1) % 2
-            var p0 = intersections_cartesian[i][dir]
-            var p3 = intersections_cartesian[i + 1][dir]
-            if (_method === "simple")
-                nurb_c.push(Helper.generate_nurb_line(p0, p3, centroid))
-            else if (_method === "single_winding")
-                nurb_c.push(Helper.generate_nurb_circle(p0, p3, dir, centroid))
-        }
-
-
-        var curves = [nurb_l[0]]
-        for (var i = 0; i < intersections_cartesian.length - 1; i++) {
-            curves.push(nurb_c[i])
-            curves.push(nurb_l[i + 1])
-        }
-
-        var result = {
-            centroid: [centroid.latitude, centroid.longitude],
-            curves: curves,
-            direction: direction
-        }
-        return result
-    }
+    /// I/O Utilities
 
     function serialize() {
         var coordinates = []
@@ -925,10 +880,6 @@ MapPolyline {
             lon = data.coordinates[j].longitude
             addCoordinate(QtPositioning.coordinate(lat, lon))
         }
-    }
-
-    function get_nurbs(data){
-        nurbs = data
     }
 
     ///////////////////////////////////////////////////
