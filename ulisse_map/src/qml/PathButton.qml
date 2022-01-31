@@ -17,10 +17,9 @@ PathButtonForm {
         selected(managedPath)
     }
 
-    function highlight(yes) {
-        //toggled = yes
-        pathButton.Material.background = yes ? orange : lightergrey
-        managedPath.highlighted(yes)
+    function highlight(flag) {
+        managedPath.highlighted(flag)
+        isSelected = flag;
     }
 
     width: parent.width

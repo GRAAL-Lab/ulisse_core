@@ -13,12 +13,12 @@ RowLayout {
     property bool buttons: false
     property var angle: parseInt(angleField.text)
     property var offset: parseInt(offsetField.text)
-    property var method: methodField.currentText
+    //property var method: methodField.currentText
     property var nameTrack: textnametrack.text
     property var nameTrack_
     property var offset_
     property var angle_
-    property var method_
+    //property var method_
     signal accept
     signal discard
 
@@ -28,14 +28,14 @@ RowLayout {
         return {
             angle: angle,
             offset: offset,
-            method: method
+            //method: method
         }
     }
 
     function fill_cur_values(values) {
         angle_ = (values.params.angle !== undefined) ? values.params.angle : 30
         offset_ = (values.params.offset !== undefined) ? values.params.offset : 30
-        method_ = (values.params.method !== undefined) ? values.params.method : "simple"
+        //method_ = (values.params.method !== undefined) ? values.params.method : "simple"
         nameTrack_ = (values.name !== undefined) ? values.name : "Path"
     }
 
@@ -78,7 +78,7 @@ RowLayout {
         }
     }
 
-    LabelledField {
+    /*LabelledField {
         id: groupBoxnurbs
         height: methodField.height + 40
         width: methodField.width + 50
@@ -91,7 +91,7 @@ RowLayout {
             //Layout.fillWidth: true
             model: ["single_winding", "simple"]
         }
-    }
+    }*/
 
     Button {
         id: cancelPolyEdit

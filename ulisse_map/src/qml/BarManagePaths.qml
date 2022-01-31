@@ -82,7 +82,7 @@ BarManagePathsForm {
     }
     
     function abort_h(){
-        console.log("[BarManagePaths] abort_h()")
+        //console.log("[BarManagePaths] abort_h()")
         map.clickHandler = map.click_goto_handler
         map.posChangedHandler = function () {}
         pathCmdPane.enableBtns(true)
@@ -120,7 +120,7 @@ BarManagePathsForm {
     }
 
     function end() {
-        console.log("[BarManagePaths] end()")
+        //console.log("[BarManagePaths] end()")
         window.sig_escape.disconnect(abort_h)
         cur_managed.end.disconnect(end)
         confirm()
@@ -138,7 +138,7 @@ BarManagePathsForm {
     }
 
     function confirm() {
-        console.log("[BarManagePaths] confirm()")
+        //console.log("[BarManagePaths] confirm()")
         map.clickHandler = map.click_goto_handler
         map.posChangedHandler = function () {}
         var p = params_panel.getParams()
@@ -150,13 +150,13 @@ BarManagePathsForm {
     }
 
     function discard() {
-        console.log("[BarManagePaths] discard()")
+        //console.log("[BarManagePaths] discard()")
         map.clickHandler = map.click_goto_handler
         map.posChangedHandler = function () {}
         if (cur_managed !== undefined){
             if( cur_managed.path.lenght !== 0 )    {
-                console.log("[BarManagePaths] discard() - cur_managed !== undefined")
-                console.log("cur_managed: " + cur_managed.pathName)
+                //console.log("[BarManagePaths] discard() - cur_managed !== undefined")
+                //console.log("cur_managed: " + cur_managed.pathName)
                 cur_managed.enable_ab_markers()
                 cur_managed.discard_edit()
 

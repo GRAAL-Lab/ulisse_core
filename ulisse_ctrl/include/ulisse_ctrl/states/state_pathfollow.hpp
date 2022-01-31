@@ -1,7 +1,7 @@
-#ifndef ULISSE_CTRL_STATEpathfollow_HPP
-#define ULISSE_CTRL_STATEpathfollow_HPP
+#ifndef ULISSE_CTRL_STATE_PATHFOLLOW_HPP
+#define ULISSE_CTRL_STATE_PATHFOLLOW_HPP
 
-#include "sisl.h"
+#include "sisl_toolbox/sisl_toolbox.hpp"
 #include "ulisse_ctrl/states/generic_state.hpp"
 #include "ulisse_msgs/msg/path.hpp"
 #include <ulisse_ctrl/nurbs.h>
@@ -42,4 +42,4 @@ namespace states {
 }
 }
 
-#endif // ULISSE_CTRL_STATEMOVE_HPP
+#endif // ULISSE_CTRL_STATE_PATHFOLLOW_HPP

@@ -267,7 +267,7 @@ Pane {
                 bar_manage.manage(path)
             })
             cur_managed.check_safe(map.safety_polygon)
-            console.log("[Command Pane] loadPath - generate_and_draw_deferred()")
+            //console.log("[Command Pane] loadPath - generate_and_draw_deferred()")
             cur_managed.generate_and_draw_deferred()
             break
         case "PointPath":

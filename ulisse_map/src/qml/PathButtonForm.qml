@@ -15,7 +15,7 @@ RowLayout {
     id: pathButtonRoot
     property variant managedPath
     property alias pathButton: pathButton
-    //property bool toggled: false
+    property bool isSelected: false
 
     signal selected(var path)
     signal edit(var path)
@@ -31,7 +31,7 @@ RowLayout {
         Layout.fillWidth: true
         antialiasing: false
         enabled: true
-        Material.background: lightergrey
+        Material.background: isSelected ? orange : lightergrey
     }
 
     Button {
@@ -87,10 +87,12 @@ RowLayout {
             title: "Delete Path?"
             standardButtons: Dialog.Ok
             onAccepted: {
+                if (pathButtonRoot.isSelected){
+                    bar_manage.hide_all()
+                }
                 managedPath.deregister_map_items()
                 map.removeMapItem(managedPath)
                 pathButtonRoot.destroy()
-                bar_manage.hide_all()
             }
         }
     }

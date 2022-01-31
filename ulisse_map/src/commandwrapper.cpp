@@ -12,7 +12,7 @@
 #include "ulisse_msgs/futils.hpp"
 #include "nav_filter/nav_data_structs.hpp"
 #include "sisl_toolbox/sisl_toolbox.hpp"
-#include "sisl.h"
+//#include "sisl.h"
 
 using namespace std::chrono_literals;
 using std::placeholders::_1;
@@ -367,18 +367,18 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
     Json::Reader reader;
     Json::Value jvalues, obj2;
 
-    std::string pathJason = pathJsonData.toStdString();
-    QJsonDocument doc = QJsonDocument::fromJson(pathJason.c_str());
-    QString formattedJsonString = doc.toJson(QJsonDocument::Indented);
-    std::cout << "JSON Indented:\n" << formattedJsonString.toStdString();
+    //std::string pathJason = pathJsonData.toStdString();
+    //QJsonDocument doc = QJsonDocument::fromJson(pathJason.c_str());
+    //QString formattedJsonString = doc.toJson(QJsonDocument::Indented);
+    //std::cout << "JSON Indented:\n" << formattedJsonString.toStdString();
 
     reader.parse(pathJsonData.toStdString(), jvalues);
 
     std::vector<Eigen::Vector3d> polyVerticesUTM(jvalues["coordinates"].size());
-    qDebug() << "Coordinates size: " << jvalues["coordinates"].size();
+    //qDebug() << "Coordinates size: " << jvalues["coordinates"].size();
 
     ctb::LatLong centroid(jvalues["centroid"]["latitude"].asDouble(), jvalues["centroid"]["longitude"].asDouble());
-    qDebug() << "Centroid: " << jvalues["centroid"]["latitude"].asDouble() << ", " << jvalues["centroid"]["longitude"].asDouble();
+    //qDebug() << "Centroid: " << jvalues["centroid"]["latitude"].asDouble() << ", " << jvalues["centroid"]["longitude"].asDouble();
 
     double altitude = 0.0;
 
@@ -411,23 +411,21 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
         Eigen::Vector3d {-78, 44, 0}, Eigen::Vector3d {-47, 99, 0}, Eigen::Vector3d {46, 80, 0},
         Eigen::Vector3d {79, -43, 0}, Eigen::Vector3d {-23, -99, 0}, Eigen::Vector3d{-110, -71, 0} });*/
 
-    qDebug() << "angle: " << angle;
-    qDebug() << "offset: " << offsetPath;
-    qDebug() << "direction: " << direction;
-
-    for (const auto &vertex : polyVerticesUTM){
-        qDebug() << QString::fromStdString(futils::ArrayToString(vertex, 3, ','));
-    }
+    //qDebug() << "angle: " << angle;
+    //qDebug() << "offset: " << offsetPath;
+    //qDebug() << "direction: " << direction;
+    //
+    //for (const auto &vertex : polyVerticesUTM){
+    //    qDebug() << QString::fromStdString(futils::ArrayToString(vertex, 3, ','));
+    //}
 
     try {
         serpentine = PathFactory::NewSerpentine(angle, RIGHT, offsetPath, polyVerticesUTM);
         std::cout << *serpentine << std::endl;
-
-        std::cout << std::endl << serpentine->Name() << " is composed by: " << std::endl;
+        /*std::cout << std::endl << serpentine->Name() << " is composed by: " << std::endl;
         for(int i = 0; i < serpentine->CurvesNumber(); ++i) {
             std::cout << i << ". " << *serpentine->Curves()[i] << std::endl;
-            //std::cout << i << ". Lenght: " << serpentine->Curves()[i]->Length() << std::endl;
-        }
+        }*/
 
     }
     catch(std::runtime_error const& exception) {
@@ -485,8 +483,6 @@ bool CommandWrapper::sendBoundaries(const QString& boundaryJsonData)
         // output exception information
         std::cout << "Error parsing QML Jason" << e.what() << std::endl;
     }
-
-    // TODO: UPDATE THE CONTROLLER SIDE
 
     return SendBoundariesRequest(serviceReq);
 }

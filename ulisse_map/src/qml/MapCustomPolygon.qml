@@ -40,7 +40,7 @@ MapPolyline {
     property string pathName: "Path"
     property real _angle: 30
     property real _offset: 30
-    property var _method: "single_winding" // "simple"
+    //property var _method: "single_winding" // "simple"
     property int direction: 0  // 0: Direct, 1: Reverse
 
     property var centroid: QtPositioning.coordinate(0.0, 0.0)
@@ -91,10 +91,10 @@ MapPolyline {
 
     }
 
-    onPathNameChanged: {
+    /*onPathNameChanged: {
         console.log("[MapPolygon] PathName: " + pathName)
         console.log("[MapPolygon] PathType: " + type)
-    }
+    }*/
 
 
     function deregister_map_items() {
@@ -393,7 +393,7 @@ MapPolyline {
                 pp.push(pp[0])
                 if (!Helper.coord_inside_polygon(fbkUpdater.ulisse_pos, pp))
                     return
-                console.log("[MapPolygon.click_handler_non_intersecting] close_polygon()")
+                //console.log("[MapPolygon.click_handler_non_intersecting] close_polygon()")
 
                 close_polygon()
                 update_centroid()
@@ -551,7 +551,7 @@ MapPolyline {
                 if (map_polygon_point_admissibility(m)){
                     addCoordinate(p)
                 } else {
-                    console.log("[MapPolygon.click_handler_convex] close_polygon()")
+                    //console.log("[MapPolygon.click_handler_convex] close_polygon()")
                     close_polygon()
                 }
             }
@@ -722,19 +722,19 @@ MapPolyline {
         reposition_markers()
         disable_markers()
         disable_handle()
-        if (_method !== null || _method !== undefined) {
+        //if (_method !== null || _method !== undefined) {
             _generate_and_draw()
-        }
+        //}
     }
 
     function confirm_edit(name, params) {
-        console.log("[MapCustomPolygon] confirm edit")
+        //console.log("[MapCustomPolygon] confirm edit")
         mapMouseArea.hoverEnabled = false
         pathName = name
         if (params !== null || params !== undefined) {
             _angle = params.angle
             _offset = params.offset
-            _method = params.method
+            //_method = params.method
         }
         moving_idx = -1
         _generate_and_draw()
@@ -746,7 +746,7 @@ MapPolyline {
             params: {
                 angle: _angle,
                 offset: _offset,
-                method: _method,
+                //method: _method,
                 direction: direction
             }
         }
@@ -802,22 +802,22 @@ MapPolyline {
         startPoint = QtPositioning.coordinate(pathPoints[0], pathPoints[1]);
         endPoint = QtPositioning.coordinate(pathPoints[pathPoints.length - 2], pathPoints[pathPoints.length - 1]);
 
-        console.log("[MapPolygon] Number of PathPoints: " + pathPoints.length)
+        //console.log("[MapPolygon] Number of PathPoints: " + pathPoints.length)
 
-        if (_method != null || _method !== undefined) {
+        //if (_method != null || _method !== undefined) {
             // For the SafetyBoundary the _method is null
 
             //generate_path()
-            console.log("[MapPolygon] draw_path()")
+            //console.log("[MapPolygon] draw_path()")
             draw_path(pathPoints)
-        }
+        //}
 
         generate_markers()
         reposition_markers()
         disable_markers()
         disable_handle()
 
-        console.log("[MapPolygon] _generate_and_draw() DONE")
+        //console.log("[MapPolygon] _generate_and_draw() DONE")
     }
 
     function generate_and_draw_deferred() {
@@ -856,7 +856,7 @@ MapPolyline {
             params: {
                 offset: _offset,
                 angle: _angle,
-                method: _method,
+                //method: _method,
                 direction: direction
             },
             centroid: { latitude: centroid.latitude, longitude: centroid.longitude },
@@ -871,7 +871,7 @@ MapPolyline {
 
         _angle = data.params.angle
         _offset = data.params.offset
-        _method = data.params.method
+        //  _method = data.params.method
         direction = data.params.direction
 
         var lat, lon
@@ -885,7 +885,7 @@ MapPolyline {
     ///////////////////////////////////////////////////
     // Safety
     function check_safe(box) {
-        console.log("[MapCustomPolygon] check_safe()")
+        //console.log("[MapCustomPolygon] check_safe()")
         var bpp = [], ppp = []
         for (var i in box.path) {
             bpp.push(map.fromCoordinate(box.path[i], false))
