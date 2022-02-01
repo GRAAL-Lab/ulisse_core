@@ -54,7 +54,7 @@ set(ulisse_kinematic_ctrl_lib_sources
     src/ulisse_ctrl/kinematic_vehicle_controller.cpp
     # Helpers
     src/ulisse_ctrl/configuration.cpp
-    src/ulisse_ctrl/nurbs.cpp
+    src/ulisse_ctrl/path_manager.cpp
     # States
     src/ulisse_ctrl/states/generic_state.cpp
     src/ulisse_ctrl/states/state_halt.cpp

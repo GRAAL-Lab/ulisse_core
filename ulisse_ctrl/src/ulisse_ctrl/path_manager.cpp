@@ -1,7 +1,7 @@
-#include "ulisse_ctrl/nurbs.h"
+#include "ulisse_ctrl/path_manager.h"
 #include <fstream>
 
-Nurbs::Nurbs(int dim)
+PathManager::PathManager(int dim)
     : dim_ { dim }
     , startP_ { 0.0, 0.0 }
     , endP_ { 0.0, 0.0 }
@@ -21,9 +21,9 @@ Nurbs::Nurbs(int dim)
     nurbsParam.deltaStep = 0.05;
 }
 
-Nurbs::~Nurbs() { nurbs_.clear(); }
+PathManager::~PathManager() { nurbs_.clear(); }
 
-bool Nurbs::Initialization(const ulisse_msgs::msg::Path& path)
+bool PathManager::Initialization(const ulisse_msgs::msg::Path& path)
 {
     bool reverse = false;
     parvalue_ = 0.0;
@@ -52,12 +52,12 @@ bool Nurbs::Initialization(const ulisse_msgs::msg::Path& path)
     try {
         for (auto curves : path.nurbs) {
 
-            //Order of curve.
+            // Order of curve
             int order = static_cast<int>(curves.degree);
             std::cout << "order: " << order << std::endl;
             std::cout << "curve index: " << i++ << std::endl;
 
-            std::shared_ptr<double[]> weights(new double[curves.weigths.size()]); //whight vector of curve.
+            std::shared_ptr<double[]> weights(new double[curves.weigths.size()]); // Weight vector of curve.
             //Acquired the weights
             for (unsigned int i = 0; i < curves.weigths.size(); i++) {
                 weights[i] = curves.weigths[i];
@@ -157,7 +157,7 @@ bool Nurbs::Initialization(const ulisse_msgs::msg::Path& path)
     return true;
 }
 
-bool Nurbs::ComputeNextPoint(const ctb::LatLong& currentP, ctb::LatLong& nextP)
+bool PathManager::ComputeNextPoint(const ctb::LatLong& currentP, ctb::LatLong& nextP)
 {
     Eigen::VectorXd currentPCartesian = Eigen::VectorXd::Zero(dim_);
     ctb::LatLong2LocalUTM(currentP, 0.0, centroid_, currentPCartesian);
@@ -244,7 +244,7 @@ bool Nurbs::ComputeNextPoint(const ctb::LatLong& currentP, ctb::LatLong& nextP)
     return true;
 }
 
-bool Nurbs::ComputePossibleNextPoint(Eigen::VectorXd& nextDirection, Eigen::VectorXd& nextP)
+bool PathManager::ComputePossibleNextPoint(Eigen::VectorXd& nextDirection, Eigen::VectorXd& nextP)
 {
     nextP = Eigen::VectorXd::Zero(dim_);
 
@@ -321,7 +321,7 @@ bool Nurbs::ComputePossibleNextPoint(Eigen::VectorXd& nextDirection, Eigen::Vect
     return true;
 }
 
-bool Nurbs::ComputeCurveLength(SISLCurve* curve, double& length)
+bool PathManager::ComputeCurveLength(SISLCurve* curve, double& length)
 {
     //SISL call to campute the curve length
     int stat = 0;
@@ -333,7 +333,7 @@ bool Nurbs::ComputeCurveLength(SISLCurve* curve, double& length)
     return true;
 }
 
-bool Nurbs::ComputeDerive(SISLCurve* curve, const int der, const double parvalue, Eigen::VectorXd& derive)
+bool PathManager::ComputeDerive(SISLCurve* curve, const int der, const double parvalue, Eigen::VectorXd& derive)
 {
 	//std::cerr << "ComputeDerive at parvalue " << parvalue << std::endl;
     int deriveDim = dim_ * (der + 1);
@@ -366,7 +366,7 @@ bool Nurbs::ComputeDerive(SISLCurve* curve, const int der, const double parvalue
     return true;
 }
 
-bool Nurbs::ComputeParameterValue(const Eigen::VectorXd& epoint)
+bool PathManager::ComputeParameterValue(const Eigen::VectorXd& epoint)
 {
     //std::cout << "epoint: " << epoint[0] << ", " << epoint[1] << std::endl;
     //convert epoint in a formata readable for SISL
@@ -473,7 +473,7 @@ bool Nurbs::ComputeParameterValue(const Eigen::VectorXd& epoint)
     return true;
 }
 
-bool Nurbs::LogPathOnFile(const std::vector<SISLCurve*>& nurbs)
+bool PathManager::LogPathOnFile(const std::vector<SISLCurve*>& nurbs)
 {
     auto in_time_t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 

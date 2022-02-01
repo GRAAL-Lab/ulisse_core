@@ -9,14 +9,14 @@ namespace states {
         : isCurveSet_ { false }
         , vehicleOnTrack_ { false }
         , logPathOnFile_ { false }
-        , nurbsObj_ { 3 }
+        , pathManager_ { 3 }
 
     {
     }
 
     StatePathFollow::~StatePathFollow() { }
 
-    bool StatePathFollow::LoadNurbs(const ulisse_msgs::msg::Path& path)
+    /*bool StatePathFollow::LoadNurbs(const ulisse_msgs::msg::Path& path)
     {
         vehicleOnTrack_ = false;
 
@@ -61,6 +61,53 @@ namespace states {
         std::cout << "*** GOING TO INITIAL POINT! ***" << std::endl;
 
         return isCurveSet_;
+    }*/
+
+    bool StatePathFollow::LoadPath(const ulisse_msgs::msg::Path& path){
+        vehicleOnTrack_ = false;
+
+        std::cout << "LOADING NURBS" << std::endl;
+        pathManager_.ResetPath();
+        if (!pathManager_.Initialization(path)) {
+            std::cerr << "PathManager::Initialization: fails" << std::endl;
+            return false;
+        }
+        isCurveSet_ = true;
+
+        if (logPathOnFile_) {
+            // Log path on file
+            if (!pathManager_.LogPathOnFile(pathManager_.Path())) {
+                std::cerr << "PathManager::LogPathOnFile fails" << std::endl;
+                return false;
+            }
+        }
+
+        // Get the staring and ending point of the path
+        startP_ = pathManager_.StartingPoint();
+
+        // Evaluete the end curve length
+        double length;
+        pathManager_.ComputeCurveLength(pathManager_.Path()[pathManager_.Path().size() - 1], length);
+        // Compute the prametric tollerance of the end curve
+        tolleranceEndingPoint_ = pathManager_.Path().size() - tolleranceEndingPoint_ / length;
+
+        // Check if the curves are greater than the delta max
+        for (auto curve : pathManager_.Path()) {
+            if (!pathManager_.ComputeCurveLength(curve, length)) {
+                std::cerr << "State pathfollow: ComputeCurveLength fails" << std::endl;
+                return fsm::fail;
+            }
+
+            if (length < pathManager_.nurbsParam.deltaMax) {
+                std::cerr << "State pathfollow: Delta is too high" << std::endl;
+                return fsm::fail;
+            }
+        }
+
+        std::cout << "*** GOING TO INITIAL POINT! ***" << std::endl;
+
+        return isCurveSet_;
+
     }
 
     bool StatePathFollow::ConfigureStateFromFile(libconfig::Config& confObj)
@@ -82,7 +129,7 @@ namespace states {
             return false;
 
         //configure the nurbs param
-        if (!nurbsObj_.nurbsParam.configureFromFile(confObj, ulisse::states::ID::pathfollow)) {
+        if (!pathManager_.nurbsParam.configureFromFile(confObj, ulisse::states::ID::pathfollow)) {
             std::cerr << "Failed to load Nurbs Params" << std::endl;
             return false;
         }
@@ -172,13 +219,13 @@ namespace states {
                     cartesianDistancePathFollowingTask_->ExternalActivationFunction() = 0.0 * Eigen::MatrixXd::Identity(cartesianDistancePathFollowingTask_->TaskSpace(), cartesianDistancePathFollowingTask_->TaskSpace());
                 }
             } else {
-                if (nurbsObj_.CurrentParameterValue() >= tolleranceEndingPoint_) {
+                if (pathManager_.CurrentParameterValue() >= tolleranceEndingPoint_) {
                     std::cout << "*** MISSION FINISHED! ***" << std::endl;
 
                     fsm_->EmitEvent(ulisse::events::names::neargoalposition, ulisse::events::priority::medium);
                 }
                 //std::cout << "*** STARTING POINT! ***" << std::endl;
-                if (!nurbsObj_.ComputeNextPoint(ctrlData->inertialF_linearPosition, nextP_)) {
+                if (!pathManager_.ComputeNextPoint(ctrlData->inertialF_linearPosition, nextP_)) {
                     return fsm::fail;
                 }
 

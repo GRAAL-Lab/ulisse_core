@@ -1,2 +1,2 @@
 string id
-LatLong[] vertices
+LatLong[] coordinates

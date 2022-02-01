@@ -310,7 +310,7 @@ void VehicleController::SetUpFSM()
     eventNearGoalPosition_.GoToHoldAfterMove(conf_->goToHoldAfterMove);
     eventNearGoalPosition_.StateHold() = std::dynamic_pointer_cast<ulisse::states::StateHold>(statesMap_.find(ulisse::states::ID::hold)->second);
 
-    // ***** CONFIGURE FSM ***** //
+    // ***** FSM CONFIGURATION ***** //
     // ADD COMMANDS
     for (auto& command : commandsMap_) {
         uFsm_.AddCommand(command.first, &command.second);
@@ -416,12 +416,12 @@ void VehicleController::CommandsHandler(const std::shared_ptr<rmw_request_id_t> 
 
             std::cout << "Received Command Path Following" << std::endl;
 
-            if (!statePathFollowing_->LoadNurbs(request->nav_cmd.path)) {
+            /*if (!statePathFollowing_->LoadPath(request->path_cmd)) {
                 response->res = "CommandAnswer::fail - Malformed Path Message.";
                 ret = fsm::retval::fail;
             }
 
-            log << "Received Command PathFollowing (nurbs: " << request->nav_cmd.path.nurbs_string << " )";
+            log << "Received Command PathFollowing (nurbs: " << request->path_cmd.path.nurbs_string << " )";*/
             PublishLog(log.str().c_str());
 
         } else {

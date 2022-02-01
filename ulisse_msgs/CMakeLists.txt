@@ -54,7 +54,7 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/CommandHold.msg"
   "msg/CommandLatLong.msg"
   "msg/CommandSpeedHeading.msg"
-  "msg/CommandNavigate.msg"
+  "msg/CommandPathFollow.msg"
   
   # LLC
   "msg/LLCAck.msg"
@@ -79,6 +79,7 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/TaskStatus.msg"
   "msg/Curves.msg"
   "msg/Path.msg"
+#  "msg/PolygonPath.msg"
   "msg/CoordinateList.msg"
   "msg/TPIKAction.msg"
   "msg/TPIKPriorityLevel.msg"

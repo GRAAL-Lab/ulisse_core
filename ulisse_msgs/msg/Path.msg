@@ -1,10 +1,9 @@
-string nurbs_string
+string type             # PolyPath, PolyLine
+LatLong[] coordinates   # Coordinates of path
+LatLong centroid
+float64 offset
+float64 angle
+bool direction
 
-#The lat long coordinate of the centroid used form cartesian/map covertion
-LatLong centroid 
 
-# direction of the path
-int64 direction 
-
-#The lat lang coordinate of nurbs
-Curves[] nurbs #lat lang coordinate of nurbs
+# Curves[] nurbs #lat lang coordinate of nurbs

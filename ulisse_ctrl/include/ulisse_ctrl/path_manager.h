@@ -1,5 +1,5 @@
-#ifndef NURBS_H
-#define NURBS_H
+#ifndef PATHMANAGER_H
+#define PATHMANAGER_H
 
 #include "ctrl_data_structs.hpp"
 #include "eigen3/Eigen/Eigen"
@@ -10,17 +10,17 @@
 #include <memory>
 
 //Class to handle the nurbs curves based on the SISL library.
-class Nurbs {
+class PathManager {
 
 public:
     /*
      * Contructor
     */
-    Nurbs(int dim);
+    PathManager(int dim);
     /*
      * Default Decontructor
     */
-    ~Nurbs();
+    ~PathManager();
     /*
      * Method that get the starting point of the path in cartesian coordinates
     */
@@ -38,7 +38,7 @@ public:
     */
     auto Centroid() const -> const ctb::LatLong& { return centroid_; }
     /*
-     * Method that allow the load of the nurbs path (for now in jason) and to compute the starting/ending point and the starting direction
+     * Method that allow the load of the nurbs path and to compute the starting/ending point and the starting direction
     */
     bool Initialization(const ulisse_msgs::msg::Path& path);
     /*

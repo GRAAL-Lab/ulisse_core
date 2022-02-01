@@ -136,214 +136,68 @@ void CommandWrapper::ShowToast(const QVariant message, const QVariant duration)
     serviceReq->command_type = ulisse::commands::ID::pathfollow;
     serviceReq->nav_cmd.path.nurbs_string = path.toStdString();
 
-    std::string pathJason = path.toStdString();
+std::string pathJason = path.toStdString();
 
-    //std::cout << "JSON:\n" << pathJason;
-    //QJsonDocument doc = QJsonDocument::fromJson(pathJason.c_str());
-    //QString formattedJsonString = doc.toJson(QJsonDocument::Indented);
-    //std::cout << "JSON Indented:\n" << formattedJsonString.toStdString();
+//std::cout << "JSON:\n" << pathJason;
+//QJsonDocument doc = QJsonDocument::fromJson(pathJason.c_str());
+//QString formattedJsonString = doc.toJson(QJsonDocument::Indented);
+//std::cout << "JSON Indented:\n" << formattedJsonString.toStdString();
 
-    Json::Reader reader;
-    Json::Value obj, objMaster;
+Json::Reader reader;
+Json::Value obj, objMaster;
 
-    //parse the jason
-    reader.parse(pathJason, objMaster);
+//parse the jason
+reader.parse(pathJason, objMaster);
 
-    // check whatever the path has beeen reverse
-    serviceReq->nav_cmd.path.direction = objMaster["direction"].asInt64();
+// check whatever the path has beeen reverse
+serviceReq->nav_cmd.path.direction = objMaster["direction"].asInt64();
 
-    serviceReq->nav_cmd.path.centroid.latitude = objMaster["centroid"][0].asDouble();
-    serviceReq->nav_cmd.path.centroid.longitude = objMaster["centroid"][1].asDouble();
+serviceReq->nav_cmd.path.centroid.latitude = objMaster["centroid"][0].asDouble();
+serviceReq->nav_cmd.path.centroid.longitude = objMaster["centroid"][1].asDouble();
 
-    unsigned int count = 0;
-    serviceReq->nav_cmd.path.nurbs.resize(objMaster["curves"].size());
-    try {
-        for (Json::Value c : objMaster["curves"]) {
+unsigned int count = 0;
+serviceReq->nav_cmd.path.nurbs.resize(objMaster["curves"].size());
+try {
+    for (Json::Value c : objMaster["curves"]) {
 
-            reader.parse(c.toStyledString(), obj);
+        reader.parse(c.toStyledString(), obj);
 
-            serviceReq->nav_cmd.path.nurbs.at(count).degree = obj["degree"].asInt();
+        serviceReq->nav_cmd.path.nurbs.at(count).degree = obj["degree"].asInt();
 
-            serviceReq->nav_cmd.path.nurbs.at(count).weigths.resize(obj["weigths"].size());
-            //Acquired the weights
-            for (Json::ArrayIndex i = 0; i < obj["weigths"].size(); i++) {
-                serviceReq->nav_cmd.path.nurbs.at(count).weigths.at(i) = obj["weigths"][i].asDouble();
-            }
-
-            serviceReq->nav_cmd.path.nurbs.at(count).points.resize(obj["points"].size());
-
-            // //Acquire the vertices
-            for (Json::ArrayIndex i = 0; i < obj["points"].size(); i++) {
-
-                serviceReq->nav_cmd.path.nurbs.at(count).points.at(i).latitude = obj["points"][i][0].asDouble();
-                serviceReq->nav_cmd.path.nurbs.at(count).points.at(i).longitude = obj["points"][i][1].asDouble();
-            }
-
-            serviceReq->nav_cmd.path.nurbs.at(count).knots.resize(obj["knots"].size());
-            //Acquired the knots
-            for (Json::ArrayIndex i = 0; i < obj["knots"].size(); i++) {
-                serviceReq->nav_cmd.path.nurbs.at(count).knots.at(i) = obj["knots"][i].asDouble();
-            }
-            count++;
+        serviceReq->nav_cmd.path.nurbs.at(count).weigths.resize(obj["weigths"].size());
+        //Acquired the weights
+        for (Json::ArrayIndex i = 0; i < obj["weigths"].size(); i++) {
+            serviceReq->nav_cmd.path.nurbs.at(count).weigths.at(i) = obj["weigths"][i].asDouble();
         }
 
-    } catch (Json::Exception& e) {
-        // output exception information
-        std::cout << "NURBS Descriptor Error: " << e.what();
-        return false;
+        serviceReq->nav_cmd.path.nurbs.at(count).points.resize(obj["points"].size());
+
+        // //Acquire the vertices
+        for (Json::ArrayIndex i = 0; i < obj["points"].size(); i++) {
+
+            serviceReq->nav_cmd.path.nurbs.at(count).points.at(i).latitude = obj["points"][i][0].asDouble();
+            serviceReq->nav_cmd.path.nurbs.at(count).points.at(i).longitude = obj["points"][i][1].asDouble();
+        }
+
+        serviceReq->nav_cmd.path.nurbs.at(count).knots.resize(obj["knots"].size());
+        //Acquired the knots
+        for (Json::ArrayIndex i = 0; i < obj["knots"].size(); i++) {
+            serviceReq->nav_cmd.path.nurbs.at(count).knots.at(i) = obj["knots"][i].asDouble();
+        }
+        count++;
     }
 
-    return SendCommandRequest(serviceReq);
+} catch (Json::Exception& e) {
+    // output exception information
+    std::cout << "NURBS Descriptor Error: " << e.what();
+    return false;
+}
+
+return SendCommandRequest(serviceReq);
 }*/
 
-/*QVector<double> CommandWrapper::createNurbs(const QString& pointForNurbs)
-{
-    QVector<double> nurbsDiscretize;
-    std::vector<SISLCurve*> nurbs;
-    nurbs.clear();
-    Json::Reader reader;
-    Json::Value objMaster;
-    bool reverse = false;
-    int count = 0;
 
-    //parse the jason
-    reader.parse(pointForNurbs.toStdString(), objMaster);
-
-
-    std::string pathJason = pointForNurbs.toStdString();
-    //std::cout << "JSON:\n" << pathJason;
-    QJsonDocument doc = QJsonDocument::fromJson(pathJason.c_str());
-    QString formattedJsonString = doc.toJson(QJsonDocument::Indented);
-    //std::cout << "JSON Indented:\n" << formattedJsonString.toStdString();
-
-    // check whatever the path has beeen reverse
-    reverse = objMaster["direction"].asInt() ? true : false;
-
-    ctb::LatLong centroid;
-    centroid.latitude = objMaster["centroid"][0].asDouble();
-    centroid.longitude = objMaster["centroid"][1].asDouble();
-
-    //some param needs to create a new curve
-    int kind = 2;  // Type of curve.
-                   // = 1 : Polynomial B-spline curve.
-                   // = 2 : Rational B-spline (nurbs) curve.
-                   // = 3 : Polynomial Bezier curve.
-                   // = 4 : Rational Bezier curve
-
-    int copy = 1; // Flag
-                  //   = 0 : Set pointer to input arrays.
-                  //   = 1 : Copy input arrays.
-                  //   = 2 : Set pointer and remember to free arrays.
-
-    try {
-        for (Json::Value jcurve : objMaster["curves"]) {
-
-            //reader.parse(c.toStyledString(), obj);
-
-            int order; //Order of curve.
-            order = jcurve["degree"].asInt();
-
-            std::shared_ptr<double[]> weights(new double[jcurve["weigths"].size()]); //whight vector of curve.
-            //Acquired the weights
-            for (Json::ArrayIndex i = 0; i < jcurve["weigths"].size(); i++) {
-                weights[i] = jcurve["weigths"][i].asDouble();
-            }
-
-            std::shared_ptr<double[]> coef(new double[jcurve["points"].size() * 4]); //Vertices of curve
-            // //Acquired the vertices
-            count = 0;
-            ctb::LatLong point;
-            Eigen::Vector3d pointC;
-            for (Json::ArrayIndex i = 0; i < jcurve["points"].size(); i++) {
-                point.latitude = jcurve["points"][i][0].asDouble();
-                point.longitude = jcurve["points"][i][1].asDouble();
-
-                ctb::LatLong2LocalUTM(point, 0.0, centroid, pointC);
-
-                coef[count] = pointC[0] * weights[i];
-                coef[count + 1] = pointC[1] * weights[i];
-                coef[count + 2] = 0;
-                coef[count + 3] = weights[i];
-
-                count += 4;
-            }
-
-            std::shared_ptr<double[]> knots(new double[jcurve["knots"].size()]); //Knot vector of curve
-            //Acquired the knots
-            for (Json::ArrayIndex i = 0; i < jcurve["knots"].size(); i++) {
-                knots[i] = jcurve["knots"][i].asDouble();
-            }
-
-            //create the curve
-            SISLCurve* curve = newCurve(static_cast<int>(jcurve["points"].size()), order + 1, knots.get(), coef.get(), kind, 3, copy);
-
-            if (curve == nullptr) {
-                std::cout << "Something Goes Wrong in NURBS Parsing" << std::endl;
-            }
-
-            if (reverse) {
-                // Turn the direction of a curve by reversing the ordering of the coefficients
-                s1706(curve);
-            }
-
-            nurbs.push_back(curve);
-        }
-
-    } catch (Json::Exception& e) {
-        // output exception information
-        std::cerr << "NURBS Descriptor Error: " << e.what();
-    }
-
-    // Revert the nurbs curve
-    if (reverse) {
-        std::reverse(nurbs.begin(), nurbs.end());
-    }
-
-    ctb::LatLong map_point(0.0, 0.0);
-    //int j = 0;
-    for (unsigned int i = 0; i < nurbs.size(); i++) {
-        //Pick the i-th curve
-        SISLCurve* currentCurve = nurbs[i];
-        double currentParvalue = 0.0;
-        double altitude = 0.0;
-
-        while (currentParvalue < 1.0) {
-            Eigen::VectorXd derive;
-            int deriveDim = 3;
-            derive.setZero(deriveDim);
-
-            auto deriveTmp = std::unique_ptr<double[]>(new double[static_cast<unsigned int>(deriveDim)]);
-
-            // S1227 is a method for computing the position and the first derivatives of the curve at  a given parameter value Evaluation from the left hand side
-            int leftKnot; //Pointer to the interval in the knot vector where parvalue is located.
-            int stat; // Status messages
-                      //  > 0 : warning
-                      //  = 0 : ok
-                      //  < 0 : error
-            // S1227 is a method for computing the position and the first derivatives of the curve at a given parameter value Evaluation from the left hand side
-            s1227(currentCurve, 0, currentParvalue, &leftKnot, deriveTmp.get(), &stat);
-
-            if (stat < 0) {
-                std::cerr << "Compute derive fails" << std::endl;
-
-            } else {
-                for (int i = 0; i < deriveDim; i++) {
-                    derive[i] = deriveTmp[static_cast<unsigned int>(i)];
-                }
-            }
-
-
-            ctb::LocalUTM2LatLong(derive, centroid, map_point, altitude);
-            //std::cout << "crateNurbs map point: " << map_point.latitude << ", " << map_point.longitude << std::endl;
-
-            nurbsDiscretize << map_point.latitude << map_point.longitude;
-            currentParvalue += 0.01;
-        }
-    }
-    return nurbsDiscretize;
-}*/
-
-QPoint CommandWrapper::latLong2LocalUTM(QGeoCoordinate latlong, QGeoCoordinate centroid)
+    QPoint CommandWrapper::latLong2LocalUTM(QGeoCoordinate latlong, QGeoCoordinate centroid)
 {
 
     Eigen::Vector3d tmp;
@@ -396,14 +250,14 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
         std::cerr << "Polygon Descriptor Error: " << e.what();
     }
 
-    // Remove last element equal to first (fix?)
+    // Remove last element equal to first (fix? ADD SILENT REMOVAL IN SISL_TOOLBOX)
     polyVerticesUTM.pop_back();
 
     //double angle{150.0};
     //double offsetPath{30.0};
     double angle = jvalues["params"]["angle"].asDouble();
     double offsetPath = jvalues["params"]["offset"].asDouble();
-    int direction = jvalues["params"]["direction"].asInt() + 1; /// TODO, FIXME: Make direction variable uniform!!!!!
+    Path::Direction direction = static_cast<Path::Direction>(jvalues["params"]["direction"].asInt());
 
     std::shared_ptr<Path> serpentine;
 
@@ -420,7 +274,7 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
     //}
 
     try {
-        serpentine = PathFactory::NewSerpentine(angle, RIGHT, offsetPath, polyVerticesUTM);
+        serpentine = PathFactory::NewSerpentine(angle, direction, offsetPath, polyVerticesUTM);
         std::cout << *serpentine << std::endl;
         /*std::cout << std::endl << serpentine->Name() << " is composed by: " << std::endl;
         for(int i = 0; i < serpentine->CurvesNumber(); ++i) {
@@ -450,7 +304,42 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
 
 bool CommandWrapper::sendPath(const QString &pathJsonData)
 {
+    auto serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
+    serviceReq->command_type = ulisse::commands::ID::pathfollow;
 
+    // DEBUG PRINT
+    QJsonDocument doc = QJsonDocument::fromJson(pathJsonData.toUtf8());
+    QString formattedJsonString = doc.toJson(QJsonDocument::Indented);
+    std::cout << formattedJsonString.toStdString() << std::endl;
+
+    Json::Reader reader;
+    Json::Value jObj;
+
+    reader.parse(pathJsonData.toStdString(), jObj);
+
+    serviceReq->path_cmd.polygon_path.angle = jObj["params"]["angle"].asDouble();
+    serviceReq->path_cmd.polygon_path.direction = jObj["params"]["direction"].asBool();
+    serviceReq->path_cmd.polygon_path.offset = jObj["params"]["offset"].asDouble();
+
+    serviceReq->path_cmd.polygon_path.centroid.latitude = jObj["centroid"]["latitude"].asDouble();
+    serviceReq->path_cmd.polygon_path.centroid.longitude = jObj["centroid"]["longitude"].asDouble();
+
+    serviceReq->path_cmd.polygon_path.polygon.vertices.resize(jObj["coordinates"].size());
+    unsigned int i = 0;
+    try {
+        for (const Json::Value &coord : jObj["coordinates"]) {
+
+            serviceReq->path_cmd.polygon_path.polygon.vertices.at(i).latitude = coord["latitude"].asDouble();
+            serviceReq->path_cmd.polygon_path.polygon.vertices.at(i).longitude = coord["longitude"].asDouble();
+
+            i++;
+        }
+    } catch (Json::Exception& e) {
+        // output exception information
+        std::cout << "Error parsing QML Jason" << e.what() << std::endl;
+    }
+
+    return SendCommandRequest(serviceReq);
 }
 
 bool CommandWrapper::sendBoundaries(const QString& boundaryJsonData)
