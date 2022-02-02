@@ -3,7 +3,7 @@
 
 #include "sisl_toolbox/sisl_toolbox.hpp"
 #include "ulisse_ctrl/states/generic_state.hpp"
-#include "ulisse_msgs/msg/path.hpp"
+#include "ulisse_msgs/msg/path_data.hpp"
 #include <ulisse_ctrl/path_manager.h>
 
 namespace ulisse {
@@ -36,7 +36,7 @@ namespace states {
 
         bool ConfigureStateFromFile(libconfig::Config& confObj) override;
 
-        bool LoadPath(const ulisse_msgs::msg::Path& path);
+        bool LoadPath(const ulisse_msgs::msg::PathData& path);
         const ctb::LatLong &GetNextPoint() const { return nextP_; }
     };
 }

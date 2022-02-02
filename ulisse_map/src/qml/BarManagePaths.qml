@@ -192,8 +192,7 @@ BarManagePathsForm {
         if (!cur_managed.safe) {
             toast.show("Unsafe path due to operational space limits.", 2000)
         } else {
-            // The path is recreated when sent?
-            cmdWrapper.sendPath(JSON.stringify(cur_managed))
+            cmdWrapper.sendPath(JSON.stringify(cur_managed.serialize()))
         }
     }
 

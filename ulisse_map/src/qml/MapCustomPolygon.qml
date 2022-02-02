@@ -38,8 +38,8 @@ MapPolyline {
     property var b_marker
 
     property string pathName: "Path"
-    property real _angle: 30
-    property real _offset: 30
+    property real _angle: 0
+    property real _offset: 20
     //property var _method: "single_winding" // "simple"
     property int direction: 0  // 0: Direct, 1: Reverse
 

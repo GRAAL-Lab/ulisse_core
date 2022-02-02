@@ -66,7 +66,7 @@ bool SafetyBoundaries::InitializePolygon(const ulisse_msgs::msg::CoordinateList&
 
     try {
         bool first = true;
-        for (auto vertex : boundaries.vertices) {
+        for (auto vertex : boundaries.coordinates) {
             if (first) {
                 first = false;
             } else {

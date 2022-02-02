@@ -113,8 +113,8 @@ void AddonsBridge::PolylineCB(const ulisse_msgs::msg::CoordinateList::SharedPtr 
     QVariant id = QString::fromStdString(msg->id);
 
     QGeoPath polypath;
-    for (size_t i=0; i < msg->vertices.size() ; i++ ) {
-        polypath.addCoordinate(QGeoCoordinate(msg->vertices.at(i).latitude,msg->vertices.at(i).longitude));
+    for (size_t i=0; i < msg->coordinates.size() ; i++ ) {
+        polypath.addCoordinate(QGeoCoordinate(msg->coordinates.at(i).latitude,msg->coordinates.at(i).longitude));
     }
 
     DrawPolyline(id, polypath.variantPath());

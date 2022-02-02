@@ -229,10 +229,8 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
     reader.parse(pathJsonData.toStdString(), jvalues);
 
     std::vector<Eigen::Vector3d> polyVerticesUTM(jvalues["coordinates"].size());
-    //qDebug() << "Coordinates size: " << jvalues["coordinates"].size();
 
     ctb::LatLong centroid(jvalues["centroid"]["latitude"].asDouble(), jvalues["centroid"]["longitude"].asDouble());
-    //qDebug() << "Centroid: " << jvalues["centroid"]["latitude"].asDouble() << ", " << jvalues["centroid"]["longitude"].asDouble();
 
     double altitude = 0.0;
 
@@ -246,41 +244,22 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
             i++;
         }
     } catch (Json::Exception& e) {
-        // output exception information
+        // Output exception information
         std::cerr << "Polygon Descriptor Error: " << e.what();
     }
 
     // Remove last element equal to first (fix? ADD SILENT REMOVAL IN SISL_TOOLBOX)
     polyVerticesUTM.pop_back();
 
-    //double angle{150.0};
-    //double offsetPath{30.0};
     double angle = jvalues["params"]["angle"].asDouble();
     double offsetPath = jvalues["params"]["offset"].asDouble();
     Path::Direction direction = static_cast<Path::Direction>(jvalues["params"]["direction"].asInt());
 
     std::shared_ptr<Path> serpentine;
 
-    /*polygonVertices = std::vector<Eigen::Vector3d> ({
-        Eigen::Vector3d {-78, 44, 0}, Eigen::Vector3d {-47, 99, 0}, Eigen::Vector3d {46, 80, 0},
-        Eigen::Vector3d {79, -43, 0}, Eigen::Vector3d {-23, -99, 0}, Eigen::Vector3d{-110, -71, 0} });*/
-
-    //qDebug() << "angle: " << angle;
-    //qDebug() << "offset: " << offsetPath;
-    //qDebug() << "direction: " << direction;
-    //
-    //for (const auto &vertex : polyVerticesUTM){
-    //    qDebug() << QString::fromStdString(futils::ArrayToString(vertex, 3, ','));
-    //}
-
     try {
         serpentine = PathFactory::NewSerpentine(angle, direction, offsetPath, polyVerticesUTM);
         std::cout << *serpentine << std::endl;
-        /*std::cout << std::endl << serpentine->Name() << " is composed by: " << std::endl;
-        for(int i = 0; i < serpentine->CurvesNumber(); ++i) {
-            std::cout << i << ". " << *serpentine->Curves()[i] << std::endl;
-        }*/
-
     }
     catch(std::runtime_error const& exception) {
         std::cout << "Received exception from --> " << exception.what() << std::endl;
@@ -317,20 +296,23 @@ bool CommandWrapper::sendPath(const QString &pathJsonData)
 
     reader.parse(pathJsonData.toStdString(), jObj);
 
-    serviceReq->path_cmd.polygon_path.angle = jObj["params"]["angle"].asDouble();
-    serviceReq->path_cmd.polygon_path.direction = jObj["params"]["direction"].asBool();
-    serviceReq->path_cmd.polygon_path.offset = jObj["params"]["offset"].asDouble();
+    serviceReq->path_cmd.path.id = jObj["name"].asString();
+    serviceReq->path_cmd.path.type = jObj["type"].asString();
 
-    serviceReq->path_cmd.polygon_path.centroid.latitude = jObj["centroid"]["latitude"].asDouble();
-    serviceReq->path_cmd.polygon_path.centroid.longitude = jObj["centroid"]["longitude"].asDouble();
+    serviceReq->path_cmd.path.angle = jObj["params"]["angle"].asDouble();
+    serviceReq->path_cmd.path.offset = jObj["params"]["offset"].asDouble();
+    serviceReq->path_cmd.path.direction = jObj["params"]["direction"].asBool();
 
-    serviceReq->path_cmd.polygon_path.polygon.vertices.resize(jObj["coordinates"].size());
+    serviceReq->path_cmd.path.centroid.latitude = jObj["centroid"]["latitude"].asDouble();
+    serviceReq->path_cmd.path.centroid.longitude = jObj["centroid"]["longitude"].asDouble();
+
+    serviceReq->path_cmd.path.coordinates.resize(jObj["coordinates"].size());
     unsigned int i = 0;
     try {
         for (const Json::Value &coord : jObj["coordinates"]) {
 
-            serviceReq->path_cmd.polygon_path.polygon.vertices.at(i).latitude = coord["latitude"].asDouble();
-            serviceReq->path_cmd.polygon_path.polygon.vertices.at(i).longitude = coord["longitude"].asDouble();
+            serviceReq->path_cmd.path.coordinates.at(i).latitude = coord["latitude"].asDouble();
+            serviceReq->path_cmd.path.coordinates.at(i).longitude = coord["longitude"].asDouble();
 
             i++;
         }
@@ -357,14 +339,14 @@ bool CommandWrapper::sendBoundaries(const QString& boundaryJsonData)
 
     reader.parse(boundaryJsonData.toStdString(), jObj);
 
-    serviceReq->boundaries.vertices.resize(jObj["coordinates"].size());
+    serviceReq->boundaries.coordinates.resize(jObj["coordinates"].size());
     unsigned int count = 0;
     try {
         for (const Json::Value &coord : jObj["coordinates"]) {
 
             //reader.parse(coord.toStyledString(), obj2);
-            serviceReq->boundaries.vertices.at(count).latitude = coord["latitude"].asDouble();
-            serviceReq->boundaries.vertices.at(count).longitude = coord["longitude"].asDouble();
+            serviceReq->boundaries.coordinates.at(count).latitude = coord["latitude"].asDouble();
+            serviceReq->boundaries.coordinates.at(count).longitude = coord["longitude"].asDouble();
 
             count++;
         }

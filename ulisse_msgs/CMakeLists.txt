@@ -78,7 +78,7 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/NavFilterData.msg"
   "msg/TaskStatus.msg"
   "msg/Curves.msg"
-  "msg/Path.msg"
+  "msg/PathData.msg"
 #  "msg/PolygonPath.msg"
   "msg/CoordinateList.msg"
   "msg/TPIKAction.msg"
