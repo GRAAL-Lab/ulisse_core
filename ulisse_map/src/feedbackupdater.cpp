@@ -121,8 +121,9 @@ void FeedbackUpdater::RegisterPublishersAndSubscribers()
     // Services (rmw_qos_profile_services_default).
 
     //rmw_qos_profile_sensor_data
-    auto my_rmw_qos = rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_sensor_data);
-    auto qos_sensor = rclcpp::QoS(my_rmw_qos);
+    //auto my_rmw_qos = rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_sensor_data);
+    //auto qos_sensor = rclcpp::QoS(my_rmw_qos);
+    int qos_sensor = 10;
 
     vehicleStatusSub_ = this->create_subscription<ulisse_msgs::msg::VehicleStatus>(ulisse_msgs::topicnames::vehicle_status,
         10, std::bind(&FeedbackUpdater::VehicleStatusCB, this, _1));

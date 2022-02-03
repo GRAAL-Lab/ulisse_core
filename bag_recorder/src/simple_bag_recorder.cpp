@@ -14,7 +14,7 @@ public:
   BagRecorder()
   : Node("simple_bag_recorder")
   {
-    const rosbag2_cpp::StorageOptions storage_options({"my_bag", "sqlite3"});
+    const rosbag2_storage::StorageOptions storage_options({"my_bag", "sqlite3"});
     const rosbag2_cpp::ConverterOptions converter_options(
       {rmw_get_serialization_format(),
        rmw_get_serialization_format()});

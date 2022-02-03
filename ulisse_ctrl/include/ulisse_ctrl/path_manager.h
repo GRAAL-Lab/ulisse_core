@@ -26,7 +26,7 @@ public:
     virtual ~PathManager();
 
     /*
-     * Method that allow the load of the nurbs path and to compute the starting/ending point and the starting direction
+     * Method that allow the load of the path and to compute the starting/ending point and the starting direction
     */
     bool Initialization(const ulisse_msgs::msg::PathData &path);
 
@@ -109,7 +109,7 @@ public:
 private:
     std::string pathName_;
     std::string pathType_;
-    std::shared_ptr<Path> path_;                                // The Curve
+    std::shared_ptr<Path> path_;                // The Curve
     ctb::LatLong centroid_;                     // The centroid for the convertion from/to cartesian/latlong
     std::vector<ctb::LatLong> coordinates_;     // Coordinate List of polypath
     double angle_, offset_;

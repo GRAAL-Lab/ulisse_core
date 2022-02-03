@@ -97,7 +97,7 @@ int main(int argc, char* argv[])
         if (send) {
             auto result_future = serviceClient->async_send_request(serviceReq);
             std::cout << "Sent Request to controller" << std::endl;
-            if (rclcpp::spin_until_future_complete(node, result_future) != rclcpp::executor::FutureReturnCode::SUCCESS) {
+            if (rclcpp::spin_until_future_complete(node, result_future) != rclcpp::FutureReturnCode::SUCCESS) {
                 RCLCPP_ERROR(node->get_logger(), "service call failed :(");
             } else {
                 auto result = result_future.get();

@@ -416,12 +416,12 @@ void VehicleController::CommandsHandler(const std::shared_ptr<rmw_request_id_t> 
 
             std::cout << "Received Command Path Following" << std::endl;
 
-            /*if (!statePathFollowing_->LoadPath(request->path_cmd)) {
+            if (!statePathFollowing_->LoadPath(request->path_cmd.path)) {
                 response->res = "CommandAnswer::fail - Malformed Path Message.";
                 ret = fsm::retval::fail;
             }
 
-            log << "Received Command PathFollowing (nurbs: " << request->path_cmd.path.nurbs_string << " )";*/
+            log << "Received Command PathFollowing (id: " << request->path_cmd.path.id << " )";
             PublishLog(log.str().c_str());
 
         } else {

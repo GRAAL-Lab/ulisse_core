@@ -26,6 +26,11 @@ PathManager::~PathManager() { }
 
 bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
 {
+
+    //std::cout << path.to_yaml();
+
+    std::cout << "Path Message:\n" << rosidl_generator_traits::to_yaml(path) << std::endl;
+
     pathName_ = path.id;
     pathType_ = path.type;
 
@@ -57,7 +62,13 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
         return false;
     }
 
-    std::cout << "*** Goint to INITIAL point ***" << std::endl;
+    auto startPoint = path_->At(path_->EndParameter());
+    auto endPoint = path_->At(path_->StartParameter());
+    startP_ = ctb::LatLong(startPoint(0), startPoint(1));
+    endP_ = ctb::LatLong(endPoint(0), endPoint(1));
+
+    std::cout << "startPoint (A): " << startP_.longitude << ", " << startP_.latitude;
+    std::cout << "endPoint (A): " << endP_.longitude << ", " << endP_.latitude;
 
 }
 
