@@ -257,7 +257,7 @@ void TaskDataUpdater::LoadAction()
 
         for (const auto &taskID : pl.tasks_id) {
 
-            QVariant qTaskID = QString::fromStdString(taskID);//.replace("_", " ");;
+            QVariant qTaskID = QString::fromStdString(taskID).replace("_", " ");
 
             QQmlComponent taskComponent(&engine_, QUrl("qrc:/qml/TaskData.qml"));
             tasksItemsMap_.insert( { taskID, qobject_cast<QQuickItem*>(taskComponent.create()) } );

@@ -32,7 +32,8 @@ Item {
                 font.pointSize: 14
                 font.weight: Font.DemiBold
                 color: Material.color(Material.Blue, Material.Shade700)
-                text: taskName
+                text: taskName//.replace(/_/g, " ");
+
             }
 
             Rectangle {

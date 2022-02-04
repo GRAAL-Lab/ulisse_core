@@ -197,7 +197,7 @@ return SendCommandRequest(serviceReq);
 }*/
 
 
-    QPoint CommandWrapper::latLong2LocalUTM(QGeoCoordinate latlong, QGeoCoordinate centroid)
+QPoint CommandWrapper::latLong2LocalUTM(QGeoCoordinate latlong, QGeoCoordinate centroid)
 {
 
     Eigen::Vector3d tmp;
@@ -229,11 +229,10 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
     reader.parse(pathJsonData.toStdString(), jvalues);
 
     std::vector<Eigen::Vector3d> polyVerticesUTM(jvalues["coordinates"].size());
-
     ctb::LatLong centroid(jvalues["centroid"]["latitude"].asDouble(), jvalues["centroid"]["longitude"].asDouble());
-
     double altitude = 0.0;
 
+    // Converting the curve to UTM for path creation
     try {
         int i = 0;
         for (const Json::Value &coord : jvalues["coordinates"]) {
@@ -247,9 +246,6 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
         // Output exception information
         std::cerr << "Polygon Descriptor Error: " << e.what();
     }
-
-    // Remove last element equal to first (fix? ADD SILENT REMOVAL IN SISL_TOOLBOX)
-    polyVerticesUTM.pop_back();
 
     double angle = jvalues["params"]["angle"].asDouble();
     double offsetPath = jvalues["params"]["offset"].asDouble();
@@ -265,7 +261,22 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
         std::cout << "Received exception from --> " << exception.what() << std::endl;
     }
 
+    /// TEST ///
+    try{
+        ctb::LatLong startPoint;
+        ctb::LocalUTM2LatLong(serpentine->At(serpentine->StartParameter()), centroid, startPoint, altitude);
+        ctb::LatLong endPoint;
+        ctb::LocalUTM2LatLong(serpentine->At(serpentine->EndParameter()),   centroid, endPoint,   altitude);
 
+        std::cout << "startPoint (A): " << startPoint << std::endl;
+        std::cout << "endPoint   (B): " << endPoint   << std::endl;
+
+    } catch (const std::runtime_error& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+
+
+    // Sampling the curve and converting it back to lat-long for visualization on map
     double samplingInterval = 2.0; // meters
     int numSamples = (int)round(serpentine->Length()/samplingInterval);
     auto sampledPath = serpentine->Sampling(numSamples);
@@ -368,11 +379,11 @@ bool CommandWrapper::SendBoundariesRequest(ulisse_msgs::srv::SetBoundaries::Requ
         std::cout << "Send Boundary to KCL" << std::endl;
         if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
             result_msg = "service call failed :(";
-            RCLCPP_ERROR(this->get_logger(), result_msg.c_str());
+            RCLCPP_ERROR_STREAM(this->get_logger(), result_msg);
         } else {
             auto result = result_future.get();
             result_msg = "Service returned: " + result->res;
-            RCLCPP_INFO(this->get_logger(), result_msg.c_str());
+            RCLCPP_INFO_STREAM(this->get_logger(), result_msg);
         }
         serviceAvailable = true;
     } else {
@@ -392,12 +403,12 @@ bool CommandWrapper::SendCommandRequest(ulisse_msgs::srv::ControlCommand::Reques
         auto result_future = command_srv_->async_send_request(req);
         std::cout << "Sent Request to controller" << std::endl;
         if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
-            result_msg = "service call failed :(";
-            RCLCPP_ERROR(this->get_logger(), result_msg.c_str());
+            result_msg = "Service call failed :(";
+            RCLCPP_ERROR_STREAM(this->get_logger(), result_msg.c_str());
         } else {
             auto result = result_future.get();
             result_msg = "Service returned: " + result->res;
-            RCLCPP_INFO(this->get_logger(), result_msg.c_str());
+            RCLCPP_INFO_STREAM(this->get_logger(), result_msg.c_str());
         }
         serviceAvailable = true;
         StopOngoingTimers();
@@ -405,7 +416,7 @@ bool CommandWrapper::SendCommandRequest(ulisse_msgs::srv::ControlCommand::Reques
         result_msg = "The controller doesn't seem to be active.\n(No CommandServer available)";
         serviceAvailable = false;
     }
-    ShowToast(result_msg.c_str(), 2000);
+    ShowToast(result_msg.c_str(), 4000);
     return serviceAvailable;
 }
 
@@ -486,11 +497,11 @@ bool CommandWrapper::sendThrusterActivation(bool activate)
         std::cout << "Sent Request to controller" << std::endl;
         if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
             result_msg = "service call failed :(";
-            RCLCPP_ERROR(this->get_logger(), result_msg.c_str());
+            RCLCPP_ERROR_STREAM(this->get_logger(), result_msg);
         } else {
             auto result = result_future.get();
             result_msg = "Service returned: " + std::to_string(result->res);
-            RCLCPP_INFO(this->get_logger(), result_msg.c_str());
+            RCLCPP_INFO_STREAM(this->get_logger(), result_msg);
         }
         serviceAvailable = true;
     } else {
@@ -631,11 +642,11 @@ bool CommandWrapper::reloadKCLConf()
         std::cout << "Sent Request to controller" << std::endl;
         if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
             result_msg = "service call failed :(";
-            RCLCPP_ERROR(this->get_logger(), result_msg.c_str());
+            RCLCPP_ERROR_STREAM(this->get_logger(), result_msg);
         } else {
             auto result = result_future.get();
             result_msg = "Service returned: " + result->res;
-            RCLCPP_INFO(this->get_logger(), result_msg.c_str());
+            RCLCPP_INFO_STREAM(this->get_logger(), result_msg);
         }
         serviceAvailable = true;
     } else {
@@ -656,11 +667,11 @@ bool CommandWrapper::reloadDCLConf()
         std::cout << "Sent Request to controller" << std::endl;
         if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
             result_msg = "service call failed :(";
-            RCLCPP_ERROR(this->get_logger(), result_msg.c_str());
+            RCLCPP_ERROR_STREAM(this->get_logger(), result_msg);
         } else {
             auto result = result_future.get();
             result_msg = "Service returned: " + result->res;
-            RCLCPP_INFO(this->get_logger(), result_msg.c_str());
+            RCLCPP_INFO_STREAM(this->get_logger(), result_msg);
         }
         serviceAvailable = true;
     } else {
@@ -682,11 +693,11 @@ bool CommandWrapper::reloadNavFilterConf()
         std::cout << "Sent Request to controller" << std::endl;
         if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
             result_msg = "service call failed :(";
-            RCLCPP_ERROR(this->get_logger(), result_msg.c_str());
+            RCLCPP_ERROR_STREAM(this->get_logger(), result_msg);
         } else {
             auto result = result_future.get();
             result_msg = "Service returned: " + std::to_string(result->res);
-            RCLCPP_INFO(this->get_logger(), result_msg.c_str());
+            RCLCPP_INFO_STREAM(this->get_logger(), result_msg);
         }
         serviceAvailable = true;
     } else {

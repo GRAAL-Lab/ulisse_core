@@ -27,18 +27,19 @@ PathManager::~PathManager() { }
 bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
 {
 
-    //std::cout << path.to_yaml();
-
-    std::cout << "Path Message:\n" << rosidl_generator_traits::to_yaml(path) << std::endl;
+    std::cout.precision(10);
+    std::cout  << "Path Message:\n" << rosidl_generator_traits::to_yaml(path) << std::fixed << std::endl;
 
     pathName_ = path.id;
     pathType_ = path.type;
 
     centroid_.latitude = path.centroid.latitude;
     centroid_.longitude = path.centroid.longitude;
+
     angle_ = path.angle;
     offset_ = path.offset;
     direction_ = static_cast<Path::Direction>(path.direction);
+
 
     std::vector<Eigen::Vector3d> polyVerticesUTM(path.coordinates.size());
     double altitude = 0.0;
@@ -53,27 +54,37 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
 
     if (pathType_ == "PolyPath") {
         path_ = PathFactory::NewSerpentine(angle_, direction_, offset_, polyVerticesUTM);
-        return true;
-    } else if (pathType_ == "Polyline") {
+    } else if (pathType_ == "PolyLine") {
         path_ = PathFactory::NewPolygonalChain(polyVerticesUTM);
-        return true;
     } else {
         std::cerr << "Error: pathType not recognized.";
         return false;
     }
 
-    auto startPoint = path_->At(path_->EndParameter());
-    auto endPoint = path_->At(path_->StartParameter());
-    startP_ = ctb::LatLong(startPoint(0), startPoint(1));
-    endP_ = ctb::LatLong(endPoint(0), endPoint(1));
+    std::cout << *path_ << std::endl;
+
+    try{
+        auto startPoint = path_->At(path_->StartParameter());
+        auto endPoint = path_->At(path_->EndParameter());
+
+        startP_ = ctb::LatLong(startPoint(0), startPoint(1));
+        endP_ = ctb::LatLong(endPoint(0), endPoint(1));
+    } catch (const std::runtime_error& e) {
+        std::cerr << e.what() << std::endl;
+    }
 
     std::cout << "startPoint (A): " << startP_.longitude << ", " << startP_.latitude;
     std::cout << "endPoint (A): " << endP_.longitude << ", " << endP_.latitude;
+
+    return true;
 
 }
 
 
 bool PathManager::ComputeGoalPosition(const ctb::LatLong &currentP, ctb::LatLong &goalP)
 {
+    (void)currentP;
+    (void)goalP;
 
+    return true;
 }
