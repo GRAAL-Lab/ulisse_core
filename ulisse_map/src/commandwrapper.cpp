@@ -197,7 +197,7 @@ return SendCommandRequest(serviceReq);
 }*/
 
 
-QPoint CommandWrapper::latLong2LocalUTM(QGeoCoordinate latlong, QGeoCoordinate centroid)
+    QPoint CommandWrapper::latLong2LocalUTM(QGeoCoordinate latlong, QGeoCoordinate centroid)
 {
 
     Eigen::Vector3d tmp;
@@ -260,21 +260,6 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
     catch(std::runtime_error const& exception) {
         std::cout << "Received exception from --> " << exception.what() << std::endl;
     }
-
-    /// TEST ///
-    try{
-        ctb::LatLong startPoint;
-        ctb::LocalUTM2LatLong(serpentine->At(serpentine->StartParameter()), centroid, startPoint, altitude);
-        ctb::LatLong endPoint;
-        ctb::LocalUTM2LatLong(serpentine->At(serpentine->EndParameter()),   centroid, endPoint,   altitude);
-
-        std::cout << "startPoint (A): " << startPoint << std::endl;
-        std::cout << "endPoint   (B): " << endPoint   << std::endl;
-
-    } catch (const std::runtime_error& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
-    }
-
 
     // Sampling the curve and converting it back to lat-long for visualization on map
     double samplingInterval = 2.0; // meters

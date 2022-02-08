@@ -63,18 +63,20 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
 
     std::cout << *path_ << std::endl;
 
+    /// TEST ///
     try{
-        auto startPoint = path_->At(path_->StartParameter());
-        auto endPoint = path_->At(path_->EndParameter());
+        RCLCPP_WARN_STREAM(rclcpp::get_logger("PathManager"), "[CommandWrapper::createPathFromPolygon] Retreiving START Point...");
+        ctb::LocalUTM2LatLong(path_->At(path_->StartParameter()), centroid_, startP_, altitude);
 
-        startP_ = ctb::LatLong(startPoint(0), startPoint(1));
-        endP_ = ctb::LatLong(endPoint(0), endPoint(1));
+        RCLCPP_WARN_STREAM(rclcpp::get_logger("PathManager"), "[CommandWrapper::createPathFromPolygon] Retreiving END Point...");
+        ctb::LocalUTM2LatLong(path_->At(path_->EndParameter()),   centroid_, endP_,   altitude);
+
+        std::cout << "startPoint (A): " << startP_ << std::endl;
+        std::cout << "endPoint   (B): " << endP_   << std::endl;
+
     } catch (const std::runtime_error& e) {
-        std::cerr << e.what() << std::endl;
+        std::cerr << "Error: " << e.what() << std::endl;
     }
-
-    std::cout << "startPoint (A): " << startP_.longitude << ", " << startP_.latitude;
-    std::cout << "endPoint (A): " << endP_.longitude << ", " << endP_.latitude;
 
     return true;
 

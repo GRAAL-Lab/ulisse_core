@@ -63,6 +63,7 @@ RowLayout {
             text: (offset_ !== undefined) ? offset_ : ""
             placeholderText: "Offset"
             horizontalAlignment: Text.AlignHCenter
+            validator: DoubleValidator { bottom:0.0; top: 1000.0 }
         }
     }
 
@@ -75,6 +76,7 @@ RowLayout {
             text: (angle_ !== undefined) ? angle_ : ""
             placeholderText: "Angle"
             horizontalAlignment: TextInput.AlignHCenter
+            validator: DoubleValidator { bottom:0.0; top: 360.0 }
         }
     }
 
