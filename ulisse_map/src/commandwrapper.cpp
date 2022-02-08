@@ -130,74 +130,7 @@ void CommandWrapper::ShowToast(const QVariant message, const QVariant duration)
     QMetaObject::invokeMethod(toastMgrObj_, "show", Qt::QueuedConnection, Q_ARG(QVariant, message), Q_ARG(QVariant, duration));
 }
 
-/*bool CommandWrapper::sendPath(const QString path)
-{
-    auto serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
-    serviceReq->command_type = ulisse::commands::ID::pathfollow;
-    serviceReq->nav_cmd.path.nurbs_string = path.toStdString();
-
-std::string pathJason = path.toStdString();
-
-//std::cout << "JSON:\n" << pathJason;
-//QJsonDocument doc = QJsonDocument::fromJson(pathJason.c_str());
-//QString formattedJsonString = doc.toJson(QJsonDocument::Indented);
-//std::cout << "JSON Indented:\n" << formattedJsonString.toStdString();
-
-Json::Reader reader;
-Json::Value obj, objMaster;
-
-//parse the jason
-reader.parse(pathJason, objMaster);
-
-// check whatever the path has beeen reverse
-serviceReq->nav_cmd.path.direction = objMaster["direction"].asInt64();
-
-serviceReq->nav_cmd.path.centroid.latitude = objMaster["centroid"][0].asDouble();
-serviceReq->nav_cmd.path.centroid.longitude = objMaster["centroid"][1].asDouble();
-
-unsigned int count = 0;
-serviceReq->nav_cmd.path.nurbs.resize(objMaster["curves"].size());
-try {
-    for (Json::Value c : objMaster["curves"]) {
-
-        reader.parse(c.toStyledString(), obj);
-
-        serviceReq->nav_cmd.path.nurbs.at(count).degree = obj["degree"].asInt();
-
-        serviceReq->nav_cmd.path.nurbs.at(count).weigths.resize(obj["weigths"].size());
-        //Acquired the weights
-        for (Json::ArrayIndex i = 0; i < obj["weigths"].size(); i++) {
-            serviceReq->nav_cmd.path.nurbs.at(count).weigths.at(i) = obj["weigths"][i].asDouble();
-        }
-
-        serviceReq->nav_cmd.path.nurbs.at(count).points.resize(obj["points"].size());
-
-        // //Acquire the vertices
-        for (Json::ArrayIndex i = 0; i < obj["points"].size(); i++) {
-
-            serviceReq->nav_cmd.path.nurbs.at(count).points.at(i).latitude = obj["points"][i][0].asDouble();
-            serviceReq->nav_cmd.path.nurbs.at(count).points.at(i).longitude = obj["points"][i][1].asDouble();
-        }
-
-        serviceReq->nav_cmd.path.nurbs.at(count).knots.resize(obj["knots"].size());
-        //Acquired the knots
-        for (Json::ArrayIndex i = 0; i < obj["knots"].size(); i++) {
-            serviceReq->nav_cmd.path.nurbs.at(count).knots.at(i) = obj["knots"][i].asDouble();
-        }
-        count++;
-    }
-
-} catch (Json::Exception& e) {
-    // output exception information
-    std::cout << "NURBS Descriptor Error: " << e.what();
-    return false;
-}
-
-return SendCommandRequest(serviceReq);
-}*/
-
-
-    QPoint CommandWrapper::latLong2LocalUTM(QGeoCoordinate latlong, QGeoCoordinate centroid)
+QPoint CommandWrapper::latLong2LocalUTM(QGeoCoordinate latlong, QGeoCoordinate centroid)
 {
 
     Eigen::Vector3d tmp;
@@ -283,9 +216,9 @@ bool CommandWrapper::sendPath(const QString &pathJsonData)
     serviceReq->command_type = ulisse::commands::ID::pathfollow;
 
     // DEBUG PRINT
-    QJsonDocument doc = QJsonDocument::fromJson(pathJsonData.toUtf8());
-    QString formattedJsonString = doc.toJson(QJsonDocument::Indented);
-    std::cout << formattedJsonString.toStdString() << std::endl;
+    //QJsonDocument doc = QJsonDocument::fromJson(pathJsonData.toUtf8());
+    //QString formattedJsonString = doc.toJson(QJsonDocument::Indented);
+    //std::cout << formattedJsonString.toStdString() << std::endl;
 
     Json::Reader reader;
     Json::Value jObj;
