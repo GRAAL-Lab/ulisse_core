@@ -4,7 +4,7 @@
 #include "sisl_toolbox/sisl_toolbox.hpp"
 #include "ulisse_ctrl/states/generic_state.hpp"
 #include "ulisse_msgs/msg/path_data.hpp"
-#include <ulisse_ctrl/path_manager.h>
+#include <ulisse_ctrl/path_manager.hpp>
 
 namespace ulisse {
 

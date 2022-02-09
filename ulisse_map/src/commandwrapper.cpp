@@ -216,9 +216,9 @@ bool CommandWrapper::sendPath(const QString &pathJsonData)
     serviceReq->command_type = ulisse::commands::ID::pathfollow;
 
     // DEBUG PRINT
-    //QJsonDocument doc = QJsonDocument::fromJson(pathJsonData.toUtf8());
-    //QString formattedJsonString = doc.toJson(QJsonDocument::Indented);
-    //std::cout << formattedJsonString.toStdString() << std::endl;
+    QJsonDocument doc = QJsonDocument::fromJson(pathJsonData.toUtf8());
+    QString formattedJsonString = doc.toJson(QJsonDocument::Indented);
+    std::cout << formattedJsonString.toStdString() << std::endl;
 
     Json::Reader reader;
     Json::Value jObj;

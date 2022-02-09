@@ -26,14 +26,12 @@ bool StatePathFollow::LoadPath(const ulisse_msgs::msg::PathData& path){
     }
     isCurveSet_ = true;
 
-
-
     // Get the staring and ending point of the path
-    startP_ = pathManager_.StartingPoint();
+    nextP_ = startP_ = pathManager_.StartingPoint();
 
     // Evaluete the end curve length
     double length;
-    //pathManager_.ComputeCurveLength(pathManager_.Path()[pathManager_.Path().size() - 1], length);
+    // pathManager_.ComputeCurveLength(pathManager_.Path()[pathManager_.Path().size() - 1], length);
     // Compute the prametric tollerance of the end curve
     //tolleranceEndingPoint_ = pathManager_.Path().size() - tolleranceEndingPoint_ / length;
 
@@ -168,7 +166,7 @@ fsm::retval StatePathFollow::Execute()
                 fsm_->EmitEvent(ulisse::events::names::neargoalposition, ulisse::events::priority::medium);
             }
             //std::cout << "*** STARTING POINT! ***" << std::endl;
-            if (/*!pathManager_.ComputeNextPoint(ctrlData->inertialF_linearPosition, nextP_)*/false) {
+            if (!pathManager_.ComputeGoalPosition(ctrlData->inertialF_linearPosition, nextP_)) {
                 return fsm::fail;
             }
 

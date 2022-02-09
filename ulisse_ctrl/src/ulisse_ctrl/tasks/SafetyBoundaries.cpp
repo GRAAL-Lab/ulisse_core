@@ -124,11 +124,14 @@ void SafetyBoundaries::EvaluateAlignmentAndDistance()
 {
     Eigen::Vector3d UTM_alignVector = Eigen::Vector3d::Zero();
     Eigen::Vector3d worldF_alignVector = Eigen::Vector3d::Zero();
+
     std::list<segment_t> segments, minDistsegments;
+
     bool isConvex = false;
     point_t currentPosition(vehiclePosition_[0], vehiclePosition_[1]);
 
     // copy the list of all the segments of the polygon
+    std::cout << "*** Is this allocation failing? ***" << std::endl;
     segments = segments_;
 
     // Take the two nearest segments
@@ -169,6 +172,8 @@ void SafetyBoundaries::EvaluateAlignmentAndDistance()
 
     //std::cout << "Update(): x_bar_ = " << x_bar_ << std::endl;
     //std::cout << "Update(): x_dot_bar_ = " << x_dot_bar_ << std::endl;
+
+    std::cout << "*** Not it's not. ***" << std::endl;
 
 }
 

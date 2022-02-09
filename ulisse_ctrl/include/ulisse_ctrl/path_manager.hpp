@@ -116,7 +116,9 @@ private:
     Path::Direction direction_;
     ctb::LatLong startP_;                       // Starting point of the nurbs path
     ctb::LatLong endP_;                         // Ending point of the nurbs path
-    //double parvalue_;                         // The current parameter value on the path
+    double currentParam_;                         // The current parameter value on the path
+    double lookAheadDistance_;
+    ctb::LatLong currentGoal_;
 
     double currentDelta_;                       // The current delta increment
 };
