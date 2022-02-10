@@ -99,7 +99,11 @@ fsm::retval StatePathFollow::Execute()
 
     safetyBoundariesTask_->VehiclePosition() = ctrlData->inertialF_linearPosition;
 
+
+    //std::cout << "*** Is this allocation failing? ***" << std::endl;
     Eigen::MatrixXd Aexternal;
+
+    //std::cout << "*** No it's not ***" << std::endl;
 
     Aexternal = safetyBoundariesTask_->InternalActivationFunction().maxCoeff() * Aexternal.setIdentity(absoluteAxisAlignmentSafetyTask_->TaskSpace(), absoluteAxisAlignmentSafetyTask_->TaskSpace());
 
@@ -165,7 +169,7 @@ fsm::retval StatePathFollow::Execute()
 
                 fsm_->EmitEvent(ulisse::events::names::neargoalposition, ulisse::events::priority::medium);
             }
-            //std::cout << "*** STARTING POINT! ***" << std::endl;
+
             if (!pathManager_.ComputeGoalPosition(ctrlData->inertialF_linearPosition, nextP_)) {
                 return fsm::fail;
             }

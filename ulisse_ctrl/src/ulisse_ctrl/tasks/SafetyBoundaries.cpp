@@ -41,13 +41,16 @@ void SafetyBoundaries::UpdateJacobian()
 
 bool SafetyBoundaries::ConfigFromFile(libconfig::Config& confObj)
 {
+
     if (!ReactiveTask::ConfigFromFile(confObj)){
         std::cerr << "[SafetyBoundaries::ConfigFromFile] Failed ConfigFromFile()" << std::endl;
         return false;
     }
-    //std::cout << "== SAFETY BOUNDARIES" << std::endl;
+    enabled_ = taskParameter_.taskEnable;
+    std::cout << "== SAFETY BOUNDARIES" << std::endl;
     //std::cout << "== decreasingBellShapeParameter_.xmin = " << decreasingBellShapeParameter_.xmin << std::endl;
     //std::cout << "== decreasingBellShapeParameter_.xmax = " << decreasingBellShapeParameter_.xmax << std::endl;
+    std::cout << "Enable:" << taskParameter_.taskEnable << std::endl;
 
     std::cout << "ASV_SB Centroid: " << centroid_.latitude << ", " << centroid_.longitude << std::endl;
 
@@ -60,25 +63,24 @@ bool SafetyBoundaries::InitializePolygon(const ulisse_msgs::msg::CoordinateList&
     segment_t seg;
     std::string polygon = "polygon((";
 
-    LatLong latlongVertex;
-
-    std::shared_ptr<double[]> cartesianVertex(new double[3]);
+    LatLong coordinateGeo;
+    Eigen::Vector3d coordinateUTM;
 
     try {
         bool first = true;
-        for (auto vertex : boundaries.coordinates) {
+        for (auto coordinate : boundaries.coordinates) {
             if (first) {
                 first = false;
             } else {
                 polygon = polygon.append(", ");
             }
 
-            latlongVertex.latitude = vertex.latitude;
-            latlongVertex.longitude = vertex.longitude;
+            coordinateGeo.latitude = coordinate.latitude;
+            coordinateGeo.longitude = coordinate.longitude;
 
-            LatLong2LocalUTM(latlongVertex, 0.0, centroid_, cartesianVertex);
+            LatLong2LocalUTM(coordinateGeo, 0.0, centroid_, coordinateUTM);
 
-            polygon = polygon + boost::lexical_cast<std::string>(cartesianVertex[0]) + " " + boost::lexical_cast<std::string>(cartesianVertex[1]);
+            polygon = polygon + boost::lexical_cast<std::string>(coordinateUTM[0]) + " " + boost::lexical_cast<std::string>(coordinateUTM[1]);
         }
     } catch (std::exception& e) {
         // output exception information
@@ -131,7 +133,6 @@ void SafetyBoundaries::EvaluateAlignmentAndDistance()
     point_t currentPosition(vehiclePosition_[0], vehiclePosition_[1]);
 
     // copy the list of all the segments of the polygon
-    std::cout << "*** Is this allocation failing? ***" << std::endl;
     segments = segments_;
 
     // Take the two nearest segments
@@ -172,8 +173,6 @@ void SafetyBoundaries::EvaluateAlignmentAndDistance()
 
     //std::cout << "Update(): x_bar_ = " << x_bar_ << std::endl;
     //std::cout << "Update(): x_dot_bar_ = " << x_dot_bar_ << std::endl;
-
-    std::cout << "*** Not it's not. ***" << std::endl;
 
 }
 

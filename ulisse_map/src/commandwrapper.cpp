@@ -30,6 +30,8 @@ CommandWrapper::CommandWrapper(QQmlApplicationEngine* engine, QObject* parent)
 
 CommandWrapper::~CommandWrapper()
 {
+    //delete checkErrorTimer_;
+
 }
 
 void CommandWrapper::Init(QQmlApplicationEngine* engine)

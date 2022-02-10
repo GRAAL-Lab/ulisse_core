@@ -60,7 +60,7 @@ public:
    */
     void Update() noexcept(false) override;
 
-    bool InitializePolygon(const ulisse_msgs::msg::CoordinateList& boundaries);
+    bool InitializePolygon(const ulisse_msgs::msg::CoordinateList &boundaries);
 
     /*
      * Method that gets the centroid

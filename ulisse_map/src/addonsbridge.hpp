@@ -18,7 +18,7 @@
 class AddonsBridge : public QObject, rclcpp::Node {
     Q_OBJECT
     QQmlApplicationEngine* appEngine_;
-    QTimer *myTimer_;
+    QScopedPointer<QTimer> myTimer_;
     QObject *qmlAddonsBridgeVisualizer_, *toastMgrObj_;
 
     int callbackUpdateInterval_;
