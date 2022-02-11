@@ -36,7 +36,7 @@ def generate_launch_description():
     
     return LaunchDescription([
         dcl_node,
-        #kcl_node,
+        kcl_node,
         nav_filter_node,
         bag_recorder_node,
         # nav_filter_udp_sender

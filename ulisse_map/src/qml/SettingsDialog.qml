@@ -228,7 +228,7 @@ Dialog {
                 id: statusOverlayBox
                 text: "Show Overlay"
                 //Material.accent: orange
-                checked: true
+                checked: settings.showStatusOverlay
 
                 onClicked: {
                     settings.showStatusOverlay = !settings.showStatusOverlay;

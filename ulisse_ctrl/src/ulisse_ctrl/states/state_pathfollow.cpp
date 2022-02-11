@@ -164,11 +164,6 @@ fsm::retval StatePathFollow::Execute()
                 cartesianDistancePathFollowingTask_->ExternalActivationFunction() = 0.0 * Eigen::MatrixXd::Identity(cartesianDistancePathFollowingTask_->TaskSpace(), cartesianDistancePathFollowingTask_->TaskSpace());
             }
         } else {
-            if (/*pathManager_.CurrentParameterValue() >= tolleranceEndingPoint_*/false) {
-                std::cout << "*** MISSION FINISHED! ***" << std::endl;
-
-                fsm_->EmitEvent(ulisse::events::names::neargoalposition, ulisse::events::priority::medium);
-            }
 
             if (!pathManager_.ComputeGoalPosition(ctrlData->inertialF_linearPosition, nextP_)) {
                 return fsm::fail;
@@ -176,29 +171,37 @@ fsm::retval StatePathFollow::Execute()
 
             ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, nextP_, goalDistance, goalHeading);
 
-            //Set the distance vector to the target
-            cartesianDistancePathFollowingTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(goalHeading), goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame);
-            //Set the align vector to the target
-            alignToTargetTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(goalHeading), goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame);
+            if (goalDistance < tolleranceEndingPoint_) {
 
-            //Set the vector that has to been align to the distance vector
-            alignToTargetTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
+                std::cout << "*** MISSION FINISHED! ***" << std::endl;
+                fsm_->EmitEvent(ulisse::events::names::neargoalposition, ulisse::events::priority::medium);
 
-            //To avoid the case in which the error between the goal heading and the current heading is too big
-            // we activate the the cartesian distance through the gain based on a bell-shaped function on the heading error
+            } else {
 
-            //compute the heading error
-            double headingError = alignToTargetTask_->ControlVariable().norm();
+                //Set the distance vector to the target
+                cartesianDistancePathFollowingTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(goalHeading), goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame);
+                //Set the align vector to the target
+                alignToTargetTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(goalHeading), goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame);
 
-            //compute the gain of the cartesian distance
-            double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingError);
+                //Set the vector that has to been align to the distance vector
+                alignToTargetTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
 
-            //Set the gain of the cartesian distance task
-            //cartesianDistancePathFollowingTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(cartesianDistancePathFollowingTask_->TaskSpace(), cartesianDistancePathFollowingTask_->TaskSpace());
-            cartesianDistancePathFollowingTask_->TaskParameter().gain = taskGain * cartesianDistancePathFollowingTask_->TaskParameter().conf_gain;
+                //To avoid the case in which the error between the goal heading and the current heading is too big
+                // we activate the the cartesian distance through the gain based on a bell-shaped function on the heading error
 
-            cartesianDistanceTask_->ExternalActivationFunction() = 0.0 * Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
-            cartesianDistancePathFollowingTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(cartesianDistancePathFollowingTask_->TaskSpace(), cartesianDistancePathFollowingTask_->TaskSpace());
+                //compute the heading error
+                double headingError = alignToTargetTask_->ControlVariable().norm();
+
+                //compute the gain of the cartesian distance
+                double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingError);
+
+                //Set the gain of the cartesian distance task
+                //cartesianDistancePathFollowingTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(cartesianDistancePathFollowingTask_->TaskSpace(), cartesianDistancePathFollowingTask_->TaskSpace());
+                cartesianDistancePathFollowingTask_->TaskParameter().gain = taskGain * cartesianDistancePathFollowingTask_->TaskParameter().conf_gain;
+
+                cartesianDistanceTask_->ExternalActivationFunction() = 0.0 * Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
+                cartesianDistancePathFollowingTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(cartesianDistancePathFollowingTask_->TaskSpace(), cartesianDistancePathFollowingTask_->TaskSpace());
+            }
         }
     }
 

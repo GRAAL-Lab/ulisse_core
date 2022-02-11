@@ -32,6 +32,8 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
 
     currentDelta_ = nurbsParam.deltaMin;
     currentParam_ = 0.0;
+    std::cout << "nurbsParam.deltaMin: " << nurbsParam.deltaMin << std::endl;
+    std::cout << "nurbsParam.deltaMax: " << nurbsParam.deltaMax << std::endl;
 
     std::cout.precision(10);
     std::cout  << "Path Message:\n" << rosidl_generator_traits::to_yaml(path) << std::fixed << std::endl;
@@ -69,7 +71,10 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
     std::cout << *path_ << std::endl;
 
     // TO BE REVIEWED
-    lookAheadDistance_ = path_->Length()/path_->CurvesNumber();
+    lookAheadDistance_ = (path_->Length()/path_->CurvesNumber())/2.0;
+    // TEMP DISABLE
+    lookAheadDistance_ = 0.0;
+
     std::cout << "lookAheadDistance_: " << lookAheadDistance_ << " m" << std::endl;
 
     double altitude;
@@ -100,26 +105,36 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
 
 bool PathManager::ComputeGoalPosition(const ctb::LatLong &currentPos, ctb::LatLong &goalPos)
 {
-    std::cout << "[PathManager::ComputeGoalPosition()] currentParam = " << currentParam_ << std::endl;
-
-
-    Eigen::Vector3d currentPos_UTM;
-    ctb::LatLong2LocalUTM(currentPos, 0.0, centroid_, currentPos_UTM);
 
     double closestPointParam;
     std::vector<Eigen::Vector3d> currentPosDot, goalPosDot;
 
-    try {
-        closestPointParam = path_->FindAbscissaClosestPointOnInterval(currentPos_UTM, currentParam_, currentParam_ + lookAheadDistance_);
+    std::cout << "[PathManager::ComputeGoalPosition()] currentParam = " << currentParam_ << std::endl;
 
-        currentPosDot = path_->Derivate(2, closestPointParam);
-        goalPosDot = path_->Derivate(2, currentParam_ + currentDelta_);
+    // Converting the current geographical position to UTM coordinates
+    Eigen::Vector3d currentPos_UTM;
+    ctb::LatLong2LocalUTM(currentPos, 0.0, centroid_, currentPos_UTM);
+
+
+    try {
+        // Retreiving closest point parameter
+        double intervalEnd = std::min(currentParam_ + lookAheadDistance_, path_->EndParameter());
+        //closestPointParam = path_->FindAbscissaClosestPointOnInterval(currentPos_UTM, currentParam_, intervalEnd);
+        closestPointParam = path_->FindAbscissaClosestPoint(currentPos_UTM);
+
+        // Evaluate derivatives in points of interest (TEMPORARILY BYPASSED)
+        //currentPosDot = path_->Derivate(2, closestPointParam);
+        //goalPosDot = path_->Derivate(2, currentParam_ + currentDelta_);
 
     }
     catch (std::runtime_error const& exception) {
         std::cout << "Exception -> " << exception.what() << std::endl;
     }
 
+    currentPosDot = std::vector<Eigen::Vector3d>(2, Eigen::Vector3d(0,0,0));
+    goalPosDot = std::vector<Eigen::Vector3d>(2, Eigen::Vector3d(0,0,0));
+
+    // Evaluate tangent difference
     double tangentsDifference = currentPosDot.at(0).norm() - goalPosDot.at(0).norm();
 
     if (tangentsDifference < nurbsParam.directionError) {
@@ -131,18 +146,20 @@ bool PathManager::ComputeGoalPosition(const ctb::LatLong &currentPos, ctb::LatLo
     }
 
 
-    std::clamp(currentDelta_, nurbsParam.deltaMin, nurbsParam.deltaMax);
+    currentDelta_ = std::clamp(currentDelta_, nurbsParam.deltaMin, nurbsParam.deltaMax);
     std::cout << "[PathManager::ComputeGoalPosition()] clamped currentDelta =   " << currentDelta_ << std::endl;
 
-    Eigen::Vector3d goalPos_UTM = path_->At(currentParam_ + currentDelta_);
-    double altitude;
-    ctb::LocalUTM2LatLong(goalPos_UTM, centroid_, goalPos, altitude);
+    double goalParam = currentParam_ + currentDelta_;
+    goalParam = std::clamp(goalParam, path_->StartParameter(), path_->EndParameter());
 
-        std::cout << "[PathManager::ComputeGoalPosition()] goalPos =   " << goalPos << std::endl;
+    Eigen::Vector3d goalPos_UTM = path_->At(goalParam);
+    double altitude;
+
+    ctb::LocalUTM2LatLong(goalPos_UTM, centroid_, currentGoal_, altitude);
+    goalPos = currentGoal_;
+    std::cout << "[PathManager::ComputeGoalPosition()] goalPos =   " << currentGoal_ << std::endl;
 
     currentParam_ = closestPointParam;
-
-
 
     return true;
 }
