@@ -16,7 +16,7 @@ PathManager::PathManager()
     nurbsParam.directionError = 0.436; //25 gradi
 
     // Default initialization of the currentDelta
-    currentDelta_ = nurbsParam.deltaMin;
+    delta_ = nurbsParam.deltaMin;
     nurbsParam.deltaStep = 0.05;
 
     lookAheadDistance_ = 50.0;
@@ -30,8 +30,8 @@ PathManager::~PathManager() { }
 bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
 {
 
-    currentDelta_ = nurbsParam.deltaMin;
-    currentParam_ = 0.0;
+    delta_ = nurbsParam.deltaMin;
+    currentAbscissa_ = 0.0;
     std::cout << "nurbsParam.deltaMin: " << nurbsParam.deltaMin << std::endl;
     std::cout << "nurbsParam.deltaMax: " << nurbsParam.deltaMax << std::endl;
 
@@ -94,9 +94,13 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
         std::cerr << "Error: " << e.what() << std::endl;
     }
 
-
-    ctb::LocalUTM2LatLong(path_->At(currentParam_ + currentDelta_), centroid_, currentGoal_, altitude);
+    double goalAbscissa = currentAbscissa_ + delta_;
+    goalAbscissa = std::clamp(goalAbscissa, path_->StartParameter(), path_->EndParameter());
+    Eigen::Vector3d goalPos_UTM = path_->At(goalAbscissa);
+    ctb::LocalUTM2LatLong(goalPos_UTM, centroid_, currentGoal_, altitude);
     std::cout << "currentGoal: " << currentGoal_ << std::endl;
+
+    /// TEST END ///
 
     return true;
 
@@ -106,10 +110,10 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
 bool PathManager::ComputeGoalPosition(const ctb::LatLong &currentPos, ctb::LatLong &goalPos)
 {
 
-    double closestPointParam;
+    double closestPointAbscissa;
     std::vector<Eigen::Vector3d> currentPosDot, goalPosDot;
 
-    std::cout << "[PathManager::ComputeGoalPosition()] currentParam = " << currentParam_ << std::endl;
+    std::cout << "[PathManager::ComputeGoalPosition()] currentAbscissa_ = " << currentAbscissa_ << std::endl;
 
     // Converting the current geographical position to UTM coordinates
     Eigen::Vector3d currentPos_UTM;
@@ -118,13 +122,13 @@ bool PathManager::ComputeGoalPosition(const ctb::LatLong &currentPos, ctb::LatLo
 
     try {
         // Retreiving closest point parameter
-        double intervalEnd = std::min(currentParam_ + lookAheadDistance_, path_->EndParameter());
-        //closestPointParam = path_->FindAbscissaClosestPointOnInterval(currentPos_UTM, currentParam_, intervalEnd);
-        closestPointParam = path_->FindAbscissaClosestPoint(currentPos_UTM);
+        double intervalEnd = std::min(currentAbscissa_ + lookAheadDistance_, path_->EndParameter());
+        //closestPointAbscissa = path_->FindAbscissaClosestPointOnInterval(currentPos_UTM, currentAbscissa_, intervalEnd);
+        closestPointAbscissa = path_->FindAbscissaClosestPoint(currentPos_UTM);
 
         // Evaluate derivatives in points of interest (TEMPORARILY BYPASSED)
-        //currentPosDot = path_->Derivate(2, closestPointParam);
-        //goalPosDot = path_->Derivate(2, currentParam_ + currentDelta_);
+        //currentPosDot = path_->Derivate(2, closestPointAbscissa);
+        //goalPosDot = path_->Derivate(2, currentAbscissa_ + delta_);
 
     }
     catch (std::runtime_error const& exception) {
@@ -139,27 +143,29 @@ bool PathManager::ComputeGoalPosition(const ctb::LatLong &currentPos, ctb::LatLo
 
     if (tangentsDifference < nurbsParam.directionError) {
         std::cout << "[PathManager::ComputeGoalPosition()] tangentsDifference < error"  << std::endl;
-        currentDelta_ = currentDelta_ + nurbsParam.deltaStep;
+        delta_ = delta_ + nurbsParam.deltaStep;
     } else {
         std::cout << "[PathManager::ComputeGoalPosition()] tangentsDifference > error"  << std::endl;
-        currentDelta_ = currentDelta_ - nurbsParam.deltaStep;
+        delta_ = delta_ - nurbsParam.deltaStep;
     }
 
 
-    currentDelta_ = std::clamp(currentDelta_, nurbsParam.deltaMin, nurbsParam.deltaMax);
-    std::cout << "[PathManager::ComputeGoalPosition()] clamped currentDelta =   " << currentDelta_ << std::endl;
+    // Limit delta between min and max
+    delta_ = std::clamp(delta_, nurbsParam.deltaMin, nurbsParam.deltaMax);
+    std::cout << "[PathManager::ComputeGoalPosition()] clamped currentDelta =   " << delta_ << std::endl;
 
-    double goalParam = currentParam_ + currentDelta_;
-    goalParam = std::clamp(goalParam, path_->StartParameter(), path_->EndParameter());
+    // Limit goalParam abscissa between startParam and endParam
+    double goalAbscissa = currentAbscissa_ + delta_;
+    goalAbscissa = std::clamp(goalAbscissa, path_->StartParameter(), path_->EndParameter());
 
-    Eigen::Vector3d goalPos_UTM = path_->At(goalParam);
+    Eigen::Vector3d goalPos_UTM = path_->At(goalAbscissa);
     double altitude;
 
     ctb::LocalUTM2LatLong(goalPos_UTM, centroid_, currentGoal_, altitude);
     goalPos = currentGoal_;
     std::cout << "[PathManager::ComputeGoalPosition()] goalPos =   " << currentGoal_ << std::endl;
 
-    currentParam_ = closestPointParam;
+    currentAbscissa_ = closestPointAbscissa;
 
     return true;
 }

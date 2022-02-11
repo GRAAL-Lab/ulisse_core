@@ -197,7 +197,7 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
     }
 
     // Sampling the curve and converting it back to lat-long for visualization on map
-    double samplingInterval = 2.0; // meters
+    double samplingInterval = 1.0; // meters
     int numSamples = (int)round(serpentine->Length()/samplingInterval);
     auto sampledPath = serpentine->Sampling(numSamples);
 

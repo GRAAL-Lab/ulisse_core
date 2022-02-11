@@ -57,7 +57,7 @@ public:
     /*
      * Method that set the delta incrementation
     */
-    auto Delta() const -> double { return currentDelta_; }
+    auto Delta() const -> double { return delta_; }
 
     /*
      * Method that get the centroid for convertion from/to cartesian form/to lat long
@@ -116,11 +116,11 @@ private:
     Path::Direction direction_;
     ctb::LatLong startP_;                       // Starting point of the nurbs path
     ctb::LatLong endP_;                         // Ending point of the nurbs path
-    double currentParam_;                         // The current parameter value on the path
+    double currentAbscissa_;                         // The current parameter value on the path
     double lookAheadDistance_;
     ctb::LatLong currentGoal_;
 
-    double currentDelta_;                       // The current delta increment
+    double delta_;                       // The current delta increment
 };
 
 #endif // ULISSE_CONFIGURATION_H
