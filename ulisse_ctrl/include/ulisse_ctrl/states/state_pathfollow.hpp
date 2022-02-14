@@ -20,7 +20,7 @@ namespace states {
 
         bool isCurveSet_;               // Flag for checking if a curve has been loaded
         bool vehicleOnTrack_;           // Flag for checking is the robot at the path start
-        ctb::LatLong startP_, endP_;    // Starting and ending point
+        //ctb::LatLong startP_, endP_;    // Starting and ending point
         ctb::LatLong nextP_;            // Next point of the path
         double tolleranceStartingPoint_; // Tolerance on the starting point
         double tolleranceEndingPoint_;  // Tolerance on the ending point
@@ -37,7 +37,11 @@ namespace states {
         bool ConfigureStateFromFile(libconfig::Config& confObj) override;
 
         bool LoadPath(const ulisse_msgs::msg::PathData& path);
-        const ctb::LatLong &GetNextPoint() const { return nextP_; }
+        const ctb::LatLong& GetNextPoint() const { return nextP_; }
+        const ctb::LatLong& GetCurrentTrackPoint() const { return pathManager_.CurrentTrackPoint(); }
+        double GetDistanceToEnd() const { return pathManager_.DistanceToEnd(); }
+
+
     };
 }
 }

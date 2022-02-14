@@ -213,9 +213,9 @@ Map {
 
         anchorPoint.x: greenFlagImage.width / 2
         anchorPoint.y: greenFlagImage.height / 2
+        coordinate: fbkUpdater.track_pos
         z: goalAcceptRadius.z + 1
-        opacity: ((mapView.pathCurrentState === pathState.active)
-                  || (mapView.pathCurrentState === pathState.stopped) ? 1.0 : 0.0)
+        opacity: (fbkUpdater.vehicle_state === "Path_Following") ? 0.6 : 0.0
     }
 
     MapQuickItem {

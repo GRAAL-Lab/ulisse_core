@@ -48,7 +48,6 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
     offset_ = path.offset;
     direction_ = static_cast<Path::Direction>(path.direction);
 
-
     std::vector<Eigen::Vector3d> polyVerticesUTM(path.coordinates.size());
     int i{0};
     for (const auto &coord : path.coordinates) {
@@ -72,24 +71,17 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
 
     // TO BE REVIEWED
     lookAheadDistance_ = (path_->Length()/path_->CurvesNumber())/2.0;
-    // TEMP DISABLE
-    lookAheadDistance_ = 0.0;
 
     std::cout << "lookAheadDistance_: " << lookAheadDistance_ << " m" << std::endl;
 
     double altitude;
 
-    /// TEST ///
     try{
-        //RCLCPP_WARN_STREAM(rclcpp::get_logger("PathManager"), "[CommandWrapper::createPathFromPolygon] Retreiving START Point...");
         ctb::LocalUTM2LatLong(path_->At(path_->StartParameter()), centroid_, startP_, altitude);
-
-        //RCLCPP_WARN_STREAM(rclcpp::get_logger("PathManager"), "[CommandWrapper::createPathFromPolygon] Retreiving END Point...");
         ctb::LocalUTM2LatLong(path_->At(path_->EndParameter()),   centroid_, endP_,   altitude);
 
         std::cout << "startPoint (A): " << startP_ << std::endl;
         std::cout << "endPoint   (B): " << endP_   << std::endl;
-
     } catch (const std::runtime_error& e) {
         std::cerr << "Error: " << e.what() << std::endl;
     }
@@ -98,9 +90,9 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
     goalAbscissa = std::clamp(goalAbscissa, path_->StartParameter(), path_->EndParameter());
     Eigen::Vector3d goalPos_UTM = path_->At(goalAbscissa);
     ctb::LocalUTM2LatLong(goalPos_UTM, centroid_, currentGoal_, altitude);
-    std::cout << "currentGoal: " << currentGoal_ << std::endl;
+    //std::cout << "currentGoal: " << currentGoal_ << std::endl;
 
-    /// TEST END ///
+    currentTrackPoint_ = startP_;
 
     return true;
 
@@ -113,7 +105,7 @@ bool PathManager::ComputeGoalPosition(const ctb::LatLong &currentPos, ctb::LatLo
     double closestPointAbscissa;
     std::vector<Eigen::Vector3d> currentPosDot, goalPosDot;
 
-    std::cout << "[PathManager::ComputeGoalPosition()] currentAbscissa_ = " << currentAbscissa_ << std::endl;
+    //std::cout << "[PathManager::ComputeGoalPosition()] currentAbscissa_ = " << currentAbscissa_ << std::endl;
 
     // Converting the current geographical position to UTM coordinates
     Eigen::Vector3d currentPos_UTM;
@@ -122,37 +114,37 @@ bool PathManager::ComputeGoalPosition(const ctb::LatLong &currentPos, ctb::LatLo
 
     try {
         // Retreiving closest point parameter
+
+        // TO FIX: Does not work as expected
         double intervalEnd = std::min(currentAbscissa_ + lookAheadDistance_, path_->EndParameter());
         //closestPointAbscissa = path_->FindAbscissaClosestPointOnInterval(currentPos_UTM, currentAbscissa_, intervalEnd);
+
         closestPointAbscissa = path_->FindAbscissaClosestPoint(currentPos_UTM);
 
-        // Evaluate derivatives in points of interest (TEMPORARILY BYPASSED)
-        //currentPosDot = path_->Derivate(2, closestPointAbscissa);
-        //goalPosDot = path_->Derivate(2, currentAbscissa_ + delta_);
+        // Evaluate derivatives in points of interest
+        currentPosDot = path_->Derivate(1, closestPointAbscissa);
+        goalPosDot = path_->Derivate(1, currentAbscissa_ + delta_);
 
     }
     catch (std::runtime_error const& exception) {
         std::cout << "Exception -> " << exception.what() << std::endl;
     }
 
-    currentPosDot = std::vector<Eigen::Vector3d>(2, Eigen::Vector3d(0,0,0));
-    goalPosDot = std::vector<Eigen::Vector3d>(2, Eigen::Vector3d(0,0,0));
+    Eigen::Vector3d currentDirection = currentPosDot.at(0) / currentPosDot.at(0).norm();
+    Eigen::Vector3d goalDirection = goalPosDot.at(0) / goalPosDot.at(0).norm();
 
     // Evaluate tangent difference
-    double tangentsDifference = currentPosDot.at(0).norm() - goalPosDot.at(0).norm();
+    double tangentsDifferenceNorm = rml::ReducedVersorLemma(currentDirection, goalDirection).norm();
 
-    if (tangentsDifference < nurbsParam.directionError) {
-        std::cout << "[PathManager::ComputeGoalPosition()] tangentsDifference < error"  << std::endl;
+    if (std::fabs(tangentsDifferenceNorm) < nurbsParam.directionError) {
         delta_ = delta_ + nurbsParam.deltaStep;
     } else {
-        std::cout << "[PathManager::ComputeGoalPosition()] tangentsDifference > error"  << std::endl;
         delta_ = delta_ - nurbsParam.deltaStep;
     }
 
 
     // Limit delta between min and max
     delta_ = std::clamp(delta_, nurbsParam.deltaMin, nurbsParam.deltaMax);
-    std::cout << "[PathManager::ComputeGoalPosition()] clamped currentDelta =   " << delta_ << std::endl;
 
     // Limit goalParam abscissa between startParam and endParam
     double goalAbscissa = currentAbscissa_ + delta_;
@@ -163,9 +155,17 @@ bool PathManager::ComputeGoalPosition(const ctb::LatLong &currentPos, ctb::LatLo
 
     ctb::LocalUTM2LatLong(goalPos_UTM, centroid_, currentGoal_, altitude);
     goalPos = currentGoal_;
-    std::cout << "[PathManager::ComputeGoalPosition()] goalPos =   " << currentGoal_ << std::endl;
 
     currentAbscissa_ = closestPointAbscissa;
+    ctb::LocalUTM2LatLong(path_->At(currentAbscissa_), centroid_, currentTrackPoint_, altitude);
+
 
     return true;
 }
+
+double PathManager::DistanceToEnd() const
+{
+    return std::fabs(path_->EndParameter() - currentAbscissa_);
+}
+
+

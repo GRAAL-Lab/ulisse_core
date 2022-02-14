@@ -27,7 +27,8 @@ bool StatePathFollow::LoadPath(const ulisse_msgs::msg::PathData& path){
     isCurveSet_ = true;
 
     // Get the staring and ending point of the path
-    nextP_ = startP_ = pathManager_.StartingPoint();
+    nextP_ = pathManager_.StartingPoint();
+    //endP_ = pathManager_.EndingPoint();
 
     // Evaluete the end curve length
     double length;
@@ -132,7 +133,7 @@ fsm::retval StatePathFollow::Execute()
         //Going to the starting point
         if (!vehicleOnTrack_) {
 
-            ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, startP_, goalDistance, goalHeading);
+            ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, pathManager_.StartingPoint(), goalDistance, goalHeading);
 
             if (goalDistance < tolleranceStartingPoint_) {
                 vehicleOnTrack_ = true;
@@ -165,18 +166,18 @@ fsm::retval StatePathFollow::Execute()
             }
         } else {
 
-            if (!pathManager_.ComputeGoalPosition(ctrlData->inertialF_linearPosition, nextP_)) {
-                return fsm::fail;
-            }
-
-            ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, nextP_, goalDistance, goalHeading);
-
-            if (goalDistance < tolleranceEndingPoint_) {
+            if (pathManager_.DistanceToEnd() < tolleranceEndingPoint_) {
 
                 std::cout << "*** MISSION FINISHED! ***" << std::endl;
                 fsm_->EmitEvent(ulisse::events::names::neargoalposition, ulisse::events::priority::medium);
 
             } else {
+
+                if (!pathManager_.ComputeGoalPosition(ctrlData->inertialF_linearPosition, nextP_)) {
+                    return fsm::fail;
+                }
+
+                ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, nextP_, goalDistance, goalHeading);
 
                 //Set the distance vector to the target
                 cartesianDistancePathFollowingTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(goalHeading), goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame);

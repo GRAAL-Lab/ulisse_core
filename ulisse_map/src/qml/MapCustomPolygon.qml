@@ -245,7 +245,6 @@ MapPolyline {
         reposition_vertex_markers()
         a_marker.coordinate = startPoint
         b_marker.coordinate = endPoint
-        if (direction === 1) toggle_dir()
     }
 
     function enable_handle() {
@@ -295,9 +294,11 @@ MapPolyline {
 
     function toggle_dir() {
         direction = Helper.flip(direction)
-        var temp = Helper.coordinate_deep_copy(b_marker.coordinate)
-        b_marker.coordinate = Helper.coordinate_deep_copy(a_marker.coordinate)
-        a_marker.coordinate = temp
+        //var temp = Helper.coordinate_deep_copy(b_marker.coordinate)
+        //b_marker.coordinate = Helper.coordinate_deep_copy(a_marker.coordinate)
+        //a_marker.coordinate = temp
+
+        _generate_and_draw()
 
     }
 
@@ -723,7 +724,7 @@ MapPolyline {
         disable_markers()
         disable_handle()
         //if (_method !== null || _method !== undefined) {
-            _generate_and_draw()
+        _generate_and_draw()
         //}
     }
 
@@ -805,11 +806,11 @@ MapPolyline {
         //console.log("[MapPolygon] Number of PathPoints: " + pathPoints.length)
 
         //if (_method != null || _method !== undefined) {
-            // For the SafetyBoundary the _method is null
+        // For the SafetyBoundary the _method is null
 
-            //generate_path()
-            //console.log("[MapPolygon] draw_path()")
-            draw_path(pathPoints)
+        //generate_path()
+        //console.log("[MapPolygon] draw_path()")
+        draw_path(pathPoints)
         //}
 
         generate_markers()

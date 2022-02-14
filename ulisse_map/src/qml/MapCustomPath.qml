@@ -164,7 +164,7 @@ MapPolyline {
         reposition_vertex_markers()
         a_marker.coordinate = path[0]
         b_marker.coordinate = path[path.length - 1]
-        if (direction === 1) toggle_dir()
+        //if (direction === 1) toggle_dir()
     }
 
     function enable_handle() {

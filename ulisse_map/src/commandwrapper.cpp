@@ -186,6 +186,8 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
     double offsetPath = jvalues["params"]["offset"].asDouble();
     Path::Direction direction = static_cast<Path::Direction>(jvalues["params"]["direction"].asInt());
 
+    //std::cout << "Direction: " << (int)direction << std::endl;
+
     std::shared_ptr<Path> serpentine;
 
     try {

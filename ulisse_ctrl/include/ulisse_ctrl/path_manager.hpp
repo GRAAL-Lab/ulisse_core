@@ -33,8 +33,8 @@ public:
     /**
      * @brief ComputeGoalPosition
      *
-     * @param currentP
-     * @param nextP
+     * @param currentP Current Coordinate of the vehicle
+     * @param nextP Goal Coordinate for the vehicle
      * @return
      */
     bool ComputeGoalPosition(const ctb::LatLong& currentP, ctb::LatLong& goalP);
@@ -53,6 +53,18 @@ public:
      * Method that get the starting point of the path in cartesian coordinates
     */
     auto EndingPoint() const -> const ctb::LatLong& { return endP_; }
+
+    /*
+     * Method that get the current point of the path in cartesian coordinates
+    */
+    auto CurrentTrackPoint() const -> const ctb::LatLong& { return currentTrackPoint_; }
+
+    /**
+     * @brief DistanceToEnd
+     *
+     * @return
+     */
+    double DistanceToEnd() const;
 
     /*
      * Method that set the delta incrementation
@@ -119,6 +131,7 @@ private:
     double currentAbscissa_;                         // The current parameter value on the path
     double lookAheadDistance_;
     ctb::LatLong currentGoal_;
+    ctb::LatLong currentTrackPoint_;
 
     double delta_;                       // The current delta increment
 };

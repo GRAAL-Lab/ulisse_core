@@ -45,6 +45,7 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     Q_PROPERTY(double accept_radius READ get_accept_radius NOTIFY callbacks_processed)
     Q_PROPERTY(QString gps_time READ get_gps_time NOTIFY callbacks_processed)
     Q_PROPERTY(QGeoCoordinate gps_pos READ get_gps_pos NOTIFY callbacks_processed)
+    Q_PROPERTY(QGeoCoordinate track_pos READ get_track_pos NOTIFY callbacks_processed)
 
     Q_PROPERTY(bool gps_online READ get_gps_online NOTIFY callbacks_processed)
     Q_PROPERTY(bool imu_online READ get_imu_online NOTIFY callbacks_processed)
@@ -81,7 +82,7 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     Q_PROPERTY(float water_current_deg READ get_water_current_deg NOTIFY callbacks_processed)
 
     bool gpsReceived_, imuReceived_, compassReceived_, magnetometerReceived_;
-    QGeoCoordinate q_centroid, q_ulisse_pos_, q_goal_pos_, q_gps_pos_;
+    QGeoCoordinate q_centroid, q_ulisse_pos_, q_goal_pos_, q_gps_pos_, q_track_pos_;
     double q_goal_distance_, q_goal_heading_deg_;
     double q_ulisse_surge_;
     QVector3D q_ulisse_rpy_deg_, q_ulisse_rpy_rate_deg_;
@@ -176,6 +177,7 @@ public:
     double get_battery_perc_R();
     QString get_gps_time();
     QGeoCoordinate get_gps_pos();
+    QGeoCoordinate get_track_pos();
 
     bool get_gps_online();
     bool get_imu_online();

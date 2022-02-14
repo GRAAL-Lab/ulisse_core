@@ -58,7 +58,7 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
     micro_loop_count_t_ = 0;
     motor_speed_L_ = motor_speed_R_ = 0;
 
-    q_gps_pos_ = q_goal_pos_ = q_ulisse_pos_;
+    q_gps_pos_ = q_goal_pos_ = q_track_pos_ = q_ulisse_pos_;
     q_gps_time_ = "undefined";
 
     gpsReceived_ = imuReceived_ = compassReceived_ = magnetometerReceived_ = false;
@@ -107,6 +107,7 @@ bool FeedbackUpdater::LoadConfiguration()
     };
     q_centroid.setLatitude(centroidLocationTmp[0]);
     q_centroid.setLongitude(centroidLocationTmp[1]);
+    q_centroid.setAltitude(0.0);
 
     qDebug() << "centroid Location: " << q_centroid;
 
@@ -337,6 +338,9 @@ void FeedbackUpdater::FeedbackGuiCB(const ulisse_msgs::msg::FeedbackGui::SharedP
     q_goal_distance_ = msg->goal_distance;
     q_accept_radius_ = msg->acceptance_radius;
     q_goal_heading_deg_ = msg->goal_heading * 180 / M_PI;
+
+    q_track_pos_.setLatitude(msg->current_track_point.latitude);
+    q_track_pos_.setLongitude(msg->current_track_point.longitude);
 }
 
 void FeedbackUpdater::copyToClipboard(QString newText)
@@ -443,6 +447,11 @@ QString FeedbackUpdater::get_gps_time()
 QGeoCoordinate FeedbackUpdater::get_gps_pos()
 {
     return q_gps_pos_;
+}
+
+QGeoCoordinate FeedbackUpdater::get_track_pos()
+{
+    return q_track_pos_;
 }
 
 bool FeedbackUpdater::get_gps_online()

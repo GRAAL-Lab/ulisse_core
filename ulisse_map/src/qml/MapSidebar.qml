@@ -59,7 +59,7 @@ Rectangle {
                     //h:12
                     //w:100
                     labelColor: blue
-                    label: "Position"
+                    label: "Vehicle Position"
                     text: fbkUpdater.ulisse_pos.latitude.toFixed(8) + ", " +
                           fbkUpdater.ulisse_pos.longitude.toFixed(8)
                     Layout.fillWidth: true
@@ -82,7 +82,7 @@ Rectangle {
                     text: fbkUpdater.goal_distance.toFixed(2) + " (m)"
                     objectName: "goalDistance"
                     labelColor: blue
-                    label: "Distance"
+                    label: "Target Distance"
                     Layout.fillWidth: true
                 }
 

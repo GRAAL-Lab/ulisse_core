@@ -721,6 +721,9 @@ void VehicleController::PublishTasksInfo()
     } else if (uFsm_.GetCurrentStateName() == ulisse::states::ID::pathfollow){
         feedbackGuiMsg.goal_position.latitude = statePathFollowing_->GetNextPoint().latitude;
         feedbackGuiMsg.goal_position.longitude = statePathFollowing_->GetNextPoint().longitude;
+        feedbackGuiMsg.current_track_point.latitude = statePathFollowing_->GetCurrentTrackPoint().latitude;
+        feedbackGuiMsg.current_track_point.longitude = statePathFollowing_->GetCurrentTrackPoint().longitude;
+        feedbackGuiMsg.goal_distance = statePathFollowing_->GetDistanceToEnd();
     }
     feedbackGuiPub_->publish(feedbackGuiMsg);
 }
