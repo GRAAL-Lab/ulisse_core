@@ -198,6 +198,8 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
         std::cout << "Received exception from --> " << exception.what() << std::endl;
     }
 
+    //serpentine = serpentine->ExtractSection(15.0, serpentine->EndParameter()/2.0);
+
     // Sampling the curve and converting it back to lat-long for visualization on map
     double samplingInterval = 1.0; // meters
     int numSamples = (int)round(serpentine->Length()/samplingInterval);

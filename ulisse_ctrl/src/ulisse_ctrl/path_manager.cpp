@@ -102,10 +102,12 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
 bool PathManager::ComputeGoalPosition(const ctb::LatLong &currentPos, ctb::LatLong &goalPos)
 {
 
+    std::cout << "----------------------" << std::endl;
+
     double closestPointAbscissa;
     std::vector<Eigen::Vector3d> currentPosDot, goalPosDot;
 
-    //std::cout << "[PathManager::ComputeGoalPosition()] currentAbscissa_ = " << currentAbscissa_ << std::endl;
+    std::cout << "[ComputeGoalPosition()] currentAbscissa_ = " << currentAbscissa_ << std::endl;
 
     // Converting the current geographical position to UTM coordinates
     Eigen::Vector3d currentPos_UTM;
@@ -117,9 +119,18 @@ bool PathManager::ComputeGoalPosition(const ctb::LatLong &currentPos, ctb::LatLo
 
         // TO FIX: Does not work as expected
         double intervalEnd = std::min(currentAbscissa_ + lookAheadDistance_, path_->EndParameter());
+
+        std::cout << "[ComputeGoalPosition()] intervalEnd = " << intervalEnd << std::endl;
+        auto section = path_->ExtractSection(currentAbscissa_, intervalEnd);
+        std::cout << *section << std::endl;
+        auto section_abscissa = section->FindAbscissaClosestPoint(currentPos_UTM);
+        std::cout << "[ComputeGoalPosition()] section_abscissa = " << section_abscissa << std::endl;
+        closestPointAbscissa = currentAbscissa_ + section_abscissa;
+
         //closestPointAbscissa = path_->FindAbscissaClosestPointOnInterval(currentPos_UTM, currentAbscissa_, intervalEnd);
 
-        closestPointAbscissa = path_->FindAbscissaClosestPoint(currentPos_UTM);
+        // TEMPORARY FIX:
+        //closestPointAbscissa = path_->FindAbscissaClosestPoint(currentPos_UTM);
 
         // Evaluate derivatives in points of interest
         currentPosDot = path_->Derivate(1, closestPointAbscissa);
@@ -147,7 +158,7 @@ bool PathManager::ComputeGoalPosition(const ctb::LatLong &currentPos, ctb::LatLo
     delta_ = std::clamp(delta_, nurbsParam.deltaMin, nurbsParam.deltaMax);
 
     // Limit goalParam abscissa between startParam and endParam
-    double goalAbscissa = currentAbscissa_ + delta_;
+    double goalAbscissa = closestPointAbscissa + delta_;
     goalAbscissa = std::clamp(goalAbscissa, path_->StartParameter(), path_->EndParameter());
 
     Eigen::Vector3d goalPos_UTM = path_->At(goalAbscissa);

@@ -48,7 +48,7 @@ Rectangle {
                     //h:12
                     //w:100
                     labelColor: blue
-                    label: "State"
+                    label: "Vehicle State"
                     text: fbkUpdater.vehicle_state
                     Layout.fillWidth: true
                     textBoldness: Font.DemiBold
