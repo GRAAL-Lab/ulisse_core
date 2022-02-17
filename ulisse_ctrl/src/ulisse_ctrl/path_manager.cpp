@@ -119,15 +119,24 @@ bool PathManager::ComputeGoalPosition(const ctb::LatLong &currentPos, ctb::LatLo
 
         // TO FIX: Does not work as expected
         double intervalEnd = std::min(currentAbscissa_ + lookAheadDistance_, path_->EndParameter());
-
         std::cout << "[ComputeGoalPosition()] intervalEnd = " << intervalEnd << std::endl;
+
         auto section = path_->ExtractSection(currentAbscissa_, intervalEnd);
         std::cout << *section << std::endl;
-        auto section_abscissa = section->FindAbscissaClosestPoint(currentPos_UTM);
-        std::cout << "[ComputeGoalPosition()] section_abscissa = " << section_abscissa << std::endl;
-        closestPointAbscissa = currentAbscissa_ + section_abscissa;
 
-        //closestPointAbscissa = path_->FindAbscissaClosestPointOnInterval(currentPos_UTM, currentAbscissa_, intervalEnd);
+
+        std::cout << "currentPos_UTM: " << currentPos_UTM.transpose() << std::endl;
+        std::cout << "path_->At(0): " << path_->At(0).transpose() << std::endl;
+        std::cout << "section->At(0): " << section->At(0).transpose() << std::endl;
+
+
+        auto section_abscissa = section->FindAbscissaClosestPoint(currentPos_UTM);
+        std::cout << "[ComputeGoalPosition()] path_CP_abscissa = " << path_->FindAbscissaClosestPoint(currentPos_UTM) << std::endl;
+        std::cout << "[ComputeGoalPosition()] section_CP_abscissa = " << section_abscissa << std::endl;
+        closestPointAbscissa = section_abscissa + currentAbscissa_;
+        std::cout << "[ComputeGoalPosition()] section_abscissa + currentAbscissa_ = " << closestPointAbscissa << std::endl;
+
+        //closestPointAbscissa = path_->FindAbscissaClosestPointOnInterval(currentPos_UTM, 0.0, intervalEnd);
 
         // TEMPORARY FIX:
         //closestPointAbscissa = path_->FindAbscissaClosestPoint(currentPos_UTM);

@@ -302,10 +302,6 @@ MapPolyline {
 
     }
 
-    /*onDirectionChanged: {
-        console.log("dir: " + direction)
-    }*/
-
     function nearest_marker(point, markers, nearest, thresh) {
         for (var i = 0; i < markers.length; i++) {
             var v = map.fromCoordinate(markers[i].center)
