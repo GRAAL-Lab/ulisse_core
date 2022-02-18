@@ -64,7 +64,7 @@ MapComponentForm {
             safety_polygon.close_polygon()
         }
 
-        //safety_polygon._method = null
+        safety_polygon._polypathType = null
         map.addMapItem(safety_polygon)
     }
 

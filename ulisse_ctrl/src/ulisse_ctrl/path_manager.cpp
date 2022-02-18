@@ -40,6 +40,7 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
 
     pathName_ = path.id;
     pathType_ = path.type;
+    polypathType_ = path.polypath_type;
 
     centroid_.latitude = path.centroid.latitude;
     centroid_.longitude = path.centroid.longitude;
@@ -58,8 +59,17 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
         i++;
     }
 
+
     if (pathType_ == "PolyPath") {
-        path_ = PathFactory::NewSerpentine(angle_, direction_, offset_, polyVerticesUTM);
+        if (polypathType_ == "Serpentine"){
+            path_ = PathFactory::NewSerpentine(angle_, direction_, offset_, polyVerticesUTM);
+        } else if (polypathType_ == "RaceTrack"){
+            path_ = PathFactory::NewRaceTrack(angle_, direction_, offset_, offset_/2.0, polyVerticesUTM);
+        } else {
+            std::cerr << "Error: polypathType not recognized.";
+            return false;
+        }
+
     } else if (pathType_ == "PolyLine") {
         path_ = PathFactory::NewPolygonalChain(polyVerticesUTM);
     } else {
@@ -98,16 +108,11 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
 
 }
 
-
 bool PathManager::ComputeGoalPosition(const ctb::LatLong &currentPos, ctb::LatLong &goalPos)
 {
 
-    std::cout << "----------------------" << std::endl;
-
     double closestPointAbscissa;
     std::vector<Eigen::Vector3d> currentPosDot, goalPosDot;
-
-    std::cout << "[ComputeGoalPosition()] currentAbscissa_ = " << currentAbscissa_ << std::endl;
 
     // Converting the current geographical position to UTM coordinates
     Eigen::Vector3d currentPos_UTM;
@@ -116,30 +121,8 @@ bool PathManager::ComputeGoalPosition(const ctb::LatLong &currentPos, ctb::LatLo
 
     try {
         // Retreiving closest point parameter
-
-        // TO FIX: Does not work as expected
         double intervalEnd = std::min(currentAbscissa_ + lookAheadDistance_, path_->EndParameter());
-        std::cout << "[ComputeGoalPosition()] intervalEnd = " << intervalEnd << std::endl;
-
-        auto section = path_->ExtractSection(currentAbscissa_, intervalEnd);
-        std::cout << *section << std::endl;
-
-
-        std::cout << "currentPos_UTM: " << currentPos_UTM.transpose() << std::endl;
-        std::cout << "path_->At(0): " << path_->At(0).transpose() << std::endl;
-        std::cout << "section->At(0): " << section->At(0).transpose() << std::endl;
-
-
-        auto section_abscissa = section->FindAbscissaClosestPoint(currentPos_UTM);
-        std::cout << "[ComputeGoalPosition()] path_CP_abscissa = " << path_->FindAbscissaClosestPoint(currentPos_UTM) << std::endl;
-        std::cout << "[ComputeGoalPosition()] section_CP_abscissa = " << section_abscissa << std::endl;
-        closestPointAbscissa = section_abscissa + currentAbscissa_;
-        std::cout << "[ComputeGoalPosition()] section_abscissa + currentAbscissa_ = " << closestPointAbscissa << std::endl;
-
-        //closestPointAbscissa = path_->FindAbscissaClosestPointOnInterval(currentPos_UTM, 0.0, intervalEnd);
-
-        // TEMPORARY FIX:
-        //closestPointAbscissa = path_->FindAbscissaClosestPoint(currentPos_UTM);
+        closestPointAbscissa = path_->FindAbscissaClosestPointOnInterval(currentPos_UTM, currentAbscissa_, intervalEnd);
 
         // Evaluate derivatives in points of interest
         currentPosDot = path_->Derivate(1, closestPointAbscissa);

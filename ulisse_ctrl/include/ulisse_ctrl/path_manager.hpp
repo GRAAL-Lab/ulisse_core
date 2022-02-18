@@ -121,6 +121,7 @@ public:
 private:
     std::string pathName_;
     std::string pathType_;
+    std::string polypathType_;
     std::shared_ptr<Path> path_;                // The Curve
     ctb::LatLong centroid_;                     // The centroid for the convertion from/to cartesian/latlong
     std::vector<ctb::LatLong> coordinates_;     // Coordinate List of polypath

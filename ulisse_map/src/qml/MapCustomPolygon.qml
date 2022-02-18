@@ -40,7 +40,7 @@ MapPolyline {
     property string pathName: "Path"
     property real _angle: 0
     property real _offset: 20
-    //property var _method: "single_winding" // "simple"
+    property var _polypathType: "Serpentine" // "simple"
     property int direction: 0  // 0: Direct, 1: Reverse
 
     property var centroid: QtPositioning.coordinate(0.0, 0.0)
@@ -719,9 +719,9 @@ MapPolyline {
         reposition_markers()
         disable_markers()
         disable_handle()
-        //if (_method !== null || _method !== undefined) {
-        _generate_and_draw()
-        //}
+        if (_polypathType !== null || _polypathType !== undefined) {
+            _generate_and_draw()
+        }
     }
 
     function confirm_edit(name, params) {
@@ -731,7 +731,7 @@ MapPolyline {
         if (params !== null || params !== undefined) {
             _angle = params.angle
             _offset = params.offset
-            //_method = params.method
+            _polypathType = params.polypath_type
         }
         moving_idx = -1
         _generate_and_draw()
@@ -743,7 +743,7 @@ MapPolyline {
             params: {
                 angle: _angle,
                 offset: _offset,
-                //method: _method,
+                polypath_type: _polypathType,
                 direction: direction
             }
         }
@@ -853,7 +853,7 @@ MapPolyline {
             params: {
                 offset: _offset,
                 angle: _angle,
-                //method: _method,
+                polypath_type: _polypathType,
                 direction: direction
             },
             centroid: { latitude: centroid.latitude, longitude: centroid.longitude },
@@ -868,7 +868,7 @@ MapPolyline {
 
         _angle = data.params.angle
         _offset = data.params.offset
-        //  _method = data.params.method
+        _polypathType = data.params.polypath_type
         direction = data.params.direction
 
         var lat, lon

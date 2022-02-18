@@ -11,14 +11,17 @@ import "."
 RowLayout {
     id: root
     property bool buttons: false
-    property var angle: parseInt(angleField.text)
-    property var offset: parseInt(offsetField.text)
-    //property var method: methodField.currentText
+
     property var nameTrack: textnametrack.text
+    property var offset: parseInt(offsetField.text)
+    property var angle: parseInt(angleField.text)
+    property var polypath_type: polypathType.currentText
+
     property var nameTrack_
     property var offset_
     property var angle_
-    //property var method_
+    property var polypath_type_
+
     signal accept
     signal discard
 
@@ -28,14 +31,14 @@ RowLayout {
         return {
             angle: angle,
             offset: offset,
-            //method: method
+            polypath_type: polypath_type
         }
     }
 
     function fill_cur_values(values) {
         angle_ = (values.params.angle !== undefined) ? values.params.angle : 0
         offset_ = (values.params.offset !== undefined) ? values.params.offset : 20
-        //method_ = (values.params.method !== undefined) ? values.params.method : "simple"
+        polypath_type_ = (values.params.polypath_type !== undefined) ? values.params.polypath_type : "Serpentine"
         nameTrack_ = (values.name !== undefined) ? values.name : "Path"
     }
 
@@ -80,20 +83,24 @@ RowLayout {
         }
     }
 
-    /*LabelledField {
-        id: groupBoxnurbs
-        height: methodField.height + 40
-        width: methodField.width + 50
+    LabelledField {
+        id: polyCoverageMethod
+        height: polypathType.height + 40
+        width: polypathType.width + 50
         title: qsTr("Path Type")
 
         ComboBox {
-            id: methodField
+            id: polypathType
             hoverEnabled: true
             width: 140
-            //Layout.fillWidth: true
-            model: ["single_winding", "simple"]
+            model: cmdWrapper.polypath_types
+            currentIndex: cmdWrapper.polypath_types.indexOf(polypath_type_)
+
+            /*Component.onCompleted: {
+
+            }*/
         }
-    }*/
+    }
 
     Button {
         id: cancelPolyEdit

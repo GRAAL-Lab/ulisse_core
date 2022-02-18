@@ -27,6 +27,10 @@ class CommandWrapper : public QObject, rclcpp::Node {
     QScopedPointer<QTimer> checkErrorTimer_, surgeHeadingPubTimer_, surgeYawRatePubTimer_, commandTimeoutTimer_;
     QObject *toastMgrObj_, *cmdTimeoutObj_;
     QObject *cruiseSpeedObj_, *goalDistanceObj_, *waypointPathObj_, *waypointRadiusObj_, *loopPathObj_, *mapMouseAreaObj_;
+    QStringList polypathTypes;
+
+
+    Q_PROPERTY(QStringList polypath_types READ get_polypath_types NOTIFY startup_info_read)
 
     rclcpp::Client<ulisse_msgs::srv::ControlCommand>::SharedPtr command_srv_;
     rclcpp::Client<ulisse_msgs::srv::SetCruiseControl>::SharedPtr cruise_srv_;
@@ -81,7 +85,6 @@ public:
     Q_INVOKABLE void resumePath();
     Q_INVOKABLE bool goToNextWaypoint();
     Q_INVOKABLE bool goToPreviousWaypoint();
-    //Q_INVOKABLE QVector<double> createNurbs(const QString& pointForNurbs);
     Q_INVOKABLE QVector<double> createPathFromPolygon(const QString& pathJsonData);
     Q_INVOKABLE QPoint latLong2LocalUTM(QGeoCoordinate latlong, QGeoCoordinate centroid);
     Q_INVOKABLE QGeoCoordinate localUTM2LatLong(QPoint UTM_point, QGeoCoordinate centroid);
@@ -89,6 +92,7 @@ public:
     Q_INVOKABLE bool reloadDCLConf();
     Q_INVOKABLE bool reloadNavFilterConf();
 
+    QStringList get_polypath_types();
 
 
 public slots:
@@ -98,7 +102,8 @@ public slots:
     void stop_command_publisher();
 
 signals:
-    void connected();
+    void startup_info_read();
+
 };
 
 //Q_DECLARE_METATYPE(QGeoCoordinate)

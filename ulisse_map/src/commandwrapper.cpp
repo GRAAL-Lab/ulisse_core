@@ -82,6 +82,12 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
         emit connected();
         setCruiseSpeedCommand(cruiseSpeedObj_->property("value").toUInt());
     });*/
+
+    polypathTypes.append("Serpentine");
+    polypathTypes.append("RaceTrack");
+    //polyCoverageMethods_.append("Hippodrome");
+
+    emit startup_info_read();
 }
 
 void CommandWrapper::RegisterPublishersAndSubscribers()
@@ -182,35 +188,46 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
         std::cerr << "Polygon Descriptor Error: " << e.what();
     }
 
+    std::string type = jvalues["type"].asString();
     double angle = jvalues["params"]["angle"].asDouble();
     double offsetPath = jvalues["params"]["offset"].asDouble();
     Path::Direction direction = static_cast<Path::Direction>(jvalues["params"]["direction"].asInt());
+    std::string polypathType = jvalues["params"]["polypath_type"].asString();
 
     //std::cout << "Direction: " << (int)direction << std::endl;
 
-    std::shared_ptr<Path> serpentine;
+    std::shared_ptr<Path> newPath;
 
+    bool pathCreated{true};
     try {
-        serpentine = PathFactory::NewSerpentine(angle, direction, offsetPath, polyVerticesUTM);
-        std::cout << *serpentine << std::endl;
+        if (polypathType == "Serpentine") {
+            newPath = PathFactory::NewSerpentine(angle, direction, offsetPath, polyVerticesUTM);
+        } else if (polypathType == "RaceTrack") {
+            newPath = PathFactory::NewRaceTrack(angle, direction, offsetPath, offsetPath/2.0, polyVerticesUTM);
+        //} else if (coverageMethod == "Hippodrome") {
+        //    newPath = PathFactory::NewHippodrome(polyVerticesUTM);
+        } else {
+            std::cout << "[CommandWrapper::createPathFromPolygon] polypathType '" << polypathType << "' not recognized." << std::endl;
+            pathCreated = false;
+        }
     }
     catch(std::runtime_error const& exception) {
         std::cout << "Received exception from --> " << exception.what() << std::endl;
     }
 
-    //serpentine = serpentine->ExtractSection(15.0, serpentine->EndParameter()/2.0);
-
-    // Sampling the curve and converting it back to lat-long for visualization on map
-    double samplingInterval = 1.0; // meters
-    int numSamples = (int)round(serpentine->Length()/samplingInterval);
-    auto sampledPath = serpentine->Sampling(numSamples);
-
     QVector<double> pathVectorGeo;
+    if (pathCreated) {
+        std::cout << *newPath << std::endl;
+        // Sampling the curve and converting it back to lat-long for visualization on map
+        double samplingInterval = 1.0; // meters
+        int numSamples = (int)round(newPath->Length()/samplingInterval);
+        auto sampledPath = newPath->Sampling(numSamples);
 
-    for(size_t i=0; i < sampledPath->size(); i++){
-        ctb::LatLong pathPointGeo;
-        ctb::LocalUTM2LatLong(sampledPath->at(i), centroid, pathPointGeo, altitude);
-        pathVectorGeo << pathPointGeo.latitude << pathPointGeo.longitude;
+        for(size_t i=0; i < sampledPath->size(); i++){
+            ctb::LatLong pathPointGeo;
+            ctb::LocalUTM2LatLong(sampledPath->at(i), centroid, pathPointGeo, altitude);
+            pathVectorGeo << pathPointGeo.latitude << pathPointGeo.longitude;
+        }
     }
 
     return pathVectorGeo;
@@ -222,9 +239,9 @@ bool CommandWrapper::sendPath(const QString &pathJsonData)
     serviceReq->command_type = ulisse::commands::ID::pathfollow;
 
     // DEBUG PRINT
-    QJsonDocument doc = QJsonDocument::fromJson(pathJsonData.toUtf8());
-    QString formattedJsonString = doc.toJson(QJsonDocument::Indented);
-    std::cout << formattedJsonString.toStdString() << std::endl;
+    //QJsonDocument doc = QJsonDocument::fromJson(pathJsonData.toUtf8());
+    //QString formattedJsonString = doc.toJson(QJsonDocument::Indented);
+    //std::cout << formattedJsonString.toStdString() << std::endl;
 
     Json::Reader reader;
     Json::Value jObj;
@@ -234,6 +251,7 @@ bool CommandWrapper::sendPath(const QString &pathJsonData)
     serviceReq->path_cmd.path.id = jObj["name"].asString();
     serviceReq->path_cmd.path.type = jObj["type"].asString();
 
+    serviceReq->path_cmd.path.polypath_type =  jObj["params"]["polypath_type"].asString();
     serviceReq->path_cmd.path.angle = jObj["params"]["angle"].asDouble();
     serviceReq->path_cmd.path.offset = jObj["params"]["offset"].asDouble();
     serviceReq->path_cmd.path.direction = jObj["params"]["direction"].asBool();
@@ -265,9 +283,9 @@ bool CommandWrapper::sendBoundaries(const QString& boundaryJsonData)
     serviceReq->boundaries.id = "GUI Set Boundary";// + boundary.toStdString();
 
     // DEBUG PRINT
-    /*QJsonDocument doc = QJsonDocument::fromJson(boundary_json_data.toUtf8());
-    QString formattedJsonString = doc.toJson(QJsonDocument::Indented);
-    std::cout << formattedJsonString.toStdString() << std::endl;*/
+    //QJsonDocument doc = QJsonDocument::fromJson(boundary_json_data.toUtf8());
+    //QString formattedJsonString = doc.toJson(QJsonDocument::Indented);
+    //std::cout << formattedJsonString.toStdString() << std::endl;
 
     Json::Reader reader;
     Json::Value jObj;
@@ -279,14 +297,13 @@ bool CommandWrapper::sendBoundaries(const QString& boundaryJsonData)
     try {
         for (const Json::Value &coord : jObj["coordinates"]) {
 
-            //reader.parse(coord.toStyledString(), obj2);
             serviceReq->boundaries.coordinates.at(count).latitude = coord["latitude"].asDouble();
             serviceReq->boundaries.coordinates.at(count).longitude = coord["longitude"].asDouble();
 
             count++;
         }
     } catch (Json::Exception& e) {
-        // output exception information
+        // Output exception information
         std::cout << "Error parsing QML Jason" << e.what() << std::endl;
     }
 
@@ -630,4 +647,9 @@ bool CommandWrapper::reloadNavFilterConf()
     }
     ShowToast(result_msg.c_str(), 2000);
     return serviceAvailable;
+}
+
+QStringList CommandWrapper::get_polypath_types()
+{
+    return polypathTypes;
 }
