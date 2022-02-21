@@ -48,6 +48,13 @@ BarManagePathsForm {
         params_panel = panelParamsPolygon
         start()
     }
+
+    b_hippodrome.onClicked: function () {
+        cur_managed = map.createHippodromePath()
+        params_panel = panelParamsPolygon
+        panelParamsPolygon.polypath_type_ = "Hippodrome"
+        start()
+    }
     
     b_polyline.onClicked: function () {
         cur_managed = map.createPolylinePath()

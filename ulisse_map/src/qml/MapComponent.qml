@@ -56,7 +56,7 @@ MapComponentForm {
         safety_polygon.clickHandler = safety_polygon.click_handler_non_intersecting
         safety_polygon.posChangedHandler = safety_polygon.pos_changed_handler_simple
         safety_polygon._angle = 0
-        safety_polygon._offset = 0
+        safety_polygon._size_1 = safety_polygon._size_2 = 0
 
         if (settings.savedBoundary != "null") {
             var data = JSON.parse(settings.savedBoundary)
@@ -70,6 +70,15 @@ MapComponentForm {
 
     function createPolySweepPath() {
         var poly_cur = polygonComponent.createObject(map_component)
+        map.addMapItem(poly_cur)
+        return poly_cur
+    }
+
+    function createHippodromePath() {
+        var poly_cur = polygonComponent.createObject(map_component)
+        //poly_cur.clickHandler = poly_cur.click_handler_point
+        //poly_cur.clickHandler = poly_cur.pos_changed_handler_simple
+        poly_cur._polypathType = "Hippodrome"
         map.addMapItem(poly_cur)
         return poly_cur
     }

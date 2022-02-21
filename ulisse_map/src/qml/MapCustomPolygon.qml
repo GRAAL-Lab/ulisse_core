@@ -12,7 +12,7 @@ MapPolyline {
     opacity: 1.0
     z: map.z + 4
 
-    property real desel_line_opacity: 0.4
+    property real desel_line_opacity: 0.5
 
     property string type: "PolyPath"
 
@@ -39,7 +39,8 @@ MapPolyline {
 
     property string pathName: "Path"
     property real _angle: 0
-    property real _offset: 20
+    property real _size_1: 20
+    property real _size_2: 20
     property var _polypathType: "Serpentine" // "simple"
     property int direction: 0  // 0: Direct, 1: Reverse
 
@@ -452,6 +453,25 @@ MapPolyline {
         }
     }
 
+    //////////////////////////////////////////////
+    // Logic for definition of rectangle
+    function click_handler_point(mouse) {
+        if (mouse.button & Qt.LeftButton) {
+            console.log("Clicked")
+            path = [];
+            var m = [];
+            m.push(Qt.point(mouse.x-0.05, mouse.y-0.05))
+            m.push(Qt.point(mouse.x+0.05, mouse.y-0.05))
+            m.push(Qt.point(mouse.x+0.05, mouse.y+0.05))
+            m.push(Qt.point(mouse.x-0.05, mouse.y+0.05))
+
+            for (var i = 0; i < 4; i++) {
+                addCoordinate(map.toCoordinate(m[i]))
+            }
+            end()
+        }
+    }
+
     function pos_changed_handler_rect(mouse) {
 
         if (polygonal_phase === 1) {
@@ -730,7 +750,8 @@ MapPolyline {
         pathName = name
         if (params !== null || params !== undefined) {
             _angle = params.angle
-            _offset = params.offset
+            _size_1 = params.size_1
+            _size_2 = params.size_2
             _polypathType = params.polypath_type
         }
         moving_idx = -1
@@ -742,7 +763,8 @@ MapPolyline {
             name: pathName,
             params: {
                 angle: _angle,
-                offset: _offset,
+                size_1: _size_1,
+                size_2: _size_2,
                 polypath_type: _polypathType,
                 direction: direction
             }
@@ -775,7 +797,7 @@ MapPolyline {
         var p2m_h = a.distanceTo(b)
         var p2m_v = a.distanceTo(c)
 
-        var temp_offset = _offset * 3
+        var temp_offset = _size_1 * 3
         var o_x = temp_offset / p2m_h
         var o_y = temp_offset / p2m_v
 
@@ -851,7 +873,8 @@ MapPolyline {
             type: type,
             name: pathName,
             params: {
-                offset: _offset,
+                size_1: _size_1,
+                size_2: _size_2,
                 angle: _angle,
                 polypath_type: _polypathType,
                 direction: direction
@@ -867,7 +890,8 @@ MapPolyline {
         pathName = data.name
 
         _angle = data.params.angle
-        _offset = data.params.offset
+        _size_1 = data.params.size_1
+        _size_2 = data.params.size_2
         _polypathType = data.params.polypath_type
         direction = data.params.direction
 
@@ -901,5 +925,6 @@ MapPolyline {
     function highlighted(yes) {
         //var desel_line_color = safe ? lightgreen : red
         opacity = yes ? 1.0 : desel_line_opacity
+        _canvas.line_opacity = opacity;
     }
 }

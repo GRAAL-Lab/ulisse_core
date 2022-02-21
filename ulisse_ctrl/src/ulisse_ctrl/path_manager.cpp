@@ -10,7 +10,7 @@ PathManager::PathManager()
     // Default initialization of Nurbs.cpp param
     nurbsParam.aepsge = 0.001;
     nurbsParam.aepsco = 0.000001;
-    nurbsParam.maxLookupParvalue = 0.5;
+    nurbsParam.lookAheadDistance = 0.5;
     nurbsParam.deltaMin = 2.0;
     nurbsParam.deltaMax = 5.0;
     nurbsParam.directionError = 0.436; //25 gradi
@@ -18,8 +18,6 @@ PathManager::PathManager()
     // Default initialization of the currentDelta
     delta_ = nurbsParam.deltaMin;
     nurbsParam.deltaStep = 0.05;
-
-    lookAheadDistance_ = 50.0;
 
 }
 
@@ -46,7 +44,8 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
     centroid_.longitude = path.centroid.longitude;
 
     angle_ = path.angle;
-    offset_ = path.offset;
+    size_1_ = path.size_1;
+    size_2_ = path.size_2;
     direction_ = static_cast<Path::Direction>(path.direction);
 
     std::vector<Eigen::Vector3d> polyVerticesUTM(path.coordinates.size());
@@ -62,9 +61,11 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
 
     if (pathType_ == "PolyPath") {
         if (polypathType_ == "Serpentine"){
-            path_ = PathFactory::NewSerpentine(angle_, direction_, offset_, polyVerticesUTM);
+            path_ = PathFactory::NewSerpentine(angle_, direction_, size_1_, polyVerticesUTM);
         } else if (polypathType_ == "RaceTrack"){
-            path_ = PathFactory::NewRaceTrack(angle_, direction_, offset_, offset_/2.0, polyVerticesUTM);
+            path_ = PathFactory::NewRaceTrack(angle_, direction_, size_1_, size_2_, polyVerticesUTM);
+        } else if (polypathType_ == "Hippodrome"){
+            path_ = PathFactory::NewHippodrome(angle_, direction_, size_1_, size_2_, polyVerticesUTM.at(0));
         } else {
             std::cerr << "Error: polypathType not recognized.";
             return false;
@@ -79,10 +80,8 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
 
     std::cout << *path_ << std::endl;
 
-    // TO BE REVIEWED
-    lookAheadDistance_ = (path_->Length()/path_->CurvesNumber())/2.0;
-
-    std::cout << "lookAheadDistance_: " << lookAheadDistance_ << " m" << std::endl;
+    //lookAheadDistance = (path_->Length()/path_->CurvesNumber())/2.0;
+    std::cout << "lookAheadDistance: " << nurbsParam.lookAheadDistance << " m" << std::endl;
 
     double altitude;
 
@@ -121,7 +120,7 @@ bool PathManager::ComputeGoalPosition(const ctb::LatLong &currentPos, ctb::LatLo
 
     try {
         // Retreiving closest point parameter
-        double intervalEnd = std::min(currentAbscissa_ + lookAheadDistance_, path_->EndParameter());
+        double intervalEnd = std::min(currentAbscissa_ + nurbsParam.lookAheadDistance, path_->EndParameter());
         closestPointAbscissa = path_->FindAbscissaClosestPointOnInterval(currentPos_UTM, currentAbscissa_, intervalEnd);
 
         // Evaluate derivatives in points of interest

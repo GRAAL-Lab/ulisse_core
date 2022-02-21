@@ -85,7 +85,7 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
 
     polypathTypes.append("Serpentine");
     polypathTypes.append("RaceTrack");
-    //polyCoverageMethods_.append("Hippodrome");
+    polypathTypes.append("Hippodrome");
 
     emit startup_info_read();
 }
@@ -190,22 +190,31 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
 
     std::string type = jvalues["type"].asString();
     double angle = jvalues["params"]["angle"].asDouble();
-    double offsetPath = jvalues["params"]["offset"].asDouble();
+    double size_1_Path = jvalues["params"]["size_1"].asDouble();
+    double size_2_Path = jvalues["params"]["size_2"].asDouble();
     Path::Direction direction = static_cast<Path::Direction>(jvalues["params"]["direction"].asInt());
     std::string polypathType = jvalues["params"]["polypath_type"].asString();
 
-    //std::cout << "Direction: " << (int)direction << std::endl;
-
     std::shared_ptr<Path> newPath;
-
     bool pathCreated{true};
     try {
         if (polypathType == "Serpentine") {
-            newPath = PathFactory::NewSerpentine(angle, direction, offsetPath, polyVerticesUTM);
+            newPath = PathFactory::NewSerpentine(angle, direction, size_1_Path, polyVerticesUTM);
         } else if (polypathType == "RaceTrack") {
-            newPath = PathFactory::NewRaceTrack(angle, direction, offsetPath, offsetPath/2.0, polyVerticesUTM);
-        //} else if (coverageMethod == "Hippodrome") {
-        //    newPath = PathFactory::NewHippodrome(polyVerticesUTM);
+            newPath = PathFactory::NewRaceTrack(angle, direction, size_1_Path, size_2_Path, polyVerticesUTM);
+        } else if (polypathType == "Hippodrome") {
+            Eigen::Vector3d baricenter;
+
+            for(int i = 0; i < 3; i++) {
+                double dim_sum{0};
+                for (auto& point : polyVerticesUTM) {
+                    dim_sum += point[i];
+                }
+                baricenter[i] = dim_sum/polyVerticesUTM.size();
+            }
+
+
+            newPath = PathFactory::NewHippodrome(angle, direction, size_1_Path, size_2_Path, baricenter);
         } else {
             std::cout << "[CommandWrapper::createPathFromPolygon] polypathType '" << polypathType << "' not recognized." << std::endl;
             pathCreated = false;
@@ -253,7 +262,8 @@ bool CommandWrapper::sendPath(const QString &pathJsonData)
 
     serviceReq->path_cmd.path.polypath_type =  jObj["params"]["polypath_type"].asString();
     serviceReq->path_cmd.path.angle = jObj["params"]["angle"].asDouble();
-    serviceReq->path_cmd.path.offset = jObj["params"]["offset"].asDouble();
+    serviceReq->path_cmd.path.size_1 = jObj["params"]["size_1"].asDouble();
+    serviceReq->path_cmd.path.size_2 = jObj["params"]["size_2"].asDouble();
     serviceReq->path_cmd.path.direction = jObj["params"]["direction"].asBool();
 
     serviceReq->path_cmd.path.centroid.latitude = jObj["centroid"]["latitude"].asDouble();

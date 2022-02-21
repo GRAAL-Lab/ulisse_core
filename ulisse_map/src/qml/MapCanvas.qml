@@ -10,6 +10,9 @@ MapQuickItem {
     property var canvasAngle: 0
     property var multiplier: 0
     property alias _canvas: _c
+    property var line_opacity: 1.0
+
+    opacity: line_opacity
 
     function requestPaint() {
         _c.requestPaint()
@@ -19,15 +22,11 @@ MapQuickItem {
 
     sourceItem: Canvas {
         id: _c
-        //antialiasing:true
-        //smooth: true
         property var _ctx
 
         onAvailableChanged: {
-            // QML Canvas: Unable to use getContext() at this time, please wait for available: true
             _ctx = _c.getContext("2d")
             contextReady()
-            //console.log("[Map Canvas] onAvailableChanged triggered")
         }
 
         transform: [

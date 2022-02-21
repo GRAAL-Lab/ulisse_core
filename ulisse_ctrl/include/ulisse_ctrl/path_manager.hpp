@@ -90,7 +90,7 @@ public:
         double deltaStep; //the step increment for the delta (in meters)
         double aepsge; // geometric tollerance
         double aepsco; // computational tollerance
-        double maxLookupParvalue; //max delta increment for select a part of a curve for computing the current parvalue
+        double lookAheadDistance; //max delta increment for select a part of a curve for computing the nearest point
         double directionError; // threshold for the difference between the current and the next tangent direction of the path
 
         bool configureFromFile(const libconfig::Config& confObj, const std::string& stateName)
@@ -109,7 +109,7 @@ public:
                 return false;
             if (!ctb::GetParam(state, aepsco, "computationalTollerance"))
                 return false;
-            if (!ctb::GetParam(state, maxLookupParvalue, "maxLookupCurvilinearAbscissa"))
+            if (!ctb::GetParam(state, lookAheadDistance, "lookAheadDistance"))
                 return false;
             if (!ctb::GetParam(state, directionError, "tangentDirectionError"))
                 return false;
@@ -125,12 +125,11 @@ private:
     std::shared_ptr<Path> path_;                // The Curve
     ctb::LatLong centroid_;                     // The centroid for the convertion from/to cartesian/latlong
     std::vector<ctb::LatLong> coordinates_;     // Coordinate List of polypath
-    double angle_, offset_;
+    double angle_, size_1_, size_2_;
     Path::Direction direction_;
     ctb::LatLong startP_;                       // Starting point of the nurbs path
     ctb::LatLong endP_;                         // Ending point of the nurbs path
     double currentAbscissa_;                         // The current parameter value on the path
-    double lookAheadDistance_;
     ctb::LatLong currentGoal_;
     ctb::LatLong currentTrackPoint_;
 

@@ -10,19 +10,18 @@ import "."
 
 GroupBox {
     id: root
-    y: -10
-    width: 200
+    //y: -10
     height: root.contentHeight
-    //font.capitalization: Font.AllUppercase
     clip: true
 
     label: Label {
         x: root.leftPadding
-        y: 25
+        y: 15
         width: root.availableWidth
         text: root.title
         horizontalAlignment: Text.AlignHCenter
         elide: Text.ElideRight
+        font.weight: Font.DemiBold
 
         background: Rectangle {
             y: 0
