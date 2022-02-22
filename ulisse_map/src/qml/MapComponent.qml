@@ -35,24 +35,24 @@ MapComponentForm {
         posChangedHandler(mouse)
     }
 
-    property MapCustomPolygon safety_polygon
+    property MapPolyPath safety_polygon
 
     // These components will create all the dynamic objects
-    property Component polygonComponent
-    property Component pathComponent
+    property Component polyPathComponent
+    property Component pointPathComponent
     property Component pathButtonComponent
 
     Component.onCompleted: {
 
-        polygonComponent = Qt.createComponent("MapCustomPolygon.qml")
-        pathComponent = Qt.createComponent("MapCustomPath.qml")
+        polyPathComponent = Qt.createComponent("MapPolyPath.qml")
+        pointPathComponent = Qt.createComponent("MapPointPath.qml")
         pathButtonComponent = Qt.createComponent("PathButton.qml")
 
         createSafetyPolygon()
     }
 
     function createSafetyPolygon() {
-        safety_polygon = polygonComponent.createObject(map_component, {type: "SafetyBoundary", pathName: "Safety Area", opacity: 1.0})
+        safety_polygon = polyPathComponent.createObject(map_component, {type: "SafetyBoundary", pathName: "Safety Area", opacity: 1.0})
         safety_polygon.clickHandler = safety_polygon.click_handler_non_intersecting
         safety_polygon.posChangedHandler = safety_polygon.pos_changed_handler_simple
         safety_polygon._angle = 0
@@ -69,13 +69,13 @@ MapComponentForm {
     }
 
     function createPolySweepPath() {
-        var poly_cur = polygonComponent.createObject(map_component)
+        var poly_cur = polyPathComponent.createObject(map_component)
         map.addMapItem(poly_cur)
         return poly_cur
     }
 
     function createHippodromePath() {
-        var poly_cur = polygonComponent.createObject(map_component)
+        var poly_cur = polyPathComponent.createObject(map_component)
         poly_cur.clickHandler = poly_cur.click_handler_point
         //poly_cur.clickHandler = poly_cur.pos_changed_handler_simple
         poly_cur._polypathType = "Hippodrome"
@@ -91,7 +91,7 @@ MapComponentForm {
     }
 
     function createPolylinePath() {
-        var path_cur = pathComponent.createObject(map_component)
+        var path_cur = pointPathComponent.createObject(map_component)
         map.addMapItem(path_cur)
         return path_cur
     }

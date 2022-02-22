@@ -36,7 +36,7 @@
         <file>qml/MapComponentForm.qml</file>
         <file>qml/BarManagePaths.qml</file>
         <file>qml/BarManagePathsForm.qml</file>
-        <file>qml/MapCustomPath.qml</file>
+        <file>qml/MapPointPath.qml</file>
         <file>qml/MapCanvas.qml</file>
         <file>qml/MapMarker.qml</file>
         <file>qml/MapDashedLine.qml</file>
@@ -63,7 +63,7 @@
         <file>qml/UtilitiesView.qml</file>
         <file>qml/TaskData.qml</file>
         <file>qml/PriorityLevelData.qml</file>
-        <file>qml/MapCustomPolygon.qml</file>
+        <file>qml/MapPolyPath.qml</file>
         <file>qml/MapObstacle.qml</file>
         <file>qml/AddonsBridgeVisualizer.qml</file>
         <file>fonts/fontello-icons/fontello.ttf</file>

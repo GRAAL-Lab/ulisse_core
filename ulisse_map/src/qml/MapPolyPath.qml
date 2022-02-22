@@ -739,7 +739,7 @@ MapPolyline {
     }
 
     function confirm_edit(name, params) {
-        console.log("[MapCustomPolygon] confirm edit")
+        //console.log("[MapPolyPath] confirm edit")
         mapMouseArea.hoverEnabled = false
         pathName = name
         if (params !== null || params !== undefined) {
@@ -922,7 +922,7 @@ MapPolyline {
     ///////////////////////////////////////////////////
     // Safety
     function check_safe(box) {
-        //console.log("[MapCustomPolygon] check_safe()")
+        //console.log("[MapPolyPath] check_safe()")
         var bpp = [], ppp = []
         for (var i in box.path) {
             bpp.push(map.fromCoordinate(box.path[i], false))

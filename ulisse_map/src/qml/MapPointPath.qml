@@ -30,6 +30,8 @@ MapPolyline {
     property var a_marker
     property var b_marker
 
+
+
     property var direction: 0
 
     function toggle_dir() {
