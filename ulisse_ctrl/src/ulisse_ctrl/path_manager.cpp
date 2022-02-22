@@ -81,8 +81,8 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
             return false;
         }
 
-    } else if (pathType_ == "PolyLine") {
-        path_ = PathFactory::NewPolygonalChain(polyVerticesUTM);
+    } else if (pathType_ == "PointPath") {
+        path_ = PathFactory::NewPolygonalChain(direction_, polyVerticesUTM);
     } else {
         std::cerr << "Error: pathType not recognized.";
         return false;

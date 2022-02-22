@@ -11,10 +11,10 @@ MapPolyline {
     opacity: 1.0
     z: map.z + 5
 
-    //property bool multichoice: false
+    property real desel_line_opacity: 0.5
 
     property string type: "PointPath"
-    property string pathName: "Path"
+    property string pathName: "Point Path"
 
     signal end
 
@@ -30,6 +30,8 @@ MapPolyline {
     property var a_marker
     property var b_marker
 
+    property var clickHandler: click_handler
+    property var posChangedHandler: pos_changed_handler
 
 
     property var direction: 0
@@ -87,7 +89,6 @@ MapPolyline {
     }
 
     function _generate_and_draw() {
-        //generate_nurbs()
         generate_markers()
         reposition_markers()
         disable_markers()
@@ -286,7 +287,7 @@ MapPolyline {
                                distance: d1
                            } : {
             nearest: n2,
-                     distance: d2
+            distance: d2
         }
     }
 
@@ -407,13 +408,13 @@ MapPolyline {
             var r2 = nearest_marker(
                         p, vertex_markers,
                         (r1.nearest === -1) ? -1 : r1.nearest + _path.length,
-                                              r1.distance)
+                        r1.distance)
             var r3 = nearest_than(p, r2.distance,
                                   (r2.nearest === -1) ? -1 : r2.nearest, hpc,
-                                                        2 * _path.length)
+                                  2 * _path.length)
             var r4 = nearest_than(p, r3.distance,
                                   (r3.nearest === -1) ? -1 : r3.nearest, hph,
-                                                        2 * _path.length + 1)
+                                  2 * _path.length + 1)
             var nearest = r4.nearest
             if (mouse.button & Qt.LeftButton) {
                 if (nearest >= 0 && nearest < _path.length) {
@@ -458,13 +459,13 @@ MapPolyline {
             var r2 = nearest_marker(
                         p, vertex_markers,
                         (r1.nearest === -1) ? -1 : r1.nearest + _path.length,
-                                              r1.distance)
+                        r1.distance)
             var r3 = nearest_than(p, r2.distance,
                                   (r2.nearest === -1) ? -1 : r2.nearest, hpc,
-                                                        2 * _path.length)
+                                  2 * _path.length)
             var r4 = nearest_than(p, r3.distance,
                                   (r3.nearest === -1) ? -1 : r3.nearest, hph,
-                                                        2 * _path.length + 1)
+                                  2 * _path.length + 1)
             change_marked(r4.nearest)
         } else if (moving_idx >= 0 && moving_idx < _path.length) {
             change_coordinate(moving_idx, pf)
@@ -564,41 +565,22 @@ MapPolyline {
         }
     }
 
-    /*function generate_nurbs() {
-        var centroid = Helper.coords_centroid(path)
-        var points = Helper.points_map2euclidean(path, centroid)
-
-        var nurb_l = []
-
-        for (var i = 0; i < points.length-1; i++)
-                nurb_l.push(Helper.generate_nurb_line(points[i], points[i+1],centroid))
-
-        var result = {
-            centroid: [centroid.latitude, centroid.longitude],
-            curves: nurb_l,
-            direction: direction
-        }
-        return result
-    }*/
-
-
     function serialize() {
         var coordinates = []
         for (var j = 0; j < path.length; j++) {
             var p_i = path[j]
             coordinates.push({
-                            latitude: p_i.latitude,
-                            longitude: p_i.longitude
-                        })
+                                 latitude: p_i.latitude,
+                                 longitude: p_i.longitude
+                             })
         }
         return {
             type: type,
             name: pathName,
             params: {
-
+                direction: direction,
             },
             centroid: { latitude: centroid.latitude, longitude: centroid.longitude },
-            direction: direction,
             coordinates: coordinates
 
         }
@@ -607,6 +589,7 @@ MapPolyline {
     function deserialize(data) {
         var lat, lon
         pathName = data.name
+        direction = data.params.direction
         for (var j = 0; j < data.coordinates.length; j++) {
             lat = data.coordinates[j].latitude
             lon = data.coordinates[j].longitude
@@ -618,12 +601,13 @@ MapPolyline {
         return {
             name: pathName,
             params: {
-
+                direction: direction,
             }
         }
     }
 
     function highlighted(yes) {
-        line.color = yes ? orange : green
+        //var desel_line_color = safe ? lightgreen : red
+        opacity = yes ? 1.0 : desel_line_opacity
     }
 }

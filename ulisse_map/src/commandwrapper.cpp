@@ -201,7 +201,9 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
         if (polypathType == "Serpentine") {
             newPath = PathFactory::NewSerpentine(angle, direction, size_1_Path, polyVerticesUTM);
         } else if (polypathType == "RaceTrack") {
+            //qDebug() << "*** CREATING RACE TRACK ***";
             newPath = PathFactory::NewRaceTrack(angle, direction, size_1_Path, size_2_Path, polyVerticesUTM);
+            //qDebug() << "*** RACE TRACK DONE ***";
         } else if (polypathType == "Hippodrome") {
             Eigen::Vector3d baricenter;
             for(int i = 0; i < 3; i++) {

@@ -40,7 +40,7 @@ MapPolyline {
     property string pathName: "Path"
     property real _angle: 0
     property real _size_1: 20
-    property real _size_2: 20
+    property real _size_2: 10
     property var _polypathType: "Serpentine" // "simple"
     property int direction: 0  // 0: Direct, 1: Reverse
 
@@ -242,10 +242,11 @@ MapPolyline {
     }
 
     function reposition_markers() {
+        var _path = get_path()
         reposition_add_markers()
         reposition_vertex_markers()
-        a_marker.coordinate = startPoint
-        b_marker.coordinate = endPoint
+        a_marker.coordinate = startPoint//Helper.geo_intermediate(startPoint, _path[1], 0.2)
+        b_marker.coordinate = endPoint//Helper.geo_intermediate(endPoint, _path[ _path.length - 1], 0.2)
     }
 
     function enable_handle() {
@@ -714,7 +715,6 @@ MapPolyline {
         reposition_handle()
         if (_polypathType != "Hippodrome"){
             enable_markers()
-
         }
         enable_handle()
         disable_ab_markers()
