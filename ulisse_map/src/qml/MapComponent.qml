@@ -76,7 +76,7 @@ MapComponentForm {
 
     function createHippodromePath() {
         var poly_cur = polygonComponent.createObject(map_component)
-        //poly_cur.clickHandler = poly_cur.click_handler_point
+        poly_cur.clickHandler = poly_cur.click_handler_point
         //poly_cur.clickHandler = poly_cur.pos_changed_handler_simple
         poly_cur._polypathType = "Hippodrome"
         map.addMapItem(poly_cur)

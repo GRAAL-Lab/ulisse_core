@@ -457,17 +457,8 @@ MapPolyline {
     // Logic for definition of rectangle
     function click_handler_point(mouse) {
         if (mouse.button & Qt.LeftButton) {
-            console.log("Clicked")
-            path = [];
-            var m = [];
-            m.push(Qt.point(mouse.x-0.05, mouse.y-0.05))
-            m.push(Qt.point(mouse.x+0.05, mouse.y-0.05))
-            m.push(Qt.point(mouse.x+0.05, mouse.y+0.05))
-            m.push(Qt.point(mouse.x-0.05, mouse.y+0.05))
-
-            for (var i = 0; i < 4; i++) {
-                addCoordinate(map.toCoordinate(m[i]))
-            }
+            //console.log("Clicked")
+            centroid = map.toCoordinate(Qt.point(mouse.x, mouse.y));
             end()
         }
     }
@@ -721,7 +712,10 @@ MapPolyline {
         backup_path = path
         reposition_markers()
         reposition_handle()
-        enable_markers()
+        if (_polypathType != "Hippodrome"){
+            enable_markers()
+
+        }
         enable_handle()
         disable_ab_markers()
         _canvas.clear_canvas()
@@ -745,7 +739,7 @@ MapPolyline {
     }
 
     function confirm_edit(name, params) {
-        //console.log("[MapCustomPolygon] confirm edit")
+        console.log("[MapCustomPolygon] confirm edit")
         mapMouseArea.hoverEnabled = false
         pathName = name
         if (params !== null || params !== undefined) {
@@ -754,6 +748,28 @@ MapPolyline {
             _size_2 = params.size_2
             _polypathType = params.polypath_type
         }
+
+        if (_polypathType === "Hippodrome"){
+
+            var objCorners = []
+            var _top = centroid.atDistanceAndAzimuth(_size_1/2.0, _angle)
+            //var _right = coords.atDistanceAndAzimuth(bBoxY/2.0, heading + 90)
+            var _bottom = centroid.atDistanceAndAzimuth(_size_1/2.0, _angle + 180)
+            //var _left = coords.atDistanceAndAzimuth(bBoxY/2.0, heading + 270)
+
+            objCorners.push(_top.atDistanceAndAzimuth(_size_2/2.0, _angle + 270))    // _topLeft
+            objCorners.push(_top.atDistanceAndAzimuth(_size_2/2.0, _angle + 90))     // _topRight
+            objCorners.push(_bottom.atDistanceAndAzimuth(_size_2/2.0, _angle + 90))  // _bottomRight
+            objCorners.push(_bottom.atDistanceAndAzimuth(_size_2/2.0, _angle + 270)) // _bottomLeft
+            objCorners.push(objCorners[0]);
+
+            path = [];
+            for (var i = 0; i < objCorners.length; i++){
+                addCoordinate(objCorners[i])
+            }
+
+        }
+
         moving_idx = -1
         _generate_and_draw()
     }

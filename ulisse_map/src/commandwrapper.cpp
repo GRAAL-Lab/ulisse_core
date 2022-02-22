@@ -204,17 +204,14 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
             newPath = PathFactory::NewRaceTrack(angle, direction, size_1_Path, size_2_Path, polyVerticesUTM);
         } else if (polypathType == "Hippodrome") {
             Eigen::Vector3d baricenter;
-
             for(int i = 0; i < 3; i++) {
                 double dim_sum{0};
-                for (auto& point : polyVerticesUTM) {
-                    dim_sum += point[i];
+                for(size_t j = 0; j < (polyVerticesUTM.size() - 1); j++) {
+                    dim_sum += polyVerticesUTM.at(j)[i];
                 }
-                baricenter[i] = dim_sum/polyVerticesUTM.size();
+                baricenter[i] = dim_sum/(polyVerticesUTM.size() - 1);
             }
-
-
-            newPath = PathFactory::NewHippodrome(angle, direction, size_1_Path, size_2_Path, baricenter);
+            newPath = PathFactory::NewHippodrome(-angle, direction, size_1_Path, size_2_Path, baricenter);
         } else {
             std::cout << "[CommandWrapper::createPathFromPolygon] polypathType '" << polypathType << "' not recognized." << std::endl;
             pathCreated = false;

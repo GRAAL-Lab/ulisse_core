@@ -92,10 +92,7 @@ MapPolygon {
     function _internalUpdate(){
         var obsCorners = []
         var _top = coords.atDistanceAndAzimuth(bBoxX/2.0, heading)
-        //var _right = coords.atDistanceAndAzimuth(bBoxY/2.0, heading + 90)
         var _bottom = coords.atDistanceAndAzimuth(bBoxX/2.0, heading + 180)
-        //var _left = coords.atDistanceAndAzimuth(bBoxY/2.0, heading + 270)
-
         obsCorners.push(_top.atDistanceAndAzimuth(bBoxY/2.0, heading + 270))    // _topLeft
         obsCorners.push(_top.atDistanceAndAzimuth(bBoxY/2.0, heading + 90))     // _topRight
         obsCorners.push(_bottom.atDistanceAndAzimuth(bBoxY/2.0, heading + 90))  // _bottomRight
@@ -105,7 +102,6 @@ MapPolygon {
         for (var i = 0; i < obsCorners.length; i++){
             obstacle.addCoordinate(obsCorners[i])
         }
-
         // console.log("[MapObstacle] Obstacle Update (timeout: " + timeoutSeconds + " s)")
         console.log("obstacleID: " + id + ", coords: (" + coords.latitude + "," + coords.longitude + "), heading: " + heading
                     + ", size: (" + bBoxX + ", " + bBoxY + ")")

@@ -65,7 +65,17 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
         } else if (polypathType_ == "RaceTrack"){
             path_ = PathFactory::NewRaceTrack(angle_, direction_, size_1_, size_2_, polyVerticesUTM);
         } else if (polypathType_ == "Hippodrome"){
-            path_ = PathFactory::NewHippodrome(angle_, direction_, size_1_, size_2_, polyVerticesUTM.at(0));
+
+            Eigen::Vector3d baricenter;
+            for(int i = 0; i < 3; i++) {
+                double dim_sum{0};
+                for(size_t j = 0; j < (polyVerticesUTM.size() - 1); j++) {
+                    dim_sum += polyVerticesUTM.at(j)[i];
+                }
+                baricenter[i] = dim_sum/(polyVerticesUTM.size() - 1);
+            }
+
+            path_ = PathFactory::NewHippodrome(-angle_, direction_, size_1_, size_2_, baricenter);
         } else {
             std::cerr << "Error: polypathType not recognized.";
             return false;
