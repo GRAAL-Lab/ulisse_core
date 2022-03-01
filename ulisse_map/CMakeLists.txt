@@ -97,11 +97,10 @@ install(FILES
   DESTINATION $ENV{HOME}/.local/share/icons
 )
 
-# Install GUI Icon
+# Install GUI Desktop File
 install(FILES
   src/scripts/ulisse_map.desktop
   DESTINATION $ENV{HOME}/.local/share/applications
-  #DESTINATION $ENV{HOME}/Desktop
 )
 
 
