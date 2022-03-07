@@ -54,6 +54,14 @@ cmake ..
 sudo make install
 cd ../..
 
+git clone git@bitbucket.org:isme_robotics/sisl_toolbox.git
+cd sisl_toolbox
+mkdir build
+cd build
+cmake ..
+sudo make install
+cd ../..
+
 sudo apt install -y libgps-dev gpsd-clients
 sudo apt install -y qtquickcontrols2-5-dev qtlocation5-dev qtpositioning5-dev qml-module-qtquick-controls2 qml-module-qt-labs-settings qml-module-qt-labs-folderlistmodel qml-module-qtlocation qml-module-qtpositioning qml-module-qtquick-extras qml-module-qtgraphicaleffects qml-module-qtquick-dialogs qml-module-qtquick-controls python3-colcon-common-extensions qml-module-qtqml-models2
 
@@ -63,7 +71,7 @@ cd ros2_ws/src
 git clone git@bitbucket.org:isme_robotics/ulisse_core.git
 cd ..
 
-source /opt/ros/foxy/setup.bash
+source /opt/ros/galactic/setup.bash
 source ~/ros2_ws/install/setup.bash
 
 colcon build --symlink-install --packages-select ulisse_msgs

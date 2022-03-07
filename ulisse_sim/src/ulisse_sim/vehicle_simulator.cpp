@@ -243,7 +243,7 @@ void VehicleSimulator::SimulateActuation()
     // Get the vehicle absolute velocity by adding the water current velocity
     worldF_velocity_ = worldF_relativeVelocity_ + worldF_waterVelocity_;
 
-    // Passing from angular vehicle acceleration to Euler rates
+    // Passing from angular vehicle velocity to Euler rates
     Eigen::Matrix3d S;
     S << cos(bodyF_orientation_.Yaw()) * cos(bodyF_orientation_.Pitch()), -sin(bodyF_orientation_.Yaw()), 0,
         sin(bodyF_orientation_.Yaw()) * cos(bodyF_orientation_.Pitch()), cos(bodyF_orientation_.Yaw()), 0,
@@ -289,7 +289,7 @@ void VehicleSimulator::SimulateSensors()
     std::normal_distribution<double> gpsNoiseY(0.0, config_->sensorsNoise.gps_stdd.y());
     std::normal_distribution<double> gpsNoiseZ(0.0, config_->sensorsNoise.gps_stdd.z());
 
-    //Transform to cartesian,
+    //Transform to cartesian
     Eigen::Vector3d worldF_com, worldF_antenna;
     ctb::LatLong2LocalNED(vehiclePos, altitude_, centroidLocation, worldF_com);
 

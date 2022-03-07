@@ -39,7 +39,7 @@ In order of installation to respect dependencies:
 
 ## Build
 
-In ROS2 "galactic", the default DDS (CycloneDDS) presented some undefined behaviour. For this reason the default DDS has been switched to FastRTPS. In addition, in the following instructions, the `sourceros#` commands are placeholders for your ROS sourcing commands. To do so, add this lines in your **~/.bashrc**:
+In ROS2 "galactic", the default DDS (CycloneDDS) presented some undefined behaviour. For this reason the default DDS has been switched to FastRTPS. In addition, in the following instructions, the `sourceros#` commands are placeholders for your ROS sourcing commands. To do so, add this lines in your `~/.bashrc` :
 
 ```bash
 RMW_IMPLEMENTATION=rmw_fastrtps_cpp; export RMW_IMPLEMENTATION
@@ -47,10 +47,9 @@ alias sourceros2='source /opt/ros/galactic/setup.bash && source ~/*ros_ws_folder
 
 ```
 
+⚠️ If you're using both ROS1 and ROS2 it's important that you define separate aliases in your `~/.bashrc` to source your workspace, that are **not** automatically called when launching new terminals, otherwise you will mix environment variables from different ROS versions.
 
-⚠️ If you're using both ROS1 and ROS2 it's important that you define separate aliases in your **~/.bashrc** to source your workspace, that are **not** automatically called when launching new terminals, otherwise you will mix environment variables from different ROS versions.
-
-After installing all the needed dependencies, to build the repo for the first time:
+To install the dependencies altogether in can use the `install_ulisse_core.sh` script inside the **scripts** folder. After installing all the needed dependencies, to build the repo for the first time:
 
 - Create a ros2 workspace using `colcon` (https://docs.ros.org/en/galactic/Tutorials/Colcon-Tutorial.html)
 - Clone in the **src** folder the ulisse_core repo (git clone git@bitbucket.org:isme_robotics/ulisse_core.git)
@@ -65,12 +64,6 @@ All the next times, just execute the following commands:
 sourceros2
 colcon build --symlink-install
 ```
-
-## GPS Setup
-To enable the GPS on a fresh install of Linux you will have to:
-
-- Add in **/etc/default/gpsd** the following line: `DEVICE:"/dev/ttyS1"`.
-- Add your user to the `dialout` user group.
 
 ## Run the architecture
 Firstly be sure to **synchronize your system** time using the GPS, and then configure the GPS itself, by running these commands in the root of the repository:
@@ -98,6 +91,13 @@ ros2 launch ulisse_ctrl launchControl.py
 # Shell C (optional, GUI)
 ros2 run ulisse_map ulisse_map_node
 ```
+
+## GPS Setup
+To enable the GPS on a fresh install of Linux you will have to:
+
+- Add in **/etc/default/gpsd** the following line: `DEVICE:"/dev/ttyS1"`.
+- Add your user to the `dialout` user group.
+
 
 ### Testing the serial
 

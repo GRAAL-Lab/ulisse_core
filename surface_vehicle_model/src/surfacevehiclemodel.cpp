@@ -133,6 +133,7 @@ Eigen::Vector3d SurfaceVehicleModel::ComputeCoriolisAndDragForces(Eigen::Vector6
     return { params.cX[0] * vehvel[5] * vehvel[5] + params.cX[1] * vehvel[0] + params.cX[2] * vehvel[0] * abs(vehvel[0]), params.cY[0] * vehvel[5] * vehvel[5] + params.cY[1] * vehvel[1] + params.cY[2] * vehvel[1] * abs(vehvel[1]), alpha * pos_tauN + (1 - alpha) * neg_tauN };
 }
 
+// Paper [Simetti,Indiveri (2022)] Eq.28
 Eigen::Vector2d SurfaceVehicleModel::ThusterAllocation(Eigen::Vector2d& tau)
 {
     double forceP;
