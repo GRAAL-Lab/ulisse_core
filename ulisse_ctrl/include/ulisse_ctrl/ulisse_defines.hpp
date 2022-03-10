@@ -29,8 +29,8 @@ const std::string asvLinearVelocityHold = "ASV_Linear_Velocity_Hold";
 
 namespace action {
 
-const std::string goTo = "Go_To";
-const std::string idle = "Idle";
+const std::string goTo = "Move_To";
+const std::string halt = "Halt";
 const std::string hold = "Hold";
 const std::string surge_heading = "Surge_Heading";
 const std::string surge_yawrate = "Surge_YawRate";
@@ -54,8 +54,8 @@ namespace states {
 
 namespace ID {
 
+const std::string latlong = "Move_To";
 const std::string halt = "Halt";
-const std::string latlong = "Go_To";
 const std::string hold = "Hold";
 const std::string surgeheading = "Surge_Heading";
 const std::string surgeyawrate = "Surge_YawRate";

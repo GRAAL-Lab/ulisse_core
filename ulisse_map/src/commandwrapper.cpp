@@ -358,7 +358,7 @@ bool CommandWrapper::SendCommandRequest(ulisse_msgs::srv::ControlCommand::Reques
         } else {
             auto result = result_future.get();
             result_msg = "Service returned: " + result->res;
-            RCLCPP_INFO_STREAM(this->get_logger(), result_msg.c_str());
+            RCLCPP_INFO_STREAM(this->get_logger(), result_msg);
         }
         serviceAvailable = true;
         StopOngoingTimers();

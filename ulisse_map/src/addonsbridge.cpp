@@ -197,12 +197,12 @@ bool AddonsBridge::sendRosbagRecordCommand(int record_cmd, const QString folder_
         std::cout << "Sent Request to controller" << std::endl;
         if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
             result_msg = "service call failed :(";
-            RCLCPP_ERROR(this->get_logger(), result_msg.c_str());
+            RCLCPP_ERROR_STREAM(this->get_logger(), result_msg);
         } else {
             auto result = result_future.get();
             result_msg = "Service returned: " + result->res;
             rec_status = result->record_status;
-            RCLCPP_INFO(this->get_logger(), result_msg.c_str());
+            RCLCPP_INFO_STREAM(this->get_logger(), result_msg);
         }
         serviceAvailable = true;
     } else {

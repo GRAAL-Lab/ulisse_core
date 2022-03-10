@@ -29,7 +29,7 @@ namespace states {
         safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
         absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
 
-        actionManager->SetAction(ulisse::action::idle, true);
+        actionManager->SetAction(ulisse::action::halt, true);
 
         return fsm::ok;
     }

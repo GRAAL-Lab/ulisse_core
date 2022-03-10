@@ -85,7 +85,7 @@ bool ConfigureActionsFromFile(std::shared_ptr<tpik::ActionManager> actionManager
 
         try {
             actionManager->AddAction(actionID, actionPL);
-            std::cout << "Added: " << actionID << "action with PLs:" << std::endl;
+            std::cout << "Added: " << actionID << " action with PLs:" << std::endl;
             for (auto& pl : actionPL)
                 std::cout << pl << std::endl;
 
