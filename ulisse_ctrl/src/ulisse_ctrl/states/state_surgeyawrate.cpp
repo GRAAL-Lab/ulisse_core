@@ -43,9 +43,11 @@ namespace states {
         /*safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
         absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
 */
-        actionManager->SetAction(ulisse::action::surge_yawrate, true);
-
-        return fsm::ok;
+        if (actionManager->SetAction(ulisse::action::surge_yawrate, true)) {
+            return fsm::ok;
+        } else {
+            return fsm::fail;
+        }
     }
 
     fsm::retval StateSurgeYawRate::Execute()

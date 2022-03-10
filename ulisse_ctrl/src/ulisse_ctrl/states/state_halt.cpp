@@ -29,9 +29,11 @@ namespace states {
         safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
         absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
 
-        actionManager->SetAction(ulisse::action::halt, true);
-
-        return fsm::ok;
+        if (actionManager->SetAction(ulisse::action::halt, true)) {
+            return fsm::ok;
+        } else {
+            return fsm::fail;
+        }
     }
 
     fsm::retval StateHalt::Execute()
@@ -49,21 +51,21 @@ namespace states {
 
         absoluteAxisAlignmentSafetyTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
         absoluteAxisAlignmentSafetyTask_->SetDirectionAlignment(safetyBoundariesTask_->GetAlignVector(rml::FrameID::WorldFrame),
-                                                                rml::FrameID::WorldFrame);
+            rml::FrameID::WorldFrame);
 
-        //To avoid the case in which the error between the goal heading and the current heading is too big
-        //we activate the the cartesian distance through the gain based on a bell-shaped function on the heading error
+           //To avoid the case in which the error between the goal heading and the current heading is too big
+           //we activate the the cartesian distance through the gain based on a bell-shaped function on the heading error
 
-        //compute the heading error
+           //compute the heading error
         double headingErrorsafety = absoluteAxisAlignmentSafetyTask_->ControlVariable().norm();
 
-        //compute the gain of the cartesian distance
+           //compute the gain of the cartesian distance
         double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingErrorsafety);
 
-        // Set the gain of the cartesian distance task
+           // Set the gain of the cartesian distance task
         safetyBoundariesTask_->ExternalActivationFunction() = taskGainSafety * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
 
-        //std::cout << "STATE HALT" << std::endl;
+           //std::cout << "STATE HALT" << std::endl;
         return fsm::ok;
     }
 }

@@ -88,8 +88,11 @@ fsm::retval StatePathFollow::OnEntry()
     alignToTargetTask_ = std::dynamic_pointer_cast<ikcl::AlignToTarget>(tasksMap.find(ulisse::task::asvAngularPosition)->second.task);
     cartesianDistancePathFollowingTask_ = std::dynamic_pointer_cast<ikcl::CartesianDistance>(tasksMap.find(ulisse::task::asvCartesianDistancePathFollowing)->second.task);
 
-    actionManager->SetAction(ulisse::action::pathfollow, true);
-    return fsm::ok;
+    if (actionManager->SetAction(ulisse::action::pathfollow, true)) {
+        return fsm::ok;
+    } else {
+        return fsm::fail;
+    }
 }
 
 fsm::retval StatePathFollow::Execute()

@@ -36,9 +36,11 @@ namespace states {
         cartesianDistanceTask_ = std::dynamic_pointer_cast<ikcl::CartesianDistance>(tasksMap.find(ulisse::task::asvCartesianDistance)->second.task);
         alignToTargetTask_ = std::dynamic_pointer_cast<ikcl::AlignToTarget>(tasksMap.find(ulisse::task::asvAngularPosition)->second.task);
 
-        actionManager->SetAction(ulisse::action::goTo, true);
-
-        return fsm::ok;
+        if (actionManager->SetAction(ulisse::action::goTo, true)) {
+            return fsm::ok;
+        } else {
+            return fsm::fail;
+        }
     }
 
     fsm::retval StateLatLong::Execute()

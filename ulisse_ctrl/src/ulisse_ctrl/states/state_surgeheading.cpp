@@ -46,9 +46,11 @@ namespace states {
         linearVelocityTask_ = std::dynamic_pointer_cast<ikcl::LinearVelocity>(tasksMap.find(ulisse::task::asvLinearVelocity)->second.task);
         absoluteAxisAlignmentTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignment)->second.task);
 
-        actionManager->SetAction(ulisse::action::surge_heading, true);
-
-        return fsm::ok;
+        if (actionManager->SetAction(ulisse::action::surge_heading, true)) {
+            return fsm::ok;
+        } else {
+            return fsm::fail;
+        }
     }
 
     fsm::retval StateSurgeHeading::Execute()

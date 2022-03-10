@@ -6,7 +6,8 @@ namespace ulisse {
 namespace states {
 
     StateHold::StateHold()
-        : hysteresisState_ { HysteresisState::Align }, goalDistance { 0.0 }
+        : hysteresisState_ { HysteresisState::Align }
+        , goalDistance { 0.0 }
     {
     }
 
@@ -23,9 +24,11 @@ namespace states {
         absoluteAxisAlignmentTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentHold)->second.task);
 
         // Set action
-        actionManager->SetAction(ulisse::action::hold, true);
-
-        return fsm::ok;
+        if (actionManager->SetAction(ulisse::action::hold, true)) {
+            return fsm::ok;
+        } else {
+            return fsm::fail;
+        }
     }
 
     bool StateHold::ConfigureStateFromFile(libconfig::Config& confObj)
@@ -61,8 +64,7 @@ namespace states {
 
         Eigen::MatrixXd Aexternal;
 
-        Aexternal = safetyBoundariesTask_->InternalActivationFunction().maxCoeff() *
-            Aexternal.setIdentity(absoluteAxisAlignmentSafetyTask_->TaskSpace(), absoluteAxisAlignmentSafetyTask_->TaskSpace());
+        Aexternal = safetyBoundariesTask_->InternalActivationFunction().maxCoeff() * Aexternal.setIdentity(absoluteAxisAlignmentSafetyTask_->TaskSpace(), absoluteAxisAlignmentSafetyTask_->TaskSpace());
 
         absoluteAxisAlignmentSafetyTask_->ExternalActivationFunction() = Aexternal;
 
@@ -107,13 +109,13 @@ namespace states {
             linearVelocityTask_->SetReferenceRate(Eigen::Vector3d::Zero(), robotModel->BodyFrameID());
 
             absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(-(ctrlData->inertialF_waterCurrent).normalized().x(),
-                                                                  -(ctrlData->inertialF_waterCurrent).normalized().y(), 0), rml::FrameID::WorldFrame);
+                                                                  -(ctrlData->inertialF_waterCurrent).normalized().y(), 0),
+                rml::FrameID::WorldFrame);
             absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
 
             // Avoid that the roboto try to align with very small intensity of water current.
             double absoluteAxisAlignmentGain = rml::IncreasingBellShapedFunction(minWaterCurrent_, maxWaterCurrent_, 0, 1, (ctrlData->inertialF_waterCurrent).norm());
-            absoluteAxisAlignmentTask_->ExternalActivationFunction() = absoluteAxisAlignmentGain *
-                Eigen::MatrixXd::Identity(absoluteAxisAlignmentTask_->TaskSpace(), absoluteAxisAlignmentTask_->TaskSpace());
+            absoluteAxisAlignmentTask_->ExternalActivationFunction() = absoluteAxisAlignmentGain * Eigen::MatrixXd::Identity(absoluteAxisAlignmentTask_->TaskSpace(), absoluteAxisAlignmentTask_->TaskSpace());
 
         } else if (hysteresisState_ == HysteresisState::ComeBack) {
             // If the previos action was comeback to the hold acceptance radius, keep do it until d < minAcceptanceRadius.
