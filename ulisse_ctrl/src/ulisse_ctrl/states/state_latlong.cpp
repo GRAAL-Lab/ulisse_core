@@ -41,7 +41,14 @@ namespace states {
         } else {
             return fsm::fail;
         }
+
+        /**
+         * Sottoscrizione ai topic ostacolo
+         */
+
     }
+
+    // Callback ostacoli
 
     fsm::retval StateLatLong::Execute()
     {
@@ -76,10 +83,29 @@ namespace states {
         // Set the gain of the cartesian distance task
         safetyBoundariesTask_->ExternalActivationFunction() = taskGainSafety * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
 
-        //goto task
-        ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, goalPosition, goalDistance, goalHeading);
 
-        if (goalDistance < acceptanceRadius) {
+
+
+        //goto task
+        /** if (we have obstacles){
+         *
+         *
+         *      pathController.computePath(ctrlData->inertialF_linearPosition, posizioni ostacoli, polyline)
+         *
+         *
+         *
+         *      ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, polyine(1), goalDistance, goalHeading);
+         * } else {
+         */
+
+             ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, goalPosition, goalDistance, goalHeading);
+
+        // }
+
+        double finalGoalDistance, finalGoalHeading;
+        ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, goalPosition, finalGoalDistance, finalGoalHeading);
+
+        if (finalGoalDistance < acceptanceRadius) {
             std::cout << "*** GOAL REACHED! ***" << std::endl;
             fsm_->EmitEvent(ulisse::events::names::neargoalposition, ulisse::events::priority::medium);
         } else {
