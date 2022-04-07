@@ -10,11 +10,11 @@
 #include <QQuickStyle>
 #include <QSettings>
 
+#include "rclcpp/rclcpp.hpp"
 #include "commandwrapper.hpp"
 #include "feedbackupdater.hpp"
 #include "taskdataupdater.hpp"
 #include "addonsbridge.hpp"
-#include "rclcpp/rclcpp.hpp"
 
 #include <QQmlDebuggingEnabler>
 
