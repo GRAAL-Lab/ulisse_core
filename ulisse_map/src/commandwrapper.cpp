@@ -244,7 +244,7 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
 bool CommandWrapper::sendPath(const QString &pathJsonData)
 {
     auto serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
-    serviceReq->command_type = ulisse::commands::ID::pathfollow;
+
 
     // DEBUG PRINT
     //QJsonDocument doc = QJsonDocument::fromJson(pathJsonData.toUtf8());
@@ -255,6 +255,9 @@ bool CommandWrapper::sendPath(const QString &pathJsonData)
     Json::Value jObj;
 
     reader.parse(pathJsonData.toStdString(), jObj);
+
+    serviceReq->command_type = ulisse::commands::ID::pathfollow_ilos;
+    //serviceReq->command_type = ulisse::commands::ID::pathfollow;
 
     serviceReq->path_cmd.path.id = jObj["name"].asString();
     serviceReq->path_cmd.path.type = jObj["type"].asString();

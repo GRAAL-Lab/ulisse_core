@@ -9,6 +9,8 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+#set(BUILD_TYPE_DEBUG TRUE)
+
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
@@ -63,6 +65,7 @@ set(ulisse_kinematic_ctrl_lib_sources
     src/ulisse_ctrl/states/state_surgeheading.cpp
     src/ulisse_ctrl/states/state_surgeyawrate.cpp
     src/ulisse_ctrl/states/state_pathfollow.cpp
+    src/ulisse_ctrl/states/state_pathfollow_ilos.cpp
     # Commands
     src/ulisse_ctrl/commands/generic_command.cpp
     src/ulisse_ctrl/commands/command_halt.cpp
@@ -71,6 +74,7 @@ set(ulisse_kinematic_ctrl_lib_sources
     src/ulisse_ctrl/commands/command_surgeheading.cpp
     src/ulisse_ctrl/commands/command_surgeyawrate.cpp
     src/ulisse_ctrl/commands/command_pathfollow.cpp
+    src/ulisse_ctrl/commands/command_pathfollow_ilos.cpp
     # Events
     #src/ulisse_ctrl/events/generic_event.cpp
     src/ulisse_ctrl/events/event_rc_enabled.cpp

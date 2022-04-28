@@ -54,6 +54,7 @@ const std::string surge_yawrate = "/ulisse/ctrl/surge_yawrate";
 const std::string task_absolute_axis_alignment = "/ulisse/task/ASV_Absolute_Axis_Alignment";
 const std::string task_linear_velocity = "/ulisse/task/ASV_Linear_Velocity";
 const std::string task_angular_position = "/ulisse/task/ASV_Angular_Position";
+const std::string task_angular_position_ilos = "/ulisse/task/ASV_Angular_Position_ILOS";
 const std::string task_cartesian_distance = "/ulisse/task/ASV_Cartesian_Distance";
 const std::string task_cartesian_distance_path_follow = "/ulisse/task/ASV_Cartesian_Distance_Path_Follow";
 const std::string task_safety_boundaries = "/ulisse/task/ASV_Safety_Boundaries";

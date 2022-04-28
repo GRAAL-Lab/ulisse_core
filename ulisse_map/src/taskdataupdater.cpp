@@ -81,6 +81,7 @@ void TaskDataUpdater::Init(QQmlApplicationEngine* engine)
     tasksMessageMap_.insert( { ulisse::task::asvAbsoluteAxisAlignmentHold, ulisse_msgs::msg::TaskStatus() } );
     tasksMessageMap_.insert( { ulisse::task::asvAbsoluteAxisAlignmentSafety, ulisse_msgs::msg::TaskStatus() } );
     tasksMessageMap_.insert( { ulisse::task::asvAngularPosition, ulisse_msgs::msg::TaskStatus()});
+    tasksMessageMap_.insert( { ulisse::task::asvAngularPositionILOS, ulisse_msgs::msg::TaskStatus()});
     tasksMessageMap_.insert( { ulisse::task::asvCartesianDistance, ulisse_msgs::msg::TaskStatus()});
     tasksMessageMap_.insert( { ulisse::task::asvCartesianDistancePathFollowing, ulisse_msgs::msg::TaskStatus()});
     tasksMessageMap_.insert( { ulisse::task::asvLinearVelocity, ulisse_msgs::msg::TaskStatus()});
@@ -115,6 +116,9 @@ void TaskDataUpdater::RegisterSubscribers(){
 
     angularPositionSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_angular_position, 10,
         std::bind(&TaskDataUpdater::AngularPositionCB, this, _1));
+        
+            angularPositionIlosSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_angular_position, 10,
+        std::bind(&TaskDataUpdater::AngularPositionILOSCB, this, _1));
 
     cartesianDistanceSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_cartesian_distance, 10,
         std::bind(&TaskDataUpdater::CartesianDistanceCB, this, _1));
@@ -177,6 +181,11 @@ void TaskDataUpdater::AbsoluteAxisAlignmentSafetyCB(const ulisse_msgs::msg::Task
 void TaskDataUpdater::AngularPositionCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
 {
     tasksMessageMap_.at(ulisse::task::asvAngularPosition) = *msg;
+}
+
+void TaskDataUpdater::AngularPositionILOSCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
+{
+    tasksMessageMap_.at(ulisse::task::asvAngularPositionILOS) = *msg;
 }
 
 void TaskDataUpdater::CartesianDistanceCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)

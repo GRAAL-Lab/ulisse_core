@@ -24,6 +24,7 @@
 #include "ulisse_ctrl/commands/command_hold.hpp"
 #include "ulisse_ctrl/commands/command_latlong.hpp"
 #include "ulisse_ctrl/commands/command_pathfollow.hpp"
+#include "ulisse_ctrl/commands/command_pathfollow_ilos.hpp"
 #include "ulisse_ctrl/commands/command_surgeheading.hpp"
 #include "ulisse_ctrl/commands/command_surgeyawrate.hpp"
 
@@ -34,6 +35,7 @@
 #include "ulisse_ctrl/states/state_hold.hpp"
 #include "ulisse_ctrl/states/state_latlong.hpp"
 #include "ulisse_ctrl/states/state_pathfollow.hpp"
+#include "ulisse_ctrl/states/state_pathfollow_ilos.hpp"
 #include "ulisse_ctrl/states/state_surgeheading.hpp"
 #include "ulisse_ctrl/states/state_surgeyawrate.hpp"
 
@@ -50,7 +52,7 @@ class VehicleController : public rclcpp::Node {
     std::unordered_map<std::string, commands::GenericCommand&> commandsMap_;
 
 
-    //ulisse_msgs::msg::TaskStatus taskstatusMsg_;
+       //ulisse_msgs::msg::TaskStatus taskstatusMsg_;
     std::string fileName_;
     rclcpp::Service<ulisse_msgs::srv::ControlCommand>::SharedPtr srvCommand_;
     rclcpp::Service<ulisse_msgs::srv::SetBoundaries>::SharedPtr srvSetBoundaries_;
@@ -73,25 +75,30 @@ class VehicleController : public rclcpp::Node {
     rclcpp::TimerBase::SharedPtr runTimer_;
     rclcpp::TimerBase::SharedPtr slow_timer_;
 
-    /// ROBOT MODEL
+       /// ROBOT MODEL
     std::shared_ptr<rml::RobotModel> robotModel_;
 
-    /// Action Manager definition
+       /// Action Manager definition
     std::shared_ptr<tpik::ActionManager> actionManager_;
 
     std::shared_ptr<tpik::iCAT> iCat_;
+
+    int a;
+
+    int b;
 
     double cruise_;
     //double externalSurge_, externalYawRate_;
     std::shared_ptr<tpik::Solver> solver_;
 
-    // Solution of TPIK
+       // Solution of TPIK
     Eigen::VectorXd yTpik_;
 
-    ///TASKS
+       ///TASKS
     std::shared_ptr<ikcl::LinearVelocity> asvLinearVelocity_;
     std::shared_ptr<ikcl::LinearVelocity> asvLinearVelocityHold_;
     std::shared_ptr<ikcl::AlignToTarget> asvAngularPosition_;
+    std::shared_ptr<ikcl::AlignToTarget> asvAngularPositionILOS_;
     std::shared_ptr<ikcl::CartesianDistance> asvCartesianDistance_;
     std::shared_ptr<ikcl::SafetyBoundaries> asvSafetyBoundaries_;
     std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignment_;
@@ -102,7 +109,7 @@ class VehicleController : public rclcpp::Node {
     double timestamp_;
     bool boundariesSet_;
 
-    // FSM
+       // FSM
     fsm::FSM uFsm_;
 
     std::shared_ptr<states::StateHalt> stateHalt_;
@@ -111,6 +118,7 @@ class VehicleController : public rclcpp::Node {
     std::shared_ptr<states::StateSurgeHeading> stateSurgeHeading_;
     std::shared_ptr<states::StateSurgeYawRate> stateSurgeYawRate_;
     std::shared_ptr<states::StatePathFollow> statePathFollowing_;
+    std::shared_ptr<states::StatePathFollowILOS> statePathFollowingILOS_;
 
     commands::CommandHalt commandHalt_;
     commands::CommandHold commandHold_;
@@ -118,6 +126,7 @@ class VehicleController : public rclcpp::Node {
     commands::CommandSurgeHeading commandSurgeHeading_;
     commands::CommandSurgeYawRate commandSurgeYawRate_;
     commands::CommandPathFollow commandPathFollowing_;
+    commands::CommandPathFollowILOS commandPathFollowingILOS_;
 
     events::EventRCEnabled eventRcEnabled_;
     events::EventNearGoalPosition eventNearGoalPosition_;

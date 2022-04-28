@@ -15,6 +15,7 @@ namespace task {
 
 const std::string asvLinearVelocity = "ASV_Linear_Velocity";
 const std::string asvAngularPosition = "ASV_Angular_Position";
+const std::string asvAngularPositionILOS = "ASV_Angular_Position_ILOS"; //ILOS
 const std::string asvAngularPositionHold = "ASV_Angular_Position_Hold";
 const std::string asvAbsoluteAxisAlignment = "ASV_Absolute_Axis_Alignment";
 const std::string asvCartesianDistance = "ASV_Cartesian_Distance";
@@ -35,6 +36,7 @@ const std::string hold = "Hold";
 const std::string surge_heading = "Surge_Heading";
 const std::string surge_yawrate = "Surge_YawRate";
 const std::string pathfollow = "Path_Following";
+const std::string pathfollow_ilos = "Path_FollowingILOS"; //ILOS
 }
 
 namespace commands {
@@ -47,6 +49,7 @@ const std::string hold = "hold_command";
 const std::string surgeheading = "surgeheading_command";
 const std::string surgeyawrate = "surgeyawrate_command";
 const std::string pathfollow = "pathfollow_command";
+const std::string pathfollow_ilos = "pathfollow_ilos_command";
 }
 }
 
@@ -60,6 +63,7 @@ const std::string hold = "Hold";
 const std::string surgeheading = "Surge_Heading";
 const std::string surgeyawrate = "Surge_YawRate";
 const std::string pathfollow = "Path_Following";
+const std::string pathfollow_ilos = "Path_FollowingILOS";
 }
 }
 

@@ -1,11 +1,13 @@
 #include "ulisse_ctrl/path_manager.hpp"
 #include <fstream>
+#include <math.h>
+
+#define _USE_MATH_DEFINES
 
 PathManager::PathManager()
     :  centroid_ { 0.0, 0.0 }
     , startP_ { 0.0, 0.0 }
     , endP_ { 0.0, 0.0 }
-
 {
     // Default initialization of Nurbs.cpp param
     nurbsParam.aepsge = 0.001;
@@ -19,6 +21,12 @@ PathManager::PathManager()
     delta_ = nurbsParam.deltaMin;
     nurbsParam.deltaStep = 0.05;
 
+    // Default initialization for ILOS
+    lamda_y = 0.1;
+    delta_y = 5;
+    y_int = 0;
+    y_int_dot = 0;
+    delta_t = std::chrono::duration_cast<std::chrono::nanoseconds>(T_last_ - T_now_);
 }
 
 PathManager::~PathManager() { }
@@ -47,6 +55,9 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
     size_1_ = path.size_1;
     size_2_ = path.size_2;
     direction_ = static_cast<Path::Direction>(path.direction);
+
+    T_now_ = std::chrono::system_clock::now();
+    T_last_ = T_now_;
 
     std::vector<Eigen::Vector3d> polyVerticesUTM(path.coordinates.size());
     int i{0};
@@ -170,6 +181,131 @@ bool PathManager::ComputeGoalPosition(const ctb::LatLong &currentPos, ctb::LatLo
 
     currentAbscissa_ = closestPointAbscissa;
     ctb::LocalUTM2LatLong(path_->At(currentAbscissa_), centroid_, currentTrackPoint_, altitude);
+
+
+    return true;
+}
+
+bool PathManager::ComputeGoalPositionILOS(const ctb::LatLong &currentPos, ctb::LatLong &goalPos)
+{
+
+    double closestPointAbscissa;
+    std::vector<Eigen::Vector3d> currentPosDot, goalPosDot;
+
+       // Converting the current geographical position to UTM coordinates
+    Eigen::Vector3d currentPos_UTM;
+    ctb::LatLong2LocalUTM(currentPos, 0.0, centroid_, currentPos_UTM);
+
+
+    Eigen::Vector3d closestPointOnPath;
+    Eigen::Vector3d distanceVector;
+
+
+
+    try {
+        // Retreiving closest point parameter
+        double intervalEnd = std::min(currentAbscissa_ + nurbsParam.lookAheadDistance, path_->EndParameter());
+        closestPointAbscissa = path_->FindAbscissaClosestPointOnInterval(currentPos_UTM, currentAbscissa_, intervalEnd);
+
+           // Evaluate derivatives in points of interest
+        currentPosDot = path_->Derivate(1, closestPointAbscissa);
+        goalPosDot = path_->Derivate(1, currentAbscissa_ + delta_);
+
+
+
+        ///////////////////////////
+        closestPointOnPath = path_->At(closestPointAbscissa);
+        //Eigen::Vector3d goalPos_UTM = path_->At(goalAbscissa);
+        double altitude;
+        ctb::LocalUTM2LatLong(closestPointOnPath, centroid_, currentGoal_, altitude);
+        goalPos = currentGoal_;
+
+        T_now_ = std::chrono::system_clock::now();
+        distanceVector = closestPointOnPath - currentPos_UTM;
+        double y = sqrt(pow(distanceVector.x(),2) - pow(distanceVector.y(),2));
+        y_int_dot = delta_y * y / ( pow((y + lamda_y*y_int),2) + pow(delta_y,2));
+        delta_t = std::chrono::duration_cast<std::chrono::nanoseconds>(T_last_ - T_now_);
+        T_last_ = T_now_;
+        y_int = y_int + y_int_dot * delta_t.count() / 1E9;
+
+    }
+    catch (std::runtime_error const& exception) {
+        std::cout << "Exception -> " << exception.what() << std::endl;
+    }
+
+    //Eigen::Vector3d currentDirection = currentPosDot.at(0) / currentPosDot.at(0).norm();
+    //Eigen::Vector3d goalDirection = goalPosDot.at(0) / goalPosDot.at(0).norm();
+
+       // Evaluate tangent difference
+    //double tangentsDifferenceNorm = rml::ReducedVersorLemma(currentDirection, goalDirection).norm();
+
+    //if (std::fabs(tangentsDifferenceNorm) < nurbsParam.directionError) {
+    //    delta_ = delta_ + nurbsParam.deltaStep;
+    //} else {
+    //    delta_ = delta_ - nurbsParam.deltaStep;
+    //}
+
+
+       // Limit delta between min and max
+    //delta_ = std::clamp(delta_, nurbsParam.deltaMin, nurbsParam.deltaMax);
+
+       // Limit goalParam abscissa between startParam and endParam
+    //double goalAbscissa = closestPointAbscissa + delta_;
+    //goalAbscissa = std::clamp(goalAbscissa, path_->StartParameter(), path_->EndParameter());
+
+    //Eigen::Vector3d goalPos_UTM = path_->At(goalAbscissa);
+    double altitude;
+
+    //ctb::LocalUTM2LatLong(goalPos_UTM, centroid_, currentGoal_, altitude);
+    //goalPos = currentGoal_;
+
+    currentAbscissa_ = closestPointAbscissa;
+    ctb::LocalUTM2LatLong(path_->At(currentAbscissa_), centroid_, currentTrackPoint_, altitude);
+
+
+    return true;
+}
+
+bool PathManager::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos, double& goalHead)
+{
+
+    double closestPointAbscissa;
+    std::vector<Eigen::Vector3d> currentPosDot, goalPosDot;
+
+       // Converting the current geographical position to UTM coordinates
+    Eigen::Vector3d currentPos_UTM;
+    ctb::LatLong2LocalUTM(currentPos, 0.0, centroid_, currentPos_UTM);
+
+
+    Eigen::Vector3d closestPointOnPath;
+    Eigen::Vector3d distanceVector;
+
+
+
+    try {
+        // Retreiving closest point parameter
+        double intervalEnd = std::min(currentAbscissa_ + nurbsParam.lookAheadDistance, path_->EndParameter());
+        closestPointAbscissa = path_->FindAbscissaClosestPointOnInterval(currentPos_UTM, currentAbscissa_, intervalEnd);
+
+        // Evaluate derivatives in points of interest
+        //currentPosDot = path_->Derivate(1, closestPointAbscissa);
+        //goalPosDot = path_->Derivate(1, currentAbscissa_ + delta_);
+
+
+        // /////////////////////////
+        closestPointOnPath = path_->At(closestPointAbscissa);
+        distanceVector = closestPointOnPath - currentPos_UTM;
+        double y = sqrt(pow(distanceVector.x(),2) + pow(distanceVector.y(),2));
+        y_int_dot = delta_y * y / ( pow((y + lamda_y*y_int),2) + pow(delta_y,2));
+        delta_t = std::chrono::duration_cast<std::chrono::nanoseconds>(T_last_ - T_now_);
+        y_int = y_int + y_int_dot * delta_t.count() / 1E9;
+        goalHead = - atan((y + lamda_y * y_int)/delta_y);
+        goalHead = goalHead * M_PI/180;
+
+    }
+    catch (std::runtime_error const& exception) {
+        std::cout << "Exception -> " << exception.what() << std::endl;
+    }
 
 
     return true;

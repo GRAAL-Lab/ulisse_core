@@ -39,6 +39,9 @@ public:
      */
     bool ComputeGoalPosition(const ctb::LatLong& currentP, ctb::LatLong& goalP);
 
+    bool ComputeGoalPositionILOS(const ctb::LatLong& currentP, ctb::LatLong& goalP);
+
+    bool ComputeGoalHeadingILOS(const ctb::LatLong& currentP, double& goalHead);
     /*
      * Method that resets the path
     */
@@ -118,6 +121,9 @@ public:
         }
     } nurbsParam;
 
+    std::chrono::system_clock::time_point T_last_, T_now_; // ILOS
+    std::chrono::nanoseconds delta_t;
+
 private:
     std::string pathName_;
     std::string pathType_;
@@ -134,6 +140,12 @@ private:
     ctb::LatLong currentTrackPoint_;
 
     double delta_;                       // The current delta increment
+
+    double lamda_y;
+    double delta_y;
+    double y_int;
+    double y_int_dot;
+    // double delta_t;
 };
 
 #endif // ULISSE_CONFIGURATION_H
