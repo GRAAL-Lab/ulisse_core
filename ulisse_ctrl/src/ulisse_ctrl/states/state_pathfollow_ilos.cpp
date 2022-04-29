@@ -192,7 +192,7 @@ fsm::retval StatePathFollowILOS::Execute()
                 //Set the align vector to the target
                 pathManager_.ComputeGoalHeadingILOS(ctrlData->inertialF_linearPosition, psi_ILOS);
                 double goalHeading = Heading - M_PI_2 + psi_ILOS;
-                alignToTargetTask_->SetTargetDistance(Eigen::Vector3d(cos(goalHeading), sin(goalHeading), 0), rml::FrameID::WorldFrame);
+                alignToTargetTask_->SetTargetDistance(Eigen::Vector3d(goalDistance*cos(goalHeading), goalDistance*sin(goalHeading), 0), rml::FrameID::WorldFrame);
 
                 //Set the vector that has to been align to the distance vector
                 alignToTargetTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);

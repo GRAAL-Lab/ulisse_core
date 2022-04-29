@@ -279,7 +279,7 @@ bool PathManager::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos, double&
 
     Eigen::Vector3d closestPointOnPath;
     Eigen::Vector3d distanceVector;
-
+    Eigen::Vector3d directionVector;
 
 
     try {
@@ -291,11 +291,24 @@ bool PathManager::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos, double&
         //currentPosDot = path_->Derivate(1, closestPointAbscissa);
         //goalPosDot = path_->Derivate(1, currentAbscissa_ + delta_);
 
+        // compute the direction of the mosìtion
+        double goalAbscissa = closestPointAbscissa + delta_;
+        goalAbscissa = std::clamp(goalAbscissa, path_->StartParameter(), path_->EndParameter());
+
+        Eigen::Vector3d goalPos_UTM = path_->At(goalAbscissa);
+        directionVector = goalPos_UTM - closestPointOnPath;
 
         // /////////////////////////
         closestPointOnPath = path_->At(closestPointAbscissa);
-        distanceVector = closestPointOnPath - currentPos_UTM;
-        double y = sqrt(pow(distanceVector.x(),2) + pow(distanceVector.y(),2));
+        distanceVector =  currentPos_UTM - closestPointOnPath;
+
+        // compute the sign of y
+        double k = directionVector(0)*distanceVector(0) + directionVector(1)*distanceVector(1) + directionVector(2)*distanceVector(2);
+        int sign;
+        if(k>0) sign = 1;
+        else sign = -1;
+
+        double y = sign * sqrt(pow(distanceVector.x(),2) + pow(distanceVector.y(),2));
         y_int_dot = delta_y * y / ( pow((y + lamda_y*y_int),2) + pow(delta_y,2));
         delta_t = std::chrono::duration_cast<std::chrono::nanoseconds>(T_last_ - T_now_);
         y_int = y_int + y_int_dot * delta_t.count() / 1E9;
