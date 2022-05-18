@@ -15,7 +15,7 @@ namespace task {
 
 const std::string asvLinearVelocity = "ASV_Linear_Velocity";
 const std::string asvAngularPosition = "ASV_Angular_Position";
-const std::string asvAngularPositionILOS = "ASV_Angular_Position_ILOS"; //ILOS
+//const std::string asvAngularPositionILOS = "ASV_Angular_Position_ILOS"; //ILOS
 const std::string asvAngularPositionHold = "ASV_Angular_Position_Hold";
 const std::string asvAbsoluteAxisAlignment = "ASV_Absolute_Axis_Alignment";
 const std::string asvCartesianDistance = "ASV_Cartesian_Distance";
@@ -24,6 +24,7 @@ const std::string asvCartesianDistancePathFollowing = "ASV_Cartesian_Distance_Pa
 const std::string asvSafetyBoundaries = "ASV_Safety_Boundaries";
 const std::string asvAbsoluteAxisAlignmentSafety = "ASV_Absolute_Axis_Alignment_Safety";
 const std::string asvAbsoluteAxisAlignmentHold = "ASV_Absolute_Axis_Alignment_Hold";
+const std::string asvAbsoluteAxisAlignmentILOS = "ASV_Absolute_Axis_Alignment_ILOS"; //ILOS
 const std::string asvLinearVelocityHold = "ASV_Linear_Velocity_Hold";
 
 }

@@ -120,11 +120,17 @@ VehicleController::VehicleController(std::string conf_filename)
     tasksMap_.insert(std::make_pair(ulisse::task::asvLinearVelocityHold, taskInfo_));
 
 
-       // AUV CONTROL ANGULAR POSITION
-    asvAngularPositionILOS_ = std::make_shared<ikcl::AlignToTarget>(ikcl::AlignToTarget(ulisse::task::asvAngularPositionILOS, robotModel_, ulisse::robotModelID::ASV));
-    taskInfo_.task = asvAngularPositionILOS_;
-    taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_angular_position_ilos, 1);
-    tasksMap_.insert(std::make_pair(ulisse::task::asvAngularPositionILOS, taskInfo_));
+       // AUV CONTROL ANGULAR POSITION ILOS
+    //asvAngularPositionILOS_ = std::make_shared<ikcl::AlignToTarget>(ikcl::AlignToTarget(ulisse::task::asvAngularPositionILOS, robotModel_, ulisse::robotModelID::ASV));
+    //taskInfo_.task = asvAngularPositionILOS_;
+    //taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_angular_position_ilos, 1);
+    //tasksMap_.insert(std::make_pair(ulisse::task::asvAngularPositionILOS, taskInfo_));
+
+    // ASV absolute axis alignment task
+    asvAbsoluteAxisAlignmentILOS_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asvAbsoluteAxisAlignmentILOS, robotModel_, ulisse::robotModelID::ASV));
+    taskInfo_.task = asvAbsoluteAxisAlignmentILOS_;
+    taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment_ilos, 1);
+    tasksMap_.insert(std::make_pair(ulisse::task::asvAbsoluteAxisAlignmentILOS, taskInfo_));
 
        // Initialize solver_ and iCAT
     int dof = 6;

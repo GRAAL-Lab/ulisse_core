@@ -22,7 +22,7 @@ PathManager::PathManager()
     nurbsParam.deltaStep = 0.05;
 
     // Default initialization for ILOS
-    lamda_y = 0.1;
+    lamda_y = 0.1;//0.1;
     delta_y = 5;
     y_int = 0;
     y_int_dot = 0;
@@ -124,6 +124,10 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
 
     currentTrackPoint_ = startP_;
 
+    y_int_dot = 0.0;
+    y_int = 0.0;
+    T_last_ = T_now_;
+    delta_t = std::chrono::duration_cast<std::chrono::nanoseconds>(T_last_ - T_now_);
     return true;
 
 }
@@ -188,18 +192,12 @@ bool PathManager::ComputeGoalPosition(const ctb::LatLong &currentPos, ctb::LatLo
 
 bool PathManager::ComputeGoalPositionILOS(const ctb::LatLong &currentPos, ctb::LatLong &goalPos)
 {
-
     double closestPointAbscissa;
     std::vector<Eigen::Vector3d> currentPosDot, goalPosDot;
 
-       // Converting the current geographical position to UTM coordinates
+    // Converting the current geographical position to UTM coordinates
     Eigen::Vector3d currentPos_UTM;
     ctb::LatLong2LocalUTM(currentPos, 0.0, centroid_, currentPos_UTM);
-
-
-    Eigen::Vector3d closestPointOnPath;
-    Eigen::Vector3d distanceVector;
-
 
 
     try {
@@ -207,26 +205,68 @@ bool PathManager::ComputeGoalPositionILOS(const ctb::LatLong &currentPos, ctb::L
         double intervalEnd = std::min(currentAbscissa_ + nurbsParam.lookAheadDistance, path_->EndParameter());
         closestPointAbscissa = path_->FindAbscissaClosestPointOnInterval(currentPos_UTM, currentAbscissa_, intervalEnd);
 
-           // Evaluate derivatives in points of interest
+        // Evaluate derivatives in points of interest
         currentPosDot = path_->Derivate(1, closestPointAbscissa);
         goalPosDot = path_->Derivate(1, currentAbscissa_ + delta_);
 
+    }
+    catch (std::runtime_error const& exception) {
+        std::cout << "Exception -> " << exception.what() << std::endl;
+    }
+
+    Eigen::Vector3d currentDirection = currentPosDot.at(0) / currentPosDot.at(0).norm();
+    Eigen::Vector3d goalDirection = goalPosDot.at(0) / goalPosDot.at(0).norm();
+
+    // Evaluate tangent difference
+    double tangentsDifferenceNorm = rml::ReducedVersorLemma(currentDirection, goalDirection).norm();
+
+    if (std::fabs(tangentsDifferenceNorm) < nurbsParam.directionError) {
+        delta_ = delta_ + nurbsParam.deltaStep;
+    } else {
+        delta_ = delta_ - nurbsParam.deltaStep;
+    }
 
 
-        ///////////////////////////
-        closestPointOnPath = path_->At(closestPointAbscissa);
-        //Eigen::Vector3d goalPos_UTM = path_->At(goalAbscissa);
-        double altitude;
-        ctb::LocalUTM2LatLong(closestPointOnPath, centroid_, currentGoal_, altitude);
-        goalPos = currentGoal_;
+    // Limit delta between min and max
+    //delta_ = std::clamp(delta_, nurbsParam.deltaMin, nurbsParam.deltaMax);
+    delta_ = std::clamp(delta_, nurbsParam.deltaMax, nurbsParam.deltaMax);
 
-        T_now_ = std::chrono::system_clock::now();
-        distanceVector = closestPointOnPath - currentPos_UTM;
-        double y = sqrt(pow(distanceVector.x(),2) - pow(distanceVector.y(),2));
-        y_int_dot = delta_y * y / ( pow((y + lamda_y*y_int),2) + pow(delta_y,2));
-        delta_t = std::chrono::duration_cast<std::chrono::nanoseconds>(T_last_ - T_now_);
-        T_last_ = T_now_;
-        y_int = y_int + y_int_dot * delta_t.count() / 1E9;
+    // Limit goalParam abscissa between startParam and endParam
+    double goalAbscissa = closestPointAbscissa + delta_;
+    //double goalAbscissa = closestPointAbscissa;
+    goalAbscissa = std::clamp(goalAbscissa, path_->StartParameter(), path_->EndParameter());
+
+    Eigen::Vector3d goalPos_UTM = path_->At(goalAbscissa);
+    double altitude;
+
+    ctb::LocalUTM2LatLong(goalPos_UTM, centroid_, currentGoal_, altitude);
+    goalPos = currentGoal_;
+
+    currentAbscissa_ = closestPointAbscissa;
+    ctb::LocalUTM2LatLong(path_->At(currentAbscissa_), centroid_, currentTrackPoint_, altitude);
+
+
+    return true;
+}
+
+bool PathManager::ComputeClosetPointILOS(const ctb::LatLong &currentPos, ctb::LatLong &goalPos)
+{
+    double closestPointAbscissa;
+    std::vector<Eigen::Vector3d> currentPosDot, goalPosDot;
+
+    // Converting the current geographical position to UTM coordinates
+    Eigen::Vector3d currentPos_UTM;
+    ctb::LatLong2LocalUTM(currentPos, 0.0, centroid_, currentPos_UTM);
+
+
+    try {
+        // Retreiving closest point parameter
+        double intervalEnd = std::min(currentAbscissa_ + nurbsParam.lookAheadDistance, path_->EndParameter());
+        closestPointAbscissa = path_->FindAbscissaClosestPointOnInterval(currentPos_UTM, currentAbscissa_, intervalEnd);
+
+        // Evaluate derivatives in points of interest
+        //currentPosDot = path_->Derivate(1, closestPointAbscissa);
+        //goalPosDot = path_->Derivate(1, currentAbscissa_ + delta_);
 
     }
     catch (std::runtime_error const& exception) {
@@ -236,7 +276,7 @@ bool PathManager::ComputeGoalPositionILOS(const ctb::LatLong &currentPos, ctb::L
     //Eigen::Vector3d currentDirection = currentPosDot.at(0) / currentPosDot.at(0).norm();
     //Eigen::Vector3d goalDirection = goalPosDot.at(0) / goalPosDot.at(0).norm();
 
-       // Evaluate tangent difference
+    // Evaluate tangent difference
     //double tangentsDifferenceNorm = rml::ReducedVersorLemma(currentDirection, goalDirection).norm();
 
     //if (std::fabs(tangentsDifferenceNorm) < nurbsParam.directionError) {
@@ -246,18 +286,20 @@ bool PathManager::ComputeGoalPositionILOS(const ctb::LatLong &currentPos, ctb::L
     //}
 
 
-       // Limit delta between min and max
+    // Limit delta between min and max
     //delta_ = std::clamp(delta_, nurbsParam.deltaMin, nurbsParam.deltaMax);
+    //delta_ = std::clamp(delta_, nurbsParam.deltaMax, nurbsParam.deltaMax);
 
-       // Limit goalParam abscissa between startParam and endParam
+    // Limit goalParam abscissa between startParam and endParam
     //double goalAbscissa = closestPointAbscissa + delta_;
-    //goalAbscissa = std::clamp(goalAbscissa, path_->StartParameter(), path_->EndParameter());
+    double goalAbscissa = closestPointAbscissa;
+    goalAbscissa = std::clamp(goalAbscissa, path_->StartParameter(), path_->EndParameter());
 
-    //Eigen::Vector3d goalPos_UTM = path_->At(goalAbscissa);
+    Eigen::Vector3d goalPos_UTM = path_->At(goalAbscissa);
     double altitude;
 
-    //ctb::LocalUTM2LatLong(goalPos_UTM, centroid_, currentGoal_, altitude);
-    //goalPos = currentGoal_;
+    ctb::LocalUTM2LatLong(goalPos_UTM, centroid_, currentGoal_, altitude);
+    goalPos = currentGoal_;
 
     currentAbscissa_ = closestPointAbscissa;
     ctb::LocalUTM2LatLong(path_->At(currentAbscissa_), centroid_, currentTrackPoint_, altitude);
@@ -275,11 +317,12 @@ bool PathManager::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos, double&
        // Converting the current geographical position to UTM coordinates
     Eigen::Vector3d currentPos_UTM;
     ctb::LatLong2LocalUTM(currentPos, 0.0, centroid_, currentPos_UTM);
-
+    T_now_ = std::chrono::system_clock::now();
 
     Eigen::Vector3d closestPointOnPath;
     Eigen::Vector3d distanceVector;
-    Eigen::Vector3d directionVector;
+    Eigen::Vector3d Vehicle2Goal;
+    Eigen::Vector3d X_p; Eigen::Vector3d Y_p; Eigen::Vector3d Z_p;
 
 
     try {
@@ -294,26 +337,51 @@ bool PathManager::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos, double&
         // compute the direction of the mosìtion
         double goalAbscissa = closestPointAbscissa + delta_;
         goalAbscissa = std::clamp(goalAbscissa, path_->StartParameter(), path_->EndParameter());
+        closestPointOnPath = path_->At(closestPointAbscissa);
 
         Eigen::Vector3d goalPos_UTM = path_->At(goalAbscissa);
-        directionVector = goalPos_UTM - closestPointOnPath;
+        X_p = goalPos_UTM - closestPointOnPath;
+        X_p = X_p / X_p.norm();
+        // Z_p.x() = 0; Z_p.y() = 0; Z_p.z() = -1;
+        Y_p.x() = X_p.y();
+        Y_p.y() = -X_p.x();
+        //Y_p.x() = -X_p.y();
+        //Y_p.y() = X_p.x();
+        Y_p.z() = 0;
 
         // /////////////////////////
-        closestPointOnPath = path_->At(closestPointAbscissa);
+        //closestPointOnPath = path_->At(closestPointAbscissa);
         distanceVector =  currentPos_UTM - closestPointOnPath;
 
         // compute the sign of y
-        double k = directionVector(0)*distanceVector(0) + directionVector(1)*distanceVector(1) + directionVector(2)*distanceVector(2);
+        double k = Y_p.x() * distanceVector.x() + Y_p.y() * distanceVector.y();
+
+
+        //Vehicle2Goal = goalPos_UTM - currentPos_UTM;
+        //double k = Y_p.x() * Vehicle2Goal.x() + Y_p.y() * Vehicle2Goal.y();
+
+
+
+
         int sign;
         if(k>0) sign = 1;
         else sign = -1;
 
         double y = sign * sqrt(pow(distanceVector.x(),2) + pow(distanceVector.y(),2));
-        y_int_dot = delta_y * y / ( pow((y + lamda_y*y_int),2) + pow(delta_y,2));
-        delta_t = std::chrono::duration_cast<std::chrono::nanoseconds>(T_last_ - T_now_);
+        y_int_dot = delta_y * y / ( pow((y + lamda_y*y_int),2) + pow(delta_y,2) );
+        delta_t = std::chrono::duration_cast<std::chrono::nanoseconds>(T_now_ - T_last_);
+        T_last_ = T_now_;
         y_int = y_int + y_int_dot * delta_t.count() / 1E9;
-        goalHead = - atan((y + lamda_y * y_int)/delta_y);
-        goalHead = goalHead * M_PI/180;
+        goalHead = - atan2((y + lamda_y * y_int),delta_y);
+        //std::cout << "phiILOS = " << goalHead*180/M_PI << std::endl;
+        //goalHead = goalHead * M_PI/180;
+        //std::cout << "delta_t = " << delta_t.count()/ 1E9 << std::endl;
+        //std::cout << "k = " << k << std::endl;
+        //std::cout << "distanceX = " << distanceVector.x() << std::endl;
+        //std::cout << "distanceY = " << distanceVector.y() << std::endl;
+        std::cout << "y = " << y << std::endl;
+        std::cout << "y_int_dot = " << y_int_dot << std::endl;
+        std::cout << "y_int = " << y_int << std::endl;
 
     }
     catch (std::runtime_error const& exception) {

@@ -15,6 +15,8 @@ namespace states {
     protected:
         // Tasks of the state
         std::shared_ptr<ikcl::AlignToTarget> alignToTargetTask_;
+        //std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentSafetyTask_;
+        std::shared_ptr<ikcl::AbsoluteAxisAlignment> alignToTargetILOSTask_;
         std::shared_ptr<ikcl::CartesianDistance> cartesianDistanceTask_;
         std::shared_ptr<ikcl::CartesianDistance> cartesianDistancePathFollowingTask_;
 
@@ -22,6 +24,7 @@ namespace states {
         bool vehicleOnTrack_;           // Flag for checking is the robot at the path start
         //ctb::LatLong startP_, endP_;    // Starting and ending point
         ctb::LatLong nextP_;            // Next point of the path
+        ctb::LatLong closestP_;            // Closest point from the path ILOS
         //ctb::LatLong nextPilos_;            // Next point of the path ILOS
         double tolleranceStartingPoint_; // Tolerance on the starting point
         double tolleranceEndingPoint_;  // Tolerance on the ending point
@@ -39,6 +42,7 @@ namespace states {
 
         bool LoadPath(const ulisse_msgs::msg::PathData& path);
         const ctb::LatLong& GetNextPoint() const { return nextP_; }
+        const ctb::LatLong& GetClosestPoint() const { return closestP_; } // ILOS
         const ctb::LatLong& GetCurrentTrackPoint() const { return pathManager_.CurrentTrackPoint(); }
         double GetDistanceToEnd() const { return pathManager_.DistanceToEnd(); }
 

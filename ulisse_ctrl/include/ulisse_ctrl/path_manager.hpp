@@ -41,6 +41,8 @@ public:
 
     bool ComputeGoalPositionILOS(const ctb::LatLong& currentP, ctb::LatLong& goalP);
 
+    bool ComputeClosetPointILOS(const ctb::LatLong& currentP, ctb::LatLong& goalP);
+
     bool ComputeGoalHeadingILOS(const ctb::LatLong& currentP, double& goalHead);
     /*
      * Method that resets the path

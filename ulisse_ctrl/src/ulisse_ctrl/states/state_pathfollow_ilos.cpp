@@ -88,8 +88,10 @@ fsm::retval StatePathFollowILOS::OnEntry()
     safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
     absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
     cartesianDistanceTask_ = std::dynamic_pointer_cast<ikcl::CartesianDistance>(tasksMap.find(ulisse::task::asvCartesianDistance)->second.task);
-    alignToTargetTask_ = std::dynamic_pointer_cast<ikcl::AlignToTarget>(tasksMap.find(ulisse::task::asvAngularPositionILOS)->second.task);
+    alignToTargetTask_ = std::dynamic_pointer_cast<ikcl::AlignToTarget>(tasksMap.find(ulisse::task::asvAngularPosition)->second.task);
     cartesianDistancePathFollowingTask_ = std::dynamic_pointer_cast<ikcl::CartesianDistance>(tasksMap.find(ulisse::task::asvCartesianDistancePathFollowing)->second.task);
+
+    alignToTargetILOSTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentILOS)->second.task);
 
     if (actionManager->SetAction(ulisse::action::pathfollow_ilos, true)) {
         return fsm::ok;
@@ -133,7 +135,7 @@ fsm::retval StatePathFollowILOS::Execute()
     // Set the gain of the cartesian distance task
     safetyBoundariesTask_->ExternalActivationFunction() = taskGainSafety * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
 
-    double goalDistance, goalHeading ,Heading, psi_ILOS;
+    double goalDistance,closestP, goalHeading ,Heading1, Heading2ClosetPoint, psi_ILOS;
     //pathfollow action
     if (isCurveSet_) {
         //Going to the starting point
@@ -150,6 +152,7 @@ fsm::retval StatePathFollowILOS::Execute()
                 cartesianDistanceTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(goalHeading), goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame);
                 //Set the align vector to the target
                 alignToTargetTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(goalHeading), goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame);
+                //alignToTargetTask_->SetTargetDistance(Eigen::Vector3d(cos(goalHeading), sin(goalHeading), 0), rml::FrameID::WorldFrame);
 
                 //Set the vector that has to been align to the distance vector
                 alignToTargetTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
@@ -167,6 +170,7 @@ fsm::retval StatePathFollowILOS::Execute()
                 //cartesianDistanceTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
 
                 cartesianDistanceTask_->TaskParameter().gain = taskGain * cartesianDistanceTask_->TaskParameter().conf_gain;
+                //std::cout << "Task Gain = " << cartesianDistanceTask_->TaskParameter().gain<< std::endl;
                 cartesianDistanceTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
                 cartesianDistancePathFollowingTask_->ExternalActivationFunction() = 0.0 * Eigen::MatrixXd::Identity(cartesianDistancePathFollowingTask_->TaskSpace(), cartesianDistancePathFollowingTask_->TaskSpace());
             }
@@ -183,33 +187,97 @@ fsm::retval StatePathFollowILOS::Execute()
                     return fsm::fail;
                 }
 
-                ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, nextP_, goalDistance, Heading);
+                ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, nextP_, goalDistance, Heading1);
 
+                // Set the distance vector to the target
+                cartesianDistancePathFollowingTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(Heading1), goalDistance * sin(Heading1), 0), rml::FrameID::WorldFrame);
 
-                //Set the distance vector to the target
-                cartesianDistancePathFollowingTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(Heading), goalDistance * sin(Heading), 0), rml::FrameID::WorldFrame);
-
-                //Set the align vector to the target
+                // Set the align vector to the target
+                pathManager_.ComputeClosetPointILOS(ctrlData->inertialF_linearPosition, closestP_);
+                ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, closestP_, closestP, Heading2ClosetPoint);
+                //if(Heading2ClosetPoint > M_PI_2){Heading2ClosetPoint = M_PI_2;}
+                //else if(Heading2ClosetPoint < -M_PI_2){Heading2ClosetPoint = M_PI_2;}
                 pathManager_.ComputeGoalHeadingILOS(ctrlData->inertialF_linearPosition, psi_ILOS);
-                double goalHeading = Heading - M_PI_2 + psi_ILOS;
-                alignToTargetTask_->SetTargetDistance(Eigen::Vector3d(goalDistance*cos(goalHeading), goalDistance*sin(goalHeading), 0), rml::FrameID::WorldFrame);
+
+                double goalHeading;
+                if(psi_ILOS > 0 )
+                    goalHeading = Heading2ClosetPoint - M_PI_2 + psi_ILOS;
+                else goalHeading = Heading2ClosetPoint + M_PI_2 + psi_ILOS;
+
+                //double goalHeading = - Heading2ClosetPoint - M_PI_2 - psi_ILOS;
+                while(goalHeading > 2*M_PI)
+                {
+                    goalHeading = goalHeading - 2*M_PI;
+                }
+                while(goalHeading < 0)
+                {
+                    goalHeading = goalHeading + 2*M_PI;
+                }
+                //if(goalHeading > M_PI)
+                //{
+                //    goalHeading = goalHeading - 2*M_PI;
+                //}
+
+                //double goalHeading = Heading2ClosetPoint + psi_ILOS;
+
+                //cartesianDistancePathFollowingTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(goalHeading), goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame);
+                //alignToTargetTask_->SetTargetDistance(Eigen::Vector3d(closestP*cos(goalHeading), closestP*sin(goalHeading), 0), rml::FrameID::WorldFrame);
 
                 //Set the vector that has to been align to the distance vector
-                alignToTargetTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
+                //alignToTargetTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
+
+                // Absolute alignment
+                //Aexternal = safetyBoundariesTask_->InternalActivationFunction().maxCoeff() * Aexternal.setIdentity(absoluteAxisAlignmentSafetyTask_->TaskSpace(), absoluteAxisAlignmentSafetyTask_->TaskSpace());
+                //absoluteAxisAlignmentSafetyTask_->ExternalActivationFunction() = Aexternal;
+
+                //absoluteAxisAlignmentSafetyTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
+                //absoluteAxisAlignmentSafetyTask_->SetDirectionAlignment(safetyBoundariesTask_->GetAlignVector(rml::FrameID::WorldFrame),
+                //    rml::FrameID::WorldFrame);
+
+                // Absolute alignment ILOS
+
+                // OPTION 1
+                //Aexternal = alignToTargetILOSTask_->InternalActivationFunction().maxCoeff() * Aexternal.setIdentity(absoluteAxisAlignmentSafetyTask_->TaskSpace(), absoluteAxisAlignmentSafetyTask_->TaskSpace());
+                //alignToTargetILOSTask_->ExternalActivationFunction() = Aexternal;
+
+                // OPTION 2
+                alignToTargetILOSTask_->ExternalActivationFunction().setIdentity();
+
+                //goalHeading = -M_PI_2;
+                //goalHeading = M_PI;
+                alignToTargetILOSTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
+                alignToTargetILOSTask_->SetDirectionAlignment(Eigen::Vector3d(cos(goalHeading), sin(goalHeading), 0),rml::FrameID::WorldFrame);
+                //alignToTargetILOSTask_->SetDirectionAlignment(Eigen::Vector3d(0, 1, 0),rml::FrameID::WorldFrame);
+                std::cout << "closetHeading = " << Heading2ClosetPoint<< std::endl;
+                std::cout << "phiILOS = " << psi_ILOS << std::endl;
+                std::cout << "finalHeading = " << goalHeading << std::endl;
+
+                double headingErrorILOS = alignToTargetILOSTask_->ControlVariable().norm();
+                //double headingErrorILOS = 1;
+                //alignToTargetILOSTask_->TaskParameter().gain = 1;
+
+                //To avoid the case in which the error between the goal heading and the current heading is too big
+                //we activate the the cartesian distance through the gain based on a bell-shaped function on the heading error????
+
+                //compute the heading error
+                //double headingErrorILOS = alignToTargetILOSTask_->ControlVariable().norm();
 
                 //To avoid the case in which the error between the goal heading and the current heading is too big
                 // we activate the the cartesian distance through the gain based on a bell-shaped function on the heading error
 
                 //compute the heading error
-                double headingError = alignToTargetTask_->ControlVariable().norm();
+                //double headingError = alignToTargetTask_->ControlVariable().norm();
 
                 //compute the gain of the cartesian distance
-                double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingError);
+                double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingErrorILOS);
 
                 //Set the gain of the cartesian distance task
                 //cartesianDistancePathFollowingTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(cartesianDistancePathFollowingTask_->TaskSpace(), cartesianDistancePathFollowingTask_->TaskSpace());
-                cartesianDistancePathFollowingTask_->TaskParameter().gain = taskGain * cartesianDistancePathFollowingTask_->TaskParameter().conf_gain;
 
+                cartesianDistancePathFollowingTask_->TaskParameter().gain = taskGain * cartesianDistancePathFollowingTask_->TaskParameter().conf_gain;
+                //cartesianDistancePathFollowingTask_->TaskParameter().gain = 1;
+                std::cout << "cartesianDistancePathFollowing GAIN = " << cartesianDistancePathFollowingTask_->TaskParameter().gain<< std::endl;
+                std::cout <<std::endl;
                 cartesianDistanceTask_->ExternalActivationFunction() = 0.0 * Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
                 cartesianDistancePathFollowingTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(cartesianDistancePathFollowingTask_->TaskSpace(), cartesianDistancePathFollowingTask_->TaskSpace());
             }

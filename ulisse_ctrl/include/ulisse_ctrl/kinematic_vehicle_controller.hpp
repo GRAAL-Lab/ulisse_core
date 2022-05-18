@@ -104,6 +104,7 @@ class VehicleController : public rclcpp::Node {
     std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignment_;
     std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentSafety_;
     std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentHold_;
+    std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentILOS_;
     std::shared_ptr<ikcl::CartesianDistance> asvCartesianDistancePathFollowing_;
 
     double timestamp_;
