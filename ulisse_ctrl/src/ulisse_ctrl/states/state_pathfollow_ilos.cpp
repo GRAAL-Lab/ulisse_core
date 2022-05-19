@@ -197,22 +197,22 @@ fsm::retval StatePathFollowILOS::Execute()
                 ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, closestP_, closestP, Heading2ClosetPoint);
                 //if(Heading2ClosetPoint > M_PI_2){Heading2ClosetPoint = M_PI_2;}
                 //else if(Heading2ClosetPoint < -M_PI_2){Heading2ClosetPoint = M_PI_2;}
-                pathManager_.ComputeGoalHeadingILOS(ctrlData->inertialF_linearPosition, psi_ILOS);
+                pathManager_.ComputeGoalHeadingILOS(ctrlData->inertialF_linearPosition,Heading2ClosetPoint, goalHeading);
 
-                double goalHeading;
-                if(psi_ILOS > 0 )
-                    goalHeading = Heading2ClosetPoint - M_PI_2 + psi_ILOS;
-                else goalHeading = Heading2ClosetPoint + M_PI_2 + psi_ILOS;
+                //double goalHeading;
+                //if(psi_ILOS > 0 )
+                //    goalHeading = Heading2ClosetPoint - M_PI_2 + psi_ILOS;
+                //else goalHeading = Heading2ClosetPoint + M_PI_2 + psi_ILOS;
 
                 //double goalHeading = - Heading2ClosetPoint - M_PI_2 - psi_ILOS;
-                while(goalHeading > 2*M_PI)
-                {
-                    goalHeading = goalHeading - 2*M_PI;
-                }
-                while(goalHeading < 0)
-                {
-                    goalHeading = goalHeading + 2*M_PI;
-                }
+                //while(goalHeading > 2*M_PI)
+                //{
+                //    goalHeading = goalHeading - 2*M_PI;
+                //}
+                //while(goalHeading < 0)
+                //{
+                //    goalHeading = goalHeading + 2*M_PI;
+                //}
                 //if(goalHeading > M_PI)
                 //{
                 //    goalHeading = goalHeading - 2*M_PI;
@@ -251,8 +251,9 @@ fsm::retval StatePathFollowILOS::Execute()
                 std::cout << "closetHeading = " << Heading2ClosetPoint<< std::endl;
                 std::cout << "phiILOS = " << psi_ILOS << std::endl;
                 std::cout << "finalHeading = " << goalHeading << std::endl;
-
+                std::cout << "ULISSE heading = " << ctrlData->bodyF_angularPosition.Yaw() << std::endl;
                 double headingErrorILOS = alignToTargetILOSTask_->ControlVariable().norm();
+                std::cout << "heading Error = " << headingErrorILOS << std::endl;
                 //double headingErrorILOS = 1;
                 //alignToTargetILOSTask_->TaskParameter().gain = 1;
 

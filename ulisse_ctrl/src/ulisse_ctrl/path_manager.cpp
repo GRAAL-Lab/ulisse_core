@@ -22,7 +22,7 @@ PathManager::PathManager()
     nurbsParam.deltaStep = 0.05;
 
     // Default initialization for ILOS
-    lamda_y = 0.1;//0.1;
+    lamda_y = 0.05;//0.1;
     delta_y = 5;
     y_int = 0;
     y_int_dot = 0;
@@ -308,10 +308,11 @@ bool PathManager::ComputeClosetPointILOS(const ctb::LatLong &currentPos, ctb::La
     return true;
 }
 
-bool PathManager::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos, double& goalHead)
+bool PathManager::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos,const double& Heading2ClosetPoint, double& goalHead)
 {
 
     double closestPointAbscissa;
+    double psi_ILOS;
     std::vector<Eigen::Vector3d> currentPosDot, goalPosDot;
 
        // Converting the current geographical position to UTM coordinates
@@ -372,7 +373,24 @@ bool PathManager::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos, double&
         delta_t = std::chrono::duration_cast<std::chrono::nanoseconds>(T_now_ - T_last_);
         T_last_ = T_now_;
         y_int = y_int + y_int_dot * delta_t.count() / 1E9;
-        goalHead = - atan2((y + lamda_y * y_int),delta_y);
+
+        //if(y_int > 15) y_int = 15;
+        //else if(y_int < -15) y_int = -15;
+
+        psi_ILOS = - atan2((y + lamda_y * y_int),delta_y);
+        if(sign < 0 )
+            goalHead = Heading2ClosetPoint - M_PI_2 + psi_ILOS;
+        else goalHead = Heading2ClosetPoint + M_PI_2 + psi_ILOS;
+
+           //double goalHeading = - Heading2ClosetPoint - M_PI_2 - psi_ILOS;
+        while(goalHead > 2*M_PI)
+        {
+            goalHead = goalHead - 2*M_PI;
+        }
+        while(goalHead < 0)
+        {
+            goalHead = goalHead + 2*M_PI;
+        }
         //std::cout << "phiILOS = " << goalHead*180/M_PI << std::endl;
         //goalHead = goalHead * M_PI/180;
         //std::cout << "delta_t = " << delta_t.count()/ 1E9 << std::endl;
