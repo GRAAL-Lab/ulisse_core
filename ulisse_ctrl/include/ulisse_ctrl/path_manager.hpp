@@ -143,7 +143,7 @@ private:
 
     double delta_;                       // The current delta increment
 
-    double lamda_y;
+    double sigma_y;
     double delta_y;
     double y_int;
     double y_int_dot;

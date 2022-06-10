@@ -22,7 +22,7 @@ PathManager::PathManager()
     nurbsParam.deltaStep = 0.05;
 
     // Default initialization for ILOS
-    lamda_y = 0.05;//0.1;
+    sigma_y = 0.1;//0.1;
     delta_y = 5;
     y_int = 0;
     y_int_dot = 0;
@@ -264,34 +264,11 @@ bool PathManager::ComputeClosetPointILOS(const ctb::LatLong &currentPos, ctb::La
         double intervalEnd = std::min(currentAbscissa_ + nurbsParam.lookAheadDistance, path_->EndParameter());
         closestPointAbscissa = path_->FindAbscissaClosestPointOnInterval(currentPos_UTM, currentAbscissa_, intervalEnd);
 
-        // Evaluate derivatives in points of interest
-        //currentPosDot = path_->Derivate(1, closestPointAbscissa);
-        //goalPosDot = path_->Derivate(1, currentAbscissa_ + delta_);
-
     }
     catch (std::runtime_error const& exception) {
         std::cout << "Exception -> " << exception.what() << std::endl;
     }
 
-    //Eigen::Vector3d currentDirection = currentPosDot.at(0) / currentPosDot.at(0).norm();
-    //Eigen::Vector3d goalDirection = goalPosDot.at(0) / goalPosDot.at(0).norm();
-
-    // Evaluate tangent difference
-    //double tangentsDifferenceNorm = rml::ReducedVersorLemma(currentDirection, goalDirection).norm();
-
-    //if (std::fabs(tangentsDifferenceNorm) < nurbsParam.directionError) {
-    //    delta_ = delta_ + nurbsParam.deltaStep;
-    //} else {
-    //    delta_ = delta_ - nurbsParam.deltaStep;
-    //}
-
-
-    // Limit delta between min and max
-    //delta_ = std::clamp(delta_, nurbsParam.deltaMin, nurbsParam.deltaMax);
-    //delta_ = std::clamp(delta_, nurbsParam.deltaMax, nurbsParam.deltaMax);
-
-    // Limit goalParam abscissa between startParam and endParam
-    //double goalAbscissa = closestPointAbscissa + delta_;
     double goalAbscissa = closestPointAbscissa;
     goalAbscissa = std::clamp(goalAbscissa, path_->StartParameter(), path_->EndParameter());
 
@@ -331,10 +308,6 @@ bool PathManager::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos,const do
         double intervalEnd = std::min(currentAbscissa_ + nurbsParam.lookAheadDistance, path_->EndParameter());
         closestPointAbscissa = path_->FindAbscissaClosestPointOnInterval(currentPos_UTM, currentAbscissa_, intervalEnd);
 
-        // Evaluate derivatives in points of interest
-        //currentPosDot = path_->Derivate(1, closestPointAbscissa);
-        //goalPosDot = path_->Derivate(1, currentAbscissa_ + delta_);
-
         // compute the direction of the mosìtion
         double goalAbscissa = closestPointAbscissa + delta_;
         goalAbscissa = std::clamp(goalAbscissa, path_->StartParameter(), path_->EndParameter());
@@ -343,11 +316,8 @@ bool PathManager::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos,const do
         Eigen::Vector3d goalPos_UTM = path_->At(goalAbscissa);
         X_p = goalPos_UTM - closestPointOnPath;
         X_p = X_p / X_p.norm();
-        // Z_p.x() = 0; Z_p.y() = 0; Z_p.z() = -1;
         Y_p.x() = X_p.y();
         Y_p.y() = -X_p.x();
-        //Y_p.x() = -X_p.y();
-        //Y_p.y() = X_p.x();
         Y_p.z() = 0;
 
         // /////////////////////////
@@ -357,32 +327,24 @@ bool PathManager::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos,const do
         // compute the sign of y
         double k = Y_p.x() * distanceVector.x() + Y_p.y() * distanceVector.y();
 
-
-        //Vehicle2Goal = goalPos_UTM - currentPos_UTM;
-        //double k = Y_p.x() * Vehicle2Goal.x() + Y_p.y() * Vehicle2Goal.y();
-
-
-
-
         int sign;
         if(k>0) sign = 1;
         else sign = -1;
 
         double y = sign * sqrt(pow(distanceVector.x(),2) + pow(distanceVector.y(),2));
-        y_int_dot = delta_y * y / ( pow((y + lamda_y*y_int),2) + pow(delta_y,2) );
+        y_int_dot = delta_y * y / ( pow((y + sigma_y*y_int),2) + pow(sigma_y,2) );
         delta_t = std::chrono::duration_cast<std::chrono::nanoseconds>(T_now_ - T_last_);
         T_last_ = T_now_;
         y_int = y_int + y_int_dot * delta_t.count() / 1E9;
 
-        //if(y_int > 15) y_int = 15;
-        //else if(y_int < -15) y_int = -15;
+        if(y_int > 5) y_int = 5;
+        else if(y_int < -5) y_int = -5;
 
-        psi_ILOS = - atan2((y + lamda_y * y_int),delta_y);
+        psi_ILOS = - atan2((y + sigma_y * y_int),delta_y);
         if(sign < 0 )
             goalHead = Heading2ClosetPoint - M_PI_2 + psi_ILOS;
         else goalHead = Heading2ClosetPoint + M_PI_2 + psi_ILOS;
 
-           //double goalHeading = - Heading2ClosetPoint - M_PI_2 - psi_ILOS;
         while(goalHead > 2*M_PI)
         {
             goalHead = goalHead - 2*M_PI;
@@ -391,15 +353,12 @@ bool PathManager::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos,const do
         {
             goalHead = goalHead + 2*M_PI;
         }
-        //std::cout << "phiILOS = " << goalHead*180/M_PI << std::endl;
-        //goalHead = goalHead * M_PI/180;
-        //std::cout << "delta_t = " << delta_t.count()/ 1E9 << std::endl;
-        //std::cout << "k = " << k << std::endl;
-        //std::cout << "distanceX = " << distanceVector.x() << std::endl;
-        //std::cout << "distanceY = " << distanceVector.y() << std::endl;
+
         std::cout << "y = " << y << std::endl;
         std::cout << "y_int_dot = " << y_int_dot << std::endl;
         std::cout << "y_int = " << y_int << std::endl;
+        std::cout << "psi_ILOS = " << psi_ILOS << std::endl;
+
 
     }
     catch (std::runtime_error const& exception) {
