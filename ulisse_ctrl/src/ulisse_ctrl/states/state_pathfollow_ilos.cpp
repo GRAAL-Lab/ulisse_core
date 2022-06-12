@@ -87,10 +87,11 @@ fsm::retval StatePathFollowILOS::OnEntry()
     //set tasks
     safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
     absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
+
     cartesianDistanceTask_ = std::dynamic_pointer_cast<ikcl::CartesianDistance>(tasksMap.find(ulisse::task::asvCartesianDistance)->second.task);
     alignToTargetTask_ = std::dynamic_pointer_cast<ikcl::AlignToTarget>(tasksMap.find(ulisse::task::asvAngularPosition)->second.task);
-    cartesianDistancePathFollowingTask_ = std::dynamic_pointer_cast<ikcl::CartesianDistance>(tasksMap.find(ulisse::task::asvCartesianDistancePathFollowing)->second.task);
 
+    cartesianDistancePathFollowingTask_ = std::dynamic_pointer_cast<ikcl::CartesianDistance>(tasksMap.find(ulisse::task::asvCartesianDistancePathFollowing)->second.task);
     alignToTargetILOSTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentILOS)->second.task);
 
     if (actionManager->SetAction(ulisse::action::pathfollow_ilos, true)) {
@@ -98,6 +99,15 @@ fsm::retval StatePathFollowILOS::OnEntry()
     } else {
         return fsm::fail;
     }
+}
+
+fsm::retval StatePathFollowILOS::OnExit(){
+
+    std::cout << "************* ILOS finished ***************" << std::endl;
+
+    cartesianDistanceTask_->TaskParameter().gain = cartesianDistanceTask_->TaskParameter().conf_gain;
+    alignToTargetTask_->TaskParameter().gain = alignToTargetTask_->TaskParameter().conf_gain;
+    return fsm::ok;
 }
 
 fsm::retval StatePathFollowILOS::Execute()
@@ -171,7 +181,10 @@ fsm::retval StatePathFollowILOS::Execute()
 
                 cartesianDistanceTask_->TaskParameter().gain = taskGain * cartesianDistanceTask_->TaskParameter().conf_gain;
                 cartesianDistanceTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
+                alignToTargetTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(alignToTargetTask_->TaskSpace(), alignToTargetTask_->TaskSpace());
+
                 cartesianDistancePathFollowingTask_->ExternalActivationFunction() = 0.0 * Eigen::MatrixXd::Identity(cartesianDistancePathFollowingTask_->TaskSpace(), cartesianDistancePathFollowingTask_->TaskSpace());
+                alignToTargetILOSTask_->ExternalActivationFunction() = 0.0*Eigen::MatrixXd::Identity(alignToTargetILOSTask_->TaskSpace(), alignToTargetILOSTask_->TaskSpace());
             }
         } else {
 
@@ -249,6 +262,8 @@ fsm::retval StatePathFollowILOS::Execute()
                 std::cout <<std::endl;
                 cartesianDistanceTask_->ExternalActivationFunction() = 0.0 * Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
                 cartesianDistancePathFollowingTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(cartesianDistancePathFollowingTask_->TaskSpace(), cartesianDistancePathFollowingTask_->TaskSpace());
+                alignToTargetTask_->ExternalActivationFunction() = 0.0 * Eigen::MatrixXd::Identity(alignToTargetTask_->TaskSpace(), alignToTargetTask_->TaskSpace());
+                alignToTargetILOSTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(alignToTargetILOSTask_->TaskSpace(), alignToTargetILOSTask_->TaskSpace());
             }
         }
     }

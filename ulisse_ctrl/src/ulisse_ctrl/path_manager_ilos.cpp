@@ -1,10 +1,10 @@
-#include "ulisse_ctrl/path_manager.hpp"
+#include "ulisse_ctrl/path_manager_ilos.hpp"
 #include <fstream>
 #include <math.h>
 
 #define _USE_MATH_DEFINES
 
-PathManager::PathManager()
+PathManagerILOS::PathManagerILOS()
     :  centroid_ { 0.0, 0.0 }
     , startP_ { 0.0, 0.0 }
     , endP_ { 0.0, 0.0 }
@@ -29,11 +29,11 @@ PathManager::PathManager()
     delta_t = std::chrono::duration_cast<std::chrono::nanoseconds>(T_last_ - T_now_);
 }
 
-PathManager::~PathManager() { }
+PathManagerILOS::~PathManagerILOS() { }
 
 
 
-bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
+bool PathManagerILOS::Initialization(const ulisse_msgs::msg::PathData& path)
 {
 
     delta_ = nurbsParam.deltaMin;
@@ -132,7 +132,7 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
 
 }
 
-bool PathManager::ComputeGoalPosition(const ctb::LatLong &currentPos, ctb::LatLong &goalPos)
+bool PathManagerILOS::ComputeGoalPosition(const ctb::LatLong &currentPos, ctb::LatLong &goalPos)
 {
 
     double closestPointAbscissa;
@@ -190,7 +190,7 @@ bool PathManager::ComputeGoalPosition(const ctb::LatLong &currentPos, ctb::LatLo
     return true;
 }
 
-bool PathManager::ComputeGoalPositionILOS(const ctb::LatLong &currentPos, ctb::LatLong &goalPos)
+bool PathManagerILOS::ComputeGoalPositionILOS(const ctb::LatLong &currentPos, ctb::LatLong &goalPos)
 {
     double closestPointAbscissa;
     std::vector<Eigen::Vector3d> currentPosDot, goalPosDot;
@@ -249,7 +249,7 @@ bool PathManager::ComputeGoalPositionILOS(const ctb::LatLong &currentPos, ctb::L
     return true;
 }
 
-bool PathManager::ComputeClosetPointILOS(const ctb::LatLong &currentPos, ctb::LatLong &goalPos)
+bool PathManagerILOS::ComputeClosetPointILOS(const ctb::LatLong &currentPos, ctb::LatLong &goalPos)
 {
     double closestPointAbscissa;
     std::vector<Eigen::Vector3d> currentPosDot, goalPosDot;
@@ -285,7 +285,7 @@ bool PathManager::ComputeClosetPointILOS(const ctb::LatLong &currentPos, ctb::La
     return true;
 }
 
-bool PathManager::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos,const double& Heading2ClosetPoint, double& goalHead)
+bool PathManagerILOS::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos,const double& Heading2ClosetPoint, double& goalHead)
 {
 
     double closestPointAbscissa;
@@ -369,7 +369,7 @@ bool PathManager::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos,const do
     return true;
 }
 
-double PathManager::DistanceToEnd() const
+double PathManagerILOS::DistanceToEnd() const
 {
     return std::fabs(path_->EndParameter() - currentAbscissa_);
 }

@@ -4,7 +4,7 @@
 #include "sisl_toolbox/sisl_toolbox.hpp"
 #include "ulisse_ctrl/states/generic_state.hpp"
 #include "ulisse_msgs/msg/path_data.hpp"
-#include <ulisse_ctrl/path_manager.hpp>
+#include <ulisse_ctrl/path_manager_ilos.hpp>
 
 namespace ulisse {
 
@@ -30,12 +30,13 @@ namespace states {
         double tolleranceEndingPoint_;  // Tolerance on the ending point
         bool logPathOnFile_;
 
-        PathManager pathManager_;       // Object to handle the path
+        PathManagerILOS pathManager_;       // Object to handle the path
 
     public:
         StatePathFollowILOS();
         ~StatePathFollowILOS() override;
         fsm::retval OnEntry() override;
+        fsm::retval OnExit() override;
         fsm::retval Execute() override;
 
         bool ConfigureStateFromFile(libconfig::Config& confObj) override;
