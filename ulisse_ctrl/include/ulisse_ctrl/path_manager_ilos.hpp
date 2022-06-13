@@ -43,7 +43,7 @@ public:
 
     bool ComputeClosetPointILOS(const ctb::LatLong& currentP, ctb::LatLong& goalP);
 
-    bool ComputeGoalHeadingILOS(const ctb::LatLong &currentPos,const double& Heading2ClosetPoint, double& goalHead);
+    bool ComputeGoalHeadingILOS(const ctb::LatLong &currentPos,const double& Heading2ClosetPoint, double& goalHead,const double& sigma_y, const double& delta_y);
     /*
      * Method that resets the path
     */
@@ -124,7 +124,23 @@ public:
     } nurbsParam;
 
     std::chrono::system_clock::time_point T_last_, T_now_; // ILOS
-    std::chrono::nanoseconds delta_t;
+    std::chrono::nanoseconds delta_t; // ILOS time interval
+
+    //double sigma_y;
+    //double delta_y;
+    //bool configureFromFile(const libconfig::Config& confObj, const std::string& stateName)
+    //{
+    //    const libconfig::Setting& root = confObj.getRoot();
+    //    const libconfig::Setting& states = root["states"];
+
+    //    const libconfig::Setting& state = states.lookup(stateName);
+    //    if (!ctb::GetParam(state, sigma_y, "sigma_y"))
+    //        return false;
+    //    if (!ctb::GetParam(state, delta_y, "delta_y"))
+    //        return false;
+
+    //    return true;
+    //}
 
 private:
     std::string pathName_;
@@ -143,11 +159,11 @@ private:
 
     double delta_;                       // The current delta increment
 
-    double sigma_y;
-    double delta_y;
     double y_int;
     double y_int_dot;
-    // double delta_t;
+    bool FirstEntry;
+
+    //bool ConfigureStateFromFile(libconfig::Config& confObj) override;
 };
 
 #endif // ULISSE_CONFIGURATION_H

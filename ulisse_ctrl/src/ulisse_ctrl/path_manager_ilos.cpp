@@ -22,8 +22,8 @@ PathManagerILOS::PathManagerILOS()
     nurbsParam.deltaStep = 0.05;
 
     // Default initialization for ILOS
-    sigma_y = 0.01;//0.1;
-    delta_y = 5;
+    //sigma_y = 0.01;//0.1;
+    //delta_y = 5;
     y_int = 0;
     y_int_dot = 0;
     delta_t = std::chrono::duration_cast<std::chrono::nanoseconds>(T_last_ - T_now_);
@@ -55,9 +55,6 @@ bool PathManagerILOS::Initialization(const ulisse_msgs::msg::PathData& path)
     size_1_ = path.size_1;
     size_2_ = path.size_2;
     direction_ = static_cast<Path::Direction>(path.direction);
-
-    T_now_ = std::chrono::system_clock::now();
-    T_last_ = T_now_;
 
     std::vector<Eigen::Vector3d> polyVerticesUTM(path.coordinates.size());
     int i{0};
@@ -124,10 +121,18 @@ bool PathManagerILOS::Initialization(const ulisse_msgs::msg::PathData& path)
 
     currentTrackPoint_ = startP_;
 
+    // resetting variables in ILOS equation
     y_int_dot = 0.0;
     y_int = 0.0;
+
+    FirstEntry = 1; // flag that indicate the first entry for ComputeGoalHeadingILOS()
+    // Needed for resetting T_last_ = T_now_ for the first time after initializing path
+
+    // resetting time interval
+    T_now_ = std::chrono::system_clock::now();
     T_last_ = T_now_;
     delta_t = std::chrono::duration_cast<std::chrono::nanoseconds>(T_last_ - T_now_);
+
     return true;
 
 }
@@ -285,7 +290,7 @@ bool PathManagerILOS::ComputeClosetPointILOS(const ctb::LatLong &currentPos, ctb
     return true;
 }
 
-bool PathManagerILOS::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos,const double& Heading2ClosetPoint, double& goalHead)
+bool PathManagerILOS::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos,const double& Heading2ClosetPoint, double& goalHead,const double& sigma_y, const double& delta_y)
 {
 
     double closestPointAbscissa;
@@ -300,7 +305,9 @@ bool PathManagerILOS::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos,cons
     Eigen::Vector3d closestPointOnPath;
     Eigen::Vector3d distanceVector;
     Eigen::Vector3d Vehicle2Goal;
-    Eigen::Vector3d X_p; Eigen::Vector3d Y_p; Eigen::Vector3d Z_p;
+    Eigen::Vector3d X_p; // vector directed from the closestPointOnPath towards the goalPos
+    Eigen::Vector3d Y_p;
+    Eigen::Vector3d Z_p; // (0, 0, -1) with respect to the world frame
 
 
     try {
@@ -314,17 +321,24 @@ bool PathManagerILOS::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos,cons
         closestPointOnPath = path_->At(closestPointAbscissa);
 
         Eigen::Vector3d goalPos_UTM = path_->At(goalAbscissa);
-        X_p = goalPos_UTM - closestPointOnPath;
-        X_p = X_p / X_p.norm();
+
+        X_p = goalPos_UTM - closestPointOnPath; // the vector directed from the closestPointOnPath towards the goalPos
+        X_p = X_p / X_p.norm(); // the unit vector of X_p
+
+        // the cross product Y_p = Z_p*X_p
         Y_p.x() = X_p.y();
         Y_p.y() = -X_p.x();
         Y_p.z() = 0;
 
-        // /////////////////////////
-        //closestPointOnPath = path_->At(closestPointAbscissa);
+        if(FirstEntry){
+            T_last_ = T_now_;
+            FirstEntry = 0;
+        }
+
+        // the vector directed from the closestPointOnPath towards the currentPos
         distanceVector =  currentPos_UTM - closestPointOnPath;
 
-        // compute the sign of y
+        // compute the sign of y (the error)
         double k = Y_p.x() * distanceVector.x() + Y_p.y() * distanceVector.y();
 
         int sign;
@@ -345,6 +359,7 @@ bool PathManagerILOS::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos,cons
             goalHead = Heading2ClosetPoint - M_PI_2 + psi_ILOS;
         else goalHead = Heading2ClosetPoint + M_PI_2 + psi_ILOS;
 
+        // goalHead must be in the range [0,2PI]
         while(goalHead > 2*M_PI)
         {
             goalHead = goalHead - 2*M_PI;

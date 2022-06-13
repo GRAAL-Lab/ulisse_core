@@ -14,10 +14,11 @@ namespace states {
 
     protected:
         // Tasks of the state
-        std::shared_ptr<ikcl::AlignToTarget> alignToTargetTask_;
+
         //std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentSafetyTask_;
-        std::shared_ptr<ikcl::AbsoluteAxisAlignment> alignToTargetILOSTask_;
+        std::shared_ptr<ikcl::AlignToTarget> alignToTargetTask_;
         std::shared_ptr<ikcl::CartesianDistance> cartesianDistanceTask_;
+        std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentILOSTask_;
         std::shared_ptr<ikcl::CartesianDistance> cartesianDistancePathFollowingTask_;
 
         bool isCurveSet_;               // Flag for checking if a curve has been loaded
@@ -29,6 +30,10 @@ namespace states {
         double tolleranceStartingPoint_; // Tolerance on the starting point
         double tolleranceEndingPoint_;  // Tolerance on the ending point
         bool logPathOnFile_;
+
+        //ILOS
+        double sigma_y_;
+        double delta_y_;
 
         PathManagerILOS pathManager_;       // Object to handle the path
 
