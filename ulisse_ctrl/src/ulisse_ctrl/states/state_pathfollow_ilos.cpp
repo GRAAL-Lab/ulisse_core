@@ -107,6 +107,8 @@ fsm::retval StatePathFollowILOS::OnExit(){
 
     cartesianDistanceTask_->TaskParameter().gain = cartesianDistanceTask_->TaskParameter().conf_gain;
     alignToTargetTask_->TaskParameter().gain = alignToTargetTask_->TaskParameter().conf_gain;
+    cartesianDistanceTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
+    alignToTargetTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(alignToTargetTask_->TaskSpace(), alignToTargetTask_->TaskSpace());
     return fsm::ok;
 }
 
