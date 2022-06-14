@@ -22,11 +22,11 @@ PathManagerILOS::PathManagerILOS()
     nurbsParam.deltaStep = 0.05;
 
     // Default initialization for ILOS
-    //sigma_y = 0.01;//0.1;
-    //delta_y = 5;
+    // sigma_y = 0.01;//0.1;
+    // delta_y = 5;
     y_int = 0;
     y_int_dot = 0;
-    delta_t = std::chrono::duration_cast<std::chrono::nanoseconds>(T_last_ - T_now_);
+    // delta_t = std::chrono::duration_cast<std::chrono::nanoseconds>(T_last_ - T_now_);
 }
 
 PathManagerILOS::~PathManagerILOS() { }
@@ -129,9 +129,9 @@ bool PathManagerILOS::Initialization(const ulisse_msgs::msg::PathData& path)
     // Needed for resetting T_last_ = T_now_ for the first time after initializing path
 
     // resetting time interval
-    T_now_ = std::chrono::system_clock::now();
-    T_last_ = T_now_;
-    delta_t = std::chrono::duration_cast<std::chrono::nanoseconds>(T_last_ - T_now_);
+    //T_now_ = std::chrono::system_clock::now();
+    //T_last_ = T_now_;
+    //delta_t = std::chrono::duration_cast<std::chrono::nanoseconds>(T_last_ - T_now_);
 
     return true;
 
@@ -233,8 +233,8 @@ bool PathManagerILOS::ComputeGoalPositionILOS(const ctb::LatLong &currentPos, ct
 
 
     // Limit delta between min and max
-    //delta_ = std::clamp(delta_, nurbsParam.deltaMin, nurbsParam.deltaMax);
-    delta_ = std::clamp(delta_, nurbsParam.deltaMax, nurbsParam.deltaMax);
+    delta_ = std::clamp(delta_, nurbsParam.deltaMin, nurbsParam.deltaMax);
+    //delta_ = std::clamp(delta_, nurbsParam.deltaMax, nurbsParam.deltaMax);
 
     // Limit goalParam abscissa between startParam and endParam
     double goalAbscissa = closestPointAbscissa + delta_;
@@ -346,7 +346,8 @@ bool PathManagerILOS::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos,cons
         else sign = -1;
 
         double y = sign * sqrt(pow(distanceVector.x(),2) + pow(distanceVector.y(),2));
-        y_int_dot = delta_y * y / ( pow((y + sigma_y*y_int),2) + pow(sigma_y,2) );
+        //y_int_dot = delta_y * y / ( pow((y + sigma_y*y_int),2) + pow(sigma_y,2) ); //
+        y_int_dot = delta_ * y / ( pow((y + sigma_y*y_int),2) + pow(sigma_y,2) );
         delta_t = std::chrono::duration_cast<std::chrono::nanoseconds>(T_now_ - T_last_);
         T_last_ = T_now_;
         y_int = y_int + y_int_dot * delta_t.count() / 1E9;
@@ -354,7 +355,8 @@ bool PathManagerILOS::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos,cons
         //if(y_int > 5) y_int = 5;
         //else if(y_int < -5) y_int = -5;
 
-        psi_ILOS = - atan2((y + sigma_y * y_int),delta_y);
+        //psi_ILOS = - atan2((y + sigma_y * y_int),delta_y); //
+        psi_ILOS = - atan2((y + sigma_y * y_int),delta_);
         if(sign < 0 )
             goalHead = Heading2ClosetPoint - M_PI_2 + psi_ILOS;
         else goalHead = Heading2ClosetPoint + M_PI_2 + psi_ILOS;

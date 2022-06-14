@@ -132,9 +132,10 @@ fsm::retval StatePathFollowILOS::Execute()
 
     //std::cout << "*** No it's not ***" << std::endl;
 
-    Aexternal = safetyBoundariesTask_->InternalActivationFunction().maxCoeff() * Aexternal.setIdentity(absoluteAxisAlignmentSafetyTask_->TaskSpace(), absoluteAxisAlignmentSafetyTask_->TaskSpace());
-
-    absoluteAxisAlignmentSafetyTask_->ExternalActivationFunction() = Aexternal;
+     Aexternal = safetyBoundariesTask_->InternalActivationFunction().maxCoeff() * Aexternal.setIdentity(absoluteAxisAlignmentSafetyTask_->TaskSpace(), absoluteAxisAlignmentSafetyTask_->TaskSpace());
+     absoluteAxisAlignmentSafetyTask_->ExternalActivationFunction() = Aexternal;
+    //safetyBoundariesTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
+    //absoluteAxisAlignmentSafetyTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(absoluteAxisAlignmentSafetyTask_->TaskSpace(), absoluteAxisAlignmentSafetyTask_->TaskSpace());
 
     absoluteAxisAlignmentSafetyTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
     absoluteAxisAlignmentSafetyTask_->SetDirectionAlignment(safetyBoundariesTask_->GetAlignVector(rml::FrameID::WorldFrame),
