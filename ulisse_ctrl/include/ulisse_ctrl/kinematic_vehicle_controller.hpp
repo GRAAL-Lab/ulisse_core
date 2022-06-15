@@ -71,6 +71,7 @@ class VehicleController : public rclcpp::Node {
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr genericLogPub_;
     rclcpp::Publisher<ulisse_msgs::msg::FeedbackGui>::SharedPtr feedbackGuiPub_;
     rclcpp::Publisher<ulisse_msgs::msg::TPIKAction>::SharedPtr tpikActionPub_;
+    //rclcpp::Publisher<ulisse_msgs::msg::PathFollowILOS>::SharedPtr pathFollowILOSPub_;
 
     rclcpp::TimerBase::SharedPtr runTimer_;
     rclcpp::TimerBase::SharedPtr slow_timer_;
