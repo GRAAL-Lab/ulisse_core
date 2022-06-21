@@ -2,8 +2,8 @@ Time stamp
 float64 y
 float64 y_int_dot
 float64 y_int
-float64 psi_ILOS
-float64 Heading2ClosestPoint
-float64 goalHeading
-float64 headingError
+float64 psi
+float64 heading2closest_point
+float64 goal_heading
+float64 heading_error
 float64 y_real

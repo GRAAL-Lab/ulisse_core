@@ -49,6 +49,7 @@ VehicleController::VehicleController(std::string conf_filename)
     referenceVelocitiesPub_ = this->create_publisher<ulisse_msgs::msg::ReferenceVelocities>(ulisse_msgs::topicnames::reference_velocities, 10);
     feedbackGuiPub_ = this->create_publisher<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10);
     tpikActionPub_ = this->create_publisher<ulisse_msgs::msg::TPIKAction>(ulisse_msgs::topicnames::tpik_action, 10);
+    pathFolllowILOSPub_ = this->create_publisher<ulisse_msgs::msg::PathFollowILOS>(ulisse_msgs::topicnames::pathfollow_ilos, 10);
 
        /// TPIK Manager
     actionManager_ = std::make_shared<tpik::ActionManager>(tpik::ActionManager());
