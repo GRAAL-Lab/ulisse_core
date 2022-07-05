@@ -43,7 +43,8 @@ public:
 
     bool ComputeClosetPointILOS(const ctb::LatLong& currentP, ctb::LatLong& goalP);
 
-    bool ComputeGoalHeadingILOS(const ctb::LatLong &currentPos,const double& Heading2ClosetPoint, double& goalHead,const double& sigma_y, const double& delta_y);
+    bool ComputeGoalHeadingILOS(const ctb::LatLong &currentPos,const double& Heading2ClosetPoint,
+                                double& goalHead,const double& sigma_y, double& delta_y, double INFO[]);
     /*
      * Method that resets the path
     */
@@ -122,6 +123,13 @@ public:
             return true;
         }
     } nurbsParam;
+
+    //struct info{
+   //     double y_;
+    //    double y_int;
+    //    double y_int_dot_;
+    //    double psi_;
+    //} INFO;
 
     std::chrono::system_clock::time_point T_last_, T_now_; // ILOS
     std::chrono::nanoseconds delta_t; // ILOS time interval

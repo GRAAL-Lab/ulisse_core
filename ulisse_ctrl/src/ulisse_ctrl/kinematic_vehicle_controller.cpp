@@ -127,7 +127,7 @@ VehicleController::VehicleController(std::string conf_filename)
     //taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_angular_position_ilos, 1);
     //tasksMap_.insert(std::make_pair(ulisse::task::asvAngularPositionILOS, taskInfo_));
 
-    // ASV absolute axis alignment task
+       // ASV absolute axis alignment task
     asvAbsoluteAxisAlignmentILOS_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asvAbsoluteAxisAlignmentILOS, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvAbsoluteAxisAlignmentILOS_;
     taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment_ilos, 1);
@@ -766,6 +766,21 @@ void VehicleController::PublishTasksInfo()
         feedbackGuiMsg.current_track_point.latitude = statePathFollowingILOS_->GetCurrentTrackPoint().latitude;
         feedbackGuiMsg.current_track_point.longitude = statePathFollowingILOS_->GetCurrentTrackPoint().longitude;
         feedbackGuiMsg.goal_distance = statePathFollowingILOS_->GetDistanceToEnd();
+
+        ulisse_msgs::msg::PathFollowILOS pathFollowIlosMsg;
+        pathFollowIlosMsg.stamp.sec = now_stamp_secs;
+        pathFollowIlosMsg.stamp.nanosec = now_stamp_nanosecs;
+        pathFollowIlosMsg.sigma = statePathFollowingILOS_->GetSigmaY();
+        pathFollowIlosMsg.delta = statePathFollowingILOS_->GetDeltaY();
+        pathFollowIlosMsg.y = statePathFollowingILOS_->GetY();
+        pathFollowIlosMsg.y_int = statePathFollowingILOS_->GetYint();
+        pathFollowIlosMsg.y_int_dot = statePathFollowingILOS_->GetYintDot();
+        pathFollowIlosMsg.psi = statePathFollowingILOS_->GetPsi();
+
+        pathFollowIlosMsg.heading2closest_point = statePathFollowingILOS_->GetHeading2ClosetPoint();
+        pathFollowIlosMsg.goal_heading = statePathFollowingILOS_->GetGoalHeading();
+
+        pathFolllowILOSPub_->publish(pathFollowIlosMsg);
     }
     feedbackGuiPub_->publish(feedbackGuiMsg);
 }

@@ -290,7 +290,8 @@ bool PathManagerILOS::ComputeClosetPointILOS(const ctb::LatLong &currentPos, ctb
     return true;
 }
 
-bool PathManagerILOS::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos,const double& Heading2ClosetPoint, double& goalHead,const double& sigma_y, const double& delta_y)
+bool PathManagerILOS::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos,const double& Heading2ClosetPoint, double& goalHead,
+                                             const double& sigma_y, double& delta_y, double INFO[])
 {
 
     double closestPointAbscissa;
@@ -372,16 +373,20 @@ bool PathManagerILOS::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos,cons
         }
 
         std::cout << "y = " << y << std::endl;
-        std::cout << "y_int_dot = " << y_int_dot << std::endl;
         std::cout << "y_int = " << y_int << std::endl;
+        std::cout << "y_int_dot = " << y_int_dot << std::endl;
         std::cout << "psi_ILOS = " << psi_ILOS << std::endl;
 
-
+        INFO[0] = y;
+        INFO[1] = y_int;
+        INFO[2] = y_int_dot;
+        INFO[3] = psi_ILOS;
     }
     catch (std::runtime_error const& exception) {
         std::cout << "Exception -> " << exception.what() << std::endl;
     }
 
+    delta_y = delta_;
 
     return true;
 }

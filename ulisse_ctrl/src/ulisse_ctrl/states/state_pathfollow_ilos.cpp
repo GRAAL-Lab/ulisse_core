@@ -154,7 +154,7 @@ fsm::retval StatePathFollowILOS::Execute()
     // Set the gain of the cartesian distance task
     safetyBoundariesTask_->ExternalActivationFunction() = taskGainSafety * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
 
-    double goalDistance,closestP, goalHeading ,Heading1, Heading2ClosetPoint;//, psi_ILOS;
+    double goalDistance,closestP, goalHeading ,Heading1; //, Heading2ClosetPoint;//, psi_ILOS;
     //pathfollow action
     if (isCurveSet_) {
         //Going to the starting point
@@ -215,10 +215,14 @@ fsm::retval StatePathFollowILOS::Execute()
 
                 // Set the align vector to the target
                 pathManager_.ComputeClosetPointILOS(ctrlData->inertialF_linearPosition, closestP_);
-                ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, closestP_, closestP, Heading2ClosetPoint);
-                pathManager_.ComputeGoalHeadingILOS(ctrlData->inertialF_linearPosition,Heading2ClosetPoint, goalHeading,sigma_y_,delta_y_);
-
-
+                ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, closestP_, closestP, ILOS_Heading2ClosetPoint);
+                double ILOS_INFO[5];
+                pathManager_.ComputeGoalHeadingILOS(ctrlData->inertialF_linearPosition,
+                                                    ILOS_Heading2ClosetPoint, ILOS_goalHeading, sigma_y_,delta_y_,ILOS_INFO);
+                INFO.y_ = ILOS_INFO[0];
+                INFO.y_int = ILOS_INFO[1];
+                INFO.y_int_dot_ = ILOS_INFO[2];
+                INFO.psi_ = ILOS_INFO[3];
                 //cartesianDistancePathFollowingTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(goalHeading), goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame);
                 //alignToTargetTask_->SetTargetDistance(Eigen::Vector3d(closestP*cos(goalHeading), closestP*sin(goalHeading), 0), rml::FrameID::WorldFrame);
 
@@ -243,9 +247,9 @@ fsm::retval StatePathFollowILOS::Execute()
                 absoluteAxisAlignmentILOSTask_->ExternalActivationFunction().setIdentity();
 
                 absoluteAxisAlignmentILOSTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
-                absoluteAxisAlignmentILOSTask_->SetDirectionAlignment(Eigen::Vector3d(cos(goalHeading), sin(goalHeading), 0),rml::FrameID::WorldFrame);
-                std::cout << "Heading2ClosetPoint = " << Heading2ClosetPoint<< std::endl;
-                std::cout << "goalHeading = " << goalHeading << std::endl;
+                absoluteAxisAlignmentILOSTask_->SetDirectionAlignment(Eigen::Vector3d(cos(ILOS_goalHeading), sin(ILOS_goalHeading), 0),rml::FrameID::WorldFrame);
+                std::cout << "Heading2ClosetPoint = " << ILOS_Heading2ClosetPoint<< std::endl;
+                std::cout << "goalHeading = " << ILOS_goalHeading << std::endl;
                 std::cout << "ULISSE heading = " << ctrlData->bodyF_angularPosition.Yaw() << std::endl;
                 double headingErrorILOS = absoluteAxisAlignmentILOSTask_->ControlVariable().norm();
                 std::cout << "heading Error = " << headingErrorILOS << std::endl;

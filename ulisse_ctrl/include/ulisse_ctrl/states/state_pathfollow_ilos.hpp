@@ -34,6 +34,18 @@ namespace states {
         //ILOS
         double sigma_y_;
         double delta_y_;
+        double ILOS_Heading2ClosetPoint;
+        double ILOS_goalHeading;
+
+        struct info_{
+            double y_;
+            double y_int;
+            double y_int_dot_;
+            double psi_;
+            //double goal_heading_;
+        };
+        info_ INFO;
+        //double info_[5];
 
         PathManagerILOS pathManager_;       // Object to handle the path
 
@@ -51,6 +63,16 @@ namespace states {
         const ctb::LatLong& GetClosestPoint() const { return closestP_; } // ILOS
         const ctb::LatLong& GetCurrentTrackPoint() const { return pathManager_.CurrentTrackPoint(); }
         double GetDistanceToEnd() const { return pathManager_.DistanceToEnd(); }
+
+        double GetDeltaY() const { return delta_y_; } // ILOS
+        double GetSigmaY() const { return sigma_y_; } // ILOS
+
+        double GetY() const { return INFO.y_; }
+        double GetYint() const { return INFO.y_int; }
+        double GetYintDot() const { return INFO.y_int_dot_; }
+        double GetPsi() const { return INFO.psi_; }
+        double GetHeading2ClosetPoint() const { return ILOS_Heading2ClosetPoint; }
+        double GetGoalHeading() const { return ILOS_goalHeading; }
 
 
     };
