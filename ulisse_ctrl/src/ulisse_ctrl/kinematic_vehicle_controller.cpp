@@ -24,6 +24,8 @@ VehicleController::VehicleController(std::string conf_filename)
     conf_ = std::make_shared<KCLConfiguration>();
 
     ctrlData_ = std::make_shared<ControlData>();
+    ctrlDataReal_ = std::make_shared<ControlData>();
+    real_position_ = std::make_shared<LatLong>();
 
     fileName_ = conf_filename;
 
@@ -42,6 +44,9 @@ VehicleController::VehicleController(std::string conf_filename)
        // Data Subscriptions
     surgeHeadingSub_ = this->create_subscription<ulisse_msgs::msg::SurgeHeading>(ulisse_msgs::topicnames::surge_heading, 10, std::bind(&VehicleController::SurgeHeadingCB, this, _1));
     surgeYawRateSub_ = this->create_subscription<ulisse_msgs::msg::SurgeYawRate>(ulisse_msgs::topicnames::surge_yawrate, 10, std::bind(&VehicleController::SurgeYawRateCB, this, _1));
+
+    simulatedSystemSub_ = this->create_subscription<ulisse_msgs::msg::SimulatedSystem>(ulisse_msgs::topicnames::simulated_system,
+        10, std::bind(&VehicleController::GroundTruthDataCB, this, _1));
 
        // Control Publishers
     genericLogPub_ = this->create_publisher<std_msgs::msg::String>("/ulisse/log/generic", 10);
@@ -319,6 +324,8 @@ void VehicleController::SetUpFSM()
         state.second->robotModel = robotModel_;
         state.second->tasksMap = tasksMap_;
         state.second->ctrlData = ctrlData_;
+        state.second->real_position = real_position_; // ILOS
+        state.second->ctrlDataReal = ctrlDataReal_; // ILOS
         state.second->SetFSM(&uFsm_);
     }
 
@@ -613,6 +620,21 @@ void VehicleController::LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr
     ctrlData_->radioControllerEnabled = msg->flags.ppm_remote_enabled;
 }
 
+void VehicleController::GroundTruthDataCB(const ulisse_msgs::msg::SimulatedSystem::SharedPtr msg)
+{
+     simulatedData_ = *msg;
+     //ctrlDataReal_->inertialF_linearPosition.latitude = simulatedData_.inertialframe_linear_position.latlong.latitude;
+     //ctrlDataReal_->inertialF_linearPosition.longitude = simulatedData_.inertialframe_linear_position.latlong.longitude;
+
+     ctrlDataReal_->inertialF_linearPosition.latitude = msg->inertialframe_linear_position.latlong.latitude;
+     ctrlDataReal_->inertialF_linearPosition.longitude = msg->inertialframe_linear_position.latlong.longitude;
+
+     //ctrlData_->inertialF_linearPosition.latitude = msg->inertialframe_linear_position.latlong.latitude;
+     //ctrlData_->inertialF_linearPosition.longitude = msg->inertialframe_linear_position.latlong.longitude;
+     real_position_->latitude = msg->inertialframe_linear_position.latlong.latitude;
+     real_position_->longitude = msg->inertialframe_linear_position.latlong.longitude;
+}
+
 void VehicleController::Run()
 {
     if (boundariesSet_) {
@@ -779,6 +801,9 @@ void VehicleController::PublishTasksInfo()
 
         pathFollowIlosMsg.heading2closest_point = statePathFollowingILOS_->GetHeading2ClosetPoint();
         pathFollowIlosMsg.goal_heading = statePathFollowingILOS_->GetGoalHeading();
+        pathFollowIlosMsg.heading_error = statePathFollowingILOS_->GetHeadingError();
+        pathFollowIlosMsg.y_real = statePathFollowingILOS_->GetYReal();
+        //pathFollowIlosMsg.y_real = simulatedData_.n_p;
 
         pathFolllowILOSPub_->publish(pathFollowIlosMsg);
     }

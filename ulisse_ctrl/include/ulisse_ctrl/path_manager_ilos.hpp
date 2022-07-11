@@ -41,10 +41,13 @@ public:
 
     bool ComputeGoalPositionILOS(const ctb::LatLong& currentP, ctb::LatLong& goalP);
 
-    bool ComputeClosetPointILOS(const ctb::LatLong& currentP, ctb::LatLong& goalP);
+    bool ComputeClosetPointOnPathILOS(const ctb::LatLong &currentPos, ctb::LatLong &closestPointOnPath);
 
-    bool ComputeGoalHeadingILOS(const ctb::LatLong &currentPos,const double& Heading2ClosetPoint,
-                                double& goalHead,const double& sigma_y, double& delta_y, double INFO[]);
+    double ComputePsiHeadingILOS(const ctb::LatLong &currentPos,const ctb::LatLong &goalP, const ctb::LatLong &ClosestPoint, const double& Heading2ClosetPoint,
+                                const double& sigma_y, double& delta_y, double INFO[]);
+
+    double ComputeRealErrorILOS(const ctb::LatLong &currentPos,const ctb::LatLong &currentRealPos,const ctb::LatLong &goalPos,
+                              const ctb::LatLong &closestPos);
     /*
      * Method that resets the path
     */

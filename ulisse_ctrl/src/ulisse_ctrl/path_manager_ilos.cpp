@@ -128,11 +128,6 @@ bool PathManagerILOS::Initialization(const ulisse_msgs::msg::PathData& path)
     FirstEntry = 1; // flag that indicate the first entry for ComputeGoalHeadingILOS()
     // Needed for resetting T_last_ = T_now_ for the first time after initializing path
 
-    // resetting time interval
-    //T_now_ = std::chrono::system_clock::now();
-    //T_last_ = T_now_;
-    //delta_t = std::chrono::duration_cast<std::chrono::nanoseconds>(T_last_ - T_now_);
-
     return true;
 
 }
@@ -254,7 +249,7 @@ bool PathManagerILOS::ComputeGoalPositionILOS(const ctb::LatLong &currentPos, ct
     return true;
 }
 
-bool PathManagerILOS::ComputeClosetPointILOS(const ctb::LatLong &currentPos, ctb::LatLong &goalPos)
+bool PathManagerILOS::ComputeClosetPointOnPathILOS(const ctb::LatLong &currentPos, ctb::LatLong &closestPointOnPath)
 {
     double closestPointAbscissa;
     std::vector<Eigen::Vector3d> currentPosDot, goalPosDot;
@@ -281,7 +276,7 @@ bool PathManagerILOS::ComputeClosetPointILOS(const ctb::LatLong &currentPos, ctb
     double altitude;
 
     ctb::LocalUTM2LatLong(goalPos_UTM, centroid_, currentGoal_, altitude);
-    goalPos = currentGoal_;
+    closestPointOnPath = currentGoal_;
 
     currentAbscissa_ = closestPointAbscissa;
     ctb::LocalUTM2LatLong(path_->At(currentAbscissa_), centroid_, currentTrackPoint_, altitude);
@@ -290,86 +285,71 @@ bool PathManagerILOS::ComputeClosetPointILOS(const ctb::LatLong &currentPos, ctb
     return true;
 }
 
-bool PathManagerILOS::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos,const double& Heading2ClosetPoint, double& goalHead,
-                                             const double& sigma_y, double& delta_y, double INFO[])
+double PathManagerILOS::ComputePsiHeadingILOS(const ctb::LatLong &currentPos, const ctb::LatLong &goalPos, const ctb::LatLong &ClosestPoint,
+                                              const double& Heading2ClosetPoint, const double& sigma_y, double& delta_y, double INFO[])
 {
-
-    double closestPointAbscissa;
-    double psi_ILOS;
-    std::vector<Eigen::Vector3d> currentPosDot, goalPosDot;
+    double psi_ILOS, Psi;
 
        // Converting the current geographical position to UTM coordinates
-    Eigen::Vector3d currentPos_UTM;
+    Eigen::Vector3d currentPos_UTM, closestPointOnPath_UTM, goalPos_UTM;
     ctb::LatLong2LocalUTM(currentPos, 0.0, centroid_, currentPos_UTM);
+    ctb::LatLong2LocalUTM(ClosestPoint, 0.0, centroid_, closestPointOnPath_UTM);
+    ctb::LatLong2LocalUTM(goalPos, 0.0, centroid_, goalPos_UTM);
     T_now_ = std::chrono::system_clock::now();
 
-    Eigen::Vector3d closestPointOnPath;
     Eigen::Vector3d distanceVector;
-    Eigen::Vector3d Vehicle2Goal;
     Eigen::Vector3d X_p; // vector directed from the closestPointOnPath towards the goalPos
     Eigen::Vector3d Y_p;
     Eigen::Vector3d Z_p; // (0, 0, -1) with respect to the world frame
 
 
     try {
-        // Retreiving closest point parameter
-        double intervalEnd = std::min(currentAbscissa_ + nurbsParam.lookAheadDistance, path_->EndParameter());
-        closestPointAbscissa = path_->FindAbscissaClosestPointOnInterval(currentPos_UTM, currentAbscissa_, intervalEnd);
-
-        // compute the direction of the mosìtion
-        double goalAbscissa = closestPointAbscissa + delta_;
-        goalAbscissa = std::clamp(goalAbscissa, path_->StartParameter(), path_->EndParameter());
-        closestPointOnPath = path_->At(closestPointAbscissa);
-
-        Eigen::Vector3d goalPos_UTM = path_->At(goalAbscissa);
-
-        X_p = goalPos_UTM - closestPointOnPath; // the vector directed from the closestPointOnPath towards the goalPos
+        X_p = goalPos_UTM - closestPointOnPath_UTM; // the vector directed from the closestPointOnPath towards the goalPos
         X_p = X_p / X_p.norm(); // the unit vector of X_p
 
-        // the cross product Y_p = Z_p*X_p
+            // the cross product Y_p = Z_p*X_p
         Y_p.x() = X_p.y();
         Y_p.y() = -X_p.x();
         Y_p.z() = 0;
 
+            // reset timer in case of first entry of the function
         if(FirstEntry){
             T_last_ = T_now_;
             FirstEntry = 0;
         }
 
-        // the vector directed from the closestPointOnPath towards the currentPos
-        distanceVector =  currentPos_UTM - closestPointOnPath;
+            // the vector directed from the closestPointOnPath towards the currentPos
+        distanceVector =  currentPos_UTM - closestPointOnPath_UTM;
 
-        // compute the sign of y (the error)
+            // compute the sign of y (the error)
         double k = Y_p.x() * distanceVector.x() + Y_p.y() * distanceVector.y();
-
         int sign;
         if(k>0) sign = 1;
         else sign = -1;
 
         double y = sign * sqrt(pow(distanceVector.x(),2) + pow(distanceVector.y(),2));
-        //y_int_dot = delta_y * y / ( pow((y + sigma_y*y_int),2) + pow(sigma_y,2) ); //
         y_int_dot = delta_ * y / ( pow((y + sigma_y*y_int),2) + pow(sigma_y,2) );
         delta_t = std::chrono::duration_cast<std::chrono::nanoseconds>(T_now_ - T_last_);
         T_last_ = T_now_;
         y_int = y_int + y_int_dot * delta_t.count() / 1E9;
 
+            // in case of saturation of y_int
         //if(y_int > 5) y_int = 5;
         //else if(y_int < -5) y_int = -5;
 
-        //psi_ILOS = - atan2((y + sigma_y * y_int),delta_y); //
         psi_ILOS = - atan2((y + sigma_y * y_int),delta_);
         if(sign < 0 )
-            goalHead = Heading2ClosetPoint - M_PI_2 + psi_ILOS;
-        else goalHead = Heading2ClosetPoint + M_PI_2 + psi_ILOS;
+            Psi = Heading2ClosetPoint - M_PI_2 + psi_ILOS;
+        else Psi = Heading2ClosetPoint + M_PI_2 + psi_ILOS;
 
-        // goalHead must be in the range [0,2PI]
-        while(goalHead > 2*M_PI)
+            // goalHead must be in the range [0,2PI]
+        while(Psi > 2*M_PI)
         {
-            goalHead = goalHead - 2*M_PI;
+            Psi = Psi - 2*M_PI;
         }
-        while(goalHead < 0)
+        while(Psi < 0)
         {
-            goalHead = goalHead + 2*M_PI;
+            Psi = Psi + 2*M_PI;
         }
 
         std::cout << "y = " << y << std::endl;
@@ -388,7 +368,55 @@ bool PathManagerILOS::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos,cons
 
     delta_y = delta_;
 
-    return true;
+    return Psi;
+}
+
+double PathManagerILOS::ComputeRealErrorILOS(const ctb::LatLong &currentPos,const ctb::LatLong &currentRealPos,const ctb::LatLong &goalPos,
+                                           const ctb::LatLong &closestPos)
+{
+       // Converting the current geographical position to UTM coordinates
+    Eigen::Vector3d currentPos_UTM, currentPosReal_UTM, closestPointOnPath_UTM, goalPos_UTM;
+    ctb::LatLong2LocalUTM(currentPos, 0.0, centroid_, currentPos_UTM);
+    ctb::LatLong2LocalUTM(currentRealPos, 0.0, centroid_, currentPosReal_UTM);
+    ctb::LatLong2LocalUTM(closestPos, 0.0, centroid_, closestPointOnPath_UTM);
+    ctb::LatLong2LocalUTM(goalPos, 0.0, centroid_, goalPos_UTM);
+
+    T_now_ = std::chrono::system_clock::now();
+
+    Eigen::Vector3d distanceVector, distanceVector_real;
+    Eigen::Vector3d X_p; // vector directed from the closestPointOnPath towards the goalPos
+    Eigen::Vector3d Y_p;
+    Eigen::Vector3d Z_p; // (0, 0, -1) with respect to the world frame
+    double y_real;
+
+    try {
+        X_p = goalPos_UTM - closestPointOnPath_UTM; // the vector directed from the closestPointOnPath towards the goalPos
+        X_p = X_p / X_p.norm(); // the unit vector of X_p
+
+            // the cross product Y_p = Z_p*X_p
+        Y_p.x() = X_p.y();
+        Y_p.y() = -X_p.x();
+        Y_p.z() = 0;
+
+            // the vector directed from the closestPointOnPath towards the currentPos
+        distanceVector =  currentPos_UTM - closestPointOnPath_UTM;
+        distanceVector_real = currentPosReal_UTM - closestPointOnPath_UTM;
+
+            // compute the sign of y (the error)
+        double k = Y_p.x() * distanceVector.x() + Y_p.y() * distanceVector.y();
+
+        int sign;
+        if(k>0) sign = 1;
+        else sign = -1;
+
+        y_real = sign * sqrt(pow(distanceVector_real.x(),2) + pow(distanceVector_real.y(),2));
+
+    }
+    catch (std::runtime_error const& exception) {
+        std::cout << "Exception -> " << exception.what() << std::endl;
+    }
+
+    return y_real;
 }
 
 double PathManagerILOS::DistanceToEnd() const

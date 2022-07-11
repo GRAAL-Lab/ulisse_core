@@ -14,6 +14,7 @@
 #include "ulisse_msgs/msg/tpik_action.hpp"
 #include "ulisse_msgs/msg/tpik_priority_level.hpp"
 #include "ulisse_msgs/msg/path_follow_ilos.hpp"
+#include "ulisse_msgs/msg/simulated_system.hpp"
 
 #include "ulisse_msgs/srv/control_command.hpp"
 #include "ulisse_msgs/srv/get_boundaries.hpp"
@@ -66,6 +67,8 @@ class VehicleController : public rclcpp::Node {
 
     rclcpp::Subscription<ulisse_msgs::msg::SurgeHeading>::SharedPtr surgeHeadingSub_;
     rclcpp::Subscription<ulisse_msgs::msg::SurgeYawRate>::SharedPtr surgeYawRateSub_;
+
+    rclcpp::Subscription<ulisse_msgs::msg::SimulatedSystem>::SharedPtr simulatedSystemSub_; //ILOS
 
     rclcpp::Publisher<ulisse_msgs::msg::ReferenceVelocities>::SharedPtr  referenceVelocitiesPub_;
     rclcpp::Publisher<ulisse_msgs::msg::VehicleStatus>::SharedPtr vehicleStatusPub_;
@@ -145,6 +148,9 @@ class VehicleController : public rclcpp::Node {
     std::shared_ptr<ControlData> ctrlData_;
     //std::shared_ptr<ctb::LatLong> vehiclePosition_;
     //std::shared_ptr<Eigen::Vector2d> inertialF_waterCurrent_;
+    ulisse_msgs::msg::SimulatedSystem simulatedData_; // ILOS
+    std::shared_ptr<LatLong> real_position_; // ILOS
+    std::shared_ptr<ControlData> ctrlDataReal_;
 
     bool LoadConfiguration(std::shared_ptr<KCLConfiguration>& conf);
     void SetUpFSM();
@@ -168,6 +174,8 @@ class VehicleController : public rclcpp::Node {
     void SurgeYawRateCB(const ulisse_msgs::msg::SurgeYawRate::SharedPtr msg);
     void NavFilterCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
     void LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg);
+
+    void GroundTruthDataCB(const ulisse_msgs::msg::SimulatedSystem::SharedPtr msg);
 
     void PublishLog(std::string log);
 

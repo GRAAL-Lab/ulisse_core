@@ -36,6 +36,8 @@ namespace states {
         double delta_y_;
         double ILOS_Heading2ClosetPoint;
         double ILOS_goalHeading;
+        double ILOS_headingError;
+        double yReal_;
 
         struct info_{
             double y_;
@@ -73,7 +75,16 @@ namespace states {
         double GetPsi() const { return INFO.psi_; }
         double GetHeading2ClosetPoint() const { return ILOS_Heading2ClosetPoint; }
         double GetGoalHeading() const { return ILOS_goalHeading; }
+        double GetHeadingError() const { return ILOS_headingError; }
+        double GetYReal() const { return yReal_; }
 
+        bool SetInformation(const double information[], info_& F) const {
+            F.y_ = information[0];
+            F.y_int = information[1];
+            F.y_int_dot_ = information[2];
+            F.psi_ = information[3];
+            return true;
+        }
 
     };
 }
