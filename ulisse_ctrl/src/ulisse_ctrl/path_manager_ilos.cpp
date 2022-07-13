@@ -228,7 +228,11 @@ bool PathManagerILOS::ComputeGoalPositionILOS(const ctb::LatLong &currentPos, ct
 
 
     // Limit delta between min and max
-    delta_ = std::clamp(delta_, nurbsParam.deltaMin, nurbsParam.deltaMax);
+    if(nurbsParam.variableDelta){
+        delta_ = std::clamp(delta_, nurbsParam.deltaMin, nurbsParam.deltaMax);
+    }
+    else
+        delta_ = nurbsParam.deltaY;
     //delta_ = std::clamp(delta_, nurbsParam.deltaMax, nurbsParam.deltaMax);
 
     // Limit goalParam abscissa between startParam and endParam
@@ -286,7 +290,7 @@ bool PathManagerILOS::ComputeClosetPointOnPathILOS(const ctb::LatLong &currentPo
 }
 
 double PathManagerILOS::ComputePsiHeadingILOS(const ctb::LatLong &currentPos, const ctb::LatLong &goalPos, const ctb::LatLong &ClosestPoint,
-                                              const double& Heading2ClosetPoint, const double& sigma_y, double& delta_y, double INFO[])
+                                              const double& Heading2ClosetPoint, double INFO[])
 {
     double psi_ILOS, Psi;
 
@@ -328,7 +332,8 @@ double PathManagerILOS::ComputePsiHeadingILOS(const ctb::LatLong &currentPos, co
         else sign = -1;
 
         double y = sign * sqrt(pow(distanceVector.x(),2) + pow(distanceVector.y(),2));
-        y_int_dot = delta_ * y / ( pow((y + sigma_y*y_int),2) + pow(sigma_y,2) );
+        //y_int_dot = delta_ * y / ( pow((y + nurbsParam.sigmaY *y_int),2) + pow(delta_,2));
+        y_int_dot = delta_ * y / ( pow((y + nurbsParam.sigmaY *y_int),2) + pow(nurbsParam.sigmaY,2));
         delta_t = std::chrono::duration_cast<std::chrono::nanoseconds>(T_now_ - T_last_);
         T_last_ = T_now_;
         y_int = y_int + y_int_dot * delta_t.count() / 1E9;
@@ -337,7 +342,7 @@ double PathManagerILOS::ComputePsiHeadingILOS(const ctb::LatLong &currentPos, co
         //if(y_int > 5) y_int = 5;
         //else if(y_int < -5) y_int = -5;
 
-        psi_ILOS = - atan2((y + sigma_y * y_int),delta_);
+        psi_ILOS = - atan2((y + nurbsParam.sigmaY * y_int),delta_);
         if(sign < 0 )
             Psi = Heading2ClosetPoint - M_PI_2 + psi_ILOS;
         else Psi = Heading2ClosetPoint + M_PI_2 + psi_ILOS;
@@ -361,12 +366,14 @@ double PathManagerILOS::ComputePsiHeadingILOS(const ctb::LatLong &currentPos, co
         INFO[1] = y_int;
         INFO[2] = y_int_dot;
         INFO[3] = psi_ILOS;
+        INFO[4] = delta_;
+        INFO[5] = nurbsParam.sigmaY;
     }
     catch (std::runtime_error const& exception) {
         std::cout << "Exception -> " << exception.what() << std::endl;
     }
 
-    delta_y = delta_;
+    //delta_y = delta_;
 
     return Psi;
 }

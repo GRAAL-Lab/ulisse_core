@@ -32,8 +32,8 @@ namespace states {
         bool logPathOnFile_;
 
         //ILOS
-        double sigma_y_;
-        double delta_y_;
+        //double sigma_y_;
+        //double delta_y_;
         double ILOS_Heading2ClosetPoint;
         double ILOS_goalHeading;
         double ILOS_headingError;
@@ -45,6 +45,8 @@ namespace states {
             double y_int;
             double y_int_dot_;
             double psi_;
+            double sigma_y_;
+            double delta_y_;
             //double goal_heading_;
         };
         info_ INFO;
@@ -67,8 +69,8 @@ namespace states {
         const ctb::LatLong& GetCurrentTrackPoint() const { return pathManager_.CurrentTrackPoint(); }
         double GetDistanceToEnd() const { return pathManager_.DistanceToEnd(); }
 
-        double GetDeltaY() const { return delta_y_; } // ILOS
-        double GetSigmaY() const { return sigma_y_; } // ILOS
+        double GetDeltaY() const { return INFO.delta_y_; } // ILOS
+        double GetSigmaY() const { return INFO.sigma_y_; } // ILOS
 
         double GetY() const { return INFO.y_; }
         double GetYint() const { return INFO.y_int; }
@@ -84,6 +86,8 @@ namespace states {
             F.y_int = information[1];
             F.y_int_dot_ = information[2];
             F.psi_ = information[3];
+            F.delta_y_ = information[4];
+            F.sigma_y_ = information[5];
             return true;
         }
 

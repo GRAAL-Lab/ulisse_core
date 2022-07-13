@@ -72,12 +72,12 @@ bool StatePathFollowILOS::ConfigureStateFromFile(libconfig::Config& confObj)
         return false;
 
     //ILOS
-    if (!ctb::GetParam(state, sigma_y_, "sigmaY"))
-        return false;
-    if (!ctb::GetParam(state, delta_y_, "deltaY"))
-        return false;
-    if (!ctb::GetParam(state, variableDelta_, "variableDelta"))
-        return false;
+    //if (!ctb::GetParam(state, sigma_y_, "sigmaY"))
+    //    return false;
+    //if (!ctb::GetParam(state, delta_y_, "deltaY"))
+    //    return false;
+    //if (!ctb::GetParam(state, variableDelta_, "variableDelta"))
+    //    return false;
 
     //configure the nurbs param
     if (!pathManager_.nurbsParam.configureFromFile(confObj, ulisse::states::ID::pathfollow_ilos)) {
@@ -219,11 +219,11 @@ fsm::retval StatePathFollowILOS::Execute()
                 pathManager_.ComputeClosetPointOnPathILOS(ctrlData->inertialF_linearPosition, closestP_);
                 ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, closestP_, closestP, ILOS_Heading2ClosetPoint);
 
-                double ILOS_INFO[5]; // Information matrix that has variables to be published (y, y_int, y_int_dot)
+                double ILOS_INFO[6]; // Information matrix that has variables to be published (y, y_int, y_int_dot)
 
                 //  Compute ILOS heading (psi angle)
                 ILOS_goalHeading = pathManager_.ComputePsiHeadingILOS(ctrlData->inertialF_linearPosition, nextP_, closestP_,
-                                                                      ILOS_Heading2ClosetPoint,sigma_y_,delta_y_,ILOS_INFO);
+                                                                      ILOS_Heading2ClosetPoint,ILOS_INFO);
                 // set information in a global variable in order to be published
                 SetInformation(ILOS_INFO,INFO);
 

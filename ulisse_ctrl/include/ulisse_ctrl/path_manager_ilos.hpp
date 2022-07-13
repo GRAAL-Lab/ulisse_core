@@ -38,12 +38,12 @@ public:
      */
     bool ComputeGoalPosition(const ctb::LatLong& currentP, ctb::LatLong& goalP);
 
-    bool ComputeGoalPositionILOS(const ctb::LatLong& currentP, const bool &variableDelta_, ctb::LatLong& goalP);
+    bool ComputeGoalPositionILOS(const ctb::LatLong& currentP, ctb::LatLong& goalP);
 
     bool ComputeClosetPointOnPathILOS(const ctb::LatLong &currentPos, ctb::LatLong &closestPointOnPath);
 
     double ComputePsiHeadingILOS(const ctb::LatLong &currentPos,const ctb::LatLong &goalP, const ctb::LatLong &ClosestPoint, const double& Heading2ClosetPoint,
-                                const double& sigma_y, double& delta_y, double INFO[]);
+                                 double INFO[]);
 
     double ComputeRealErrorILOS(const ctb::LatLong &currentPos,const ctb::LatLong &currentRealPos,const ctb::LatLong &goalPos,
                               const ctb::LatLong &closestPos);
@@ -101,6 +101,10 @@ public:
         double lookAheadDistance; //max delta increment for select a part of a curve for computing the nearest point
         double directionError; // threshold for the difference between the current and the next tangent direction of the path
 
+        bool variableDelta;
+        double sigmaY;
+        double deltaY;
+
         bool configureFromFile(const libconfig::Config& confObj, const std::string& stateName)
         {
             const libconfig::Setting& root = confObj.getRoot();
@@ -120,6 +124,12 @@ public:
             if (!ctb::GetParam(state, lookAheadDistance, "lookAheadDistance"))
                 return false;
             if (!ctb::GetParam(state, directionError, "tangentDirectionError"))
+                return false;
+            if (!ctb::GetParam(state, sigmaY, "sigmaY"))
+                return false;
+            if (!ctb::GetParam(state, deltaY, "deltaY"))
+                return false;
+            if (!ctb::GetParam(state, variableDelta, "variableDelta"))
                 return false;
 
             return true;
@@ -173,6 +183,10 @@ private:
     double y_int;
     double y_int_dot;
     bool FirstEntry;
+
+    //bool variableDelta;
+    //double sigmaY;
+    //double deltaY;
 
     //bool ConfigureStateFromFile(libconfig::Config& confObj) override;
 };

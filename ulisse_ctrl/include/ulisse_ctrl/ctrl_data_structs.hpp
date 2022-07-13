@@ -63,8 +63,8 @@ struct KCLConfiguration {
             return false;
         if (!ctb::GetParamVector(confObj, saturationMin, "saturationMin"))
             return false;
-        if (!ctb::GetParamVector(confObj, pathFollowMode, "pathFollowMode")) // ILOS or LOS
-            return false;
+        //if (!ctb::GetParamVector(confObj, pathFollowMode, "pathFollowMode")) // ILOS or LOS
+        //    return false;
 
         return true;
     }
