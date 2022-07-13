@@ -89,5 +89,9 @@ const uint8_t low = 1;
 }
 }
 
+namespace pathFollowModes {
+enum { LOS = 0, ILOS = 1 };
+}
+
 }
 #endif

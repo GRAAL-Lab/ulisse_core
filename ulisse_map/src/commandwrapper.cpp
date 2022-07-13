@@ -7,12 +7,14 @@
 #include <jsoncpp/json/json.h>
 #include <QJsonDocument>
 
+#include <ament_index_cpp/get_package_share_directory.hpp>
+#include <libconfig.h++>
+
 #include "ulisse_ctrl/ulisse_defines.hpp"
 #include "ulisse_driver/LLCHelperDataStructs.h"
 #include "ulisse_msgs/futils.hpp"
 #include "nav_filter/nav_data_structs.hpp"
 #include "sisl_toolbox/sisl_toolbox.hpp"
-//#include "sisl.h"
 
 using namespace std::chrono_literals;
 using std::placeholders::_1;
@@ -46,6 +48,11 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
     errorCheckInterval_ = 500;
     commandTimerPeriod_ = 100;
     fbkReceived_ = false;
+
+    if(!LoadConfiguration()){
+        qDebug("[CommandWrapper] ERROR Reading Configuration File!");
+        exit(EXIT_FAILURE);
+    }
 
     QObject::connect(checkErrorTimer_.get(), SIGNAL(timeout()), this, SLOT(check_error_slot()));
     QObject::connect(surgeHeadingPubTimer_.get(), SIGNAL(timeout()), this, SLOT(publish_surge_heading()));
@@ -106,6 +113,39 @@ void CommandWrapper::RegisterPublishersAndSubscribers()
 
     surgeHeadingPub_ = this->create_publisher<ulisse_msgs::msg::SurgeHeading>(ulisse_msgs::topicnames::surge_heading, 1);
     surgeYawRatePub_ = this->create_publisher<ulisse_msgs::msg::SurgeYawRate>(ulisse_msgs::topicnames::surge_yawrate, 1);
+}
+
+bool CommandWrapper::LoadConfiguration()
+{
+    libconfig::Config confObj;
+
+    // Inizialization
+    std::string package_share_directory = ament_index_cpp::get_package_share_directory("ulisse_ctrl");
+    std::string confPath = package_share_directory;
+    confPath.append("/conf/kcl_ulisse.conf");
+
+    std::cout << "PATH TO CONF FILE : " << confPath << std::endl;
+
+    // Read the file. If there is an error, report it and exit.
+    try {
+        confObj.readFile(confPath.c_str());
+    } catch (const libconfig::FileIOException& fioex) {
+        std::cerr << "I/O error while reading file: " << fioex.what() << std::endl;
+        return -1;
+    } catch (const libconfig::ParseException& pex) {
+        std::cerr << "Parse error at " << pex.getFile() << ":" << pex.getLine() << " - " << pex.getError() << std::endl;
+        return -1;
+    }
+
+    // Acquiring the path mode
+    if (!ctb::GetParam(confObj, pathFollowMode_, "pathFollowMode")) {
+        std::cerr << "Failed to load pathFollowMode from file" << std::endl;
+        return false;
+    };
+
+    qDebug() << "pathFollowMode: " << pathFollowMode_;
+
+    return true;
 }
 
 void CommandWrapper::resetPublishersAndSubscribers()
@@ -256,8 +296,13 @@ bool CommandWrapper::sendPath(const QString &pathJsonData)
 
     reader.parse(pathJsonData.toStdString(), jObj);
 
+    if (pathFollowMode_ == ulisse::pathFollowModes::ILOS) {
     serviceReq->command_type = ulisse::commands::ID::pathfollow_ilos;
-    //serviceReq->command_type = ulisse::commands::ID::pathfollow;
+    } else if (pathFollowMode_ == ulisse::pathFollowModes::LOS) {
+        serviceReq->command_type = ulisse::commands::ID::pathfollow;
+    } else {
+        qDebug("ERROR: Unrecognized pathFollowMode!");
+    }
 
     serviceReq->path_cmd.path.id = jObj["name"].asString();
     serviceReq->path_cmd.path.type = jObj["type"].asString();
