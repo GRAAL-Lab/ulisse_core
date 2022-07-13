@@ -11,7 +11,6 @@
 #include <iostream>
 #include <memory>
 
-
 class PathManagerILOS {
 
 public:
@@ -141,6 +140,7 @@ public:
 
     //    return true;
     //}
+    //rclcpp::Publisher<ulisse_msgs::msg::PathFollowILOS>::SharedPtr pathFolllowILOSPub_; // ILOS
 
 private:
     std::string pathName_;
