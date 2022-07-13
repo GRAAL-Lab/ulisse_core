@@ -76,6 +76,8 @@ bool StatePathFollowILOS::ConfigureStateFromFile(libconfig::Config& confObj)
         return false;
     if (!ctb::GetParam(state, delta_y_, "deltaY"))
         return false;
+    if (!ctb::GetParam(state, variableDelta_, "variableDelta"))
+        return false;
 
     //configure the nurbs param
     if (!pathManager_.nurbsParam.configureFromFile(confObj, ulisse::states::ID::pathfollow_ilos)) {

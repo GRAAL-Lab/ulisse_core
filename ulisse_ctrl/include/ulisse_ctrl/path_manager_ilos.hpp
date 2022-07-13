@@ -39,7 +39,7 @@ public:
      */
     bool ComputeGoalPosition(const ctb::LatLong& currentP, ctb::LatLong& goalP);
 
-    bool ComputeGoalPositionILOS(const ctb::LatLong& currentP, ctb::LatLong& goalP);
+    bool ComputeGoalPositionILOS(const ctb::LatLong& currentP, const bool &variableDelta_, ctb::LatLong& goalP);
 
     bool ComputeClosetPointOnPathILOS(const ctb::LatLong &currentPos, ctb::LatLong &closestPointOnPath);
 

@@ -24,7 +24,7 @@ VehicleController::VehicleController(std::string conf_filename)
     conf_ = std::make_shared<KCLConfiguration>();
 
     ctrlData_ = std::make_shared<ControlData>();
-    ctrlDataReal_ = std::make_shared<ControlData>();
+    //ctrlDataReal_ = std::make_shared<ControlData>(); // no need for now
     real_position_ = std::make_shared<LatLong>();
 
     fileName_ = conf_filename;
@@ -258,6 +258,7 @@ bool VehicleController::LoadConfiguration(std::shared_ptr<KCLConfiguration>& con
         std::cerr << "Failed to load  Actions from file" << std::endl;
         return false;
     };
+    // conf->pathFollowMode //////// ILOS or LOS
 
        //insert states in the map
     statesMap_.insert({ ulisse::states::ID::halt, stateHalt_ });
@@ -325,7 +326,7 @@ void VehicleController::SetUpFSM()
         state.second->tasksMap = tasksMap_;
         state.second->ctrlData = ctrlData_;
         state.second->real_position = real_position_; // ILOS
-        state.second->ctrlDataReal = ctrlDataReal_; // ILOS
+        //state.second->ctrlDataReal = ctrlDataReal_; // ILOS
         state.second->SetFSM(&uFsm_);
     }
 
@@ -626,8 +627,8 @@ void VehicleController::GroundTruthDataCB(const ulisse_msgs::msg::SimulatedSyste
      //ctrlDataReal_->inertialF_linearPosition.latitude = simulatedData_.inertialframe_linear_position.latlong.latitude;
      //ctrlDataReal_->inertialF_linearPosition.longitude = simulatedData_.inertialframe_linear_position.latlong.longitude;
 
-     ctrlDataReal_->inertialF_linearPosition.latitude = msg->inertialframe_linear_position.latlong.latitude;
-     ctrlDataReal_->inertialF_linearPosition.longitude = msg->inertialframe_linear_position.latlong.longitude;
+     //ctrlDataReal_->inertialF_linearPosition.latitude = msg->inertialframe_linear_position.latlong.latitude;
+     //ctrlDataReal_->inertialF_linearPosition.longitude = msg->inertialframe_linear_position.latlong.longitude;
 
      //ctrlData_->inertialF_linearPosition.latitude = msg->inertialframe_linear_position.latlong.latitude;
      //ctrlData_->inertialF_linearPosition.longitude = msg->inertialframe_linear_position.latlong.longitude;

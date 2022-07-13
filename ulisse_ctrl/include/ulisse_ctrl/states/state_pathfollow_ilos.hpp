@@ -38,6 +38,7 @@ namespace states {
         double ILOS_goalHeading;
         double ILOS_headingError;
         double yReal_;
+        bool variableDelta_;
 
         struct info_{
             double y_;
