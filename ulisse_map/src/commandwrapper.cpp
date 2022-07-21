@@ -652,6 +652,9 @@ bool CommandWrapper::reloadKCLConf()
         serviceAvailable = false;
     }
     ShowToast(result_msg.c_str(), 2000);
+
+    LoadConfiguration();
+
     return serviceAvailable;
 }
 

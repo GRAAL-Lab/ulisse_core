@@ -332,8 +332,8 @@ double PathManagerILOS::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos, c
         else sign = -1;
 
         double y = sign * sqrt(pow(distanceVector.x(),2) + pow(distanceVector.y(),2));
-        //y_int_dot = delta_ * y / ( pow((y + nurbsParam.sigmaY *y_int),2) + pow(delta_,2));
-        y_int_dot = delta_ * y / ( pow((y + nurbsParam.sigmaY *y_int),2) + pow(nurbsParam.sigmaY,2));
+        y_int_dot = delta_ * y / ( pow((y + nurbsParam.sigmaY *y_int),2) + pow(delta_,2));
+        //y_int_dot = delta_ * y / ( pow((y + nurbsParam.sigmaY *y_int),2) + pow(nurbsParam.sigmaY,2));
         delta_t = std::chrono::duration_cast<std::chrono::nanoseconds>(T_now_ - T_last_);
         T_last_ = T_now_;
         y_int = y_int + y_int_dot * delta_t.count() / 1E9;
