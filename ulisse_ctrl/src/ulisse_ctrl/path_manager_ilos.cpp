@@ -289,10 +289,10 @@ bool PathManagerILOS::ComputeClosetPointOnPathILOS(const ctb::LatLong &currentPo
     return true;
 }
 
-double PathManagerILOS::ComputePsiHeadingILOS(const ctb::LatLong &currentPos, const ctb::LatLong &goalPos, const ctb::LatLong &ClosestPoint,
+double PathManagerILOS::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos, const ctb::LatLong &goalPos, const ctb::LatLong &ClosestPoint,
                                               const double& Heading2ClosetPoint, double INFO[])
 {
-    double psi_ILOS, Psi;
+    double psi_ILOS, goal_heading;
 
        // Converting the current geographical position to UTM coordinates
     Eigen::Vector3d currentPos_UTM, closestPointOnPath_UTM, goalPos_UTM;
@@ -344,23 +344,23 @@ double PathManagerILOS::ComputePsiHeadingILOS(const ctb::LatLong &currentPos, co
 
         psi_ILOS = - atan2((y + nurbsParam.sigmaY * y_int),delta_);
         if(sign < 0 )
-            Psi = Heading2ClosetPoint - M_PI_2 + psi_ILOS;
-        else Psi = Heading2ClosetPoint + M_PI_2 + psi_ILOS;
+            goal_heading = Heading2ClosetPoint - M_PI_2 + psi_ILOS;
+        else goal_heading = Heading2ClosetPoint + M_PI_2 + psi_ILOS;
 
             // goalHead must be in the range [0,2PI]
-        while(Psi > 2*M_PI)
+        while(goal_heading > 2*M_PI)
         {
-            Psi = Psi - 2*M_PI;
+            goal_heading = goal_heading - 2*M_PI;
         }
-        while(Psi < 0)
+        while(goal_heading < 0)
         {
-            Psi = Psi + 2*M_PI;
+            goal_heading = goal_heading + 2*M_PI;
         }
 
-        std::cout << "y = " << y << std::endl;
-        std::cout << "y_int = " << y_int << std::endl;
-        std::cout << "y_int_dot = " << y_int_dot << std::endl;
-        std::cout << "psi_ILOS = " << psi_ILOS << std::endl;
+        //std::cout << "y = " << y << std::endl;
+        //std::cout << "y_int = " << y_int << std::endl;
+        //std::cout << "y_int_dot = " << y_int_dot << std::endl;
+        //std::cout << "psi_ILOS = " << psi_ILOS << std::endl;
 
         INFO[0] = y;
         INFO[1] = y_int;
@@ -375,7 +375,7 @@ double PathManagerILOS::ComputePsiHeadingILOS(const ctb::LatLong &currentPos, co
 
     //delta_y = delta_;
 
-    return Psi;
+    return goal_heading;
 }
 
 double PathManagerILOS::ComputeRealErrorILOS(const ctb::LatLong &currentPos,const ctb::LatLong &currentRealPos,const ctb::LatLong &goalPos,

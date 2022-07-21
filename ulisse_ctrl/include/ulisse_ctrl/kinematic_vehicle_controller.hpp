@@ -13,7 +13,7 @@
 #include "ulisse_msgs/msg/surge_yaw_rate.hpp"
 #include "ulisse_msgs/msg/tpik_action.hpp"
 #include "ulisse_msgs/msg/tpik_priority_level.hpp"
-#include "ulisse_msgs/msg/path_follow_ilos.hpp"
+#include "ulisse_msgs/msg/path_follow.hpp"
 #include "ulisse_msgs/msg/simulated_system.hpp"
 
 #include "ulisse_msgs/srv/control_command.hpp"
@@ -75,7 +75,7 @@ class VehicleController : public rclcpp::Node {
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr genericLogPub_;
     rclcpp::Publisher<ulisse_msgs::msg::FeedbackGui>::SharedPtr feedbackGuiPub_;
     rclcpp::Publisher<ulisse_msgs::msg::TPIKAction>::SharedPtr tpikActionPub_;
-    rclcpp::Publisher<ulisse_msgs::msg::PathFollowILOS>::SharedPtr pathFolllowILOSPub_; // ILOS
+    rclcpp::Publisher<ulisse_msgs::msg::PathFollow>::SharedPtr pathFolllowPub_; // ILOS
 
     rclcpp::TimerBase::SharedPtr runTimer_;
     rclcpp::TimerBase::SharedPtr slow_timer_;

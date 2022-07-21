@@ -81,11 +81,15 @@ bool StatePathFollow::ConfigureStateFromFile(libconfig::Config& confObj)
 
 fsm::retval StatePathFollow::OnEntry()
 {
+    std::cout << "************* LOS starts ***************" << std::endl;
+
     //set tasks
     safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
     absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
+
     cartesianDistanceTask_ = std::dynamic_pointer_cast<ikcl::CartesianDistance>(tasksMap.find(ulisse::task::asvCartesianDistance)->second.task);
     alignToTargetTask_ = std::dynamic_pointer_cast<ikcl::AlignToTarget>(tasksMap.find(ulisse::task::asvAngularPosition)->second.task);
+
     cartesianDistancePathFollowingTask_ = std::dynamic_pointer_cast<ikcl::CartesianDistance>(tasksMap.find(ulisse::task::asvCartesianDistancePathFollowing)->second.task);
 
     if (actionManager->SetAction(ulisse::action::pathfollow, true)) {
@@ -175,12 +179,13 @@ fsm::retval StatePathFollow::Execute()
                 fsm_->EmitEvent(ulisse::events::names::neargoalposition, ulisse::events::priority::medium);
 
             } else {
-
-                if (!pathManager_.ComputeGoalPosition(ctrlData->inertialF_linearPosition, nextP_)) {
+                ctb::LatLong closePoint2path;
+                if (!pathManager_.ComputeGoalPosition(ctrlData->inertialF_linearPosition, nextP_,delta_y_,closePoint2path)) {
                     return fsm::fail;
                 }
 
                 ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, nextP_, goalDistance, goalHeading);
+
 
                 //Set the distance vector to the target
                 cartesianDistancePathFollowingTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(goalHeading), goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame);
@@ -198,6 +203,11 @@ fsm::retval StatePathFollow::Execute()
 
                 //compute the gain of the cartesian distance
                 double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingError);
+
+                // for publishing msgs
+                pathManager_.ComputeErrorLOS(ctrlData->inertialF_linearPosition, *real_position, nextP_, closePoint2path, y_, yReal_);
+                LOS_goalHeading = goalHeading;
+                LOS_headingError = headingError;
 
                 //Set the gain of the cartesian distance task
                 //cartesianDistancePathFollowingTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(cartesianDistancePathFollowingTask_->TaskSpace(), cartesianDistancePathFollowingTask_->TaskSpace());

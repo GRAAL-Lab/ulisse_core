@@ -37,13 +37,16 @@ public:
      * @param nextP Goal Coordinate for the vehicle
      * @return
      */
-    bool ComputeGoalPosition(const ctb::LatLong& currentP, ctb::LatLong& goalP);
+    bool ComputeGoalPosition(const ctb::LatLong& currentP, ctb::LatLong& goalP,double& delta, ctb::LatLong &closestPos);
 
     bool ComputeGoalPositionILOS(const ctb::LatLong& currentP, ctb::LatLong& goalP);
 
     bool ComputeClosetPointILOS(const ctb::LatLong& currentP, ctb::LatLong& goalP);
 
     bool ComputeGoalHeadingILOS(const ctb::LatLong &currentPos,const double& Heading2ClosetPoint, double& goalHead);
+
+    bool ComputeErrorLOS(const ctb::LatLong &currentPos,const ctb::LatLong &currentRealPos,const ctb::LatLong &goalPos,
+                                               const ctb::LatLong &closestPos, double& estimated, double& real);
     /*
      * Method that resets the path
     */
@@ -98,6 +101,9 @@ public:
         double lookAheadDistance; //max delta increment for select a part of a curve for computing the nearest point
         double directionError; // threshold for the difference between the current and the next tangent direction of the path
 
+        bool variableDelta; // enable/disable delta variation (delta is fixed or has a range)
+        double deltaY;
+
         bool configureFromFile(const libconfig::Config& confObj, const std::string& stateName)
         {
             const libconfig::Setting& root = confObj.getRoot();
@@ -117,6 +123,10 @@ public:
             if (!ctb::GetParam(state, lookAheadDistance, "lookAheadDistance"))
                 return false;
             if (!ctb::GetParam(state, directionError, "tangentDirectionError"))
+                return false;
+            if (!ctb::GetParam(state, deltaY, "deltaY"))
+                return false;
+            if (!ctb::GetParam(state, variableDelta, "variableDelta"))
                 return false;
 
             return true;

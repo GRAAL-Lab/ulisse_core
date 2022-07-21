@@ -49,7 +49,7 @@ const std::string reset_kcl_conf_service = "/ulisse/ctrl/reset_kcl_configuration
 const std::string reset_dcl_conf_service = "/ulisse/ctrl/reset_dcl_configuration";
 const std::string surge_heading = "/ulisse/ctrl/surge_heading";
 const std::string surge_yawrate = "/ulisse/ctrl/surge_yawrate";
-const std::string pathfollow_ilos = "/ulisse/ctrl/pathfollow_ilos"; // ILOS
+const std::string pathfollowing = "/ulisse/ctrl/pathfollowing"; // ILOS
 
 // TASKS
 const std::string task_absolute_axis_alignment = "/ulisse/task/ASV_Absolute_Axis_Alignment";

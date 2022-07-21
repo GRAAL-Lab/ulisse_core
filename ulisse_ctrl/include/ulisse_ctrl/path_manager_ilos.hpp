@@ -42,7 +42,7 @@ public:
 
     bool ComputeClosetPointOnPathILOS(const ctb::LatLong &currentPos, ctb::LatLong &closestPointOnPath);
 
-    double ComputePsiHeadingILOS(const ctb::LatLong &currentPos,const ctb::LatLong &goalP, const ctb::LatLong &ClosestPoint, const double& Heading2ClosetPoint,
+    double ComputeGoalHeadingILOS(const ctb::LatLong &currentPos,const ctb::LatLong &goalP, const ctb::LatLong &ClosestPoint, const double& Heading2ClosetPoint,
                                  double INFO[]);
 
     double ComputeRealErrorILOS(const ctb::LatLong &currentPos,const ctb::LatLong &currentRealPos,const ctb::LatLong &goalPos,

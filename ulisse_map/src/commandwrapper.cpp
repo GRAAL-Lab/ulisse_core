@@ -297,7 +297,7 @@ bool CommandWrapper::sendPath(const QString &pathJsonData)
     reader.parse(pathJsonData.toStdString(), jObj);
 
     if (pathFollowMode_ == ulisse::pathFollowModes::ILOS) {
-    serviceReq->command_type = ulisse::commands::ID::pathfollow_ilos;
+        serviceReq->command_type = ulisse::commands::ID::pathfollow_ilos;
     } else if (pathFollowMode_ == ulisse::pathFollowModes::LOS) {
         serviceReq->command_type = ulisse::commands::ID::pathfollow;
     } else {

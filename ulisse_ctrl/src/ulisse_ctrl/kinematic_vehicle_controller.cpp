@@ -54,7 +54,7 @@ VehicleController::VehicleController(std::string conf_filename)
     referenceVelocitiesPub_ = this->create_publisher<ulisse_msgs::msg::ReferenceVelocities>(ulisse_msgs::topicnames::reference_velocities, 10);
     feedbackGuiPub_ = this->create_publisher<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10);
     tpikActionPub_ = this->create_publisher<ulisse_msgs::msg::TPIKAction>(ulisse_msgs::topicnames::tpik_action, 10);
-    pathFolllowILOSPub_ = this->create_publisher<ulisse_msgs::msg::PathFollowILOS>(ulisse_msgs::topicnames::pathfollow_ilos, 10);
+    pathFolllowPub_ = this->create_publisher<ulisse_msgs::msg::PathFollow>(ulisse_msgs::topicnames::pathfollowing, 10);
 
        /// TPIK Manager
     actionManager_ = std::make_shared<tpik::ActionManager>(tpik::ActionManager());
@@ -783,14 +783,30 @@ void VehicleController::PublishTasksInfo()
         feedbackGuiMsg.current_track_point.latitude = statePathFollowing_->GetCurrentTrackPoint().latitude;
         feedbackGuiMsg.current_track_point.longitude = statePathFollowing_->GetCurrentTrackPoint().longitude;
         feedbackGuiMsg.goal_distance = statePathFollowing_->GetDistanceToEnd();
+
+        ulisse_msgs::msg::PathFollow pathFollowIlosMsg;
+        pathFollowIlosMsg.stamp.sec = now_stamp_secs;
+        pathFollowIlosMsg.stamp.nanosec = now_stamp_nanosecs;
+        pathFollowIlosMsg.sigma = 0;
+        pathFollowIlosMsg.delta = statePathFollowing_->GetDeltaY();
+        pathFollowIlosMsg.y = statePathFollowing_->GetY();
+        pathFollowIlosMsg.y_int = 0;
+        pathFollowIlosMsg.y_int_dot = 0;
+        pathFollowIlosMsg.psi = 0;
+
+        pathFollowIlosMsg.heading2closest_point = 0;
+        pathFollowIlosMsg.goal_heading = statePathFollowing_->GetGoalHeading();
+        pathFollowIlosMsg.heading_error = statePathFollowing_->GetHeadingError();
+        pathFollowIlosMsg.y_real = statePathFollowing_->GetYReal();
+
+        pathFolllowPub_->publish(pathFollowIlosMsg);
     } else if (uFsm_.GetCurrentStateName() == ulisse::states::ID::pathfollow_ilos){
         feedbackGuiMsg.goal_position.latitude = statePathFollowingILOS_->GetNextPoint().latitude;
         feedbackGuiMsg.goal_position.longitude = statePathFollowingILOS_->GetNextPoint().longitude;
         feedbackGuiMsg.current_track_point.latitude = statePathFollowingILOS_->GetCurrentTrackPoint().latitude;
         feedbackGuiMsg.current_track_point.longitude = statePathFollowingILOS_->GetCurrentTrackPoint().longitude;
         feedbackGuiMsg.goal_distance = statePathFollowingILOS_->GetDistanceToEnd();
-
-        ulisse_msgs::msg::PathFollowILOS pathFollowIlosMsg;
+        ulisse_msgs::msg::PathFollow pathFollowIlosMsg;
         pathFollowIlosMsg.stamp.sec = now_stamp_secs;
         pathFollowIlosMsg.stamp.nanosec = now_stamp_nanosecs;
         pathFollowIlosMsg.sigma = statePathFollowingILOS_->GetSigmaY();
@@ -806,7 +822,7 @@ void VehicleController::PublishTasksInfo()
         pathFollowIlosMsg.y_real = statePathFollowingILOS_->GetYReal();
         //pathFollowIlosMsg.y_real = simulatedData_.n_p;
 
-        pathFolllowILOSPub_->publish(pathFollowIlosMsg);
+        pathFolllowPub_->publish(pathFollowIlosMsg);
     }
     feedbackGuiPub_->publish(feedbackGuiMsg);
 }

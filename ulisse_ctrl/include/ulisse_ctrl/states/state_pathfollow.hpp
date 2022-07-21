@@ -28,6 +28,12 @@ namespace states {
 
         PathManager pathManager_;       // Object to handle the path
 
+        double delta_y_;
+        double y_;
+        double LOS_goalHeading;
+        double LOS_headingError;
+        double yReal_;
+
     public:
         StatePathFollow();
         ~StatePathFollow() override;
@@ -40,6 +46,12 @@ namespace states {
         const ctb::LatLong& GetNextPoint() const { return nextP_; }
         const ctb::LatLong& GetCurrentTrackPoint() const { return pathManager_.CurrentTrackPoint(); }
         double GetDistanceToEnd() const { return pathManager_.DistanceToEnd(); }
+
+        double GetDeltaY() const { return delta_y_; } // LOS
+        double GetY() const { return y_; }
+        double GetGoalHeading() const { return LOS_goalHeading; }
+        double GetHeadingError() const { return LOS_headingError; }
+        double GetYReal() const { return yReal_; }
 
 
     };
