@@ -27,6 +27,7 @@
 #include "ulisse_ctrl/commands/command_latlong.hpp"
 #include "ulisse_ctrl/commands/command_pathfollow.hpp"
 #include "ulisse_ctrl/commands/command_pathfollow_ilos.hpp"
+#include "ulisse_ctrl/commands/command_pathfollow_current.hpp"
 #include "ulisse_ctrl/commands/command_surgeheading.hpp"
 #include "ulisse_ctrl/commands/command_surgeyawrate.hpp"
 
@@ -38,6 +39,7 @@
 #include "ulisse_ctrl/states/state_latlong.hpp"
 #include "ulisse_ctrl/states/state_pathfollow.hpp"
 #include "ulisse_ctrl/states/state_pathfollow_ilos.hpp"
+#include "ulisse_ctrl/states/state_pathfollow_current.hpp"
 #include "ulisse_ctrl/states/state_surgeheading.hpp"
 #include "ulisse_ctrl/states/state_surgeyawrate.hpp"
 
@@ -110,7 +112,9 @@ class VehicleController : public rclcpp::Node {
     std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentSafety_;
     std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentHold_;
     std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentILOS_;
+    std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentCurrentEst_;
     std::shared_ptr<ikcl::CartesianDistance> asvCartesianDistancePathFollowing_;
+    std::shared_ptr<ikcl::LinearVelocity> asvLinearVelocityCurrentEst_;
 
     double timestamp_;
     bool boundariesSet_;
@@ -125,6 +129,7 @@ class VehicleController : public rclcpp::Node {
     std::shared_ptr<states::StateSurgeYawRate> stateSurgeYawRate_;
     std::shared_ptr<states::StatePathFollow> statePathFollowing_;
     std::shared_ptr<states::StatePathFollowILOS> statePathFollowingILOS_;
+    std::shared_ptr<states::StatePathFollowCurrent> statePathFollowingCurrent_;
 
     commands::CommandHalt commandHalt_;
     commands::CommandHold commandHold_;
@@ -133,6 +138,7 @@ class VehicleController : public rclcpp::Node {
     commands::CommandSurgeYawRate commandSurgeYawRate_;
     commands::CommandPathFollow commandPathFollowing_;
     commands::CommandPathFollowILOS commandPathFollowingILOS_;
+    commands::CommandPathFollowCurrent commandPathFollowingCurrent_;
 
     events::EventRCEnabled eventRcEnabled_;
     events::EventNearGoalPosition eventNearGoalPosition_;

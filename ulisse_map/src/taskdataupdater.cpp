@@ -87,8 +87,9 @@ void TaskDataUpdater::Init(QQmlApplicationEngine* engine)
     tasksMessageMap_.insert( { ulisse::task::asvCartesianDistancePathFollowing, ulisse_msgs::msg::TaskStatus()});
     tasksMessageMap_.insert( { ulisse::task::asvLinearVelocity, ulisse_msgs::msg::TaskStatus()});
     tasksMessageMap_.insert( { ulisse::task::asvLinearVelocityHold, ulisse_msgs::msg::TaskStatus()});
+    tasksMessageMap_.insert( { ulisse::task::asvLinearVelocityCurrentEst, ulisse_msgs::msg::TaskStatus()});//Current
     tasksMessageMap_.insert( { ulisse::task::asvSafetyBoundaries, ulisse_msgs::msg::TaskStatus()});
-
+    tasksMessageMap_.insert( { ulisse::task::asvAbsoluteAxisAlignmentCurrentEst, ulisse_msgs::msg::TaskStatus() } );//Current
 
 }
 
@@ -115,6 +116,9 @@ void TaskDataUpdater::RegisterSubscribers(){
     absoluteAxisAlignmentHoldSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment_hold, 10,
         std::bind(&TaskDataUpdater::AbsoluteAxisAlignmentHoldCB, this, _1));
 
+    absoluteAxisAlignmentCurrentSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment_current, 10,
+        std::bind(&TaskDataUpdater::AbsoluteAxisAlignmentCurrentCB, this, _1));
+
     absoluteAxisAlignmentSafetySub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment_safety, 10,
         std::bind(&TaskDataUpdater::AbsoluteAxisAlignmentSafetyCB, this, _1));
 
@@ -136,6 +140,9 @@ void TaskDataUpdater::RegisterSubscribers(){
     linearVelocityHoldSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_linear_velocity_hold, 10,
         std::bind(&TaskDataUpdater::LinearVelocityHoldCB, this, _1));
 
+    linearVelocityCurrentEstSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_linear_velocity_current, 10,
+        std::bind(&TaskDataUpdater::LinearVelocityCurrentEstCB, this, _1));
+
     safetyBoundariesSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_safety_boundaries, 10,
         std::bind(&TaskDataUpdater::SafetyBoundariesCB, this, _1));
 
@@ -147,12 +154,14 @@ void TaskDataUpdater::resetPublishersAndSubscribers()
 
     absoluteAxisAlignmentSub_         .reset();
     absoluteAxisAlignmentILOSSub_         .reset(); // ILOS
+    absoluteAxisAlignmentCurrentSub_  .reset(); // Current
     absoluteAxisAlignmentHoldSub_     .reset();
     absoluteAxisAlignmentSafetySub_   .reset();
     angularPositionSub_               .reset();
     cartesianDistanceSub_             .reset();
     cartesianDistancePathFollowingSub_.reset();
     linearVelocityHoldSub_            .reset();
+    linearVelocityCurrentEstSub_      .reset(); // Current
     linearVelocitySub_                .reset();
     safetyBoundariesSub_              .reset();
 
@@ -181,6 +190,11 @@ void TaskDataUpdater::AbsoluteAxisAlignmentILOSCB(const ulisse_msgs::msg::TaskSt
 void TaskDataUpdater::AbsoluteAxisAlignmentHoldCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
 {
     tasksMessageMap_.at(ulisse::task::asvAbsoluteAxisAlignmentHold) = *msg;
+}
+
+void TaskDataUpdater::AbsoluteAxisAlignmentCurrentCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
+{
+    tasksMessageMap_.at(ulisse::task::asvAbsoluteAxisAlignmentCurrentEst) = *msg;
 }
 
 void TaskDataUpdater::AbsoluteAxisAlignmentSafetyCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
@@ -216,6 +230,11 @@ void TaskDataUpdater::LinearVelocityCB(const ulisse_msgs::msg::TaskStatus::Share
 void TaskDataUpdater::LinearVelocityHoldCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
 {
     tasksMessageMap_.at(ulisse::task::asvLinearVelocityHold) = *msg;
+}
+
+void TaskDataUpdater::LinearVelocityCurrentEstCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
+{
+    tasksMessageMap_.at(ulisse::task::asvLinearVelocityCurrentEst) = *msg;
 }
 
 void TaskDataUpdater::SafetyBoundariesCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)

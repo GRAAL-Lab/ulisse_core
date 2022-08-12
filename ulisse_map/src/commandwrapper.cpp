@@ -300,6 +300,8 @@ bool CommandWrapper::sendPath(const QString &pathJsonData)
         serviceReq->command_type = ulisse::commands::ID::pathfollow_ilos;
     } else if (pathFollowMode_ == ulisse::pathFollowModes::LOS) {
         serviceReq->command_type = ulisse::commands::ID::pathfollow;
+    } else if (pathFollowMode_ == ulisse::pathFollowModes::LOSandCurrentEst) {
+        serviceReq->command_type = ulisse::commands::ID::pathfollow_current;
     } else {
         qDebug("ERROR: Unrecognized pathFollowMode!");
     }

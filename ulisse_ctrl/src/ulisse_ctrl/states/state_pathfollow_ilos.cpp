@@ -117,6 +117,17 @@ fsm::retval StatePathFollowILOS::OnExit(){
     cartesianDistanceTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
     alignToTargetTask_->TaskParameter().gain = alignToTargetTask_->TaskParameter().conf_gain;    
     alignToTargetTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(alignToTargetTask_->TaskSpace(), alignToTargetTask_->TaskSpace());
+
+    INFO.y_ = 0;
+    INFO.y_int = 0;
+    INFO.y_int_dot_ = 0;
+    INFO.psi_ = 0;
+    INFO.sigma_y_ = 0;
+    INFO.delta_y_ = 0;
+    ILOS_Heading2ClosetPoint = 0;
+    ILOS_goalHeading = 0;
+    ILOS_headingError= 0;
+    yReal_= 0;
     return fsm::ok;
 }
 

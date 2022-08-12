@@ -18,7 +18,8 @@ PathManagerILOS::PathManagerILOS()
     nurbsParam.directionError = 0.436; //25 gradi
 
     // Default initialization of the currentDelta
-    delta_ = nurbsParam.deltaMin;
+    // delta_ = nurbsParam.deltaMin;
+    delta_ = nurbsParam.deltaY;
     nurbsParam.deltaStep = 0.05;
 
     // Default initialization for ILOS
@@ -36,7 +37,8 @@ PathManagerILOS::~PathManagerILOS() { }
 bool PathManagerILOS::Initialization(const ulisse_msgs::msg::PathData& path)
 {
 
-    delta_ = nurbsParam.deltaMin;
+    // delta_ = nurbsParam.deltaMin;
+    delta_ = nurbsParam.deltaY;
     currentAbscissa_ = 0.0;
     std::cout << "nurbsParam.deltaMin: " << nurbsParam.deltaMin << std::endl;
     std::cout << "nurbsParam.deltaMax: " << nurbsParam.deltaMax << std::endl;

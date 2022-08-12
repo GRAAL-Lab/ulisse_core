@@ -1,22 +1,24 @@
-#ifndef ULISSE_CTRL_STATE_PATHFOLLOW_HPP
-#define ULISSE_CTRL_STATE_PATHFOLLOW_HPP
+#ifndef ULISSE_CTRL_STATE_PATHFOLLOWCURRENT_HPP
+#define ULISSE_CTRL_STATE_PATHFOLLOWCURRENT_HPP
 
 #include "sisl_toolbox/sisl_toolbox.hpp"
 #include "ulisse_ctrl/states/generic_state.hpp"
 #include "ulisse_msgs/msg/path_data.hpp"
-#include <ulisse_ctrl/path_manager.hpp>
+#include <ulisse_ctrl/path_manager_current.hpp>
 
 namespace ulisse {
 
 namespace states {
 
-    class StatePathFollow : public GenericState {
+    class StatePathFollowCurrent : public GenericState {
 
     protected:
         // Tasks of the state
         std::shared_ptr<ikcl::AlignToTarget> alignToTargetTask_;
         std::shared_ptr<ikcl::CartesianDistance> cartesianDistanceTask_;
         std::shared_ptr<ikcl::CartesianDistance> cartesianDistancePathFollowingTask_;
+        std::shared_ptr<ikcl::LinearVelocity> linearVelocityPathFollowingCurrentTask_;
+        std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentTask_;
 
         bool isCurveSet_;               // Flag for checking if a curve has been loaded
         bool vehicleOnTrack_;           // Flag for checking is the robot at the path start
@@ -25,8 +27,9 @@ namespace states {
         double tolleranceStartingPoint_; // Tolerance on the starting point
         double tolleranceEndingPoint_;  // Tolerance on the ending point
         bool logPathOnFile_;
+        double minWaterCurrent_, maxWaterCurrent_;
 
-        PathManager pathManager_;       // Object to handle the path
+        PathManagerCurrent pathManager_;       // Object to handle the path
 
         double delta_y_;
         double y_;
@@ -35,8 +38,8 @@ namespace states {
         double yReal_;
 
     public:
-        StatePathFollow();
-        ~StatePathFollow() override;
+        StatePathFollowCurrent();
+        ~StatePathFollowCurrent() override;
         fsm::retval OnEntry() override;
         fsm::retval OnExit() override;
         fsm::retval Execute() override;

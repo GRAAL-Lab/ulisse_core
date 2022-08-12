@@ -1,21 +1,21 @@
-#include "ulisse_ctrl/states/state_pathfollow.hpp"
+#include "ulisse_ctrl/states/state_pathfollow_current.hpp"
 #include "ulisse_ctrl/ulisse_defines.hpp"
 
 namespace ulisse {
 
 namespace states {
 
-StatePathFollow::StatePathFollow()
+StatePathFollowCurrent::StatePathFollowCurrent()
     : isCurveSet_ { false }
     , vehicleOnTrack_ { false }
     , logPathOnFile_ { false }
 {
 }
 
-StatePathFollow::~StatePathFollow() { }
+StatePathFollowCurrent::~StatePathFollowCurrent() { }
 
 
-bool StatePathFollow::LoadPath(const ulisse_msgs::msg::PathData& path){
+bool StatePathFollowCurrent::LoadPath(const ulisse_msgs::msg::PathData& path){
     vehicleOnTrack_ = false;
 
     std::cout << "LOADING Path" << std::endl;
@@ -52,12 +52,12 @@ bool StatePathFollow::LoadPath(const ulisse_msgs::msg::PathData& path){
 
 }
 
-bool StatePathFollow::ConfigureStateFromFile(libconfig::Config& confObj)
+bool StatePathFollowCurrent::ConfigureStateFromFile(libconfig::Config& confObj)
 {
     const libconfig::Setting& root = confObj.getRoot();
     const libconfig::Setting& states = root["states"];
 
-    const libconfig::Setting& state = states.lookup(ulisse::states::ID::pathfollow);
+    const libconfig::Setting& state = states.lookup(ulisse::states::ID::pathfollow_current);
 
     if (!ctb::GetParam(state, maxHeadingError_, "maxHeadingError"))
         return false;
@@ -69,9 +69,13 @@ bool StatePathFollow::ConfigureStateFromFile(libconfig::Config& confObj)
         return false;
     if (!ctb::GetParam(state, logPathOnFile_, "logPathOnFile"))
         return false;
+    if (!ctb::GetParam(state, minWaterCurrent_, "minWaterCurrent"))
+        return false;
+    if (!ctb::GetParam(state, maxWaterCurrent_, "maxWaterCurrent"))
+        return false;
 
     //configure the nurbs param
-    if (!pathManager_.nurbsParam.configureFromFile(confObj, ulisse::states::ID::pathfollow)) {
+    if (!pathManager_.nurbsParam.configureFromFile(confObj, ulisse::states::ID::pathfollow_current)) {
         std::cerr << "Failed to load Nurbs Params" << std::endl;
         return false;
     }
@@ -79,9 +83,9 @@ bool StatePathFollow::ConfigureStateFromFile(libconfig::Config& confObj)
     return true;
 }
 
-fsm::retval StatePathFollow::OnEntry()
+fsm::retval StatePathFollowCurrent::OnEntry()
 {
-    std::cout << "************* LOS starts ***************" << std::endl;
+    std::cout << "************* LOS with Current estimator starts ***************" << std::endl;
 
     //set tasks
     safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
@@ -90,27 +94,40 @@ fsm::retval StatePathFollow::OnEntry()
     cartesianDistanceTask_ = std::dynamic_pointer_cast<ikcl::CartesianDistance>(tasksMap.find(ulisse::task::asvCartesianDistance)->second.task);
     alignToTargetTask_ = std::dynamic_pointer_cast<ikcl::AlignToTarget>(tasksMap.find(ulisse::task::asvAngularPosition)->second.task);
 
-    cartesianDistancePathFollowingTask_ = std::dynamic_pointer_cast<ikcl::CartesianDistance>(tasksMap.find(ulisse::task::asvCartesianDistancePathFollowing)->second.task);
+    //cartesianDistancePathFollowingTask_ = std::dynamic_pointer_cast<ikcl::CartesianDistance>(tasksMap.find(ulisse::task::asvCartesianDistancePathFollowing)->second.task);
 
-    if (actionManager->SetAction(ulisse::action::pathfollow, true)) {
+    linearVelocityPathFollowingCurrentTask_ = std::dynamic_pointer_cast<ikcl::LinearVelocity>(tasksMap.find(ulisse::task::asvLinearVelocityCurrentEst)->second.task);
+    absoluteAxisAlignmentTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentCurrentEst)->second.task);
+
+    //linearVelocityPathFollowingCurrentTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(linearVelocityPathFollowingCurrentTask_->TaskSpace(), linearVelocityPathFollowingCurrentTask_->TaskSpace());
+
+    if (actionManager->SetAction(ulisse::action::pathfollow_current, true)) {
         return fsm::ok;
     } else {
         return fsm::fail;
     }
 }
 
-fsm::retval StatePathFollow::OnExit(){
-    std::cout << "************* LOS finished ***************" << std::endl;
+fsm::retval StatePathFollowCurrent::OnExit(){
+
+    std::cout << "************* LOS with current estimator finished ***************" << std::endl;
+
     delta_y_ = 0;
     y_ = 0;
     LOS_goalHeading = 0;
     LOS_headingError = 0;
     yReal_ = 0;
+
+    cartesianDistanceTask_->TaskParameter().gain = cartesianDistanceTask_->TaskParameter().conf_gain;
+    cartesianDistanceTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
+    linearVelocityPathFollowingCurrentTask_->TaskParameter().gain = linearVelocityPathFollowingCurrentTask_->TaskParameter().conf_gain;
+    linearVelocityPathFollowingCurrentTask_->ExternalActivationFunction() = 0 * Eigen::MatrixXd::Identity(linearVelocityPathFollowingCurrentTask_->TaskSpace(), linearVelocityPathFollowingCurrentTask_->TaskSpace());
+    //alignToTargetTask_->TaskParameter().gain = alignToTargetTask_->TaskParameter().conf_gain;
+    //alignToTargetTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(alignToTargetTask_->TaskSpace(), alignToTargetTask_->TaskSpace());
     return fsm::ok;
 }
 
-
-fsm::retval StatePathFollow::Execute()
+fsm::retval StatePathFollowCurrent::Execute()
 {
     //SafetyBoundaries task: it's a velocity task base on the distance from the boundaries. The behaviour that has to achive is align to
     //a desired escape directon and to generate a desired velocity. To do this we use the task AbsoluteAxisAlignment to cope with
@@ -180,7 +197,10 @@ fsm::retval StatePathFollow::Execute()
 
                 cartesianDistanceTask_->TaskParameter().gain = taskGain * cartesianDistanceTask_->TaskParameter().conf_gain;
                 cartesianDistanceTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
-                cartesianDistancePathFollowingTask_->ExternalActivationFunction() = 0.0 * Eigen::MatrixXd::Identity(cartesianDistancePathFollowingTask_->TaskSpace(), cartesianDistancePathFollowingTask_->TaskSpace());
+                alignToTargetTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(alignToTargetTask_->TaskSpace(), alignToTargetTask_->TaskSpace());
+                absoluteAxisAlignmentTask_->ExternalActivationFunction() = 0.0 * Eigen::MatrixXd::Identity(absoluteAxisAlignmentTask_->TaskSpace(), absoluteAxisAlignmentTask_->TaskSpace());
+                linearVelocityPathFollowingCurrentTask_->ExternalActivationFunction() = 0.0 * Eigen::MatrixXd::Identity(linearVelocityPathFollowingCurrentTask_->TaskSpace(), linearVelocityPathFollowingCurrentTask_->TaskSpace());
+
             }
         } else {
 
@@ -198,34 +218,38 @@ fsm::retval StatePathFollow::Execute()
                 ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, nextP_, goalDistance, goalHeading);
 
 
-                //Set the distance vector to the target
-                cartesianDistancePathFollowingTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(goalHeading), goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame);
-                //Set the align vector to the target
-                alignToTargetTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(goalHeading), goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame);
+                Eigen::Vector2d appliedVelocity;
+                pathManager_.ComputeAppliedVelocity(goalHeading, linearVelocityPathFollowingCurrentTask_->TaskParameter().saturation,
+                                                    Eigen::Vector2d(ctrlData->inertialF_waterCurrent[0], ctrlData->inertialF_waterCurrent[1]), appliedVelocity);
+                //Eigen::Vector3d directionVector;
+                //directionVector = pathManager_.ComputeDirectionVector(appliedVelocity);
 
-                //Set the vector that has to been align to the distance vector
-                alignToTargetTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
+                absoluteAxisAlignmentTask_->ExternalActivationFunction().setIdentity();
+                absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
+                absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(appliedVelocity.normalized().x(),appliedVelocity.normalized().y(),0), rml::FrameID::WorldFrame);
+                absoluteAxisAlignmentTask_->Update();
 
                 //To avoid the case in which the error between the goal heading and the current heading is too big
                 // we activate the the cartesian distance through the gain based on a bell-shaped function on the heading error
-
                 //compute the heading error
-                double headingError = alignToTargetTask_->ControlVariable().norm();
-
+                double headingError = absoluteAxisAlignmentTask_->ControlVariable().norm();
                 //compute the gain of the cartesian distance
                 double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingError);
 
-                // for publishing msgs
-                pathManager_.ComputeErrorLOS(ctrlData->inertialF_linearPosition, *real_position, nextP_, closePoint2path, y_, yReal_);
-                LOS_goalHeading = goalHeading;
-                LOS_headingError = headingError;
+                //Set the gain of the cartesian linearVelocity task
+                linearVelocityPathFollowingCurrentTask_->TaskParameter().gain = taskGain * linearVelocityPathFollowingCurrentTask_->TaskParameter().conf_gain;
+                linearVelocityPathFollowingCurrentTask_->SetReferenceRate(Eigen::Vector3d(appliedVelocity.norm(), 0, 0), robotModel->BodyFrameID());
 
-                //Set the gain of the cartesian distance task
-                //cartesianDistancePathFollowingTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(cartesianDistancePathFollowingTask_->TaskSpace(), cartesianDistancePathFollowingTask_->TaskSpace());
-                cartesianDistancePathFollowingTask_->TaskParameter().gain = taskGain * cartesianDistancePathFollowingTask_->TaskParameter().conf_gain;
+                // for publishing msgs
+                pathManager_.ComputeError(ctrlData->inertialF_linearPosition, *real_position, nextP_, closePoint2path, y_, yReal_);
+                LOS_goalHeading = goalHeading;
+                LOS_headingError = absoluteAxisAlignmentTask_->ControlVariable().norm();
 
                 cartesianDistanceTask_->ExternalActivationFunction() = 0.0 * Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
-                cartesianDistancePathFollowingTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(cartesianDistancePathFollowingTask_->TaskSpace(), cartesianDistancePathFollowingTask_->TaskSpace());
+                alignToTargetTask_->ExternalActivationFunction() = 0 * Eigen::MatrixXd::Identity(alignToTargetTask_->TaskSpace(), alignToTargetTask_->TaskSpace());
+                absoluteAxisAlignmentTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(absoluteAxisAlignmentTask_->TaskSpace(), absoluteAxisAlignmentTask_->TaskSpace());
+                linearVelocityPathFollowingCurrentTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(linearVelocityPathFollowingCurrentTask_->TaskSpace(), linearVelocityPathFollowingCurrentTask_->TaskSpace());
+                //cartesianDistancePathFollowingTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(cartesianDistancePathFollowingTask_->TaskSpace(), cartesianDistancePathFollowingTask_->TaskSpace());
             }
         }
     }

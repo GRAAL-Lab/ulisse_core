@@ -26,6 +26,8 @@ const std::string asvAbsoluteAxisAlignmentSafety = "ASV_Absolute_Axis_Alignment_
 const std::string asvAbsoluteAxisAlignmentHold = "ASV_Absolute_Axis_Alignment_Hold";
 const std::string asvAbsoluteAxisAlignmentILOS = "ASV_Absolute_Axis_Alignment_ILOS"; //ILOS
 const std::string asvLinearVelocityHold = "ASV_Linear_Velocity_Hold";
+const std::string asvLinearVelocityCurrentEst = "ASV_Linear_Velocity_CurrentEst";
+const std::string asvAbsoluteAxisAlignmentCurrentEst = "ASV_Absolute_Axis_Alignment_CurrentEst";
 
 }
 
@@ -38,6 +40,7 @@ const std::string surge_heading = "Surge_Heading";
 const std::string surge_yawrate = "Surge_YawRate";
 const std::string pathfollow = "Path_Following";
 const std::string pathfollow_ilos = "Path_FollowingILOS"; //ILOS
+const std::string pathfollow_current = "Path_FollowingCurrentEst";
 }
 
 namespace commands {
@@ -51,6 +54,7 @@ const std::string surgeheading = "surgeheading_command";
 const std::string surgeyawrate = "surgeyawrate_command";
 const std::string pathfollow = "pathfollow_command";
 const std::string pathfollow_ilos = "pathfollow_ilos_command";
+const std::string pathfollow_current = "pathfollow_current_command";
 }
 }
 
@@ -65,6 +69,7 @@ const std::string surgeheading = "Surge_Heading";
 const std::string surgeyawrate = "Surge_YawRate";
 const std::string pathfollow = "Path_Following";
 const std::string pathfollow_ilos = "Path_FollowingILOS";
+const std::string pathfollow_current = "Path_FollowingCurrentEst";
 }
 }
 
