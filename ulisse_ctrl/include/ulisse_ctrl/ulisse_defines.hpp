@@ -41,6 +41,7 @@ const std::string surge_yawrate = "Surge_YawRate";
 const std::string pathfollow = "Path_Following";
 const std::string pathfollow_ilos = "Path_FollowingILOS"; //ILOS
 const std::string pathfollow_current = "Path_FollowingCurrentEst";
+const std::string pathfollow_iloscurrent = "Path_FollowingILOSCurrentEst"; // ILOS current
 }
 
 namespace commands {
@@ -55,6 +56,7 @@ const std::string surgeyawrate = "surgeyawrate_command";
 const std::string pathfollow = "pathfollow_command";
 const std::string pathfollow_ilos = "pathfollow_ilos_command";
 const std::string pathfollow_current = "pathfollow_current_command";
+const std::string pathfollow_iloscurrent = "pathfollow_iloscurrent_command";
 }
 }
 
@@ -70,6 +72,7 @@ const std::string surgeyawrate = "Surge_YawRate";
 const std::string pathfollow = "Path_Following";
 const std::string pathfollow_ilos = "Path_FollowingILOS";
 const std::string pathfollow_current = "Path_FollowingCurrentEst";
+const std::string pathfollow_iloscurrent = "Path_FollowingILOSCurrentEst";
 }
 }
 

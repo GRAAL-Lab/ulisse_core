@@ -28,6 +28,7 @@
 #include "ulisse_ctrl/commands/command_pathfollow.hpp"
 #include "ulisse_ctrl/commands/command_pathfollow_ilos.hpp"
 #include "ulisse_ctrl/commands/command_pathfollow_current.hpp"
+#include "ulisse_ctrl/commands/command_pathfollow_iloscurrent.hpp"
 #include "ulisse_ctrl/commands/command_surgeheading.hpp"
 #include "ulisse_ctrl/commands/command_surgeyawrate.hpp"
 
@@ -40,6 +41,7 @@
 #include "ulisse_ctrl/states/state_pathfollow.hpp"
 #include "ulisse_ctrl/states/state_pathfollow_ilos.hpp"
 #include "ulisse_ctrl/states/state_pathfollow_current.hpp"
+#include "ulisse_ctrl/states/state_pathfollow_iloscurrent.hpp"
 #include "ulisse_ctrl/states/state_surgeheading.hpp"
 #include "ulisse_ctrl/states/state_surgeyawrate.hpp"
 
@@ -130,6 +132,7 @@ class VehicleController : public rclcpp::Node {
     std::shared_ptr<states::StatePathFollow> statePathFollowing_;
     std::shared_ptr<states::StatePathFollowILOS> statePathFollowingILOS_;
     std::shared_ptr<states::StatePathFollowCurrent> statePathFollowingCurrent_;
+    std::shared_ptr<states::StatePathFollowILOSCurrent> statePathFollowingILOSCurrent_;
 
     commands::CommandHalt commandHalt_;
     commands::CommandHold commandHold_;
@@ -139,6 +142,7 @@ class VehicleController : public rclcpp::Node {
     commands::CommandPathFollow commandPathFollowing_;
     commands::CommandPathFollowILOS commandPathFollowingILOS_;
     commands::CommandPathFollowCurrent commandPathFollowingCurrent_;
+    commands::CommandPathFollowILOSCurrent commandPathFollowingILOSCurrent_;
 
     events::EventRCEnabled eventRcEnabled_;
     events::EventNearGoalPosition eventNearGoalPosition_;
