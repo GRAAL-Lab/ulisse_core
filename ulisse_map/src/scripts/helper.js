@@ -470,7 +470,7 @@ function init_canvas(canvas, map, width, height, lat, lon, px_multiplier) {
     canvas.coordinate = QtPositioning.coordinate(lat, lon)
     canvas.canvasAngle = 0
     canvas.multiplier = px_multiplier
-    canvas.canvasCtx.lineWidth = 3
+    canvas.canvasCtx.lineWidth = settings.pathLineWidth
     canvas.canvasCtx.lineJoin = "bevel"
 }
 

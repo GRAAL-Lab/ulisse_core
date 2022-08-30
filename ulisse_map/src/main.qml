@@ -91,6 +91,7 @@ ApplicationWindow {
         property bool showPolylineID: true
         property string bagSaveFolder: home_dir + "/logs/"
         property int visualizerTimeout: 30
+        property int pathLineWidth: 2
 
         Component.onCompleted: {
             futureMapPlugin = mapPluginType
@@ -107,7 +108,7 @@ ApplicationWindow {
     SettingsDialog {
         id: settingsDialog
         x: Math.round((window.width - width) / 2)
-        y: Math.round(window.height / 8)
+        y: Math.round(window.height / 32)
         width: Math.round(Math.min(window.width, window.height) / 4 * 3)
     }
 
