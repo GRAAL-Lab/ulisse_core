@@ -47,7 +47,6 @@
 
 #include "ulisse_ctrl/tasks/SafetyBoundaries.hpp"
 
-
 namespace ulisse {
 
 class VehicleController : public rclcpp::Node {

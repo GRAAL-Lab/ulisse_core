@@ -232,17 +232,17 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
     double angle = jvalues["params"]["angle"].asDouble();
     double size_1_Path = jvalues["params"]["size_1"].asDouble();
     double size_2_Path = jvalues["params"]["size_2"].asDouble();
-    Path::Direction direction = static_cast<Path::Direction>(jvalues["params"]["direction"].asInt());
+    sisl::Path::Direction direction = static_cast<sisl::Path::Direction>(jvalues["params"]["direction"].asInt());
     std::string polypathType = jvalues["params"]["polypath_type"].asString();
 
-    std::shared_ptr<Path> newPath;
+    std::shared_ptr<sisl::Path> newPath;
     bool pathCreated{true};
     try {
         if (polypathType == "Serpentine") {
-            newPath = PathFactory::NewSerpentine(angle, direction, size_1_Path, polyVerticesUTM);
+            newPath = sisl::PathFactory::NewSerpentine(angle, direction, size_1_Path, polyVerticesUTM);
         } else if (polypathType == "RaceTrack") {
             //qDebug() << "*** CREATING RACE TRACK ***";
-            newPath = PathFactory::NewRaceTrack(angle, direction, size_1_Path, size_2_Path, polyVerticesUTM);
+            newPath = sisl::PathFactory::NewRaceTrack(angle, direction, size_1_Path, size_2_Path, polyVerticesUTM);
             //qDebug() << "*** RACE TRACK DONE ***";
         } else if (polypathType == "Hippodrome") {
             Eigen::Vector3d baricenter;
@@ -253,7 +253,7 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
                 }
                 baricenter[i] = dim_sum/(polyVerticesUTM.size() - 1);
             }
-            newPath = PathFactory::NewHippodrome(-angle, direction, size_1_Path, size_2_Path, baricenter);
+            newPath = sisl::PathFactory::NewHippodrome(-angle, direction, size_1_Path, size_2_Path, baricenter);
         } else {
             std::cout << "[CommandWrapper::createPathFromPolygon] polypathType '" << polypathType << "' not recognized." << std::endl;
             pathCreated = false;

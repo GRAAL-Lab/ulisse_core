@@ -93,7 +93,7 @@ public:
     /*
      * Method that get the path
     */
-    auto GetPath() const -> const std::shared_ptr<Path> { return path_; }
+    auto GetPath() const -> const std::shared_ptr<sisl::Path> { return path_; }
 
 
 
@@ -146,11 +146,11 @@ private:
     std::string pathName_;
     std::string pathType_;
     std::string polypathType_;
-    std::shared_ptr<Path> path_;                // The Curve
+    std::shared_ptr<sisl::Path> path_;                // The Curve
     ctb::LatLong centroid_;                     // The centroid for the convertion from/to cartesian/latlong
     std::vector<ctb::LatLong> coordinates_;     // Coordinate List of polypath
     double angle_, size_1_, size_2_;
-    Path::Direction direction_;
+    sisl::Path::Direction direction_;
     ctb::LatLong startP_;                       // Starting point of the nurbs path
     ctb::LatLong endP_;                         // Ending point of the nurbs path
     double currentAbscissa_;                         // The current parameter value on the path
