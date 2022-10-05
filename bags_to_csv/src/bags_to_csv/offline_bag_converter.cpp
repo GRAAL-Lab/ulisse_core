@@ -159,7 +159,7 @@ bool OfflineBagConverter::ConvertToCSV()
                            << groundtruth_.n_s
                            << "\n";
         } else if (bag_message->topic_name == ulisse_msgs::topicnames::pathfollowing) {
-            rclcpp::Serialization<ulisse_msgs::msg::SimulatedSystem> serialization;
+            rclcpp::Serialization<ulisse_msgs::msg::PathFollow> serialization;
             rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
             serialization.deserialize_message(&extracted_serialized_msg, &pathFollow_);
             pathFollowingFile_ << std::fixed << std::setprecision(6)
