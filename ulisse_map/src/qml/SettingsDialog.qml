@@ -316,7 +316,7 @@ Dialog {
             SpinBox {
                 id: lineWidthSBox
                 from: 1
-                to: 10
+                to: 20
                 stepSize: 1
                 Layout.maximumWidth: 150
                 Layout.fillWidth: true

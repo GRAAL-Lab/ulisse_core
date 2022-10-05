@@ -72,6 +72,8 @@ MapPolyline {
         map.addMapItem(a_marker)
         map.addMapItem(b_marker)
         _handle.add_to_map(map)
+
+
     }
 
     function deregister_map_items() {
@@ -89,6 +91,7 @@ MapPolyline {
     }
 
     function _generate_and_draw() {
+
         generate_markers()
         reposition_markers()
         disable_markers()
@@ -96,10 +99,13 @@ MapPolyline {
     }
 
     function generate_and_draw_deferred() {
+
         _generate_and_draw()
+
     }
 
     function get_path() {
+
         return path
     }
 
@@ -500,7 +506,7 @@ MapPolyline {
         moving_idx = -1
         translating = false
         rotating = false
-        console.log("backup path: ", backup_path)
+        //console.log("backup path: ", backup_path)
         path = backup_path
         vertex_markers = backup_vertex_markers
         add_markers = backup_add_markers
@@ -513,6 +519,7 @@ MapPolyline {
     }
 
     function confirm_edit(name, params) {
+
         pathName = name
         mapMouseArea.hoverEnabled = false
         moving_idx = -1
@@ -522,6 +529,9 @@ MapPolyline {
 
     function click_handler(mouse) {
         if (mouse.button & Qt.LeftButton) {
+
+
+
             var p = Qt.point(mouse.x, mouse.y)
             var wp = map.toCoordinate(p)
             if (pathLength() === 0) {
@@ -533,12 +543,15 @@ MapPolyline {
             } else if (pathLength() > 1) {
                 var lastwp = coordinateAt(pathLength() - 2)
                 var lastp = map.fromCoordinate(lastwp)
+                //
+                // Closing the curve if the next point is near to the last one
+                //
                 if (Helper.distance(p, lastp) < 8) {
+                    //console.log("[MapPointPath] click_handler - Closing curve")
                     removeCoordinate(pathLength() - 1)
                     line.color = lightgreen
                     mapMouseArea.hoverEnabled = false
                     update_centroid()
-                    //generate_nurbs()
                     end()
                     return
                 }

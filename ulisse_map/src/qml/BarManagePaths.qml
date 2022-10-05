@@ -161,7 +161,7 @@ BarManagePathsForm {
         map.clickHandler = map.click_goto_handler
         map.posChangedHandler = function () {}
         if (cur_managed !== undefined){
-            if( cur_managed.path.lenght !== 0 )    {
+            if( cur_managed.path.length !== 0 )    {
                 //console.log("[BarManagePaths] discard() - cur_managed !== undefined")
                 //console.log("cur_managed: " + cur_managed.pathName)
                 cur_managed.enable_ab_markers()
