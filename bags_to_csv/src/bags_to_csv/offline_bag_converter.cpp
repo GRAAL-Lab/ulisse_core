@@ -158,6 +158,16 @@ bool OfflineBagConverter::ConvertToCSV()
                            << groundtruth_.n_p                                             << ", "
                            << groundtruth_.n_s
                            << "\n";
+        } else if (bag_message->topic_name == ulisse_msgs::topicnames::pathfollowing) {
+            rclcpp::Serialization<ulisse_msgs::msg::SimulatedSystem> serialization;
+            rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
+            serialization.deserialize_message(&extracted_serialized_msg, &pathFollow_);
+            pathFollowingFile_ << std::fixed << std::setprecision(6)
+                               << bag_message->time_stamp  * 1e-9 << ", "
+                               << pathFollow_.stamp.sec + (pathFollow_.stamp.nanosec * 1e-9) << ", "
+                               << pathFollow_.delta << ", " << pathFollow_.y << ", " << pathFollow_.y_real << ", "
+                               << pathFollow_.y_int_dot << ", " << pathFollow_.y_int << ", " << pathFollow_.psi
+                               << "\n";
         }
         // else if (bag_message->topic_name == ulisse_msgs::topicnames::llc_battery_left) {
         //    batteryFile_ << batteryLeft_.stamp.sec + (batteryLeft_.stamp.nanosec * 1e-9) << ", " << batteryLeft_.charge_percent  << "\n";
@@ -167,7 +177,7 @@ bool OfflineBagConverter::ConvertToCSV()
             sensorReceived = false;
             sensorsFile_ << std::fixed << std::setprecision(6)
                          << bag_message->time_stamp  * 1e-9 << ", "
-                         << imuData_.stamp.sec + (imuData_.stamp.nanosec * 1e-9)<< ", "
+                         << imuData_.stamp.sec + (imuData_.stamp.nanosec * 1e-9) << ", "
                          << imuData_.accelerometer[0] << ", " << imuData_.accelerometer[1] << ", " << imuData_.accelerometer[2] << ", "
                          << imuData_.gyro[0] << ", " << imuData_.gyro[1] << ", " << imuData_.gyro[2] << ", "
                          << compassData_.stamp.sec + (compassData_.stamp.nanosec * 1e-9) << ", "
@@ -195,7 +205,7 @@ bool OfflineBagConverter::OpenFiles()
                     "magn_x, magn_y, magn_z, dvl_bvel_x, dvl_bvel_y, dvl_bvel_z, dvl_wvel_x, dvl_wvel_y, dvl_wvel_z, fog_w\n";
 
     motorsFile_       .open(std::string(saveFolder_ + "/motors.txt"));
-    motorsFile_ << "ros_time, time, rpm_L, rpm_R\n";
+    motorsFile_ << "ros_time, time, timestamp_485, rpm_L, timestamp_485, rpm_R\n";
 
     navFilterFile_    .open(std::string(saveFolder_ + "/nav_filter.txt"));
     navFilterFile_ << "ros_time, time, x, y, z, r, p, y, u, v, h, "
@@ -211,6 +221,9 @@ bool OfflineBagConverter::OpenFiles()
     groundtruthFile_ << "ros_time, time, lat, long, alt, b_roll, b_pitch, b_yaw,"
                         "b_lin_vel_x, b_lin_vel_y, b_lin_vel_z, b_ang_vel_x, b_ang_vel_y, b_ang_vel_z,"
                         "i_wat_vel_x, i_wat_vel_y, gyro_bias_x, gyro_bias_y, gyro_bias_z, n_p, n_s\n";
+
+    pathFollowingFile_.open(std::string(saveFolder_ + "/pathFollowing.txt"));
+    pathFollowingFile_ << "ros_time, time, delta, y, y_real, y_int_dot, y_int, psi\n";
 
     //vehicleStatusFile_.open(std::string(saveFolder_ + "/vehicle_status.txt"));
 
@@ -228,6 +241,7 @@ void OfflineBagConverter::CloseFiles()
     navFilterFile_    .close();
     refVelFile_       .close();
     thrustersFile_    .close();
+    pathFollowingFile_.close();
     //vehicleStatusFile_.close();
 
 }
