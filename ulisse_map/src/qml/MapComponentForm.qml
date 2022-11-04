@@ -278,7 +278,7 @@ Map {
 
     MapPolyline {
         id: ulissePath
-        line.width: 1
+        line.width: settings.ulisseLineWidth
         line.color: orange
         property bool firstRun: true
         property real traceSize: 1000

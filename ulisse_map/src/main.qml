@@ -92,6 +92,7 @@ ApplicationWindow {
         property string bagSaveFolder: home_dir + "/logs/"
         property int visualizerTimeout: 30
         property int pathLineWidth: 2
+        property int ulisseLineWidth: 1
 
         Component.onCompleted: {
             futureMapPlugin = mapPluginType

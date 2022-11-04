@@ -34,6 +34,7 @@ Dialog {
     onAccepted: {
         settings.mapTypeIndex = mapTypeComboBox.currentIndex
         settings.pathLineWidth = lineWidthSBox.value;
+        settings.ulisseLineWidth = ulisseLineWidthSBox.value;
 
         if (settings.mapPluginType !== futureMapPlugin) {
             //futureMapPlugin = mapPluginBox.displayText
@@ -326,6 +327,31 @@ Dialog {
 
                 Component.onCompleted: {
                     value = settings.pathLineWidth
+                }
+            }
+        }
+
+        RowLayout {
+            id: ulisseLineWidthSetting
+            spacing: 10
+
+            Label {
+                text: "Ulisse Line Width:"
+            }
+
+            SpinBox {
+                id: ulisseLineWidthSBox
+                from: 1
+                to: 20
+                stepSize: 1
+                Layout.maximumWidth: 150
+                Layout.fillWidth: true
+                font.pointSize: 10
+                editable: true
+                inputMethodHints: Qt.ImhDigitsOnly //Only digits are allowed.
+
+                Component.onCompleted: {
+                    value = settings.ulisseLineWidth
                 }
             }
         }
