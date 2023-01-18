@@ -32,9 +32,10 @@ struct TasksInfo {
 };
 
 enum class ControlMode : int {
-    ThrusterMapping,
+    ThrusterMapping=0,
     ClassicPIDControl,
-    ComputedTorque
+    ComputedTorque,
+    STSM /*Super Twisting Sliding Mode*/
 };
 
 struct KCLConfiguration {
@@ -119,6 +120,44 @@ struct ThrusterMapping {
                   << "==============================\n";
     }
 };
+// Inizio struct STSM
+struct STSMControlData {
+    Eigen::Vector3d L;
+    Eigen::Vector3d C;
+    Eigen::Vector3d K1;
+    Eigen::Vector3d K2;
+
+    bool ConfigureFromFile(const libconfig::Setting& confObj) noexcept(false)
+    {
+        //const libconfig::Setting& STSMConf = confObj["STSMControl"];
+
+        //if (!ctb::GetParam(pidSurge, pidGainsSurge.Kd, "kd"))
+            //return false;
+        // Aggiungere tutti i parametri che voglio caricare, ad esempio: m11 m2
+        if (!ctb::GetParamVector(confObj, L, "L"))
+            return false;
+        if (!ctb::GetParamVector(confObj, C, "C"))
+            return false;
+        if (!ctb::GetParamVector(confObj, K1, "K1"))
+            return false;
+        if (!ctb::GetParamVector(confObj, K2, "K2"))
+            return false;
+
+        return true;
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, STSMControlData const& a)
+    {
+        return os << "======= STSM Control CONF =======\n"
+                  << "L: " << a.L.transpose() <<"\n"
+                  << "L: " << a.C.transpose() <<"\n"
+                  << "L: " << a.K1.transpose() <<"\n"
+                  << "L: " << a.K2.transpose() <<"\n"
+                  << "==============================\n";
+    }
+};
+//
+
 
 struct DynamicPid {
     ctb::PIDGains pidGainsSurge;
@@ -204,6 +243,7 @@ struct DCLConfiguration {
     ThrusterMapping thrusterMapping;
     DynamicPid classicPidControl;
     DynamicPid computedTorqueControl;
+    STSMControlData stsmControl;
 
     friend std::ostream& operator<<(std::ostream& os, DCLConfiguration const& a)
     {
@@ -219,8 +259,10 @@ struct DCLConfiguration {
             os << a.thrusterMapping;
         } else if (a.ctrlMode == ControlMode::ClassicPIDControl) {
             os << a.classicPidControl;
-        } else {
+        } else if(a.ctrlMode == ControlMode::ComputedTorque){
             os << a.computedTorqueControl;
+        } else if(a.ctrlMode == ControlMode::STSM){
+            os << a.stsmControl;
         }
 
         os << "==============================\n";
@@ -274,6 +316,10 @@ struct DCLConfiguration {
             if (!computedTorqueControl.ConfigureFromFile(computedTorqueCtr))
                 return false;
 
+        } else if (ctrlMode == ControlMode::STSM){
+            const libconfig::Setting& STSMConfig = root["STSMControl"];
+            if (!stsmControl.ConfigureFromFile(STSMConfig))
+                return false;
         } else {
             std::cerr << "Type of control not recognized" << std::endl;
         }
