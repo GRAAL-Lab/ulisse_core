@@ -248,16 +248,16 @@ void DynamicVehicleController::Run()
             float alfa_2 = 180;
 
             //Disturbance observer signal
-            Eigen::Vector3d float d_hat = compute_d_hat(z, L, M, v_r); //inizializzare z = 0
+            Eigen::Vector3d d_hat = compute_d_hat(z, L, M, v_r); //inizializzare z = 0
 
             //tau_controllo
-            Eigen::Vector3d float tau_eq = compute_tau_eq(C, D, v_r, d_hat);
-            Eigen::Vector3d float tau_stsm_1 = compute_tau_stsm_1(alfa_1, sigma);
-            Eigen::Vector3d float tau_stsm_2 = compute_tau_stsm_2(alfa_2, sigma, tau_stsm_2, Ts); //inizializzare tau_stsm_2 = 0
-            Eigen::Vector3d float tau_controllo = tau_eq + tau_stsm_1 + tau_stsm_2;
+            Eigen::Vector3d tau_eq = compute_tau_eq(C, D, v_r, d_hat);
+            Eigen::Vector3d tau_stsm_1 = compute_tau_stsm_1(alfa_1, sigma);
+            Eigen::Vector3d tau_stsm_2 = compute_tau_stsm_2(alfa_2, sigma, tau_stsm_2, Ts); //inizializzare tau_stsm_2 = 0
+            Eigen::Vector3d tau_controllo = tau_eq + tau_stsm_1 + tau_stsm_2;
 
             //Auxiliary variable z
-            Eigen::Vector3d float z = compute_z(z, L, M, v_r);
+            Eigen::Vector3d z = compute_z(z, L, M, v_r);
 
 
             std::cout<<"K1"<<std::endl<<K1; //stampo la matrice K1 per verificare che sia tutto ok
