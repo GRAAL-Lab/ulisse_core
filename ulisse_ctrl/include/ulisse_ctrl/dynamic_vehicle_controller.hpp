@@ -4,6 +4,7 @@
 #include "rclcpp/rclcpp.hpp"
 
 #include "ulisse_msgs/msg/dynamic_pid_control.hpp"
+#include "ulisse_msgs/msg/stsm_control.hpp"
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
 #include "ulisse_msgs/msg/reference_velocities.hpp"
 #include "ulisse_msgs/msg/simulated_velocity_sensor.hpp"
@@ -79,6 +80,16 @@ class DynamicVehicleController : public rclcpp::Node {
     ctb::DigitalPID pidYawRateCT;
     ctb::DigitalPID pidSurgeCT;
 
+    //Variables for STSM
+    Eigen::Vector3d z; 
+    Eigen::Vector3d rho;
+    Eigen::Matrix3d L;
+    Eigen::Matrix3d C;
+    Eigen::Matrix3d K1;
+    Eigen::Matrix3d K2;
+    Eigen::Vector3d error;
+    double m11, m22, m23, m32, m33;
+
     Eigen::Vector2d tau = Eigen::Vector2d::Zero();
 
     void ResetConfHandler(const std::shared_ptr<rmw_request_id_t> request_header,
@@ -90,7 +101,7 @@ class DynamicVehicleController : public rclcpp::Node {
     void ThrusterMappingInizialization(std::shared_ptr<DCLConfiguration> conf, double sampleTime, ctb::DigitalPID& pid);
     void ClassicPidControlInizialization(std::shared_ptr<DCLConfiguration> conf, double sampleTime, ctb::DigitalPID& pidSurge, ctb::DigitalPID& pidYawRate);
     void ComputedTorqueControlInizialization(std::shared_ptr<DCLConfiguration> conf, double sampleTime, ctb::DigitalPID& pidSurge, ctb::DigitalPID& pidYawRate);
-
+    void STSMControlInizialization(std::shared_ptr<DCLConfiguration> conf, double sampleTime); //funzione da definire per inizializzare il controllo STSM
     void FilterDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
     void ReferenceVelocitiesCB(const ulisse_msgs::msg::ReferenceVelocities::SharedPtr msg);
     void VehicleStatusCB(const ulisse_msgs::msg::VehicleStatus::SharedPtr msg);

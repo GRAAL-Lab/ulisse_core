@@ -8,6 +8,7 @@
 
 #include "ulisse_msgs/terminal_utils.hpp"
 #include "ulisse_msgs/topicnames.hpp"
+#include "ulisse_msgs/futils.hpp"
 
 
 using std::placeholders::_1;
@@ -56,10 +57,11 @@ DynamicVehicleController::DynamicVehicleController(std::string file_name)
         ThrusterMappingInizialization(dcl_conf, sampleTime_, pidSurgeTM);
     } else if (dcl_conf->ctrlMode == ControlMode::ClassicPIDControl) {
         ClassicPidControlInizialization(dcl_conf, sampleTime_, pidSurgeCP, pidYawRateCP);
-    } else {
+    } else if (dcl_conf->ctrlMode == ControlMode::ComputedTorque){
         ComputedTorqueControlInizialization(dcl_conf, sampleTime_, pidSurgeCT, pidYawRateCT);
+    } else if (dcl_conf->ctrlMode == ControlMode::STSM) {
+        STSMControlInizialization(dcl_conf, sampleTime_);// pidSurgeCP, pidYawRateCP);
     }
-
     srvResetConf_ = this->create_service<ulisse_msgs::srv::ResetConfiguration>(ulisse_msgs::topicnames::reset_dcl_conf_service,
         std::bind(&DynamicVehicleController::ResetConfHandler, this, _1, _2, _3));
 
@@ -94,13 +96,14 @@ void DynamicVehicleController::ResetConfHandler(const std::shared_ptr<rmw_reques
     ulisseModel.params = dcl_conf->ulisseModel;
 
     //Controller inizialization
-    //Controller inizialization
     if (dcl_conf->ctrlMode == ControlMode::ThrusterMapping) {
         ThrusterMappingInizialization(dcl_conf, sampleTime_, pidSurgeTM);
     } else if (dcl_conf->ctrlMode == ControlMode::ClassicPIDControl) {
         ClassicPidControlInizialization(dcl_conf, sampleTime_, pidSurgeCP, pidYawRateCP);
-    } else {
+    } else if (dcl_conf->ctrlMode == ControlMode::ComputedTorque){
         ComputedTorqueControlInizialization(dcl_conf, sampleTime_, pidSurgeCT, pidYawRateCT);
+    } else if (dcl_conf->ctrlMode == ControlMode::STSM){
+        STSMControlInizialization(dcl_conf, sampleTime_);
     }
 
     response->res = "[DCL] ReloadConfiguration::ok";
@@ -211,8 +214,8 @@ void DynamicVehicleController::Run()
             //std::cerr << "tau CT :  F = " << tauDrag[0] << " | N = " << tauDrag[2] << std::endl;
 
             tau += Eigen::Vector2d(tauDrag[0], tauDrag[2]);
-            double outLeft, outRight;
-
+            double outLeft, outRight; /*riferimenti per i thrusters*/
+            // utilizzare queste 3 funzioni per passare dalla tau alle percentuali dei motori
             Eigen::Vector2d forces = ulisseModel.ThusterAllocation(tau);
             ulisseModel.InverseMotorsEquations(feedbackVel, forces, outLeft, outRight);
             ulisseModel.ThrustersSaturation(outLeft, outRight, -dcl_conf->thrusterPercLimit, dcl_conf->thrusterPercLimit, thrustersReference.left_percentage, thrustersReference.right_percentage);
@@ -226,7 +229,7 @@ void DynamicVehicleController::Run()
             computedTorqueMsg.desired_surge = referenceVelocities.desired_surge;
             computedTorqueMsg.feedback_surge = absSurgeFbk;
             computedTorqueMsg.out_pid_surge = pidSurgeCP.GetOutput();
-            computedTorqueMsg.desired_yaw_rate = referenceVelocities.desired_yaw_rate;
+            computedTorqueMsg.desired_yaw_rate = referenceVelocities.desired_yaw_rate; //velocità desiderate
             computedTorqueMsg.feedback_yaw_rate = yawRateFbk;
             computedTorqueMsg.out_pid_yaw_rate = pidYawRateCP.GetOutput();
             computedTorqueMsg.forces = { forces[0], forces[1] };
@@ -236,8 +239,54 @@ void DynamicVehicleController::Run()
             computedTorqueControlPub_->publish(computedTorqueMsg);
 
             //fill the feedback for the nav filter
-            simulatedVelocitySensor.water_relative_surge = referenceVelocities.desired_surge;
+            simulatedVelocitySensor.water_relative_surge = referenceVelocities.desired_surge;//velocità desiderate
             simulatedVelocitySensorPub_->publish(simulatedVelocitySensor);
+        } else if (dcl_conf->ctrlMode == ControlMode::STSM){
+
+            double Ts = sampleTime_;
+            float alfa_1 = 5;
+            float alfa_2 = 180;
+
+            //Disturbance observer signal
+            Eigen::Vector3d float d_hat = compute_d_hat(z, L, M, v_r); //inizializzare z = 0
+
+            //tau_controllo
+            Eigen::Vector3d float tau_eq = compute_tau_eq(C, D, v_r, d_hat);
+            Eigen::Vector3d float tau_stsm_1 = compute_tau_stsm_1(alfa_1, sigma);
+            Eigen::Vector3d float tau_stsm_2 = compute_tau_stsm_2(alfa_2, sigma, tau_stsm_2, Ts); //inizializzare tau_stsm_2 = 0
+            Eigen::Vector3d float tau_controllo = tau_eq + tau_stsm_1 + tau_stsm_2;
+
+            //Auxiliary variable z
+            Eigen::Vector3d float z = compute_z(z, L, M, v_r);
+
+
+            std::cout<<"K1"<<std::endl<<K1; //stampo la matrice K1 per verificare che sia tutto ok
+
+            //Eigen::Matrix3d M; // Matrice d'inerzia (considera anche effetti di massa aggiunta)
+            //M << ulisseModel.params.m11, 0, 0,
+            //    0, ulisseModel.params.m22, ulisseModel.params.m23,
+            //    0, ulisseModel.params.m32, ulisseModel.params.m33;
+
+            //Eigen::Matrix3d D; //Matrice Drag (dove prendo gli elementi?)
+            
+
+            //Eigen::Matrix3d Co; //Matrice Coriolis (dove prendo gli elementi?)
+
+            error(0) = referenceVelocities.desired_surge;
+            error(2) = referenceVelocities.desired_yaw_rate;
+
+            // using relative surge velocity for the feedforward term
+            Eigen::Vector6d feedbackVel = Eigen::Vector6d::Zero();
+            feedbackVel(0) = relSurgeFbk;
+            feedbackVel(5) = yawRateFbk;
+            double outLeft, outRight; 
+
+            tau = tau_controllo; 
+
+            //Utilizzare queste 3 funzioni per passare dalla tau alle percentuali dei motori
+            Eigen::Vector2d forces = ulisseModel.ThusterAllocation(tau);
+            ulisseModel.InverseMotorsEquations(feedbackVel, forces, outLeft, outRight);
+            ulisseModel.ThrustersSaturation(outLeft, outRight, -dcl_conf->thrusterPercLimit, dcl_conf->thrusterPercLimit,thrustersReference.left_percentage, thrustersReference.right_percentage);
         }
     } else {
         thrustersReference.left_percentage = 0.0;
@@ -322,6 +371,23 @@ void DynamicVehicleController::ComputedTorqueControlInizialization(std::shared_p
 {
     pidSurge.Initialize(conf->computedTorqueControl.pidGainsSurge, sampleTime, conf->computedTorqueControl.pidSatSurge);
     pidYawRate.Initialize(conf->computedTorqueControl.pidGainsYawRate, sampleTime, conf->computedTorqueControl.pidSatYawRate);
+}
+/*STSM Inizialization <-- TO DO*/
+void DynamicVehicleController::STSMControlInizialization(std::shared_ptr<DCLConfiguration> conf, double sampleTime)
+{
+    z = Eigen::Vector3d::Zero();
+    rho = Eigen::Vector3d::Zero();
+    error = Eigen::Vector3d::Zero();
+    m11 = m - Xup;
+    m22 = m - Yvp;
+    m23 = -Yrp
+    m32 = -Nvp
+    m33 = Iz - Nrp;
+    L.diagonal() = dcl_conf->stsmControl.L;      
+    C.diagonal() = dcl_conf->stsmControl.C;      
+    K1.diagonal() = dcl_conf->stsmControl.K1; 
+    K2.diagonal() = dcl_conf->stsmControl.K2;
+
 }
 
 void DynamicVehicleController::ReferenceVelocitiesCB(const ulisse_msgs::msg::ReferenceVelocities::SharedPtr msg) { referenceVelocities = *msg; }
