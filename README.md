@@ -130,7 +130,7 @@ You can also use the file *play_serial.sh* to continuosly replay the logfile.
 - Connect to WiFi Hotspot.
 - Connect ethernet cable to catamaran.
 - Share WiFi connection with "Ethernet" in Control Panel: Network Connections->*Left Click on* WiFi Connection->Properties->Sharing Tab.
-- Set the IPv4 of the Ethernet Connection as 192.168.1.169 and it's gateway as the IP of the WiFi connection.
+- Set the IPv4 of the Ethernet Connection as 192.168.1.169 (and it's gateway as the IP of the WiFi connection -> UPDATE: leave the gateway blank or it doesn't work).
 
 ### Ubuntu side (Catamaran or VirtualBox):
 
