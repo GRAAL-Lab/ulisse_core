@@ -34,7 +34,7 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
     std::cout << "nurbsParam.deltaMax: " << nurbsParam.deltaMax << std::endl;
 
     std::cout.precision(10);
-    std::cout  << "Path Message:\n" << rosidl_generator_traits::to_yaml(path) << std::fixed << std::endl;
+    //std::cout  << "Path Message:\n" << rosidl_generator_traits::to_yaml(path) << std::fixed << std::endl;
 
     pathName_ = path.id;
     pathType_ = path.type;
