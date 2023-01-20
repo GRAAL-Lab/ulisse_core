@@ -50,9 +50,15 @@ MapViewForm {
         map.clearUlisseTrace()
     }
 
-    engineButton.onClicked: {
-        cmdWrapper.sendThrusterActivation(true);
+    enableRefButton.onClicked: {
+        cmdWrapper.sendEnableReference(true);
     }
+
+    enginePowerButton.onClicked: {
+        cmdWrapper.toggleEnginePowerButtons();
+    }
+
+
 
     followMeCheckbox.onCheckStateChanged: {
         followMeCheckbox.checked ? followMeTimer.start() : followMeTimer.stop()

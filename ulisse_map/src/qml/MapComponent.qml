@@ -169,11 +169,11 @@ MapComponentForm {
 
     onCenterChanged: {
         ruler.rulerTimer.restart()
+        settings.mapCenter = map.center
     }
 
     onZoomLevelChanged: {
         ruler.rulerTimer.restart()
-        settings.mapCenter = map.center
     }
 
     onWidthChanged: {

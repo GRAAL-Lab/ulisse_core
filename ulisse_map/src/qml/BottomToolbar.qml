@@ -13,7 +13,8 @@ Rectangle {
     property alias followMeCheckbox: followMeCheckbox
     //property alias overlayStatusCbox: overlayStatusCbox
     property alias gpsIconCBox: gpsIconCBox
-    property alias engineButton: engineButton
+    property alias enableRefButton: enableRefButton
+    property alias enginePowerButton: enginePowerButton
 
     RowLayout {
         anchors.fill: parent
@@ -58,16 +59,27 @@ Rectangle {
             id: rectangle
             width: 200
             height: 200
-            color: "#ffffff"
+            color: dimmedwhite
             Layout.fillWidth: true
             Layout.fillHeight: true
         }
 
         Button {
-            id: engineButton
+            id: enableRefButton
             anchors.rightMargin: parent.anchors.rightMargin
             //Layout.rightMargin: 5
-            text: "engine"
+            text: "Enable Ref"
+            highlighted: true
+            Material.accent: mainColor
+            Layout.alignment: Qt.AlignRight
+            Layout.rightMargin: 20
+        }
+
+        Button {
+            id: enginePowerButton
+            anchors.rightMargin: parent.anchors.rightMargin
+            //Layout.rightMargin: 5
+            text: "Engines"
             highlighted: true
             Material.accent: red
             Layout.alignment: Qt.AlignRight

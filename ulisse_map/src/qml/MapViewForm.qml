@@ -23,7 +23,8 @@ RowLayout {
     //property alias overlayStatusCbox: bottomToolbar.overlayStatusCbox
     property alias clearPathButton: bottomToolbar.clearPathButton
     property alias gpsIconCBox: bottomToolbar.gpsIconCBox
-    property alias engineButton: bottomToolbar.engineButton
+    property alias enableRefButton: bottomToolbar.enableRefButton
+    property alias enginePowerButton: bottomToolbar.enginePowerButton
     property alias mapCache: mapCache
     property alias map: map
     property alias mapsidebar: mapsidebar

@@ -435,13 +435,40 @@ bool CommandWrapper::sendSurgeYawRateCommand(double surge, double yawrate)
     }
 }
 
-bool CommandWrapper::sendThrusterActivation(bool activate)
+bool CommandWrapper::sendEnableReference(bool activate)
 {
     std::string result_msg;
     bool serviceAvailable;
     auto req = std::make_shared<ulisse_msgs::srv::LLCCommand::Request>();
     req->command_type = static_cast<uint16_t>(ulisse::llc::CommandType::enableref);
     req->enable_ref_data.enable = static_cast<uint8_t>(activate ? 1 : 0);
+    if (llc_srv_->service_is_ready()) {
+        auto result_future = llc_srv_->async_send_request(req);
+        std::cout << "Sent Request to controller" << std::endl;
+        if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
+            result_msg = "service call failed :(";
+            RCLCPP_ERROR_STREAM(this->get_logger(), result_msg);
+        } else {
+            auto result = result_future.get();
+            result_msg = "Service returned: " + std::to_string(result->res);
+            RCLCPP_INFO_STREAM(this->get_logger(), result_msg);
+        }
+        serviceAvailable = true;
+    } else {
+        result_msg = "No LLC Server Available";
+        serviceAvailable = false;
+    }
+    ShowToast(result_msg.c_str(), 2000);
+    return serviceAvailable;
+}
+
+bool CommandWrapper::toggleEnginePowerButtons()
+{
+    std::string result_msg;
+    bool serviceAvailable;
+    auto req = std::make_shared<ulisse_msgs::srv::LLCCommand::Request>();
+    req->command_type = static_cast<uint16_t>(ulisse::llc::CommandType::setpowerbuttons);
+    req->pwr_buttons_data.pwrbuttonsflag = 3;
     if (llc_srv_->service_is_ready()) {
         auto result_future = llc_srv_->async_send_request(req);
         std::cout << "Sent Request to controller" << std::endl;
