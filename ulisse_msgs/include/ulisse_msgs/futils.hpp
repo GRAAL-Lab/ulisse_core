@@ -766,26 +766,26 @@ inline int sign (double value){
 }
 
 inline Eigen::Vector3d compute_z(Eigen::Vector3d z, Eigen::Matrix3d L, Eigen::Matrix3d C, Eigen::Matrix3d D, Eigen::Matrix3d M, Eigen::Vector3d v_r, Eigen::Vector3d tau_controllo){
-    z + L*(C*v_r + D*v_r - tau_controllo - z - L*M*v_r); //z inizializzato a vettore nullo
+   return z + L*(C*v_r + D*v_r - tau_controllo - z - L*M*v_r); //z inizializzato a vettore nullo
 }
 
 inline Eigen::Vector3d compute_d_hat(Eigen::Vector3d float z, Eigen::Matrix3d float L, Eigen::Matrix3d float M, Eigen::Vector3d float v_r){
-    z + Ts*SL*M*v_r; // z = compute_z();
+    return z + Ts*SL*M*v_r; // z = compute_z();
 }
 
 // Di seguito definisco le funzioni per calcolare tau_controllo = tau_eq + tau_stsm_1 + tau_stsm_2;
 
 inline Eigen::Vector3d compute_tau_eq(Eigen::Matrix3d C, Eigen::Matrix3d D, Eigen::Vector3d v_r, Eigen::Vector3d d_hat){
-    C*v_r + D*v_r -d_hat; //d_hat = compute_d_hat();
+    return C*v_r + D*v_r -d_hat; //d_hat = compute_d_hat();
 
 }
 
 inline Eigen::Vector3d compute_tau_stsm_1(float alfa_1, Eigen::Vector3d sigma){
-    -(alfa_1*(pow(abs(sigma),0.5))*(sign(sigma)); // sigma è la sliding variable, definita come errore tra le velocità: sigma = v_r - v_desiderata
+    return -(alfa_1*(pow(abs(sigma),0.5))*(sign(sigma)); // sigma è la sliding variable, definita come errore tra le velocità: sigma = v_r - v_desiderata
 }
 
 inline Eigen::Vector3d compute_tau_stsm_2(float alfa_2, Eigen::Vector3d sigma, Eigen::Vector3d tau_stsm_2, float Ts){
-    tau_stsm_2 -(alfa_2*Ts*sign(sigma)); //tau_stsm_2 inizializzato a vettore nullo
+    return tau_stsm_2 -(alfa_2*Ts*sign(sigma)); //tau_stsm_2 inizializzato a vettore nullo
 }
 
 } /* namespace FUTILS */
