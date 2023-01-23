@@ -21,10 +21,10 @@ struct UlisseModelParameters {
     double rpmDynState;
     double rpmDynPosPerc;
     double rpmDynNegPerc;
-    double Xup, Yvp, Yrp, Nvp, Nrp;
-    double Xu, Yv, Yr, Nv, Nr;
-    double Xuu, Yvv, Yrv, Yvr, Yrr, Nvv, Nrv, Nvr, Nrr;
-    double m11, m22, m23, m32, m33;
+    //double Xup, Yvp, Yrp, Nvp, Nrp;
+    //double Xu, Yv, Yr, Nv, Nr;
+    //double Xuu, Yvv, Yrv, Yvr, Yrr, Nvv, Nrv, Nvr, Nrr;
+    // double m11, m22, m23, m32, m33;
     Eigen::Matrix3d Inertia;
 
     UlisseModelParameters()
@@ -42,31 +42,6 @@ struct UlisseModelParameters {
         , rpmDynState(0.0)
         , rpmDynPosPerc(0.0)
         , rpmDynNegPerc(0.0)
-        //Parametri per STSM
-        , Xup(0.0)
-        , Yvp(0.0)
-        , Yrp(0.0)
-        , Nvp(0.0)
-        , Nrp(0.0)
-        , Xu(0.0)
-        , Yv(0.0)
-        , Yr(0.0)
-        , Nv(0.0)
-        , Nr(0.0)
-        , Xuu(0.0)
-        , Yvv(0.0)
-        , Yrv(0.0)
-        , Yvr(0.0)
-        , Yrr(0.0)
-        , Nvv(0.0)
-        , Nrv(0.0)
-        , Nvr(0.0)
-        , Nrr(0.0)
-        , m11(0.0)
-        , m22(0.0)
-        , m23(0.0)
-        , m32(0.0)
-        , m33(0.0)
     {
         cX.setZero();
         cY.setZero();
@@ -192,56 +167,14 @@ struct UlisseModelParameters {
             return false;
         if (!ctb::GetParam(ulisseModel, rpmDynNegPerc, "rpmDynNegPerc"))
             return false;
-        if (!ctb::GetParam(ulisseModel, Xup, "Xup"))
+        Eigen::Vector3d tmp_Inertia;
+        
+        if (!ctb::GetParamVector(ulisseModel, tmp_Inertia, "inertia"))
             return false;
-        if (!ctb::GetParam(ulisseModel, Yvp, "Yvp"))
-            return false;
-        if (!ctb::GetParam(ulisseModel, Yrp, "Yrp"))
-            return false;
-        if (!ctb::GetParam(ulisseModel, Nvp, "Nvp"))
-            return false;
-        if (!ctb::GetParam(ulisseModel, Nrp, "Nrp"))
-            return false;
-        if (!ctb::GetParam(ulisseModel, Xu, "Xu"))
-            return false;
-        if (!ctb::GetParam(ulisseModel, Yv, "Yv"))
-            return false;
-        if (!ctb::GetParam(ulisseModel, Yr, "Yr"))
-            return false;
-        if (!ctb::GetParam(ulisseModel, Nv, "Nv"))
-            return false;
-        if (!ctb::GetParam(ulisseModel, Nr, "Nr"))
-            return false;
-        if (!ctb::GetParam(ulisseModel, Xuu, "Xuu"))
-            return false;
-        if (!ctb::GetParam(ulisseModel, Yvv, "Yvv"))
-            return false;
-        if (!ctb::GetParam(ulisseModel, Yrv, "Yrv"))
-            return false;
-        if (!ctb::GetParam(ulisseModel, Yvr, "Yvr"))
-            return false;
-        if (!ctb::GetParam(ulisseModel, Yrr, "Yrr"))
-            return false;
-        if (!ctb::GetParam(ulisseModel, Nvv, "Nvv"))
-            return false;
-        if (!ctb::GetParam(ulisseModel, Nrv, "Nrv"))
-            return false;
-        if (!ctb::GetParam(ulisseModel, Nvr, "Nvr"))
-            return false;
-        if (!ctb::GetParam(ulisseModel, Nrr, "Nrr"))
-            return false;
-        Eigen::Vector3d tmp_Inerzia;
-        tmp_Inerzia.setZero();
-        if (!ctb::GetParamVector(ulisseModel, tmp_Inerzia, "inertia"))
-            return false;
+        
+        Inertia.setZero();
+        Inertia.diagonal() = Eigen::Map<Eigen::Matrix<double, 3, 1>>(tmp_Inertia.data());
 
-        Inertia.diagonal() = Eigen::Map<Eigen::Matrix<double, 3, 1>>(tmp_Inerzia.data());
-        //Qui calcolo i vari m11 = --- m22 = ... 
-        m11 = m - Xup;
-        m22 = m - Yvp;
-        m23 = -Yrp
-        m32 = -Nvp
-        m33 = Iz - Nrp;
         return true;
     }
 
