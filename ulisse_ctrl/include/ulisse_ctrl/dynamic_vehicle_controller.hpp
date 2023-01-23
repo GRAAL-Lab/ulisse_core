@@ -81,6 +81,7 @@ class DynamicVehicleController : public rclcpp::Node {
     ctb::DigitalPID pidSurgeCT;
 
     //Variables for STSM
+    Eigen::Vector3d sigma_stsm;
     Eigen::Vector3d z_stsm; 
     Eigen::Vector3d tau_stsm_2; 
     Eigen::Matrix3d L;
@@ -102,6 +103,12 @@ class DynamicVehicleController : public rclcpp::Node {
     void FilterDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
     void ReferenceVelocitiesCB(const ulisse_msgs::msg::ReferenceVelocities::SharedPtr msg);
     void VehicleStatusCB(const ulisse_msgs::msg::VehicleStatus::SharedPtr msg);
+    
+    Eigen::Vector3d compute_z(Eigen::Vector3d z, Eigen::Matrix3d L, Eigen::Matrix3d C, Eigen::Matrix3d D, Eigen::Matrix3d M, Eigen::Vector3d v_r, Eigen::Vector3d tau_controllo);
+    Eigen::Vector3d compute_d_hat(Eigen::Vector3d z, Eigen::Matrix3d L, Eigen::Matrix3d M, Eigen::Vector3d v_r);
+    Eigen::Vector3d compute_tau_eq(Eigen::Matrix3d C, Eigen::Matrix3d D, Eigen::Vector3d v_r, Eigen::Vector3d d_hat);
+    Eigen::Vector3d compute_tau_stsm_1(double alfa_1, Eigen::Vector3d sigma);
+    Eigen::Vector3d compute_tau_stsm_2(double alfa_2, Eigen::Vector3d sigma, Eigen::Vector3d tau_stsm_2, double Ts);
 
 
 public:
