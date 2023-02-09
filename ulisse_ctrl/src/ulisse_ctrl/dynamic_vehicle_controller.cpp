@@ -21,7 +21,6 @@ DynamicVehicleController::DynamicVehicleController(std::string file_name)
     : Node("dynamic_control_node")
 {
 
-
     confFileName_ = file_name;
 
          //Subscribers
@@ -247,52 +246,60 @@ void DynamicVehicleController::Run()
             double alfa_1 = 5;
             double alfa_2 = 180;
 
-                 /// C e D sono le matrici del paper di Coriolis e Drag (correggere quella presa come diagonal dal conf)
-                 /// v_r velocità istantea del veicolo (vel relativa) feedback   (---> filterData.bodyframe_linear_velocity)
-                 /// sigma (sliding variable è l'errore di velocità)
+            /// C e D sono le matrici del paper di Coriolis e Drag (correggere quella presa come diagonal dal conf)
+            /// v_r velocità istantea del veicolo (vel relativa) feedback   (---> filterData.bodyframe_linear_velocity)
+            /// sigma (sliding variable è l'errore di velocità)
 
-                 //Disturbance observer signal
+            //Disturbance observer signal
 
-                 ///!!!! Eigen::Vector3d d_hat = compute_d_hat(z_stsm, L, ulisseModel.params.Inertia, v_r); //inizializzare z = 0; segnale osservatore
+            Eigen::Map<Eigen::Vector3d> v_r(filterData.bodyframe_linear_velocity.data(), 3);
+            Eigen::Vector3d d_hat = compute_d_hat(z_stsm, L, ulisseModel.params.Inertia, v_r); //inizializzare z = 0; segnale osservatore
 
 
 
-                 //tau_controllo
+            //tau_controllo
 
-                 ///!!!! Eigen::Vector3d tau_eq = compute_tau_eq(C, D, v_r, d_hat);
+            Eigen::Vector3d tau_eq = compute_tau_eq(C, D, v_r, d_hat);
 
             Eigen::Vector3d tau_stsm_1 = compute_tau_stsm_1(alfa_1, sigma_stsm);
             tau_stsm_2 = compute_tau_stsm_2(alfa_2, sigma_stsm, tau_stsm_2, Ts); //inizializzare tau_stsm_2 = 0*
 
-                 ///!!!! Eigen::Vector3d tau_controllo = tau_eq + tau_stsm_1 + tau_stsm_2;
+            Eigen::Vector3d tau_controllo = tau_eq + tau_stsm_1 + tau_stsm_2;
 
-                 //Auxiliary variable z
+            //Auxiliary variable z
 
-                 ///!!!! z_stsm = compute_z(z_stsm, L, ulisseModel.params.Inertia, v_r); //*
+            //Eigen::Vector3d z, Eigen::Matrix3d L, Eigen::Matrix3d C, Eigen::Matrix3d D, Eigen::Matrix3d M, Eigen::Vector3d v_r, Eigen::Vector3d tau_controllo
+
+            // L Observer gain
+
+            z_stsm = compute_z(z_stsm, L, C, D, ulisseModel.params.Inertia, v_r, tau_controllo);
+
+            Eigen::Vector6d vehicleVel;
+            vehicleVel.LinearVector(Eigen::Map<Eigen::Vector3d>(filterData.bodyframe_linear_velocity.data(), 3));
+            vehicleVel.AngularVector(Eigen::Map<Eigen::Vector3d>(filterData.bodyframe_angular_velocity.data(), 3));
+            ulisseModel.ComputeCoriolisAndDragForces(vehicleVel);
+            //std::cout<<"K1"<<std::endl<<K1; //stampo la matrice K1 per verificare che sia tutto ok
+
+            //Eigen::Matrix3d M; // Matrice d'inerzia (considera anche effetti di massa aggiunta)
+            //M << ulisseModel.params.m11, 0, 0,
+            //    0, ulisseModel.params.m22, ulisseModel.params.m23,
+            //    0, ulisseModel.params.m32, ulisseModel.params.m33;
+
+            //Eigen::Matrix3d D; //Matrice Drag (dove prendo gli elementi?)
 
 
-                 //std::cout<<"K1"<<std::endl<<K1; //stampo la matrice K1 per verificare che sia tutto ok
+            //Eigen::Matrix3d Co; //Matrice Coriolis (dove prendo gli elementi?)
 
-                 //Eigen::Matrix3d M; // Matrice d'inerzia (considera anche effetti di massa aggiunta)
-                 //M << ulisseModel.params.m11, 0, 0,
-                 //    0, ulisseModel.params.m22, ulisseModel.params.m23,
-                 //    0, ulisseModel.params.m32, ulisseModel.params.m33;
+            //error(0) = referenceVelocities.desired_surge;
+            //error(2) = referenceVelocities.desired_yaw_rate;
 
-                 //Eigen::Matrix3d D; //Matrice Drag (dove prendo gli elementi?)
-
-
-                 //Eigen::Matrix3d Co; //Matrice Coriolis (dove prendo gli elementi?)
-
-                 //error(0) = referenceVelocities.desired_surge;
-                 //error(2) = referenceVelocities.desired_yaw_rate;
-
-                 // using relative surge velocity for the feedforward term
+            // using relative surge velocity for the feedforward term
             Eigen::Vector6d feedbackVel = Eigen::Vector6d::Zero();
             feedbackVel(0) = relSurgeFbk;
             feedbackVel(5) = yawRateFbk;
             double outLeft, outRight; 
 
-                 ///!!!! tau = tau_controllo;
+                 tau = tau_controllo;
 
                  //Utilizzare queste 3 funzioni per passare dalla tau alle percentuali dei motori
             Eigen::Vector2d forces = ulisseModel.ThusterAllocation(tau);
@@ -394,8 +401,8 @@ void DynamicVehicleController::STSMControlInizialization(std::shared_ptr<DCLConf
     //m23 = -Yrp
     //m32 = -Nvp
     //m33 = Iz - Nrp;
-    L.diagonal() = dcl_conf->stsmControl.L;
-    C.diagonal() = dcl_conf->stsmControl.C;
+    //L.diagonal() = dcl_conf->stsmControl.L;
+    //C.diagonal() = dcl_conf->stsmControl.C;
 
 }
 
