@@ -55,13 +55,14 @@ class DynamicVehicleController : public rclcpp::Node {
     rclcpp::Publisher<ulisse_msgs::msg::SimulatedVelocitySensor>::SharedPtr simulatedVelocitySensorPub_;// = this->create_publisher<ulisse_msgs::msg::SimulatedVelocitySensor>(ulisse_msgs::topicnames::simulated_velocity_sensor, 1);
     rclcpp::Publisher<ulisse_msgs::msg::DynamicPidControl>::SharedPtr classicPidControlPub_;// = this->create_publisher<ulisse_msgs::msg::DynamicPidControl>(ulisse_msgs::topicnames::classic_pid_control, 1);
     rclcpp::Publisher<ulisse_msgs::msg::DynamicPidControl>::SharedPtr computedTorqueControlPub_;// = this->create_publisher<ulisse_msgs::msg::DynamicPidControl>(ulisse_msgs::topicnames::computed_torque_control, 1);
-
+    rclcpp::Publisher<ulisse_msgs::msg::STSMControl>::SharedPtr stsmControlPub_;//
 
     //local variables
     ulisse_msgs::msg::ThrusterMappingControl thrusterMappingMsg;
     ulisse_msgs::msg::ThrustersReference thrustersReference;
     ulisse_msgs::msg::DynamicPidControl classicPidControlMsg, computedTorqueMsg;
     ulisse_msgs::msg::SimulatedVelocitySensor simulatedVelocitySensor;
+    ulisse_msgs::msg::STSMControl stsmControlMsg;
 
     //feedback from nav filter
     //double surgeFbk = 0.0;
@@ -104,9 +105,10 @@ class DynamicVehicleController : public rclcpp::Node {
     void ReferenceVelocitiesCB(const ulisse_msgs::msg::ReferenceVelocities::SharedPtr msg);
     void VehicleStatusCB(const ulisse_msgs::msg::VehicleStatus::SharedPtr msg);
     
-    Eigen::Vector3d compute_z(Eigen::Vector3d z, Eigen::Matrix3d L, Eigen::Matrix3d C, Eigen::Matrix3d D, Eigen::Matrix3d M, Eigen::Vector3d v_r, Eigen::Vector3d tau_controllo);
+    Eigen::Vector3d compute_z(Eigen::Vector3d z, Eigen::Matrix3d L, Eigen::Matrix3d M, Eigen::Vector3d v_r,
+                                Eigen::Vector3d tau_DC, Eigen::Vector3d tau_controllo);
     Eigen::Vector3d compute_d_hat(Eigen::Vector3d z, Eigen::Matrix3d L, Eigen::Matrix3d M, Eigen::Vector3d v_r);
-    Eigen::Vector3d compute_tau_eq(Eigen::Matrix3d C, Eigen::Matrix3d D, Eigen::Vector3d v_r, Eigen::Vector3d d_hat);
+    Eigen::Vector3d compute_tau_eq(Eigen::Vector3d tau_DC, Eigen::Vector3d d_hat);
     Eigen::Vector3d compute_tau_stsm_1(double alfa_1, Eigen::Vector3d sigma);
     Eigen::Vector3d compute_tau_stsm_2(double alfa_2, Eigen::Vector3d sigma, Eigen::Vector3d tau_stsm_2, double Ts);
 
