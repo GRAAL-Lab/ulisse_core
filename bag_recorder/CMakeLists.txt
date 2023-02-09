@@ -6,6 +6,11 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
 
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug)
+endif()
+
+
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
@@ -29,15 +34,15 @@ add_library(RosbagRecorder src/bag_recorder/rosbag_recorder.cpp)
 ament_target_dependencies(RosbagRecorder rclcpp rosbag2_cpp ulisse_msgs ament_index_cpp)
 
 # Executables
-add_executable(simple_bag_recorder src/simple_bag_recorder.cpp)
-ament_target_dependencies(simple_bag_recorder rclcpp rosbag2_cpp)
+#add_executable(simple_bag_recorder src/simple_bag_recorder.cpp)
+#ament_target_dependencies(simple_bag_recorder rclcpp rosbag2_cpp)
 
 add_executable(bag_recorder_node src/bag_recorder_node.cpp)
 ament_target_dependencies(bag_recorder_node rclcpp rosbag2_cpp std_srvs ulisse_msgs)
 target_link_libraries(bag_recorder_node RosbagRecorder)
 
 install(TARGETS
-  simple_bag_recorder
+#  simple_bag_recorder
   bag_recorder_node
   DESTINATION lib/${PROJECT_NAME}
 )
