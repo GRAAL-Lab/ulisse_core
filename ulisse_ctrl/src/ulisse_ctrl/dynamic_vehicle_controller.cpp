@@ -225,10 +225,10 @@ void DynamicVehicleController::Run()
             long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
             computedTorqueMsg.stamp.sec = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
             computedTorqueMsg.stamp.nanosec = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
-            computedTorqueMsg.desired_surge = referenceVelocities.desired_surge;
+            computedTorqueMsg.desired_surge = tau[0];//referenceVelocities.desired_surge;
             computedTorqueMsg.feedback_surge = absSurgeFbk;
             computedTorqueMsg.out_pid_surge = pidSurgeCP.GetOutput();
-            computedTorqueMsg.desired_yaw_rate = referenceVelocities.desired_yaw_rate; //velocità desiderate
+            computedTorqueMsg.desired_yaw_rate = tau[1];//referenceVelocities.desired_yaw_rate; //velocità desiderate
             computedTorqueMsg.feedback_yaw_rate = yawRateFbk;
             computedTorqueMsg.out_pid_yaw_rate = pidYawRateCP.GetOutput();
             computedTorqueMsg.forces = { forces[0], forces[1] };
@@ -258,6 +258,7 @@ void DynamicVehicleController::Run()
             Eigen::Vector6d vehicleVel;
             vehicleVel.LinearVector(Eigen::Map<Eigen::Vector3d>(filterData.bodyframe_linear_velocity.data(), 3));
             vehicleVel.AngularVector(Eigen::Map<Eigen::Vector3d>(filterData.bodyframe_angular_velocity.data(), 3));
+
             // tauDC = C*v_r + D*v_r
             Eigen::Vector3d tauDC = ulisseModel.ComputeCoriolisAndDragForces(vehicleVel);
 
@@ -438,7 +439,7 @@ Eigen::Vector3d DynamicVehicleController::compute_tau_eq(Eigen::Vector3d tau_DC,
 
 Eigen::Vector3d DynamicVehicleController::compute_tau_stsm_1(double alfa_1, Eigen::Vector3d sigma){
     for (int i = 0; i < 3; ++i) {
-        sigma(i) = -(alfa_1*(pow(abs(sigma(i)),0.5))*(futils::sign(sigma(i))));
+        sigma(i) = (alfa_1*(pow(abs(sigma(i)),0.5))*(futils::sign(sigma(i))));
     }
 
     return sigma; // sigma è la sliding variable, definita come errore tra le velocità: sigma = v_r - v_desiderata
@@ -447,7 +448,7 @@ Eigen::Vector3d DynamicVehicleController::compute_tau_stsm_1(double alfa_1, Eige
 Eigen::Vector3d DynamicVehicleController::compute_tau_stsm_2(double alfa_2, Eigen::Vector3d sigma, Eigen::Vector3d tau_stsm_2, double Ts){
 
     for (int i = 0; i < 3; ++i) {
-        sigma(i) = tau_stsm_2(i) - (alfa_2*Ts*futils::sign(sigma(i)));
+        sigma(i) = tau_stsm_2(i) + (alfa_2*Ts*futils::sign(sigma(i)));
     }
     return sigma; //tau_stsm_2 inizializzato a vettore nullo
 }
