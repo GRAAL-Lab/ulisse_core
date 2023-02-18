@@ -246,11 +246,16 @@ void DynamicVehicleController::Run()
             double alfa_1 = 5;
             double alfa_2 = 180;
 
-               /// C e D sono le matrici del paper di Coriolis e Drag (correggere quella presa come diagonal dal conf)
-               /// v_r velocità istantea del veicolo (vel relativa) feedback   (---> filterData.bodyframe_linear_velocity)
-               /// sigma (sliding variable è l'errore di velocità)
+            /// C e D sono le matrici del paper di Coriolis e Drag (correggere quella presa come diagonal dal conf)
+            /// v_r velocità istantea del veicolo (vel relativa) feedback   (---> filterData.bodyframe_linear_velocity)
+            /// sigma (sliding variable è l'errore di velocità)
+            ///
 
-               //Disturbance observer signal
+            sigma_stsm(0) = referenceVelocities.desired_surge - filterData.bodyframe_linear_velocity.at(0);
+            sigma_stsm(1) = 0.0;
+            sigma_stsm(2) = referenceVelocities.desired_yaw_rate - filterData.bodyframe_angular_velocity.at(2);
+
+            //Disturbance observer signal
 
             Eigen::Map<Eigen::Vector3d> v_r(filterData.bodyframe_linear_velocity.data(), 3);
             Eigen::Vector3d d_hat = compute_d_hat(z_stsm, L, ulisseModel.params.Inertia, v_r); //inizializzare z = 0; segnale osservatore
@@ -259,7 +264,7 @@ void DynamicVehicleController::Run()
             vehicleVel.LinearVector(Eigen::Map<Eigen::Vector3d>(filterData.bodyframe_linear_velocity.data(), 3));
             vehicleVel.AngularVector(Eigen::Map<Eigen::Vector3d>(filterData.bodyframe_angular_velocity.data(), 3));
 
-            // tauDC = C*v_r + D*v_r
+               // tauDC = C*v_r + D*v_r
             Eigen::Vector3d tauDC = ulisseModel.ComputeCoriolisAndDragForces(vehicleVel);
 
 
@@ -269,28 +274,28 @@ void DynamicVehicleController::Run()
 
             Eigen::Vector3d tau_controllo = tau_eq + tau_stsm_1 + tau_stsm_2;
 
-               //Auxiliary variable z
+           //Auxiliary variable z
 
-               // L Observer gain
+           // L Observer gain
 
             z_stsm = compute_z(z_stsm, L, ulisseModel.params.Inertia, v_r, tauDC, tau_controllo);
 
 
-               //std::cout<<"K1"<<std::endl<<K1; //stampo la matrice K1 per verificare che sia tutto ok
+           //std::cout<<"K1"<<std::endl<<K1; //stampo la matrice K1 per verificare che sia tutto ok
 
-               //Eigen::Matrix3d M; // Matrice d'inerzia (considera anche effetti di massa aggiunta)
-               //M << ulisseModel.params.m11, 0, 0,
-               //    0, ulisseModel.params.m22, ulisseModel.params.m23,
-               //    0, ulisseModel.params.m32, ulisseModel.params.m33;
+           //Eigen::Matrix3d M; // Matrice d'inerzia (considera anche effetti di massa aggiunta)
+           //M << ulisseModel.params.m11, 0, 0,
+           //    0, ulisseModel.params.m22, ulisseModel.params.m23,
+           //    0, ulisseModel.params.m32, ulisseModel.params.m33;
 
-               //Eigen::Matrix3d D; //Matrice Drag (dove prendo gli elementi?)
+           //Eigen::Matrix3d D; //Matrice Drag (dove prendo gli elementi?)
 
-               //Eigen::Matrix3d Co; //Matrice Coriolis (dove prendo gli elementi?)
+           //Eigen::Matrix3d Co; //Matrice Coriolis (dove prendo gli elementi?)
 
-               //error(0) = referenceVelocities.desired_surge;
-               //error(2) = referenceVelocities.desired_yaw_rate;
+           //error(0) = referenceVelocities.desired_surge;
+           //error(2) = referenceVelocities.desired_yaw_rate;
 
-               // using relative surge velocity for the feedforward term
+           // using relative surge velocity for the feedforward term
             Eigen::Vector6d feedbackVel = Eigen::Vector6d::Zero();
             feedbackVel(0) = relSurgeFbk;
             feedbackVel(5) = yawRateFbk;
