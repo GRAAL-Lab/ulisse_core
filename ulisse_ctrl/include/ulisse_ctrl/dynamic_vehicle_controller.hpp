@@ -108,10 +108,10 @@ class DynamicVehicleController : public rclcpp::Node {
     Eigen::Vector3d compute_z(Eigen::Vector3d z, Eigen::Matrix3d L, Eigen::Matrix3d M, Eigen::Vector3d v_r,
                                 Eigen::Vector3d tau_DC, Eigen::Vector3d tau_controllo);
     Eigen::Vector3d compute_d_hat(Eigen::Vector3d z, Eigen::Matrix3d L, Eigen::Matrix3d M, Eigen::Vector3d v_r);
-    Eigen::Vector3d compute_tau_eq(Eigen::Vector3d tau_DC, Eigen::Vector3d d_hat);
-    Eigen::Vector3d compute_tau_stsm_1(double alfa_1, Eigen::Vector3d sigma);
-    Eigen::Vector3d compute_tau_stsm_2(double alfa_2, Eigen::Vector3d sigma, Eigen::Vector3d tau_stsm_2, double Ts);
-
+    Eigen::Vector3d compute_tau_eq(const Eigen::Vector3d &tau_DC, const Eigen::Vector3d &d_hat);
+    Eigen::Vector3d compute_tau_stsm_1(const Eigen::Vector3d &k, const Eigen::Vector3d &sigma);
+    Eigen::Vector3d compute_tau_stsm_2(const Eigen::Vector3d &K, const Eigen::Vector3d &sigma,
+                                                        const Eigen::Vector3d &tau_stsm_2, double Ts);
 
 public:
     DynamicVehicleController(std::string file_name);

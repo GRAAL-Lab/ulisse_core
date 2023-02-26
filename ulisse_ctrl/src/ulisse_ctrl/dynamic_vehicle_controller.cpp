@@ -243,19 +243,24 @@ void DynamicVehicleController::Run()
         } else if (dcl_conf->ctrlMode == ControlMode::STSM){
 
             double Ts = sampleTime_;
-            double alfa_1 = 5;
-            double alfa_2 = 180;
+            Eigen::Vector3d K_1(200.0, 10.0, 200.0);
+            Eigen::Vector3d K_2(2.0, 2.0, 2.0);
 
             /// C e D sono le matrici del paper di Coriolis e Drag (correggere quella presa come diagonal dal conf)
             /// v_r velocità istantea del veicolo (vel relativa) feedback   (---> filterData.bodyframe_linear_velocity)
             /// sigma (sliding variable è l'errore di velocità)
             ///
 
-            sigma_stsm(0) = referenceVelocities.desired_surge - filterData.bodyframe_linear_velocity.at(0);
-            sigma_stsm(1) = 0.0;
-            sigma_stsm(2) = referenceVelocities.desired_yaw_rate - filterData.bodyframe_angular_velocity.at(2);
+            //sigma_stsm(0) = referenceVelocities.desired_surge - filterData.bodyframe_linear_velocity.at(0);
+            //sigma_stsm(1) = 0.0;
+            //sigma_stsm(2) = referenceVelocities.desired_yaw_rate - filterData.bodyframe_angular_velocity.at(2);
 
-            //Disturbance observer signal
+            sigma_stsm(0) = filterData.bodyframe_linear_velocity.at(0) - referenceVelocities.desired_surge;
+            sigma_stsm(1) = 0.0;
+            sigma_stsm(2) = filterData.bodyframe_angular_velocity.at(2) - referenceVelocities.desired_yaw_rate;
+
+
+            // Disturbance observer signal
 
             Eigen::Map<Eigen::Vector3d> v_r(filterData.bodyframe_linear_velocity.data(), 3);
             Eigen::Vector3d d_hat = compute_d_hat(z_stsm, L, ulisseModel.params.Inertia, v_r); //inizializzare z = 0; segnale osservatore
@@ -269,10 +274,10 @@ void DynamicVehicleController::Run()
 
 
             Eigen::Vector3d tau_eq = compute_tau_eq(tauDC, d_hat);
-            Eigen::Vector3d tau_stsm_1 = compute_tau_stsm_1(alfa_1, sigma_stsm);
-            tau_stsm_2 = compute_tau_stsm_2(alfa_2, sigma_stsm, tau_stsm_2, Ts); //inizializzare tau_stsm_2 = 0*
+            Eigen::Vector3d tau_stsm_1 = compute_tau_stsm_1(K_1, sigma_stsm);
+            tau_stsm_2 = compute_tau_stsm_2(K_2, sigma_stsm, tau_stsm_2, Ts); //inizializzare tau_stsm_2 = 0*
 
-            Eigen::Vector3d tau_controllo = tau_eq + tau_stsm_1 + tau_stsm_2;
+            Eigen::Vector3d tau_controllo = tau_eq - tau_stsm_1 + tau_stsm_2;
 
            //Auxiliary variable z
 
@@ -292,8 +297,6 @@ void DynamicVehicleController::Run()
 
            //Eigen::Matrix3d Co; //Matrice Coriolis (dove prendo gli elementi?)
 
-           //error(0) = referenceVelocities.desired_surge;
-           //error(2) = referenceVelocities.desired_yaw_rate;
 
            // using relative surge velocity for the feedforward term
             Eigen::Vector6d feedbackVel = Eigen::Vector6d::Zero();
@@ -437,25 +440,27 @@ Eigen::Vector3d DynamicVehicleController::compute_d_hat(Eigen::Vector3d z, Eigen
 
 // Di seguito definisco le funzioni per calcolare tau_controllo = tau_eq + tau_stsm_1 + tau_stsm_2;
 
-Eigen::Vector3d DynamicVehicleController::compute_tau_eq(Eigen::Vector3d tau_DC, Eigen::Vector3d d_hat){
+Eigen::Vector3d DynamicVehicleController::compute_tau_eq(const Eigen::Vector3d &tau_DC, const Eigen::Vector3d &d_hat){
     return tau_DC - d_hat; //d_hat = compute_d_hat();
 
 }
 
-Eigen::Vector3d DynamicVehicleController::compute_tau_stsm_1(double alfa_1, Eigen::Vector3d sigma){
+Eigen::Vector3d DynamicVehicleController::compute_tau_stsm_1(const Eigen::Vector3d &K1, const Eigen::Vector3d &sigma){
+    Eigen::Vector3d tau;
     for (int i = 0; i < 3; ++i) {
-        sigma(i) = (alfa_1*(pow(abs(sigma(i)),0.5))*(futils::sign(sigma(i))));
+        tau(i) = (K1(i)*(pow(abs(sigma(i)),0.5))*(futils::sign(sigma(i))));
     }
 
-    return sigma; // sigma è la sliding variable, definita come errore tra le velocità: sigma = v_r - v_desiderata
+    return tau; // sigma è la sliding variable, definita come errore tra le velocità: sigma = v_r - v_desiderata
 }
 
-Eigen::Vector3d DynamicVehicleController::compute_tau_stsm_2(double alfa_2, Eigen::Vector3d sigma, Eigen::Vector3d tau_stsm_2, double Ts){
-
+Eigen::Vector3d DynamicVehicleController::compute_tau_stsm_2(const Eigen::Vector3d &K2, const Eigen::Vector3d &sigma,
+                                                                            const Eigen::Vector3d &tau_stsm_2, double Ts){
+    Eigen::Vector3d tau;
     for (int i = 0; i < 3; ++i) {
-        sigma(i) = tau_stsm_2(i) + (alfa_2*Ts*futils::sign(sigma(i)));
+        tau(i) = tau_stsm_2(i) + (K2(i)*Ts*futils::sign(sigma(i)));
     }
-    return sigma; //tau_stsm_2 inizializzato a vettore nullo
+    return tau; //tau_stsm_2 inizializzato a vettore nullo
 }
 
 void DynamicVehicleController::ReferenceVelocitiesCB(const ulisse_msgs::msg::ReferenceVelocities::SharedPtr msg) { referenceVelocities = *msg; }
