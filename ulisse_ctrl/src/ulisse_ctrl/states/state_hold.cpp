@@ -106,8 +106,12 @@ namespace states {
 
         //If the goal distance is minAcceptanceRadius << goalDistance << maxAcceptanceRadius.
         if (hysteresisState_ == HysteresisState::Align) {
-            linearVelocityTask_->SetReferenceRate(Eigen::Vector3d::Zero(), robotModel->BodyFrameID());
 
+            linearVelocityTask_->SetReferenceRate(Eigen::Vector3d::Zero(), robotModel->BodyFrameID());
+            //// MOD (stsm)
+            //double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1, absoluteAxisAlignmentTask_->ControlVariable().norm());
+            //linearVelocityTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(linearVelocityTask_->TaskSpace(), linearVelocityTask_->TaskSpace());
+            //// MOD
             absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(-(ctrlData->inertialF_waterCurrent).normalized().x(),
                                                                   -(ctrlData->inertialF_waterCurrent).normalized().y(), 0),
                 rml::FrameID::WorldFrame);
@@ -116,6 +120,8 @@ namespace states {
             // Avoid that the roboto try to align with very small intensity of water current.
             double absoluteAxisAlignmentGain = rml::IncreasingBellShapedFunction(minWaterCurrent_, maxWaterCurrent_, 0, 1, (ctrlData->inertialF_waterCurrent).norm());
             absoluteAxisAlignmentTask_->ExternalActivationFunction() = absoluteAxisAlignmentGain * Eigen::MatrixXd::Identity(absoluteAxisAlignmentTask_->TaskSpace(), absoluteAxisAlignmentTask_->TaskSpace());
+
+
 
         } else if (hysteresisState_ == HysteresisState::ComeBack) {
             // If the previos action was comeback to the hold acceptance radius, keep do it until d < minAcceptanceRadius.

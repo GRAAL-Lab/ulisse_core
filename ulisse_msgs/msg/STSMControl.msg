@@ -4,5 +4,7 @@ float64 feedback_surge
 float64 desired_yaw_rate
 float64 feedback_yaw_rate
 float64[2] tau
+float64 tau_surge
+float64 tau_yawrate
 float64[2] forces
 ThrustersReference motor_percentage
