@@ -245,6 +245,7 @@ void DynamicVehicleController::Run()
             double Ts = sampleTime_;
             Eigen::Vector3d K_1(200.0, 10.0, 200.0);
             Eigen::Vector3d K_2(2.0, 2.0, 2.0);
+            double delta = 0.1;
 
             /// C e D sono le matrici del paper di Coriolis e Drag (correggere quella presa come diagonal dal conf)
             /// v_r velocità istantea del veicolo (vel relativa) feedback   (---> filterData.bodyframe_linear_velocity)
@@ -255,9 +256,9 @@ void DynamicVehicleController::Run()
             //sigma_stsm(1) = 0.0;
             //sigma_stsm(2) = referenceVelocities.desired_yaw_rate - filterData.bodyframe_angular_velocity.at(2);
 
-            sigma_stsm(0) = filterData.bodyframe_linear_velocity.at(0) - referenceVelocities.desired_surge;
+            sigma_stsm(0) = absSurgeFbk - referenceVelocities.desired_surge;
             sigma_stsm(1) = 0.0;
-            sigma_stsm(2) = filterData.bodyframe_angular_velocity.at(2) - referenceVelocities.desired_yaw_rate;
+            sigma_stsm(2) = yawRateFbk - referenceVelocities.desired_yaw_rate;
 
 
             // Disturbance observer signal
@@ -274,8 +275,8 @@ void DynamicVehicleController::Run()
 
 
             Eigen::Vector3d tau_eq = compute_tau_eq(tauDC, d_hat);
-            Eigen::Vector3d tau_stsm_1 = compute_tau_stsm_1(K_1, sigma_stsm);
-            tau_stsm_2 = compute_tau_stsm_2(K_2, sigma_stsm, tau_stsm_2, Ts); //inizializzare tau_stsm_2 = 0*
+            Eigen::Vector3d tau_stsm_1 = compute_tau_stsm_1(K_1, sigma_stsm, delta);
+            tau_stsm_2 = compute_tau_stsm_2(K_2, sigma_stsm, tau_stsm_2, delta, Ts);    // inizializzare tau_stsm_2 = 0*
 
             Eigen::Vector3d tau_controllo = tau_eq - tau_stsm_1 + tau_stsm_2;
 
@@ -285,17 +286,7 @@ void DynamicVehicleController::Run()
 
             z_stsm = compute_z(z_stsm, L, ulisseModel.params.Inertia, v_r, tauDC, tau_controllo);
 
-
            //std::cout<<"K1"<<std::endl<<K1; //stampo la matrice K1 per verificare che sia tutto ok
-
-           //Eigen::Matrix3d M; // Matrice d'inerzia (considera anche effetti di massa aggiunta)
-           //M << ulisseModel.params.m11, 0, 0,
-           //    0, ulisseModel.params.m22, ulisseModel.params.m23,
-           //    0, ulisseModel.params.m32, ulisseModel.params.m33;
-
-           //Eigen::Matrix3d D; //Matrice Drag (dove prendo gli elementi?)
-
-           //Eigen::Matrix3d Co; //Matrice Coriolis (dove prendo gli elementi?)
 
 
            // using relative surge velocity for the feedforward term
@@ -324,6 +315,8 @@ void DynamicVehicleController::Run()
             stsmControlMsg.feedback_yaw_rate = yawRateFbk;
             stsmControlMsg.forces = { forces[0], forces[1] };
             stsmControlMsg.tau = { tau[0], tau[1] };
+            stsmControlMsg.tau_surge = tau[0];
+            stsmControlMsg.tau_yawrate = tau[1];
             stsmControlMsg.motor_percentage.left_percentage = outLeft;
             stsmControlMsg.motor_percentage.right_percentage = outRight;
             stsmControlPub_->publish(stsmControlMsg);
@@ -445,20 +438,20 @@ Eigen::Vector3d DynamicVehicleController::compute_tau_eq(const Eigen::Vector3d &
 
 }
 
-Eigen::Vector3d DynamicVehicleController::compute_tau_stsm_1(const Eigen::Vector3d &K1, const Eigen::Vector3d &sigma){
+Eigen::Vector3d DynamicVehicleController::compute_tau_stsm_1(const Eigen::Vector3d &K1, const Eigen::Vector3d &sigma, double delta){
     Eigen::Vector3d tau;
     for (int i = 0; i < 3; ++i) {
-        tau(i) = (K1(i)*(pow(abs(sigma(i)),0.5))*(futils::sign(sigma(i))));
+        tau(i) = (K1(i)*(pow(abs(sigma(i)),0.5))*(futils::boundedlayer(sigma(i), delta)));
     }
 
     return tau; // sigma è la sliding variable, definita come errore tra le velocità: sigma = v_r - v_desiderata
 }
 
 Eigen::Vector3d DynamicVehicleController::compute_tau_stsm_2(const Eigen::Vector3d &K2, const Eigen::Vector3d &sigma,
-                                                                            const Eigen::Vector3d &tau_stsm_2, double Ts){
+                                                                            const Eigen::Vector3d &tau_stsm_2, double delta, double Ts){
     Eigen::Vector3d tau;
     for (int i = 0; i < 3; ++i) {
-        tau(i) = tau_stsm_2(i) + (K2(i)*Ts*futils::sign(sigma(i)));
+        tau(i) = tau_stsm_2(i) + (K2(i)*Ts*futils::boundedlayer(sigma(i), delta));
     }
     return tau; //tau_stsm_2 inizializzato a vettore nullo
 }

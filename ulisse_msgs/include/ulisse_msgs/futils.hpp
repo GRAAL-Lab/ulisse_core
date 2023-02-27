@@ -765,6 +765,14 @@ inline int sign (double value){
     }
 }
 
+inline double boundedlayer(double sigma, double delta){
+    double ret;
+
+    ret = sigma / (std::abs(sigma) + delta);
+
+    return ret;
+}
+
 
 
 } /* namespace FUTILS */
