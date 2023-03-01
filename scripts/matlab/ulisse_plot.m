@@ -2,6 +2,6 @@
 
 is_sim = 0;
 
-data = import_data("/home/wanderfra/logs/csv/sensors_calib_jan22/rosbag2_2022-01-12_12.25.50/", is_sim);
+data = import_data("/home/wanderfra/logs/stsm/CSV/rosbag2_2023-03-01_12.11.24/", is_sim);
 
 plot_data(data, is_sim)

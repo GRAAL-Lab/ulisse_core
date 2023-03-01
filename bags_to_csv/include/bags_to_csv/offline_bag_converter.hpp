@@ -32,6 +32,7 @@
 #include "ulisse_msgs/msg/reference_velocities.hpp"
 #include "ulisse_msgs/msg/vehicle_status.hpp"
 #include "ulisse_msgs/msg/simulated_system.hpp"
+#include "ulisse_msgs/msg/stsm_control.hpp"
 
 //#include "ulisse_msgs/msg/llc_sw485_status.hpp"
 //#include "ulisse_msgs/msg/micro_loop_count.hpp"
@@ -60,6 +61,7 @@ private:
     ulisse_msgs::msg::ReferenceVelocities referenceVel_;
     //ulisse_msgs::msg::VehicleStatus vehicleStatus_;
     ulisse_msgs::msg::SimulatedSystem groundtruth_;
+    ulisse_msgs::msg::STSMControl stsmControl_;
 
     std::ofstream gpsFile_;
     //std::ofstream ambientFile_;

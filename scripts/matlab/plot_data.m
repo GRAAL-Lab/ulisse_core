@@ -40,6 +40,7 @@ end
 h = plot(data.compass.ros_time, data.compass.rpy(:,1)*180/pi, '*');  set(h,{'DisplayName'},{'data.compass roll'})
 xlabel('Time [s]');
 ylabel('Roll angle [deg]');
+%ylim([-10,10])
 legend('off'); legend('show')
 subplot(3,1,2)
 h = plot(data.filter.ros_time, data.filter.state(:,5)*180/pi); hold on; set(h,{'DisplayName'},{'pitch'})
@@ -139,53 +140,65 @@ legend('port', 'startboard','port rpm', 'starboard rpm');
 %figure(15); hold off;
 
 
-figure(9); hold off;
-h = plot(data.filter.state(:,2), data.filter.state(:,1)); hold on; set(h,{'DisplayName'},{'estimated'})
-if (is_sim)
-    h = plot(data.sim.state(:,2), data.sim.state(:,1), '--'); set(h,{'DisplayName'},{'sim'})
-end
-plot(data.gps.longitude, data.gps.latitude, '*'); set(h,{'DisplayName'},{'data.gps'})
-xlabel('Longitude');
-ylabel('Latitude');
-legend('off'); legend('show')
+% figure(9); hold off;
+% h = plot(data.filter.state(:,2), data.filter.state(:,1)); hold on; set(h,{'DisplayName'},{'estimated'})
+% if (is_sim)
+%     h = plot(data.sim.state(:,2), data.sim.state(:,1), '--'); set(h,{'DisplayName'},{'sim'})
+% end
+% plot(data.gps.longitude, data.gps.latitude, '*'); set(h,{'DisplayName'},{'data.gps'})
+% xlabel('Longitude');
+% ylabel('Latitude');
+% legend('off'); legend('show')
 
 
-figure(10); hold off;
-h = plot(data.filter.ned(:,2), data.filter.ned(:,1)); hold on; set(h,{'DisplayName'},{'estimated'})
-if (is_sim)
-    h = plot(data.sim.ned(:,2), data.sim.ned(:,1), '--'); set(h,{'DisplayName'},{'sim'})
-end
-h = plot(data.gps.ned(:,2), data.gps.ned(:,1), '*'); set(h,{'DisplayName'},{'data.gps'})
-axis equal
-xlabel('Easting');
-ylabel('Northing');
-legend('off'); legend('show')
+% figure(10); hold off;
+% h = plot(data.filter.ned(:,2), data.filter.ned(:,1)); hold on; set(h,{'DisplayName'},{'estimated'})
+% if (is_sim)
+%     h = plot(data.sim.ned(:,2), data.sim.ned(:,1), '--'); set(h,{'DisplayName'},{'sim'})
+% end
+% h = plot(data.gps.ned(:,2), data.gps.ned(:,1), '*'); set(h,{'DisplayName'},{'data.gps'})
+% axis equal
+% xlabel('Easting');
+% ylabel('Northing');
+% legend('off'); legend('show')
 
 %diff = data.filter.ned(:,1:2) - data.gps.ned(:,1:2);
 %figure(11)
 %plot(vecnorm(diff,2,2))
 %ylabel('Distance norm between estimated and data.gps position [m]');
 
-figure(12); hold off;
-h = plot(data.filter.ros_time, data.filter.bodyF_cur);
-ylabel('Estimated current projected on body frame [m/s]');
+% figure(12); hold off;
+% h = plot(data.filter.ros_time, data.filter.bodyF_cur);
+% ylabel('Estimated current projected on body frame [m/s]');
 
-figure(13); hold off;
+figure(13); %hold off;
 h = plot(data.filter.ros_time, data.filter.bodyF_absvel);  hold on;
 h = plot(data.gps.ros_time, data.gps.speed);
 h = plot(data.gps.ros_time, surgefilt);
 ylabel('Estimated absolute velocity projected on body frame [m/s]');
 
-figure(14); hold off;
+figure(14); %hold off;
 h = plot(data.filter.ros_time, data.filter.worldF_absvel); hold on;
 ylabel('Estimated absolute velocity projected on world frame [m/s]');
 
 
-figure(16); hold off;
-h = plot(data.imu.ros_time, data.imu.accelerometer); hold on;
-xlabel('Time [s]');
-ylabel('Acceleration [m/s^2]');
-legend('x', 'y', 'z');
+% figure(15); hold off;
+% h = plot(data.imu.ros_time, data.imu.accelerometer); hold on;
+% xlabel('Time [s]');
+% ylabel('Acceleration [m/s^2]');
+% legend('x', 'y', 'z');
+
+figure(16); %hold off;
+h = plot(data.stsm.ros_time, data.stsm.sigma_surge);  hold on;
+h = plot(data.stsm.ros_time, data.stsm.sigma_yawrate);
+ylabel('sigma [m/s]');
+
+figure(17); %hold off;
+h = plot(data.stsm.ros_time, data.stsm.tau_surge);  hold on;
+h = plot(data.stsm.ros_time, data.stsm.tau_yawrate);
+ylabel('Control torque [N*m]');
+
 
 end
+
 

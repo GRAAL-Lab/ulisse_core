@@ -77,6 +77,23 @@ for k=1:length(data.gps.time(:,1))
     data.gps.ned(k,3) = data.gps.altitude(k);
 end
 
+filename = path + "gps.txt";
+A = importdata(filename, delimiterIn, headerlinesIn);
+i = 1;
+data.gps.ros_time = A.data(first:end,i)  - time(1);
+i = 2;
+data.gps.time =  A.data(first:end,i)  - time(1);
+data.gps.latitude =  A.data(first:end,i+1);
+data.gps.longitude =  A.data(first:end,i+2);
+data.gps.altitude = A.data(first:end,i+3);
+data.gps.speed = A.data(first:end,i+4);
+data.gps.cog = A.data(first:end,i+5);
+for k=1:length(data.gps.time(:,1))
+    [x, y, zone, isnorth] = utmups_fwd(data.gps.latitude(k), data.gps.longitude(k));
+    data.gps.ned(k,1) = y;
+    data.gps.ned(k,2) = x;
+    data.gps.ned(k,3) = data.gps.altitude(k);
+end
 
 % using rostime instead of sensortime due to bug
 %
@@ -96,26 +113,40 @@ i = i+4;
 data.magnetometer.time = A.data(first:end,i)  - time(1);
 data.magnetometer.xyz = A.data(first:end,i+1:i+3);
 
+
 % using rostime instead of sensortime due to bug
 %
-filename = path + "pathFollowing.txt";
-i = 1;
+filename = path + "stsm_control.txt";
 A = importdata(filename, delimiterIn, headerlinesIn);
-data.pathfollow.ros_time = A.data(first:end,i)  - time(1);
-i = 2;
-data.pathfollow.time = A.data(first:end,i) - time(1);
-i = 3;
-data.pathfollow.delta = A.data(first:end,i);
-i = 4;
-data.pathfollow.y = A.data(first:end,i);
-i = 5;
-data.pathfollow.y_real = A.data(first:end,i);
-i = 6;
-data.pathfollow.y_int_dot = A.data(first:end,i);
-i = 7;
-data.pathfollow.y_int = A.data(first:end,i);
-i = 8;
-data.pathfollow.psi = A.data(first:end,i);
+i = 1;
+data.stsm.ros_time = A.data(first:end,i)  - time(1);
+data.stsm.time = A.data(first:end,i+1)  - time(1);
+data.stsm.sigma_surge = A.data(first:end,i+2);
+data.stsm.sigma_yawrate = A.data(first:end,i+3);
+data.stsm.tau_surge = A.data(first:end,i+4);
+data.stsm.tau_yawrate = A.data(first:end,i+5);
+
+
+% using rostime instead of sensortime due to bug
+%
+% filename = path + "pathFollowing.txt";
+% i = 1;
+% A = importdata(filename, delimiterIn, headerlinesIn);
+% data.pathfollow.ros_time = A.data(first:end,i)  - time(1);
+% i = 2;
+% data.pathfollow.time = A.data(first:end,i) - time(1);
+% i = 3;
+% data.pathfollow.delta = A.data(first:end,i);
+% i = 4;
+% data.pathfollow.y = A.data(first:end,i);
+% i = 5;
+% data.pathfollow.y_real = A.data(first:end,i);
+% i = 6;
+% data.pathfollow.y_int_dot = A.data(first:end,i);
+% i = 7;
+% data.pathfollow.y_int = A.data(first:end,i);
+% i = 8;
+% data.pathfollow.psi = A.data(first:end,i);
 
 
 if is_sim == 1
