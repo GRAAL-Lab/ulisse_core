@@ -123,25 +123,20 @@ struct ThrusterMapping {
 // Inizio struct STSM
 struct STSMControlData {
     Eigen::Vector3d L;
-    //Eigen::Vector3d C;
-    //Eigen::Vector3d K1;
-    //Eigen::Vector3d K2;
+    Eigen::Vector3d K1;//(200.0, 10.0, 200.0);
+    Eigen::Vector3d K2;//(2.0, 2.0, 2.0);
+    double boundaryDelta;// = 0.1;
 
     bool ConfigureFromFile(const libconfig::Setting& confObj) noexcept(false)
     {
-        //const libconfig::Setting& STSMConf = confObj["STSMControl"];
-
-        //if (!ctb::GetParam(pidSurge, pidGainsSurge.Kd, "kd"))
-            //return false;
-        // Aggiungere tutti i parametri che voglio caricare, ad esempio: m11 m2
         if (!ctb::GetParamVector(confObj, L, "L"))
             return false;
-        //if (!ctb::GetParamVector(confObj, C, "C"))
-        //    return false;
-        //if (!ctb::GetParamVector(confObj, K1, "K1"))
-        //    return false;
-        //if (!ctb::GetParamVector(confObj, K2, "K2"))
-        //    return false;
+        if (!ctb::GetParamVector(confObj, K1, "K1"))
+            return false;
+        if (!ctb::GetParamVector(confObj, K2, "K2"))
+            return false;
+        if (!ctb::GetParam(confObj, boundaryDelta, "boundaryDelta"))
+            return false;
 
         return true;
     }
@@ -150,9 +145,9 @@ struct STSMControlData {
     {
         return os << "======= STSM Control CONF =======\n"
                   << "L: " << a.L.transpose() <<"\n"
-                  //<< "L: " << a.C.transpose() <<"\n"
-                  //<< "L: " << a.K1.transpose() <<"\n"
-                  //<< "L: " << a.K2.transpose() <<"\n"
+                  << "K1: " << a.K1.transpose() <<"\n"
+                  << "K1: " << a.K2.transpose() <<"\n"
+                  << "boundaryDelta: " << a.boundaryDelta <<"\n"
                   << "==============================\n";
     }
 };

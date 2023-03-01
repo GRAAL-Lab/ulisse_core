@@ -220,7 +220,7 @@ void DynamicVehicleController::Run()
             ulisseModel.ThrustersSaturation(outLeft, outRight, -dcl_conf->thrusterPercLimit, dcl_conf->thrusterPercLimit, thrustersReference.left_percentage, thrustersReference.right_percentage);
 
 
-               //Fill the classic dynamic pid contol msg
+            //Fill the classic dynamic pid contol msg
             auto t_now_ = std::chrono::system_clock::now();
             long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
             computedTorqueMsg.stamp.sec = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
@@ -237,24 +237,19 @@ void DynamicVehicleController::Run()
             computedTorqueMsg.motor_percentage.right_percentage = outRight;
             computedTorqueControlPub_->publish(computedTorqueMsg);
 
-               // fill the feedback for the nav filter
+            // fill the feedback for the nav filter
             simulatedVelocitySensor.water_relative_surge = referenceVelocities.desired_surge;//velocità desiderate
             simulatedVelocitySensorPub_->publish(simulatedVelocitySensor);
         } else if (dcl_conf->ctrlMode == ControlMode::STSM){
 
             double Ts = sampleTime_;
-            Eigen::Vector3d K_1(200.0, 10.0, 200.0);
-            Eigen::Vector3d K_2(2.0, 2.0, 2.0);
-            double delta = 0.1;
 
             /// C e D sono le matrici del paper di Coriolis e Drag (correggere quella presa come diagonal dal conf)
             /// v_r velocità istantea del veicolo (vel relativa) feedback   (---> filterData.bodyframe_linear_velocity)
             /// sigma (sliding variable è l'errore di velocità)
-            ///
-
-            //sigma_stsm(0) = referenceVelocities.desired_surge - filterData.bodyframe_linear_velocity.at(0);
-            //sigma_stsm(1) = 0.0;
-            //sigma_stsm(2) = referenceVelocities.desired_yaw_rate - filterData.bodyframe_angular_velocity.at(2);
+            /// Auxiliary variable z
+            /// L Observer gain
+            /// tauDC = C*v_r + D*v_r
 
             sigma_stsm(0) = absSurgeFbk - referenceVelocities.desired_surge;
             sigma_stsm(1) = 0.0;
@@ -270,23 +265,16 @@ void DynamicVehicleController::Run()
             vehicleVel.LinearVector(Eigen::Map<Eigen::Vector3d>(filterData.bodyframe_linear_velocity.data(), 3));
             vehicleVel.AngularVector(Eigen::Map<Eigen::Vector3d>(filterData.bodyframe_angular_velocity.data(), 3));
 
-               // tauDC = C*v_r + D*v_r
+
             Eigen::Vector3d tauDC = ulisseModel.ComputeCoriolisAndDragForces(vehicleVel);
 
-
             Eigen::Vector3d tau_eq = compute_tau_eq(tauDC, d_hat);
-            Eigen::Vector3d tau_stsm_1 = compute_tau_stsm_1(K_1, sigma_stsm, delta);
-            tau_stsm_2 = compute_tau_stsm_2(K_2, sigma_stsm, tau_stsm_2, delta, Ts);    // inizializzare tau_stsm_2 = 0*
+            Eigen::Vector3d tau_stsm_1 = compute_tau_stsm_1(dcl_conf->stsmControl.K1, sigma_stsm, dcl_conf->stsmControl.boundaryDelta);
+            tau_stsm_2 = compute_tau_stsm_2(dcl_conf->stsmControl.K2, sigma_stsm, tau_stsm_2, dcl_conf->stsmControl.boundaryDelta, Ts);    // inizializzare tau_stsm_2 = 0*
 
             Eigen::Vector3d tau_controllo = tau_eq - tau_stsm_1 + tau_stsm_2;
 
-           //Auxiliary variable z
-
-           // L Observer gain
-
             z_stsm = compute_z(z_stsm, L, ulisseModel.params.Inertia, v_r, tauDC, tau_controllo);
-
-           //std::cout<<"K1"<<std::endl<<K1; //stampo la matrice K1 per verificare che sia tutto ok
 
 
            // using relative surge velocity for the feedforward term
@@ -298,7 +286,7 @@ void DynamicVehicleController::Run()
             tau(0) = tau_controllo(0);
             tau(1) = tau_controllo(2);
 
-               //Utilizzare queste 3 funzioni per passare dalla tau alle percentuali dei motori
+            //Utilizzare queste 3 funzioni per passare dalla tau alle percentuali dei motori
             Eigen::Vector2d forces = ulisseModel.ThusterAllocation(tau);
             ulisseModel.InverseMotorsEquations(feedbackVel, forces, outLeft, outRight);
             ulisseModel.ThrustersSaturation(outLeft, outRight, -dcl_conf->thrusterPercLimit,
@@ -417,13 +405,9 @@ void DynamicVehicleController::STSMControlInizialization(std::shared_ptr<DCLConf
     sigma_stsm = Eigen::Vector3d::Zero();
     z_stsm = Eigen::Vector3d::Zero();
     tau_stsm_2 = Eigen::Vector3d::Zero();
-    //m11 = m - Xup;
-    //m22 = m - Yvp;
-    //m23 = -Yrp
-    //m32 = -Nvp
-    //m33 = Iz - Nrp;
+
+    L.setZero();
     L.diagonal() = dcl_conf->stsmControl.L;
-    //C.diagonal() = dcl_conf->stsmControl.C;
 
 }
 

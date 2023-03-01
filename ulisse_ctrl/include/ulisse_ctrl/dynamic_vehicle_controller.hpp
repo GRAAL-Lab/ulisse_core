@@ -86,8 +86,6 @@ class DynamicVehicleController : public rclcpp::Node {
     Eigen::Vector3d z_stsm; 
     Eigen::Vector3d tau_stsm_2;
     Eigen::Matrix3d L;
-    //Eigen::Matrix3d C;
-    //double m11, m22, m23, m32, m33;
 
     Eigen::Vector2d tau = Eigen::Vector2d::Zero();
 
