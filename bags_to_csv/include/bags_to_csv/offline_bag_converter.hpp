@@ -74,6 +74,7 @@ private:
     std::ofstream refVelFile_;
     //std::ofstream vehicleStatusFile_;
     std::ofstream groundtruthFile_;
+    std::ofstream stsmFile_;
 
     bool ConvertToCSV();
     bool OpenFiles();
