@@ -314,9 +314,13 @@ void DynamicVehicleController::Run()
             stsmControlMsg.desired_yaw_rate = referenceVelocities.desired_yaw_rate; //velocità desiderate
             stsmControlMsg.feedback_yaw_rate = yawRateFbk;
             stsmControlMsg.forces = { forces[0], forces[1] };
-            stsmControlMsg.tau = { tau[0], tau[1] };
+
+            //stsmControlMsg.tau = { tau[0], tau[1] };
             stsmControlMsg.tau_surge = tau[0];
             stsmControlMsg.tau_yawrate = tau[1];
+            stsmControlMsg.sigma_surge = sigma_stsm(0);
+            stsmControlMsg.sigma_yawrate = sigma_stsm(2);
+
             stsmControlMsg.motor_percentage.left_percentage = outLeft;
             stsmControlMsg.motor_percentage.right_percentage = outRight;
             stsmControlPub_->publish(stsmControlMsg);
