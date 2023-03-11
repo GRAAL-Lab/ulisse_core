@@ -125,7 +125,8 @@ struct STSMControlData {
     Eigen::Vector3d L;
     Eigen::Vector3d K1;//(200.0, 10.0, 200.0);
     Eigen::Vector3d K2;//(2.0, 2.0, 2.0);
-    double boundaryDelta;// = 0.1;
+    Eigen::Vector3d boundaryDelta;
+    
 
     bool ConfigureFromFile(const libconfig::Setting& confObj) noexcept(false)
     {
@@ -135,7 +136,7 @@ struct STSMControlData {
             return false;
         if (!ctb::GetParamVector(confObj, K2, "K2"))
             return false;
-        if (!ctb::GetParam(confObj, boundaryDelta, "boundaryDelta"))
+        if (!ctb::GetParamVector(confObj, boundaryDelta, "boundaryDelta"))
             return false;
 
         return true;
@@ -147,7 +148,7 @@ struct STSMControlData {
                   << "L: " << a.L.transpose() <<"\n"
                   << "K1: " << a.K1.transpose() <<"\n"
                   << "K1: " << a.K2.transpose() <<"\n"
-                  << "boundaryDelta: " << a.boundaryDelta <<"\n"
+                  << "boundaryDelta: " << a.boundaryDelta.transpose() <<"\n"
                   << "==============================\n";
     }
 };
