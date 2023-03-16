@@ -426,20 +426,20 @@ Eigen::Vector3d DynamicVehicleController::compute_tau_eq(const Eigen::Vector3d &
 
 }
 
-Eigen::Vector3d DynamicVehicleController::compute_tau_stsm_1(const Eigen::Vector3d &K1, const Eigen::Vector3d &sigma, double delta){
+Eigen::Vector3d DynamicVehicleController::compute_tau_stsm_1(const Eigen::Vector3d &K1, const Eigen::Vector3d &sigma, const Eigen::Vector3d &delta){
     Eigen::Vector3d tau;
     for (int i = 0; i < 3; ++i) {
-        tau(i) = (K1(i)*(pow(abs(sigma(i)),0.5))*(futils::boundedlayer(sigma(i), delta)));
+        tau(i) = (K1(i)*(pow(abs(sigma(i)),0.5))*(futils::boundedlayer(sigma(i), delta(i))));
     }
 
     return tau; // sigma è la sliding variable, definita come errore tra le velocità: sigma = v_r - v_desiderata
 }
 
 Eigen::Vector3d DynamicVehicleController::compute_tau_stsm_2(const Eigen::Vector3d &K2, const Eigen::Vector3d &sigma,
-                                                                            const Eigen::Vector3d &tau_stsm_2, double delta, double Ts){
+                                                                           const Eigen::Vector3d &tau_stsm_2, const Eigen::Vector3d &delta, double Ts){
     Eigen::Vector3d tau;
     for (int i = 0; i < 3; ++i) {
-        tau(i) = tau_stsm_2(i) + (K2(i)*Ts*futils::boundedlayer(sigma(i), delta));
+        tau(i) = tau_stsm_2(i) + (K2(i)*Ts*futils::boundedlayer(sigma(i), delta(i)));
     }
     return tau; //tau_stsm_2 inizializzato a vettore nullo
 }
