@@ -66,7 +66,21 @@ colcon build --symlink-install
 ```
 
 ## Run the architecture
-Firstly be sure to **synchronize your system** time using the GPS, and then configure the GPS itself, by running these commands in the root of the repository:
+
+With your on-shore device connect to the Wi-Fi network of the catamaran "ISME AUV", and give yourself a static IP in the network `192.168.1.*`. Then connect via SSH with the catamaran (user:graal, pwd: graal) using:
+
+```bash
+
+ssh graal@192.168.1.100
+```
+
+When using remote terminals, to prevent problems related to network failures, it is strongly advised to use `screen` sessions in the terminal where you launch the controller and the driver. Useful commands:
+
+ - Create named session: `screen -S session_name`
+ - Detach session: `Ctrl+A`, then press `D`
+ - Reattach to session: `screen -r session_name`
+
+Once on the catamaran, firstly be sure to **synchronize your system time** using the GPS, and then configure the GPS itself, by running these commands in the root of the repository:
 
 ```bash
 
@@ -87,7 +101,13 @@ ros2 launch ulisse_sim launchSim.py        # simulating
 
 # Shell B (controller)
 ros2 launch ulisse_ctrl launchControl.py
+```
 
+## Run the GUI
+
+To launch the **GUI**, type on a separate shell of your on-shore device type:
+
+```bash
 # Shell C (optional, GUI)
 ros2 run ulisse_map ulisse_map_node
 ```
