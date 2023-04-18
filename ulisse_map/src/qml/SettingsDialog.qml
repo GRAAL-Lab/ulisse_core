@@ -73,6 +73,7 @@ Dialog {
             text: "Map Plugin [" + settings.mapPluginType + "]"
         }
 
+	
         RowLayout {
             id: mapPluginSetting
             property bool changed: false
@@ -112,17 +113,26 @@ Dialog {
                     mapPluginSetting.changed = true
                 }
 
-                /*Image {
-                    anchors.fill: parent
-                    source: "qrc:/images/Esri_logo.svg.png"
-                    fillMode: Image.PreserveAspectFit
-                    mipmap: true
+            }
+            
+           Button{
+                text: "MapBoxGL"
+                font.capitalization: Font.MixedCase
+                checkable: true
+                highlighted: checked
+                ButtonGroup.group: mapPluginsButtonGroup
+                checked: settings.mapPluginType === "mapboxgl"
+                Material.foreground: "#0060df"
 
-                }*/
+                onClicked: {
+                    futureMapPlugin = "mapboxgl"
+                    mapPluginSetting.changed = true
+                }
+
             }
 
         }
-
+        
 
         RowLayout {
             id: mapTypeSetting

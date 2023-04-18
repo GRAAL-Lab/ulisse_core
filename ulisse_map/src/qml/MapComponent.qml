@@ -198,6 +198,7 @@ MapComponentForm {
             if (ulissePath.firstRun) {
                 ulissePath.addCoordinate(fbkUpdater.ulisse_pos)
                 ulissePath.firstRun = false
+                ulisseIcon.visible = true;
             }
             // To reduce the line density (and avoid to overload the gui)
             // we add a new point only every 1.0 meter

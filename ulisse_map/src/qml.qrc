@@ -68,6 +68,7 @@
         <file>qml/AddonsBridgeVisualizer.qml</file>
         <file>fonts/fontello-icons/fontello.ttf</file>
         <file>qml/MapCustomPolyline.qml</file>
+        <file>qml/MapCustomCircle.qml</file>
         <file>qml/SettingsSectionLabel.qml</file>
         <file>images/Esri_logo.svg.png</file>
         <file>images/Openstreetmap_logo.svg.png</file>

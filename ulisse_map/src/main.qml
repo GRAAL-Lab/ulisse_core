@@ -72,13 +72,11 @@ ApplicationWindow {
     }
 
 
-    // The reasons why "esri" has been chosen as the map plugin is due to the fact
-    // that it enables a high level of zoom-in (>18), differently from "osm".
     Settings {
         id: settings
         property int shTimeout: 120
-        property string mapPluginType: "esri"
-        property string mapCachePath: home_dir + "/.map_offline_tiles/esri/"
+        property string mapPluginType: "mapboxgl"
+        property string mapCachePath: home_dir + "/.map_offline_tiles/" + mapPluginType + "/"
         property int mapTypeIndex: 0
         property string theme: "Light"
         property var mapBearing: 0.0

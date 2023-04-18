@@ -46,11 +46,11 @@ RowLayout {
             value: settings.mapCachePath
         }
 
-        PluginParameter {
+        /*PluginParameter {
             id: maxZoomLevel
             name: "esri.mapping.maximumZoomLevel"
             value: 19.9
-        }
+        }*/
 
         //PluginParameter { name: "osm.useragent"; value: "GraalLab - UNIGE" }
         //PluginParameter { name: "osm.mapping.copyright"; value: "All mine" }
@@ -103,7 +103,7 @@ RowLayout {
             width: parent.width
             height: parent.height// - bottomToolbar.height
             plugin: mapPlugin
-            center: settings.mapCenter
+            //center: settings.mapCenter
             zoomLevel: settings.mapZoom
             bearing: settings.mapBearing
 

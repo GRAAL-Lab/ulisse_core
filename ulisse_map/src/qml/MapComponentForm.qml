@@ -24,7 +24,7 @@ Map {
     property alias goalFlag: goalFlag
     property alias ruler: ruler
     property alias greenFlag: greenFlag
-    //property alias editCircle: editCircle
+    property alias goalAcceptRadius: goalAcceptRadius
     property alias sliderz: sliders.z
     property alias mapTextOverlay: mapTextOverlay
 
@@ -167,6 +167,7 @@ Map {
         coordinate: fbkUpdater.ulisse_pos
         anchorPoint.x: ulisseImage.width / 2
         anchorPoint.y: ulisseImage.height / 2
+        visible: false
         z: map.z + 5
     }
 
@@ -242,15 +243,28 @@ Map {
         visible: settings.showStatusOverlay
     }
 
-    MapCircle {
-        id: goalAcceptRadius
-        center: goalFlag.coordinate
-        radius: fbkUpdater.accept_radius
-        color: 'transparent'
-        border.width: 1
-        border.color: grey
-        opacity: goalFlag.opacity == 1.0 ? goalFlag.opacity : 0.0
-        z: map.z + 2
+    //MapCircle {
+    //    id: goalAcceptRadius
+    //    center: goalFlag.coordinate
+    //    radius: fbkUpdater.accept_radius
+    //    color: 'transparent'
+    //    border.width: 1
+    //    border.color: grey
+    //    opacity: goalFlag.opacity == 1.0 ? goalFlag.opacity : 0.0
+    //    z: map.z + 2
+    //}
+
+  MapCustomCircle {
+      id: goalAcceptRadius
+      center: goalFlag.coordinate
+      radius: fbkUpdater.accept_radius
+      //color: 'transparent'
+      //border.width: 1
+      //border.color: grey
+      line.width: 2
+      line.color: grey
+      opacity: goalFlag.opacity == 1.0 ? goalFlag.opacity : 0.0
+      z: map.z + 4
     }
 
     MapQuickItem {
