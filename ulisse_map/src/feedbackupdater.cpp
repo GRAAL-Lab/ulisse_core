@@ -146,6 +146,8 @@ void FeedbackUpdater::RegisterPublishersAndSubscribers()
     llc_motors_sub_ = this->create_subscription<ulisse_msgs::msg::LLCThrusters>(ulisse_msgs::topicnames::llc_thrusters,
         qos_sensor, std::bind(&FeedbackUpdater::LLCMotorsCB, this, _1));
 
+
+
     battery_left_sub_ = this->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_left,
         10, std::bind(&FeedbackUpdater::LLCBatteryLeftCB, this, _1));
     battery_right_sub_ = this->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_right,
@@ -156,6 +158,8 @@ void FeedbackUpdater::RegisterPublishersAndSubscribers()
         1, std::bind(&FeedbackUpdater::ThrustersAppliedReferenceCB, this, _1));
     sw485_status_sub_ = this->create_subscription<ulisse_msgs::msg::LLCSw485Status>(ulisse_msgs::topicnames::llc_sw485status,
         10, std::bind(&FeedbackUpdater::LLCSw485StatusCB, this, _1));
+    llc_status_sub_ = this->create_subscription<ulisse_msgs::msg::LLCStatus>(ulisse_msgs::topicnames::llc_status,
+        10, std::bind(&FeedbackUpdater::LLCStatusCB, this, _1));
     current_status_sub_ = this->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data,
         10, std::bind(&FeedbackUpdater::NavFilterDataCB, this, _1));
     feedbackGuiSub_ = this->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui,
@@ -305,6 +309,12 @@ void FeedbackUpdater::ThrustersAppliedReferenceCB(const ulisse_msgs::msg::Thrust
 {
     q_thrust_applied_ref_left_ = msg->left_percentage;
     q_thrust_applied_ref_right_ = msg->right_percentage;
+}
+
+void FeedbackUpdater::LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg)
+{
+    thruster_reference_enabled = msg->flags.enable_reference;
+    radio_controller_enabled = msg->flags.ppm_remote_enabled;
 }
 
 void FeedbackUpdater::LLCSw485StatusCB(const ulisse_msgs::msg::LLCSw485Status::SharedPtr msg)
@@ -567,6 +577,16 @@ double FeedbackUpdater::get_water_current_deg()
 double FeedbackUpdater::get_water_current_norm()
 {
     return water_current_norm;
+}
+
+bool FeedbackUpdater::get_radio_controller_enabled()
+{
+    return radio_controller_enabled;
+}
+
+bool FeedbackUpdater::get_thruster_ref_enabled()
+{
+    return thruster_reference_enabled;
 }
 
 void FeedbackUpdater::process_callbacks_slot()

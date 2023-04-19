@@ -22,6 +22,7 @@
 #include "ulisse_msgs/msg/llc_thrusters.hpp"
 #include "ulisse_msgs/msg/llc_battery.hpp"
 #include "ulisse_msgs/msg/llc_sw485_status.hpp"
+#include "ulisse_msgs/msg/llc_status.hpp"
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
 #include "ulisse_msgs/msg/reference_velocities.hpp"
 #include "ulisse_msgs/msg/thrusters_reference.hpp"
@@ -77,6 +78,8 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     Q_PROPERTY(int motor_speed_R READ get_motor_speed_R NOTIFY callbacks_processed)
     Q_PROPERTY(int timestamp485 READ get_timestamp485 NOTIFY callbacks_processed)
     Q_PROPERTY(int missed_deadlines485 READ get_missed_deadlines NOTIFY callbacks_processed)
+    Q_PROPERTY(bool radio_controller_enabled READ get_radio_controller_enabled NOTIFY callbacks_processed)
+    Q_PROPERTY(bool thruster_ref_enabled READ get_thruster_ref_enabled NOTIFY callbacks_processed)
 
     Q_PROPERTY(float water_current_norm READ get_water_current_norm NOTIFY callbacks_processed)
     Q_PROPERTY(float water_current_deg READ get_water_current_deg NOTIFY callbacks_processed)
@@ -109,6 +112,9 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     int missed_deadlines_;
     int timestamp485_;
 
+    bool radio_controller_enabled = false;
+    bool thruster_reference_enabled = false;
+
     double water_current_deg;
     double water_current_norm;
 
@@ -125,6 +131,7 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     rclcpp::Subscription<ulisse_msgs::msg::ThrustersReference>::SharedPtr thrusters_reference_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::ThrustersReference>::SharedPtr thrusters_applied_ref_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::LLCSw485Status>::SharedPtr sw485_status_sub_;
+    rclcpp::Subscription<ulisse_msgs::msg::LLCStatus>::SharedPtr llc_status_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr current_status_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::ReferenceVelocities>::SharedPtr referenceVelocitiesSub_;
     rclcpp::Subscription<ulisse_msgs::msg::VehicleStatus>::SharedPtr vehicleStatusSub_;
@@ -147,6 +154,7 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     void LLCBatteryRightCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg);
     void ThrustersReferenceCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg);
     void ThrustersAppliedReferenceCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg);
+    void LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg);
     void LLCSw485StatusCB(const ulisse_msgs::msg::LLCSw485Status::SharedPtr msg);
     void ReferenceVelocitiesCB(const ulisse_msgs::msg::ReferenceVelocities::SharedPtr msg);
     void VehicleStatusCB(const ulisse_msgs::msg::VehicleStatus::SharedPtr msg);
@@ -204,6 +212,8 @@ public:
 
     int get_missed_deadlines();
     int get_timestamp485();
+    bool get_radio_controller_enabled();
+    bool get_thruster_ref_enabled();
     double get_water_current_norm();
     double get_water_current_deg();
 

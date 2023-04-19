@@ -53,7 +53,7 @@ RowLayout {
         }*/
 
         //PluginParameter { name: "osm.useragent"; value: "GraalLab - UNIGE" }
-        //PluginParameter { name: "osm.mapping.copyright"; value: "All mine" }
+        //PluginParameter { name: "osm.mapping.copyright"; value: "" }
 
     }
 
@@ -101,7 +101,7 @@ RowLayout {
         MapComponent {
             id: map
             width: parent.width
-            height: parent.height// - bottomToolbar.height
+            height: parent.height - 20
             plugin: mapPlugin
             //center: settings.mapCenter
             zoomLevel: settings.mapZoom

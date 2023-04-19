@@ -39,6 +39,7 @@ VehicleSimulator::VehicleSimulator(const std::string file_name)
 
     t_start_ = t_last_ = t_now_ = std::chrono::system_clock::now();
 
+    llcStatusPub_ = this->create_publisher<ulisse_msgs::msg::LLCStatus>(ulisse_msgs::topicnames::llc_status,1);
     microLoopCountPub_ = this->create_publisher<ulisse_msgs::msg::MicroLoopCount>(ulisse_msgs::topicnames::micro_loop_count, 1);
     gpsPub_ = this->create_publisher<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data, 1);
     compassPub_ = this->create_publisher<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass, 1);
@@ -52,13 +53,16 @@ VehicleSimulator::VehicleSimulator(const std::string file_name)
     motorsDataPub_ = this->create_publisher<ulisse_msgs::msg::LLCThrusters>(ulisse_msgs::topicnames::llc_thrusters, 1);
 
     thrustersSub_ = this->create_subscription<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_reference_perc, 1,
-        std::bind(&VehicleSimulator::ThrustersReferenceCB, this, _1));
+                                                                                    std::bind(&VehicleSimulator::ThrustersReferenceCB, this, _1));
 
     worldF_waterVelocity_(0) = 0.0;
     worldF_waterVelocity_(1) = 0.0;
 
     n_p_ = 0;
     n_s_ = 0;
+
+    llcStatusMsg_.flags.enable_reference = true;
+    llcStatusMsg_.flags.ppm_remote_enabled = false;
 
     bodyF_projection_.setZero(6, 6);
 
@@ -490,6 +494,8 @@ void VehicleSimulator::SimulateSensors()
     motorsDataMsg_.stamp.nanosec = now_stamp_nanosecs;
     motorsDataMsg_.left.motor_speed = n_p_; //ulisseModel.PercentageToRPM(hp_);
     motorsDataMsg_.right.motor_speed = n_s_; //ulisseModel.PercentageToRPM(hs_);
+
+
 }
 
 void VehicleSimulator::PublishSensors()
@@ -498,6 +504,7 @@ void VehicleSimulator::PublishSensors()
     simulatedSystemPub_->publish(groundTruthMsg_);
     appliedMotorRefPub_->publish(appliedMotorRefMsg_);
     motorsDataPub_->publish(motorsDataMsg_);
+    llcStatusPub_->publish(llcStatusMsg_);
 
     if (static_cast<int>(timestamp_count_ / 20) > gpsPubCounter_) {
         gpsPubCounter_ = static_cast<int>(timestamp_count_ / 20);

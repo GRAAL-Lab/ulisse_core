@@ -27,7 +27,7 @@ Rectangle {
             text: "Recenter"
             font.pointSize: 9
             highlighted: true
-            Material.background: grey
+            //Material.background: grey
             Layout.leftMargin: 10
         }
 
@@ -36,32 +36,69 @@ Rectangle {
             text: "Clear trace"
             font.pointSize: 9
             highlighted: true
-            Material.accent: grey
+            //Material.accent: grey
             Layout.alignment: Qt.AlignLeft
         }
 
         CheckBox {
             id: followMeCheckbox
             text: "Follow vehicle"
-            //Layout.alignment: Qt.AlignLeft
-            Material.accent: grey
+            //Material.accent: grey
             checked: false
         }
 
         CheckBox {
             id: gpsIconCBox
             text: "Show GPS"
-            Material.accent: grey
+            //Material.accent: grey
             checked: false
         }
 
-        Rectangle {
-            id: rectangle
-            width: 200
-            height: 200
-            color: dimmedwhite
+        // Spacer item
+        Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
+            //Rectangle { anchors.fill: parent; color: "#ffaaaa" } // to visualize the spacer
+        }
+
+        Column {
+            Layout.rightMargin: 5
+            spacing: 6
+            Rectangle {
+                width: rc_enabled.contentWidth + 6
+                height: rc_enabled.contentHeight + 3
+                border.color: fbkUpdater.radio_controller_enabled ? "red" : "green"
+                border.width: 1
+                radius: 5
+
+                Text {
+                    id: rc_enabled
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
+                    anchors.fill:parent
+                    font.pointSize: 8
+                    color: fbkUpdater.radio_controller_enabled ? "red" : "green"
+                    text:  fbkUpdater.radio_controller_enabled ? qsTr("Radio Controller On") : qsTr("Radio Controller Off")
+                }
+            }
+
+            Rectangle {
+                width: thrusters_enabled.contentWidth + 6
+                height: thrusters_enabled.contentHeight + 3
+                border.color: fbkUpdater.thruster_ref_enabled ? "green" : "red"
+                border.width: 1
+                radius: 5
+
+                Text {
+                    id: thrusters_enabled
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
+                    anchors.fill:parent
+                    font.pointSize: 8
+                    color: fbkUpdater.thruster_ref_enabled ? "green" : "red"
+                    text:  fbkUpdater.thruster_ref_enabled ? qsTr("Reference Enabled") : qsTr("Reference Disabled")
+                }
+            }
         }
 
         Button {
@@ -73,6 +110,7 @@ Rectangle {
             Material.accent: mainColor
             Layout.alignment: Qt.AlignRight
             Layout.rightMargin: 20
+            enabled: !fbkUpdater.thruster_ref_enabled
         }
 
         Button {
