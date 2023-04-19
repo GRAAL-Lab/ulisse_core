@@ -70,6 +70,7 @@ When using remote terminals, to prevent problems related to network failures, it
  - Create named session: `screen -S session_name`
  - Detach session: `Ctrl+A`, then press `D`
  - Reattach to session: `screen -r session_name`
+ - List all the sessions: `screen -ls`
 
 Once on the catamaran, firstly be sure to configure the GPS itself, and then **synchronize your system time** using the GPS by running these commands:
 
@@ -88,17 +89,19 @@ The following launch files will run all the necessary nodes (all with `sourceros
 ```bash
 
 # Shell A (driver)
+screen -S driver
 ros2 launch ulisse_driver launchDriver.py  # real case
 -or-
 ros2 launch ulisse_sim launchSim.py        # simulating
 
 # Shell B (controller)
+screen -S control
 ros2 launch ulisse_ctrl launchControl.py
 ```
 
 ## Run the GUI
 
-To launch the **GUI**, type on a separate shell of your on-shore device type:
+To launch the **GUI**, type on a separate shell of your on-shore device type (no need for screen here):
 
 ```bash
 # Shell C (optional, GUI)
