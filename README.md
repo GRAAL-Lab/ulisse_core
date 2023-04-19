@@ -71,12 +71,14 @@ When using remote terminals, to prevent problems related to network failures, it
  - Detach session: `Ctrl+A`, then press `D`
  - Reattach to session: `screen -r session_name`
 
-Once on the catamaran, firstly be sure to **synchronize your system time** using the GPS, and then configure the GPS itself, by running these commands in the root of the repository:
+Once on the catamaran, firstly be sure to configure the GPS itself, and then **synchronize your system time** using the GPS by running these commands:
 
 ```bash
 
-python gpstime.py
 ros2 launch ulisse_driver launchGPSSetup.py
+cd ros2_ws/src/ulisse_core/scripts
+python3 gpstime.py
+
 ```
 
 Wait till the launch files finishes printing info, then you can kill the process if hanging.
