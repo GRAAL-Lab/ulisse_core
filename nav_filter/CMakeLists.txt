@@ -1,9 +1,12 @@
 cmake_minimum_required(VERSION 3.5)
 project(nav_filter)
 
-# Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD 17)
+endif()
+
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -16,7 +19,6 @@ find_package(std_msgs REQUIRED)
 find_package(surface_vehicle_model REQUIRED)
 find_package(ulisse_msgs REQUIRED)
 find_package(ulisse_driver REQUIRED)
-#find_package(ulisse_ctrl REQUIRED)
 find_package(rml REQUIRED)
 find_package(ctrl_toolbox REQUIRED)
 find_package(ament_index_cpp REQUIRED)

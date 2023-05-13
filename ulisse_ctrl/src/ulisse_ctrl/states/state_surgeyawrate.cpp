@@ -24,7 +24,8 @@ namespace states {
 
     bool StateSurgeYawRate::ConfigureStateFromFile(libconfig::Config& confObj)
     {
-        const libconfig::Setting& root = confObj.getRoot();
+        (void) confObj;
+        //const libconfig::Setting& root = confObj.getRoot();
 /*        const libconfig::Setting& states = root["states"];
 
         const libconfig::Setting& state = states.lookup(ulisse::states::ID::surgeyawrate);
