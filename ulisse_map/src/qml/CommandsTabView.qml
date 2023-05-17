@@ -5,23 +5,33 @@ import QtQuick.Controls.Material 2.1
 import "."
 import "../scripts/helper.js" as Helper
 
-Pane{
+
+Rectangle {
+
+    Layout.alignment: Qt.AlignCenter
+    width: commandsColumnLayout.width + 10
+    height: commandsColumnLayout.height + 10
+    color: lightergrey
+
     property alias pathCommandsPane: pathCommandsPane
     property alias speedHeadTimeout: speedHeadTimeout
 
     property var sliderHeading: sliderHeading
 
-
-
-    property var labelWidth: 100
-    property var sliderWidth: 105
-    property var unitsWidth: 40
-
-    topPadding: 0
-    Material.elevation: 4
+    property real labelWidth: 100
+    property real sliderWidth: 105
+    property real unitsWidth: 40
 
     ColumnLayout {
-        width: parent.width
+
+
+        id: commandsColumnLayout
+
+
+        anchors.centerIn: parent
+        //id: commandsLayout
+        //width: parent.width
+        //height: contentHeight
 
         Label {
             font.pointSize: 12

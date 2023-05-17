@@ -98,13 +98,13 @@ Pane {
                 Button {
                     id: buttonBoundBoxResend
                     enabled: settings.savedBoundary == "null" ? false : true
-                    text: qsTr("Resend")
+                    text: fbkUpdater.safety_boundary_set? qsTr("Resend") : qsTr("Send")
                     font.pointSize: 9
                     padding: 5
                     antialiasing: false
                     Layout.fillWidth: true
                     highlighted: true
-                    //Layout.fillHeight: false
+                    Material.background: fbkUpdater.safety_boundary_set? grey : softorange
                     onClicked: cmdWrapper.sendBoundaries(JSON.stringify(map.safety_polygon.serialize()))
                 }
 
@@ -150,8 +150,83 @@ Pane {
             Layout.bottomMargin: 20
             Layout.fillWidth: true
             Layout.fillHeight: true
+            //height: commandsLayout.height
             Material.background: Material.color(Material.BlueGrey, Material.Shade50)
+
+            Layout.alignment:  Qt.AlignVCenter | Qt.AlignHCenter
+
+
+            Rectangle {
+                visible: !fbkUpdater.safety_boundary_set
+                Layout.alignment:  Qt.AlignVCenter | Qt.AlignHCenter
+                height: commandParamsStackContainer.height
+                width: commandParamsStackContainer.width
+                color: Qt.hsla(0, 0, 0, 0.25)
+                //opacity: 0.5
+                z: 99
+
+                layer.enabled: true
+                layer.effect: Glow {
+                    radius: 5
+                    samples: 10
+                    color: Qt.hsla(0, 0, 0, 0.25)
+
+                }
+
+                ColumnLayout {
+
+                    anchors.horizontalCenter: parent.horizontalCenter
+
+                    // Spacer Item
+                    Item {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 10
+                        //Rectangle { anchors.fill: parent; color: "#ffaaaa" } // to visualize the spacer
+                    }
+
+                    Image {
+                        width: 40
+                        Layout.alignment: Qt.AlignCenter
+                        source: 'qrc:/images/white_arrow.png'
+                        sourceSize.height: 120
+                    }
+
+                    Text {
+
+                        Layout.alignment:  Qt.AlignCenter
+                        horizontalAlignment: Text.AlignHCenter
+                        text: "Boundary not set for the controller! Please ensure that a bounding box has been defined and send it to the catamaran."
+                        wrapMode: Text.WordWrap
+                        Layout.maximumWidth: commandParamsStackContainer.width - 30
+
+                        color: 'white'
+                        z: 100
+
+                        font.weight: Font.Bold
+
+                        layer.enabled: true
+                        layer.effect: Glow {
+                            radius: 10
+                            samples: 10
+                            color: grey
+
+                        }
+                    }
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    propagateComposedEvents: false
+                    hoverEnabled: true
+                    preventStealing: true
+                    onClicked: {
+                        overlay.visible = false
+                    }
+                }
+            }
         }
+
+
 
         Button {
             text: "Halt"
@@ -175,6 +250,8 @@ Pane {
             horizontalAlignment: Text.AlignHCenter
         }
     }
+
+
 
 
 

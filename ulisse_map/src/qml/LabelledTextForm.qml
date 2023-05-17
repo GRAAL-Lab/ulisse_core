@@ -4,7 +4,7 @@ import QtQuick.Controls 2.1
 import "."
 
 RowLayout {
-    property var label: ""
+    property string label: ""
     property int lsize: 11
     property int tsize: 9
     property alias labelColor: title.color

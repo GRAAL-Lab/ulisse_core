@@ -34,7 +34,7 @@ MapPolyline {
     property var posChangedHandler: pos_changed_handler
 
 
-    property var direction: 0
+    property real direction: 0
 
     function toggle_dir() {
         direction = (++direction) % 2
@@ -254,8 +254,8 @@ MapPolyline {
     property var backup_vertex_markers
     property var backup_add_markers
 
-    property var moving_idx: -1
-    property var marked: -1
+    property real moving_idx: -1
+    property real marked: -1
     property bool translating: false
     property bool rotating: false
 

@@ -48,6 +48,8 @@ VehicleController::VehicleController(std::string conf_filename)
     feedbackGuiPub_ = this->create_publisher<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10);
     tpikActionPub_ = this->create_publisher<ulisse_msgs::msg::TPIKAction>(ulisse_msgs::topicnames::tpik_action, 10);
 
+    safetyBoundarySetPub_ = this->create_publisher<std_msgs::msg::Bool>(ulisse_msgs::topicnames::safety_boundary_set, 10);
+
     /// TPIK Manager
     actionManager_ = std::make_shared<tpik::ActionManager>(tpik::ActionManager());
 
@@ -511,6 +513,9 @@ void VehicleController::SlowTimerCB()
         RCLCPP_INFO(this->get_logger(), "Waiting for the Safety Bounding Box");
     }
     return;*/
+    std_msgs::msg::Bool sbSet;
+    sbSet.data = boundariesSet_;
+    safetyBoundarySetPub_->publish(sbSet);
 
     // Publish Hierarchy Info
     ulisse_msgs::msg::TPIKAction tpikActionMsg_;

@@ -74,5 +74,6 @@
         <file>images/Openstreetmap_logo.svg.png</file>
         <file>images/ulisse_icon.png</file>
         <file>images/ulisse_icon-48.png</file>
+        <file>images/white_arrow.png</file>
     </qresource>
 </RCC>

@@ -79,8 +79,8 @@ ApplicationWindow {
         property string mapCachePath: home_dir + "/.map_offline_tiles/" + mapPluginType + "/"
         property int mapTypeIndex: 0
         property string theme: "Light"
-        property var mapBearing: 0.0
-        property var mapZoom: 19.0
+        property real mapBearing: 0.0
+        property real mapZoom: 19.0
         property var mapCenter: QtPositioning.coordinate(44.392, 8.945)
         property string savedBoundary: "null"
         property bool showCentroid: true

@@ -12,11 +12,11 @@ RowLayout {
     id: root
     property bool buttons: false
 
-    property var nameTrack: textnametrack.text
+    property string nameTrack: textnametrack.text
     property var size_1: parseInt(size_1Field.text)
     property var size_2: parseInt(size_2Field.text)
     property var angle: parseInt(angleField.text)
-    property var polypath_type: polypathType.currentText
+    property string polypath_type: polypathType.currentText
 
     property var nameTrack_
     property var size_1_

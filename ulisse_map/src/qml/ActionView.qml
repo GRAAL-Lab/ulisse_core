@@ -9,8 +9,8 @@ import "."
 Rectangle {
 
     id: actionView
-    property var titlesize: 15
-    property var labelsize: 13
+    property real titlesize: 15
+    property real labelsize: 13
     color: Material.background
 
     Pane {

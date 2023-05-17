@@ -7,10 +7,10 @@ MapQuickItem {
     property alias canvasWidth: _c.width
     property alias canvasHeight: _c.height
     property alias canvasCtx: _c._ctx
-    property var canvasAngle: 0
-    property var multiplier: 0
+    property real canvasAngle: 0
+    property real multiplier: 0
     property alias _canvas: _c
-    property var line_opacity: 1.0
+    property real line_opacity: 1.0
 
     opacity: line_opacity
 

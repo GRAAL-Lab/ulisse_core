@@ -47,6 +47,7 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
     commandTimerPeriod_ = 100;
     fbkReceived_ = false;
 
+    // Connecting the timer endings (SIGNAL timeout()) to some speicific functions defined in the SLOTS
     QObject::connect(checkErrorTimer_.get(), SIGNAL(timeout()), this, SLOT(check_error_slot()));
     QObject::connect(surgeHeadingPubTimer_.get(), SIGNAL(timeout()), this, SLOT(publish_surge_heading()));
     QObject::connect(surgeYawRatePubTimer_.get(), SIGNAL(timeout()), this, SLOT(publish_surge_yawrate()));
@@ -102,7 +103,7 @@ void CommandWrapper::RegisterPublishersAndSubscribers()
     nav_filter_srv_ = this->create_client<ulisse_msgs::srv::NavFilterCommand>(ulisse_msgs::topicnames::navfilter_cmd_service);
 
     feedbackGuiSub_ = this->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10,
-        std::bind(&CommandWrapper::FeedbackGuiCB, this, _1) );
+                                                                               std::bind(&CommandWrapper::FeedbackGuiCB, this, _1) );
 
     surgeHeadingPub_ = this->create_publisher<ulisse_msgs::msg::SurgeHeading>(ulisse_msgs::topicnames::surge_heading, 1);
     surgeYawRatePub_ = this->create_publisher<ulisse_msgs::msg::SurgeYawRate>(ulisse_msgs::topicnames::surge_yawrate, 1);
@@ -152,7 +153,7 @@ QGeoCoordinate CommandWrapper::localUTM2LatLong(QPoint UTM_point, QGeoCoordinate
     ctb::LatLong tmp;
     double altitude;
     ctb::LocalUTM2LatLong(Eigen::Vector3d { static_cast<double>(UTM_point.x()), static_cast<double>(UTM_point.y()), 0.0 },
-        ctb::LatLong(centroid.latitude(), centroid.longitude()), tmp, altitude);
+                          ctb::LatLong(centroid.latitude(), centroid.longitude()), tmp, altitude);
 
     return QGeoCoordinate(tmp.latitude, tmp.longitude);
 }
@@ -337,7 +338,7 @@ bool CommandWrapper::SendBoundariesRequest(ulisse_msgs::srv::SetBoundaries::Requ
         }
         serviceAvailable = true;
     } else {
-        result_msg = "No Boundary Server Available";
+        result_msg = "The controller doesn't seem to be active.\n(No Boundary Server Available)";
         serviceAvailable = false;
     }
 
@@ -689,3 +690,5 @@ QStringList CommandWrapper::get_polypath_types()
 {
     return polypathTypes;
 }
+
+

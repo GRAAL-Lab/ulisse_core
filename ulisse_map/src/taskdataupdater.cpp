@@ -56,6 +56,8 @@ void TaskDataUpdater::Init(QQmlApplicationEngine* engine)
 
     myTimer_ = new QTimer(this);
     QObject::connect(myTimer_, SIGNAL(timeout()), this, SLOT(process_callbacks_slot()));
+
+    //std::cout << "[TU] Timer interval = " << taskDataUpdateInterval_ << std::endl;
     myTimer_->start(taskDataUpdateInterval_);
 
     /*slowTimer_ = new QTimer(this);
@@ -102,34 +104,34 @@ void TaskDataUpdater::RegisterSubscribers(){
     //custom_qos_profile.depth = 7;
 
     tpikActionSub_ = this->create_subscription<ulisse_msgs::msg::TPIKAction>(ulisse_msgs::topicnames::tpik_action, 10,
-        std::bind(&TaskDataUpdater::TPIKActionCB, this, _1));
+                                                                             std::bind(&TaskDataUpdater::TPIKActionCB, this, _1));
 
     absoluteAxisAlignmentSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment, 10,
-        std::bind(&TaskDataUpdater::AbsoluteAxisAlignmentCB, this, _1));
+                                                                                        std::bind(&TaskDataUpdater::AbsoluteAxisAlignmentCB, this, _1));
 
     absoluteAxisAlignmentHoldSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment_hold, 10,
-        std::bind(&TaskDataUpdater::AbsoluteAxisAlignmentHoldCB, this, _1));
+                                                                                            std::bind(&TaskDataUpdater::AbsoluteAxisAlignmentHoldCB, this, _1));
 
     absoluteAxisAlignmentSafetySub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment_safety, 10,
-        std::bind(&TaskDataUpdater::AbsoluteAxisAlignmentSafetyCB, this, _1));
+                                                                                              std::bind(&TaskDataUpdater::AbsoluteAxisAlignmentSafetyCB, this, _1));
 
     angularPositionSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_angular_position, 10,
-        std::bind(&TaskDataUpdater::AngularPositionCB, this, _1));
+                                                                                  std::bind(&TaskDataUpdater::AngularPositionCB, this, _1));
 
     cartesianDistanceSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_cartesian_distance, 10,
-        std::bind(&TaskDataUpdater::CartesianDistanceCB, this, _1));
+                                                                                    std::bind(&TaskDataUpdater::CartesianDistanceCB, this, _1));
 
     cartesianDistancePathFollowingSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_cartesian_distance_path_follow, 10,
-        std::bind(&TaskDataUpdater::CartesianDistancePathFollowingCB, this, _1));
+                                                                                                 std::bind(&TaskDataUpdater::CartesianDistancePathFollowingCB, this, _1));
 
     linearVelocitySub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_linear_velocity, 10,
-        std::bind(&TaskDataUpdater::LinearVelocityCB, this, _1));
+                                                                                 std::bind(&TaskDataUpdater::LinearVelocityCB, this, _1));
 
     linearVelocityHoldSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_linear_velocity_hold, 10,
-        std::bind(&TaskDataUpdater::LinearVelocityHoldCB, this, _1));
+                                                                                     std::bind(&TaskDataUpdater::LinearVelocityHoldCB, this, _1));
 
     safetyBoundariesSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_safety_boundaries, 10,
-        std::bind(&TaskDataUpdater::SafetyBoundariesCB, this, _1));
+                                                                                   std::bind(&TaskDataUpdater::SafetyBoundariesCB, this, _1));
 
 }
 

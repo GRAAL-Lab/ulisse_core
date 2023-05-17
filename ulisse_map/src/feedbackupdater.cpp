@@ -36,6 +36,7 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
     appEngine_ = engine;
 
     myTimer_ = new QTimer(this);
+    //std::cout << "[FU] Timer interval = " << feedbackUpdateInterval_ << std::endl;
     myTimer_->start(feedbackUpdateInterval_);
     QObject::connect(myTimer_, SIGNAL(timeout()), this, SLOT(process_callbacks_slot()));
 
@@ -164,6 +165,10 @@ void FeedbackUpdater::RegisterPublishersAndSubscribers()
         10, std::bind(&FeedbackUpdater::NavFilterDataCB, this, _1));
     feedbackGuiSub_ = this->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui,
         10, std::bind(&FeedbackUpdater::FeedbackGuiCB, this, _1));
+
+
+    safetyBoundarySetSub_ = this->create_subscription<std_msgs::msg::Bool>(ulisse_msgs::topicnames::safety_boundary_set, 1,
+                                                                           std::bind(&FeedbackUpdater::SafetyBoundaryCB, this, _1) );
 
 
 }
@@ -351,6 +356,16 @@ void FeedbackUpdater::FeedbackGuiCB(const ulisse_msgs::msg::FeedbackGui::SharedP
 
     q_track_pos_.setLatitude(msg->current_track_point.latitude);
     q_track_pos_.setLongitude(msg->current_track_point.longitude);
+}
+
+void FeedbackUpdater::SafetyBoundaryCB(const std_msgs::msg::Bool::SharedPtr msg)
+{
+    if(msg->data != safetyBoundarySet_) {
+        safetyBoundarySet_ = msg->data;
+        std::cout << "[CommandWrapper::SafetyBoundaryCB] Value READ" << std::endl;
+    }
+
+    //std::cout << "[CommandWrapper::SafetyBoundaryCB] safetyBoundarySet_ = " << safetyBoundarySet_ << std::endl;
 }
 
 void FeedbackUpdater::copyToClipboard(QString newText)
@@ -587,6 +602,11 @@ bool FeedbackUpdater::get_radio_controller_enabled()
 bool FeedbackUpdater::get_thruster_ref_enabled()
 {
     return thruster_reference_enabled;
+}
+
+bool FeedbackUpdater::get_safety_boundary_set()
+{
+    return safetyBoundarySet_;
 }
 
 void FeedbackUpdater::process_callbacks_slot()

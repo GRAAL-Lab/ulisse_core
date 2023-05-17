@@ -12,6 +12,7 @@
 
 #include "rclcpp/rclcpp.hpp"
 
+#include "std_msgs/msg/bool.hpp"
 #include "ulisse_msgs/msg/feedback_gui.hpp"
 #include "ulisse_msgs/msg/gps_data.hpp"
 #include "ulisse_msgs/msg/micro_loop_count.hpp"
@@ -80,6 +81,7 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     Q_PROPERTY(int missed_deadlines485 READ get_missed_deadlines NOTIFY callbacks_processed)
     Q_PROPERTY(bool radio_controller_enabled READ get_radio_controller_enabled NOTIFY callbacks_processed)
     Q_PROPERTY(bool thruster_ref_enabled READ get_thruster_ref_enabled NOTIFY callbacks_processed)
+    Q_PROPERTY(bool safety_boundary_set READ get_safety_boundary_set NOTIFY callbacks_processed)
 
     Q_PROPERTY(float water_current_norm READ get_water_current_norm NOTIFY callbacks_processed)
     Q_PROPERTY(float water_current_deg READ get_water_current_deg NOTIFY callbacks_processed)
@@ -114,6 +116,7 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
 
     bool radio_controller_enabled = false;
     bool thruster_reference_enabled = false;
+    bool safetyBoundarySet_ = false;
 
     double water_current_deg;
     double water_current_norm;
@@ -136,6 +139,7 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     rclcpp::Subscription<ulisse_msgs::msg::ReferenceVelocities>::SharedPtr referenceVelocitiesSub_;
     rclcpp::Subscription<ulisse_msgs::msg::VehicleStatus>::SharedPtr vehicleStatusSub_;
     rclcpp::Subscription<ulisse_msgs::msg::FeedbackGui>::SharedPtr feedbackGuiSub_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr safetyBoundarySetSub_;
 
     QVector<double> GenerateRandFloatVector(int size);
     bool LoadConfiguration();
@@ -160,6 +164,7 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     void VehicleStatusCB(const ulisse_msgs::msg::VehicleStatus::SharedPtr msg);
     void NavFilterDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
     void FeedbackGuiCB(const ulisse_msgs::msg::FeedbackGui::SharedPtr msg);
+    void SafetyBoundaryCB(const std_msgs::msg::Bool::SharedPtr msg);
 
 public:
     explicit FeedbackUpdater(QObject* parent = nullptr);
@@ -214,6 +219,7 @@ public:
     int get_timestamp485();
     bool get_radio_controller_enabled();
     bool get_thruster_ref_enabled();
+    bool get_safety_boundary_set();
     double get_water_current_norm();
     double get_water_current_deg();
 

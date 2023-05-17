@@ -29,8 +29,8 @@ class CommandWrapper : public QObject, rclcpp::Node {
     QObject *cruiseSpeedObj_, *goalDistanceObj_, *waypointPathObj_, *waypointRadiusObj_, *loopPathObj_, *mapMouseAreaObj_;
     QStringList polypathTypes;
 
-
     Q_PROPERTY(QStringList polypath_types READ get_polypath_types NOTIFY startup_info_read)
+
 
     rclcpp::Client<ulisse_msgs::srv::ControlCommand>::SharedPtr command_srv_;
     rclcpp::Client<ulisse_msgs::srv::SetCruiseControl>::SharedPtr cruise_srv_;
@@ -94,6 +94,7 @@ public:
     Q_INVOKABLE bool reloadNavFilterConf();
 
     QStringList get_polypath_types();
+    bool get_safety_boundary_set();
 
 
 public slots:

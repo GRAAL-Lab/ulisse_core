@@ -36,6 +36,7 @@ void AddonsBridge::Init(QQmlApplicationEngine* engine)
     appEngine_ = engine;
 
     myTimer_.reset(new QTimer());
+    //std::cout << "[AB] Timer interval = " << callbackUpdateInterval_<< std::endl;
     myTimer_->start(callbackUpdateInterval_);
     QObject::connect(myTimer_.get(), SIGNAL(timeout()), this, SLOT(process_callbacks_slot()));
 

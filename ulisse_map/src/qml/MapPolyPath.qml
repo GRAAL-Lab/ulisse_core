@@ -41,7 +41,7 @@ MapPolyline {
     property real _angle: 0
     property real _size_1: 20
     property real _size_2: 10
-    property var _polypathType: "Serpentine" // "simple"
+    property string _polypathType: "Serpentine" // "simple"
     property int direction: 0  // 0: Direct, 1: Reverse
 
     property var centroid: QtPositioning.coordinate(0.0, 0.0)
@@ -52,11 +52,11 @@ MapPolyline {
     //property var intersections_cartesian: []
     //property var intersections_geographic: []
 
-    property var polygonal_phase: 0
-    property var polygonal_direction: 0 //1: counterclockwise, 2: clockwise
+    property int polygonal_phase: 0
+    property int polygonal_direction: 0 //1: counterclockwise, 2: clockwise
 
     property var safe: null
-    property var detection_intersect: 0
+    property int detection_intersect: 0
 
     onSafeChanged: function () {
         line.color = safe ? green : red
@@ -577,8 +577,8 @@ MapPolyline {
 
     //////////////////////////////////////////////
     // Event handlers for polygon editing
-    property var moving_idx: -1
-    property var marked: -1
+    property real moving_idx: -1
+    property real marked: -1
     property bool translating: false
     property bool rotating: false
 
