@@ -9,14 +9,15 @@ import "../scripts/helper.js" as Helper
 Rectangle {
 
     Layout.alignment: Qt.AlignCenter
-    width: commandsColumnLayout.width + 10
-    height: commandsColumnLayout.height + 10
-    color: lightergrey
+    //width: commandsColumnLayout.width + 10
+    //height: commandsColumnLayout.height + 10
+    color: dimmedwhite
     border.color: lightgrey
     border.width: 1
 
     property alias pathCommandsPane: pathCommandsPane
     property alias speedHeadTimeout: speedHeadTimeout
+    property alias commandsColumnLayout: commandsColumnLayout
 
     property var sliderHeading: sliderHeading
 
@@ -27,17 +28,20 @@ Rectangle {
     ColumnLayout {
         id: commandsColumnLayout
 
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: parent.top
+        //anchors.horizontalCenter: parent.horizontalCenter
+        //anchors.top: parent.top
+        anchors.fill: parent
+        anchors.margins: 1
 
         Label {
-            font.pointSize: 12
+            font.pointSize: 13
             font.weight: Font.DemiBold
             color: mainColor
             text: "Commands"
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignHCenter
-            Layout.topMargin: 15
+            Layout.topMargin: 10
+            Layout.bottomMargin: 5
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
         }
@@ -45,8 +49,8 @@ Rectangle {
         TabBar {
             id: commandPathsBar
             Layout.fillWidth: true
-            Material.accent: grey
-            Material.background: Material.color(Material.BlueGrey, Material.Shade50)
+            //Material.accent: grey
+            Material.background: Material.color(Material.BlueGrey, Material.Shade100)
 
             TabButton {
                 id: commandsTabButton
@@ -79,6 +83,7 @@ Rectangle {
             currentIndex: commandPathsBar.currentIndex
             Layout.fillHeight: true
             Layout.fillWidth: true
+            Layout.margins: 10
 
             ColumnLayout {
                 id: commandsTab

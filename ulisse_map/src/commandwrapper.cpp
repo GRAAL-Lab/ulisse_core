@@ -198,14 +198,16 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
 
     std::shared_ptr<sisl::Path> newPath;
     bool pathCreated{true};
+
+    futils::Timer executionTime;
+    executionTime.Start();
     try {
         if (polypathType == "Serpentine") {
             newPath = sisl::PathFactory::NewSerpentine(angle, direction, size_1_Path, polyVerticesUTM);
         } else if (polypathType == "RaceTrack") {
-            //qDebug() << "*** CREATING RACE TRACK ***";
             newPath = sisl::PathFactory::NewRaceTrack(angle, direction, size_1_Path, size_2_Path, polyVerticesUTM);
-            //qDebug() << "*** RACE TRACK DONE ***";
         } else if (polypathType == "Hippodrome") {
+
             Eigen::Vector3d baricenter;
             for(int i = 0; i < 3; i++) {
                 double dim_sum{0};
@@ -214,6 +216,7 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
                 }
                 baricenter[i] = dim_sum/(polyVerticesUTM.size() - 1);
             }
+            //std::cout << "Lap 1:" << executionTime.Elapsed() << std::endl;
             newPath = sisl::PathFactory::NewHippodrome(-angle, direction, size_1_Path, size_2_Path, baricenter);
         } else {
             std::cout << "[CommandWrapper::createPathFromPolygon] polypathType '" << polypathType << "' not recognized." << std::endl;
@@ -224,20 +227,24 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
         std::cout << "Received exception from --> " << exception.what() << std::endl;
     }
 
+    //std::cout << "Lap 2:" << executionTime.Elapsed() << std::endl;
     QVector<double> pathVectorGeo;
     if (pathCreated) {
         std::cout << *newPath << std::endl;
         // Sampling the curve and converting it back to lat-long for visualization on map
-        double samplingInterval = 1.0; // meters
-        int numSamples = (int)round(newPath->Length()/samplingInterval);
+        //double samplingInterval = 1.0; // meters
+        //int numSamples = (int)round(newPath->Length()/samplingInterval);
+        double numSamples = 256;
         auto sampledPath = newPath->Sampling(numSamples);
 
+        //std::cout << "Lap 3:" << executionTime.Elapsed() << std::endl;
         for(size_t i=0; i < sampledPath->size(); i++){
             ctb::LatLong pathPointGeo;
             ctb::LocalUTM2LatLong(sampledPath->at(i), centroid, pathPointGeo, altitude);
             pathVectorGeo << pathPointGeo.latitude << pathPointGeo.longitude;
         }
     }
+    //std::cout << "Lap 4:" << executionTime.Elapsed() << std::endl;
 
     return pathVectorGeo;
 }

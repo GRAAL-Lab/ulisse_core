@@ -149,9 +149,10 @@ ColumnLayout {
             id: commandParamsStackContainer
             Layout.topMargin: 10
             Layout.bottomMargin: 20
+            //Layout.preferredWidth: commandsColumnLayout.width + 10
+            //Layout.preferredHeight: commandsColumnLayout.height + 10
             Layout.fillWidth: true
             Layout.fillHeight: true
-            //height: commandsLayout.height
             Material.background: Material.color(Material.BlueGrey, Material.Shade50)
 
             Layout.alignment:  Qt.AlignTop | Qt.AlignHCenter
@@ -175,7 +176,6 @@ ColumnLayout {
                 }
 
                 ColumnLayout {
-
                     anchors.horizontalCenter: parent.horizontalCenter
 
                     // Spacer Item
@@ -193,19 +193,15 @@ ColumnLayout {
                     }
 
                     Text {
-
                         Layout.alignment:  Qt.AlignCenter
                         horizontalAlignment: Text.AlignHCenter
-                        text: "<b>Safety boundary not set for the controller!</b><br>Please ensure \
-                                that a bounding box has been defined and send it to the catamaran."
+                        text: "<b>Safety boundary not set for the controller!</b><br><br>Please ensure \
+                                that a safety area has been defined and send it to the catamaran."
                         wrapMode: Text.WordWrap
                         Layout.maximumWidth: commandParamsStackContainer.width - 30
 
                         color: 'white'
                         z: 100
-
-                        //font.weight: Font.Bold
-
                         layer.enabled: true
                         layer.effect: Glow {
                             radius: 10

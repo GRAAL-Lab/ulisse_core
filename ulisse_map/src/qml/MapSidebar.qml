@@ -22,10 +22,13 @@ Rectangle {
 
         Pane {
             id: statusdatarect
-            Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
-            Layout.fillWidth: true
-            Layout.fillHeight: false
-            Material.elevation: 0
+
+            Layout.topMargin: 10
+            Layout.alignment: Qt.AlignHCenter
+            Layout.preferredWidth: parent.width - 20
+            //Layout.fillWidth: true
+            //Layout.fillHeight: false
+            Material.elevation: 3
             //Material.background: Material.color(Material.BlueGrey, Material.Shade50)
 
             ColumnLayout {

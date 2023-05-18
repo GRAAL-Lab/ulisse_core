@@ -708,6 +708,7 @@ MapPolyline {
     property var backup_path
 
     function begin_edit() {
+        console.time("begin_edit")
         mapMouseArea.hoverEnabled = true
         moving_idx = -1
         backup_path = path
@@ -719,6 +720,7 @@ MapPolyline {
         enable_handle()
         disable_ab_markers()
         _canvas.clear_canvas()
+        console.timeEnd("begin_edit")
     }
 
     function discard_edit() {
@@ -739,6 +741,7 @@ MapPolyline {
     }
 
     function confirm_edit(name, params) {
+        console.time("confirm_edit")
         //console.log("[MapPolyPath] confirm edit")
         mapMouseArea.hoverEnabled = false
         pathName = name
@@ -771,7 +774,9 @@ MapPolyline {
         }
 
         moving_idx = -1
+
         _generate_and_draw()
+        console.timeEnd("confirm_edit")
     }
 
     function get_params() {
@@ -832,8 +837,9 @@ MapPolyline {
     function _generate_and_draw() {
 
         update_centroid();
-
+        console.time("cmdWrapper.createPathFromPolygon(JSON.stringify(serialize()))")
         var pathPoints = cmdWrapper.createPathFromPolygon(JSON.stringify(serialize()));
+        console.timeEnd("cmdWrapper.createPathFromPolygon(JSON.stringify(serialize()))")
         startPoint = QtPositioning.coordinate(pathPoints[0], pathPoints[1]);
         endPoint = QtPositioning.coordinate(pathPoints[pathPoints.length - 2], pathPoints[pathPoints.length - 1]);
 
@@ -844,13 +850,18 @@ MapPolyline {
 
         //generate_path()
         //console.log("[MapPolygon] draw_path()")
+
+        console.time("draw_path")
         draw_path(pathPoints)
+        console.timeEnd("draw_path")
         //}
 
+        console.time("markersAndHandles")
         generate_markers()
         reposition_markers()
         disable_markers()
         disable_handle()
+        console.timeEnd("markersAndHandles")
 
         //console.log("[MapPolygon] _generate_and_draw() DONE")
     }
@@ -869,7 +880,9 @@ MapPolyline {
         init_canvas()
         // Clear the canvas
         _canvas.clear_canvas()
+        console.time("Helper.draw_path_lines")
         Helper.draw_path_lines(_canvas, pathPoints, map)//cmdWrapper.createPathFromPolygon(JSON.stringify(serialize())), map)
+        console.timeEnd("Helper.draw_path_lines")
     }
 
     ////////////////////////////////////////////////////////////////////////////////////

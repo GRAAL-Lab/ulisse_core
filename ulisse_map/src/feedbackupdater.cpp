@@ -45,7 +45,7 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
     q_ulisse_pos_ = q_centroid; //QGeoCoordinate(44.0956, 9.8631, 0.0); // Porto Lotti, La Spezia
     q_goal_heading_deg_ = 0.0;
 
-    q_vehicle_state_ = "undefined";
+    q_vehicle_state_ = "N/A";
     q_goal_distance_ = 0.0;
     q_ulisse_surge_ = 0.0;
     q_battery_perc_L_ = 99.9;
@@ -60,7 +60,7 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
     motor_speed_L_ = motor_speed_R_ = 0;
 
     q_gps_pos_ = q_goal_pos_ = q_track_pos_ = q_ulisse_pos_;
-    q_gps_time_ = "undefined";
+    q_gps_time_ = "N/A";
 
     gpsReceived_ = imuReceived_ = compassReceived_ = magnetometerReceived_ = false;
 
