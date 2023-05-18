@@ -12,6 +12,8 @@ Rectangle {
     width: commandsColumnLayout.width + 10
     height: commandsColumnLayout.height + 10
     color: lightergrey
+    border.color: lightgrey
+    border.width: 1
 
     property alias pathCommandsPane: pathCommandsPane
     property alias speedHeadTimeout: speedHeadTimeout
@@ -23,15 +25,10 @@ Rectangle {
     property real unitsWidth: 40
 
     ColumnLayout {
-
-
         id: commandsColumnLayout
 
-
-        anchors.centerIn: parent
-        //id: commandsLayout
-        //width: parent.width
-        //height: contentHeight
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.top: parent.top
 
         Label {
             font.pointSize: 12

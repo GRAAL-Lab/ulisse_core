@@ -84,7 +84,7 @@ RowLayout {
         Layout.minimumWidth: 320
         Layout.preferredWidth: 320
         Layout.maximumWidth: 350
-        Material.elevation: myElevation
+        //Material.elevation: myElevation
         Material.accent: grey
     }
 

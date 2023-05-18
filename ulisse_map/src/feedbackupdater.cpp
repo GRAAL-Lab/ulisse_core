@@ -75,6 +75,9 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
 
     RegisterPublishersAndSubscribers();
 
+    controlAliveTimer_.Start();
+    vehicleAliveTimer_.Start();
+
 }
 
 
@@ -128,43 +131,43 @@ void FeedbackUpdater::RegisterPublishersAndSubscribers()
     int qos_sensor = 10;
 
     vehicleStatusSub_ = this->create_subscription<ulisse_msgs::msg::VehicleStatus>(ulisse_msgs::topicnames::vehicle_status,
-        10, std::bind(&FeedbackUpdater::VehicleStatusCB, this, _1));
+                                                                                   10, std::bind(&FeedbackUpdater::VehicleStatusCB, this, _1));
     referenceVelocitiesSub_ = this->create_subscription<ulisse_msgs::msg::ReferenceVelocities>(ulisse_msgs::topicnames::reference_velocities,
-        10, std::bind(&FeedbackUpdater::ReferenceVelocitiesCB, this, _1));
+                                                                                               10, std::bind(&FeedbackUpdater::ReferenceVelocitiesCB, this, _1));
     gps_data_sub_ = this->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data,
-        10, std::bind(&FeedbackUpdater::GPSDataCB, this, _1));
+                                                                         10, std::bind(&FeedbackUpdater::GPSDataCB, this, _1));
 
     micro_loop_count_sub_ = this->create_subscription<ulisse_msgs::msg::MicroLoopCount>(ulisse_msgs::topicnames::micro_loop_count,
-        10, std::bind(&FeedbackUpdater::MicroLoopCountCB, this, _1));
+                                                                                        10, std::bind(&FeedbackUpdater::MicroLoopCountCB, this, _1));
     ambient_sensors_sub_ = this->create_subscription<ulisse_msgs::msg::AmbientSensors>(ulisse_msgs::topicnames::sensor_ambient,
-        qos_sensor, std::bind(&FeedbackUpdater::AmbientSensorsCB, this, _1));
+                                                                                       qos_sensor, std::bind(&FeedbackUpdater::AmbientSensorsCB, this, _1));
     compass_sub_ = this->create_subscription<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass,
-        qos_sensor, std::bind(&FeedbackUpdater::CompassCB, this, _1));
+                                                                        qos_sensor, std::bind(&FeedbackUpdater::CompassCB, this, _1));
     imu_data_sub_ = this->create_subscription<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu,
-        qos_sensor, std::bind(&FeedbackUpdater::IMUDataCB, this, _1));
+                                                                         qos_sensor, std::bind(&FeedbackUpdater::IMUDataCB, this, _1));
     magnetometer_sub_ = this->create_subscription<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer,
-        qos_sensor, std::bind(&FeedbackUpdater::MagnetometerCB, this, _1));
+                                                                                  qos_sensor, std::bind(&FeedbackUpdater::MagnetometerCB, this, _1));
     llc_motors_sub_ = this->create_subscription<ulisse_msgs::msg::LLCThrusters>(ulisse_msgs::topicnames::llc_thrusters,
-        qos_sensor, std::bind(&FeedbackUpdater::LLCMotorsCB, this, _1));
+                                                                                qos_sensor, std::bind(&FeedbackUpdater::LLCMotorsCB, this, _1));
 
 
 
     battery_left_sub_ = this->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_left,
-        10, std::bind(&FeedbackUpdater::LLCBatteryLeftCB, this, _1));
+                                                                                10, std::bind(&FeedbackUpdater::LLCBatteryLeftCB, this, _1));
     battery_right_sub_ = this->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_right,
-        10, std::bind(&FeedbackUpdater::LLCBatteryRightCB, this, _1));
+                                                                                 10, std::bind(&FeedbackUpdater::LLCBatteryRightCB, this, _1));
     thrusters_reference_sub_ = this->create_subscription<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_reference_perc,
-        10, std::bind(&FeedbackUpdater::ThrustersReferenceCB, this, _1));
+                                                                                               10, std::bind(&FeedbackUpdater::ThrustersReferenceCB, this, _1));
     thrusters_applied_ref_sub_ = this->create_subscription<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_applied_perc,
-        1, std::bind(&FeedbackUpdater::ThrustersAppliedReferenceCB, this, _1));
+                                                                                                 1, std::bind(&FeedbackUpdater::ThrustersAppliedReferenceCB, this, _1));
     sw485_status_sub_ = this->create_subscription<ulisse_msgs::msg::LLCSw485Status>(ulisse_msgs::topicnames::llc_sw485status,
-        10, std::bind(&FeedbackUpdater::LLCSw485StatusCB, this, _1));
+                                                                                    10, std::bind(&FeedbackUpdater::LLCSw485StatusCB, this, _1));
     llc_status_sub_ = this->create_subscription<ulisse_msgs::msg::LLCStatus>(ulisse_msgs::topicnames::llc_status,
-        10, std::bind(&FeedbackUpdater::LLCStatusCB, this, _1));
+                                                                             10, std::bind(&FeedbackUpdater::LLCStatusCB, this, _1));
     current_status_sub_ = this->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data,
-        10, std::bind(&FeedbackUpdater::NavFilterDataCB, this, _1));
+                                                                                     10, std::bind(&FeedbackUpdater::NavFilterDataCB, this, _1));
     feedbackGuiSub_ = this->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui,
-        10, std::bind(&FeedbackUpdater::FeedbackGuiCB, this, _1));
+                                                                               10, std::bind(&FeedbackUpdater::FeedbackGuiCB, this, _1));
 
 
     safetyBoundarySetSub_ = this->create_subscription<std_msgs::msg::Bool>(ulisse_msgs::topicnames::safety_boundary_set, 1,
@@ -249,7 +252,14 @@ void FeedbackUpdater::GPSDataCB(const ulisse_msgs::msg::GPSData::SharedPtr msg)
     q_gps_pos_.setLatitude(msg->latitude);
     q_gps_pos_.setLongitude(msg->longitude);
 
-    //msg->track;
+    // Using the GPS signal as a watchdog for checking that the vehicle is on and driver is running
+    if (!vehicleAlive_) {
+        vehicleAlive_ = true;
+        std::cout << "Vehicle alive!" << std::endl;
+    }
+
+    vehicleAliveTimer_.Reset();
+
 }
 
 void FeedbackUpdater::MicroLoopCountCB(const ulisse_msgs::msg::MicroLoopCount::SharedPtr msg)
@@ -266,26 +276,26 @@ void FeedbackUpdater::AmbientSensorsCB(const ulisse_msgs::msg::AmbientSensors::S
 void FeedbackUpdater::CompassCB(const ulisse_msgs::msg::Compass::SharedPtr msg)
 {
     compass_RPY_ = QString::number(msg->orientation.roll, 'f', 2) + ", "
-        + QString::number(msg->orientation.pitch, 'f', 2) + ", "
-        + QString::number(msg->orientation.yaw, 'f', 2);
+                   + QString::number(msg->orientation.pitch, 'f', 2) + ", "
+                   + QString::number(msg->orientation.yaw, 'f', 2);
 }
 
 void FeedbackUpdater::IMUDataCB(const ulisse_msgs::msg::IMUData::SharedPtr msg)
 {
     imu_accelerometer_ = QString::number(msg->accelerometer[0], 'f', 2) + ", "
-        + QString::number(msg->accelerometer[1], 'f', 2) + ", "
-        + QString::number(msg->accelerometer[2], 'f', 2);
+                         + QString::number(msg->accelerometer[1], 'f', 2) + ", "
+                         + QString::number(msg->accelerometer[2], 'f', 2);
 
     imu_gyro_ = QString::number(msg->gyro[0], 'f', 2) + ", "
-        + QString::number(msg->gyro[1], 'f', 2) + ", "
-        + QString::number(msg->gyro[2], 'f', 2);
+                + QString::number(msg->gyro[1], 'f', 2) + ", "
+                + QString::number(msg->gyro[2], 'f', 2);
 }
 
 void FeedbackUpdater::MagnetometerCB(const ulisse_msgs::msg::Magnetometer::SharedPtr msg)
 {
     magnetometer_ = QString::number(msg->orthogonalstrength[0], 'f', 2) + ", "
-        + QString::number(msg->orthogonalstrength[1], 'f', 2) + ", "
-        + QString::number(msg->orthogonalstrength[2], 'f', 2);
+                    + QString::number(msg->orthogonalstrength[1], 'f', 2) + ", "
+                    + QString::number(msg->orthogonalstrength[2], 'f', 2);
 }
 
 void FeedbackUpdater::LLCMotorsCB(const ulisse_msgs::msg::LLCThrusters::SharedPtr msg)
@@ -344,6 +354,14 @@ void FeedbackUpdater::VehicleStatusCB(const ulisse_msgs::msg::VehicleStatus::Sha
     } else {
         goalFlagObj_->setProperty("opacity", 0.3);
     }
+
+    // Using the Vehicle Status as a watchdog for checking that the controller is running
+    if (!controlAlive_) {
+        controlAlive_ = true;
+        std::cout << "Control alive!" << std::endl;
+    }
+
+    controlAliveTimer_.Reset();
 }
 
 void FeedbackUpdater::FeedbackGuiCB(const ulisse_msgs::msg::FeedbackGui::SharedPtr msg)
@@ -398,6 +416,15 @@ void FeedbackUpdater::resetPublishersAndSubscribers()
     RegisterPublishersAndSubscribers();
 }
 
+bool FeedbackUpdater::get_control_alive()
+{
+    return controlAlive_;
+}
+
+bool FeedbackUpdater::get_vehicle_alive()
+{
+    return vehicleAlive_;
+}
 
 QGeoCoordinate FeedbackUpdater::get_centroid()
 {
@@ -612,6 +639,17 @@ bool FeedbackUpdater::get_safety_boundary_set()
 void FeedbackUpdater::process_callbacks_slot()
 {
     rclcpp::spin_some(this->get_node_base_interface());
+
+    if(controlAlive_ && (controlAliveTimer_.Elapsed() > 2.0)){
+        controlAlive_ = false;
+        std::cout << "Control disappeared!" << std::endl;
+    }
+
+    if(vehicleAlive_ && (vehicleAliveTimer_.Elapsed() > 2.0)){
+        vehicleAlive_ = false;
+        std::cout << "Vehicle disappeared! (elapsed: " << vehicleAliveTimer_.Elapsed() << ")" << std::endl;
+    }
+
     emit callbacks_processed();
 }
 

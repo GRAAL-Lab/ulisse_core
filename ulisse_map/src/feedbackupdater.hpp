@@ -13,6 +13,7 @@
 #include "rclcpp/rclcpp.hpp"
 
 #include "std_msgs/msg/bool.hpp"
+#include "ulisse_msgs/futils.hpp"
 #include "ulisse_msgs/msg/feedback_gui.hpp"
 #include "ulisse_msgs/msg/gps_data.hpp"
 #include "ulisse_msgs/msg/micro_loop_count.hpp"
@@ -35,8 +36,12 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     QQmlApplicationEngine* appEngine_;
     QTimer* myTimer_;
     QObject* goalFlagObj_;
+    futils::Timer controlAliveTimer_, vehicleAliveTimer_;
 
     Q_PROPERTY(QGeoCoordinate centroid READ get_centroid NOTIFY startup_info_read)
+
+    Q_PROPERTY(bool control_alive READ get_control_alive NOTIFY callbacks_processed)
+    Q_PROPERTY(bool vehicle_alive READ get_vehicle_alive NOTIFY callbacks_processed)
 
     Q_PROPERTY(QString vehicle_state READ get_vehicle_state NOTIFY callbacks_processed)
     Q_PROPERTY(QGeoCoordinate ulisse_pos READ get_ulisse_pos NOTIFY callbacks_processed)
@@ -86,6 +91,8 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     Q_PROPERTY(float water_current_norm READ get_water_current_norm NOTIFY callbacks_processed)
     Q_PROPERTY(float water_current_deg READ get_water_current_deg NOTIFY callbacks_processed)
 
+    bool controlAlive_ = false;
+    bool vehicleAlive_ = false;
     bool gpsReceived_, imuReceived_, compassReceived_, magnetometerReceived_;
     QGeoCoordinate q_centroid, q_ulisse_pos_, q_goal_pos_, q_gps_pos_, q_track_pos_;
     double q_goal_distance_, q_goal_heading_deg_;
@@ -175,6 +182,8 @@ public:
     Q_INVOKABLE void copyToClipboard(QString value);
     Q_INVOKABLE void resetPublishersAndSubscribers();
 
+    bool get_control_alive();
+    bool get_vehicle_alive();
     QGeoCoordinate get_centroid();
     QGeoCoordinate get_ulisse_pos();
     QVector3D get_ulisse_linear_vel();

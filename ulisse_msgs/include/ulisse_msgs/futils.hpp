@@ -262,6 +262,14 @@ struct Timer
         running = false;
     }
 
+    void Reset()
+    {
+        lapTime = 0;
+        clock_gettime(CLOCK_MONOTONIC, &start);
+        lap = start;
+        //std::cout << "Reset" << std::endl;
+    }
+
     /**
 	 * @return elapsed time since start in seconds, with nanosecond precision (if timer is running)
          */

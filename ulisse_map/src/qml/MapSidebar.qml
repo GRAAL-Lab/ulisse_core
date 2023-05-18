@@ -17,7 +17,7 @@ Rectangle {
 
     ColumnLayout {
         id: leftbarlayout
-        width: parent.width
+        anchors.fill: parent
         spacing: 0
 
         Pane {
@@ -86,16 +86,16 @@ Rectangle {
                     Layout.fillWidth: true
                 }
 
-                Text {
-                    id: markerText
-                    font.pointSize: 8
-                    color: 'grey'
-                    text: "(Left click to set marker)"
-                    verticalAlignment: Text.AlignVCenter
-                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                    Layout.fillWidth: true
-                    horizontalAlignment: Text.AlignHCenter
-                }
+                //Text {
+                //    id: markerText
+                //    font.pointSize: 8
+                //    color: 'grey'
+                //    text: "(Left click to set marker)"
+                //    verticalAlignment: Text.AlignVCenter
+                //    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                //    Layout.fillWidth: true
+                //    horizontalAlignment: Text.AlignHCenter
+                //}
             }
         }
 
@@ -103,7 +103,9 @@ Rectangle {
             id: commandRect
             Layout.alignment: Qt.AlignLeft | Qt.AlignTop
             Layout.fillWidth: true
-            Layout.fillHeight: false
+            Layout.fillHeight: true
+
+            Layout.margins: 10
             //Material.background: "white"//Material.color(Material.BlueGrey, Material.Shade50)
         }
     }

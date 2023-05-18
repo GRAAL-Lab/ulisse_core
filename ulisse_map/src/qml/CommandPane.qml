@@ -10,7 +10,7 @@ import QtQuick.Dialogs 1.2
 import "."
 import "../scripts/helper.js" as Helper
 
-Pane {
+ColumnLayout {
 
     property var safetyPoly_bkp: []
     property var buttonSafety: buttonBoundBoxDefine
@@ -26,7 +26,8 @@ Pane {
 
     ColumnLayout {
         id: controlsColumn
-        anchors.fill: parent
+        Layout.fillHeight: true
+        Layout.fillWidth: true
         spacing: 1
 
         RowLayout {
@@ -153,7 +154,7 @@ Pane {
             //height: commandsLayout.height
             Material.background: Material.color(Material.BlueGrey, Material.Shade50)
 
-            Layout.alignment:  Qt.AlignVCenter | Qt.AlignHCenter
+            Layout.alignment:  Qt.AlignTop | Qt.AlignHCenter
 
 
             Rectangle {
@@ -161,7 +162,7 @@ Pane {
                 Layout.alignment:  Qt.AlignVCenter | Qt.AlignHCenter
                 height: commandParamsStackContainer.height
                 width: commandParamsStackContainer.width
-                color: Qt.hsla(0, 0, 0, 0.25)
+                color: Qt.hsla(0, 0, 0, 0.3)
                 //opacity: 0.5
                 z: 99
 
@@ -169,7 +170,7 @@ Pane {
                 layer.effect: Glow {
                     radius: 5
                     samples: 10
-                    color: Qt.hsla(0, 0, 0, 0.25)
+                    color: Qt.hsla(0, 0, 0, 0.3)
 
                 }
 
@@ -195,20 +196,21 @@ Pane {
 
                         Layout.alignment:  Qt.AlignCenter
                         horizontalAlignment: Text.AlignHCenter
-                        text: "Boundary not set for the controller! Please ensure that a bounding box has been defined and send it to the catamaran."
+                        text: "<b>Safety boundary not set for the controller!</b><br>Please ensure \
+                                that a bounding box has been defined and send it to the catamaran."
                         wrapMode: Text.WordWrap
                         Layout.maximumWidth: commandParamsStackContainer.width - 30
 
                         color: 'white'
                         z: 100
 
-                        font.weight: Font.Bold
+                        //font.weight: Font.Bold
 
                         layer.enabled: true
                         layer.effect: Glow {
                             radius: 10
                             samples: 10
-                            color: grey
+                            color: darkgrey
 
                         }
                     }
@@ -226,7 +228,11 @@ Pane {
             }
         }
 
-
+        //Item {
+        //    Layout.fillWidth: true
+        //    Layout.fillHeight: true
+        //    Rectangle { anchors.fill: parent; color: "#ffaaaa" } // to visualize the spacer
+        //}
 
         Button {
             text: "Halt"
@@ -234,6 +240,7 @@ Pane {
             Material.background: orange//pressed ? orange : mainColor
             Layout.fillHeight: false
             Layout.fillWidth: true
+            Layout.alignment: Qt.AlignBottom
             onClicked: {
                 cmdWrapper.sendHaltCommand()
             }
@@ -245,7 +252,7 @@ Pane {
             color: 'grey'
             text: "(Shortcut: Return)"
             verticalAlignment: Text.AlignVCenter
-            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+            Layout.alignment: Qt.AlignBottom
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
         }

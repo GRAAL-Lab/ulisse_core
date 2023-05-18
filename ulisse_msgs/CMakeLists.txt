@@ -22,6 +22,7 @@ file(GLOB_RECURSE SOURCE_FILES
     "srv/*.srv"
     "*.xml"
     "launch/*.py"
+    "include/*.hpp"
 )
 add_custom_target(.Files. SOURCES ${SOURCE_FILES})
 

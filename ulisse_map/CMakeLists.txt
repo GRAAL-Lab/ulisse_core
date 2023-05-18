@@ -6,9 +6,9 @@ if(NOT WIN32)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Wextra -fPIC -Wno-deprecated-copy")
 endif()
 
-IF (NOT DEFINED BUILD_VERSION)
+#IF (NOT DEFINED BUILD_VERSION)
         SET(BUILD_VERSION "Release")
-ENDIF()
+#ENDIF()
 ADD_DEFINITIONS(-DBUILD_VERSION="${BUILD_VERSION}")
 
 find_package(ament_cmake REQUIRED)
