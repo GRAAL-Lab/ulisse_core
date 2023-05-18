@@ -49,8 +49,8 @@ Rectangle {
         TabBar {
             id: commandPathsBar
             Layout.fillWidth: true
-            //Material.accent: grey
-            Material.background: Material.color(Material.BlueGrey, Material.Shade100)
+            Material.accent: mainColor
+            //Material.background: Material.color(Material.BlueGrey, Material.Shade50)
 
             TabButton {
                 id: commandsTabButton
@@ -61,7 +61,11 @@ Rectangle {
                     font: commandsTabButton.font
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
-                    color: (commandPathsBar.currentIndex == 0) ? mainColor : grey
+                    color: (commandPathsBar.currentIndex === 0) ? mainColor : grey
+                }
+
+                background: Rectangle {
+                    color: (commandPathsBar.currentIndex === 0) ? lighterbluegrey : lightbluegrey
                 }
             }
 
@@ -74,7 +78,11 @@ Rectangle {
                     font: parametersTabButton.font
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
-                    color: (commandPathsBar.currentIndex == 1) ? mainColor : grey
+                    color: (commandPathsBar.currentIndex === 1) ? mainColor : grey
+                }
+
+                background: Rectangle {
+                    color: (commandPathsBar.currentIndex === 1) ? lighterbluegrey : lightbluegrey
                 }
             }
         }

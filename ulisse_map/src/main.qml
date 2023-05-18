@@ -32,6 +32,8 @@ ApplicationWindow {
     property color lightgrey: Material.color(Material.Grey, Material.Shade400)
     property color lightergrey: Material.color(Material.Grey, Material.Shade300)
     property color dimmedwhite: Material.color(Material.Grey, Material.Shade100)
+    property color lighterbluegrey: Material.color(Material.BlueGrey, Material.Shade50)
+    property color lightbluegrey: Material.color(Material.BlueGrey, Material.Shade100)
 
     property color mainColor: cyan
     property color mainColorLight: lightcyan
