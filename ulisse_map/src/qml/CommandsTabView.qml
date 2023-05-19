@@ -168,6 +168,7 @@ Rectangle {
                     //enabled: settings.mapPluginType === "esri" ? true : false
 
                     Label {
+                        font.pointSize: 11
                         text: "Lat, Long:"
                     }
 
@@ -177,7 +178,7 @@ Rectangle {
                         id: latLongText
                         Layout.preferredWidth: 15
                         Layout.fillWidth: true
-                        font.pointSize: 10
+                        font.pointSize: 11
                         text: ""
                         placeholderText: "Latitude, Longitude"
                         selectByMouse: true
@@ -218,20 +219,25 @@ Rectangle {
                     }
                 }
 
-
-                ToolSeparator {
-                    orientation: Qt.Horizontal
+                Rectangle {
                     Layout.fillWidth: true
-
-                    contentItem: Rectangle {
-                        implicitHeight: 1
-                        color: "#c3c3c3"
-                    }
+                    implicitHeight: 1
+                    color: "#c3c3c3"
                 }
+
+                //ToolSeparator {
+                //    orientation: Qt.Horizontal
+                //    Layout.fillWidth: true
+
+                //    contentItem: Rectangle {
+                //        implicitHeight: 1
+                //        color: "#c3c3c3"
+                //    }
+                //}
 
                 PathsCommands {
                     id: pathCommandsPane
-                    Layout.bottomMargin: 10
+                    //Layout.bottomMargin: 10
                     Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
                     Layout.fillWidth: true
                     Layout.fillHeight: true

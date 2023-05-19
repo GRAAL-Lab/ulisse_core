@@ -148,7 +148,7 @@ ColumnLayout {
             // This Item is needed to add margins to the StackLayout and make it correctly resize
             id: commandParamsStackContainer
             Layout.topMargin: 10
-            Layout.bottomMargin: 20
+            Layout.bottomMargin: 10
             //Layout.preferredWidth: commandsColumnLayout.width + 10
             //Layout.preferredHeight: commandsColumnLayout.height + 10
             Layout.fillWidth: true
@@ -207,7 +207,6 @@ ColumnLayout {
                             radius: 10
                             samples: 10
                             color: darkgrey
-
                         }
                     }
                 }
@@ -233,7 +232,7 @@ ColumnLayout {
         Button {
             text: "Halt"
             highlighted: true
-            Material.background: orange//pressed ? orange : mainColor
+            Material.background: orange
             Layout.fillHeight: false
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignBottom
@@ -245,16 +244,15 @@ ColumnLayout {
         Text {
             id: haltText
             font.pointSize: 8
-            color: 'grey'
-            text: "(Shortcut: Return)"
-            verticalAlignment: Text.AlignVCenter
+
             Layout.alignment: Qt.AlignBottom
             Layout.fillWidth: true
+            color: 'grey'
+            text: "(Shortcut: Return)"
             horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
         }
     }
-
-
 
 
 

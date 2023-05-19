@@ -69,6 +69,18 @@ RowLayout {
             clip : true                   // Prevent drawing column outside the scrollview borders
             ScrollBar.vertical.policy: ScrollBar.AlwaysOn
 
+            Label {
+                height: 40
+                width: parent.width - 20
+                text: "Load or define a path"
+                font.pointSize: 14
+                font.weight: Font.Light
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                color: lightgrey
+                visible: pathButtonsColumn.children.length === 0
+            }
+
             Column {
                 id: pathButtonsColumn
                 width: parent.width - 18
