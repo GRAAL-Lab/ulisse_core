@@ -145,7 +145,6 @@ BarManagePathsForm {
     }
 
     function confirm() {
-        console.time("BarManagePaths::confirm()")
         //console.log("[BarManagePaths] confirm()")
         map.clickHandler = map.click_goto_handler
         map.posChangedHandler = function () {}
@@ -155,7 +154,6 @@ BarManagePathsForm {
         cur_managed.check_safe(map.safety_polygon)
         pathCmdPane.enableBtns(true)
         show_manage()
-        console.timeEnd("BarManagePaths::confirm()")
     }
 
     function discard() {
