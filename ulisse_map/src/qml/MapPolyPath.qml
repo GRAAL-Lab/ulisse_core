@@ -83,12 +83,12 @@ MapPolyline {
         b_marker.content = "B";
 
         map.addMapItem(_canvas)
-        map.addMapItem(_marker)
-        map.addMapItem(_dashed_line)
-        map.addMapItem(_handle)
-        map.addMapItem(a_marker)
-        map.addMapItem(b_marker)
-        _handle.add_to_map(map)
+        //map.addMapItem(_marker)
+        //map.addMapItem(_dashed_line)
+        //map.addMapItem(_handle)
+        //map.addMapItem(a_marker)
+        //map.addMapItem(b_marker)
+        //_handle.add_to_map(map)
 
     }
 

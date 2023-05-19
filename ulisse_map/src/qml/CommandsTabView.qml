@@ -123,11 +123,15 @@ Rectangle {
                             var coords_tokens = moveToCoordinate.latLongText.split(/[ ,]+/);
                             var coord = QtPositioning.coordinate(coords_tokens[0], coords_tokens[1])
 
+                            if (coord.isValid) {
                             toast.show("Moving to coordinate:\n"
                                        + coord.latitude.toFixed(7) + ", " + coord.longitude.toFixed(7), 6000)
                             cmdWrapper.sendLatLongCommand(
                                         coord,
                                         holdRadius.value)
+                            } else {
+                                toast.show("Invalid coordinate.")
+                            }
                         }
 
 
@@ -228,9 +232,9 @@ Rectangle {
                 PathsCommands {
                     id: pathCommandsPane
                     Layout.bottomMargin: 10
-                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                    Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
                     Layout.fillWidth: true
-                    Layout.fillHeight: false
+                    Layout.fillHeight: true
                 }
             }
 

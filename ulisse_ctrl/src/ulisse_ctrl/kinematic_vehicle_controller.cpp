@@ -395,7 +395,11 @@ void VehicleController::CommandsHandler(const std::shared_ptr<rmw_request_id_t> 
         } else if (request->command_type == ulisse::commands::ID::latlong) {
 
             std::cout << "Received Command LatLong" << std::endl;
-            commandLatLong_.SetGoTo(LatLong(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude), request->latlong_cmd.acceptance_radius);
+            if(!commandLatLong_.SetGoTo(LatLong(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude),
+                    request->latlong_cmd.acceptance_radius)){
+                response->res = "CommandAnswer::fail - Malformed LatLong Message.";
+                ret = fsm::retval::fail;
+            }
 
             log << "Received Command GoTo (lat: " << request->latlong_cmd.goal.latitude << " , long: " << request->latlong_cmd.goal.longitude << " )";
             PublishLog(log.str().c_str());

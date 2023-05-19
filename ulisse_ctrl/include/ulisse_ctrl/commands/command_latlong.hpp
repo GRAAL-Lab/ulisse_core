@@ -17,7 +17,7 @@ namespace commands {
         CommandLatLong();
         virtual ~CommandLatLong() override;
         virtual fsm::retval Execute(void) override;
-        void SetGoTo(LatLong goalPosition, double acceptanceRadius);
+        bool SetGoTo(LatLong goalPosition, double acceptanceRadius);
 
         void SetState(std::shared_ptr<states::GenericState> state) override;
     };

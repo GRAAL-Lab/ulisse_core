@@ -14,10 +14,17 @@ namespace commands {
         return fsm_->SetNextState(ulisse::states::ID::latlong);
     }
 
-    void CommandLatLong::SetGoTo(LatLong goalPosition, double acceptanceRadius)
+    bool CommandLatLong::SetGoTo(LatLong goalPosition, double acceptanceRadius)
     {
-        stateLatLong_->goalPosition = goalPosition;
-        stateLatLong_->acceptanceRadius = acceptanceRadius;
+        if (std::isnan(goalPosition.latitude) ||
+            std::isnan(goalPosition.longitude) ||
+            std::isnan(acceptanceRadius)) {
+            return false;
+        } else {
+            stateLatLong_->goalPosition = goalPosition;
+            stateLatLong_->acceptanceRadius = acceptanceRadius;
+            return true;
+        }
     }
 
     void CommandLatLong::SetState(std::shared_ptr<states::GenericState> state)

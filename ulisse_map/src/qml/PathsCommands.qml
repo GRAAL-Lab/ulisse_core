@@ -14,7 +14,8 @@ RowLayout {
 
     ColumnLayout {
         Layout.fillWidth: true
-        height: main_btns.height
+        Layout.fillHeight: true
+        //height: main_btns.height
 
         RowLayout {
             id: main_btns
@@ -58,11 +59,31 @@ RowLayout {
             }
         }
 
-        Column {
-            // Space for the Paths buttons
-            id: pathButtonsColumn
-            Layout.preferredWidth: parent.width
+        ScrollView {
+            //width: parent.width
+            //height : parent.height
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            contentWidth: parent.width    // The important part
+            contentHeight: pathButtonsColumn.height  // Same
+            clip : true                   // Prevent drawing column outside the scrollview borders
+            ScrollBar.vertical.policy: ScrollBar.AlwaysOn
+
+            Column {
+                id: pathButtonsColumn
+                width: parent.width - 18
+            }
         }
+
+
+
+        //Column {
+        //    // Space for the Paths buttons
+        //    id: pathButtonsColumn
+        //    Layout.fillWidth: true
+        //    //width: parent.width
+        //}
+
     }
 
 
