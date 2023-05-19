@@ -70,7 +70,7 @@ Dialog {
         spacing: 3
 
         SettingsSectionLabel {
-            text: "Map Plugin [" + settings.mapPluginType + "]"
+            text: "Map Plugin [" + settings.mapPluginType + "] (suggested: osm)"
         }
 
 	
@@ -117,6 +117,7 @@ Dialog {
             
            Button{
                 text: "MapBoxGL"
+
                 font.capitalization: Font.MixedCase
                 checkable: true
                 highlighted: checked

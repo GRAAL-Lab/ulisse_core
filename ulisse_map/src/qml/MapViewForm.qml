@@ -46,6 +46,12 @@ RowLayout {
             value: settings.mapCachePath
         }
 
+        PluginParameter {
+            name: 'osm.mapping.offline.directory'
+            value: ':/offline_tiles/osm'
+        }
+
+
         /*PluginParameter {
             id: maxZoomLevel
             name: "esri.mapping.maximumZoomLevel"
