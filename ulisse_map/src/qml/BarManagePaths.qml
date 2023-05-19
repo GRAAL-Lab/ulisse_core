@@ -93,7 +93,7 @@ BarManagePathsForm {
         map.clickHandler = map.click_goto_handler
         map.posChangedHandler = function () {}
         pathCmdPane.enableBtns(true)
-        map.mapMouseArea.hoverEnabled = false
+        //map.mapMouseArea.hoverEnabled = false
         if (cur_managed !== undefined) {
             //console.log("[BarManagePaths] abort_h() - cur_managed !== undefined")
             cur_managed.deregister_map_items()

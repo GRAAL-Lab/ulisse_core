@@ -211,7 +211,7 @@ Dialog {
             spacing: 10
 
             Label {
-                text: "Show Centroid on Map:"
+                text: "Show centroid on map:"
             }
             CheckBox {
                 id: showCentroidBox
@@ -234,7 +234,7 @@ Dialog {
             spacing: 10
 
             Label {
-                text: "Show status overlay on Map:"
+                text: "Show status overlay on map:"
             }
             CheckBox {
                 id: statusOverlayBox
@@ -244,6 +244,25 @@ Dialog {
 
                 onClicked: {
                     settings.showStatusOverlay = !settings.showStatusOverlay;
+                }
+            }
+        }
+
+        RowLayout {
+            id: showMouseCoordinateSetting
+            spacing: 10
+
+            Label {
+                text: "Show mouse coordinates on map:"
+            }
+            CheckBox {
+                id: mouseCoordinateBox
+                text: "Show Coordinates"
+                //Material.accent: orange
+                checked: settings.showMouseCoordinates
+
+                onClicked: {
+                    settings.showMouseCoordinates = !settings.showMouseCoordinates;
                 }
             }
         }

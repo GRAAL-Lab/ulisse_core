@@ -27,6 +27,7 @@ Map {
     property alias goalAcceptRadius: goalAcceptRadius
     property alias sliderz: sliders.z
     property alias mapTextOverlay: mapTextOverlay
+    property alias mouseLiveCoordinate: mouseLiveCoordinate
 
     Text {
         id: mapTextOverlay
@@ -304,5 +305,31 @@ Map {
         objectName: "mapMouseArea"
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton | Qt.RightButton
+        hoverEnabled: true
+
+
+    }
+
+    MapQuickItem {
+        id: mouseLiveCoordinate
+
+        property alias coordItem: coordItem
+        property bool show: false
+
+        sourceItem: Text {
+            id: coordItem
+            color: 'darkslategrey'
+            style: Text.Outline
+            styleColor: 'white'
+            text: ""
+
+            font.weight: Font.Bold
+        }
+
+        anchorPoint.x: - 10
+        anchorPoint.y: - 10
+
+        z: map.z + 5
+        visible: settings.showMouseCoordinates && show
     }
 }

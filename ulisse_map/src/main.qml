@@ -87,6 +87,7 @@ ApplicationWindow {
         property string savedBoundary: "null"
         property bool showCentroid: true
         property bool showStatusOverlay: true
+        property bool showMouseCoordinates: true
         property bool showObstacleID: true
         property bool showPolylineID: true
         property string bagSaveFolder: home_dir + "/logs/"

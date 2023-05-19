@@ -402,7 +402,7 @@ MapPolyline {
     }
 
     function click_mod_handler(mouse) {
-        mapMouseArea.hoverEnabled = false
+        //mapMouseArea.hoverEnabled = false
         _dashed_line.reset()
         var p = Qt.point(mouse.x, mouse.y)
         var pf = map.toCoordinate(p)
@@ -502,7 +502,7 @@ MapPolyline {
     }
 
     function discard_edit() {
-        mapMouseArea.hoverEnabled = false
+        //mapMouseArea.hoverEnabled = false
         moving_idx = -1
         translating = false
         rotating = false
@@ -521,7 +521,7 @@ MapPolyline {
     function confirm_edit(name, params) {
 
         pathName = name
-        mapMouseArea.hoverEnabled = false
+        //mapMouseArea.hoverEnabled = false
         moving_idx = -1
         _generate_and_draw()
         enable_ab_markers()
@@ -550,7 +550,7 @@ MapPolyline {
                     //console.log("[MapPointPath] click_handler - Closing curve")
                     removeCoordinate(pathLength() - 1)
                     line.color = lightgreen
-                    mapMouseArea.hoverEnabled = false
+                    //mapMouseArea.hoverEnabled = false
                     update_centroid()
                     end()
                     return

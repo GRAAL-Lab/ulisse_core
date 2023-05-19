@@ -182,7 +182,7 @@ MapPolyline {
     function close_polygon() {
         replaceCoordinate(pathLength() - 1, path[0])
         //removeCoordinate(pathLength() - 1)
-        mapMouseArea.hoverEnabled = false
+        //mapMouseArea.hoverEnabled = false
         line.color = green
         polygonal_phase = 0
         end()
@@ -447,7 +447,7 @@ MapPolyline {
                 var p0 = map.fromCoordinate(coordinateAt(0))
                 var p2 = map.fromCoordinate(coordinateAt(2))
                 polygonal_phase = 0
-                mapMouseArea.hoverEnabled = false
+                //mapMouseArea.hoverEnabled = false
                 line.color = green
                 end()
             }
@@ -605,7 +605,7 @@ MapPolyline {
     }
 
     function click_mod_handler(mouse) {
-        mapMouseArea.hoverEnabled = false
+        //mapMouseArea.hoverEnabled = false
         _dashed_line.reset()
         var p = Qt.point(mouse.x, mouse.y)
         var pf = map.toCoordinate(p)
@@ -724,7 +724,7 @@ MapPolyline {
     }
 
     function discard_edit() {
-        mapMouseArea.hoverEnabled = false
+        //mapMouseArea.hoverEnabled = false
         moving_idx = -1
         translating = false
         rotating = false
@@ -743,7 +743,7 @@ MapPolyline {
     function confirm_edit(name, params) {
         console.time("confirm_edit")
         //console.log("[MapPolyPath] confirm edit")
-        mapMouseArea.hoverEnabled = false
+        //mapMouseArea.hoverEnabled = false
         pathName = name
         if (params !== null || params !== undefined) {
             _angle = params.angle
@@ -863,7 +863,6 @@ MapPolyline {
         disable_handle()
         console.timeEnd("markersAndHandles")
 
-        //console.log("[MapPolygon] _generate_and_draw() DONE")
     }
 
     function generate_and_draw_deferred() {

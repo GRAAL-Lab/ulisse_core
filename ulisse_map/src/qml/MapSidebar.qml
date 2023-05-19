@@ -63,8 +63,8 @@ Rectangle {
                     //w:100
                     labelColor: blue
                     label: "Vehicle Position"
-                    text: fbkUpdater.ulisse_pos.latitude.toFixed(8) + ", " +
-                          fbkUpdater.ulisse_pos.longitude.toFixed(8)
+                    text: fbkUpdater.ulisse_pos.latitude.toFixed(7) + ", " +
+                          fbkUpdater.ulisse_pos.longitude.toFixed(7)
                     Layout.fillWidth: true
                 }
 

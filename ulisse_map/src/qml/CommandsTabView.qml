@@ -2,6 +2,7 @@ import QtQuick 2.6
 import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.3
 import QtQuick.Controls.Material 2.1
+import QtPositioning 5.6
 import "."
 import "../scripts/helper.js" as Helper
 
@@ -110,21 +111,73 @@ Rectangle {
                 }
 
 
+                RowLayout {
+                    Button {
+                        id: moveToButton
+                        text: "Move to Coordinate"
+                        Layout.fillWidth: true
+                        Material.background: pressed ? orange : mainColor
+                        highlighted: true
 
-                Button {
-                    id: moveToButton
-                    text: "Move to marker"
-                    Layout.fillWidth: true
-                    Material.background: pressed ? orange : mainColor
-                    enabled: Helper.coord_inside_polygon(map.marker_coords,
-                                                         map.safety_polygon.path)
-                             && (map.markerIcon.opacity > 0)
-                    highlighted: true
+                        onClicked: {
+                            var coords_tokens = moveToCoordinate.latLongText.split(/[ ,]+/);
+                            var coord = QtPositioning.coordinate(coords_tokens[0], coords_tokens[1])
 
-                    onClicked: {
-                        cmdWrapper.sendLatLongCommand(
-                                    map.marker_coords,
-                                    holdRadius.value)
+                            toast.show("Moving to coordinate:\n"
+                                       + coord.latitude.toFixed(7) + ", " + coord.longitude.toFixed(7), 6000)
+                            cmdWrapper.sendLatLongCommand(
+                                        coord,
+                                        holdRadius.value)
+                        }
+
+
+                    }
+
+                    Button {
+                        id: moveToMarkerButton
+                        text: "\ue820" // icon-folder
+                        font.family: "fontello"
+                        font.pointSize: 12
+                        padding: 5
+                        Layout.minimumWidth: 18
+                        Material.background: pressed ? orange : mainColor
+                        enabled: Helper.coord_inside_polygon(map.marker_coords,
+                                                             map.safety_polygon.path)
+                                 && (map.markerIcon.opacity > 0)
+                        highlighted: true
+
+                        onClicked: {
+                            toast.show("Moving to coordinate:\n"
+                                       + map.marker_coords.latitude.toFixed(7) + ", " + map.marker_coords.longitude.toFixed(7), 6000)
+                            cmdWrapper.sendLatLongCommand(
+                                        map.marker_coords,
+                                        holdRadius.value)
+                        }
+                    }
+                }
+
+                RowLayout {
+                    id: moveToCoordinate
+
+                    property alias latLongText: latLongText.text
+                    spacing: 10
+                    //enabled: settings.mapPluginType === "esri" ? true : false
+
+                    Label {
+                        text: "Lat, Long:"
+                    }
+
+                    TextField {
+                        property bool changed: false
+
+                        id: latLongText
+                        Layout.preferredWidth: 15
+                        Layout.fillWidth: true
+                        font.pointSize: 10
+                        text: ""
+                        placeholderText: "Latitude, Longitude"
+                        selectByMouse: true
+
                     }
                 }
 

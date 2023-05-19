@@ -234,7 +234,7 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
         // Sampling the curve and converting it back to lat-long for visualization on map
         //double samplingInterval = 1.0; // meters
         //int numSamples = (int)round(newPath->Length()/samplingInterval);
-        double numSamples = 256;
+        double numSamples = 512;
         auto sampledPath = newPath->Sampling(numSamples);
 
         //std::cout << "Lap 3:" << executionTime.Elapsed() << std::endl;
