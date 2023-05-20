@@ -95,6 +95,8 @@ ApplicationWindow {
         property int pathLineWidth: 2
         property int ulisseLineWidth: 1
 
+        property bool bypassSafetyBoundaryCheck: false
+
         Component.onCompleted: {
             futureMapPlugin = mapPluginType
             mapViewLoader.active = true
@@ -111,7 +113,8 @@ ApplicationWindow {
         id: settingsDialog
         x: Math.round((window.width - width) / 2)
         y: Math.round(window.height / 32)
-        width: Math.round(Math.min(window.width, window.height) / 4 * 3)
+        width: Math.round(window.width * 0.6)
+        height: Math.round(window.height * 0.8)
     }
 
     onMapPluginReady: {

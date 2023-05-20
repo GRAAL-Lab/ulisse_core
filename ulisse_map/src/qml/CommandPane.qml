@@ -158,8 +158,10 @@ ColumnLayout {
             Layout.alignment:  Qt.AlignTop | Qt.AlignHCenter
 
 
+            // This is an overlay rectangle to block commands if the Safety Boundary
+            // has not been set for the controller.
             Rectangle {
-                visible: !fbkUpdater.safety_boundary_set
+                visible: !fbkUpdater.safety_boundary_set && !settings.bypassSafetyBoundaryCheck
                 Layout.alignment:  Qt.AlignVCenter | Qt.AlignHCenter
                 height: commandParamsStackContainer.height
                 width: commandParamsStackContainer.width
