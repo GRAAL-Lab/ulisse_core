@@ -149,6 +149,10 @@ Rectangle {
                                                              map.safety_polygon.path)
                                  && (map.markerIcon.opacity > 0)
                         highlighted: true
+                        ToolTip.delay: 1000
+                        ToolTip.timeout: 5000
+                        ToolTip.visible: hovered
+                        ToolTip.text: qsTr("Move to marker")
 
                         onClicked: {
                             toast.show("Moving to coordinate:\n"

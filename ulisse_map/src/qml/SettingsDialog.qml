@@ -78,10 +78,11 @@ Dialog {
 
         ColumnLayout {
             id: settingsColumn
-            spacing: 3
+            spacing: 2
+            width: parent.width - 70 // the column is overflowing the view for some reason
 
             SettingsSectionLabel {
-                text: "Map Plugin [" + settings.mapPluginType + "] (suggested: osm)"
+                text: "Map Plugin [" + settings.mapPluginType + "] (for offline use select: osm)"
             }
 
 
@@ -110,21 +111,21 @@ Dialog {
                     }
                 }
 
-                Button{
-                    text: "Esri ArcGIS"
-                    font.capitalization: Font.MixedCase
-                    checkable: true
-                    highlighted: checked
-                    ButtonGroup.group: mapPluginsButtonGroup
-                    checked: settings.mapPluginType === "esri"
-                    Material.foreground: "#2e63a5"
+                //Button{
+                //    text: "Esri ArcGIS"
+                //    font.capitalization: Font.MixedCase
+                //    checkable: true
+                //    highlighted: checked
+                //    ButtonGroup.group: mapPluginsButtonGroup
+                //    checked: settings.mapPluginType === "esri"
+                //    Material.foreground: "#2e63a5"
 
-                    onClicked: {
-                        futureMapPlugin = "esri"
-                        mapPluginSetting.changed = true
-                    }
+                //    onClicked: {
+                //        futureMapPlugin = "esri"
+                //        mapPluginSetting.changed = true
+                //    }
 
-                }
+                //}
 
                 Button{
                     text: "MapBoxGL"
@@ -142,6 +143,35 @@ Dialog {
                     }
 
                 }
+
+                //ToolSeparator {
+                //    orientation: Qt.Vertical
+                //    //Layout.fillWidth: true
+
+                //    contentItem: Rectangle {
+                //        implicitHeight: 1
+                //        color: "#c3c3c3"
+                //    }
+                //}
+
+                //Button{
+                //    text: "Offline Maps"
+
+                //    font.capitalization: Font.MixedCase
+                //    checkable: true
+                //    //highlighted: checked
+                //    ButtonGroup.group: mapPluginsButtonGroup
+                //    checked: settings.mapPluginType === "osm"
+                //    Material.foreground: dimmedwhite
+                //    Material.background: red
+
+                //    onClicked: {
+                //        futureMapPlugin = "osm"
+                //        mapPluginSetting.changed = true
+                //        settings.mapTypeIndex = 0
+                //    }
+
+                //}
 
             }
 
@@ -414,6 +444,7 @@ Dialog {
                     text: "enable"
                     font.pointSize: 10
                     checkState: settings.bypassSafetyBoundaryCheck ? Qt.Checked : Qt.Unchecked
+                    Material.accent: red
 
                     onClicked: {
                         settings.bypassSafetyBoundaryCheck = !settings.bypassSafetyBoundaryCheck;
@@ -441,17 +472,7 @@ Dialog {
             }
         }*/
 
-            Label {
-                id: restartText
-                text: "Changes will take effect on restart!"
-                color: "#e41e25"
-                opacity: (mapCacheDirectory.changed || mapPluginSetting.changed) ? 1.0 : 0.0
-                font.weight: Font.DemiBold
-                horizontalAlignment: Label.AlignHCenter
-                verticalAlignment: Label.AlignVCenter
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-            }
+
         }
 
     }

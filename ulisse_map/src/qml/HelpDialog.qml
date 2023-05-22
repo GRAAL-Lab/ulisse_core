@@ -25,9 +25,9 @@ Dialog {
         height: parent.height
 
         Label {
-            id: shortcutsTitle
-            text: "Shortcuts"
-            font.pointSize: 12
+            id: helpTitle
+            text: "Help"
+            font.pointSize: 14
             font.bold: true
             verticalAlignment: Text.AlignBottom
             horizontalAlignment: Label.AlignHCenter
@@ -36,10 +36,37 @@ Dialog {
 
         Text {
             font.pointSize: 11
-            text: "<b>Return</b>: Send a Halt Command"
+            text: "<b>Offline maps</b>: to use the offline maps, select the OpenStreetMaps plugin in the settings
+                and then the map type \"Street maps in daylight view\".<br>"
+            lineHeight: 1.5
             color: Material.foreground
             wrapMode: Text.Wrap
             Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+            Layout.maximumWidth: parent.width - 30
+        }
+
+
+        Label {
+            id: shortcutsTitle
+            text: "Shortcuts"
+            font.pointSize: 12
+            font.bold: true
+            verticalAlignment: Text.AlignBottom
+            horizontalAlignment: Label.AlignHCenter
+            Layout.fillWidth: true
+            Layout.topMargin: 20
+        }
+
+        Text {
+            font.pointSize: 11
+            lineHeight: 1.5
+            text: "<b>• Return</b>: Send a Halt Command.<br>
+                   <b>• Fast Copy/Paste</b>: Most of the numerical values in the interface can be copied to clipboard just
+                    by left clicking on the number."
+            color: Material.foreground
+            wrapMode: Text.Wrap
+            Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+            Layout.maximumWidth: parent.width - 30
         }
 
         Label {
@@ -50,6 +77,7 @@ Dialog {
             font.bold: true
             horizontalAlignment: Label.AlignHCenter
             Layout.fillWidth: true
+            Layout.topMargin: 20
         }
 
         TextArea {
@@ -63,7 +91,7 @@ Dialog {
         }
 
         Label {
-            text: "Developed by GRAAL Lab (2021)"
+            text: "Developed by GRAAL Lab (2023)<br>Mantainer: francesco.wanderlingh@unige.it"
             horizontalAlignment: Text.AlignHCenter
             color: "grey"
             Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
