@@ -316,7 +316,7 @@ namespace nav {
             extendedKalmanFilter_->AddMeasurement(zMeterMeasurement_);
         }
 
-        /*RCLCPP_INFO(this->get_logger(), "EFK measurement: imu %d - gps %d - magnetometer %d", imuValid_, gpsValid_, magnetometerValid_);*/
+        RCLCPP_INFO(this->get_logger(), "EFK measurement: imu %d - gps %d - magnetometer %d", imuValid_, gpsValid_, magnetometerValid_);
 
         //Filter Update
 
@@ -473,21 +473,25 @@ namespace nav {
 
         if (std::abs(lastValidGPSSecs - timeNowSecs) > sensorsCheckInterval_) {
             RCLCPP_WARN(this->get_logger(), "GPS Data unavailable for more than %i seconds.", sensorsCheckInterval_);
+            RCLCPP_WARN(this->get_logger(), "GPS Data last valid %lld, now %lld, diff %lld", lastValidGPSSecs, timeNowSecs, std::abs(lastValidGPSSecs - timeNowSecs));
             //filterData_.gps_received = false;
         }
 
         if (std::abs(imuData_.stamp.sec - timeNowSecs) > sensorsCheckInterval_) {
             RCLCPP_WARN(this->get_logger(), "IMU Data unavailable for more than %i seconds.", sensorsCheckInterval_);
+            RCLCPP_WARN(this->get_logger(), "IMU Data last valid %lld, now %lld, diff %lld", imuData_.stamp.sec, timeNowSecs, std::abs(imuData_.stamp.sec - timeNowSecs));
             //filterData_.imu_received = false;
         }
 
         if (std::abs(compassData_.stamp.sec - timeNowSecs) > sensorsCheckInterval_) {
             RCLCPP_WARN(this->get_logger(), "Compass Data unavailable for more than %i seconds.", sensorsCheckInterval_);
+            RCLCPP_WARN(this->get_logger(), "Compass Data last valid %lld, now %lld, diff %lld", compassData_.stamp.sec, timeNowSecs, std::abs(compassData_.stamp.sec - timeNowSecs));
             //filterData_.compass_received = false;
         }
 
         if (std::abs(magnetometerData_.stamp.sec - timeNowSecs) > sensorsCheckInterval_) {
             RCLCPP_WARN(this->get_logger(), "Magnetometer Data unavailable for more than %i seconds.", sensorsCheckInterval_);
+            RCLCPP_WARN(this->get_logger(), "Magnetometer Data last valid %lld, now %lld, diff %lld", magnetometerData_.stamp.sec, timeNowSecs, std::abs(magnetometerData_.stamp.sec - timeNowSecs));
             //filterData_.magnetometer_received = false;
         }
 
