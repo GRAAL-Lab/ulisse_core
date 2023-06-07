@@ -38,18 +38,30 @@ BarManagePathsForm {
     property var params_panel
     
     b_polySweep.onClicked: function () {
+        map.mapHintsOverlay.text =
+                "<b>POLYGON SWEEP</b><br>"
+                + "Left click on map to define polygon vertices. Right click to close polygon.<br>"
+                + map.mapHintsOverlay.text;
         cur_managed = map.createPolySweepPath()
         params_panel = panelParamsPolygon
         start()
     }
     
     b_rectSweep.onClicked: function () {
+        map.mapHintsOverlay.text =
+                "<b>RECTANGLE SWEEP</b><br>"
+                + "Left click on map to define rectangle vertices.<br>"
+                + map.mapHintsOverlay.text;
         cur_managed = map.createRectSweepPath()
         params_panel = panelParamsPolygon
         start()
     }
 
     b_hippodrome.onClicked: function () {
+        map.mapHintsOverlay.text =
+                "<b>HIPPODROME</b><br>"
+                + "Left click on map to define hippodrome center.<br>"
+                + map.mapHintsOverlay.text;
         cur_managed = map.createHippodromePath()
         params_panel = panelParamsPolygon
         panelParamsPolygon.polypath_type_ = "Hippodrome"
@@ -57,6 +69,10 @@ BarManagePathsForm {
     }
     
     b_polyline.onClicked: function () {
+        map.mapHintsOverlay.text =
+                "<b>POLYLINE</b><br>"
+                + "Left click on map to define polyline vertices. Double click to end.<br>"
+                + map.mapHintsOverlay.text;
         cur_managed = map.createPolylinePath()
         params_panel = panelParamsPolyline
         start()
@@ -141,7 +157,7 @@ BarManagePathsForm {
         cur_managed.check_safe(map.safety_polygon)
         pathCmdPane.update_selection(cur_managed)
         manage(cur_managed)
-        map.mapTextOverlay.visible = false
+        map.mapHintsOverlay.visible = false
     }
 
     function confirm() {
@@ -236,7 +252,7 @@ BarManagePathsForm {
         for (var j in panels)
             panels[j].visible = false
         pathManageToolbar.visible = false
-        map.mapTextOverlay.visible = false
+        map.mapHintsOverlay.visible = false
         cur_managed = undefined; // (?)
     }
 

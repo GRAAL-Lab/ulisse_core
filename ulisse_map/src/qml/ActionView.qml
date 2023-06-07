@@ -31,8 +31,6 @@ Rectangle {
             }
 
             Text {
-                id: mapTextOverlay
-
                 font.pointSize: 12
                 color: grey
                 horizontalAlignment: Text.AlignHCenter

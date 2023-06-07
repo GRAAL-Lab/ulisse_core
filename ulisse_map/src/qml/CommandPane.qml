@@ -64,15 +64,17 @@ ColumnLayout {
                         map.clickHandler = map.safety_polygon.clickHandler
                         map.posChangedHandler = map.safety_polygon.posChangedHandler
                         enabled = false
-                        map.mapTextOverlay.text = "Press ESC to cancel"
-                        map.mapTextOverlay.visible = true
+                        map.mapHintsOverlay.text =
+                                "<b>Left click on map to define polygon vertices.\nRight click to close polygon.</b><br>"
+                                + "Press ESC to cancel";
+                        map.mapHintsOverlay.visible = true
                         window.sig_escape.connect(reset_safetypoly)
                         map.safety_polygon.end.connect(end)
                     }
 
                     function end() {
                         enabled = true
-                        map.mapTextOverlay.visible = false
+                        map.mapHintsOverlay.visible = false
                         map.safety_polygon.end.disconnect(end)
                         window.sig_escape.disconnect(reset_safetypoly)
                         map.clickHandler = map.click_goto_handler
@@ -87,7 +89,7 @@ ColumnLayout {
 
                     function reset_safetypoly(){
                         enabled = true
-                        map.mapTextOverlay.visible = false
+                        map.mapHintsOverlay.visible = false
                         map.safety_polygon.end.disconnect(end)
                         window.sig_escape.disconnect(reset_safetypoly)
                         map.safety_polygon.path = safetyPoly_bkp

@@ -26,19 +26,20 @@ Map {
     property alias greenFlag: greenFlag
     property alias goalAcceptRadius: goalAcceptRadius
     property alias sliderz: sliders.z
-    property alias mapTextOverlay: mapTextOverlay
+    property alias mapHintsOverlay: mapHintsOverlay
     property alias mouseLiveCoordinate: mouseLiveCoordinate
 
     Text {
-        id: mapTextOverlay
+        id: mapHintsOverlay
 
         font.pointSize: 12
-        color: grey
+        color: darkgrey
         horizontalAlignment: Text.AlignHCenter
         width: parent.width
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 110
-        text: "Overlay Text"
+        anchors.bottomMargin: 150
+        lineHeight: 1.2
+        text: "undefined"
         font.weight: Font.DemiBold
         z: map.z + 4
         visible: false

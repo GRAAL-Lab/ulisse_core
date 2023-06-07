@@ -33,8 +33,8 @@ RowLayout {
                     bar_manage.show_shape_choice()
                     enableBtns(false)
                     //window.sig_escape.connect(cancelPathCreation)
-                    //map.mapTextOverlay.text = "Press ESC to cancel"
-                    //map.mapTextOverlay.visible = true
+                    map.mapHintsOverlay.text = "<i>(Press ESC to cancel)</i>"
+                    map.mapHintsOverlay.visible = true
                 }
             }
 
@@ -83,7 +83,7 @@ RowLayout {
 
             Column {
                 id: pathButtonsColumn
-                width: parent.width - 18
+                width: parent.width - 22  // space subtracted to avoid overlap with scrolling bar
             }
         }
 

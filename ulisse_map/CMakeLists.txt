@@ -6,10 +6,7 @@ if(NOT WIN32)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Wextra -fPIC -Wno-deprecated-copy")
 endif()
 
-#IF (NOT DEFINED BUILD_VERSION)
-        SET(BUILD_VERSION "Release")
-#ENDIF()
-ADD_DEFINITIONS(-DBUILD_VERSION="${BUILD_VERSION}")
+SET(CMAKE_BUILD_TYPE "Release")
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -30,6 +27,7 @@ find_package(sisl_toolbox REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(JSONCPP jsoncpp)
 link_libraries(${JSONCPP_LIBRARIES} sisl)
+
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
