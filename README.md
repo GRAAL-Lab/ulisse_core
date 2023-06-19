@@ -7,10 +7,10 @@ Ulisse catamaran controller revamped with ROS2.
 Short description of all the packages included in this meta package:
 
 - **surface_vehicle_model**: Dynamic model of a surface vehicle with two thrusters.
-- **navigation_filter**: The sensor filtering package providing the vehicle status and seacurrent estimation to the controller.
+- **navigation_filter**: The sensor filtering package providing the vehicle status and sea current estimation to the controller.
 - **ulisse_msgs**: Interface and services messages package with headers for topic names and common variables.
 - **ulisse_ctrl**: The catamaran controller.
-- **ulisse_driver**: The low level driver that communicates with the catamaran microcontrollers.
+- **ulisse_driver**: The low level driver that communicates with the catamaran micro-controllers.
 - **ulisse_sim**: The dynamic simulator, which makes use of `surface_vehicle_model` library or replays data from logs.
 - **ulisse_map**: Graphical interface (Qt based) for controlling the catamaran.
 - **csv_pkg**: Node to log all necessary data to be plotted in matlab.
