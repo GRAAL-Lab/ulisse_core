@@ -10,20 +10,20 @@
 #include <QQuickStyle>
 #include <QSettings>
 
+#include "rclcpp/rclcpp.hpp"
 #include "commandwrapper.hpp"
 #include "feedbackupdater.hpp"
 #include "taskdataupdater.hpp"
 #include "addonsbridge.hpp"
-#include "rclcpp/rclcpp.hpp"
 
-#include <QQmlDebuggingEnabler>
+//#include <QQmlDebuggingEnabler>
 
 #include "ulisse_msgs/srv/set_boundaries.hpp"
 
 
 int main(int argc, char* argv[])
 {
-    QQmlDebuggingEnabler enabler;
+    //QQmlDebuggingEnabler enabler;
 
     char name[] = { "Ulisse Control GUI" };
 

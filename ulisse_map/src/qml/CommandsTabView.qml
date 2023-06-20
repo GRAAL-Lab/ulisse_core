@@ -2,35 +2,47 @@ import QtQuick 2.6
 import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.3
 import QtQuick.Controls.Material 2.1
+import QtPositioning 5.6
 import "."
 import "../scripts/helper.js" as Helper
 
-Pane{
+
+Rectangle {
+
+    Layout.alignment: Qt.AlignCenter
+    //width: commandsColumnLayout.width + 10
+    //height: commandsColumnLayout.height + 10
+    color: dimmedwhite
+    border.color: lightgrey
+    border.width: 1
+
     property alias pathCommandsPane: pathCommandsPane
     property alias speedHeadTimeout: speedHeadTimeout
+    property alias commandsColumnLayout: commandsColumnLayout
 
     property var sliderHeading: sliderHeading
 
-
-
-    property var labelWidth: 100
-    property var sliderWidth: 105
-    property var unitsWidth: 40
-
-    topPadding: 0
-    Material.elevation: 4
+    property real labelWidth: 100
+    property real sliderWidth: 105
+    property real unitsWidth: 40
 
     ColumnLayout {
-        width: parent.width
+        id: commandsColumnLayout
+
+        //anchors.horizontalCenter: parent.horizontalCenter
+        //anchors.top: parent.top
+        anchors.fill: parent
+        anchors.margins: 1
 
         Label {
-            font.pointSize: 12
+            font.pointSize: 13
             font.weight: Font.DemiBold
             color: mainColor
             text: "Commands"
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignHCenter
-            Layout.topMargin: 15
+            Layout.topMargin: 10
+            Layout.bottomMargin: 5
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
         }
@@ -38,8 +50,8 @@ Pane{
         TabBar {
             id: commandPathsBar
             Layout.fillWidth: true
-            Material.accent: grey
-            Material.background: Material.color(Material.BlueGrey, Material.Shade50)
+            Material.accent: mainColor
+            //Material.background: Material.color(Material.BlueGrey, Material.Shade50)
 
             TabButton {
                 id: commandsTabButton
@@ -50,7 +62,11 @@ Pane{
                     font: commandsTabButton.font
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
-                    color: (commandPathsBar.currentIndex == 0) ? mainColor : grey
+                    color: (commandPathsBar.currentIndex === 0) ? mainColor : grey
+                }
+
+                background: Rectangle {
+                    color: (commandPathsBar.currentIndex === 0) ? lighterbluegrey : lightbluegrey
                 }
             }
 
@@ -63,7 +79,11 @@ Pane{
                     font: parametersTabButton.font
                     horizontalAlignment: Text.AlignHCenter
                     verticalAlignment: Text.AlignVCenter
-                    color: (commandPathsBar.currentIndex == 1) ? mainColor : grey
+                    color: (commandPathsBar.currentIndex === 1) ? mainColor : grey
+                }
+
+                background: Rectangle {
+                    color: (commandPathsBar.currentIndex === 1) ? lighterbluegrey : lightbluegrey
                 }
             }
         }
@@ -72,6 +92,7 @@ Pane{
             currentIndex: commandPathsBar.currentIndex
             Layout.fillHeight: true
             Layout.fillWidth: true
+            Layout.margins: 10
 
             ColumnLayout {
                 id: commandsTab
@@ -90,21 +111,82 @@ Pane{
                 }
 
 
+                RowLayout {
+                    Button {
+                        id: moveToButton
+                        text: "Move to Coordinate"
+                        Layout.fillWidth: true
+                        Material.background: pressed ? orange : mainColor
+                        highlighted: true
 
-                Button {
-                    id: moveToButton
-                    text: "Move to marker"
-                    Layout.fillWidth: true
-                    Material.background: pressed ? orange : mainColor
-                    enabled: Helper.coord_inside_polygon(map.marker_coords,
-                                                         map.safety_polygon.path)
-                             && (map.markerIcon.opacity > 0)
-                    highlighted: true
+                        onClicked: {
+                            var coords_tokens = moveToCoordinate.latLongText.split(/[ ,]+/);
+                            var coord = QtPositioning.coordinate(coords_tokens[0], coords_tokens[1])
 
-                    onClicked: {
-                        cmdWrapper.sendLatLongCommand(
-                                    map.marker_coords,
-                                    holdRadius.value)
+                            if (coord.isValid) {
+                            toast.show("Moving to coordinate:\n"
+                                       + coord.latitude.toFixed(7) + ", " + coord.longitude.toFixed(7), 6000)
+                            cmdWrapper.sendLatLongCommand(
+                                        coord,
+                                        holdRadius.value)
+                            } else {
+                                toast.show("Invalid coordinate.")
+                            }
+                        }
+
+
+                    }
+
+                    Button {
+                        id: moveToMarkerButton
+                        text: "\ue820" // icon-folder
+                        font.family: "fontello"
+                        font.pointSize: 12
+                        padding: 5
+                        Layout.minimumWidth: 18
+                        Material.background: pressed ? orange : mainColor
+                        enabled: Helper.coord_inside_polygon(map.marker_coords,
+                                                             map.safety_polygon.path)
+                                 && (map.markerIcon.opacity > 0)
+                        highlighted: true
+                        ToolTip.delay: 1000
+                        ToolTip.timeout: 5000
+                        ToolTip.visible: hovered
+                        ToolTip.text: qsTr("Move to marker")
+
+                        onClicked: {
+                            toast.show("Moving to coordinate:\n"
+                                       + map.marker_coords.latitude.toFixed(7) + ", " + map.marker_coords.longitude.toFixed(7), 6000)
+                            cmdWrapper.sendLatLongCommand(
+                                        map.marker_coords,
+                                        holdRadius.value)
+                        }
+                    }
+                }
+
+                RowLayout {
+                    id: moveToCoordinate
+
+                    property alias latLongText: latLongText.text
+                    spacing: 10
+                    //enabled: settings.mapPluginType === "esri" ? true : false
+
+                    Label {
+                        font.pointSize: 11
+                        text: "Lat, Long:"
+                    }
+
+                    TextField {
+                        property bool changed: false
+
+                        id: latLongText
+                        Layout.preferredWidth: 15
+                        Layout.fillWidth: true
+                        font.pointSize: 11
+                        text: ""
+                        placeholderText: "Latitude, Longitude"
+                        selectByMouse: true
+
                     }
                 }
 
@@ -141,23 +223,28 @@ Pane{
                     }
                 }
 
-
-                ToolSeparator {
-                    orientation: Qt.Horizontal
+                Rectangle {
                     Layout.fillWidth: true
-
-                    contentItem: Rectangle {
-                        implicitHeight: 1
-                        color: "#c3c3c3"
-                    }
+                    implicitHeight: 1
+                    color: "#c3c3c3"
                 }
+
+                //ToolSeparator {
+                //    orientation: Qt.Horizontal
+                //    Layout.fillWidth: true
+
+                //    contentItem: Rectangle {
+                //        implicitHeight: 1
+                //        color: "#c3c3c3"
+                //    }
+                //}
 
                 PathsCommands {
                     id: pathCommandsPane
-                    Layout.bottomMargin: 10
-                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                    //Layout.bottomMargin: 10
+                    Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
                     Layout.fillWidth: true
-                    Layout.fillHeight: false
+                    Layout.fillHeight: true
                 }
             }
 

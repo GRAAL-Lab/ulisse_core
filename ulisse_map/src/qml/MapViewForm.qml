@@ -23,7 +23,8 @@ RowLayout {
     //property alias overlayStatusCbox: bottomToolbar.overlayStatusCbox
     property alias clearPathButton: bottomToolbar.clearPathButton
     property alias gpsIconCBox: bottomToolbar.gpsIconCBox
-    property alias engineButton: bottomToolbar.engineButton
+    property alias enableRefButton: bottomToolbar.enableRefButton
+    property alias enginePowerButton: bottomToolbar.enginePowerButton
     property alias mapCache: mapCache
     property alias map: map
     property alias mapsidebar: mapsidebar
@@ -46,13 +47,19 @@ RowLayout {
         }
 
         PluginParameter {
+            name: 'osm.mapping.offline.directory'
+            value: ':/offline_tiles/osm'
+        }
+
+
+        /*PluginParameter {
             id: maxZoomLevel
             name: "esri.mapping.maximumZoomLevel"
             value: 19.9
-        }
+        }*/
 
         //PluginParameter { name: "osm.useragent"; value: "GraalLab - UNIGE" }
-        //PluginParameter { name: "osm.mapping.copyright"; value: "All mine" }
+        //PluginParameter { name: "osm.mapping.copyright"; value: "" }
 
     }
 
@@ -83,7 +90,7 @@ RowLayout {
         Layout.minimumWidth: 320
         Layout.preferredWidth: 320
         Layout.maximumWidth: 350
-        Material.elevation: myElevation
+        //Material.elevation: myElevation
         Material.accent: grey
     }
 
@@ -100,9 +107,9 @@ RowLayout {
         MapComponent {
             id: map
             width: parent.width
-            height: parent.height// - bottomToolbar.height
+            height: parent.height - 20
             plugin: mapPlugin
-            center: settings.mapCenter
+            //center: settings.mapCenter
             zoomLevel: settings.mapZoom
             bearing: settings.mapBearing
 

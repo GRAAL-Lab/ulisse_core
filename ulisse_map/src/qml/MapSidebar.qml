@@ -17,15 +17,18 @@ Rectangle {
 
     ColumnLayout {
         id: leftbarlayout
-        width: parent.width
+        anchors.fill: parent
         spacing: 0
 
         Pane {
             id: statusdatarect
-            Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
-            Layout.fillWidth: true
-            Layout.fillHeight: false
-            Material.elevation: 0
+
+            Layout.topMargin: 10
+            Layout.alignment: Qt.AlignHCenter
+            Layout.preferredWidth: parent.width - 20
+            //Layout.fillWidth: true
+            //Layout.fillHeight: false
+            Material.elevation: 3
             //Material.background: Material.color(Material.BlueGrey, Material.Shade50)
 
             ColumnLayout {
@@ -60,8 +63,8 @@ Rectangle {
                     //w:100
                     labelColor: blue
                     label: "Vehicle Position"
-                    text: fbkUpdater.ulisse_pos.latitude.toFixed(8) + ", " +
-                          fbkUpdater.ulisse_pos.longitude.toFixed(8)
+                    text: fbkUpdater.ulisse_pos.latitude.toFixed(7) + ", " +
+                          fbkUpdater.ulisse_pos.longitude.toFixed(7)
                     Layout.fillWidth: true
                 }
 
@@ -86,16 +89,16 @@ Rectangle {
                     Layout.fillWidth: true
                 }
 
-                Text {
-                    id: markerText
-                    font.pointSize: 8
-                    color: 'grey'
-                    text: "(Left click to set marker)"
-                    verticalAlignment: Text.AlignVCenter
-                    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                    Layout.fillWidth: true
-                    horizontalAlignment: Text.AlignHCenter
-                }
+                //Text {
+                //    id: markerText
+                //    font.pointSize: 8
+                //    color: 'grey'
+                //    text: "(Left click to set marker)"
+                //    verticalAlignment: Text.AlignVCenter
+                //    Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+                //    Layout.fillWidth: true
+                //    horizontalAlignment: Text.AlignHCenter
+                //}
             }
         }
 
@@ -103,7 +106,9 @@ Rectangle {
             id: commandRect
             Layout.alignment: Qt.AlignLeft | Qt.AlignTop
             Layout.fillWidth: true
-            Layout.fillHeight: false
+            Layout.fillHeight: true
+
+            Layout.margins: 10
             //Material.background: "white"//Material.color(Material.BlueGrey, Material.Shade50)
         }
     }

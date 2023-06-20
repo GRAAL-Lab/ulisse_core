@@ -14,7 +14,8 @@ RowLayout {
 
     ColumnLayout {
         Layout.fillWidth: true
-        height: main_btns.height
+        Layout.fillHeight: true
+        //height: main_btns.height
 
         RowLayout {
             id: main_btns
@@ -32,8 +33,8 @@ RowLayout {
                     bar_manage.show_shape_choice()
                     enableBtns(false)
                     //window.sig_escape.connect(cancelPathCreation)
-                    //map.mapTextOverlay.text = "Press ESC to cancel"
-                    //map.mapTextOverlay.visible = true
+                    map.mapHintsOverlay.text = "<i>(Press ESC to cancel)</i>"
+                    map.mapHintsOverlay.visible = true
                 }
             }
 
@@ -58,11 +59,43 @@ RowLayout {
             }
         }
 
-        Column {
-            // Space for the Paths buttons
-            id: pathButtonsColumn
-            Layout.preferredWidth: parent.width
+        ScrollView {
+            //width: parent.width
+            //height : parent.height
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            contentWidth: parent.width    // The important part
+            contentHeight: pathButtonsColumn.height  // Same
+            clip : true                   // Prevent drawing column outside the scrollview borders
+            ScrollBar.vertical.policy: ScrollBar.AlwaysOn
+
+            Label {
+                height: 40
+                width: parent.width - 20
+                text: "Load or define a path"
+                font.pointSize: 14
+                font.weight: Font.Light
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                color: lightgrey
+                visible: pathButtonsColumn.children.length === 0
+            }
+
+            Column {
+                id: pathButtonsColumn
+                width: parent.width - 22  // space subtracted to avoid overlap with scrolling bar
+            }
         }
+
+
+
+        //Column {
+        //    // Space for the Paths buttons
+        //    id: pathButtonsColumn
+        //    Layout.fillWidth: true
+        //    //width: parent.width
+        //}
+
     }
 
 

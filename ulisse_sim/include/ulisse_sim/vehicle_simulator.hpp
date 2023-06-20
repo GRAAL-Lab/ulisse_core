@@ -18,6 +18,7 @@
 #include "ulisse_msgs/msg/simulated_system.hpp"
 #include "ulisse_msgs/msg/llc_thrusters.hpp"
 #include "ulisse_msgs/msg/thrusters_reference.hpp"
+#include "ulisse_msgs/msg/llc_status.hpp"
 
 #include "ulisse_sim/simulator_defines.hpp"
 
@@ -68,7 +69,9 @@ class VehicleSimulator : public rclcpp::Node {
     ulisse_msgs::msg::ThrustersReference appliedMotorRefMsg_;
     ulisse_msgs::msg::SimulatedSystem groundTruthMsg_;
     ulisse_msgs::msg::LLCThrusters motorsDataMsg_;
+    ulisse_msgs::msg::LLCStatus llcStatusMsg_;
 
+    rclcpp::Publisher<ulisse_msgs::msg::LLCStatus>::SharedPtr llcStatusPub_;
     rclcpp::Publisher<ulisse_msgs::msg::MicroLoopCount>::SharedPtr microLoopCountPub_;
     rclcpp::Publisher<ulisse_msgs::msg::GPSData>::SharedPtr gpsPub_;
     rclcpp::Publisher<ulisse_msgs::msg::Compass>::SharedPtr compassPub_;

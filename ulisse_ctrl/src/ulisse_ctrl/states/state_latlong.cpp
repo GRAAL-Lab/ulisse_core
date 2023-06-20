@@ -98,14 +98,14 @@ namespace states {
          * } else {
          */
 
-             ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, goalPosition, goalDistance, goalHeading);
+        ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, goalPosition, goalDistance, goalHeading);
 
         // }
 
-        double finalGoalDistance, finalGoalHeading;
-        ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, goalPosition, finalGoalDistance, finalGoalHeading);
+        //double finalGoalDistance, finalGoalHeading;
+        //ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, goalPosition, finalGoalDistance, finalGoalHeading);
 
-        if (finalGoalDistance < acceptanceRadius) {
+        if (goalDistance < acceptanceRadius) {
             std::cout << "*** GOAL REACHED! ***" << std::endl;
             fsm_->EmitEvent(ulisse::events::names::neargoalposition, ulisse::events::priority::medium);
         } else {

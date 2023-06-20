@@ -3,11 +3,11 @@ project(ulisse_driver)
 
 # Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
+    set(CMAKE_CXX_STANDARD 14)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
+    add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
 find_package(ament_cmake REQUIRED)
@@ -29,7 +29,7 @@ file(GLOB_RECURSE SOURCE_FILES
 add_custom_target(.Files. SOURCES ${SOURCE_FILES})
 
 include_directories(include
-  ${ulisse_msgs_INCLUDE_DIRS}
+    ${ulisse_msgs_INCLUDE_DIRS}
 )
 
 
@@ -46,10 +46,10 @@ ament_target_dependencies(ulisse_driver_lib rclcpp std_msgs ulisse_msgs)
 target_link_libraries(ulisse_driver_lib Geographic rml ctrl_toolbox config++)
 
 add_library(llc_driver_threads SHARED
-            src/ulisse_driver/thread_sender.cpp
-            src/ulisse_driver/thread_receiver.cpp)
+    src/ulisse_driver/thread_sender.cpp
+    src/ulisse_driver/thread_receiver.cpp)
 target_compile_definitions(llc_driver_threads
-  PRIVATE "THREADS_COMPOSITION_DLL")
+    PRIVATE "THREADS_COMPOSITION_DLL")
 ament_target_dependencies(llc_driver_threads rclcpp std_msgs class_loader ament_index_cpp)
 target_link_libraries(llc_driver_threads ulisse_driver_lib config++)
 
@@ -71,32 +71,33 @@ ament_target_dependencies(driver_console_node rclcpp std_msgs ulisse_msgs)
 target_link_libraries(driver_console_node ulisse_driver_lib llc_driver_threads rml ctrl_toolbox config++)
 
 install(TARGETS
-  ulisse_driver_lib
-  ARCHIVE DESTINATION lib#/${PROJECT_NAME}
-  LIBRARY DESTINATION lib#/${PROJECT_NAME}
-  RUNTIME DESTINATION bin#/${PROJECT_NAME}
+    ulisse_driver_lib
+    llc_driver_threads
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin
 )
 
 install(TARGETS
-  llc_driver_node
-  llc_driver_threads
-  gps_setup_node
-  gps_publisher_node
-  driver_console_node
-  DESTINATION lib/${PROJECT_NAME}
+    llc_driver_node
+    gps_setup_node
+    gps_publisher_node
+    driver_console_node
+    DESTINATION lib/${PROJECT_NAME}
 )
 
 install(DIRECTORY
-  launch
-  conf
-  DESTINATION share/${PROJECT_NAME}
+    launch
+    conf
+    DESTINATION share/${PROJECT_NAME}
 )
 
 install(
-  DIRECTORY include/
-  DESTINATION include
+    DIRECTORY include/
+    DESTINATION include
 )
 
 ament_export_include_directories(include)
 ament_export_libraries(ulisse_driver_lib)
+ament_export_libraries(llc_driver_threads)
 ament_package()

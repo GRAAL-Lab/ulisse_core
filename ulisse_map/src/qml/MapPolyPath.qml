@@ -41,7 +41,7 @@ MapPolyline {
     property real _angle: 0
     property real _size_1: 20
     property real _size_2: 10
-    property var _polypathType: "Serpentine" // "simple"
+    property string _polypathType: "Serpentine" // "simple"
     property int direction: 0  // 0: Direct, 1: Reverse
 
     property var centroid: QtPositioning.coordinate(0.0, 0.0)
@@ -52,11 +52,11 @@ MapPolyline {
     //property var intersections_cartesian: []
     //property var intersections_geographic: []
 
-    property var polygonal_phase: 0
-    property var polygonal_direction: 0 //1: counterclockwise, 2: clockwise
+    property int polygonal_phase: 0
+    property int polygonal_direction: 0 //1: counterclockwise, 2: clockwise
 
     property var safe: null
-    property var detection_intersect: 0
+    property int detection_intersect: 0
 
     onSafeChanged: function () {
         line.color = safe ? green : red
@@ -82,6 +82,7 @@ MapPolyline {
         a_marker.content = "A";
         b_marker.content = "B";
 
+        /// FIXME: Problem on canvas drawing - with large path drawing becomes very slow
         map.addMapItem(_canvas)
         map.addMapItem(_marker)
         map.addMapItem(_dashed_line)
@@ -137,6 +138,7 @@ MapPolyline {
         if (idx === 0)
             replaceCoordinate(path.length - 1, coord)
         update_centroid()
+        reposition_handle()
     }
 
     function remove_coordinate(idx) {
@@ -144,6 +146,7 @@ MapPolyline {
         if (idx === 0)
             replaceCoordinate(pathLength() - 1, path[0])
         update_centroid()
+        reposition_handle()
     }
 
     function split_edge(idx) {
@@ -160,6 +163,7 @@ MapPolyline {
             replaceCoordinate(i, cn)
         }
         update_centroid()
+        reposition_handle()
     }
 
     function rotate_and_scale_coordinates(angle, scale) {
@@ -176,13 +180,14 @@ MapPolyline {
     function update_centroid() {
         var _path = get_path()
         centroid = Helper.coords_centroid(_path)
-        reposition_handle()
+        //reposition_handle()
+        //console.log("Centroid: " + centroid.latitude.toFixed(7) + ", " + centroid.longitude.toFixed(7));
     }
 
     function close_polygon() {
         replaceCoordinate(pathLength() - 1, path[0])
         //removeCoordinate(pathLength() - 1)
-        mapMouseArea.hoverEnabled = false
+        //mapMouseArea.hoverEnabled = false
         line.color = green
         polygonal_phase = 0
         end()
@@ -447,7 +452,7 @@ MapPolyline {
                 var p0 = map.fromCoordinate(coordinateAt(0))
                 var p2 = map.fromCoordinate(coordinateAt(2))
                 polygonal_phase = 0
-                mapMouseArea.hoverEnabled = false
+                //mapMouseArea.hoverEnabled = false
                 line.color = green
                 end()
             }
@@ -577,8 +582,8 @@ MapPolyline {
 
     //////////////////////////////////////////////
     // Event handlers for polygon editing
-    property var moving_idx: -1
-    property var marked: -1
+    property real moving_idx: -1
+    property real marked: -1
     property bool translating: false
     property bool rotating: false
 
@@ -605,7 +610,7 @@ MapPolyline {
     }
 
     function click_mod_handler(mouse) {
-        mapMouseArea.hoverEnabled = false
+        //mapMouseArea.hoverEnabled = false
         _dashed_line.reset()
         var p = Qt.point(mouse.x, mouse.y)
         var pf = map.toCoordinate(p)
@@ -722,13 +727,14 @@ MapPolyline {
     }
 
     function discard_edit() {
-        mapMouseArea.hoverEnabled = false
+        //mapMouseArea.hoverEnabled = false
         moving_idx = -1
         translating = false
         rotating = false
         //console.log("backup path: ", backup_path)
         path = backup_path
         update_centroid()
+        reposition_handle()
         generate_markers()
         reposition_markers()
         disable_markers()
@@ -740,7 +746,7 @@ MapPolyline {
 
     function confirm_edit(name, params) {
         //console.log("[MapPolyPath] confirm edit")
-        mapMouseArea.hoverEnabled = false
+        //mapMouseArea.hoverEnabled = false
         pathName = name
         if (params !== null || params !== undefined) {
             _angle = params.angle
@@ -754,24 +760,29 @@ MapPolyline {
             var objCorners = []
             var _top = centroid.atDistanceAndAzimuth(_size_1/2.0, _angle)
             //var _right = coords.atDistanceAndAzimuth(bBoxY/2.0, heading + 90)
-            var _bottom = centroid.atDistanceAndAzimuth(_size_1/2.0, _angle + 180)
+            var _bottom = centroid.atDistanceAndAzimuth(_size_1/2.0, _angle + 180.0)
             //var _left = coords.atDistanceAndAzimuth(bBoxY/2.0, heading + 270)
 
-            objCorners.push(_top.atDistanceAndAzimuth(_size_2/2.0, _angle + 270))    // _topLeft
-            objCorners.push(_top.atDistanceAndAzimuth(_size_2/2.0, _angle + 90))     // _topRight
-            objCorners.push(_bottom.atDistanceAndAzimuth(_size_2/2.0, _angle + 90))  // _bottomRight
-            objCorners.push(_bottom.atDistanceAndAzimuth(_size_2/2.0, _angle + 270)) // _bottomLeft
+            objCorners.push(_top.atDistanceAndAzimuth(_size_2/2.0, _angle + 270.0))    // _topLeft
+            objCorners.push(_top.atDistanceAndAzimuth(_size_2/2.0, _angle + 90.0))     // _topRight
+            objCorners.push(_bottom.atDistanceAndAzimuth(_size_2/2.0, _angle + 90.0))  // _bottomRight
+            objCorners.push(_bottom.atDistanceAndAzimuth(_size_2/2.0, _angle + 270.0)) // _bottomLeft
             objCorners.push(objCorners[0]);
 
             path = [];
             for (var i = 0; i < objCorners.length; i++){
                 addCoordinate(objCorners[i])
+                //console.log(i + " coord: " + objCorners[i].latitude.toFixed(7) + ", " + objCorners[i].longitude.toFixed(7))
             }
+
+
 
         }
 
         moving_idx = -1
+
         _generate_and_draw()
+        console.timeEnd("confirm_edit")
     }
 
     function get_params() {
@@ -832,7 +843,7 @@ MapPolyline {
     function _generate_and_draw() {
 
         update_centroid();
-
+        reposition_handle()
         var pathPoints = cmdWrapper.createPathFromPolygon(JSON.stringify(serialize()));
         startPoint = QtPositioning.coordinate(pathPoints[0], pathPoints[1]);
         endPoint = QtPositioning.coordinate(pathPoints[pathPoints.length - 2], pathPoints[pathPoints.length - 1]);
@@ -844,15 +855,15 @@ MapPolyline {
 
         //generate_path()
         //console.log("[MapPolygon] draw_path()")
+
         draw_path(pathPoints)
-        //}
 
         generate_markers()
         reposition_markers()
         disable_markers()
         disable_handle()
 
-        //console.log("[MapPolygon] _generate_and_draw() DONE")
+
     }
 
     function generate_and_draw_deferred() {
@@ -869,7 +880,7 @@ MapPolyline {
         init_canvas()
         // Clear the canvas
         _canvas.clear_canvas()
-        Helper.draw_path_lines(_canvas, pathPoints, map)//cmdWrapper.createPathFromPolygon(JSON.stringify(serialize())), map)
+        Helper.draw_path_lines(_canvas, pathPoints, map)
     }
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -917,6 +928,7 @@ MapPolyline {
             lon = data.coordinates[j].longitude
             addCoordinate(QtPositioning.coordinate(lat, lon))
         }
+        update_centroid();
     }
 
     ///////////////////////////////////////////////////

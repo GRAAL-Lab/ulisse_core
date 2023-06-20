@@ -5,6 +5,10 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
 
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug)
+endif()
+
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
@@ -38,6 +42,7 @@ file(GLOB_RECURSE SOURCE_FILES
     "launch/*.py"
     "conf/*.yaml"
     "conf/*.conf"
+    "include/*.hpp"
 )
 add_custom_target(.Files. SOURCES ${SOURCE_FILES})
 
@@ -50,7 +55,7 @@ include_directories(
 
 set(use_SYSTEM_BOOST TRUE)
 
-## Libraries ##
+## Main Libraries and depedencies ##
 set(ulisse_kinematic_ctrl_lib_sources
     # Main Classes
     src/ulisse_ctrl/kinematic_vehicle_controller.cpp

@@ -10,13 +10,13 @@ Item {
     id: taskData
     Layout.preferredHeight: taskDataColumn.implicitHeight
     Layout.fillWidth: true
-    property var labelsize: 12
-    property var textsize: 11
+    property real labelsize: 12
+    property real textsize: 11
 
-    property var taskName: "Undefined"
-    property var reference: " "
-    property var internalAct: " "
-    property var externalAct: " "
+    property string taskName: "Undefined"
+    property string reference: " "
+    property string internalAct: " "
+    property string externalAct: " "
     property bool enabled: false
 
     ColumnLayout {

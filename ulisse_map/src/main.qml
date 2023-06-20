@@ -32,6 +32,8 @@ ApplicationWindow {
     property color lightgrey: Material.color(Material.Grey, Material.Shade400)
     property color lightergrey: Material.color(Material.Grey, Material.Shade300)
     property color dimmedwhite: Material.color(Material.Grey, Material.Shade100)
+    property color lighterbluegrey: Material.color(Material.BlueGrey, Material.Shade50)
+    property color lightbluegrey: Material.color(Material.BlueGrey, Material.Shade100)
 
     property color mainColor: cyan
     property color mainColorLight: lightcyan
@@ -72,25 +74,28 @@ ApplicationWindow {
     }
 
 
-    // The reasons why "esri" has been chosen as the map plugin is due to the fact
-    // that it enables a high level of zoom-in (>18), differently from "osm".
     Settings {
         id: settings
         property int shTimeout: 120
-        property string mapPluginType: "esri"
-        property string mapCachePath: home_dir + "/.map_offline_tiles/esri/"
+        property string mapPluginType: "osm"
+        property string mapCachePath: home_dir + "/.map_offline_tiles/" + mapPluginType + "/"
         property int mapTypeIndex: 0
         property string theme: "Light"
-        property var mapBearing: 0.0
-        property var mapZoom: 19.0
+        property real mapBearing: 0.0
+        property real mapZoom: 19.0
         property var mapCenter: QtPositioning.coordinate(44.392, 8.945)
         property string savedBoundary: "null"
         property bool showCentroid: true
         property bool showStatusOverlay: true
+        property bool showMouseCoordinates: true
         property bool showObstacleID: true
         property bool showPolylineID: true
         property string bagSaveFolder: home_dir + "/logs/"
         property int visualizerTimeout: 30
+        property int pathLineWidth: 2
+        property int ulisseLineWidth: 1
+
+        property bool bypassSafetyBoundaryCheck: false
 
         Component.onCompleted: {
             futureMapPlugin = mapPluginType
@@ -107,8 +112,9 @@ ApplicationWindow {
     SettingsDialog {
         id: settingsDialog
         x: Math.round((window.width - width) / 2)
-        y: Math.round(window.height / 8)
-        width: Math.round(Math.min(window.width, window.height) / 4 * 3)
+        y: Math.round(window.height / 32)
+        width: Math.round(window.width * 0.6)
+        height: Math.round(window.height * 0.8)
     }
 
     onMapPluginReady: {

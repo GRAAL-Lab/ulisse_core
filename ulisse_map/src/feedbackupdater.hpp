@@ -12,6 +12,8 @@
 
 #include "rclcpp/rclcpp.hpp"
 
+#include "std_msgs/msg/bool.hpp"
+#include "ulisse_msgs/futils.hpp"
 #include "ulisse_msgs/msg/feedback_gui.hpp"
 #include "ulisse_msgs/msg/gps_data.hpp"
 #include "ulisse_msgs/msg/micro_loop_count.hpp"
@@ -22,6 +24,7 @@
 #include "ulisse_msgs/msg/llc_thrusters.hpp"
 #include "ulisse_msgs/msg/llc_battery.hpp"
 #include "ulisse_msgs/msg/llc_sw485_status.hpp"
+#include "ulisse_msgs/msg/llc_status.hpp"
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
 #include "ulisse_msgs/msg/reference_velocities.hpp"
 #include "ulisse_msgs/msg/thrusters_reference.hpp"
@@ -33,8 +36,12 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     QQmlApplicationEngine* appEngine_;
     QTimer* myTimer_;
     QObject* goalFlagObj_;
+    futils::Timer controlAliveTimer_, vehicleAliveTimer_;
 
     Q_PROPERTY(QGeoCoordinate centroid READ get_centroid NOTIFY startup_info_read)
+
+    Q_PROPERTY(bool control_alive READ get_control_alive NOTIFY callbacks_processed)
+    Q_PROPERTY(bool vehicle_alive READ get_vehicle_alive NOTIFY callbacks_processed)
 
     Q_PROPERTY(QString vehicle_state READ get_vehicle_state NOTIFY callbacks_processed)
     Q_PROPERTY(QGeoCoordinate ulisse_pos READ get_ulisse_pos NOTIFY callbacks_processed)
@@ -77,10 +84,15 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     Q_PROPERTY(int motor_speed_R READ get_motor_speed_R NOTIFY callbacks_processed)
     Q_PROPERTY(int timestamp485 READ get_timestamp485 NOTIFY callbacks_processed)
     Q_PROPERTY(int missed_deadlines485 READ get_missed_deadlines NOTIFY callbacks_processed)
+    Q_PROPERTY(bool radio_controller_enabled READ get_radio_controller_enabled NOTIFY callbacks_processed)
+    Q_PROPERTY(bool thruster_ref_enabled READ get_thruster_ref_enabled NOTIFY callbacks_processed)
+    Q_PROPERTY(bool safety_boundary_set READ get_safety_boundary_set NOTIFY callbacks_processed)
 
     Q_PROPERTY(float water_current_norm READ get_water_current_norm NOTIFY callbacks_processed)
     Q_PROPERTY(float water_current_deg READ get_water_current_deg NOTIFY callbacks_processed)
 
+    bool controlAlive_ = false;
+    bool vehicleAlive_ = false;
     bool gpsReceived_, imuReceived_, compassReceived_, magnetometerReceived_;
     QGeoCoordinate q_centroid, q_ulisse_pos_, q_goal_pos_, q_gps_pos_, q_track_pos_;
     double q_goal_distance_, q_goal_heading_deg_;
@@ -109,6 +121,10 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     int missed_deadlines_;
     int timestamp485_;
 
+    bool radio_controller_enabled = false;
+    bool thruster_reference_enabled = false;
+    bool safetyBoundarySet_ = false;
+
     double water_current_deg;
     double water_current_norm;
 
@@ -125,10 +141,12 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     rclcpp::Subscription<ulisse_msgs::msg::ThrustersReference>::SharedPtr thrusters_reference_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::ThrustersReference>::SharedPtr thrusters_applied_ref_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::LLCSw485Status>::SharedPtr sw485_status_sub_;
+    rclcpp::Subscription<ulisse_msgs::msg::LLCStatus>::SharedPtr llc_status_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr current_status_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::ReferenceVelocities>::SharedPtr referenceVelocitiesSub_;
     rclcpp::Subscription<ulisse_msgs::msg::VehicleStatus>::SharedPtr vehicleStatusSub_;
     rclcpp::Subscription<ulisse_msgs::msg::FeedbackGui>::SharedPtr feedbackGuiSub_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr safetyBoundarySetSub_;
 
     QVector<double> GenerateRandFloatVector(int size);
     bool LoadConfiguration();
@@ -147,11 +165,13 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     void LLCBatteryRightCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg);
     void ThrustersReferenceCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg);
     void ThrustersAppliedReferenceCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg);
+    void LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg);
     void LLCSw485StatusCB(const ulisse_msgs::msg::LLCSw485Status::SharedPtr msg);
     void ReferenceVelocitiesCB(const ulisse_msgs::msg::ReferenceVelocities::SharedPtr msg);
     void VehicleStatusCB(const ulisse_msgs::msg::VehicleStatus::SharedPtr msg);
     void NavFilterDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
     void FeedbackGuiCB(const ulisse_msgs::msg::FeedbackGui::SharedPtr msg);
+    void SafetyBoundaryCB(const std_msgs::msg::Bool::SharedPtr msg);
 
 public:
     explicit FeedbackUpdater(QObject* parent = nullptr);
@@ -162,6 +182,8 @@ public:
     Q_INVOKABLE void copyToClipboard(QString value);
     Q_INVOKABLE void resetPublishersAndSubscribers();
 
+    bool get_control_alive();
+    bool get_vehicle_alive();
     QGeoCoordinate get_centroid();
     QGeoCoordinate get_ulisse_pos();
     QVector3D get_ulisse_linear_vel();
@@ -204,6 +226,9 @@ public:
 
     int get_missed_deadlines();
     int get_timestamp485();
+    bool get_radio_controller_enabled();
+    bool get_thruster_ref_enabled();
+    bool get_safety_boundary_set();
     double get_water_current_norm();
     double get_water_current_deg();
 

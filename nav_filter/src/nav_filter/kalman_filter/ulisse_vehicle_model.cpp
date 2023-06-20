@@ -24,6 +24,7 @@ namespace nav {
 
     Eigen::MatrixXd UlisseVehicleModel::ComputeJacobian(const Eigen::VectorXd& state, const Eigen::VectorXd& input)
     {
+        (void) input;
         /*
          * F is the matrix of estimated state:
          *

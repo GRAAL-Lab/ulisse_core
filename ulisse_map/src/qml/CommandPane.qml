@@ -10,7 +10,7 @@ import QtQuick.Dialogs 1.2
 import "."
 import "../scripts/helper.js" as Helper
 
-Pane {
+ColumnLayout {
 
     property var safetyPoly_bkp: []
     property var buttonSafety: buttonBoundBoxDefine
@@ -26,7 +26,8 @@ Pane {
 
     ColumnLayout {
         id: controlsColumn
-        anchors.fill: parent
+        Layout.fillHeight: true
+        Layout.fillWidth: true
         spacing: 1
 
         RowLayout {
@@ -63,15 +64,17 @@ Pane {
                         map.clickHandler = map.safety_polygon.clickHandler
                         map.posChangedHandler = map.safety_polygon.posChangedHandler
                         enabled = false
-                        map.mapTextOverlay.text = "Press ESC to cancel"
-                        map.mapTextOverlay.visible = true
+                        map.mapHintsOverlay.text =
+                                "<b>Left click on map to define polygon vertices.\nRight click to close polygon.</b><br>"
+                                + "Press ESC to cancel";
+                        map.mapHintsOverlay.visible = true
                         window.sig_escape.connect(reset_safetypoly)
                         map.safety_polygon.end.connect(end)
                     }
 
                     function end() {
                         enabled = true
-                        map.mapTextOverlay.visible = false
+                        map.mapHintsOverlay.visible = false
                         map.safety_polygon.end.disconnect(end)
                         window.sig_escape.disconnect(reset_safetypoly)
                         map.clickHandler = map.click_goto_handler
@@ -86,7 +89,7 @@ Pane {
 
                     function reset_safetypoly(){
                         enabled = true
-                        map.mapTextOverlay.visible = false
+                        map.mapHintsOverlay.visible = false
                         map.safety_polygon.end.disconnect(end)
                         window.sig_escape.disconnect(reset_safetypoly)
                         map.safety_polygon.path = safetyPoly_bkp
@@ -98,13 +101,13 @@ Pane {
                 Button {
                     id: buttonBoundBoxResend
                     enabled: settings.savedBoundary == "null" ? false : true
-                    text: qsTr("Resend")
+                    text: fbkUpdater.safety_boundary_set? qsTr("Resend") : qsTr("Send")
                     font.pointSize: 9
                     padding: 5
                     antialiasing: false
                     Layout.fillWidth: true
                     highlighted: true
-                    //Layout.fillHeight: false
+                    Material.background: fbkUpdater.safety_boundary_set? grey : softorange
                     onClicked: cmdWrapper.sendBoundaries(JSON.stringify(map.safety_polygon.serialize()))
                 }
 
@@ -147,18 +150,96 @@ Pane {
             // This Item is needed to add margins to the StackLayout and make it correctly resize
             id: commandParamsStackContainer
             Layout.topMargin: 10
-            Layout.bottomMargin: 20
+            Layout.bottomMargin: 10
+            //Layout.preferredWidth: commandsColumnLayout.width + 10
+            //Layout.preferredHeight: commandsColumnLayout.height + 10
             Layout.fillWidth: true
             Layout.fillHeight: true
             Material.background: Material.color(Material.BlueGrey, Material.Shade50)
+
+            Layout.alignment:  Qt.AlignTop | Qt.AlignHCenter
+
+
+            // This is an overlay rectangle to block commands if the Safety Boundary
+            // has not been set for the controller.
+            Rectangle {
+                visible: !fbkUpdater.safety_boundary_set && !settings.bypassSafetyBoundaryCheck
+                Layout.alignment:  Qt.AlignVCenter | Qt.AlignHCenter
+                height: commandParamsStackContainer.height
+                width: commandParamsStackContainer.width
+                color: Qt.hsla(0, 0, 0, 0.3)
+                //opacity: 0.5
+                z: 99
+
+                layer.enabled: true
+                layer.effect: Glow {
+                    radius: 5
+                    samples: 10
+                    color: Qt.hsla(0, 0, 0, 0.3)
+
+                }
+
+                ColumnLayout {
+                    anchors.horizontalCenter: parent.horizontalCenter
+
+                    // Spacer Item
+                    Item {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 10
+                        //Rectangle { anchors.fill: parent; color: "#ffaaaa" } // to visualize the spacer
+                    }
+
+                    Image {
+                        width: 40
+                        Layout.alignment: Qt.AlignCenter
+                        source: 'qrc:/images/white_arrow.png'
+                        sourceSize.height: 120
+                    }
+
+                    Text {
+                        Layout.alignment:  Qt.AlignCenter
+                        horizontalAlignment: Text.AlignHCenter
+                        text: "<b>Safety boundary not set for the controller!</b><br><br>Please ensure \
+                                that a safety area has been defined and send it to the catamaran."
+                        wrapMode: Text.WordWrap
+                        Layout.maximumWidth: commandParamsStackContainer.width - 30
+
+                        color: 'white'
+                        z: 100
+                        layer.enabled: true
+                        layer.effect: Glow {
+                            radius: 10
+                            samples: 10
+                            color: darkgrey
+                        }
+                    }
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    propagateComposedEvents: false
+                    hoverEnabled: true
+                    preventStealing: true
+                    onClicked: {
+                        overlay.visible = false
+                    }
+                }
+            }
         }
+
+        //Item {
+        //    Layout.fillWidth: true
+        //    Layout.fillHeight: true
+        //    Rectangle { anchors.fill: parent; color: "#ffaaaa" } // to visualize the spacer
+        //}
 
         Button {
             text: "Halt"
             highlighted: true
-            Material.background: orange//pressed ? orange : mainColor
+            Material.background: orange
             Layout.fillHeight: false
             Layout.fillWidth: true
+            Layout.alignment: Qt.AlignBottom
             onClicked: {
                 cmdWrapper.sendHaltCommand()
             }
@@ -167,12 +248,13 @@ Pane {
         Text {
             id: haltText
             font.pointSize: 8
+
+            Layout.alignment: Qt.AlignBottom
+            Layout.fillWidth: true
             color: 'grey'
             text: "(Shortcut: Return)"
-            verticalAlignment: Text.AlignVCenter
-            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-            Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
         }
     }
 

@@ -9,7 +9,7 @@ import "."
 
 RowLayout {
 
-    property var priorityID: "Priority Level"
+    property string priorityID: "Priority Level"
     //property var taskIDs: ["Task_1", "Task_2"]
 
     id: priorityLevelData

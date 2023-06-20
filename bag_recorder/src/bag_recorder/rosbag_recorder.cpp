@@ -22,6 +22,7 @@ RosbagRecorder::RosbagRecorder() :
     nav_filter_conf_ = nav_filter_dir;
     nav_filter_conf_.append("/conf/navigation_filter.conf");
 
+    // TODO!!!! check result of get_package_share... for when simulator is not compiled! (like on the catamaran)
     std::string ulisse_sim_dir = ament_index_cpp::get_package_share_directory("ulisse_sim");
     ulisse_sim_conf_ = ulisse_sim_dir;
     ulisse_sim_conf_.append("/conf/simulator_ulisse.conf");

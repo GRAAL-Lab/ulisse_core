@@ -54,6 +54,7 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
         exit(EXIT_FAILURE);
     }
 
+    // Connecting the timer endings (SIGNAL timeout()) to some speicific functions defined in the SLOTS
     QObject::connect(checkErrorTimer_.get(), SIGNAL(timeout()), this, SLOT(check_error_slot()));
     QObject::connect(surgeHeadingPubTimer_.get(), SIGNAL(timeout()), this, SLOT(publish_surge_heading()));
     QObject::connect(surgeYawRatePubTimer_.get(), SIGNAL(timeout()), this, SLOT(publish_surge_yawrate()));
@@ -109,7 +110,7 @@ void CommandWrapper::RegisterPublishersAndSubscribers()
     nav_filter_srv_ = this->create_client<ulisse_msgs::srv::NavFilterCommand>(ulisse_msgs::topicnames::navfilter_cmd_service);
 
     feedbackGuiSub_ = this->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10,
-        std::bind(&CommandWrapper::FeedbackGuiCB, this, _1) );
+                                                                               std::bind(&CommandWrapper::FeedbackGuiCB, this, _1) );
 
     surgeHeadingPub_ = this->create_publisher<ulisse_msgs::msg::SurgeHeading>(ulisse_msgs::topicnames::surge_heading, 1);
     surgeYawRatePub_ = this->create_publisher<ulisse_msgs::msg::SurgeYawRate>(ulisse_msgs::topicnames::surge_yawrate, 1);
@@ -192,7 +193,7 @@ QGeoCoordinate CommandWrapper::localUTM2LatLong(QPoint UTM_point, QGeoCoordinate
     ctb::LatLong tmp;
     double altitude;
     ctb::LocalUTM2LatLong(Eigen::Vector3d { static_cast<double>(UTM_point.x()), static_cast<double>(UTM_point.y()), 0.0 },
-        ctb::LatLong(centroid.latitude(), centroid.longitude()), tmp, altitude);
+                          ctb::LatLong(centroid.latitude(), centroid.longitude()), tmp, altitude);
 
     return QGeoCoordinate(tmp.latitude, tmp.longitude);
 }
@@ -237,6 +238,9 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
 
     std::shared_ptr<sisl::Path> newPath;
     bool pathCreated{true};
+
+    futils::Timer executionTime;
+    executionTime.Start();
     try {
         if (polypathType == "Serpentine") {
             newPath = sisl::PathFactory::NewSerpentine(angle, direction, size_1_Path, polyVerticesUTM);
@@ -244,7 +248,9 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
             //qDebug() << "*** CREATING RACE TRACK ***";
             newPath = sisl::PathFactory::NewRaceTrack(angle, direction, size_1_Path, size_2_Path, polyVerticesUTM);
             //qDebug() << "*** RACE TRACK DONE ***";
+            newPath = sisl::PathFactory::NewRaceTrack(angle, direction, size_1_Path, size_2_Path, polyVerticesUTM);
         } else if (polypathType == "Hippodrome") {
+
             Eigen::Vector3d baricenter;
             for(int i = 0; i < 3; i++) {
                 double dim_sum{0};
@@ -253,6 +259,8 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
                 }
                 baricenter[i] = dim_sum/(polyVerticesUTM.size() - 1);
             }
+            //std::cout << "Lap 1:" << executionTime.Elapsed() << std::endl;
+
             newPath = sisl::PathFactory::NewHippodrome(-angle, direction, size_1_Path, size_2_Path, baricenter);
         } else {
             std::cout << "[CommandWrapper::createPathFromPolygon] polypathType '" << polypathType << "' not recognized." << std::endl;
@@ -263,20 +271,24 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
         std::cout << "Received exception from --> " << exception.what() << std::endl;
     }
 
+    //std::cout << "Lap 2:" << executionTime.Elapsed() << std::endl;
     QVector<double> pathVectorGeo;
     if (pathCreated) {
         std::cout << *newPath << std::endl;
         // Sampling the curve and converting it back to lat-long for visualization on map
-        double samplingInterval = 1.0; // meters
-        int numSamples = (int)round(newPath->Length()/samplingInterval);
+        //double samplingInterval = 1.0; // meters
+        //int numSamples = (int)round(newPath->Length()/samplingInterval);
+        double numSamples = 512;
         auto sampledPath = newPath->Sampling(numSamples);
 
+        //std::cout << "Lap 3:" << executionTime.Elapsed() << std::endl;
         for(size_t i=0; i < sampledPath->size(); i++){
             ctb::LatLong pathPointGeo;
             ctb::LocalUTM2LatLong(sampledPath->at(i), centroid, pathPointGeo, altitude);
             pathVectorGeo << pathPointGeo.latitude << pathPointGeo.longitude;
         }
     }
+    //std::cout << "Lap 4:" << executionTime.Elapsed() << std::endl;
 
     return pathVectorGeo;
 }
@@ -389,7 +401,7 @@ bool CommandWrapper::SendBoundariesRequest(ulisse_msgs::srv::SetBoundaries::Requ
         }
         serviceAvailable = true;
     } else {
-        result_msg = "No Boundary Server Available";
+        result_msg = "The controller doesn't seem to be active.\n(No Boundary Server Available)";
         serviceAvailable = false;
     }
 
@@ -487,13 +499,40 @@ bool CommandWrapper::sendSurgeYawRateCommand(double surge, double yawrate)
     }
 }
 
-bool CommandWrapper::sendThrusterActivation(bool activate)
+bool CommandWrapper::sendEnableReference(bool activate)
 {
     std::string result_msg;
     bool serviceAvailable;
     auto req = std::make_shared<ulisse_msgs::srv::LLCCommand::Request>();
     req->command_type = static_cast<uint16_t>(ulisse::llc::CommandType::enableref);
     req->enable_ref_data.enable = static_cast<uint8_t>(activate ? 1 : 0);
+    if (llc_srv_->service_is_ready()) {
+        auto result_future = llc_srv_->async_send_request(req);
+        std::cout << "Sent Request to controller" << std::endl;
+        if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
+            result_msg = "service call failed :(";
+            RCLCPP_ERROR_STREAM(this->get_logger(), result_msg);
+        } else {
+            auto result = result_future.get();
+            result_msg = "Service returned: " + std::to_string(result->res);
+            RCLCPP_INFO_STREAM(this->get_logger(), result_msg);
+        }
+        serviceAvailable = true;
+    } else {
+        result_msg = "No LLC Server Available";
+        serviceAvailable = false;
+    }
+    ShowToast(result_msg.c_str(), 2000);
+    return serviceAvailable;
+}
+
+bool CommandWrapper::toggleEnginePowerButtons()
+{
+    std::string result_msg;
+    bool serviceAvailable;
+    auto req = std::make_shared<ulisse_msgs::srv::LLCCommand::Request>();
+    req->command_type = static_cast<uint16_t>(ulisse::llc::CommandType::setpowerbuttons);
+    req->pwr_buttons_data.pwrbuttonsflag = 3;
     if (llc_srv_->service_is_ready()) {
         auto result_future = llc_srv_->async_send_request(req);
         std::cout << "Sent Request to controller" << std::endl;
@@ -717,3 +756,5 @@ QStringList CommandWrapper::get_polypath_types()
 {
     return polypathTypes;
 }
+
+

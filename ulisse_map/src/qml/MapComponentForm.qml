@@ -24,20 +24,22 @@ Map {
     property alias goalFlag: goalFlag
     property alias ruler: ruler
     property alias greenFlag: greenFlag
-    //property alias editCircle: editCircle
+    property alias goalAcceptRadius: goalAcceptRadius
     property alias sliderz: sliders.z
-    property alias mapTextOverlay: mapTextOverlay
+    property alias mapHintsOverlay: mapHintsOverlay
+    property alias mouseLiveCoordinate: mouseLiveCoordinate
 
     Text {
-        id: mapTextOverlay
+        id: mapHintsOverlay
 
         font.pointSize: 12
-        color: grey
+        color: darkgrey
         horizontalAlignment: Text.AlignHCenter
         width: parent.width
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 110
-        text: "Overlay Text"
+        anchors.bottomMargin: 150
+        lineHeight: 1.2
+        text: "undefined"
         font.weight: Font.DemiBold
         z: map.z + 4
         visible: false
@@ -167,6 +169,7 @@ Map {
         coordinate: fbkUpdater.ulisse_pos
         anchorPoint.x: ulisseImage.width / 2
         anchorPoint.y: ulisseImage.height / 2
+        visible: false
         z: map.z + 5
     }
 
@@ -242,15 +245,28 @@ Map {
         visible: settings.showStatusOverlay
     }
 
-    MapCircle {
-        id: goalAcceptRadius
-        center: goalFlag.coordinate
-        radius: fbkUpdater.accept_radius
-        color: 'transparent'
-        border.width: 1
-        border.color: grey
-        opacity: goalFlag.opacity == 1.0 ? goalFlag.opacity : 0.0
-        z: map.z + 2
+    //MapCircle {
+    //    id: goalAcceptRadius
+    //    center: goalFlag.coordinate
+    //    radius: fbkUpdater.accept_radius
+    //    color: 'transparent'
+    //    border.width: 1
+    //    border.color: grey
+    //    opacity: goalFlag.opacity == 1.0 ? goalFlag.opacity : 0.0
+    //    z: map.z + 2
+    //}
+
+  MapCustomCircle {
+      id: goalAcceptRadius
+      center: goalFlag.coordinate
+      radius: fbkUpdater.accept_radius
+      //color: 'transparent'
+      //border.width: 1
+      //border.color: grey
+      line.width: 2
+      line.color: grey
+      opacity: goalFlag.opacity == 1.0 ? goalFlag.opacity : 0.0
+      z: map.z + 4
     }
 
     MapQuickItem {
@@ -278,7 +294,7 @@ Map {
 
     MapPolyline {
         id: ulissePath
-        line.width: 1
+        line.width: settings.ulisseLineWidth
         line.color: orange
         property bool firstRun: true
         property real traceSize: 1000
@@ -290,5 +306,31 @@ Map {
         objectName: "mapMouseArea"
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton | Qt.RightButton
+        hoverEnabled: true
+
+
+    }
+
+    MapQuickItem {
+        id: mouseLiveCoordinate
+
+        property alias coordItem: coordItem
+        property bool show: false
+
+        sourceItem: Text {
+            id: coordItem
+            color: 'darkslategrey'
+            style: Text.Outline
+            styleColor: 'white'
+            text: ""
+
+            font.weight: Font.Bold
+        }
+
+        anchorPoint.x: - 10
+        anchorPoint.y: - 10
+
+        z: map.z + 5
+        visible: settings.showMouseCoordinates && show
     }
 }

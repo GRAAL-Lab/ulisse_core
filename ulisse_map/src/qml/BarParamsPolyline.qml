@@ -12,7 +12,7 @@ RowLayout {
 
     // CHECK
     property bool buttons: false
-    property var nameTrack: textnametrack.text
+    property string nameTrack: textnametrack.text
     property var nameTrack_
     signal accept
     signal discard

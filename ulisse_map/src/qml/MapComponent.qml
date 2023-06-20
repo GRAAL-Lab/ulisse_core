@@ -25,6 +25,14 @@ MapComponentForm {
         }
     }
 
+    function updateMouseCoord(mouse) {
+        mouseLiveCoordinate.coordinate = toCoordinate(Qt.point(mouse.x, mouse.y))
+        mouseLiveCoordinate.coordItem.text = mouseLiveCoordinate.coordinate.latitude.toFixed(7) + ", " +
+                                mouseLiveCoordinate.coordinate.longitude.toFixed(7)
+
+        //console.log("pos_changed_handler")
+    }
+
     property var clickHandler: click_goto_handler
     property var posChangedHandler: function () {}
 
@@ -33,6 +41,15 @@ MapComponentForm {
     }
     mapMouseArea.onPositionChanged: {
         posChangedHandler(mouse)
+        updateMouseCoord(mouse)
+    }
+
+    mapMouseArea.onEntered: {
+        mouseLiveCoordinate.show = true
+    }
+
+    mapMouseArea.onExited: {
+        mouseLiveCoordinate.show = false
     }
 
     property MapPolyPath safety_polygon
@@ -169,11 +186,11 @@ MapComponentForm {
 
     onCenterChanged: {
         ruler.rulerTimer.restart()
+        settings.mapCenter = map.center
     }
 
     onZoomLevelChanged: {
         ruler.rulerTimer.restart()
-        settings.mapCenter = map.center
     }
 
     onWidthChanged: {
@@ -185,8 +202,8 @@ MapComponentForm {
     }
 
     markerIcon.onCoordinateChanged: {
-        mapsidebar.markerText = "%1, %2".arg(marker_coords.latitude.toFixed(8)).arg(
-                    marker_coords.longitude.toFixed(8))
+        mapsidebar.markerText = "%1, %2".arg(marker_coords.latitude.toFixed(7)).arg(
+                    marker_coords.longitude.toFixed(7))
     }
 
     // This timer centers the map on the vehicle at startup and then draws the trace of the vehicle
@@ -198,6 +215,7 @@ MapComponentForm {
             if (ulissePath.firstRun) {
                 ulissePath.addCoordinate(fbkUpdater.ulisse_pos)
                 ulissePath.firstRun = false
+                ulisseIcon.visible = true;
             }
             // To reduce the line density (and avoid to overload the gui)
             // we add a new point only every 1.0 meter

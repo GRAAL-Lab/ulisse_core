@@ -41,7 +41,7 @@ ToolBar {
                 width: headerLayout.width / 4
 
                 background: Rectangle {
-                    color: (headerBar.currentIndex == 0) ? mainColorLight : mainColor
+                    color: (headerBar.currentIndex === 0) ? mainColorLight : mainColor
                 }
             }
 
@@ -51,7 +51,7 @@ ToolBar {
                 width: headerLayout.width / 4
 
                 background: Rectangle {
-                    color: (headerBar.currentIndex == 1) ? mainColorLight : mainColor
+                    color: (headerBar.currentIndex === 1) ? mainColorLight : mainColor
                 }
             }
 
@@ -61,7 +61,7 @@ ToolBar {
                 width: headerLayout.width / 4
 
                 background: Rectangle {
-                    color: (headerBar.currentIndex == 2) ? mainColorLight : mainColor
+                    color: (headerBar.currentIndex === 2) ? mainColorLight : mainColor
                 }
             }
 
@@ -71,7 +71,7 @@ ToolBar {
                 width: headerLayout.width / 4
 
                 background: Rectangle {
-                    color: (headerBar.currentIndex == 3) ? mainColorLight : mainColor
+                    color: (headerBar.currentIndex === 3) ? mainColorLight : mainColor
                 }
             }
         }

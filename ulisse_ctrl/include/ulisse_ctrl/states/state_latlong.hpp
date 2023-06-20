@@ -2,7 +2,7 @@
 #define ULISSE_CTRL_STATEMOVE_HPP
 
 #include "ulisse_ctrl/states/generic_state.hpp"
-#include "ulisse_ctrl/states/state_hold.hpp"
+//#include "ulisse_ctrl/states/state_hold.hpp"
 
 namespace ulisse {
 

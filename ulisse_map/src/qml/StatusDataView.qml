@@ -7,8 +7,8 @@ import QtQuick.Controls.Material 2.1
 import "."
 
 Rectangle {
-    property var labelsize: 12
-    property var textsize: 12
+    property real labelsize: 12
+    property real textsize: 12
     property real panesMargin: 14
     property real panesWidth: 252
     property bool responsive: false
