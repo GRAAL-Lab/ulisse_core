@@ -252,19 +252,19 @@ void FeedbackUpdater::GPSDataCB(const ulisse_msgs::msg::GPSData::SharedPtr msg)
     q_gps_pos_.setLatitude(msg->latitude);
     q_gps_pos_.setLongitude(msg->longitude);
 
-    // Using the GPS signal as a watchdog for checking that the vehicle is on and driver is running
+}
+
+void FeedbackUpdater::MicroLoopCountCB(const ulisse_msgs::msg::MicroLoopCount::SharedPtr msg)
+{
+    micro_loop_count_t_ = msg->timestamp;
+
+    // Using the MicroLoopCount signal as a watchdog for checking that the vehicle is on and driver is running
     if (!vehicleAlive_) {
         vehicleAlive_ = true;
         std::cout << "Vehicle alive!" << std::endl;
     }
 
     vehicleAliveTimer_.Reset();
-
-}
-
-void FeedbackUpdater::MicroLoopCountCB(const ulisse_msgs::msg::MicroLoopCount::SharedPtr msg)
-{
-    micro_loop_count_t_ = msg->timestamp;
 }
 
 void FeedbackUpdater::AmbientSensorsCB(const ulisse_msgs::msg::AmbientSensors::SharedPtr msg)
