@@ -27,6 +27,7 @@ find_package(ulisse_msgs REQUIRED)
 
 include_directories(
   include
+  ${ulisse_msgs_INCLUDE_DIRS}
 )
 
 # Libraries

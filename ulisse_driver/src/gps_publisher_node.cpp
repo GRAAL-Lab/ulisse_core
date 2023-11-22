@@ -162,7 +162,7 @@ void process_status(GpsStatusData& my_gps_status, struct gps_data_t* p)
         return;
     }
 
-    my_gps_status.status = (GpsStatus)p->status;
+    my_gps_status.status = (GpsStatus)p->fix.status;
 
     my_gps_status.satellites_used = p->satellites_used;
 

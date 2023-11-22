@@ -5,8 +5,6 @@
 #include <memory>
 #include <random>
 
-#include "surface_vehicle_model/surfacevehiclemodel.hpp"
-
 #include "ulisse_msgs/msg/ambient_sensors.hpp"
 #include "ulisse_msgs/msg/compass.hpp"
 #include "ulisse_msgs/msg/gps_data.hpp"

@@ -26,6 +26,7 @@ find_package(ulisse_driver REQUIRED)
 find_package(ulisse_ctrl REQUIRED)
 find_package(nav_filter REQUIRED)
 find_package(sisl_toolbox REQUIRED)
+find_package(rcl_interfaces REQUIRED)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(JSONCPP jsoncpp)
@@ -49,6 +50,7 @@ include_directories(
     ${ulisse_driver_INCLUDE_DIRS}
     ${nav_filter_INCLUDE_DIRS}
     ${sisl_toolbox_INCLUDE_DIRS}
+    ${rcl_interfaces_INCLUDE_DIRS}
 )
 
 file(GLOB SOURCE_FILES
