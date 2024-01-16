@@ -39,13 +39,13 @@ namespace nav {
         /*
          * @brief Method for setting the model parameters
          */
-        auto ModelParameters() -> UlisseModelParameters& { return params_; }
+        auto ModelParameters() -> SurfaceVehicleModelParameters& { return params_; }
 
         double sign(double x);
 
     private:
         Version version_;
-        UlisseModelParameters params_;
+        SurfaceVehicleModelParameters params_;
     };
 }
 }

@@ -532,7 +532,7 @@ namespace nav {
             return false;
         }
 
-        UlisseModelParameters ulisseModelParams;
+        SurfaceVehicleModelParameters ulisseModelParams;
         if (!ulisseModelParams.LoadConfiguration(confObj)) {
             RCLCPP_ERROR(this->get_logger(), "Failed to load ULISSE model");
             return false;
