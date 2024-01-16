@@ -42,7 +42,7 @@ class VehicleSimulator : public rclcpp::Node {
     Eigen::Vector6d bodyF_relativeVelocity_, worldF_relativeVelocity_, worldF_velocity_, worldF_waterVelocity_;
     Eigen::Vector6d bodyF_relativeAcceleration_, worldF_relativeAcceleration_, bodyF_relativeAcceleration_projected_, bodyF_wavesEffects_;
 
-    ctb::LatLong vehiclePos, vehiclePreviousPos, centroidLocation;
+    ctb::LatLong vehiclePos_, vehiclePreviousPos_, centroidLocation_;
     double altitude_;
 
     Eigen::Matrix3d P_;
