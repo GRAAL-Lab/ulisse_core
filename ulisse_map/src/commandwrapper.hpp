@@ -17,6 +17,7 @@
 #include "ulisse_msgs/srv/set_cruise_control.hpp"
 #include "ulisse_msgs/srv/reset_configuration.hpp"
 #include "ulisse_msgs/srv/nav_filter_command.hpp"
+#include "ulisse_msgs/srv/compute_avoidance_path.hpp"
 #include "ulisse_msgs/msg/surge_heading.hpp"
 #include "ulisse_msgs/msg/surge_yaw_rate.hpp"
 
@@ -39,6 +40,9 @@ class CommandWrapper : public QObject, rclcpp::Node {
     rclcpp::Client<ulisse_msgs::srv::ResetConfiguration>::SharedPtr kcl_conf_srv_;
     rclcpp::Client<ulisse_msgs::srv::ResetConfiguration>::SharedPtr dcl_conf_srv_;
     rclcpp::Client<ulisse_msgs::srv::NavFilterCommand>::SharedPtr nav_filter_srv_;
+
+    // Tesi Depalo
+    rclcpp::Client<ulisse_msgs::srv::ComputeAvoidancePath>::SharedPtr avoidance_path_srv_;
 
     rclcpp::Subscription<ulisse_msgs::msg::FeedbackGui>::SharedPtr feedbackGuiSub_;
 
@@ -75,6 +79,10 @@ public:
     Q_INVOKABLE bool sendPath(const QString &pathJsonData);
     Q_INVOKABLE bool sendHaltCommand();
     Q_INVOKABLE bool sendHoldCommand(double radius);
+
+    //Tesi Depalo
+    Q_INVOKABLE bool sendLatLongAvoidanceCommand(const QGeoCoordinate& goal, double radius);
+
     Q_INVOKABLE bool sendLatLongCommand(const QGeoCoordinate& goal, double radius);
     Q_INVOKABLE bool sendSurgeHeadingCommand(double surge, double heading);
     Q_INVOKABLE bool sendSurgeYawRateCommand(double surge, double yawrate);

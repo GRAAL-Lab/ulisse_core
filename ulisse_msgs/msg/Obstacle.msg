@@ -3,3 +3,8 @@ LatLong center
 float64 heading
 float64 b_box_dim_x
 float64 b_box_dim_y
+float64 vel_x
+float64 vel_y
+bool show_id
+ColorRGB color
+bool high_priority

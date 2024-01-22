@@ -25,11 +25,11 @@ Item {
         //drawPolyline("QML_Poly_1", sampleCoordList)
     }
 
-    function drawObstacle(obsID, obsCoords, obsHeading, obsBBoxX, obsBBoxY) {
+    function drawObstacle(obsID, obsCoords, obsHeading, obsBBoxX, obsBBoxY, obsShowID, obsColor) {
         // Checking if object already exists in the manager's list
         for (var i = 0; i < obstacleList.length; i++) {
             if (obstacleList[i].id === obsID) {
-                obstacleList[i].update(obsCoords, obsHeading, obsBBoxX, obsBBoxY);
+                obstacleList[i].update(obsCoords, obsHeading, obsBBoxX, obsBBoxY, obsShowID, obsColor);
                 return;
             }
         }
@@ -40,7 +40,9 @@ Item {
                                                              coordinate: obsCoords,
                                                              heading: obsHeading,
                                                              bBoxX: obsBBoxX,
-                                                             bBoxY: obsBBoxY
+                                                             bBoxY: obsBBoxY,
+                                                             showID: obsShowID,
+                                                             objectColor: obsColor
                                                          }))
 
         if (obstacleComponent.status != Component.Ready)

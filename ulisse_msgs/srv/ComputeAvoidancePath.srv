@@ -1,0 +1,5 @@
+CommandLatLong latlong_cmd
+bool colregs_compliant
+float64[] velocities
+---
+bool res

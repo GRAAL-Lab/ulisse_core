@@ -94,23 +94,29 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
 void CommandWrapper::RegisterPublishersAndSubscribers()
 {
 
-    command_srv_ = this->create_client<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service);
-    boundary_srv_ = this->create_client<ulisse_msgs::srv::SetBoundaries>(ulisse_msgs::topicnames::set_boundaries_service);
-    llc_srv_ = this->create_client<ulisse_msgs::srv::LLCCommand>(ulisse_msgs::topicnames::llc_cmd_service);
+  // Tesi Depalo
+  avoidance_path_srv_ = this->create_client<ulisse_msgs::srv::ComputeAvoidancePath>(ulisse_msgs::topicnames::control_avoidance_cmd_service);
 
-    kcl_conf_srv_ = this->create_client<ulisse_msgs::srv::ResetConfiguration>(ulisse_msgs::topicnames::reset_kcl_conf_service);
-    dcl_conf_srv_ = this->create_client<ulisse_msgs::srv::ResetConfiguration>(ulisse_msgs::topicnames::reset_dcl_conf_service);
-    nav_filter_srv_ = this->create_client<ulisse_msgs::srv::NavFilterCommand>(ulisse_msgs::topicnames::navfilter_cmd_service);
+  command_srv_ = this->create_client<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service);
+  boundary_srv_ = this->create_client<ulisse_msgs::srv::SetBoundaries>(ulisse_msgs::topicnames::set_boundaries_service);
+  llc_srv_ = this->create_client<ulisse_msgs::srv::LLCCommand>(ulisse_msgs::topicnames::llc_cmd_service);
 
-    feedbackGuiSub_ = this->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10,
-                                                                               std::bind(&CommandWrapper::FeedbackGuiCB, this, _1) );
+  kcl_conf_srv_ = this->create_client<ulisse_msgs::srv::ResetConfiguration>(ulisse_msgs::topicnames::reset_kcl_conf_service);
+  dcl_conf_srv_ = this->create_client<ulisse_msgs::srv::ResetConfiguration>(ulisse_msgs::topicnames::reset_dcl_conf_service);
+  nav_filter_srv_ = this->create_client<ulisse_msgs::srv::NavFilterCommand>(ulisse_msgs::topicnames::navfilter_cmd_service);
 
-    surgeHeadingPub_ = this->create_publisher<ulisse_msgs::msg::SurgeHeading>(ulisse_msgs::topicnames::surge_heading, 1);
-    surgeYawRatePub_ = this->create_publisher<ulisse_msgs::msg::SurgeYawRate>(ulisse_msgs::topicnames::surge_yawrate, 1);
+  feedbackGuiSub_ = this->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10,
+                                                                             std::bind(&CommandWrapper::FeedbackGuiCB, this, _1) );
+
+  surgeHeadingPub_ = this->create_publisher<ulisse_msgs::msg::SurgeHeading>(ulisse_msgs::topicnames::surge_heading, 1);
+  surgeYawRatePub_ = this->create_publisher<ulisse_msgs::msg::SurgeYawRate>(ulisse_msgs::topicnames::surge_yawrate, 1);
 }
 
 void CommandWrapper::resetPublishersAndSubscribers()
 {
+    // Tesi Depalo
+    avoidance_path_srv_.reset();
+
     command_srv_     .reset();
     cruise_srv_      .reset();
     boundary_srv_    .reset();
@@ -403,6 +409,54 @@ bool CommandWrapper::sendLatLongCommand(const QGeoCoordinate& goal, double radiu
     serviceReq->latlong_cmd.goal.longitude = goal.longitude();
     serviceReq->latlong_cmd.acceptance_radius = radius;
     return SendCommandRequest(serviceReq);
+}
+
+/// Tesi Depalo
+bool CommandWrapper::sendLatLongAvoidanceCommand(const QGeoCoordinate& goal, double radius)
+{
+  bool COLREGS = true;
+  auto serviceReq = std::make_shared<ulisse_msgs::srv::ComputeAvoidancePath::Request>();
+
+  std::vector<double> velocities;
+  auto generateRange = [](double start, double end, double step) {
+      std::vector<double> result;
+      for (double i = start; i <= end; i += step) {
+        double num = std::round(i * 100) / 100;
+        if (num != 0) result.push_back(num);
+      }
+      return result;
+  };
+  //velocities = generateRange(0.1, 2.5, 0.5);
+  velocities = generateRange(1, 1, 0.5);
+
+  serviceReq->latlong_cmd.goal.latitude = goal.latitude();
+  serviceReq->latlong_cmd.goal.longitude = goal.longitude();
+  serviceReq->latlong_cmd.acceptance_radius = radius;
+  serviceReq->colregs_compliant = COLREGS;
+  serviceReq->velocities = velocities;
+
+  //Chiama servizio di avoidance
+  static std::string result_msg;
+  bool serviceAvailable;
+  if (avoidance_path_srv_->service_is_ready()) {
+    auto result_future = avoidance_path_srv_->async_send_request(serviceReq);
+    std::cout << "Sent Request to Avoidance" << std::endl;
+    if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
+      result_msg = "Avoidance service call failed :(";
+      RCLCPP_ERROR_STREAM(this->get_logger(), result_msg.c_str());
+    } else {
+      auto result = result_future.get();
+      result_msg = "Avoidance service returned: " + result->res;
+      RCLCPP_INFO_STREAM(this->get_logger(), result_msg);
+    }
+    serviceAvailable = true;
+    StopOngoingTimers();
+  } else {
+    result_msg = "The Avoidance Node doesn't seem to be active.";
+    serviceAvailable = false;
+  }
+  ShowToast(result_msg.c_str(), 4000);
+  return serviceAvailable;
 }
 
 bool CommandWrapper::sendSurgeHeadingCommand(double surge, double heading)

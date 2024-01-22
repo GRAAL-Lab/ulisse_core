@@ -6,6 +6,7 @@
 #include <QVector>
 #include <QtGui>
 #include <QtPositioning/QtPositioning>
+#include <QColor>
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <libconfig.h++>
@@ -29,7 +30,8 @@ class AddonsBridge : public QObject, rclcpp::Node {
     rclcpp::Subscription<ulisse_msgs::msg::CoordinateList>::SharedPtr polylineSub_;
 
     void RegisterPublishersAndSubscribers();
-    void DrawObstacle(const QVariant obsID, const QVariant obsCoords, const QVariant obsHeading, const QVariant obsBBoxX, const QVariant obsBBoxY);
+    void DrawObstacle(const QVariant obsID, const QVariant obsCoords, const QVariant obsHeading, const QVariant obsBBoxX, const QVariant obsBBoxY,
+                      const QVariant showID, const QVariant color);
     void ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr msg);
     void DrawPolyline(const QVariant obsID, const QVariant polypath);
     void PolylineCB(const ulisse_msgs::msg::CoordinateList::SharedPtr msg);

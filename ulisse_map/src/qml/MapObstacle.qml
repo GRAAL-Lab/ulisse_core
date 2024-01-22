@@ -12,6 +12,7 @@ MapPolygon {
     property real markerRadius: 1
     property color objectColor: red
     property real objectOpacity: 1.0
+    property real labelOpacity: 1.0
     property var obstacleMarker
     property var objectTextOverlay
     property real lineWidth: 2
@@ -28,7 +29,7 @@ MapPolygon {
     property double heading: 0
     property double bBoxX: 0
     property double bBoxY: 0
-
+    property bool showID: true
 
     Component {
         id: obstacleMarkerComponent
@@ -38,7 +39,7 @@ MapPolygon {
             border.color: objectColor
             center: coords;
             radius: markerRadius;
-            opacity: objectOpacity
+            opacity: objectOpacity * labelOpacity
         }
     }
 
@@ -55,7 +56,7 @@ MapPolygon {
                     font.family: "Courier New"
                     font.pointSize: 10
                     color: objectColor
-                    opacity: objectOpacity
+                    opacity: objectOpacity * labelOpacity
                     font.weight: Font.DemiBold
 
                 }
@@ -79,11 +80,16 @@ MapPolygon {
 
     }
 
-    function update(obsCoords, obsHeading, obsBBoxX, obsBBoxY) {
+    function update(obsCoords, obsHeading, obsBBoxX, obsBBoxY, showID, color) {
         coords = obsCoords
         heading = obsHeading
         bBoxX = obsBBoxX
         bBoxY = obsBBoxY
+        objectColor = color
+
+        if (showID === false){
+            labelOpacity = 0;
+        }
 
         countDownTimer = timeoutSeconds
         _internalUpdate()

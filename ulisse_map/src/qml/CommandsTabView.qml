@@ -164,6 +164,31 @@ Rectangle {
                     }
                 }
 
+                Button {
+                    id: moveToMarkerAvoidanceButton
+                    text: "\uf11e" // icon-folder
+                    font.family: "fontello"
+                    font.pointSize: 12
+                    padding: 5
+                    Layout.minimumWidth: 18
+                    Material.background: pressed ? orange : mainColor
+                    enabled: Helper.coord_inside_polygon(map.marker_coords,
+                            map.safety_polygon.path)
+                        && (map.markerIcon.opacity > 0)
+                    highlighted: true
+                    ToolTip.delay: 1000
+                    ToolTip.timeout: 5000
+                    ToolTip.visible: hovered
+                    ToolTip.text: qsTr("Move to marker avoiding obstacles")
+
+                    onClicked: {
+                        if(cmdWrapper.sendLatLongAvoidanceCommand(map.marker_coords, holdRadius.value)) {
+                            toast.show("Moving with avoidance to coordinate:\n"
+                                + map.marker_coords.latitude.toFixed(7) + ", " + map.marker_coords.longitude.toFixed(7), 6000)
+                        }
+                    }
+                }
+
                 RowLayout {
                     id: moveToCoordinate
 

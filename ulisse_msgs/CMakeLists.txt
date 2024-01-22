@@ -27,6 +27,12 @@ file(GLOB_RECURSE SOURCE_FILES
 add_custom_target(.Files. SOURCES ${SOURCE_FILES})
 
 rosidl_generate_interfaces(ulisse_msgs
+  # Tesi Depalo
+  "msg/Waypoint.msg"
+  "srv/ComputeAvoidancePath.srv"
+  "msg/AvoidanceStatus.msg"
+  "msg/ColorRGB.msg"
+
   # Sensors
   "msg/Time.msg"
   "msg/RPY.msg"
@@ -56,7 +62,7 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/CommandLatLong.msg"
   "msg/CommandSpeedHeading.msg"
   "msg/CommandPathFollow.msg"
-  
+
   # LLC
   "msg/LLCAck.msg"
   "msg/LLCBattery.msg"
@@ -72,7 +78,7 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/LLCEnableRef.msg"
   "msg/LLCPowerButtons.msg"
   "msg/LLCPumps.msg"
-  
+
   # Control
   "msg/SurgeHeading.msg"
   "msg/SurgeYawRate.msg"
@@ -90,13 +96,13 @@ rosidl_generate_interfaces(ulisse_msgs
   "srv/ControlCommand.srv"
   "srv/LLCCommand.srv"
   "srv/RosbagCmd.srv"
-  "srv/NavFilterCommand.srv" 
+  "srv/NavFilterCommand.srv"
   "srv/SetBoundaries.srv"
   "srv/GetBoundaries.srv"
   "srv/SetCruiseControl.srv"
   "srv/ResetConfiguration.srv"
   "srv/MinSrv.srv"
-  
+
   ## Other ##
 
 )

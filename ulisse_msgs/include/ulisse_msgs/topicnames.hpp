@@ -7,6 +7,12 @@ namespace ulisse_msgs {
 
 namespace topicnames {
 
+// Tesi Depalo
+const std::string control_avoidance_cmd_service = "/ulisse/service/compute_avoidance_path";
+const std::string check_avoidance_path_service = "/ulisse/service/check_avoidance_path";
+const std::string avoidance_status = "/ulisse/avoidance/status";
+
+
 // LLC
 const std::string micro_loop_count = "/ulisse/llc/micro_loop_count";
 const std::string sensor_gps_data = "/ulisse/llc/sensor/gps_data";

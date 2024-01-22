@@ -23,6 +23,14 @@ namespace commands {
         } else {
             stateLatLong_->goalPosition = goalPosition;
             stateLatLong_->acceptanceRadius = acceptanceRadius;
+
+            // TODO
+            //auto taskParams = asvCartesianDistance_->TaskParameter();
+            //taskParams.saturation = request->latlong_cmd.move_speed;
+            //taskParams.gain = taskParams.conf_gain;
+            //asvCartesianDistance_->TaskParameter() = taskParams;
+
+
             return true;
         }
     }

@@ -91,18 +91,24 @@ void AddonsBridge::ShowToast(const QVariant message, const QVariant duration)
     QMetaObject::invokeMethod(toastMgrObj_, "show", Qt::QueuedConnection, Q_ARG(QVariant, message), Q_ARG(QVariant, duration));
 }
 
-void AddonsBridge::DrawObstacle(const QVariant obsID, const QVariant obsCoords, const QVariant obsHeading, const QVariant obsBBoxX, const QVariant obsBBoxY)
+void AddonsBridge::DrawObstacle(const QVariant obsID, const QVariant obsCoords, const QVariant obsHeading, const QVariant obsBBoxX, const QVariant obsBBoxY,
+                                const QVariant obsShowID, const QVariant obsColor)
 {
     QMetaObject::invokeMethod(qmlAddonsBridgeVisualizer_, "drawObstacle",
-        Qt::QueuedConnection, Q_ARG(QVariant, obsID), Q_ARG(QVariant, obsCoords), Q_ARG(QVariant, obsHeading), Q_ARG(QVariant, obsBBoxX), Q_ARG(QVariant, obsBBoxY));
+        Qt::QueuedConnection, Q_ARG(QVariant, obsID), Q_ARG(QVariant, obsCoords), Q_ARG(QVariant, obsHeading), Q_ARG(QVariant, obsBBoxX), Q_ARG(QVariant, obsBBoxY),
+                              Q_ARG(QVariant, obsShowID), Q_ARG(QVariant, obsColor));
 }
 
 void AddonsBridge::ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr msg)
 {
     QString id = QString::fromStdString(msg->id);
     QGeoCoordinate center(msg->center.latitude, msg->center.longitude);
+    QColor obsColor(msg->color.r, msg->color.g, msg->color.b, 255);
+    //QColor obsColor(255, 0, 0, 127);
+    QVariant obsShowID = QVariant(msg->show_id);
+    double headingDEG = (msg->heading*180.0)/M_PI;
 
-    DrawObstacle(id, QVariant::fromValue(center), msg->heading, msg->b_box_dim_x, msg->b_box_dim_y);
+    DrawObstacle(id, QVariant::fromValue(center), headingDEG, msg->b_box_dim_x, msg->b_box_dim_y, obsShowID, obsColor);
 }
 
 void AddonsBridge::DrawPolyline(const QVariant obsID, const QVariant polypath)
