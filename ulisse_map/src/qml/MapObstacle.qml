@@ -4,7 +4,7 @@ import QtPositioning 5.9
 import QtQuick.Controls.Material 2.1
 import "."
 
-MapPolygon {
+MapPolyline {
     id: obstacle
     opacity: objectOpacity
     z: map.z + 4
@@ -12,7 +12,6 @@ MapPolygon {
     property real markerRadius: 1
     property color objectColor: red
     property real objectOpacity: 1.0
-    property real labelOpacity: 1.0
     property var obstacleMarker
     property var objectTextOverlay
     property real lineWidth: 2
@@ -20,26 +19,25 @@ MapPolygon {
     property int timeoutSeconds: settings.visualizerTimeout
     property int countDownTimer: timeoutSeconds
 
-    color: 'transparent'
-    border.width: lineWidth
-    border.color: objectColor
+    //color: 'transparent'
+    line.width: lineWidth
+    line.color: objectColor
 
     property string id: "obstacleID"
     property alias coords: obstacle.coordinate
     property double heading: 0
     property double bBoxX: 0
     property double bBoxY: 0
-    property bool showID: true
 
     Component {
         id: obstacleMarkerComponent
-        MapCircle {
-            color: 'transparent'
-            border.width: lineWidth
-            border.color: objectColor
+        MapCustomCircle {
+            //    color: 'transparent'
+            line.width: lineWidth
+            line.color: objectColor
             center: coords;
             radius: markerRadius;
-            opacity: objectOpacity * labelOpacity
+            opacity: objectOpacity
         }
     }
 
@@ -56,7 +54,7 @@ MapPolygon {
                     font.family: "Courier New"
                     font.pointSize: 10
                     color: objectColor
-                    opacity: objectOpacity * labelOpacity
+                    opacity: objectOpacity
                     font.weight: Font.DemiBold
 
                 }
@@ -80,16 +78,11 @@ MapPolygon {
 
     }
 
-    function update(obsCoords, obsHeading, obsBBoxX, obsBBoxY, showID, color) {
+    function update(obsCoords, obsHeading, obsBBoxX, obsBBoxY) {
         coords = obsCoords
         heading = obsHeading
         bBoxX = obsBBoxX
         bBoxY = obsBBoxY
-        objectColor = color
-
-        if (showID === false){
-            labelOpacity = 0;
-        }
 
         countDownTimer = timeoutSeconds
         _internalUpdate()
@@ -103,6 +96,7 @@ MapPolygon {
         obsCorners.push(_top.atDistanceAndAzimuth(bBoxY/2.0, heading + 90))     // _topRight
         obsCorners.push(_bottom.atDistanceAndAzimuth(bBoxY/2.0, heading + 90))  // _bottomRight
         obsCorners.push(_bottom.atDistanceAndAzimuth(bBoxY/2.0, heading + 270)) // _bottomLeft
+        obsCorners.push(_top.atDistanceAndAzimuth(bBoxY/2.0, heading + 270)) // _bottomLeft
 
         obstacle.path = []
         for (var i = 0; i < obsCorners.length; i++){
@@ -110,14 +104,13 @@ MapPolygon {
         }
         // console.log("[MapObstacle] Obstacle Update (timeout: " + timeoutSeconds + " s)")
         console.log("obstacleID: " + id + ", coords: (" + coords.latitude + "," + coords.longitude + "), heading: " + heading
-                    + ", size: (" + bBoxX + ", " + bBoxY + ")")
+            + ", size: (" + bBoxX + ", " + bBoxY + ")")
     }
 
     function deregister_map_items() {
         map.removeMapItem(obstacleMarker)
         map.removeMapItem(objectTextOverlay)
     }
-
 
     Timer {
         id: selfDestroyingTimer

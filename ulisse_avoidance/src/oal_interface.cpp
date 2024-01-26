@@ -1,5 +1,4 @@
 #include "ulisse_avoidance/oal_interface.hpp"
-#include "ulisse_avoidance/oal_interface.hpp"
 
  void OalInterfaceNode::handleComputePathRequest(
     const std::shared_ptr<rmw_request_id_t> request_header,
@@ -46,13 +45,13 @@ void OalInterfaceNode::CallKCL(bool halt){
     serviceReq->latlong_cmd.goal.longitude = goal.longitude;
     serviceReq->latlong_cmd.acceptance_radius = radius_;
   }
-
+  RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "...");
   static std::string result_msg;
   bool serviceAvailable;
   if (command_srv_->service_is_ready()) {
     auto result_future = command_srv_->async_send_request(serviceReq);
     std::cout << "Sent Request to controller" << std::endl;
-    if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
+    /*if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
       result_msg = "Service call failed :(";
       std::cout << result_msg << std::endl;
       RCLCPP_ERROR_STREAM(this->get_logger(), result_msg.c_str());
@@ -61,7 +60,7 @@ void OalInterfaceNode::CallKCL(bool halt){
       result_msg = "Service returned: " + result->res;
       std::cout << result_msg << std::endl;
       RCLCPP_INFO_STREAM(this->get_logger(), result_msg);
-    }
+    }*/
     serviceAvailable = true;
   } else {
     result_msg = "The controller doesn't seem to be active.\n(No CommandServer available)";
