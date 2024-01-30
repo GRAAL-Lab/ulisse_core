@@ -13,6 +13,7 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "ulisse_msgs/msg/obstacle.hpp"
+#include "ulisse_msgs/msg/bounding_box.hpp"
 #include "ulisse_msgs/msg/coordinate_list.hpp"
 #include "ulisse_msgs/srv/rosbag_cmd.hpp"
 
@@ -30,7 +31,9 @@ class AddonsBridge : public QObject, rclcpp::Node {
     rclcpp::Subscription<ulisse_msgs::msg::CoordinateList>::SharedPtr polylineSub_;
 
     void RegisterPublishersAndSubscribers();
-    void DrawObstacle(const QVariant obsID, const QVariant obsCoords, const QVariant obsHeading, const QVariant obsBBoxX, const QVariant obsBBoxY,
+    void DrawObstacle(const QVariant obsID, const QVariant obsCoords, const QVariant obsHeading,
+                      const QVariant obsBBoxXBow, const QVariant obsBBoxXStern,
+                      const QVariant obsBBoxYStarboard, const QVariant obsBBoxYPort,
                       const QVariant showID, const QVariant color);
     void ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr msg);
     void DrawPolyline(const QVariant obsID, const QVariant polypath);

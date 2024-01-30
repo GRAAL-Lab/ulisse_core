@@ -12,6 +12,7 @@ MapPolyline {
     property real markerRadius: 1
     property color objectColor: red
     property real objectOpacity: 1.0
+    property real labelOpacity: 1.0
     property var obstacleMarker
     property var objectTextOverlay
     property real lineWidth: 2
@@ -26,8 +27,10 @@ MapPolyline {
     property string id: "obstacleID"
     property alias coords: obstacle.coordinate
     property double heading: 0
-    property double bBoxX: 0
-    property double bBoxY: 0
+    property double bBoxXBow: 0
+    property double bBoxXStern: 0
+    property double bBoxYStarboard: 0
+    property double bBoxYPort: 0
 
     Component {
         id: obstacleMarkerComponent
@@ -37,7 +40,7 @@ MapPolyline {
             line.color: objectColor
             center: coords;
             radius: markerRadius;
-            opacity: objectOpacity
+            opacity: objectOpacity * labelOpacity
         }
     }
 
@@ -54,7 +57,7 @@ MapPolyline {
                     font.family: "Courier New"
                     font.pointSize: 10
                     color: objectColor
-                    opacity: objectOpacity
+                    opacity: objectOpacity * labelOpacity
                     font.weight: Font.DemiBold
 
                 }
@@ -78,11 +81,20 @@ MapPolyline {
 
     }
 
-    function update(obsCoords, obsHeading, obsBBoxX, obsBBoxY) {
+    function update(obsCoords, obsHeading, obsBBoxXBow, obsBBoxXStern, obsBBoxYStarboard, obsBBoxYPort, showID, color) {
         coords = obsCoords
         heading = obsHeading
-        bBoxX = obsBBoxX
-        bBoxY = obsBBoxY
+
+        bBoxXBow = obsBBoxXBow
+        bBoxXStern = obsBBoxXStern
+        bBoxYStarboard = obsBBoxYStarboard
+        bBoxYPort = obsBBoxYPort
+
+        objectColor = color
+
+        if (showID === false){
+            labelOpacity = 0;
+        }
 
         countDownTimer = timeoutSeconds
         _internalUpdate()
@@ -90,21 +102,32 @@ MapPolyline {
 
     function _internalUpdate(){
         var obsCorners = []
-        var _top = coords.atDistanceAndAzimuth(bBoxX/2.0, heading)
-        var _bottom = coords.atDistanceAndAzimuth(bBoxX/2.0, heading + 180)
-        obsCorners.push(_top.atDistanceAndAzimuth(bBoxY/2.0, heading + 270))    // _topLeft
-        obsCorners.push(_top.atDistanceAndAzimuth(bBoxY/2.0, heading + 90))     // _topRight
-        obsCorners.push(_bottom.atDistanceAndAzimuth(bBoxY/2.0, heading + 90))  // _bottomRight
-        obsCorners.push(_bottom.atDistanceAndAzimuth(bBoxY/2.0, heading + 270)) // _bottomLeft
-        obsCorners.push(_top.atDistanceAndAzimuth(bBoxY/2.0, heading + 270)) // _bottomLeft
+
+        /*// Mine, UTM
+        var _top = coords.atDistanceAndAzimuth(bBoxXBow, heading)
+        var _bottom = coords.atDistanceAndAzimuth(bBoxXStern, heading + 180)
+        obsCorners.push(_top.atDistanceAndAzimuth(bBoxYPort, heading + 90))    // _topLeft
+        obsCorners.push(_top.atDistanceAndAzimuth(bBoxYStarboard, heading + 270))     // _topRight
+        obsCorners.push(_bottom.atDistanceAndAzimuth(bBoxYStarboard, heading + 270))  // _bottomRight
+        obsCorners.push(_bottom.atDistanceAndAzimuth(bBoxYPort, heading + 90)) // _bottomLeft
+        obsCorners.push(_top.atDistanceAndAzimuth(bBoxYPort, heading + 90)) // _topLeft*/
+        // NED
+        var _top = coords.atDistanceAndAzimuth(bBoxXBow, heading)
+        var _bottom = coords.atDistanceAndAzimuth(bBoxXStern, heading + 180)
+        obsCorners.push(_top.atDistanceAndAzimuth(bBoxYPort, heading + 270))    // _topLeft
+        obsCorners.push(_top.atDistanceAndAzimuth(bBoxYStarboard, heading + 90))     // _topRight
+        obsCorners.push(_bottom.atDistanceAndAzimuth(bBoxYStarboard, heading + 90))  // _bottomRight
+        obsCorners.push(_bottom.atDistanceAndAzimuth(bBoxYPort, heading + 270)) // _bottomLeft
+        obsCorners.push(_top.atDistanceAndAzimuth(bBoxYPort, heading + 270)) // _topLeft
+
 
         obstacle.path = []
         for (var i = 0; i < obsCorners.length; i++){
             obstacle.addCoordinate(obsCorners[i])
         }
         // console.log("[MapObstacle] Obstacle Update (timeout: " + timeoutSeconds + " s)")
-        console.log("obstacleID: " + id + ", coords: (" + coords.latitude + "," + coords.longitude + "), heading: " + heading
-            + ", size: (" + bBoxX + ", " + bBoxY + ")")
+        /*console.log("obstacleID: " + id + ", coords: (" + coords.latitude + "," + coords.longitude + "), heading: " + heading
+            + ", size: (" + bBoxX + ", " + bBoxY + ")")*/
     }
 
     function deregister_map_items() {

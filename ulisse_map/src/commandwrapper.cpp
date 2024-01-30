@@ -414,7 +414,7 @@ bool CommandWrapper::sendLatLongCommand(const QGeoCoordinate& goal, double radiu
 /// Tesi Depalo
 bool CommandWrapper::sendLatLongAvoidanceCommand(const QGeoCoordinate& goal, double radius)
 {
-  bool COLREGS = true;
+  bool COLREGS = true; // TODO make it selectable
   auto serviceReq = std::make_shared<ulisse_msgs::srv::ComputeAvoidancePath::Request>();
 
   std::vector<double> velocities;
@@ -427,7 +427,7 @@ bool CommandWrapper::sendLatLongAvoidanceCommand(const QGeoCoordinate& goal, dou
       return result;
   };
   //velocities = generateRange(0.1, 2.5, 0.5);
-  velocities = generateRange(1, 1, 0.5);
+  velocities = generateRange(1.5, 1.5, 0.5);
 
   serviceReq->latlong_cmd.goal.latitude = goal.latitude();
   serviceReq->latlong_cmd.goal.longitude = goal.longitude();
@@ -442,11 +442,11 @@ bool CommandWrapper::sendLatLongAvoidanceCommand(const QGeoCoordinate& goal, dou
     auto result_future = avoidance_path_srv_->async_send_request(serviceReq);
     std::cout << "Sent Request to Avoidance" << std::endl;
     if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
-      result_msg = "Avoidance service call failed :(";
+      result_msg = " Avoidance service call failed :(";
       RCLCPP_ERROR_STREAM(this->get_logger(), result_msg.c_str());
     } else {
       auto result = result_future.get();
-      result_msg = "Avoidance service returned: " + result->res;
+      result_msg = " Avoidance service returned: " + result->res;
       RCLCPP_INFO_STREAM(this->get_logger(), result_msg);
     }
     serviceAvailable = true;

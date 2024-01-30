@@ -91,11 +91,13 @@ void AddonsBridge::ShowToast(const QVariant message, const QVariant duration)
     QMetaObject::invokeMethod(toastMgrObj_, "show", Qt::QueuedConnection, Q_ARG(QVariant, message), Q_ARG(QVariant, duration));
 }
 
-void AddonsBridge::DrawObstacle(const QVariant obsID, const QVariant obsCoords, const QVariant obsHeading, const QVariant obsBBoxX, const QVariant obsBBoxY,
-                                const QVariant obsShowID, const QVariant obsColor)
+void AddonsBridge::DrawObstacle(const QVariant obsID, const QVariant obsCoords, const QVariant obsHeading,
+                  const QVariant obsBBoxXBow, const QVariant obsBBoxXStern, const QVariant obsBBoxYStarboard, const QVariant obsBBoxYPort,
+                  const QVariant obsShowID, const QVariant obsColor)
 {
     QMetaObject::invokeMethod(qmlAddonsBridgeVisualizer_, "drawObstacle",
-        Qt::QueuedConnection, Q_ARG(QVariant, obsID), Q_ARG(QVariant, obsCoords), Q_ARG(QVariant, obsHeading), Q_ARG(QVariant, obsBBoxX), Q_ARG(QVariant, obsBBoxY),
+        Qt::QueuedConnection, Q_ARG(QVariant, obsID), Q_ARG(QVariant, obsCoords), Q_ARG(QVariant, obsHeading),
+                              Q_ARG(QVariant, obsBBoxXBow), Q_ARG(QVariant, obsBBoxXStern), Q_ARG(QVariant, obsBBoxYStarboard), Q_ARG(QVariant, obsBBoxYPort),
                               Q_ARG(QVariant, obsShowID), Q_ARG(QVariant, obsColor));
 }
 
@@ -104,11 +106,27 @@ void AddonsBridge::ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr msg)
     QString id = QString::fromStdString(msg->id);
     QGeoCoordinate center(msg->center.latitude, msg->center.longitude);
     QColor obsColor(msg->color.r, msg->color.g, msg->color.b, 255);
-    //QColor obsColor(255, 0, 0, 127);
     QVariant obsShowID = QVariant(msg->show_id);
     double headingDEG = (msg->heading*180.0)/M_PI;
 
-    DrawObstacle(id, QVariant::fromValue(center), headingDEG, msg->b_box_dim_x, msg->b_box_dim_y, obsShowID, obsColor);
+    double dim_x = msg->b_box_dim_x / 2;
+    double dim_y = msg->b_box_dim_y / 2;
+
+    DrawObstacle(id, QVariant::fromValue(center), headingDEG, dim_x, dim_x, dim_y, dim_y, obsShowID, obsColor);
+
+    QString bb_max{"bb_max_"};
+    QString bb_max_id = bb_max + id;
+    DrawObstacle(bb_max_id, QVariant::fromValue(center), headingDEG,
+                 dim_x * msg->bb_max.x_bow_ratio, dim_x * msg->bb_max.x_stern_ratio, dim_y * msg->bb_max.y_starboard_ratio, dim_y * msg->bb_max.y_port_ratio,
+                 false, QColor(0, 128, 0, 255));
+
+    QString bb_safe{"bb_safe_"};
+    QString bb_safe_id = bb_safe + id;
+    DrawObstacle(bb_safe_id, QVariant::fromValue(center), headingDEG,
+                 dim_x * msg->bb_safe.x_bow_ratio, dim_x * msg->bb_safe.x_stern_ratio, dim_y * msg->bb_safe.y_starboard_ratio, dim_y * msg->bb_safe.y_port_ratio,
+                 false, QColor(255, 0, 0, 255));
+
+    //ulisse_msgs::msg::Obstacle
 }
 
 void AddonsBridge::DrawPolyline(const QVariant obsID, const QVariant polypath)

@@ -1,16 +1,14 @@
 #include "ulisse_avoidance/oal_interface.hpp"
 
  void OalInterfaceNode::handleComputePathRequest(
-    const std::shared_ptr<rmw_request_id_t> request_header,
-    const std::shared_ptr<ulisse_msgs::srv::ComputeAvoidancePath::Request> request,
-    const std::shared_ptr<ulisse_msgs::srv::ComputeAvoidancePath::Response> response)
+    const std::shared_ptr<rmw_request_id_t>& request_header,
+    const std::shared_ptr<ulisse_msgs::srv::ComputeAvoidancePath::Request>& request,
+    const std::shared_ptr<ulisse_msgs::srv::ComputeAvoidancePath::Response>& response)
 {
   RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "New request.");
-  stopTracking();
-  if(!available_ || !isPosUpToDate()){
-    // MAYBE SHUT SERVICE DOWN IN THIS CASE
+  if(active_) stopTracking();
+  if(!isPosUpToDate()){
     response->res = false;
-    available_ = false;
     return;
   }
 
@@ -29,10 +27,12 @@
   }
 }
 
-void OalInterfaceNode::CallKCL(bool halt){
+void OalInterfaceNode::CallKCL(bool hold){
   auto serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
-  if(halt){
-    serviceReq->command_type = ulisse::commands::ID::halt;
+  if(hold){
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "  Stopping vehicle! ");
+    serviceReq->command_type = ulisse::commands::ID::hold;
+    serviceReq->latlong_cmd.acceptance_radius = radius_;
   }else{
     // Get point
     Path path = path_;
@@ -43,14 +43,18 @@ void OalInterfaceNode::CallKCL(bool halt){
     serviceReq->command_type = ulisse::commands::ID::latlong;
     serviceReq->latlong_cmd.goal.latitude = goal.latitude;
     serviceReq->latlong_cmd.goal.longitude = goal.longitude;
-    serviceReq->latlong_cmd.acceptance_radius = radius_;
+    // TODO too small radius makes state go to hold and so stop tracking
+    if(path.size() == 1){
+      serviceReq->latlong_cmd.acceptance_radius = radius_;
+    }else{
+      serviceReq->latlong_cmd.acceptance_radius = WAYPOINT_ACC_RADIUS;
+    }
   }
-  RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "...");
   static std::string result_msg;
-  bool serviceAvailable;
+
   if (command_srv_->service_is_ready()) {
     auto result_future = command_srv_->async_send_request(serviceReq);
-    std::cout << "Sent Request to controller" << std::endl;
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), " - sending cmd to KCL");
     /*if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
       result_msg = "Service call failed :(";
       std::cout << result_msg << std::endl;
@@ -61,10 +65,9 @@ void OalInterfaceNode::CallKCL(bool halt){
       std::cout << result_msg << std::endl;
       RCLCPP_INFO_STREAM(this->get_logger(), result_msg);
     }*/
-    serviceAvailable = true;
   } else {
-    result_msg = "The controller doesn't seem to be active.\n(No CommandServer available)";
-    serviceAvailable = false;
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "The controller doesn't seem to be active.\n(No CommandServer available)");
+    stopTracking();
   }
   // CHECK PROGRESS = serviceAvailable;
 }
@@ -74,63 +77,88 @@ bool OalInterfaceNode::ComputePath(){
   Eigen::Vector2d goal = GetLocal2d(goal_);
 
   // Sync vh_data and obs data
+  planner = path_planner();
   planner.SetVhData(v_info);
-  SetObssData(last_pos_update_);  // TODO LOSE OLD OBS ??????????
+  SetObssData(last_pos_update_);
+  path_ = Path();
+  if (planner.ComputePath(goal, colregs_, path_)) {
 
-  if (!planner.ComputePath(goal, colregs_, path_)) {
-    std::cout <<std::endl << "Not found." << std::endl;
-    return false;
-  }else{
-    //std::cout <<std::endl << "Found." << std::endl;
+
+
+    last_path_computation_ = rclcpp::Clock().now();
     coordinates_pub();
     return true;
   }
+
+  return false;
 }
 
 bool OalInterfaceNode::CheckPath()
 {
   // Update environment info
+  planner = path_planner();
   Eigen::Vector2d vh_pos = GetLocal2d(vh_position_);
   SetObssData(last_pos_update_);
   return planner.CheckPath(vh_pos, path_);
 }
 
 void OalInterfaceNode::CheckProgress(){
-  std::cout << " . " << std::endl;
-  std::cout << " tracking " << obstacles_.size()<< " obstacles."<< std::endl;
+  if (!active_) return;
+
   bool sendNew = false;
-  // If new pos update exists when timerCB
-  // CHECK > MEANS AFTER
+  // If new pos update exists, check progress
   if(last_pos_update_ > last_check_progress_){
     last_check_progress_ = last_pos_update_;
 
-    // I know where it is: look if it reached a new waypoint and check if path is still doable
+    // check if it reached a new waypoint and check if path is still doable
     Path path_temp = path_;
+    if(path_temp.waypoints.empty()){
+      std::cout << " ERROR! " << std::endl;
+    }
     path_temp.pop(); // removing current starting point
 
-    // TODO < radius_
-    if((GetLocal2d(vh_position_) - path_temp.top().position).norm() < radius_ ){
+    if(path_temp.size()==1){
+      // Reaching final wp
+      if((GetLocal2d(vh_position_) - path_temp.top().position).norm() < radius_ ){
+        std::cout << " reached end!!! " << std::endl;
+        // Reached goal, make vh hold its position
+        CallKCL(true);
+        stopTracking();
+        return;
+      }
+    }else if((GetLocal2d(vh_position_) - path_temp.top().position).norm() < WAYPOINT_ACC_RADIUS ){
+        // Vehicle reached next waypoint
+        path_.pop();
+        sendNew = true;
+        std::cout << " reached wp! " << std::endl;
+    }
+
+    /*if((GetLocal2d(vh_position_) - path_temp.top().position).norm() < radius_ ){
       // Vehicle reached next waypoint
       path_.pop();
-      std::cout << " reached wp " << std::endl;
-      if(path_.waypoints.size()<=1){
-        std::cout << " reached end " << std::endl;
-        // Reached goal
+      std::cout << " reached wp! " << std::endl;
+      if(path_.size()<=1){
+        std::cout << " reached end!!! " << std::endl;
+        // Reached goal, make vh hold its position
         CallKCL(true);
         stopTracking();
         return;
       }
       sendNew = true;
-    }
+    }*/
 
-    if(CheckPath()){
-      std::cout << " - path still good " << std::endl;
+    if(CheckPath() && (last_path_computation_.seconds() - rclcpp::Clock().now().seconds()) <= TIME_EXPIRED_PATH){
+      //std::cout << " - path is safe, keep it going (tracking " << obstacles_.size()<<" obstacles)"<< std::endl;
+      RCLCPP_INFO(rclcpp::get_logger("rclcpp"), " - path is safe, keep it going (tracking %zu obstacles)", obstacles_.size());
       if(sendNew) CallKCL();
     }else{
       //overtakingObsList !!!!
+      RCLCPP_INFO(rclcpp::get_logger("rclcpp"), " - path is NOT safe, searching a new one");
       if(ComputePath()){
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "    - found");
         CallKCL();
       }else{
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "    - NOT found, stop");
         CallKCL(true);
         stopTracking();
       }
@@ -138,8 +166,7 @@ void OalInterfaceNode::CheckProgress(){
   }else{
     // Check if position is very old
     if(!isPosUpToDate()){
-      std::cout <<std::endl << "Own Ship position unknown." << std::endl;
-      available_ = false;
+      RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "  Own Ship position unknown.");
       CallKCL(true);
       stopTracking();
     }
@@ -148,8 +175,12 @@ void OalInterfaceNode::CheckProgress(){
 
 void OalInterfaceNode::VehicleStatusCB(const ulisse_msgs::msg::VehicleStatus::SharedPtr msg) {
   auto vehicleStatus = *msg;
-  if(vehicleStatus.vehicle_state != ulisse::states::ID::latlong){
-    stopTracking();
+  if(active_ && vehicleStatus.vehicle_state != last_known_vhStatus_) {
+    last_known_vhStatus_ = vehicleStatus.vehicle_state;
+    if (vehicleStatus.vehicle_state != ulisse::states::ID::latlong) {
+      RCLCPP_INFO(rclcpp::get_logger("rclcpp"), " STATUS HAS CHANGED: STOP TRACKING");
+      stopTracking();
+    }
   }
 }
 
@@ -172,26 +203,35 @@ void OalInterfaceNode::addObstacle(const Obstacle& obs){
 }
 
 void OalInterfaceNode::ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr msg){
+  Eigen::Vector2d pos = GetLocal2d(ctb::LatLong(msg->center.latitude, msg->center.longitude));
+
+  // HERE CONVERSION OF DIRECTION FROM NED TO UTM
+  // (v_x' = v_y, v_y'= v_x, heading' = M_PI/2-heading)
   // Handle topic message
-  Eigen::Vector2d velocity(msg->vel_x, msg->vel_y);
-  bb_data bb_dimension(20, 5,
-                       1.6, 1.4,
-                       2, 2,
-                       1.5, 1.2,
-                       1.5, 1.5,
-                       0);
-  Obstacle obs(msg->id, GetLocal2d(ctb::LatLong(msg->center.latitude, msg->center.longitude)),
-               msg->heading, velocity.norm(), atan2(velocity.y(), velocity.x()),
+  Eigen::Vector2d velocity(msg->vel_y, msg->vel_x);
+  bb_data bb_dimension(msg->b_box_dim_x, msg->b_box_dim_y,
+                       msg->bb_max.x_bow_ratio , msg->bb_max.x_stern_ratio,
+                       msg->bb_max.y_starboard_ratio, msg->bb_max.y_port_ratio,
+                       msg->bb_safe.x_bow_ratio , msg->bb_safe.x_stern_ratio,
+                       msg->bb_safe.y_starboard_ratio, msg->bb_safe.y_port_ratio,
+                       msg->uncertainty_gap);
+  Obstacle obs(msg->id, pos,
+               M_PI/2-msg->heading, velocity.norm(), atan2(velocity.y(), velocity.x()),
                bb_dimension,
                msg->high_priority);
   addObstacle(obs);
+
+  //std::cout << "NEW OBS IN LIBRARY: "<<msg->id<<" in localUTM pos: ("<<(int)pos.x()<<", "<<(int)pos.y()<<"), heading: "<< M_PI/2-msg->heading<<" with speed vector: ("<<velocity.x()<<", "<<velocity.y()<<") "<<std::endl;
+  /*Eigen::Vector3d pos_test;
+  ctb::LatLong2LocalNED(ctb::LatLong(msg->center.latitude, msg->center.longitude), 0, centroid_, pos_test);
+  std::cout<<"NED: "<<pos_test.x()<<", "<< pos_test.y()<<std::endl;*/
+
 }
 
 void OalInterfaceNode::PosCB(const ulisse_msgs::msg::GPSData::SharedPtr msg){
   // Handle topic message
   last_pos_update_ = rclcpp::Clock().now();
   vh_position_ = ctb::LatLong(msg->latitude, msg->longitude);
-  available_ = true;
 }
 
 Eigen::Vector2d OalInterfaceNode::GetLocal2d(ctb::LatLong point){
@@ -229,11 +269,11 @@ void OalInterfaceNode::status_pub_callback(){
 
   // DELETING OLD OBSTACLE
   //  older_than 10s;
-  auto old = [](ObstacleWithTime obs_t) -> bool {
+  auto old = [](const ObstacleWithTime& obs_t) -> bool {
       return (10 <= (obs_t.timestamp.seconds() - rclcpp::Clock().now().seconds()));
   };
   obstacles_.erase(std::remove_if(obstacles_.begin(), obstacles_.end(), old), obstacles_.end());
-  message.n_known_obs = obstacles_.size();
+  message.n_known_obs = (double)obstacles_.size();  // TODO fix msg
   avoidanceStatusPub_->publish(message);
 }
 

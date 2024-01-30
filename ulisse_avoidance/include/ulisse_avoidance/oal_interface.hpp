@@ -23,12 +23,12 @@
 
 #include <random> // test
 
-#define OBS_EXP_TIME = 10;
-
-double bb_y_ratio = 3.2;
-double bb_x_bow_ratio = 9;
-double bb_x_stern_ratio = 3.2;
-double safety_bb_ratio = 3;
+#define OBS_EXP_TIME 10
+#define MAX_POS_DELAY 1
+#define CHECK_PROGRESS_RATE 0.2
+#define STATUS_PUB_RATE 0.5
+#define TIME_EXPIRED_PATH 5
+#define WAYPOINT_ACC_RADIUS 1
 
 struct ObstacleWithTime {
     Obstacle data;
@@ -50,30 +50,31 @@ public:
       // Set up service server
       compute_path_service_ = create_service<ulisse_msgs::srv::ComputeAvoidancePath>
               (ulisse_msgs::topicnames::control_avoidance_cmd_service,
-               std::bind(&OalInterfaceNode::handleComputePathRequest, this, std::placeholders::_1,
-                         std::placeholders::_2, std::placeholders::_3));
+               std::bind(&OalInterfaceNode::handleComputePathRequest, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
       // Set up topic subscribers
-      pos_subscription_ = create_subscription<ulisse_msgs::msg::GPSData>(
-              ulisse_msgs::topicnames::sensor_gps_data, qos_sensor,
-              std::bind(&OalInterfaceNode::PosCB, this, std::placeholders::_1));
+      pos_subscription_ = create_subscription<ulisse_msgs::msg::GPSData>
+              (ulisse_msgs::topicnames::sensor_gps_data, qos_sensor,
+               std::bind(&OalInterfaceNode::PosCB, this, std::placeholders::_1));
       obs_subscription_ = create_subscription<ulisse_msgs::msg::Obstacle>(
               ulisse_msgs::topicnames::obstacle, qos_sensor,
               std::bind(&OalInterfaceNode::ObstacleCB, this, std::placeholders::_1));
-      vehicleStatusSub_ = create_subscription<ulisse_msgs::msg::VehicleStatus>(
+      vhStatus_subscription_ = create_subscription<ulisse_msgs::msg::VehicleStatus>(
               ulisse_msgs::topicnames::vehicle_status, qos_sensor,
               std::bind(&OalInterfaceNode::VehicleStatusCB, this, std::placeholders::_1));
 
-      // status pub
       avoidanceStatusPub_ = create_publisher<ulisse_msgs::msg::AvoidanceStatus>(
               ulisse_msgs::topicnames::avoidance_status, qos_sensor);
       avoidanceStatusTimer_ = create_wall_timer(
-              std::chrono::seconds(statusPubRate), std::bind(&OalInterfaceNode::status_pub_callback, this));
+              std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<double>(STATUS_PUB_RATE)),
+              std::bind(&OalInterfaceNode::status_pub_callback, this));
+
 
       coordinatesPub_ = create_publisher<ulisse_msgs::msg::CoordinateList>(ulisse_msgs::topicnames::avoidance_path,
                                                                            qos_sensor);
 
-      checkProgressTimer_ = create_wall_timer(std::chrono::seconds(checkProgressRate),
-                                              std::bind(&OalInterfaceNode::CheckProgress, this));
+      checkProgressTimer_ = create_wall_timer(
+              std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<double>(CHECK_PROGRESS_RATE)),
+              std::bind(&OalInterfaceNode::CheckProgress, this));
 
       RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Done config.");
     }
@@ -82,11 +83,11 @@ private:
 
     //std::shared_ptr<OALConfiguration> conf_;
 
-    int qos_sensor = 10;  // CHECK VALUE AND USE
+    int qos_sensor = 10;  // TODO CHECK VALUE AND USE
     // Environment data
     ctb::LatLong centroid_ = {44.0956, 9.8631}; // La Spezia coordinates
     ctb::LatLong vh_position_ = centroid_;
-    rclcpp::Time last_pos_update_, last_check_progress_;
+    rclcpp::Time last_pos_update_, last_check_progress_, last_path_computation_;
     std::vector <ObstacleWithTime> obstacles_;
 
     // Library
@@ -98,28 +99,24 @@ private:
     ctb::LatLong goal_;
     bool colregs_;
     double radius_;
+    std::vector<std::string> overtaking_list_;
 
-    // Utils
-    int checkProgressRate = 1;
-    int statusPubRate = 0.5;
-
-    bool available_ = false; // Depending on position being up-to-date
     bool active_ = false;
-    bool send_cmd_ = false;
-    bool halt_ = false;
+    std::string last_known_vhStatus_ = ulisse::states::ID::hold;
 
-    rclcpp::TimerBase::SharedPtr avoidanceStatusTimer_;
-    rclcpp::Publisher<ulisse_msgs::msg::AvoidanceStatus>::SharedPtr avoidanceStatusPub_;
-
-    rclcpp::Publisher<ulisse_msgs::msg::CoordinateList>::SharedPtr coordinatesPub_;
-
-    rclcpp::TimerBase::SharedPtr checkProgressTimer_;
     rclcpp::Client<ulisse_msgs::srv::ControlCommand>::SharedPtr command_srv_;
     rclcpp::Service<ulisse_msgs::srv::ComputeAvoidancePath>::SharedPtr compute_path_service_;
+
+    rclcpp::TimerBase::SharedPtr avoidanceStatusTimer_;
+    rclcpp::TimerBase::SharedPtr checkProgressTimer_;
+
     rclcpp::Subscription<ulisse_msgs::msg::GPSData>::SharedPtr pos_subscription_;
     rclcpp::Subscription<ulisse_msgs::msg::Obstacle>::SharedPtr obs_subscription_;
-    rclcpp::Subscription<ulisse_msgs::msg::VehicleStatus>::SharedPtr vehicleStatusSub_;
+    rclcpp::Subscription<ulisse_msgs::msg::VehicleStatus>::SharedPtr vhStatus_subscription_;
 
+
+    rclcpp::Publisher<ulisse_msgs::msg::AvoidanceStatus>::SharedPtr avoidanceStatusPub_;
+    rclcpp::Publisher<ulisse_msgs::msg::CoordinateList>::SharedPtr coordinatesPub_;
 
     // Send KCL new waypoint to reach
     void CallKCL(bool halt = false);
@@ -133,9 +130,9 @@ private:
     // Callbacks
     // Search for path to GUI-sent new goal and make KCL track it
     void handleComputePathRequest(
-            const std::shared_ptr <rmw_request_id_t> request_header,
-            const std::shared_ptr <ulisse_msgs::srv::ComputeAvoidancePath::Request> request,
-            const std::shared_ptr <ulisse_msgs::srv::ComputeAvoidancePath::Response> response);
+            const std::shared_ptr <rmw_request_id_t>& request_header,
+            const std::shared_ptr <ulisse_msgs::srv::ComputeAvoidancePath::Request>& request,
+            const std::shared_ptr <ulisse_msgs::srv::ComputeAvoidancePath::Response>& response);
 
     // New position available, update
     void PosCB(const ulisse_msgs::msg::GPSData::SharedPtr msg);
@@ -151,7 +148,7 @@ private:
 
     // Others
     bool isPosUpToDate() {
-      return (last_pos_update_.seconds() - rclcpp::Clock().now().seconds()) <= 1;
+      return (last_pos_update_.seconds() - rclcpp::Clock().now().seconds()) <= MAX_POS_DELAY;
     }
 
     void startTracking() {
@@ -160,8 +157,9 @@ private:
     }
 
     void stopTracking() {
-      active_ = false;
       checkProgressTimer_->cancel();
+      active_ = false;
+      planner = path_planner();
     }
 
     Eigen::Vector2d GetLocal2d(ctb::LatLong point);
@@ -170,9 +168,9 @@ private:
 
     void addObstacle(const Obstacle &obs);
 
-    void SetObssData(rclcpp::Time time) {
+    void SetObssData(const rclcpp::Time& time) {
       std::vector <Obstacle> obstacles;
-      for (ObstacleWithTime obs_t: obstacles_) {
+      for (const ObstacleWithTime& obs_t: obstacles_) {
         Obstacle obs = obs_t.data;
         obs.position = ComputePosition(obs, time.seconds() - obs_t.timestamp.seconds());
         obstacles.push_back(obs);

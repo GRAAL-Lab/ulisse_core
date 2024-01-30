@@ -1,0 +1,4 @@
+float64 x_bow_ratio
+float64 x_stern_ratio
+float64 y_starboard_ratio
+float64 y_port_ratio
