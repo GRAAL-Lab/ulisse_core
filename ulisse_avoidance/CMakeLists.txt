@@ -32,7 +32,7 @@ ament_target_dependencies(
         "ctrl_toolbox"
         "oal"
 )
-target_link_libraries(oal_interface Geographic oal)
+target_link_libraries(oal_interface Geographic oal config++)
 
 install(TARGETS oal_interface
         DESTINATION lib/${PROJECT_NAME})
@@ -49,4 +49,12 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
+install(DIRECTORY
+        conf
+        launch
+        DESTINATION share/${PROJECT_NAME}
+        )
+
+
+ament_export_dependencies(ament_cmake)
 ament_package()

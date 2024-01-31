@@ -14,7 +14,7 @@
 
   velocities_ = request->velocities;
   goal_ = ctb::LatLong(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude);
-  colregs_ = request->colregs_compliant;
+  //colregs_ = request->colregs_compliant;
   radius_ = request->latlong_cmd.acceptance_radius; // used also for waypoint acceptance
 
   if(ComputePath()){
@@ -47,7 +47,7 @@ void OalInterfaceNode::CallKCL(bool hold){
     if(path.size() == 1){
       serviceReq->latlong_cmd.acceptance_radius = radius_;
     }else{
-      serviceReq->latlong_cmd.acceptance_radius = WAYPOINT_ACC_RADIUS;
+      serviceReq->latlong_cmd.acceptance_radius = 0.001;   // TODO shitty thing, but move_to goes to hold from ulisse_map and makes avoidance stop working
     }
   }
   static std::string result_msg;
@@ -82,8 +82,15 @@ bool OalInterfaceNode::ComputePath(){
   SetObssData(last_pos_update_);
   path_ = Path();
   if (planner.ComputePath(goal, colregs_, path_)) {
-
-
+    std::cout<<std::endl;
+    planner.print(goal);
+    std::cout<<std::endl;
+    // If close to next wp, ignore it TODO check
+    if(path_.size()>1){
+      Path path_temp = path_;
+      path_temp.pop();
+      if((GetLocal2d(vh_position_) - path_temp.top().position).norm() < waypoint_acceptance_radius) path_.pop();
+    }
 
     last_path_computation_ = rclcpp::Clock().now();
     coordinates_pub();
@@ -126,7 +133,7 @@ void OalInterfaceNode::CheckProgress(){
         stopTracking();
         return;
       }
-    }else if((GetLocal2d(vh_position_) - path_temp.top().position).norm() < WAYPOINT_ACC_RADIUS ){
+    }else if((GetLocal2d(vh_position_) - path_temp.top().position).norm() < waypoint_acceptance_radius ){
         // Vehicle reached next waypoint
         path_.pop();
         sendNew = true;
@@ -146,14 +153,20 @@ void OalInterfaceNode::CheckProgress(){
       }
       sendNew = true;
     }*/
-
-    if(CheckPath() && (last_path_computation_.seconds() - rclcpp::Clock().now().seconds()) <= TIME_EXPIRED_PATH){
+    bool isOld = (rclcpp::Clock().now().seconds() - last_path_computation_.seconds()) > path_expired_time;
+    if(CheckPath() && !isOld){
       //std::cout << " - path is safe, keep it going (tracking " << obstacles_.size()<<" obstacles)"<< std::endl;
-      RCLCPP_INFO(rclcpp::get_logger("rclcpp"), " - path is safe, keep it going (tracking %zu obstacles)", obstacles_.size());
+      //RCLCPP_INFO(rclcpp::get_logger("rclcpp"), " - path is safe, keep it going (tracking %zu obstacles)", obstacles_.size());
+      RCLCPP_INFO(rclcpp::get_logger("rclcpp"), ".");
       if(sendNew) CallKCL();
     }else{
-      //overtakingObsList !!!!
-      RCLCPP_INFO(rclcpp::get_logger("rclcpp"), " - path is NOT safe, searching a new one");
+
+      if(!isOld) {
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), " - path is NOT safe, searching a new one");
+      }else{
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), " - path expired (and possibly not safe)");
+      }
+
       if(ComputePath()){
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "    - found");
         CallKCL();
@@ -178,7 +191,9 @@ void OalInterfaceNode::VehicleStatusCB(const ulisse_msgs::msg::VehicleStatus::Sh
   if(active_ && vehicleStatus.vehicle_state != last_known_vhStatus_) {
     last_known_vhStatus_ = vehicleStatus.vehicle_state;
     if (vehicleStatus.vehicle_state != ulisse::states::ID::latlong) {
-      RCLCPP_INFO(rclcpp::get_logger("rclcpp"), " STATUS HAS CHANGED: STOP TRACKING");
+      RCLCPP_INFO(rclcpp::get_logger("rclcpp"), " STATUS HAS CHANGED: [%s]",vehicleStatus.vehicle_state.c_str());
+      //std::cout<<vehicleStatus.vehicle_state<<std::endl;
+      RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "  STOP TRACKING ");
       stopTracking();
     }
   }
@@ -269,8 +284,8 @@ void OalInterfaceNode::status_pub_callback(){
 
   // DELETING OLD OBSTACLE
   //  older_than 10s;
-  auto old = [](const ObstacleWithTime& obs_t) -> bool {
-      return (10 <= (obs_t.timestamp.seconds() - rclcpp::Clock().now().seconds()));
+  auto old = [this](const ObstacleWithTime& obs_t) -> bool {
+      return (obs_expired_time <= (rclcpp::Clock().now().seconds() - obs_t.timestamp.seconds()));
   };
   obstacles_.erase(std::remove_if(obstacles_.begin(), obstacles_.end(), old), obstacles_.end());
   message.n_known_obs = (double)obstacles_.size();  // TODO fix msg
