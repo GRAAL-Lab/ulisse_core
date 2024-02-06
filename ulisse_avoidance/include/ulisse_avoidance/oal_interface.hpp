@@ -4,7 +4,6 @@
 #include <cstdio>
 #include <memory>
 #include "rclcpp/rclcpp.hpp"
-
 #include "ctrl_toolbox/HelperFunctions.h"
 #include "ulisse_msgs/topicnames.hpp"
 #include "ulisse_msgs/msg/gps_data.hpp"
@@ -15,103 +14,82 @@
 #include "ulisse_msgs/srv/control_command.hpp"
 #include "ulisse_msgs/msg/coordinate_list.hpp"
 #include "ulisse_ctrl/commands/command_latlong.hpp"
-#include "ulisse_ctrl/commands/command_halt.hpp"
+//#include "ulisse_ctrl/commands/command_halt.hpp"
 #include "ulisse_ctrl/states/state_latlong.hpp"
-
+#include "ulisse_msgs/msg/nav_filter_data.hpp"
+#include "ulisse_avoidance/data_structs.hpp"
 #include "oal/path_planner.hpp"
 #include "oal/data_structs/node.hpp"
-
-#include <random> // test
-
 #include <ament_index_cpp/get_package_share_directory.hpp>
-
 #include <iomanip>
 #include <cstdlib>
 #include <libconfig.h++>
 
 
-struct ObstacleWithTime {
-    Obstacle data;
-    rclcpp::Time timestamp;
-};
-
 class OalInterfaceNode : public rclcpp::Node {
 public:
     OalInterfaceNode() : Node("oal_interface") {
 
-      std::string ulisse_avoidance_dir = ament_index_cpp::get_package_share_directory("ulisse_avoidance");
-      std::string ulisse_avoidance_dir_conf = ulisse_avoidance_dir;
-      ulisse_avoidance_dir_conf.append("/conf/configuration.cfg");
-      //std::cout<<ulisse_avoidance_dir_conf<<std::endl;
-      cfg_.readFile(ulisse_avoidance_dir_conf.c_str());
-      colregs_ = cfg_.lookup("colregs");
-      centroid_.latitude = cfg_.lookup("centroid.latitude");
-      centroid_.longitude = cfg_.lookup("centroid.longitude");
-      obs_expired_time = cfg_.lookup("obs_expired_time");
-      max_pos_delay_time = cfg_.lookup("max_pos_delay_time");
-      check_progress_rate = cfg_.lookup("check_progress_rate");
-      status_pub_rate = cfg_.lookup("status_pub_rate");
-      path_expired_time = cfg_.lookup("path_expired_time");
-      waypoint_acceptance_radius = cfg_.lookup("waypoint_acceptance_radius");
+      RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Loading configuration file..");
+      loadConf(true);
 
-      std::cout << "Loaded configuration:\n"
-                << "  - COLREGS COMPLIANCE: " << colregs_ << "\n"
-                << "  - Centroid: { " << centroid_.latitude << ", " << centroid_.longitude << " }\n"
-                << "  - Obstacles are ignored " << obs_expired_time << "s after the last status update\n"
-                << "  - Avoidance stops " << max_pos_delay_time << "s after the last vehicle position update\n"
-                << "  - Path following progress is checked every " << check_progress_rate << "s\n"
-                << "  - Avoidance status is updated every " << status_pub_rate << " seconds\n"
-                << "  - Path is recomputed every " << path_expired_time << "s\n"
-                << "  - Inner waypoints acceptance radius: " << waypoint_acceptance_radius << "m" << std::endl;
-
-
+      // KCL cmd service client
       command_srv_ = create_client<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service);
-      // Set up service server
+      // Avoidance cmd service server
       compute_path_service_ = create_service<ulisse_msgs::srv::ComputeAvoidancePath>
               (ulisse_msgs::topicnames::control_avoidance_cmd_service,
                std::bind(&OalInterfaceNode::handleComputePathRequest, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-      // Set up topic subscribers
+      // SUBSCRIBING
+      //  Position sub
       pos_subscription_ = create_subscription<ulisse_msgs::msg::GPSData>
               (ulisse_msgs::topicnames::sensor_gps_data, qos_sensor,
                std::bind(&OalInterfaceNode::PosCB, this, std::placeholders::_1));
+      //  Heading sub
+      head_subscription_ = create_subscription<ulisse_msgs::msg::NavFilterData>
+              (ulisse_msgs::topicnames::nav_filter_data, qos_sensor,
+               std::bind(&OalInterfaceNode::HeadCB, this, std::placeholders::_1));
+      //  Obs sub
       obs_subscription_ = create_subscription<ulisse_msgs::msg::Obstacle>(
               ulisse_msgs::topicnames::obstacle, qos_sensor,
               std::bind(&OalInterfaceNode::ObstacleCB, this, std::placeholders::_1));
+      //  Ownship status sub
       vhStatus_subscription_ = create_subscription<ulisse_msgs::msg::VehicleStatus>(
               ulisse_msgs::topicnames::vehicle_status, qos_sensor,
               std::bind(&OalInterfaceNode::VehicleStatusCB, this, std::placeholders::_1));
 
+      // PUBLISHING
+      //  Avoidance status pub
       avoidanceStatusPub_ = create_publisher<ulisse_msgs::msg::AvoidanceStatus>(
               ulisse_msgs::topicnames::avoidance_status, qos_sensor);
-      avoidanceStatusTimer_ = create_wall_timer(
-              std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<double>(status_pub_rate)),
-              std::bind(&OalInterfaceNode::status_pub_callback, this));
-
-
+      //  Coordinates pub
       coordinatesPub_ = create_publisher<ulisse_msgs::msg::CoordinateList>(ulisse_msgs::topicnames::avoidance_path,
                                                                            qos_sensor);
 
+      // TIMERS
+      //  Avoidance status pub timer
+      avoidanceStatusTimer_ = create_wall_timer(
+              std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<double>(conf_.status_pub_rate)),
+              std::bind(&OalInterfaceNode::status_pub_callback, this));
+      //  Check path following progress timer
       checkProgressTimer_ = create_wall_timer(
-              std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<double>(check_progress_rate)),
+              std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<double>(conf_.check_progress_rate)),
               std::bind(&OalInterfaceNode::CheckProgress, this));
 
-      RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Done config.");
+      RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Avoidance is ready.");
     }
 
 private:
 
-    libconfig::Config cfg_;
-    double obs_expired_time, max_pos_delay_time, check_progress_rate, status_pub_rate, path_expired_time, waypoint_acceptance_radius;
-    bool colregs_ = false;
+    AvoidanceConf conf_;
 
     int qos_sensor = 10;  // TODO CHECK VALUE AND USE
-    // Environment data
-    ctb::LatLong centroid_;// = {44.0956, 9.8631}; // La Spezia coordinates
-    ctb::LatLong vh_position_ = centroid_;
+
+    ctb::LatLong vh_position_;
+    double vh_heading_;
     rclcpp::Time last_pos_update_, last_check_progress_, last_path_computation_;
     std::vector <ObstacleWithTime> obstacles_;
 
-    // Library
+    // Obstacle Avoidance Library
     path_planner planner;
     Path path_;
 
@@ -126,23 +104,20 @@ private:
 
     rclcpp::Client<ulisse_msgs::srv::ControlCommand>::SharedPtr command_srv_;
     rclcpp::Service<ulisse_msgs::srv::ComputeAvoidancePath>::SharedPtr compute_path_service_;
-
+    rclcpp::Subscription<ulisse_msgs::msg::GPSData>::SharedPtr pos_subscription_;
+    rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr head_subscription_;
+    rclcpp::Subscription<ulisse_msgs::msg::Obstacle>::SharedPtr obs_subscription_;
+    rclcpp::Subscription<ulisse_msgs::msg::VehicleStatus>::SharedPtr vhStatus_subscription_;
+    rclcpp::Publisher<ulisse_msgs::msg::AvoidanceStatus>::SharedPtr avoidanceStatusPub_;
+    rclcpp::Publisher<ulisse_msgs::msg::CoordinateList>::SharedPtr coordinatesPub_;
     rclcpp::TimerBase::SharedPtr avoidanceStatusTimer_;
     rclcpp::TimerBase::SharedPtr checkProgressTimer_;
 
-    rclcpp::Subscription<ulisse_msgs::msg::GPSData>::SharedPtr pos_subscription_;
-    rclcpp::Subscription<ulisse_msgs::msg::Obstacle>::SharedPtr obs_subscription_;
-    rclcpp::Subscription<ulisse_msgs::msg::VehicleStatus>::SharedPtr vhStatus_subscription_;
-
-
-    rclcpp::Publisher<ulisse_msgs::msg::AvoidanceStatus>::SharedPtr avoidanceStatusPub_;
-    rclcpp::Publisher<ulisse_msgs::msg::CoordinateList>::SharedPtr coordinatesPub_;
-
     // Send KCL new waypoint to reach
-    void CallKCL(bool halt = false);
+    bool CallKCL(bool hold_cmd = false);
 
     // Look for a path to GUI given goal, save it in path_
-    bool ComputePath();
+    bool ComputePath(Path& path);
 
     // Look if path_ still doable with current env data
     bool CheckPath();
@@ -157,6 +132,8 @@ private:
     // New position available, update
     void PosCB(ulisse_msgs::msg::GPSData::SharedPtr msg);
 
+    void HeadCB(ulisse_msgs::msg::NavFilterData::SharedPtr msg);
+
     // New obstacles info available, update
     void ObstacleCB(ulisse_msgs::msg::Obstacle::SharedPtr msg);
 
@@ -166,11 +143,14 @@ private:
     // Check vehicle progress along trajectory and send commands to KCL
     void CheckProgress();
 
-    // Others
+
     bool isPosUpToDate() {
-      return (rclcpp::Clock().now().seconds() - last_pos_update_.seconds()) <= max_pos_delay_time;
+      // TODO does this return false when last_pos_update has to be initialized yet?
+      return (rclcpp::Clock().now().seconds() - last_pos_update_.seconds()) <= conf_.max_pos_delay_time;
     }
 
+    // TODO timer starting and stopping are placed only in callbacks: as a single threading program can be considered safe?
+    //    (mind that CallKCL is not a cb but it does stop the timer at the beginning)
     void startTracking() {
       active_ = true;
       checkProgressTimer_->reset();
@@ -179,12 +159,11 @@ private:
     void stopTracking() {
       checkProgressTimer_->cancel();
       active_ = false;
-      planner = path_planner();
     }
 
-    Eigen::Vector2d GetLocal2d(ctb::LatLong point);
+    Eigen::Vector2d GetLocal(ctb::LatLong point, bool NED = false) const;
 
-    ctb::LatLong GetAbsolute(Eigen::Vector2d pointLocalUTM_2d);
+    ctb::LatLong GetLatLong(Eigen::Vector2d pos_2d, bool NED = false) const;
 
     void addObstacle(const Obstacle &obs);
 
@@ -201,6 +180,60 @@ private:
     void status_pub_callback();
 
     void coordinates_pub();
+
+    void loadConf(bool print = false){
+      libconfig::Config cfg_;
+      std::string ulisse_avoidance_dir = ament_index_cpp::get_package_share_directory("ulisse_avoidance");
+      std::string ulisse_avoidance_dir_conf = ulisse_avoidance_dir;
+      ulisse_avoidance_dir_conf.append("/conf/configuration.cfg");
+      //std::cout<<ulisse_avoidance_dir_conf<<std::endl;
+      cfg_.readFile(ulisse_avoidance_dir_conf.c_str());
+      conf_.colregs = cfg_.lookup("colregs");
+      conf_.centroid.latitude = cfg_.lookup("centroid.latitude");
+      conf_.centroid.longitude = cfg_.lookup("centroid.longitude");
+      conf_.rotational_speed = cfg_.lookup("rotational_speed");
+      conf_.better_path_distance_perc = cfg_.lookup("better_path_distance_perc");
+      conf_.max_pos_delay_time = cfg_.lookup("max_pos_delay_time");
+      conf_.check_progress_rate = cfg_.lookup("check_progress_rate");
+      conf_.status_pub_rate = cfg_.lookup("status_pub_rate");
+      conf_.obs_expired_time = cfg_.lookup("obs_expired_time");
+      conf_.waypoint_acceptance_radius = cfg_.lookup("waypoint_acceptance_radius");
+
+      if(print){
+        std::cout << "Loaded configuration:\n"
+                  << "  - COLREGS COMPLIANCE: " << conf_.colregs << "\n"
+                  << "  - Centroid: { " << conf_.centroid.latitude << ", " << conf_.centroid.longitude << " }\n"
+                  << "  - Considering the vehicles turns at " << conf_.rotational_speed << " rad/s\n"
+                  << "  - Path following progress is checked every " << conf_.check_progress_rate << "s\n"
+                  << "  - Inner waypoints acceptance radius: " << conf_.waypoint_acceptance_radius << "m\n"
+                  << "  - New path is followed if shorter than " << (int)conf_.better_path_distance_perc*100 << "% of current one\n"
+                  << "  - Avoidance status is updated every " << conf_.status_pub_rate << "s\n"
+                  << "  - Obstacles are ignored " << conf_.obs_expired_time << "s after the last status update\n"
+                  << "  - Avoidance stops " << conf_.max_pos_delay_time << "s after the last vehicle position update\n"
+                  << std::endl;
+      }
+    }
+
+
+    void printPath() const{
+      std::cout << std::setprecision(3);
+      Path temp = path_;
+      temp.UpdateMetrics(GetLocal(vh_position_), vh_heading_);
+      temp.print();
+      std::cout<<" Waypoint list:"<<std::endl;
+      std::cout << std::setprecision(8);
+      while(!temp.empty()){
+        auto node = temp.top();
+        ctb::LatLong pos = GetLatLong(node.position);
+        std::cout << "   - time: " << temp.top().time << "  Pos: " << pos.latitude << " " << pos.longitude;
+        if(node.obs_ptr != nullptr){
+          std::cout << "   Obs: " << node.obs_ptr->id << "/" << (vx_id) node.vx << "  reaching speed: " << node.speed_to_it;
+        }
+        std::cout << std::endl;
+        temp.pop();
+      }
+      std::cout << std::setprecision(3);
+    }
 
 };
 
