@@ -89,6 +89,7 @@ namespace nav {
         }
 
         filterEnable_ = true;
+        // Check for first measurement
         isFirst_ = true;
         state_ = Eigen::VectorXd::Zero(stateDim_);
 
@@ -684,7 +685,7 @@ namespace nav {
         stbdRPMMeasurement_->Covariance().diagonal() = covarianceDiag;
         // Load the initial state and covariance and the model covariance
 
-        // State dimention
+        // State dimension
         const libconfig::Setting& state = ekf["state"];
 
         if (!ctb::GetParam(state, stateDim_, "dim"))
