@@ -40,14 +40,10 @@ public:
               (ulisse_msgs::topicnames::control_avoidance_cmd_service,
                std::bind(&OalInterfaceNode::handleComputePathRequest, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
       // SUBSCRIBING
-      //  Position sub
-      pos_subscription_ = create_subscription<ulisse_msgs::msg::GPSData>
-              (ulisse_msgs::topicnames::sensor_gps_data, qos_sensor,
-               std::bind(&OalInterfaceNode::PosCB, this, std::placeholders::_1));
-      //  Heading sub
-      head_subscription_ = create_subscription<ulisse_msgs::msg::NavFilterData>
+      //  Nav Filter sub
+      navFilter_subscription_ = create_subscription<ulisse_msgs::msg::NavFilterData>
               (ulisse_msgs::topicnames::nav_filter_data, qos_sensor,
-               std::bind(&OalInterfaceNode::HeadCB, this, std::placeholders::_1));
+               std::bind(&OalInterfaceNode::NavFilterCB, this, std::placeholders::_1));
       //  Obs sub
       obs_subscription_ = create_subscription<ulisse_msgs::msg::Obstacle>(
               ulisse_msgs::topicnames::obstacle, qos_sensor,
@@ -104,8 +100,7 @@ private:
 
     rclcpp::Client<ulisse_msgs::srv::ControlCommand>::SharedPtr command_srv_;
     rclcpp::Service<ulisse_msgs::srv::ComputeAvoidancePath>::SharedPtr compute_path_service_;
-    rclcpp::Subscription<ulisse_msgs::msg::GPSData>::SharedPtr pos_subscription_;
-    rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr head_subscription_;
+    rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr navFilter_subscription_;
     rclcpp::Subscription<ulisse_msgs::msg::Obstacle>::SharedPtr obs_subscription_;
     rclcpp::Subscription<ulisse_msgs::msg::VehicleStatus>::SharedPtr vhStatus_subscription_;
     rclcpp::Publisher<ulisse_msgs::msg::AvoidanceStatus>::SharedPtr avoidanceStatusPub_;
@@ -114,13 +109,13 @@ private:
     rclcpp::TimerBase::SharedPtr checkProgressTimer_;
 
     // Send KCL new waypoint to reach
-    bool CallKCL(bool hold_cmd = false);
+    bool CallKCL(const std::string& cmd_type = ulisse::commands::ID::latlong);
 
     // Look for a path to GUI given goal, save it in path_
     bool ComputePath(Path& path);
 
     // Look if path_ still doable with current env data
-    bool CheckPath();
+    bool CheckPath(Path& path);
 
     // Callbacks
     // Search for path to GUI-sent new goal and make KCL track it
@@ -129,10 +124,7 @@ private:
             const std::shared_ptr <ulisse_msgs::srv::ComputeAvoidancePath::Request>& request,
             const std::shared_ptr <ulisse_msgs::srv::ComputeAvoidancePath::Response>& response);
 
-    // New position available, update
-    void PosCB(ulisse_msgs::msg::GPSData::SharedPtr msg);
-
-    void HeadCB(ulisse_msgs::msg::NavFilterData::SharedPtr msg);
+    void NavFilterCB(ulisse_msgs::msg::NavFilterData::SharedPtr msg);
 
     // New obstacles info available, update
     void ObstacleCB(ulisse_msgs::msg::Obstacle::SharedPtr msg);
@@ -149,8 +141,7 @@ private:
       return (rclcpp::Clock().now().seconds() - last_pos_update_.seconds()) <= conf_.max_pos_delay_time;
     }
 
-    // TODO timer starting and stopping are placed only in callbacks: as a single threading program can be considered safe?
-    //    (mind that CallKCL is not a cb but it does stop the timer at the beginning)
+    // Mind that timer starting and stopping are placed only in callbacks (single thread node)
     void startTracking() {
       active_ = true;
       checkProgressTimer_->reset();
@@ -227,7 +218,25 @@ private:
         ctb::LatLong pos = GetLatLong(node.position);
         std::cout << "   - time: " << temp.top().time << "  Pos: " << pos.latitude << " " << pos.longitude;
         if(node.obs_ptr != nullptr){
-          std::cout << "   Obs: " << node.obs_ptr->id << "/" << (vx_id) node.vx << "  reaching speed: " << node.speed_to_it;
+          switch (node.vx){
+            case 0:
+              std::cout << "   Obs: " << node.obs_ptr->id << "/FR reaching speed: " << node.speed_to_it;
+              break;
+            case 1:
+              std::cout << "   Obs: " << node.obs_ptr->id << "/FL reaching speed: " << node.speed_to_it;
+              break;
+            case 2:
+              std::cout << "   Obs: " << node.obs_ptr->id << "/RR reaching speed: " << node.speed_to_it;
+              break;
+            case 3:
+              std::cout << "   Obs: " << node.obs_ptr->id << "/RL reaching speed: " << node.speed_to_it;
+              break;
+            case 5:
+              std::cout << "   Obs: " << node.obs_ptr->id << "/W reaching speed: " << node.speed_to_it;
+              break;
+            default:
+              std::cout << " <Obs has undefined vx ?!?!> "<<std::endl;
+          }
         }
         std::cout << std::endl;
         temp.pop();
