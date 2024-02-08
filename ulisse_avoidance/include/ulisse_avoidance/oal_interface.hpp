@@ -33,8 +33,12 @@ public:
       RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Loading configuration file..");
       loadConf(true);
 
+      client_cb_group_ = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
+      timer_cb_group_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+
       // KCL cmd service client
-      command_srv_ = create_client<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service);
+      command_srv_ = create_client<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service, rmw_qos_profile_services_default,
+                                                                     client_cb_group_);
       // Avoidance cmd service server
       compute_path_service_ = create_service<ulisse_msgs::srv::ComputeAvoidancePath>
               (ulisse_msgs::topicnames::control_avoidance_cmd_service,
@@ -69,8 +73,9 @@ public:
       //  Check path following progress timer
       checkProgressTimer_ = create_wall_timer(
               std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<double>(conf_.check_progress_rate)),
-              std::bind(&OalInterfaceNode::CheckProgress, this));
+              std::bind(&OalInterfaceNode::CheckProgress, this), client_cb_group_);
 
+      checkProgressTimer_->cancel();
       RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Avoidance is ready.");
     }
 
@@ -96,6 +101,7 @@ private:
     std::vector<std::string> overtaking_list_;
 
     bool active_ = false;
+    bool sendNew = false;
     std::string last_known_vhStatus_ = ulisse::states::ID::hold;
 
     rclcpp::Client<ulisse_msgs::srv::ControlCommand>::SharedPtr command_srv_;
@@ -107,6 +113,9 @@ private:
     rclcpp::Publisher<ulisse_msgs::msg::CoordinateList>::SharedPtr coordinatesPub_;
     rclcpp::TimerBase::SharedPtr avoidanceStatusTimer_;
     rclcpp::TimerBase::SharedPtr checkProgressTimer_;
+    rclcpp::CallbackGroup::SharedPtr client_cb_group_;
+    rclcpp::CallbackGroup::SharedPtr timer_cb_group_;
+
 
     // Send KCL new waypoint to reach
     bool CallKCL(const std::string& cmd_type = ulisse::commands::ID::latlong);
