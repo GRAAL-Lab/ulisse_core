@@ -14,6 +14,16 @@ find_package(rclcpp REQUIRED)
 find_package(ctrl_toolbox REQUIRED)
 find_package(oal REQUIRED)
 
+# Add files in the tree of "Projects" view in QtCreator
+file(GLOB_RECURSE SOURCE_FILES
+    "msg/*.msg"
+    "*.xml"
+    "launch/*.py"
+    "conf/*.yaml"
+    "conf/*.conf"
+    "include/*.hpp"
+)
+
 include_directories(
         include
         ${ulisse_msgs_INCLUDE_DIRS}
@@ -66,7 +76,7 @@ endif()
 
 install(DIRECTORY
         conf
-        launch
+#        launch
         DESTINATION share/${PROJECT_NAME}
         )
 
