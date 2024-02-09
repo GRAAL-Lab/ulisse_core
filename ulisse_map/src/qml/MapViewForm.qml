@@ -87,8 +87,8 @@ RowLayout {
         id: mapsidebar
         Layout.fillHeight: true
         Layout.minimumHeight: 150
-        Layout.minimumWidth: 320
-        Layout.preferredWidth: 320
+        Layout.minimumWidth: 330
+        Layout.preferredWidth: 330
         Layout.maximumWidth: 350
         //Material.elevation: myElevation
         Material.accent: grey

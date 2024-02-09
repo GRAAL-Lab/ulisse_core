@@ -81,9 +81,9 @@ public:
     Q_INVOKABLE bool sendHoldCommand(double radius);
 
     //Tesi Depalo
-    Q_INVOKABLE bool sendLatLongAvoidanceCommand(const QGeoCoordinate& goal, double radius);
+    Q_INVOKABLE bool sendLatLongAvoidanceCommand(const QGeoCoordinate& goal, double radius, double speedref);
 
-    Q_INVOKABLE bool sendLatLongCommand(const QGeoCoordinate& goal, double radius);
+    Q_INVOKABLE bool sendLatLongCommand(const QGeoCoordinate& goal, double radius, double speedref);
     Q_INVOKABLE bool sendSurgeHeadingCommand(double surge, double heading);
     Q_INVOKABLE bool sendSurgeYawRateCommand(double surge, double yawrate);
     Q_INVOKABLE bool sendEnableReference(bool activate);

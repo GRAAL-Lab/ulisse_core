@@ -18,7 +18,7 @@ namespace states {
         std::shared_ptr<ikcl::SafetyBoundaries> safetyBoundariesTask_;
         std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentSafetyTask_;
 
-        double minHeadingError_, maxHeadingError_;
+        double minHeadingError_, maxHeadingError_, maxVehicleSpeed_;
 
     public:
         std::shared_ptr<ControlData> ctrlData; // [x y]

@@ -401,18 +401,19 @@ bool CommandWrapper::sendHoldCommand(double radius)
     return SendCommandRequest(serviceReq);
 }
 
-bool CommandWrapper::sendLatLongCommand(const QGeoCoordinate& goal, double radius)
+bool CommandWrapper::sendLatLongCommand(const QGeoCoordinate& goal, double radius, double ref_speed)
 {
     auto serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
     serviceReq->command_type = ulisse::commands::ID::latlong;
     serviceReq->latlong_cmd.goal.latitude = goal.latitude();
     serviceReq->latlong_cmd.goal.longitude = goal.longitude();
     serviceReq->latlong_cmd.acceptance_radius = radius;
+    serviceReq->latlong_cmd.ref_speed = ref_speed;
     return SendCommandRequest(serviceReq);
 }
 
 /// Tesi Depalo
-bool CommandWrapper::sendLatLongAvoidanceCommand(const QGeoCoordinate& goal, double radius)
+bool CommandWrapper::sendLatLongAvoidanceCommand(const QGeoCoordinate& goal, double radius, double ref_speed)
 {
   bool COLREGS = true; // TODO make it selectable
   auto serviceReq = std::make_shared<ulisse_msgs::srv::ComputeAvoidancePath::Request>();
@@ -432,6 +433,7 @@ bool CommandWrapper::sendLatLongAvoidanceCommand(const QGeoCoordinate& goal, dou
   serviceReq->latlong_cmd.goal.latitude = goal.latitude();
   serviceReq->latlong_cmd.goal.longitude = goal.longitude();
   serviceReq->latlong_cmd.acceptance_radius = radius;
+  serviceReq->latlong_cmd.ref_speed = ref_speed;
   serviceReq->colregs_compliant = COLREGS;
   serviceReq->velocities = velocities;
 
@@ -446,7 +448,7 @@ bool CommandWrapper::sendLatLongAvoidanceCommand(const QGeoCoordinate& goal, dou
       RCLCPP_ERROR_STREAM(this->get_logger(), result_msg.c_str());
     } else {
       auto result = result_future.get();
-      result_msg = " Avoidance service returned: " + result->res;
+      result_msg = " Avoidance service returned: " + std::to_string(result->res);
       RCLCPP_INFO_STREAM(this->get_logger(), result_msg);
     }
     serviceAvailable = true;

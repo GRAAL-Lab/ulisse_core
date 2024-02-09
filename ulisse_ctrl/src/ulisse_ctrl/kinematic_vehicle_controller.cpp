@@ -396,7 +396,7 @@ void VehicleController::CommandsHandler(const std::shared_ptr<rmw_request_id_t> 
 
             std::cout << "Received Command LatLong" << std::endl;
             if(!commandLatLong_.SetGoTo(LatLong(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude),
-                    request->latlong_cmd.acceptance_radius)){
+                    request->latlong_cmd.acceptance_radius, request->latlong_cmd.ref_speed)){
                 response->res = "CommandAnswer::fail - Malformed LatLong Message.";
                 ret = fsm::retval::fail;
             }

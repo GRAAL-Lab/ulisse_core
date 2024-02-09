@@ -23,6 +23,7 @@ file(GLOB_RECURSE SOURCE_FILES
     "conf/*.conf"
     "include/*.hpp"
 )
+add_custom_target(.ProjectFiles. SOURCES ${SOURCE_FILES})
 
 include_directories(
         include
@@ -78,7 +79,7 @@ install(DIRECTORY
         conf
 #        launch
         DESTINATION share/${PROJECT_NAME}
-        )
+)
 
 
 ament_export_dependencies(ament_cmake)

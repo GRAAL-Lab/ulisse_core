@@ -2,7 +2,6 @@
 #define ULISSE_CTRL_STATEMOVE_HPP
 
 #include "ulisse_ctrl/states/generic_state.hpp"
-//#include "ulisse_ctrl/states/state_hold.hpp"
 
 namespace ulisse {
 
@@ -19,16 +18,13 @@ namespace states {
         ~StateLatLong() override;
         fsm::retval OnEntry() override;
         fsm::retval Execute() override;
+        fsm::retval OnExit() override;
 
         LatLong goalPosition;
         double goalHeading;
         double goalDistance;
         double acceptanceRadius;
-
-        // Classe PathController
-
-        // Variabili ostacoli
-        // Variabili polyline
+        double ref_speed;
 
         bool ConfigureStateFromFile(libconfig::Config& confObj) override;
     };

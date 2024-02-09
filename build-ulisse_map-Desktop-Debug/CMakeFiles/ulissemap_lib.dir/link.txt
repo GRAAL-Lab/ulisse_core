@@ -1,0 +1,2 @@
+/usr/bin/ar qc libulissemap_lib.a CMakeFiles/ulissemap_lib.dir/ulissemap_lib_autogen/mocs_compilation.cpp.o CMakeFiles/ulissemap_lib.dir/src/feedbackupdater.cpp.o CMakeFiles/ulissemap_lib.dir/src/taskdataupdater.cpp.o CMakeFiles/ulissemap_lib.dir/src/commandwrapper.cpp.o CMakeFiles/ulissemap_lib.dir/src/addonsbridge.cpp.o
+/usr/bin/ranlib libulissemap_lib.a

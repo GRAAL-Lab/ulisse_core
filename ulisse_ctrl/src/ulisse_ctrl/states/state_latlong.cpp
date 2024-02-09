@@ -8,8 +8,10 @@ namespace states {
 
     StateLatLong::StateLatLong()
     {
+        // Setting some default values
         maxHeadingError_ = M_PI / 16;
         minHeadingError_ = M_PI / 32;
+        maxVehicleSpeed_ = 4.0;
     }
 
     StateLatLong::~StateLatLong() { }
@@ -17,10 +19,11 @@ namespace states {
     bool StateLatLong::ConfigureStateFromFile(libconfig::Config& confObj)
     {
         const libconfig::Setting& root = confObj.getRoot();
+        if (!ctb::GetParam(root, maxVehicleSpeed_, "maxVehicleSpeed"))
+            return false;
+
         const libconfig::Setting& states = root["states"];
-
         const libconfig::Setting& state = states.lookup(ulisse::states::ID::latlong);
-
         if (!ctb::GetParam(state, maxHeadingError_, "maxHeadingError"))
             return false;
         if (!ctb::GetParam(state, minHeadingError_, "minHeadingError"))
@@ -30,7 +33,7 @@ namespace states {
 
     fsm::retval StateLatLong::OnEntry()
     {
-        //set tasks
+        // Set tasks
         safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
         absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
         cartesianDistanceTask_ = std::dynamic_pointer_cast<ikcl::CartesianDistance>(tasksMap.find(ulisse::task::asvCartesianDistance)->second.task);
@@ -42,13 +45,17 @@ namespace states {
             return fsm::fail;
         }
 
-        /**
-         * Sottoscrizione ai topic ostacolo
-         */
+        // Saturate the input value between min and max
+        ref_speed = std::clamp(ref_speed, 0.0, maxVehicleSpeed_);
+        auto taskParams = cartesianDistanceTask_->TaskParameter();
+        taskParams.saturation = ref_speed;
 
+        // Setting the gain like this ensures that "v_ref > ref_speed"
+        // for distances greater than the acceptance radius.
+        taskParams.gain = ref_speed/acceptanceRadius;
+        cartesianDistanceTask_->TaskParameter() = taskParams;
     }
 
-    // Callback ostacoli
 
     fsm::retval StateLatLong::Execute()
     {
@@ -84,20 +91,6 @@ namespace states {
         safetyBoundariesTask_->ExternalActivationFunction() = taskGainSafety * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
 
 
-
-
-        //goto task
-        /** if (we have obstacles){
-         *
-         *
-         *      pathController.computePath(ctrlData->inertialF_linearPosition, posizioni ostacoli, polyline)
-         *
-         *
-         *
-         *      ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, polyine(1), goalDistance, goalHeading);
-         * } else {
-         */
-
         ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, goalPosition, goalDistance, goalHeading);
 
         // }
@@ -132,6 +125,17 @@ namespace states {
         }
 
         //std::cout << "STATE LATLONG" << std::endl;
+
+        return fsm::ok;
+    }
+
+    fsm::retval StateLatLong::OnExit()
+    {
+        // Defaulting to default values
+        auto taskParams = cartesianDistanceTask_->TaskParameter();
+        taskParams.saturation = taskParams.conf_saturation;
+        taskParams.gain = taskParams.conf_gain;
+        cartesianDistanceTask_->TaskParameter() = taskParams;
 
         return fsm::ok;
     }
