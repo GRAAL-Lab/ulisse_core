@@ -17,6 +17,7 @@ find_package(rmw_implementation REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(Qt5Core REQUIRED)
+find_package(Qt5Widgets REQUIRED)
 find_package(Qt5Quick REQUIRED)
 find_package(Qt5QuickControls2 REQUIRED)
 find_package(Qt5Location REQUIRED)
@@ -44,6 +45,7 @@ include_directories(
     ${std_msgs_INCLUDE_DIRS}
     ${ament_index_INCLUDE_DIRS}
     ${Qt5Core_INCLUDE_DIRS}
+    ${Qt5Widgets_INCLUDE_DIRS}
     ${Qt5Quick_INCLUDE_DIRS}
     ${ulisse_msgs_INCLUDE_DIRS}
     ${ulisse_ctrl_INCLUDE_DIRS}
@@ -75,6 +77,7 @@ ament_target_dependencies(${PROJECT_NAME}_node
 )
 target_link_libraries(${PROJECT_NAME}_node
         Qt5::Core
+        Qt5::Widgets
         Qt5::Quick
         Qt5::Location
         Qt5::Positioning
