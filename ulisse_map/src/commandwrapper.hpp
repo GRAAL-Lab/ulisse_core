@@ -25,13 +25,12 @@
 class CommandWrapper : public QObject, rclcpp::Node {
     Q_OBJECT
     QQmlApplicationEngine* appEngine_;
-    QScopedPointer<QTimer> checkErrorTimer_, surgeHeadingPubTimer_, surgeYawRatePubTimer_, commandTimeoutTimer_;
+    QScopedPointer<QTimer> surgeHeadingPubTimer_, surgeYawRatePubTimer_, commandTimeoutTimer_; //checkErrorTimer_
     QObject *toastMgrObj_, *cmdTimeoutObj_;
     QObject *cruiseSpeedObj_, *goalDistanceObj_, *waypointPathObj_, *waypointRadiusObj_, *loopPathObj_, *mapMouseAreaObj_;
     QStringList polypathTypes;
 
     Q_PROPERTY(QStringList polypath_types READ get_polypath_types NOTIFY startup_info_read)
-
 
     rclcpp::Client<ulisse_msgs::srv::ControlCommand>::SharedPtr command_srv_;
     rclcpp::Client<ulisse_msgs::srv::SetCruiseControl>::SharedPtr cruise_srv_;
@@ -81,19 +80,19 @@ public:
     Q_INVOKABLE bool sendHoldCommand(double radius);
 
     //Tesi Depalo
-    Q_INVOKABLE bool sendLatLongAvoidanceCommand(const QGeoCoordinate& goal, double radius, double speedref);
+    Q_INVOKABLE bool sendLatLongAvoidanceCommand(const QGeoCoordinate& goal, double radius, double speedref, bool COLREGS);
 
     Q_INVOKABLE bool sendLatLongCommand(const QGeoCoordinate& goal, double radius, double speedref);
     Q_INVOKABLE bool sendSurgeHeadingCommand(double surge, double heading);
     Q_INVOKABLE bool sendSurgeYawRateCommand(double surge, double yawrate);
     Q_INVOKABLE bool sendEnableReference(bool activate);
     Q_INVOKABLE bool toggleEnginePowerButtons();
-    Q_INVOKABLE bool startPath();
-    Q_INVOKABLE void stopPath();
-    Q_INVOKABLE void cancelPath();
-    Q_INVOKABLE void resumePath();
-    Q_INVOKABLE bool goToNextWaypoint();
-    Q_INVOKABLE bool goToPreviousWaypoint();
+    //Q_INVOKABLE bool startPath();
+    //Q_INVOKABLE void stopPath();
+    //Q_INVOKABLE void cancelPath();
+    //Q_INVOKABLE void resumePath();
+    //Q_INVOKABLE bool goToNextWaypoint();
+    //Q_INVOKABLE bool goToPreviousWaypoint();
     Q_INVOKABLE QVector<double> createPathFromPolygon(const QString& pathJsonData);
     Q_INVOKABLE QPoint latLong2LocalUTM(QGeoCoordinate latlong, QGeoCoordinate centroid);
     Q_INVOKABLE QGeoCoordinate localUTM2LatLong(QPoint UTM_point, QGeoCoordinate centroid);
@@ -106,7 +105,7 @@ public:
 
 
 public slots:
-    void check_error_slot();
+    //void check_error_slot();
     void publish_surge_heading();
     void publish_surge_yawrate();
     void stop_command_publisher();

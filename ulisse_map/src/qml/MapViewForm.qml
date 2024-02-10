@@ -137,7 +137,7 @@ RowLayout {
                     id: bar_manage
                     height: 130
                     Layout.fillWidth: true
-                    Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom
+                    Layout.alignment: Qt.AlignCenter | Qt.AlignBottom
                     Layout.bottomMargin: 10
                 }
             }

@@ -40,20 +40,24 @@ namespace states {
         alignToTargetTask_ = std::dynamic_pointer_cast<ikcl::AlignToTarget>(tasksMap.find(ulisse::task::asvAngularPosition)->second.task);
 
         if (actionManager->SetAction(ulisse::action::goTo, true)) {
+
+            // Saturate the input value between min and max
+            ref_speed = std::clamp(ref_speed, 0.0, maxVehicleSpeed_);
+            auto taskParams = cartesianDistanceTask_->TaskParameter();
+            taskParams.saturation = ref_speed;
+
+            // Setting the gain like this ensures that "v_ref > ref_speed"
+            // for distances greater than the acceptance radius.
+            taskParams.gain = ref_speed/acceptanceRadius;
+            cartesianDistanceTask_->TaskParameter() = taskParams;
+
+            std::cout << "[StateLatLong] Goal (lat,long): " << goalPosition << std::endl;
+            std::cout << "[StateLatLong] Ref. Speed:" << ref_speed << ", Acceptance Radius:" << acceptanceRadius << std::endl;
+
             return fsm::ok;
         } else {
             return fsm::fail;
         }
-
-        // Saturate the input value between min and max
-        ref_speed = std::clamp(ref_speed, 0.0, maxVehicleSpeed_);
-        auto taskParams = cartesianDistanceTask_->TaskParameter();
-        taskParams.saturation = ref_speed;
-
-        // Setting the gain like this ensures that "v_ref > ref_speed"
-        // for distances greater than the acceptance radius.
-        taskParams.gain = ref_speed/acceptanceRadius;
-        cartesianDistanceTask_->TaskParameter() = taskParams;
     }
 
 
@@ -131,7 +135,7 @@ namespace states {
 
     fsm::retval StateLatLong::OnExit()
     {
-        // Defaulting to default values
+        // Returing to default values
         auto taskParams = cartesianDistanceTask_->TaskParameter();
         taskParams.saturation = taskParams.conf_saturation;
         taskParams.gain = taskParams.conf_gain;

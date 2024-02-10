@@ -37,7 +37,7 @@ CommandWrapper::~CommandWrapper()
 void CommandWrapper::Init(QQmlApplicationEngine* engine)
 {
     appEngine_ = engine;
-    checkErrorTimer_.reset(new QTimer());
+    //checkErrorTimer_.reset(new QTimer());
     surgeHeadingPubTimer_.reset(new QTimer());
     surgeYawRatePubTimer_.reset(new QTimer());
     commandTimeoutTimer_.reset(new QTimer());
@@ -48,7 +48,7 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
     fbkReceived_ = false;
 
     // Connecting the timer endings (SIGNAL timeout()) to some speicific functions defined in the SLOTS
-    QObject::connect(checkErrorTimer_.get(), SIGNAL(timeout()), this, SLOT(check_error_slot()));
+    //QObject::connect(checkErrorTimer_.get(), SIGNAL(timeout()), this, SLOT(check_error_slot()));
     QObject::connect(surgeHeadingPubTimer_.get(), SIGNAL(timeout()), this, SLOT(publish_surge_heading()));
     QObject::connect(surgeYawRatePubTimer_.get(), SIGNAL(timeout()), this, SLOT(publish_surge_yawrate()));
     QObject::connect(commandTimeoutTimer_.get(), SIGNAL(timeout()), this, SLOT(stop_command_publisher()));
@@ -93,7 +93,6 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
 
 void CommandWrapper::RegisterPublishersAndSubscribers()
 {
-
   // Tesi Depalo
   avoidance_path_srv_ = this->create_client<ulisse_msgs::srv::ComputeAvoidancePath>(ulisse_msgs::topicnames::control_avoidance_cmd_service);
 
@@ -413,9 +412,9 @@ bool CommandWrapper::sendLatLongCommand(const QGeoCoordinate& goal, double radiu
 }
 
 /// Tesi Depalo
-bool CommandWrapper::sendLatLongAvoidanceCommand(const QGeoCoordinate& goal, double radius, double ref_speed)
+bool CommandWrapper::sendLatLongAvoidanceCommand(const QGeoCoordinate& goal, double radius, double ref_speed, bool COLREGS)
 {
-  bool COLREGS = true; // TODO make it selectable
+  //bool COLREGS = true; // TODO make it selectable
   auto serviceReq = std::make_shared<ulisse_msgs::srv::ComputeAvoidancePath::Request>();
 
   std::vector<double> velocities;
@@ -553,108 +552,108 @@ bool CommandWrapper::toggleEnginePowerButtons()
     return serviceAvailable;
 }
 
-bool CommandWrapper::startPath()
-{
-    wpCurrentIndex_ = 0;
-    wpRadius_ = (waypointRadiusObj_->property("text")).toDouble();
-    waypoint_path_ = (waypointPathObj_->property("path")).value<QVariantList>();
-    qDebug() << "Sending Path ( size: " << waypoint_path_.size() << ")";
+//bool CommandWrapper::startPath()
+//{
+//    wpCurrentIndex_ = 0;
+//    wpRadius_ = (waypointRadiusObj_->property("text")).toDouble();
+//    waypoint_path_ = (waypointPathObj_->property("path")).value<QVariantList>();
+//    qDebug() << "Sending Path ( size: " << waypoint_path_.size() << ")";
+//
+//    for (int i = 0; i < waypoint_path_.size(); i++) {
+//        auto coordinate = qvariant_cast<QGeoCoordinate>(waypoint_path_.at(i));
+//        qDebug() << i << ": "
+//                 << "LAT " << coordinate.latitude()
+//                 << ", LONG " << coordinate.longitude();
+//    }
+//    qDebug() << "Acceptance Radius: " << wpRadius_;
+//    qDebug() << "Loop Over Path: " << (loopPathObj_->property("checked")).toBool();
+//
+//    bool ret = sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), 0);
+//
+//    if (ret) {
+//        checkErrorTimer_->start(errorCheckInterval_);
+//    }
+//
+//    return ret;
+//}
 
-    for (int i = 0; i < waypoint_path_.size(); i++) {
-        auto coordinate = qvariant_cast<QGeoCoordinate>(waypoint_path_.at(i));
-        qDebug() << i << ": "
-                 << "LAT " << coordinate.latitude()
-                 << ", LONG " << coordinate.longitude();
-    }
-    qDebug() << "Acceptance Radius: " << wpRadius_;
-    qDebug() << "Loop Over Path: " << (loopPathObj_->property("checked")).toBool();
+//void CommandWrapper::stopPath()
+//{
+//    checkErrorTimer_->stop();
+//    wpRadius_ = (waypointRadiusObj_->property("text")).toDouble();
+//    sendHoldCommand(wpRadius_);
+//}
 
-    bool ret = sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), 0);
+//void CommandWrapper::cancelPath()
+//{
+//    checkErrorTimer_->stop();
+//    sendHaltCommand();
+//}
 
-    if (ret) {
-        checkErrorTimer_->start(errorCheckInterval_);
-    }
+//void CommandWrapper::resumePath()
+//{
+//    checkErrorTimer_->start(errorCheckInterval_);
+//    wpRadius_ = (waypointRadiusObj_->property("text")).toDouble();
+//
+//    if (wpCurrentIndex_ < waypoint_path_.size()) {
+//        sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), wpRadius_);
+//    }
+//    // FIXME: what if resuming a loop path, and we were at the last waypoint?
+//}
 
-    return ret;
-}
+//void CommandWrapper::check_error_slot()
+//{
+//    rclcpp::spin_some(this->get_node_base_interface());
+//
+//    if (fbkReceived_) {
+//        if (feedbackGuiMsg_.goal_distance < wpRadius_) {
+//            goToNextWaypoint();
+//        }
+//        //TODO: how is the client notified of the end of the path? It is necessary?
+//    }
+//}
 
-void CommandWrapper::stopPath()
-{
-    checkErrorTimer_->stop();
-    wpRadius_ = (waypointRadiusObj_->property("text")).toDouble();
-    sendHoldCommand(wpRadius_);
-}
+//bool CommandWrapper::goToNextWaypoint()
+//{
+//    bool ret = false;
+//    wpCurrentIndex_++;
+//
+//    if (wpCurrentIndex_ < waypoint_path_.size()) {
+//        ret = sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), 0);
+//    } else {
+//        if ((loopPathObj_->property("checked")).toBool()) {
+//            ret = startPath();
+//        } else {
+//            checkErrorTimer_->stop();
+//            wpCurrentIndex_ = waypoint_path_.size() - 1;
+//            sendHoldCommand(wpRadius_);
+//            ret = false;
+//        }
+//    }
+//    std::cout << "[Next] wpCurrentIndex: " << wpCurrentIndex_ << std::endl;
+//
+//    return ret;
+//}
 
-void CommandWrapper::cancelPath()
-{
-    checkErrorTimer_->stop();
-    sendHaltCommand();
-}
-
-void CommandWrapper::resumePath()
-{
-    checkErrorTimer_->start(errorCheckInterval_);
-    wpRadius_ = (waypointRadiusObj_->property("text")).toDouble();
-
-    if (wpCurrentIndex_ < waypoint_path_.size()) {
-        sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), wpRadius_);
-    }
-    // FIXME: what if resuming a loop path, and we were at the last waypoint?
-}
-
-void CommandWrapper::check_error_slot()
-{
-    rclcpp::spin_some(this->get_node_base_interface());
-
-    if (fbkReceived_) {
-        if (feedbackGuiMsg_.goal_distance < wpRadius_) {
-            goToNextWaypoint();
-        }
-        //TODO: how is the client notified of the end of the path? It is necessary?
-    }
-}
-
-bool CommandWrapper::goToNextWaypoint()
-{
-    bool ret = false;
-    wpCurrentIndex_++;
-
-    if (wpCurrentIndex_ < waypoint_path_.size()) {
-        ret = sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), 0);
-    } else {
-        if ((loopPathObj_->property("checked")).toBool()) {
-            ret = startPath();
-        } else {
-            checkErrorTimer_->stop();
-            wpCurrentIndex_ = waypoint_path_.size() - 1;
-            sendHoldCommand(wpRadius_);
-            ret = false;
-        }
-    }
-    std::cout << "[Next] wpCurrentIndex: " << wpCurrentIndex_ << std::endl;
-
-    return ret;
-}
-
-bool CommandWrapper::goToPreviousWaypoint()
-{
-    bool ret = false;
-    wpCurrentIndex_--;
-
-    if (wpCurrentIndex_ >= 0) {
-        ret = sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), 0);
-    } else {
-        wpCurrentIndex_ = 0;
-    }
-    std::cout << "[Prev] wpCurrentIndex: " << wpCurrentIndex_ << std::endl;
-    return ret;
-}
+//bool CommandWrapper::goToPreviousWaypoint()
+//{
+//    bool ret = false;
+//    wpCurrentIndex_--;
+//
+//    if (wpCurrentIndex_ >= 0) {
+//        ret = sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), 0);
+//    } else {
+//        wpCurrentIndex_ = 0;
+//    }
+//    std::cout << "[Prev] wpCurrentIndex: " << wpCurrentIndex_ << std::endl;
+//    return ret;
+//}
 
 void CommandWrapper::StopOngoingTimers()
 {
     surgeHeadingPubTimer_->stop();
     surgeYawRatePubTimer_->stop();
-    checkErrorTimer_->stop();
+    //checkErrorTimer_->stop();
 }
 
 void CommandWrapper::publish_surge_heading()

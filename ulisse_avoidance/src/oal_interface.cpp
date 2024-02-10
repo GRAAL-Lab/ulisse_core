@@ -58,6 +58,7 @@ bool OalInterfaceNode::CallKCL(const std::string &cmd_type) {
             serviceReq->command_type = ulisse::commands::ID::latlong;
             serviceReq->latlong_cmd.goal.latitude = goal.latitude;
             serviceReq->latlong_cmd.goal.longitude = goal.longitude;
+            
             if (path.size() == 1) {
                 // Last wp
                 serviceReq->latlong_cmd.acceptance_radius = radius_;
