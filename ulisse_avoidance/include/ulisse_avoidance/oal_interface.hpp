@@ -32,7 +32,6 @@ public:
       loadConf(true);
 
       nested_cb_group_ = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
-      //timer_cb_group_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
       // KCL cmd service client
       command_srv_ = create_client<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service, rmw_qos_profile_services_default,
@@ -40,7 +39,8 @@ public:
       // Avoidance cmd service server
       compute_path_service_ = create_service<ulisse_msgs::srv::ComputeAvoidancePath>
               (ulisse_msgs::topicnames::control_avoidance_cmd_service,
-               std::bind(&OalInterfaceNode::handleComputePathRequest, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+               std::bind(&OalInterfaceNode::handleComputePathRequest, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
+               rmw_qos_profile_services_default);
       // SUBSCRIBING
       //  Nav Filter sub
       navFilter_subscription_ = create_subscription<ulisse_msgs::msg::NavFilterData>
@@ -83,20 +83,24 @@ private:
 
     int qos_sensor = 10;  // TODO CHECK VALUE AND USE
 
+    // Environment
     ctb::LatLong vh_position_;
     double vh_heading_;
-    rclcpp::Time last_pos_update_, last_check_progress_, last_path_computation_;
     std::vector <ObstacleWithTime> obstacles_;
 
+    // Timestamps
+    rclcpp::Time last_pos_update_, last_check_progress_, last_path_computation_;
+
     // Obstacle Avoidance Library
-    path_planner planner;
+    //path_planner planner;
     Path path_;
+    std::vector<std::string> overtaking_list_;  // useless at the moment
 
     // Goal related
+    bool colregs_;
     std::vector<double> velocities_;
     ctb::LatLong goal_;
     double radius_;
-    std::vector<std::string> overtaking_list_;
 
     bool active_ = false;
     bool sendNew = false;
@@ -112,8 +116,6 @@ private:
     rclcpp::TimerBase::SharedPtr avoidanceStatusTimer_;
     rclcpp::TimerBase::SharedPtr checkProgressTimer_;
     rclcpp::CallbackGroup::SharedPtr nested_cb_group_;
-    //rclcpp::CallbackGroup::SharedPtr timer_cb_group_;
-
 
     // Send KCL new waypoint to reach
     bool CallKCL(const std::string& cmd_type = ulisse::commands::ID::latlong);
@@ -142,7 +144,6 @@ private:
     // Check vehicle progress along trajectory and send commands to KCL
     void CheckProgress();
 
-
     bool isPosUpToDate() {
       // TODO does this return false when last_pos_update has to be initialized yet?
       return (rclcpp::Clock().now().seconds() - last_pos_update_.seconds()) <= conf_.max_pos_delay_time;
@@ -165,7 +166,7 @@ private:
 
     void addObstacle(const Obstacle &obs);
 
-    void SetObssData(const rclcpp::Time& time) {
+    void SetObssData(path_planner& planner, const rclcpp::Time& time) {
       std::vector <Obstacle> obstacles;
       for (const ObstacleWithTime& obs_t: obstacles_) {
         Obstacle obs = obs_t.data;
@@ -184,9 +185,8 @@ private:
       std::string ulisse_avoidance_dir = ament_index_cpp::get_package_share_directory("ulisse_avoidance");
       std::string ulisse_avoidance_dir_conf = ulisse_avoidance_dir;
       ulisse_avoidance_dir_conf.append("/conf/configuration.cfg");
-      //std::cout<<ulisse_avoidance_dir_conf<<std::endl;
       cfg_.readFile(ulisse_avoidance_dir_conf.c_str());
-      conf_.colregs = cfg_.lookup("colregs");
+      //conf_.colregs = cfg_.lookup("colregs");
       conf_.centroid.latitude = cfg_.lookup("centroid.latitude");
       conf_.centroid.longitude = cfg_.lookup("centroid.longitude");
       conf_.rotational_speed = cfg_.lookup("rotational_speed");
@@ -199,7 +199,7 @@ private:
 
       if(print){
         std::cout << "Loaded configuration:\n"
-                  << "  - COLREGS COMPLIANCE: " << conf_.colregs << "\n"
+                  //<< "  - COLREGS COMPLIANCE: " << conf_.colregs << "\n"
                   << "  - Centroid: { " << conf_.centroid.latitude << ", " << conf_.centroid.longitude << " }\n"
                   << "  - Considering the vehicles turns at " << conf_.rotational_speed << " rad/s\n"
                   << "  - Path following progress is checked every " << conf_.check_progress_rate << "s\n"
@@ -227,24 +227,25 @@ private:
         if(node.obs_ptr != nullptr){
           switch (node.vx){
             case 0:
-              std::cout << "   Obs: " << node.obs_ptr->id << "/FR reaching speed: " << node.speed_to_it;
+              std::cout << "   Obs: " << node.obs_ptr->id << "/FR";
               break;
             case 1:
-              std::cout << "   Obs: " << node.obs_ptr->id << "/FL reaching speed: " << node.speed_to_it;
+              std::cout << "   Obs: " << node.obs_ptr->id << "/FL";
               break;
             case 2:
-              std::cout << "   Obs: " << node.obs_ptr->id << "/RR reaching speed: " << node.speed_to_it;
+              std::cout << "   Obs: " << node.obs_ptr->id << "/RR";
               break;
             case 3:
-              std::cout << "   Obs: " << node.obs_ptr->id << "/RL reaching speed: " << node.speed_to_it;
+              std::cout << "   Obs: " << node.obs_ptr->id << "/RL";
               break;
             case 5:
-              std::cout << "   Obs: " << node.obs_ptr->id << "/W reaching speed: " << node.speed_to_it;
+              std::cout << "   Obs: " << node.obs_ptr->id << "/W";
               break;
             default:
               std::cout << " <Obs has undefined vx ?!?!> "<<std::endl;
           }
         }
+        if(node.speed_to_it != 0) std::cout << "   reaching speed: " << node.speed_to_it;
         std::cout << std::endl;
         temp.pop();
       }

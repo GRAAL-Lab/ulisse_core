@@ -4,6 +4,7 @@ void OalInterfaceNode::handleComputePathRequest(
         const std::shared_ptr<rmw_request_id_t> &request_header,
         const std::shared_ptr<ulisse_msgs::srv::ComputeAvoidancePath::Request> &request,
         const std::shared_ptr<ulisse_msgs::srv::ComputeAvoidancePath::Response> &response) {
+
     if (last_known_vhStatus_ == ulisse::states::ID::halt) {
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), " VEHICLE NOT READY (HALT STATE) ");
     } else {
@@ -15,9 +16,22 @@ void OalInterfaceNode::handleComputePathRequest(
             return;
         }
 
-        velocities_ = request->velocities;
+        auto generateRange = [](double start, double end, double step) {
+            std::vector<double> result;
+            for (double i = start; i <= end; i += step) {
+              double num = std::round(i * 100) / 100;
+              if (num != 0) result.push_back(num);
+            }
+            return result;
+        };
+        velocities_ = generateRange(0.1, request->latlong_cmd.ref_speed, 0.1);
+        std::cout<< "vel: ";
+        for(auto vel : velocities_){
+          std::cout<< vel<<", ";
+        }
+        std::cout<<std::endl;
         goal_ = ctb::LatLong(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude);
-        //colregs_ = request->colregs_compliant;    TODO uncomment after making gui able to choose
+        colregs_ = request->colregs_compliant;
         radius_ = request->latlong_cmd.acceptance_radius; // used also for waypoint acceptance
 
         if (ComputePath(path_)) {
@@ -26,13 +40,10 @@ void OalInterfaceNode::handleComputePathRequest(
             last_path_computation_ = rclcpp::Clock().now();
             coordinates_pub();
             sendNew = true;
-            startTracking();
-            //if(CallKCL()){
             response->res = true;
             last_check_progress_ = last_pos_update_;
-            //startTracking();  // starts CheckProgress() timer WAIT IT IS IN CALLKCL ALREADY
+            startTracking();
             return;
-            //}
         }
         response->res = false;
     }
@@ -51,34 +62,30 @@ bool OalInterfaceNode::CallKCL(const std::string &cmd_type) {
         } else {
             // Get point
             Path path = path_;
-            //double speed = path.waypoints.top().vh_speed;
-            // HOW DO I SEND SPEED COMMAND TO ULISSE?
             path.waypoints.pop();
             ctb::LatLong goal = GetLatLong(path.waypoints.top().position);
             serviceReq->command_type = ulisse::commands::ID::latlong;
             serviceReq->latlong_cmd.goal.latitude = goal.latitude;
             serviceReq->latlong_cmd.goal.longitude = goal.longitude;
+            serviceReq->latlong_cmd.ref_speed = path.waypoints.top().speed_to_it;
             
             if (path.size() == 1) {
                 // Last wp
                 serviceReq->latlong_cmd.acceptance_radius = radius_;
             } else {
-                serviceReq->latlong_cmd.acceptance_radius = 0.001;   // TODO  this is a shitty thing, but move_to goes to hold from ulisse_map and makes avoidance stop working
+                serviceReq->latlong_cmd.acceptance_radius = 0.001;  // Let this node decide when inner waypoints have been reached and not KCL
             }
         }
     }
     static std::string result_msg;
-
     if (command_srv_->service_is_ready()) {
         auto result_future = command_srv_->async_send_request(serviceReq);
-        //RCLCPP_INFO(rclcpp::get_logger("rclcpp"), " - sending cmd to KCL");
-        // TODO error if not commented
         std::future_status status = result_future.wait_for(std::chrono::seconds(2));  // timeout to guarantee a graceful finish
         if (status == std::future_status::ready) {
             auto result = result_future.get();
-            //result_msg = "Service returned: " + result->res;
+            result_msg = "Service returned: " + result->res;
             //std::cout << result_msg << std::endl;
-            RCLCPP_INFO_STREAM(this->get_logger(), result_msg);
+          RCLCPP_INFO(this->get_logger(), "%s", result_msg.c_str());
         } else {
             result_msg = "Service call failed :(";
             RCLCPP_ERROR_STREAM(this->get_logger(), result_msg.c_str());
@@ -98,39 +105,29 @@ bool OalInterfaceNode::ComputePath(Path &path) {
     Eigen::Vector2d goal = GetLocal(goal_);
 
     // Sync vh_data and obs data
-    planner = path_planner();
+    path_planner planner;
     planner.SetVhData(v_info);
     planner.SetAccRadius(conf_.waypoint_acceptance_radius);
-    SetObssData(last_pos_update_);
+    SetObssData(planner, last_pos_update_);
     path = Path();
-    if (planner.ComputePath(goal, conf_.colregs, path)) {
-
-        // If close to next wp, ignore it TODO check this is right
-        if (path.size() > 1) {
-            Path path_temp = path;
-            path_temp.pop();
-            if ((GetLocal(vh_position_) - path_temp.top().position).norm() < conf_.waypoint_acceptance_radius) path.pop();
-        } else {
-            std::cout << "!!!!!!!!! execution should never get here" << std::endl;
-        }
-
-        // Only if it is used straightaway
-        /*last_path_computation_ = rclcpp::Clock().now();
-    coordinates_pub();*/
+    if (planner.ComputePath(goal, colregs_, path)) {
+        // If close to next wp, ignore it
+        Path path_temp = path;
+        path_temp.pop();
+        if ((GetLocal(vh_position_) - path_temp.top().position).norm() < conf_.waypoint_acceptance_radius) path.pop();
         return true;
     }
-
     return false;
 }
 
 bool OalInterfaceNode::CheckPath(Path &path) {
     // Update environment info
-    planner = path_planner();
+    path_planner planner;
     Eigen::Vector2d vh_pos = GetLocal(vh_position_);
     VehicleInfo v_info({vh_pos, velocities_, vh_heading_, conf_.rotational_speed});
     planner.SetVhData(v_info);
     planner.SetAccRadius(conf_.waypoint_acceptance_radius);
-    SetObssData(last_pos_update_);
+    SetObssData(planner, last_pos_update_);
 
     return planner.CheckPath(vh_pos, path);
 }
@@ -318,7 +315,7 @@ void OalInterfaceNode::status_pub_callback() {
         path_temp.pop();
         ctb::LatLong next_wp = GetLatLong(path_temp.top().position);
         message.status = "Active";
-        message.colregs_compliant = conf_.colregs;
+        message.colregs_compliant = colregs_;
         message.goal.longitude = goal_.longitude;
         message.goal.latitude = goal_.latitude;
         message.next_wp.longitude = next_wp.longitude;
