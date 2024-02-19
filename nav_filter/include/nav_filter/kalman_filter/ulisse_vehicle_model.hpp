@@ -12,7 +12,7 @@ namespace nav {
 
     public:
         enum class Version {
-            SimplifiedCoMFrame, CompleteBodyFrame
+            SimplifiedCoMFrame, CompleteBodyFrame, CompleteBodyFrameBaseline
         };
         /*
          * @brief Constructor

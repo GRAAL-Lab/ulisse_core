@@ -70,6 +70,10 @@ namespace nav {
         simulatedVelocitySub_ = this->create_subscription<ulisse_msgs::msg::SimulatedVelocitySensor>(ulisse_msgs::topicnames::simulated_velocity_sensor,
             1, std::bind(&NavigationFilter::SimulatedVelocitySensorCB, this, _1));
 
+        USE_GPS.data = true;
+        USE_GPS_Sub = this->create_subscription<std_msgs::msg::Bool>("/ulisse/USE_GPS",
+            1, std::bind(&NavigationFilter::USE_GPS_CB, this, _1));
+
         lastValidGPSTime_ = 0.0;
         lastValidImuTime_ = 0.0;
         lastValidCompassTime_ = 0.0;
@@ -247,11 +251,12 @@ namespace nav {
 
     void NavigationFilter::ExtendedKalmanFilter()
     {
-        if (gpsValid_) {
+        // Added USE_GPS boolean to deliberately ignore the GPS
+        if (gpsValid_ && USE_GPS.data) {
             if (measuresActive_.find("gps")->second) {
 
                 if (isFirst_) {
-                    //Eigen::VectorXd initialState = Eigen::VectorXd::Zero(stateDim_);
+                    // Eigen::VectorXd initialState = Eigen::VectorXd::Zero(stateDim_);
 
                     ctb::LatLong2LocalNED(ctb::LatLong(gpsData_.latitude, gpsData_.longitude), gpsData_.altitude, centroidLocation_, NED_gps_cartesian_);
 
@@ -261,7 +266,7 @@ namespace nav {
                     isFirst_ = false;
                 }
 
-                //The filter use the cartesian coordinates
+                // The filter use the cartesian coordinates
                 ctb::LatLong2LocalNED(ctb::LatLong(gpsData_.latitude, gpsData_.longitude), gpsData_.altitude, centroidLocation_, NED_gps_cartesian_);
                 gpsMeasurement_->MeasureVector() = Eigen::Vector2d { NED_gps_cartesian_.x(), NED_gps_cartesian_.y() };
                 extendedKalmanFilter_->AddMeasurement(gpsMeasurement_);
@@ -288,7 +293,7 @@ namespace nav {
 
         if (magnetometerValid_) {
             if (measuresActive_.find("magnetometer")->second) {
-                //preprocessing: I compensate for the roll and the pitch and then I pretend to have a sensor that measures the yaw
+                // preprocessing: I compensate for the roll and the pitch and then I pretend to have a sensor that measures the yaw
                 magnetometerMeasurement_->MeasureVector() << -atan2(magnetometerData_.orthogonalstrength[1] * cos(state_[3]) - magnetometerData_.orthogonalstrength[2] * sin(state_[3]), magnetometerData_.orthogonalstrength[0] * cos(state_[4]) + magnetometerData_.orthogonalstrength[2] * cos(state_[3]) * sin(state_[4]) + magnetometerData_.orthogonalstrength[1] * sin(state_[4]) * sin(state_[3]));
                 extendedKalmanFilter_->AddMeasurement(magnetometerMeasurement_);
             }
@@ -597,7 +602,9 @@ namespace nav {
             ulisseModelVersion_ = UlisseVehicleModel::Version::SimplifiedCoMFrame;
         } else if (version == 1) {
             ulisseModelVersion_ = UlisseVehicleModel::Version::CompleteBodyFrame;
-        } else {
+        } else if (version == 2) {
+            ulisseModelVersion_ = UlisseVehicleModel::Version::CompleteBodyFrameBaseline;
+        }else {
             return false;
         }
         ulisseModelEKF_ = std::make_shared<UlisseVehicleModel>(UlisseVehicleModel(ulisseModelVersion_));
@@ -804,5 +811,10 @@ namespace nav {
 
     void NavigationFilter::LLCThrustersCB(const ulisse_msgs::msg::LLCThrusters::SharedPtr msg) { llcThrustersData_ = *msg; }
 
+    void NavigationFilter::USE_GPS_CB(const std_msgs::msg::Bool::SharedPtr msg) {
+        USE_GPS = *msg;
+        std::string state = (USE_GPS.data ? "Enabled" : "Disabled");
+        RCLCPP_INFO_STREAM(this->get_logger(), "*** GPS Input " << state << "! ***");
+    }
 }
 }

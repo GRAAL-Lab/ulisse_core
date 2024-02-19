@@ -12,6 +12,7 @@
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <std_msgs/msg/string.hpp>
 #include <std_msgs/msg/float64.hpp>
+#include <std_msgs/msg/bool.hpp>
 #include "ulisse_msgs/msg/compass.hpp"
 #include "ulisse_msgs/msg/gps_data.hpp"
 #include "ulisse_msgs/msg/imu_data.hpp"
@@ -98,6 +99,10 @@ namespace nav {
         double lastValidRightRPMTime_;
         bool gpsValid_, imuValid_, compassValid_, magnetometerValid_, leftRPMValid_, rightRPMValid_;
 
+        // Artificial variable to deliberately ignore the GPS signal (for paper CAMS testing)
+        rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr USE_GPS_Sub;
+        std_msgs::msg::Bool USE_GPS;
+
         int sensorsCheckInterval_;
 
         NavigationFilterParams filterParams_;
@@ -167,6 +172,8 @@ namespace nav {
         void GroundTruthDataCB(const ulisse_msgs::msg::SimulatedSystem::SharedPtr msg);
 
         void LLCThrustersCB(const ulisse_msgs::msg::LLCThrusters::SharedPtr msg);
+
+        void USE_GPS_CB(const std_msgs::msg::Bool::SharedPtr msg);
 
         bool LoadConfiguration();
 
