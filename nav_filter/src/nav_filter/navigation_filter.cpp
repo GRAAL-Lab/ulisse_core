@@ -813,8 +813,7 @@ namespace nav {
 
     void NavigationFilter::USE_GPS_CB(const std_msgs::msg::Bool::SharedPtr msg) {
         USE_GPS = *msg;
-        std::string state = (USE_GPS.data ? "Enabled" : "Disabled");
-        RCLCPP_INFO_STREAM(this->get_logger(), "*** GPS Input " << state << "! ***");
+        RCLCPP_INFO_STREAM(this->get_logger(), "*** GPS Input " << (USE_GPS.data ? "Enabled" : "Disabled") << "! ***");
     }
 }
 }
