@@ -10,4 +10,4 @@ float64 vel_x
 float64 vel_y
 bool show_id
 ColorRGB color
-bool high_priority
+bool higher_priority

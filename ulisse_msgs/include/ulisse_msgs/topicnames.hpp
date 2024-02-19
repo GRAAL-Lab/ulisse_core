@@ -11,6 +11,7 @@ namespace topicnames {
 const std::string control_avoidance_cmd_service = "/ulisse/service/compute_avoidance_path";
 const std::string check_avoidance_path_service = "/ulisse/service/check_avoidance_path";
 const std::string avoidance_status = "/ulisse/avoidance/status";
+const std::string avoidance_path_oal = "/ulisse/avoidance/path";
 
 
 // LLC

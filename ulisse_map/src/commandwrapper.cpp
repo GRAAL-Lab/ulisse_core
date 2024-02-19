@@ -414,27 +414,13 @@ bool CommandWrapper::sendLatLongCommand(const QGeoCoordinate& goal, double radiu
 /// Tesi Depalo
 bool CommandWrapper::sendLatLongAvoidanceCommand(const QGeoCoordinate& goal, double radius, double ref_speed, bool COLREGS)
 {
-  //bool COLREGS = true; // TODO make it selectable
   auto serviceReq = std::make_shared<ulisse_msgs::srv::ComputeAvoidancePath::Request>();
-
-  std::vector<double> velocities;
-  auto generateRange = [](double start, double end, double step) {
-      std::vector<double> result;
-      for (double i = start; i <= end; i += step) {
-        double num = std::round(i * 100) / 100;
-        if (num != 0) result.push_back(num);
-      }
-      return result;
-  };
-  //velocities = generateRange(0.1, 2.5, 0.5);
-  velocities = generateRange(1.5, 1.5, 0.5);
 
   serviceReq->latlong_cmd.goal.latitude = goal.latitude();
   serviceReq->latlong_cmd.goal.longitude = goal.longitude();
   serviceReq->latlong_cmd.acceptance_radius = radius;
   serviceReq->latlong_cmd.ref_speed = ref_speed;
   serviceReq->colregs_compliant = COLREGS;
-  serviceReq->velocities = velocities;
 
   //Chiama servizio di avoidance
   static std::string result_msg;

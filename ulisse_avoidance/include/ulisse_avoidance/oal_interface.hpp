@@ -10,6 +10,8 @@
 #include "ulisse_msgs/msg/obstacle.hpp"
 #include "ulisse_msgs/msg/vehicle_status.hpp"
 #include "ulisse_msgs/msg/avoidance_status.hpp"
+#include "ulisse_msgs/msg/avoidance_path.hpp"
+#include "ulisse_msgs/msg/waypoint.hpp"
 #include "ulisse_msgs/srv/compute_avoidance_path.hpp"
 #include "ulisse_msgs/srv/control_command.hpp"
 #include "ulisse_msgs/msg/coordinate_list.hpp"
@@ -62,6 +64,9 @@ public:
       //  Coordinates pub
       coordinatesPub_ = create_publisher<ulisse_msgs::msg::CoordinateList>(ulisse_msgs::topicnames::avoidance_path,
                                                                            qos_sensor);
+      compPathPub_ = create_publisher<ulisse_msgs::msg::AvoidancePath>(
+              ulisse_msgs::topicnames::avoidance_path_oal, qos_sensor);
+
 
       // TIMERS
       //  Avoidance status pub timer
@@ -106,6 +111,8 @@ private:
     bool sendNew = false;
     std::string last_known_vhStatus_ = ulisse::states::ID::hold;
 
+    std::vector<ctb::LatLong> actual_path_;
+
     rclcpp::Client<ulisse_msgs::srv::ControlCommand>::SharedPtr command_srv_;
     rclcpp::Service<ulisse_msgs::srv::ComputeAvoidancePath>::SharedPtr compute_path_service_;
     rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr navFilter_subscription_;
@@ -113,6 +120,7 @@ private:
     rclcpp::Subscription<ulisse_msgs::msg::VehicleStatus>::SharedPtr vhStatus_subscription_;
     rclcpp::Publisher<ulisse_msgs::msg::AvoidanceStatus>::SharedPtr avoidanceStatusPub_;
     rclcpp::Publisher<ulisse_msgs::msg::CoordinateList>::SharedPtr coordinatesPub_;
+    rclcpp::Publisher<ulisse_msgs::msg::AvoidancePath>::SharedPtr compPathPub_;
     rclcpp::TimerBase::SharedPtr avoidanceStatusTimer_;
     rclcpp::TimerBase::SharedPtr checkProgressTimer_;
     rclcpp::CallbackGroup::SharedPtr nested_cb_group_;
@@ -158,6 +166,14 @@ private:
     void stopTracking() {
       checkProgressTimer_->cancel();
       active_ = false;
+      actual_path_.push_back(vh_position_);
+      std::cout<<" Last path actual waypoints: "<<std::endl;
+      std::cout << std::setprecision(8);
+      for(ctb::LatLong pos : actual_path_){
+        std::cout<<"    - "<<pos.latitude<<",   "<<pos.longitude<<std::endl;
+      }
+      actual_path_ = {};
+      std::cout << std::setprecision(3);
     }
 
     Eigen::Vector2d GetLocal(ctb::LatLong point, bool NED = false) const;
@@ -166,8 +182,7 @@ private:
 
     void addObstacle(const Obstacle &obs);
 
-    void SetObssData(path_planner& planner, const rclcpp::Time& time) {
-      std::vector <Obstacle> obstacles;
+    void SetObssData(path_planner& planner, const rclcpp::Time& time, std::vector<Obstacle>& obstacles) {
       for (const ObstacleWithTime& obs_t: obstacles_) {
         Obstacle obs = obs_t.data;
         obs.position = ComputePosition(obs, time.seconds() - obs_t.timestamp.seconds());
@@ -190,6 +205,8 @@ private:
       conf_.centroid.latitude = cfg_.lookup("centroid.latitude");
       conf_.centroid.longitude = cfg_.lookup("centroid.longitude");
       conf_.rotational_speed = cfg_.lookup("rotational_speed");
+      conf_.speed_min = cfg_.lookup("starting_velocity");
+      conf_.speed_step = cfg_.lookup("velocity_step");
       conf_.better_path_distance_perc = cfg_.lookup("better_path_distance_perc");
       conf_.max_pos_delay_time = cfg_.lookup("max_pos_delay_time");
       conf_.check_progress_rate = cfg_.lookup("check_progress_rate");

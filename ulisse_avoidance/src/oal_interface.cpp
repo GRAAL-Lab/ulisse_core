@@ -24,12 +24,12 @@ void OalInterfaceNode::handleComputePathRequest(
             }
             return result;
         };
-        velocities_ = generateRange(0.1, request->latlong_cmd.ref_speed, 0.1);
-        std::cout<< "vel: ";
+        velocities_ = generateRange(conf_.speed_min, request->latlong_cmd.ref_speed, conf_.speed_step);
+        /*std::cout<< "vel: ";
         for(auto vel : velocities_){
           std::cout<< vel<<", ";
         }
-        std::cout<<std::endl;
+        std::cout<<std::endl;*/
         goal_ = ctb::LatLong(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude);
         colregs_ = request->colregs_compliant;
         radius_ = request->latlong_cmd.acceptance_radius; // used also for waypoint acceptance
@@ -106,16 +106,64 @@ bool OalInterfaceNode::ComputePath(Path &path) {
 
     // Sync vh_data and obs data
     path_planner planner;
+    std::vector<Obstacle> obstacles;
     planner.SetVhData(v_info);
     planner.SetAccRadius(conf_.waypoint_acceptance_radius);
-    SetObssData(planner, last_pos_update_);
+    SetObssData(planner, last_pos_update_, obstacles);
     path = Path();
     if (planner.ComputePath(goal, colregs_, path)) {
-        // If close to next wp, ignore it
-        Path path_temp = path;
+      auto message = ulisse_msgs::msg::AvoidancePath();
+      message.creation_time = last_pos_update_.seconds();
+      message.colregs_compliant = colregs_;
+      message.vh_position.latitude = vh_position_.latitude;
+      message.vh_position.longitude = vh_position_.longitude;
+      message.vh_heading = vh_heading_;
+      message.vh_rot_speed = conf_.rotational_speed;
+      for(double vel : velocities_) message.velocities.push_back(vel);
+      message.goal.latitude = goal_.latitude;
+      message.goal.longitude = goal_.longitude;
+      Path path_temp = path;
+      while(!path_temp.empty()){
+        auto wp = ulisse_msgs::msg::Waypoint();
+        auto abs = GetLatLong(path_temp.top().position);
+        wp.position.latitude = abs.latitude;
+        wp.position.longitude = abs.longitude;
+        wp.speed = path_temp.top().speed_to_it;
+        if(path_temp.top().obs_ptr != nullptr){
+          wp.obs_id = path_temp.top().obs_ptr->id;
+          switch(path_temp.top().vx){
+            case FR:
+              wp.vx = "FR";
+              break;
+            case FL:
+              wp.vx = "FL";
+              break;
+            case RR:
+              wp.vx = "RR";
+              break;
+            case RL:
+              wp.vx = "RL";
+              break;
+          }
+        }
+        message.wps.push_back(wp);
         path_temp.pop();
-        if ((GetLocal(vh_position_) - path_temp.top().position).norm() < conf_.waypoint_acceptance_radius) path.pop();
-        return true;
+      }
+      for (auto obs : obstacles) {
+        auto obs_msg = ulisse_msgs::msg::Obstacle();
+        ctb::LatLong pos = GetLatLong(obs.position);
+        obs_msg.id = obs.id;
+        obs_msg.center.latitude = pos.latitude;
+        obs_msg.center.longitude = pos.longitude;
+        obs_msg.higher_priority = obs.higher_priority;
+        message.obs.push_back(obs_msg);
+      }
+      compPathPub_->publish(message);
+      // If close to next wp, ignore it
+      path_temp = path;
+      path_temp.pop();
+      if ((GetLocal(vh_position_) - path_temp.top().position).norm() < conf_.waypoint_acceptance_radius) path.pop();
+      return true;
     }
     return false;
 }
@@ -127,7 +175,8 @@ bool OalInterfaceNode::CheckPath(Path &path) {
     VehicleInfo v_info({vh_pos, velocities_, vh_heading_, conf_.rotational_speed});
     planner.SetVhData(v_info);
     planner.SetAccRadius(conf_.waypoint_acceptance_radius);
-    SetObssData(planner, last_pos_update_);
+    std::vector<Obstacle> obstacles;
+    SetObssData(planner, last_pos_update_, obstacles);
 
     return planner.CheckPath(vh_pos, path);
 }
@@ -215,6 +264,7 @@ void OalInterfaceNode::CheckProgress() {
             }
 
             if (sendNew) {
+                actual_path_.push_back(vh_position_);
                 CallKCL();
                 sendNew = false;
             }
@@ -268,7 +318,7 @@ void OalInterfaceNode::ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr ms
     Obstacle obs(msg->id, pos,
                  M_PI / 2 - msg->heading, velocity.norm(), atan2(velocity.y(), velocity.x()),
                  bb_dimension,
-                 msg->high_priority);
+                 msg->higher_priority);
     addObstacle(obs);
 
     //std::cout << "NEW OBS IN LIBRARY: "<<msg->id<<" in localUTM pos: ("<<(int)pos.x()<<", "<<(int)pos.y()<<"), heading: "<< M_PI/2-msg->heading<<" with speed vector: ("<<velocity.x()<<", "<<velocity.y()<<") "<<std::endl;

@@ -29,6 +29,7 @@ add_custom_target(.Files. SOURCES ${SOURCE_FILES})
 rosidl_generate_interfaces(ulisse_msgs
   # Tesi Depalo
   "msg/Waypoint.msg"
+  "msg/AvoidancePath.msg"
   "srv/ComputeAvoidancePath.srv"
   "msg/AvoidanceStatus.msg"
   "msg/ColorRGB.msg"
