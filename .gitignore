@@ -193,6 +193,9 @@ rml.config
 *.files
 *.includes
 
+# vscode stuff
+**/.vscode
+
 
 srv/_*.py
 *.pcd
