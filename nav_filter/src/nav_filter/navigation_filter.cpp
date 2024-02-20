@@ -325,9 +325,6 @@ namespace nav {
         //RCLCPP_INFO(this->get_logger(), "EFK measurement: imu %d - gps %d - magnetometer %d", imuValid_, gpsValid_, magnetometerValid_);
 
         //Filter Update
-
-
-
         fifo_h_p_.push(thrustersPercReference_.left_percentage);
         fifo_h_s_.push(thrustersPercReference_.right_percentage);
 

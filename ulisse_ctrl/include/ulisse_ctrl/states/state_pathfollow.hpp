@@ -4,6 +4,7 @@
 #include "sisl_toolbox/sisl_toolbox.hpp"
 #include "ulisse_ctrl/states/generic_state.hpp"
 #include "ulisse_msgs/msg/path_data.hpp"
+#include "std_msgs/msg/bool.hpp"
 #include <ulisse_ctrl/path_manager.hpp>
 
 namespace ulisse {
@@ -20,6 +21,7 @@ namespace states {
 
         bool isCurveSet_;               // Flag for checking if a curve has been loaded
         bool vehicleOnTrack_;           // Flag for checking is the robot at the path start
+        bool loopPath_;
         //ctb::LatLong startP_, endP_;    // Starting and ending point
         ctb::LatLong nextP_;            // Next point of the path
         double tolleranceStartingPoint_; // Tolerance on the starting point
@@ -36,7 +38,7 @@ namespace states {
 
         bool ConfigureStateFromFile(libconfig::Config& confObj) override;
 
-        bool LoadPath(const ulisse_msgs::msg::PathData& path);
+        bool LoadPath(const ulisse_msgs::msg::PathData& path, const bool &loop);
         const ctb::LatLong& GetNextPoint() const { return nextP_; }
         const ctb::LatLong& GetCurrentTrackPoint() const { return pathManager_.CurrentTrackPoint(); }
         double GetDistanceToEnd() const { return pathManager_.DistanceToEnd(); }

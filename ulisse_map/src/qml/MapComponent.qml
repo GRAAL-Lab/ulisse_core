@@ -28,7 +28,7 @@ MapComponentForm {
     function updateMouseCoord(mouse) {
         mouseLiveCoordinate.coordinate = toCoordinate(Qt.point(mouse.x, mouse.y))
         mouseLiveCoordinate.coordItem.text = mouseLiveCoordinate.coordinate.latitude.toFixed(7) + ", " +
-                                mouseLiveCoordinate.coordinate.longitude.toFixed(7)
+                mouseLiveCoordinate.coordinate.longitude.toFixed(7)
 
         //console.log("pos_changed_handler")
     }
@@ -207,11 +207,13 @@ MapComponentForm {
     }
 
     // This timer centers the map on the vehicle at startup and then draws the trace of the vehicle
+    // and of an eventual auxiliary_pos sent from the feedback updater
     Timer {
         interval: 500
         running: true
         repeat: true
         onTriggered: {
+            // ULISSE TRACE
             if (ulissePath.firstRun) {
                 ulissePath.addCoordinate(fbkUpdater.ulisse_pos)
                 ulissePath.firstRun = false
@@ -225,6 +227,23 @@ MapComponentForm {
                 ulissePath.addCoordinate(fbkUpdater.ulisse_pos)
                 if (ulissePath.pathLength() > ulissePath.traceSize) {
                     ulissePath.removeCoordinate(0)
+                }
+            }
+
+            // AUXILIARY TRACE
+            if (auxiliaryTrace.ulissePath === undefined) {
+                auxiliaryTrace.addCoordinate(fbkUpdater.auxiliary_pos)
+                auxiliaryTrace.visible = true
+
+            }
+            // To reduce the line density (and avoid to overload the gui)
+            // we add a new point only every 1.0 meter
+            var lastCoord = auxiliaryTrace.coordinateAt(auxiliaryTrace.pathLength() - 1)
+            var distToNext = lastCoord.distanceTo(fbkUpdater.auxiliary_pos)
+            if (distToNext > 1.0) {
+                auxiliaryTrace.addCoordinate(fbkUpdater.auxiliary_pos)
+                if (auxiliaryTrace.pathLength() > auxiliaryTrace.traceSize) {
+                    auxiliaryTrace.removeCoordinate(0)
                 }
             }
         }

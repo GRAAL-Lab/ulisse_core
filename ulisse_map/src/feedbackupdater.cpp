@@ -60,6 +60,7 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
     motor_speed_L_ = motor_speed_R_ = 0;
 
     q_gps_pos_ = q_goal_pos_ = q_track_pos_ = q_ulisse_pos_;
+    q_aux_nav_filter_pos_ = q_ulisse_pos_;
     q_gps_time_ = "N/A";
 
     gpsReceived_ = imuReceived_ = compassReceived_ = magnetometerReceived_ = false;
@@ -164,7 +165,7 @@ void FeedbackUpdater::RegisterPublishersAndSubscribers()
                                                                                     10, std::bind(&FeedbackUpdater::LLCSw485StatusCB, this, _1));
     llc_status_sub_ = this->create_subscription<ulisse_msgs::msg::LLCStatus>(ulisse_msgs::topicnames::llc_status,
                                                                              10, std::bind(&FeedbackUpdater::LLCStatusCB, this, _1));
-    current_status_sub_ = this->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data,
+    navFilterDataSub_ = this->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data,
                                                                                      10, std::bind(&FeedbackUpdater::NavFilterDataCB, this, _1));
     feedbackGuiSub_ = this->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui,
                                                                                10, std::bind(&FeedbackUpdater::FeedbackGuiCB, this, _1));
@@ -172,6 +173,9 @@ void FeedbackUpdater::RegisterPublishersAndSubscribers()
 
     safetyBoundarySetSub_ = this->create_subscription<std_msgs::msg::Bool>(ulisse_msgs::topicnames::safety_boundary_set, 1,
                                                                            std::bind(&FeedbackUpdater::SafetyBoundaryCB, this, _1) );
+
+    navFilterAuxiliarySub_ = this->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data_auxiliary,
+        10, std::bind(&FeedbackUpdater::NavFilterAuxiliaryCB, this, _1));
 
 
 }
@@ -223,11 +227,12 @@ void FeedbackUpdater::NavFilterDataCB(const ulisse_msgs::msg::NavFilterData::Sha
 
 }
 
-/*void FeedbackUpdater::SetNodeHandle(const rclcpp::Node::SharedPtr& np)
+void FeedbackUpdater::NavFilterAuxiliaryCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)
 {
-    this = np;
+    q_aux_nav_filter_pos_.setLatitude(msg->inertialframe_linear_position.latlong.latitude);
+    q_aux_nav_filter_pos_.setLongitude(msg->inertialframe_linear_position.latlong.longitude);
 }
-*/
+
 double FeedbackUpdater::RadiansToDegrees(const double angle_rad, const bool wraparound360)
 {
     double angle_deg = angle_rad * 180.0 / M_PI;
@@ -410,7 +415,7 @@ void FeedbackUpdater::resetPublishersAndSubscribers()
     thrusters_reference_sub_.reset();
     thrusters_applied_ref_sub_.reset();
     sw485_status_sub_.reset();
-    current_status_sub_.reset();
+    navFilterDataSub_.reset();
     feedbackGuiSub_.reset();
 
     RegisterPublishersAndSubscribers();
@@ -504,6 +509,11 @@ QGeoCoordinate FeedbackUpdater::get_gps_pos()
 QGeoCoordinate FeedbackUpdater::get_track_pos()
 {
     return q_track_pos_;
+}
+
+QGeoCoordinate FeedbackUpdater::get_auxiliary_pos()
+{
+    return q_aux_nav_filter_pos_;
 }
 
 bool FeedbackUpdater::get_gps_online()

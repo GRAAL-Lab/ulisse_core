@@ -34,6 +34,7 @@ const std::string simulated_system = "/ulisse/simulated_system";
 
 // NAV FILTER
 const std::string nav_filter_data = "/ulisse/nav_filter/data";
+const std::string nav_filter_data_auxiliary = "/ulisse/nav_filter/data_auxiliary";
 
 // CTRL
 const std::string vehicle_status = "/ulisse/ctrl/vehicle_status";

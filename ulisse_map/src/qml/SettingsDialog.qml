@@ -36,6 +36,7 @@ Dialog {
         settings.pathLineWidth = lineWidthSBox.value;
         settings.ulisseLineWidth = ulisseLineWidthSBox.value;
 
+
         if (settings.mapPluginType !== futureMapPlugin) {
             //futureMapPlugin = mapPluginBox.displayText
             toast.show("Map plugin change will take effect on restart...", 4000)
@@ -291,23 +292,30 @@ Dialog {
             }
 
             RowLayout {
-                id: showMouseCoordinateSetting
+                id: ulisseLineWidthSetting
                 spacing: 10
 
                 Label {
-                    text: "Show mouse coordinates on map:"
+                    text: "Ulisse Line Width:"
                 }
-                CheckBox {
-                    id: mouseCoordinateBox
-                    text: "Show Coordinates"
-                    //Material.accent: orange
-                    checked: settings.showMouseCoordinates
 
-                    onClicked: {
-                        settings.showMouseCoordinates = !settings.showMouseCoordinates;
+                SpinBox {
+                    id: ulisseLineWidthSBox
+                    from: 1
+                    to: 20
+                    stepSize: 1
+                    Layout.maximumWidth: 150
+                    Layout.fillWidth: true
+                    font.pointSize: 10
+                    editable: true
+                    inputMethodHints: Qt.ImhDigitsOnly //Only digits are allowed.
+
+                    Component.onCompleted: {
+                        value = settings.ulisseLineWidth
                     }
                 }
             }
+
 
             SettingsSectionLabel {
                 text: "Other Options"
@@ -328,6 +336,25 @@ Dialog {
 
                     onClicked: {
                         settings.showPolylineID = !settings.showPolylineID;
+                    }
+                }
+            }
+
+            RowLayout {
+                id: showMouseCoordinateSetting
+                spacing: 10
+
+                Label {
+                    text: "Show mouse coordinates on map:"
+                }
+                CheckBox {
+                    id: mouseCoordinateBox
+                    text: "Show Coordinates"
+                    //Material.accent: orange
+                    checked: settings.showMouseCoordinates
+
+                    onClicked: {
+                        settings.showMouseCoordinates = !settings.showMouseCoordinates;
                     }
                 }
             }
@@ -402,34 +429,30 @@ Dialog {
                 }
             }
 
-            RowLayout {
-                id: ulisseLineWidthSetting
-                spacing: 10
-
-                Label {
-                    text: "Ulisse Line Width:"
-                }
-
-                SpinBox {
-                    id: ulisseLineWidthSBox
-                    from: 1
-                    to: 20
-                    stepSize: 1
-                    Layout.maximumWidth: 150
-                    Layout.fillWidth: true
-                    font.pointSize: 10
-                    editable: true
-                    inputMethodHints: Qt.ImhDigitsOnly //Only digits are allowed.
-
-                    Component.onCompleted: {
-                        value = settings.ulisseLineWidth
-                    }
-                }
-            }
 
             SettingsSectionLabel {
                 text: "Debug"
                 color: red
+            }
+
+            RowLayout {
+                id: showAuxiliaryTrace
+                spacing: 10
+
+                Label {
+                    text: "showAuxiliaryTrace:"
+                }
+                CheckBox {
+                    id: showAuxiliaryTraceCB
+                    text: "enable"
+                    font.pointSize: 10
+                    checkState: settings.showAuxiliaryTrace ? Qt.Checked : Qt.Unchecked
+                    Material.accent: red
+
+                    onClicked: {
+                        settings.showAuxiliaryTrace = !settings.showAuxiliaryTrace;
+                    }
+                }
             }
 
             RowLayout {

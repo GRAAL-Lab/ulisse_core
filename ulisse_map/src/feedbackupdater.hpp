@@ -54,6 +54,8 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     Q_PROPERTY(QGeoCoordinate gps_pos READ get_gps_pos NOTIFY callbacks_processed)
     Q_PROPERTY(QGeoCoordinate track_pos READ get_track_pos NOTIFY callbacks_processed)
 
+    Q_PROPERTY(QGeoCoordinate auxiliary_pos READ get_auxiliary_pos NOTIFY callbacks_processed)
+
     Q_PROPERTY(bool gps_online READ get_gps_online NOTIFY callbacks_processed)
     Q_PROPERTY(bool imu_online READ get_imu_online NOTIFY callbacks_processed)
     Q_PROPERTY(bool compass_online READ get_compass_online NOTIFY callbacks_processed)
@@ -95,6 +97,7 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     bool vehicleAlive_ = false;
     bool gpsReceived_, imuReceived_, compassReceived_, magnetometerReceived_;
     QGeoCoordinate q_centroid, q_ulisse_pos_, q_goal_pos_, q_gps_pos_, q_track_pos_;
+    QGeoCoordinate q_aux_nav_filter_pos_;
     double q_goal_distance_, q_goal_heading_deg_;
     double q_ulisse_surge_;
     QVector3D q_ulisse_rpy_deg_, q_ulisse_rpy_rate_deg_;
@@ -142,11 +145,15 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     rclcpp::Subscription<ulisse_msgs::msg::ThrustersReference>::SharedPtr thrusters_applied_ref_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::LLCSw485Status>::SharedPtr sw485_status_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::LLCStatus>::SharedPtr llc_status_sub_;
-    rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr current_status_sub_;
+    rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr navFilterDataSub_;
     rclcpp::Subscription<ulisse_msgs::msg::ReferenceVelocities>::SharedPtr referenceVelocitiesSub_;
     rclcpp::Subscription<ulisse_msgs::msg::VehicleStatus>::SharedPtr vehicleStatusSub_;
     rclcpp::Subscription<ulisse_msgs::msg::FeedbackGui>::SharedPtr feedbackGuiSub_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr safetyBoundarySetSub_;
+
+    // This topic has been implemented to show on map the data of an eventual secondary navigation
+    // filter running in parallel (introduced for CAMS2024)
+    rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr navFilterAuxiliarySub_;
 
     QVector<double> GenerateRandFloatVector(int size);
     bool LoadConfiguration();
@@ -172,6 +179,8 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     void NavFilterDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
     void FeedbackGuiCB(const ulisse_msgs::msg::FeedbackGui::SharedPtr msg);
     void SafetyBoundaryCB(const std_msgs::msg::Bool::SharedPtr msg);
+
+    void NavFilterAuxiliaryCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
 
 public:
     explicit FeedbackUpdater(QObject* parent = nullptr);
@@ -200,6 +209,7 @@ public:
     QString get_gps_time();
     QGeoCoordinate get_gps_pos();
     QGeoCoordinate get_track_pos();
+    QGeoCoordinate get_auxiliary_pos();
 
     bool get_gps_online();
     bool get_imu_online();

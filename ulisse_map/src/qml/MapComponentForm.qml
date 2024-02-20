@@ -16,6 +16,7 @@ Map {
     property alias markerIcon: markerIcon
     property alias mapMouseArea: mapMouseArea
     property alias ulissePath: ulissePath
+    property alias auxiliaryTrace: auxiliaryTrace
     property alias compass: compass
     property alias currentArrow: currentArrow
     property alias currentLabel: currentLabel
@@ -299,6 +300,16 @@ Map {
         property bool firstRun: true
         property real traceSize: 1000
         z: map.z + 2
+    }
+
+    MapPolyline {
+        id: auxiliaryTrace
+        line.width: settings.ulisseLineWidth
+        line.color: red
+        visible: settings.showAuxiliaryTrace
+        property bool firstRun: true
+        property real traceSize: 1000
+        z: map.z + 3
     }
 
     MouseArea {

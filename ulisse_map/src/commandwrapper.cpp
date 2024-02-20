@@ -291,6 +291,8 @@ bool CommandWrapper::sendPath(const QString &pathJsonData)
         std::cout << "Error parsing QML Jason" << e.what() << std::endl;
     }
 
+    serviceReq->path_cmd.loop = true;
+
     return SendCommandRequest(serviceReq);
 }
 
