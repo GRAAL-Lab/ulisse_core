@@ -112,55 +112,10 @@ bool OalInterfaceNode::ComputePath(Path &path) {
     SetObssData(planner, last_pos_update_, obstacles);
     path = Path();
     if (planner.ComputePath(goal, colregs_, path)) {
-      auto message = ulisse_msgs::msg::AvoidancePath();
-      message.creation_time = last_pos_update_.seconds();
-      message.colregs_compliant = colregs_;
-      message.vh_position.latitude = vh_position_.latitude;
-      message.vh_position.longitude = vh_position_.longitude;
-      message.vh_heading = vh_heading_;
-      message.vh_rot_speed = conf_.rotational_speed;
-      for(double vel : velocities_) message.velocities.push_back(vel);
-      message.goal.latitude = goal_.latitude;
-      message.goal.longitude = goal_.longitude;
-      Path path_temp = path;
-      while(!path_temp.empty()){
-        auto wp = ulisse_msgs::msg::Waypoint();
-        auto abs = GetLatLong(path_temp.top().position);
-        wp.position.latitude = abs.latitude;
-        wp.position.longitude = abs.longitude;
-        wp.speed = path_temp.top().speed_to_it;
-        if(path_temp.top().obs_ptr != nullptr){
-          wp.obs_id = path_temp.top().obs_ptr->id;
-          switch(path_temp.top().vx){
-            case FR:
-              wp.vx = "FR";
-              break;
-            case FL:
-              wp.vx = "FL";
-              break;
-            case RR:
-              wp.vx = "RR";
-              break;
-            case RL:
-              wp.vx = "RL";
-              break;
-          }
-        }
-        message.wps.push_back(wp);
-        path_temp.pop();
-      }
-      for (auto obs : obstacles) {
-        auto obs_msg = ulisse_msgs::msg::Obstacle();
-        ctb::LatLong pos = GetLatLong(obs.position);
-        obs_msg.id = obs.id;
-        obs_msg.center.latitude = pos.latitude;
-        obs_msg.center.longitude = pos.longitude;
-        obs_msg.higher_priority = obs.higher_priority;
-        message.obs.push_back(obs_msg);
-      }
-      compPathPub_->publish(message);
+      path.UpdateMetrics(GetLocal(vh_position_), vh_heading_, conf_.rotational_speed);
+      pubPath(path, obstacles);
       // If close to next wp, ignore it
-      path_temp = path;
+      Path path_temp = path;
       path_temp.pop();
       if ((GetLocal(vh_position_) - path_temp.top().position).norm() < conf_.waypoint_acceptance_radius) path.pop();
       return true;
@@ -231,8 +186,8 @@ void OalInterfaceNode::CheckProgress() {
             Path new_path;
             if (ComputePath(new_path)) {
                 path_temp = path_;
-                path_temp.UpdateMetrics(GetLocal(vh_position_), vh_heading_);
-                new_path.UpdateMetrics(GetLocal(vh_position_), vh_heading_);
+                path_temp.UpdateMetrics(GetLocal(vh_position_), vh_heading_, conf_.rotational_speed);
+                //new_path.UpdateMetrics(GetLocal(vh_position_), vh_heading_); done when computing it
 
                 bool isNewBetter =
                         new_path.metrics.totDistance < conf_.better_path_distance_perc * path_temp.metrics.totDistance;
@@ -334,6 +289,8 @@ void OalInterfaceNode::NavFilterCB(ulisse_msgs::msg::NavFilterData::SharedPtr ms
                                 msg->inertialframe_linear_position.latlong.longitude);
     // assuming given yam is in NED coordinates
     vh_heading_ = M_PI / 2 - msg->bodyframe_angular_position.yaw;
+    if(vh_heading_>M_PI) vh_heading_ -= 2*M_PI;
+    if(vh_heading_<-M_PI) vh_heading_ += 2*M_PI;
 }
 
 Eigen::Vector2d OalInterfaceNode::GetLocal(ctb::LatLong LatLong, bool NED) const {

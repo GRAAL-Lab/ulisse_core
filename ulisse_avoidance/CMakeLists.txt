@@ -45,24 +45,6 @@ ament_target_dependencies(
 )
 target_link_libraries(oal_interface Geographic oal config++)
 
-add_executable(weird_test src/test.cpp)
-target_include_directories(weird_test PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:include>)
-target_compile_features(weird_test PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
-ament_target_dependencies(
-        weird_test
-        "rclcpp"
-        "ulisse_msgs"
-        "ulisse_ctrl"
-        "ctrl_toolbox"
-        "oal"
-)
-target_link_libraries(weird_test Geographic oal config++)
-
-install(TARGETS oal_interface weird_test
-        DESTINATION lib/${PROJECT_NAME})
-
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights

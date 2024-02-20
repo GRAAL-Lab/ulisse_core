@@ -229,11 +229,65 @@ private:
       }
     }
 
+    void pubPath(Path path, std::vector<Obstacle> obstacles){
+      auto message = ulisse_msgs::msg::AvoidancePath();
+      message.creation_time = last_pos_update_.seconds();
+      message.colregs_compliant = colregs_;
+      message.vh_position.latitude = vh_position_.latitude;
+      message.vh_position.longitude = vh_position_.longitude;
+      message.vh_heading = vh_heading_;
+      message.vh_rot_speed = conf_.rotational_speed;
+      for(double vel : velocities_) message.velocities.push_back(vel);
+      message.goal.latitude = goal_.latitude;
+      message.goal.longitude = goal_.longitude;
+      message.max_heading_change = path.metrics.maxHeadingChange;
+      message.tot_heading_change = path.metrics.totHeadingChange;
+      message.tot_distance = path.metrics.totDistance;
+      message.estimated_time_to_goal = path.metrics.estimatedTime;
+      // Waypoints
+      while(!path.empty()){
+        auto wp = ulisse_msgs::msg::Waypoint();
+        auto abs = GetLatLong(path.top().position);
+        wp.position.latitude = abs.latitude;
+        wp.position.longitude = abs.longitude;
+        wp.speed = path.top().speed_to_it;
+        if(path.top().obs_ptr != nullptr){
+          wp.obs_id = path.top().obs_ptr->id;
+          switch(path.top().vx){
+            case FR:
+              wp.vx = "FR";
+              break;
+            case FL:
+              wp.vx = "FL";
+              break;
+            case RR:
+              wp.vx = "RR";
+              break;
+            case RL:
+              wp.vx = "RL";
+              break;
+          }
+        }
+        message.wps.push_back(wp);
+        path.pop();
+      }
+      // Obstacles
+      for (auto obs : obstacles) {
+        auto obs_msg = ulisse_msgs::msg::Obstacle();
+        ctb::LatLong pos = GetLatLong(obs.position);
+        obs_msg.id = obs.id;
+        obs_msg.center.latitude = pos.latitude;
+        obs_msg.center.longitude = pos.longitude;
+        obs_msg.higher_priority = obs.higher_priority;
+        message.obs.push_back(obs_msg);
+      }
+      compPathPub_->publish(message);
+    }
 
     void printPath() const{
       std::cout << std::setprecision(3);
       Path temp = path_;
-      temp.UpdateMetrics(GetLocal(vh_position_), vh_heading_);
+      temp.UpdateMetrics(GetLocal(vh_position_), vh_heading_, conf_.rotational_speed);
       temp.print();
       std::cout<<" Waypoint list:"<<std::endl;
       std::cout << std::setprecision(8);
