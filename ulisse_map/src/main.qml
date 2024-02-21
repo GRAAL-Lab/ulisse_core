@@ -94,6 +94,7 @@ ApplicationWindow {
         property int visualizerTimeout: 30
         property int pathLineWidth: 2
         property int ulisseLineWidth: 1
+        property bool showUlisseTrace: true
         property bool showAuxiliaryTrace: false
 
         property bool bypassSafetyBoundaryCheck: false

@@ -11,10 +11,10 @@
 #include <QSettings>
 
 #include "rclcpp/rclcpp.hpp"
-#include "commandwrapper.hpp"
-#include "feedbackupdater.hpp"
-#include "taskdataupdater.hpp"
-#include "addonsbridge.hpp"
+#include "ulisse_map/commandwrapper.hpp"
+#include "ulisse_map/feedbackupdater.hpp"
+#include "ulisse_map/taskdataupdater.hpp"
+#include "ulisse_map/addonsbridge.hpp"
 
 //#include <QQmlDebuggingEnabler>
 

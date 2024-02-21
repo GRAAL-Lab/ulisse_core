@@ -231,15 +231,15 @@ MapComponentForm {
             }
 
             // AUXILIARY TRACE
-            if (auxiliaryTrace.ulissePath === undefined) {
+            if (auxiliaryTrace.firstRun) {
                 auxiliaryTrace.addCoordinate(fbkUpdater.auxiliary_pos)
+                ulissePath.firstRun = false
                 auxiliaryTrace.visible = true
-
             }
             // To reduce the line density (and avoid to overload the gui)
             // we add a new point only every 1.0 meter
-            var lastCoord = auxiliaryTrace.coordinateAt(auxiliaryTrace.pathLength() - 1)
-            var distToNext = lastCoord.distanceTo(fbkUpdater.auxiliary_pos)
+            lastCoord = auxiliaryTrace.coordinateAt(auxiliaryTrace.pathLength() - 1)
+            distToNext = lastCoord.distanceTo(fbkUpdater.auxiliary_pos)
             if (distToNext > 1.0) {
                 auxiliaryTrace.addCoordinate(fbkUpdater.auxiliary_pos)
                 if (auxiliaryTrace.pathLength() > auxiliaryTrace.traceSize) {
@@ -251,7 +251,10 @@ MapComponentForm {
 
     function clearUlisseTrace() {
         ulissePath.path = []
+        auxiliaryTrace.path = []
+
         ulissePath.firstRun = true
+        auxiliaryTrace.firstRun = true
     }
 
     function clearAll() {

@@ -258,7 +258,7 @@ Dialog {
                 }
                 CheckBox {
                     id: showCentroidBox
-                    text: "Show Centroid"
+                    //text: "Show Centroid"
                     font.pointSize: 10
                     checkState: settings.showCentroid ? Qt.Checked : Qt.Unchecked
 
@@ -281,12 +281,32 @@ Dialog {
                 }
                 CheckBox {
                     id: statusOverlayBox
-                    text: "Show Overlay"
+                    //text: "Show Overlay"
                     //Material.accent: orange
                     checked: settings.showStatusOverlay
 
                     onClicked: {
                         settings.showStatusOverlay = !settings.showStatusOverlay;
+                    }
+                }
+            }
+
+            RowLayout {
+                id: showUlisseTrace
+                spacing: 10
+
+                Label {
+                    text: "Show Ulisse Trace:"
+                }
+                CheckBox {
+                    id: showUlisseTraceCB
+                    //text: "enable"
+                    font.pointSize: 10
+                    checkState: settings.showUlisseTrace ? Qt.Checked : Qt.Unchecked
+                    //Material.accent: red
+
+                    onClicked: {
+                        settings.showUlisseTrace = !settings.showUlisseTrace;
                     }
                 }
             }
@@ -330,7 +350,7 @@ Dialog {
                 }
                 CheckBox {
                     id: showPolylineIDBox
-                    text: "Show IDs"
+                    //text: "Show IDs"
                     font.pointSize: 10
                     checkState: settings.showPolylineID ? Qt.Checked : Qt.Unchecked
 
@@ -349,7 +369,7 @@ Dialog {
                 }
                 CheckBox {
                     id: mouseCoordinateBox
-                    text: "Show Coordinates"
+                    //text: "Show Coordinates"
                     //Material.accent: orange
                     checked: settings.showMouseCoordinates
 
@@ -368,7 +388,7 @@ Dialog {
                 }
                 CheckBox {
                     id: showObstacleIDBox
-                    text: "Show IDs"
+                    //text: "Show IDs"
                     font.pointSize: 10
                     checkState: settings.showObstacleID ? Qt.Checked : Qt.Unchecked
 
@@ -444,7 +464,7 @@ Dialog {
                 }
                 CheckBox {
                     id: showAuxiliaryTraceCB
-                    text: "enable"
+                    //text: "enable"
                     font.pointSize: 10
                     checkState: settings.showAuxiliaryTrace ? Qt.Checked : Qt.Unchecked
                     Material.accent: red
@@ -464,7 +484,7 @@ Dialog {
                 }
                 CheckBox {
                     id: bypassSafetyCheckBox
-                    text: "enable"
+                    //text: "enable"
                     font.pointSize: 10
                     checkState: settings.bypassSafetyBoundaryCheck ? Qt.Checked : Qt.Unchecked
                     Material.accent: red

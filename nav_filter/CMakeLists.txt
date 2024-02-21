@@ -23,14 +23,14 @@ find_package(rml REQUIRED)
 find_package(ctrl_toolbox REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 
-
-
 # Add files in the tree of "Projects" view in QtCreator
 file(GLOB_RECURSE SOURCE_FILES
     "msg/*.msg"
     "*.xml"
     "launch/*.py"
-    "conf/*"
+    "conf/*.yaml"
+    "conf/*.conf"
+    "include/*.hpp"
 )
 add_custom_target(.Files. SOURCES ${SOURCE_FILES})
 

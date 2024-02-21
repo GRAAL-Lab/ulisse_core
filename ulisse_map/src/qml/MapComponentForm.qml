@@ -297,6 +297,7 @@ Map {
         id: ulissePath
         line.width: settings.ulisseLineWidth
         line.color: orange
+        opacity: settings.showUlisseTrace ? 1.0 : 0.0
         property bool firstRun: true
         property real traceSize: 1000
         z: map.z + 2
@@ -306,7 +307,7 @@ Map {
         id: auxiliaryTrace
         line.width: settings.ulisseLineWidth
         line.color: red
-        visible: settings.showAuxiliaryTrace
+        opacity: settings.showAuxiliaryTrace ? 1.0 : 0.0
         property bool firstRun: true
         property real traceSize: 1000
         z: map.z + 3

@@ -4,7 +4,7 @@
 #include <sstream>
 
 #include "rml/RML.h"
-#include "addonsbridge.hpp"
+#include "ulisse_map/addonsbridge.hpp"
 #include "ctrl_toolbox/HelperFunctions.h"
 #include "ulisse_ctrl/ulisse_defines.hpp"
 #include "ulisse_msgs/topicnames.hpp"

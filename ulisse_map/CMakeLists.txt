@@ -41,6 +41,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 
 include_directories(
+    include
     ${rclcpp_INCLUDE_DIRS}
     ${std_msgs_INCLUDE_DIRS}
     ${ament_index_INCLUDE_DIRS}
@@ -53,9 +54,21 @@ include_directories(
     ${sisl_toolbox_INCLUDE_DIRS}
 )
 
+# Add files in the tree of "Projects" view in QtCreator
+file(GLOB_RECURSE ALL_FILES
+    "msg/*.msg"
+    "*.xml"
+    "launch/*.py"
+    "conf/*.yaml"
+    "conf/*.conf"
+    "include/*.hpp"
+)
+add_custom_target(.Files. SOURCES ${ALL_FILES})
+
 file(GLOB SOURCE_FILES
         "src/*.cpp"
-        )
+        "include/ulisse_map/*.hpp"
+)
 
 add_library(ulissemap_lib
     src/feedbackupdater.cpp
@@ -64,7 +77,10 @@ add_library(ulissemap_lib
     src/addonsbridge.cpp
 )
 
-add_executable(${PROJECT_NAME}_node ${SOURCE_FILES} "src/qml.qrc")
+# The header files must be included in the add_executable directive
+# otherwise QT automoc won't parse the files and you'll get
+# "undefined reference to vtable"
+add_executable(${PROJECT_NAME}_node ${SOURCE_FILES} "src/qml.qrc" )
 ament_target_dependencies(${PROJECT_NAME}_node
         rclcpp
         ament_index_cpp
