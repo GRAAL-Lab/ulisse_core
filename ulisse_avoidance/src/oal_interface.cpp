@@ -1,9 +1,9 @@
 #include "ulisse_avoidance/oal_interface.hpp"
 
 void OalInterfaceNode::handleComputePathRequest(
-        const std::shared_ptr<rmw_request_id_t> &request_header,
-        const std::shared_ptr<ulisse_msgs::srv::ComputeAvoidancePath::Request> &request,
-        const std::shared_ptr<ulisse_msgs::srv::ComputeAvoidancePath::Response> &response) {
+        std::shared_ptr<rmw_request_id_t> request_header,
+        std::shared_ptr<ulisse_msgs::srv::ComputeAvoidancePath::Request> request,
+        std::shared_ptr<ulisse_msgs::srv::ComputeAvoidancePath::Response> response) {
 
     if (last_known_vhStatus_ == ulisse::states::ID::halt) {
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), " VEHICLE NOT READY (HALT STATE) ");
