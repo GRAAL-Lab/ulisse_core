@@ -114,6 +114,21 @@ bool OfflineBagConverter::ConvertToCSV()
                            << navFilterData_.gyro_bias[0] << ", " << navFilterData_.gyro_bias[1] << ", " << navFilterData_.gyro_bias[2]
                            << "\n";
 
+        } else if (bag_message->topic_name == ulisse_msgs::topicnames::nav_filter_data_auxiliary) {
+            rclcpp::Serialization<ulisse_msgs::msg::NavFilterData> serialization;
+            rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
+            serialization.deserialize_message(&extracted_serialized_msg, &navFilterDataAUX_);
+            navFilterFileAUX_ << std::fixed << std::setprecision(6)
+                           << bag_message->time_stamp  * 1e-9 << ", "
+                           << navFilterDataAUX_.stamp.sec + (navFilterDataAUX_.stamp.nanosec * 1e-9) << ", "
+                           << navFilterDataAUX_.inertialframe_linear_position.latlong.latitude << ", " << navFilterDataAUX_.inertialframe_linear_position.latlong.longitude << ", " << navFilterDataAUX_.inertialframe_linear_position.altitude << ", "
+                           << navFilterDataAUX_.bodyframe_angular_position.roll << ", " << navFilterDataAUX_.bodyframe_angular_position.pitch << ", " << navFilterDataAUX_.bodyframe_angular_position.yaw << ", "
+                           << navFilterDataAUX_.bodyframe_linear_velocity[0] << ", " << navFilterDataAUX_.bodyframe_linear_velocity[1] << ", " << navFilterDataAUX_.bodyframe_linear_velocity[2] << ", "
+                           << navFilterDataAUX_.bodyframe_angular_velocity[0] << ", " << navFilterDataAUX_.bodyframe_angular_velocity[1] << ", " << navFilterDataAUX_.bodyframe_angular_velocity[2] << ", "
+                           << navFilterDataAUX_.inertialframe_water_current[0] << ", " << navFilterDataAUX_.inertialframe_water_current[1] << ", "
+                           << navFilterDataAUX_.gyro_bias[0] << ", " << navFilterDataAUX_.gyro_bias[1] << ", " << navFilterDataAUX_.gyro_bias[2]
+                           << "\n";
+
         } else if (bag_message->topic_name == ulisse_msgs::topicnames::reference_velocities) {
             rclcpp::Serialization<ulisse_msgs::msg::ReferenceVelocities> serialization;
             rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
@@ -202,6 +217,10 @@ bool OfflineBagConverter::OpenFiles()
     navFilterFile_ << "ros_time, time, x, y, z, r, p, y, u, v, h, "
                    << "rRate, pRate, yRate, cx, cy, bx, by, bz\n";
 
+    navFilterFileAUX_ .open(std::string(saveFolder_ + "/nav_filter_auxiliary.txt"));
+    navFilterFileAUX_ << "ros_time, time, x, y, z, r, p, y, u, v, h, "
+                      << "rRate, pRate, yRate, cx, cy, bx, by, bz\n";
+
     refVelFile_      .open(std::string(saveFolder_ + "/reference_vel.txt"));
     refVelFile_   << "ros_time, time, surge, yawrate\n";
 
@@ -227,6 +246,7 @@ void OfflineBagConverter::CloseFiles()
     sensorsFile_      .close();
     motorsFile_       .close();
     navFilterFile_    .close();
+    navFilterFileAUX_ .close();
     refVelFile_       .close();
     thrustersFile_    .close();
     //vehicleStatusFile_.close();

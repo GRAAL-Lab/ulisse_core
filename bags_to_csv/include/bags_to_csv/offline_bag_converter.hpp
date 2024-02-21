@@ -56,6 +56,7 @@ private:
     ulisse_msgs::msg::LLCThrusters llcThrustersData_;
     //ulisse_msgs::msg::LLCBattery llcBattery_;
     ulisse_msgs::msg::NavFilterData navFilterData_;
+    ulisse_msgs::msg::NavFilterData navFilterDataAUX_;
     ulisse_msgs::msg::ThrustersReference thrustersReference_;
     ulisse_msgs::msg::ReferenceVelocities referenceVel_;
     //ulisse_msgs::msg::VehicleStatus vehicleStatus_;
@@ -70,6 +71,7 @@ private:
     std::ofstream motorsFile_;
     //std::ofstream batteryFile_;
     std::ofstream navFilterFile_;
+    std::ofstream navFilterFileAUX_;
     std::ofstream thrustersFile_;
     std::ofstream refVelFile_;
     //std::ofstream vehicleStatusFile_;
