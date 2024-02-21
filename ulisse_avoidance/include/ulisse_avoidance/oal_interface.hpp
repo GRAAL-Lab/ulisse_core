@@ -137,9 +137,9 @@ private:
     // Callbacks
     // Search for path to GUI-sent new goal and make KCL track it
     void handleComputePathRequest(
-            const std::shared_ptr <rmw_request_id_t>& request_header,
-            const std::shared_ptr <ulisse_msgs::srv::ComputeAvoidancePath::Request>& request,
-            const std::shared_ptr <ulisse_msgs::srv::ComputeAvoidancePath::Response>& response);
+            std::shared_ptr <rmw_request_id_t> request_header,
+            std::shared_ptr <ulisse_msgs::srv::ComputeAvoidancePath::Request> request,
+            std::shared_ptr <ulisse_msgs::srv::ComputeAvoidancePath::Response> response);
 
     void NavFilterCB(ulisse_msgs::msg::NavFilterData::SharedPtr msg);
 
