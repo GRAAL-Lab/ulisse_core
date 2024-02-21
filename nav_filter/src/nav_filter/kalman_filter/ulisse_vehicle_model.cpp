@@ -2,7 +2,7 @@
 
 namespace ulisse {
 namespace nav {
-UlisseVehicleModel::UlisseVehicleModel(const Version& v)
+UlisseVehicleModel::UlisseVehicleModel(const ASVModelVersion& v)
     : ctb::ModelKalmanFilter()
 {
     last_comp_time_ = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
@@ -136,7 +136,7 @@ Eigen::MatrixXd UlisseVehicleModel::ComputeJacobian(const Eigen::VectorXd& state
 
     double rpm_A_coeff = params_.rpmDynState;
 
-    if (version_ == Version::SimplifiedCoMFrame) {
+    if (version_ == ASVModelVersion::SimplifiedCoMFrame) {
         // rpm dynamics, simplified CoM frame for linear velocity
         /*[    x      ]*/   F << 1, 0, 0, 0, 0, -delta_t * (y_dot * cos(yaw) + x_dot * sin(yaw)), delta_t * cos(yaw), -delta_t * sin(yaw), 0, 0, 0, 0, delta_t, 0, 0, 0, 0, 0, 0,
             /*[    y      ]*/       0, 1, 0, 0, 0, delta_t * (x_dot * cos(yaw) - y_dot * sin(yaw)), delta_t * sin(yaw), delta_t * cos(yaw), 0, 0, 0, 0, 0, delta_t, 0, 0, 0, 0, 0,
@@ -158,7 +158,7 @@ Eigen::MatrixXd UlisseVehicleModel::ComputeJacobian(const Eigen::VectorXd& state
             /*[    n_p    ]*/       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, rpm_A_coeff, 0,
             /*[    n_s    ]*/       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, rpm_A_coeff;
 
-    } else if (version_ == Version::CompleteBodyFrame) {
+    } else if (version_ == ASVModelVersion::CompleteBodyFrame) {
         F << 1, 0, 0, delta_t * y_dot * (sin(roll) * sin(yaw) + cos(roll) * cos(yaw) * sin(pitch)) + delta_t * z_dot * (cos(roll) * sin(yaw) - cos(yaw) * sin(pitch) * sin(roll)), delta_t * cos(yaw) * (z_dot * cos(pitch) * cos(roll) - x_dot * sin(pitch) + y_dot * cos(pitch) * sin(roll)), delta_t * z_dot * (cos(yaw) * sin(roll) - cos(roll) * sin(pitch) * sin(yaw)) - delta_t * y_dot * (cos(roll) * cos(yaw) + sin(pitch) * sin(roll) * sin(yaw)) - delta_t * x_dot * cos(pitch) * sin(yaw), delta_t * cos(pitch) * cos(yaw), delta_t * cos(yaw) * sin(pitch) * sin(roll) - delta_t * cos(roll) * sin(yaw), delta_t * sin(roll) * sin(yaw) + delta_t * cos(roll) * cos(yaw) * sin(pitch), 0, 0, 0, delta_t, 0, 0, 0, 0, 0, 0,
             0, 1, 0, -delta_t * y_dot * (cos(yaw) * sin(roll) - cos(roll) * sin(pitch) * sin(yaw)) - delta_t * z_dot * (cos(roll) * cos(yaw) + sin(pitch) * sin(roll) * sin(yaw)), delta_t * sin(yaw) * (z_dot * cos(pitch) * cos(roll) - x_dot * sin(pitch) + y_dot * cos(pitch) * sin(roll)), delta_t * z_dot * (sin(roll) * sin(yaw) + cos(roll) * cos(yaw) * sin(pitch)) - delta_t * y_dot * (cos(roll) * sin(yaw) - cos(yaw) * sin(pitch) * sin(roll)) + delta_t * x_dot * cos(pitch) * cos(yaw), delta_t * cos(pitch) * sin(yaw), delta_t * cos(roll) * cos(yaw) + delta_t * sin(pitch) * sin(roll) * sin(yaw), delta_t * cos(roll) * sin(pitch) * sin(yaw) - delta_t * cos(yaw) * sin(roll), 0, 0, 0, 0, delta_t, 0, 0, 0, 0, 0,
             0, 0, 1, delta_t * cos(pitch) * (y_dot * cos(roll) - z_dot * sin(roll)), -delta_t * (x_dot * cos(pitch) + z_dot * cos(roll) * sin(pitch) + y_dot * sin(pitch) * sin(roll)), 0, -delta_t * sin(pitch), delta_t * cos(pitch) * sin(roll), delta_t * cos(pitch) * cos(roll), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -179,7 +179,7 @@ Eigen::MatrixXd UlisseVehicleModel::ComputeJacobian(const Eigen::VectorXd& state
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, rpm_A_coeff, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, rpm_A_coeff;
 
-    } else if (version_ == Version::CompleteBodyFrameBaseline) {
+    } else if (version_ == ASVModelVersion::CompleteBodyFrameBaseline) {
 
         // 4-Quadrant Model
         double um_p = x_dot + w_z * params_.d;
@@ -359,7 +359,7 @@ Eigen::VectorXd UlisseVehicleModel::ComputeStateTransitionModel(const Eigen::Vec
     double w_zq = pow(w_z, 2);
     double dq = pow(d, 2);
 
-    if (version_ == Version::SimplifiedCoMFrame) {
+    if (version_ == ASVModelVersion::SimplifiedCoMFrame) {
         newState(0) = x + delta_t * (v_cx + x_dot * cos(yaw) - y_dot * sin(yaw));
         newState(1) = y + delta_t * (v_cy + y_dot * cos(yaw) + x_dot * sin(yaw));
         newState(2) = z + delta_t * z_dot;
@@ -380,7 +380,7 @@ Eigen::VectorXd UlisseVehicleModel::ComputeStateTransitionModel(const Eigen::Vec
         newState(17) = h_p * rpm_gain_p + n_p * rpm_A_coeff;
         newState(18) = h_s * rpm_gain_s + n_s * rpm_A_coeff;
 
-    } else if (version_ == Version::CompleteBodyFrame) {
+    } else if (version_ == ASVModelVersion::CompleteBodyFrame) {
         newState(0) = x + delta_t * (v_cx - y_dot * (cos(roll) * sin(yaw) - cos(yaw) * sin(pitch) * sin(roll)) + z_dot * (sin(roll) * sin(yaw) + cos(roll) * cos(yaw) * sin(pitch)) + x_dot * cos(pitch) * cos(yaw));
         newState(1) = y + delta_t * (v_cy + y_dot * (cos(roll) * cos(yaw) + sin(pitch) * sin(roll) * sin(yaw)) - z_dot * (cos(yaw) * sin(roll) - cos(roll) * sin(pitch) * sin(yaw)) + x_dot * cos(pitch) * sin(yaw));
         newState(2) = z + delta_t * (z_dot * cos(pitch) * cos(roll) - x_dot * sin(pitch) + y_dot * cos(pitch) * sin(roll));
@@ -401,7 +401,7 @@ Eigen::VectorXd UlisseVehicleModel::ComputeStateTransitionModel(const Eigen::Vec
         newState(17) = h_p * rpm_gain_p + n_p * rpm_A_coeff;
         newState(18) = h_s * rpm_gain_s + n_s * rpm_A_coeff;
 
-    } else if (version_ == Version::CompleteBodyFrameBaseline) {
+    } else if (version_ == ASVModelVersion::CompleteBodyFrameBaseline) {
 
         // 4-Quadrant Model
         double um_p = x_dot + w_z * params_.d;

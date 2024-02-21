@@ -66,6 +66,14 @@ ApplicationWindow {
     }
 
     Shortcut {
+        sequence: "Ctrl+R"
+        context: Qt.ApplicationShortcut
+        onActivated: {
+            reloadROSTopics()
+        }
+    }
+
+    Shortcut {
         sequence: StandardKey.Cancel  // Escape Key
         context: Qt.ApplicationShortcut
         onActivated: {
@@ -129,7 +137,7 @@ ApplicationWindow {
         x: Math.round((window.width - width) / 2)
         y: Math.round((window.height - height) / 2) - headerBar.height
         width: Math.round(window.width * 0.8)
-        height: Math.round(window.height * 0.7)
+        height: Math.round(window.height * 0.8)
     }
 
     FileDialog {
@@ -209,5 +217,12 @@ ApplicationWindow {
                 Layout.fillHeight: true
             }
         }
+    }
+
+    function reloadROSTopics() {
+        cmdWrapper.resetPublishersAndSubscribers()
+        fbkUpdater.resetPublishersAndSubscribers()
+        taskdataUpdater.resetPublishersAndSubscribers()
+        toast.show("Reloading ROS Topics", 2000)
     }
 }

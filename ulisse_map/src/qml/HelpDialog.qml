@@ -20,7 +20,7 @@ Dialog {
 
     contentItem: ColumnLayout {
         id: helpColumn
-        spacing: 10
+        spacing: 5
         width: parent.width
         height: parent.height
 
@@ -49,18 +49,21 @@ Dialog {
         Label {
             id: shortcutsTitle
             text: "Shortcuts"
+            color: mainColor
             font.pointSize: 12
             font.bold: true
-            verticalAlignment: Text.AlignBottom
-            horizontalAlignment: Label.AlignHCenter
+            Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
             Layout.fillWidth: true
-            Layout.topMargin: 20
+            Layout.topMargin: 10
         }
 
         Text {
             font.pointSize: 11
             lineHeight: 1.5
             text: "<b>• Return</b>: Send a Halt Command.<br>
+                   <b>• Ctrl+R</b>: Reload the ROS Topics Publisher and Subscribers.<br>
+                   <b>• ESC</b>: Cancels the path creation process.<br>
+                   <br>
                    <b>• Fast Copy/Paste</b>: Most of the numerical values in the interface can be copied to clipboard just
                     by left clicking on the number."
             color: Material.foreground
@@ -72,12 +75,13 @@ Dialog {
         Label {
             id: aboutTitle
             text: "About"
+            color: mainColor
             verticalAlignment: Text.AlignBottom
             font.pointSize: 12
             font.bold: true
-            horizontalAlignment: Label.AlignHCenter
+            Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
             Layout.fillWidth: true
-            Layout.topMargin: 20
+            Layout.topMargin: 10
         }
 
         TextArea {
@@ -91,7 +95,7 @@ Dialog {
         }
 
         Label {
-            text: "Developed by GRAAL Lab (2023)<br>Mantainer: francesco.wanderlingh@unige.it"
+            text: "Developed by GRAAL Lab (2024)<br>Mantainer: francesco.wanderlingh@unige.it"
             horizontalAlignment: Text.AlignHCenter
             color: "grey"
             Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter

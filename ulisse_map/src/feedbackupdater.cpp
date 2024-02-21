@@ -657,7 +657,7 @@ void FeedbackUpdater::process_callbacks_slot()
 
     if(vehicleAlive_ && (vehicleAliveTimer_.Elapsed() > 2.0)){
         vehicleAlive_ = false;
-        std::cout << "Vehicle disappeared! (elapsed: " << vehicleAliveTimer_.Elapsed() << ")" << std::endl;
+        std::cout << "Vehicle disappeared!" << std::endl; // (elapsed: " << vehicleAliveTimer_.Elapsed() << ")"
     }
 
     emit callbacks_processed();

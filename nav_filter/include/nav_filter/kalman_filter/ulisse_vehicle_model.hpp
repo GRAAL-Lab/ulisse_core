@@ -8,16 +8,23 @@
 namespace ulisse {
 namespace nav {
 
+    enum ASVModelVersion {
+        SimplifiedCoMFrame, CompleteBodyFrame, CompleteBodyFrameBaseline, num_versions
+    };
+
+    const std::map<ASVModelVersion, std::string> ASVModelVersion2String = {
+        { SimplifiedCoMFrame, "SimplifiedCoMFrame" },
+        { CompleteBodyFrame, "CompleteBodyFrame_M2" },
+        { CompleteBodyFrameBaseline, "CompleteBodyFrame_BASELINE" }
+    };
+
     class UlisseVehicleModel : public ctb::ModelKalmanFilter {
 
     public:
-        enum class Version {
-            SimplifiedCoMFrame, CompleteBodyFrame, CompleteBodyFrameBaseline
-        };
         /*
          * @brief Constructor
          */
-        UlisseVehicleModel(const Version& v);
+        UlisseVehicleModel(const ASVModelVersion& v);
         /*
          * @brief Destructor
          */
@@ -44,7 +51,7 @@ namespace nav {
         double sign(double x);
 
     private:
-        Version version_;
+        ASVModelVersion version_;
         SurfaceVehicleModelParameters params_;
     };
 }

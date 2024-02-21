@@ -110,7 +110,7 @@ namespace nav {
 
         // Kalman defines
         std::shared_ptr<UlisseVehicleModel> ulisseModelEKF_; //kalman filter model
-        UlisseVehicleModel::Version ulisseModelVersion_;
+        ASVModelVersion ulisseModelVersion_;
 
         // Measurements
         std::shared_ptr<GpsMeasurement> gpsMeasurement_;

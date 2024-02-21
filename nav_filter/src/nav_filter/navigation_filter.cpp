@@ -1,9 +1,11 @@
 #include "nav_filter/navigation_filter.hpp"
+#include "ulisse_msgs/futils.hpp"
 #include <unistd.h>
 
 using std::placeholders::_1;
 using std::placeholders::_2;
 using std::placeholders::_3;
+
 
 namespace ulisse {
 
@@ -27,13 +29,13 @@ namespace nav {
         portRPMMeasurement_->SetPortStarboard(ulisse::nav::Side::Port);
         stbdRPMMeasurement_->SetPortStarboard(ulisse::nav::Side::Starboard);
 
-        //Load filter params
+             //Load filter params
         if (!LoadConfiguration()) {
             RCLCPP_ERROR(this->get_logger(), "Failed to load navigation filter configuration");
             exit(EXIT_FAILURE);
         }
 
-        //Publisher of nav data structure
+             //Publisher of nav data structure
         navDataPub_ = this->create_publisher<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 1);
         rqtAbsSurgePub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/abs_surge", 1);
         rqtRelSurgePub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/rel_surge", 1);
@@ -51,7 +53,7 @@ namespace nav {
         rqtRPMPortPub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/n_p", 1);
         rqtRPMStbdPub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/n_s", 1);
 
-        //Subscribes to data sensors
+             //Subscribes to data sensors
         compassSub_ = this->create_subscription<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass,
             1, std::bind(&NavigationFilter::CompassDataCB, this, _1));
         gpsdataSub_ = this->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data,
@@ -106,7 +108,7 @@ namespace nav {
         RCLCPP_INFO(this->get_logger(), "NavFilter Rate: %d Hz", filterParams_.rate);
         runTimer_ = this->create_wall_timer(std::chrono::milliseconds(msRunPeriod), std::bind(&NavigationFilter::Run, this));
 
-        // Service
+             // Service
         navFilterCmdService_ = this->create_service<ulisse_msgs::srv::NavFilterCommand>(ulisse_msgs::topicnames::navfilter_cmd_service,
             std::bind(&NavigationFilter::CommandHandler, this, _1, _2, _3));
 
@@ -134,10 +136,10 @@ namespace nav {
 
         navDataPub_->publish(filterData_);
 
-        //auto tNow = std::chrono::system_clock::now();
-        //long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(tNow.time_since_epoch())).count();
-        //auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
-        //auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
+             //auto tNow = std::chrono::system_clock::now();
+             //long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(tNow.time_since_epoch())).count();
+             //auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
+             //auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
         std_msgs::msg::Float64 msg;
         //msg.stamp.sec = now_stamp_secs;
         //msg.stamp.nanosec = now_stamp_nanosecs;
@@ -149,7 +151,7 @@ namespace nav {
 
         rml::EulerRPY rpy;
 
-        if (ulisseModelVersion_ == UlisseVehicleModel::Version::SimplifiedCoMFrame){
+        if (ulisseModelVersion_ == ASVModelVersion::SimplifiedCoMFrame){
             rpy.RPY(0, 0, filterData_.bodyframe_angular_position.yaw);
         } else {
             rpy.RPY(filterData_.bodyframe_angular_position.roll, filterData_.bodyframe_angular_position.pitch, filterData_.bodyframe_angular_position.yaw);
@@ -206,7 +208,7 @@ namespace nav {
             try {
                 GeographicLib::UTMUPS::Forward(gpsData_.latitude, gpsData_.longitude, zone, northp, p_utm.x(), p_utm.y());
 
-                // The geographic lib conversion outputs UTM coordinates but the filter uses NED.
+                     // The geographic lib conversion outputs UTM coordinates but the filter uses NED.
                 Eigen::Vector2d p_ned = { p_utm.y(), p_utm.x() };
 
                 if (filterEnable_) {
@@ -214,7 +216,7 @@ namespace nav {
                     obs_.Update(Eigen::Vector4d { p_ned.x(), p_ned.y(), compassData_.orientation.yaw, simulatedVelocitySensor_.water_relative_surge });
                     filterData_.inertialframe_water_current.fill(0.0);
 
-                    //Construct the inertial to body frame rotation
+                         //Construct the inertial to body frame rotation
                     rml::EulerRPY rpy { 0.0, 0.0, compassData_.orientation.yaw };
                     Eigen::Vector3d bodyF_linearVelocity = rpy.ToRotationMatrix().transpose() * Eigen::Vector3d { obs_.LinearVelocity().x(), obs_.LinearVelocity().y(), 0.0 };
 
@@ -228,7 +230,7 @@ namespace nav {
                     GeographicLib::UTMUPS::Reverse(zone, northp, p_utm.x(), p_utm.y(), filterData_.inertialframe_linear_position.latlong.latitude, filterData_.inertialframe_linear_position.latlong.longitude);
                 }
 
-                /// FILL THE MSG WITH ALL THE REST OF UNMANAGED DATA
+                     /// FILL THE MSG WITH ALL THE REST OF UNMANAGED DATA
                 filterData_.bodyframe_linear_velocity[2] = 0.0;
                 filterData_.inertialframe_linear_position.altitude = 0.0;
                 filterData_.bodyframe_angular_position = compassData_.orientation;
@@ -236,7 +238,7 @@ namespace nav {
                 filterData_.bodyframe_angular_velocity[0] = imuData_.gyro[0];
                 filterData_.bodyframe_angular_velocity[1] = imuData_.gyro[1];
 
-                //Yaw rate estimation with a digital filter
+                     //Yaw rate estimation with a digital filter
                 double omega_dot_dot = ctb::AngleDifference(compassData_.orientation.yaw, previousYaw_) / sampleTime_;
                 previousYaw_ = compassData_.orientation.yaw;
 
@@ -266,7 +268,7 @@ namespace nav {
                     isFirst_ = false;
                 }
 
-                // The filter use the cartesian coordinates
+                     // The filter use the cartesian coordinates
                 ctb::LatLong2LocalNED(ctb::LatLong(gpsData_.latitude, gpsData_.longitude), gpsData_.altitude, centroidLocation_, NED_gps_cartesian_);
                 gpsMeasurement_->MeasureVector() = Eigen::Vector2d { NED_gps_cartesian_.x(), NED_gps_cartesian_.y() };
                 extendedKalmanFilter_->AddMeasurement(gpsMeasurement_);
@@ -313,23 +315,23 @@ namespace nav {
             }
         }
 
-        //RCLCPP_INFO(this->get_logger(), "EFK measurement: left rpm %d - right rpm %d", leftRPMValid_, rightRPMValid_);
+             //RCLCPP_INFO(this->get_logger(), "EFK measurement: left rpm %d - right rpm %d", leftRPMValid_, rightRPMValid_);
 
-        //Added a perfect com altitude meter to be coherent with the real data that recod 0.0 as altitude
+             //Added a perfect com altitude meter to be coherent with the real data that recod 0.0 as altitude
         if (measuresActive_.find("zMeter")->second) {
             Eigen::Vector3d NED_p;
             zMeterMeasurement_->MeasureVector() << 0.0;
             extendedKalmanFilter_->AddMeasurement(zMeterMeasurement_);
         }
 
-        //RCLCPP_INFO(this->get_logger(), "EFK measurement: imu %d - gps %d - magnetometer %d", imuValid_, gpsValid_, magnetometerValid_);
+             //RCLCPP_INFO(this->get_logger(), "EFK measurement: imu %d - gps %d - magnetometer %d", imuValid_, gpsValid_, magnetometerValid_);
 
-        //Filter Update
+             //Filter Update
         fifo_h_p_.push(thrustersPercReference_.left_percentage);
         fifo_h_s_.push(thrustersPercReference_.right_percentage);
 
-        //std::cerr << "GPS="<<gpsValid_<< " IMU="<<imuValid_ << " MAG="<<magnetometerValid_<< " LRPM="<<leftRPMValid_ << " RRPM="<<rightRPMValid_ << std::endl;
-        //extendedKalmanFilter_->Update(Eigen::Vector2d { thrustersFbk_.left_percentage, thrustersFbk_.right_percentage });
+             //std::cerr << "GPS="<<gpsValid_<< " IMU="<<imuValid_ << " MAG="<<magnetometerValid_<< " LRPM="<<leftRPMValid_ << " RRPM="<<rightRPMValid_ << std::endl;
+             //extendedKalmanFilter_->Update(Eigen::Vector2d { thrustersFbk_.left_percentage, thrustersFbk_.right_percentage });
         extendedKalmanFilter_->Update(Eigen::Vector2d { fifo_h_p_.front(), fifo_h_s_.front() });
         fifo_h_p_.pop();
         fifo_h_s_.pop();
@@ -474,46 +476,51 @@ namespace nav {
         auto timeNowSecs = (std::chrono::duration_cast<std::chrono::seconds>(t_now.time_since_epoch())).count();
         auto lastValidGPSSecs = static_cast<std::time_t>(lastValidGPSTime_);
 
-        if (std::abs(lastValidGPSSecs - timeNowSecs) > sensorsCheckInterval_) {
-            RCLCPP_WARN(this->get_logger(), "GPS Data unavailable for more than %i seconds.", sensorsCheckInterval_);
-            RCLCPP_WARN(this->get_logger(), "GPS Data last valid %lld, now %lld, diff %lld", lastValidGPSSecs, timeNowSecs, std::abs(lastValidGPSSecs - timeNowSecs));
-            filterData_.gps_received = false;
-        }
+        if (filterData_.gps_received) {
+            if (std::abs(lastValidGPSSecs - timeNowSecs) > sensorsCheckInterval_) {
+                RCLCPP_WARN(this->get_logger(), "GPS Data unavailable for more than %i seconds.", sensorsCheckInterval_);
+                RCLCPP_WARN(this->get_logger(), "GPS Data last valid %lld, now %lld, diff %lld", lastValidGPSSecs, timeNowSecs, std::abs(lastValidGPSSecs - timeNowSecs));
+                filterData_.gps_received = false;
 
-        if (std::abs(imuData_.stamp.sec - timeNowSecs) > sensorsCheckInterval_) {
-            RCLCPP_WARN(this->get_logger(), "IMU Data unavailable for more than %i seconds.", sensorsCheckInterval_);
-            RCLCPP_WARN(this->get_logger(), "IMU Data last valid %lld, now %lld, diff %lld", imuData_.stamp.sec, timeNowSecs, std::abs(imuData_.stamp.sec - timeNowSecs));
-            filterData_.imu_received = false;
-        }
+                if (std::ctime(&timeNowSecs) != nullptr) {
+                    std::string timedate_cpu = std::ctime(&timeNowSecs);
+                    timedate_cpu.erase(std::remove(timedate_cpu.begin(), timedate_cpu.end(), '\n'), timedate_cpu.end());
+                    RCLCPP_INFO(this->get_logger(), "CPU Time now: %s", timedate_cpu.c_str());
+                } else {
+                    RCLCPP_WARN(this->get_logger(), "CPU Time now = nullptr");
+                }
 
-        if (std::abs(compassData_.stamp.sec - timeNowSecs) > sensorsCheckInterval_) {
-            RCLCPP_WARN(this->get_logger(), "Compass Data unavailable for more than %i seconds.", sensorsCheckInterval_);
-            RCLCPP_WARN(this->get_logger(), "Compass Data last valid %lld, now %lld, diff %lld", compassData_.stamp.sec, timeNowSecs, std::abs(compassData_.stamp.sec - timeNowSecs));
-            filterData_.compass_received = false;
-        }
-
-        if (std::abs(magnetometerData_.stamp.sec - timeNowSecs) > sensorsCheckInterval_) {
-            RCLCPP_WARN(this->get_logger(), "Magnetometer Data unavailable for more than %i seconds.", sensorsCheckInterval_);
-            RCLCPP_WARN(this->get_logger(), "Magnetometer Data last valid %lld, now %lld, diff %lld", magnetometerData_.stamp.sec, timeNowSecs, std::abs(magnetometerData_.stamp.sec - timeNowSecs));
-            filterData_.magnetometer_received = false;
-        }
-
-        // Utility Print
-        if (!filterData_.gps_received) {
-            if (std::ctime(&timeNowSecs) != nullptr) {
-                std::string timedate_cpu = std::ctime(&timeNowSecs);
-                timedate_cpu.erase(std::remove(timedate_cpu.begin(), timedate_cpu.end(), '\n'), timedate_cpu.end());
-                RCLCPP_INFO(this->get_logger(), "CPU Time now: %s", timedate_cpu.c_str());
-            } else {
-                RCLCPP_WARN(this->get_logger(), "CPU Time now = nullptr");
+                if (std::ctime(&lastValidGPSSecs) != nullptr) {
+                    std::string timedate_gps = std::ctime(&lastValidGPSSecs);
+                    timedate_gps.erase(std::remove(timedate_gps.begin(), timedate_gps.end(), '\n'), timedate_gps.end());
+                    RCLCPP_INFO(this->get_logger(), "GPS Time now: %s", timedate_gps.c_str());
+                } else {
+                    RCLCPP_WARN(this->get_logger(), "GPS Time now = nullptr");
+                }
             }
+        }
 
-            if (std::ctime(&lastValidGPSSecs) != nullptr) {
-                std::string timedate_gps = std::ctime(&lastValidGPSSecs);
-                timedate_gps.erase(std::remove(timedate_gps.begin(), timedate_gps.end(), '\n'), timedate_gps.end());
-                RCLCPP_INFO(this->get_logger(), "GPS Time now: %s", timedate_gps.c_str());
-            } else {
-                RCLCPP_WARN(this->get_logger(), "GPS Time now = nullptr");
+        if (filterData_.imu_received){
+            if (std::abs(imuData_.stamp.sec - timeNowSecs) > sensorsCheckInterval_) {
+                RCLCPP_WARN(this->get_logger(), "IMU Data unavailable for more than %i seconds.", sensorsCheckInterval_);
+                RCLCPP_WARN(this->get_logger(), "IMU Data last valid %lld, now %lld, diff %lld", imuData_.stamp.sec, timeNowSecs, std::abs(imuData_.stamp.sec - timeNowSecs));
+                filterData_.imu_received = false;
+            }
+        }
+
+        if (filterData_.compass_received){
+            if (std::abs(compassData_.stamp.sec - timeNowSecs) > sensorsCheckInterval_) {
+                RCLCPP_WARN(this->get_logger(), "Compass Data unavailable for more than %i seconds.", sensorsCheckInterval_);
+                RCLCPP_WARN(this->get_logger(), "Compass Data last valid %lld, now %lld, diff %lld", compassData_.stamp.sec, timeNowSecs, std::abs(compassData_.stamp.sec - timeNowSecs));
+                filterData_.compass_received = false;
+            }
+        }
+
+        if (filterData_.magnetometer_received){
+            if (std::abs(magnetometerData_.stamp.sec - timeNowSecs) > sensorsCheckInterval_) {
+                RCLCPP_WARN(this->get_logger(), "Magnetometer Data unavailable for more than %i seconds.", sensorsCheckInterval_);
+                RCLCPP_WARN(this->get_logger(), "Magnetometer Data last valid %lld, now %lld, diff %lld", magnetometerData_.stamp.sec, timeNowSecs, std::abs(magnetometerData_.stamp.sec - timeNowSecs));
+                filterData_.magnetometer_received = false;
             }
         }
     }
@@ -522,7 +529,7 @@ namespace nav {
     {
         libconfig::Config confObj;
 
-        // Read the ULISSE MODEL config file
+             // Read the ULISSE MODEL config file
         std::string package_share_directory = ament_index_cpp::get_package_share_directory("surface_vehicle_model");
         std::string modelConfPath = package_share_directory + "/conf/ulisse_model.conf";
 
@@ -541,7 +548,7 @@ namespace nav {
             return false;
         }
 
-        // Read the NAV_FILTER config file
+             // Read the NAV_FILTER config file
         try {
             confObj.readFile(confPath_.c_str());
         } catch (const libconfig::FileIOException& fioex) {
@@ -556,7 +563,7 @@ namespace nav {
             RCLCPP_ERROR(this->get_logger(), "Setting error while reading %s: %s", e.getPath(), e.what());
         }
 
-        // Configure the filter node params
+             // Configure the filter node params
         if (!filterParams_.ConfigureFromFile(confObj)) {
             RCLCPP_ERROR(this->get_logger(), "Failed to load navigation mode/rate params");
             return false;
@@ -595,20 +602,19 @@ namespace nav {
             return false;
         }
 
-        if (version == 0) {
-            ulisseModelVersion_ = UlisseVehicleModel::Version::SimplifiedCoMFrame;
-        } else if (version == 1) {
-            ulisseModelVersion_ = UlisseVehicleModel::Version::CompleteBodyFrame;
-        } else if (version == 2) {
-            ulisseModelVersion_ = UlisseVehicleModel::Version::CompleteBodyFrameBaseline;
-        }else {
+
+        if (version >= 0 && version < ASVModelVersion::num_versions) {
+            ulisseModelVersion_ = static_cast<ASVModelVersion>(version);
+            std::cout << tc::cyanL <<  "[NavFilter] Model: " << ASVModelVersion2String.at(ulisseModelVersion_) << tc::none << std::endl;
+        } else {
+            std::cerr << tc::redL << "Unrecognized UlisseVehicleModel Version!" << tc::none << std::endl;
             return false;
         }
         ulisseModelEKF_ = std::make_shared<UlisseVehicleModel>(UlisseVehicleModel(ulisseModelVersion_));
         std::vector<int> indexAngles = { 3, 4, 5 }; //rpy
         extendedKalmanFilter_ = std::make_shared<ctb::ExtendedKalmanFilter>(ctb::ExtendedKalmanFilter(stateDim_, indexAngles, ulisseModelEKF_));
 
-        // Load the measures covariance
+             // Load the measures covariance
         const libconfig::Setting& measure = ekf["measures"];
 
         Eigen::VectorXd covarianceDiag;
@@ -689,7 +695,7 @@ namespace nav {
         stbdRPMMeasurement_->Covariance().diagonal() = covarianceDiag;
         // Load the initial state and covariance and the model covariance
 
-        // State dimension
+             // State dimension
         const libconfig::Setting& state = ekf["state"];
 
         if (!ctb::GetParam(state, stateDim_, "dim"))
@@ -730,7 +736,7 @@ namespace nav {
             return false;
         obs_.k = gain;
 
-        // Yaw rate digital filter gains. This is not used by the filter but is needed to filter the yaw rate
+             // Yaw rate digital filter gains. This is not used by the filter but is needed to filter the yaw rate
         if (!ctb::GetParamVector(luenbergerObs, yawRateFilterGains_, "yawRateFilterGains"))
             return false;
 
