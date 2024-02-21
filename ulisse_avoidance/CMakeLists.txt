@@ -13,6 +13,7 @@ find_package(ulisse_ctrl REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(ctrl_toolbox REQUIRED)
 find_package(oal REQUIRED)
+find_package(ament_index_cpp)
 
 # Add files in the tree of "Projects" view in QtCreator
 file(GLOB_RECURSE SOURCE_FILES
@@ -37,6 +38,7 @@ target_include_directories(oal_interface PUBLIC
 target_compile_features(oal_interface PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
 ament_target_dependencies(
         oal_interface
+        ament_index_cpp
         "rclcpp"
         "ulisse_msgs"
         "ulisse_ctrl"
