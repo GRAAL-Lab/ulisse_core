@@ -10,6 +10,7 @@
 #include "ulisse_msgs/msg/obstacle.hpp"
 #include "ulisse_msgs/msg/vehicle_status.hpp"
 #include "ulisse_msgs/msg/avoidance_status.hpp"
+#include "ulisse_msgs/msg/obs_distance.hpp"
 #include "ulisse_msgs/msg/avoidance_path.hpp"
 #include "ulisse_msgs/msg/waypoint.hpp"
 #include "ulisse_msgs/srv/compute_avoidance_path.hpp"
@@ -182,13 +183,12 @@ private:
 
     void addObstacle(const Obstacle &obs);
 
-    void SetObssData(path_planner& planner, const rclcpp::Time& time, std::vector<Obstacle>& obstacles) {
+    void SyncObssData(const rclcpp::Time& time, std::vector<Obstacle>& obstacles) {
       for (const ObstacleWithTime& obs_t: obstacles_) {
         Obstacle obs = obs_t.data;
         obs.position = ComputePosition(obs, time.seconds() - obs_t.timestamp.seconds());
         obstacles.push_back(obs);
       }
-      planner.SetObssData(obstacles);
     }
 
     void status_pub_callback();
@@ -217,11 +217,16 @@ private:
       if(print){
         std::cout << "Loaded configuration:\n"
                   //<< "  - COLREGS COMPLIANCE: " << conf_.colregs << "\n"
-                  << "  - Centroid: { " << conf_.centroid.latitude << ", " << conf_.centroid.longitude << " }\n"
-                  << "  - Considering the vehicles turns at " << conf_.rotational_speed << " rad/s\n"
-                  << "  - Path following progress is checked every " << conf_.check_progress_rate << "s\n"
+                  << "  - Centroid: { " << conf_.centroid.latitude << ", " << conf_.centroid.longitude << " }\n";
+
+        if(conf_.rotational_speed == 0) {std::cout<< "  - Considering the vehicles turns instantaneously\n";}
+        else{
+            std::cout<< "  - Considering the vehicles turns at " << conf_.rotational_speed << " rad/s\n";
+        }
+
+        std::cout<< "  - Path following progress is checked every " << conf_.check_progress_rate << "s\n"
                   << "  - Inner waypoints acceptance radius: " << conf_.waypoint_acceptance_radius << "m\n"
-                  << "  - New path is followed if shorter than " << (int)conf_.better_path_distance_perc*100 << "% of current one\n"
+                  << "  - New path is followed if shorter than " << conf_.better_path_distance_perc*100 << "% of current one\n"
                   << "  - Avoidance status is updated every " << conf_.status_pub_rate << "s\n"
                   << "  - Obstacles are ignored " << conf_.obs_expired_time << "s after the last status update\n"
                   << "  - Avoidance stops " << conf_.max_pos_delay_time << "s after the last vehicle position update\n"
@@ -229,8 +234,7 @@ private:
       }
     }
 
-    void pubPath(Path path, std::vector<Obstacle> obstacles){
-      auto message = ulisse_msgs::msg::AvoidancePath();
+    void SetPathMsg(Path path, std::vector<Obstacle> obstacles, ulisse_msgs::msg::AvoidancePath &message){
       message.creation_time = last_pos_update_.seconds();
       message.colregs_compliant = colregs_;
       message.vh_position.latitude = vh_position_.latitude;
@@ -266,22 +270,43 @@ private:
             case RL:
               wp.vx = "RL";
               break;
+            case NA:
+              wp.vx = "NA";
+              break;
           }
         }
         message.wps.push_back(wp);
         path.pop();
       }
       // Obstacles
-      for (auto obs : obstacles) {
+      for (const Obstacle& obs : obstacles) {
         auto obs_msg = ulisse_msgs::msg::Obstacle();
-        ctb::LatLong pos = GetLatLong(obs.position);
-        obs_msg.id = obs.id;
-        obs_msg.center.latitude = pos.latitude;
-        obs_msg.center.longitude = pos.longitude;
-        obs_msg.higher_priority = obs.higher_priority;
+        SetObsMsg(obs, obs_msg);
         message.obs.push_back(obs_msg);
       }
       compPathPub_->publish(message);
+    }
+
+    void SetObsMsg(const Obstacle& obs, ulisse_msgs::msg::Obstacle &msg){
+        ctb::LatLong pos = GetLatLong(obs.position);
+        msg.id = obs.id;
+        msg.center.latitude = pos.latitude;
+        msg.center.longitude = pos.longitude;
+        msg.heading = obs.head;
+        msg.b_box_dim_x = obs.bb.dim_x;
+        msg.b_box_dim_y = obs.bb.dim_y;
+        msg.bb_max.x_bow_ratio = obs.bb.max_x_bow;
+        msg.bb_max.x_stern_ratio = obs.bb.max_x_stern;
+        msg.bb_max.y_starboard_ratio = obs.bb.max_y_starboard;
+        msg.bb_max.y_port_ratio = obs.bb.max_y_port;
+        msg.bb_safe.x_bow_ratio = obs.bb.safety_x_bow;
+        msg.bb_safe.x_stern_ratio = obs.bb.safety_x_stern;
+        msg.bb_safe.y_starboard_ratio = obs.bb.safety_y_starboard;
+        msg.bb_safe.y_port_ratio = obs.bb.safety_y_port;
+        msg.uncertainty_gap = obs.bb.gap;
+        msg.vel_x = -1;
+        msg.vel_y = -1;
+        msg.higher_priority = obs.higher_priority;
     }
 
     void printPath() const{

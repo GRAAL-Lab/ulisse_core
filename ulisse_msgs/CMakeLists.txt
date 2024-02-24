@@ -34,6 +34,7 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/AvoidanceStatus.msg"
   "msg/ColorRGB.msg"
   "msg/BoundingBox.msg"
+  "msg/ObsDistance.msg"
 
   # Sensors
   "msg/Time.msg"

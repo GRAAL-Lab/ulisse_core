@@ -109,11 +109,14 @@ bool OalInterfaceNode::ComputePath(Path &path) {
     std::vector<Obstacle> obstacles;
     planner.SetVhData(v_info);
     planner.SetAccRadius(conf_.waypoint_acceptance_radius);
-    SetObssData(planner, last_pos_update_, obstacles);
+    SyncObssData(last_pos_update_, obstacles);
+    planner.SetObssData(obstacles);
     path = Path();
     if (planner.ComputePath(goal, colregs_, path)) {
       path.UpdateMetrics(GetLocal(vh_position_), vh_heading_, conf_.rotational_speed);
-      pubPath(path, obstacles);
+      auto message = ulisse_msgs::msg::AvoidancePath();
+      SetPathMsg(path, obstacles, message);
+      compPathPub_->publish(message);
       // If close to next wp, ignore it
       Path path_temp = path;
       path_temp.pop();
@@ -131,9 +134,12 @@ bool OalInterfaceNode::CheckPath(Path &path) {
     planner.SetVhData(v_info);
     planner.SetAccRadius(conf_.waypoint_acceptance_radius);
     std::vector<Obstacle> obstacles;
-    SetObssData(planner, last_pos_update_, obstacles);
-
-    return planner.CheckPath(vh_pos, path);
+    SyncObssData(last_pos_update_, obstacles);
+    planner.SetObssData(obstacles);
+    Eigen::Vector2d unreachable_wp_local;
+    bool ret = planner.CheckPath(vh_pos, path, unreachable_wp_local);
+    if(!ret) std::cout<<" Collision before reaching wp ( "<<GetLatLong(unreachable_wp_local).latitude<<", "<<GetLatLong(unreachable_wp_local).longitude<<" )"<<std::endl;
+    return ret;
 }
 
 void OalInterfaceNode::CheckProgress() {
@@ -317,26 +323,62 @@ ctb::LatLong OalInterfaceNode::GetLatLong(Eigen::Vector2d pos_2d, bool NED) cons
 
 void OalInterfaceNode::status_pub_callback() {
     auto message = ulisse_msgs::msg::AvoidanceStatus();
-    if (active_) {
-        Path path_temp = path_;
-        path_temp.pop();
-        ctb::LatLong next_wp = GetLatLong(path_temp.top().position);
-        message.status = "Active";
-        message.colregs_compliant = colregs_;
-        message.goal.longitude = goal_.longitude;
-        message.goal.latitude = goal_.latitude;
-        message.next_wp.longitude = next_wp.longitude;
-        message.next_wp.latitude = next_wp.latitude;
-        message.speed = path_.top().speed_to_it;
-    } else {
-        message.status = "Not active";
-    }
     // DELETING OLD OBSTACLE
     auto old = [this](const ObstacleWithTime &obs_t) -> bool {
         return (conf_.obs_expired_time <= (rclcpp::Clock().now().seconds() - obs_t.timestamp.seconds()));
     };
     obstacles_.erase(std::remove_if(obstacles_.begin(), obstacles_.end(), old), obstacles_.end());
-    message.n_known_obs = (double) obstacles_.size();  // TODO fix msg
+
+    message.n_known_obs = obstacles_.size();  
+    std::vector<Obstacle> obstacles;
+    SyncObssData(last_pos_update_, obstacles);
+    auto obs_dist = ulisse_msgs::msg::ObsDistance();
+    for (const Obstacle& obs : obstacles) {
+        Eigen::Vector2d obs_to_vh = GetLocal(vh_position_) - obs.position;
+        Eigen::Rotation2D<double> rotation(obs.head);
+        obs_to_vh = rotation.inverse() * obs_to_vh;
+        obs_dist.x_distance = abs(obs_to_vh.x());
+        obs_dist.y_distance = abs(obs_to_vh.y());
+        double theta = atan2(obs_to_vh.y(), obs_to_vh.x()); // error for (0,0)
+        if(theta > 0){
+            if (theta < M_PI/2 ){
+                obs_dist.safe_x_distance = obs.bb.safety_x_bow * obs.bb.dim_x/2;
+                obs_dist.safe_y_distance = obs.bb.safety_y_port * obs.bb.dim_y/2;
+            }else{
+                obs_dist.safe_x_distance = obs.bb.safety_x_stern * obs.bb.dim_x/2;
+                obs_dist.safe_y_distance = obs.bb.safety_y_port * obs.bb.dim_y/2;
+            }
+        }else{
+            if (theta > -M_PI/2 ){
+                obs_dist.safe_x_distance = obs.bb.safety_x_bow * obs.bb.dim_x/2;
+                obs_dist.safe_y_distance = obs.bb.safety_y_starboard * obs.bb.dim_y/2;
+            }else{
+                obs_dist.safe_x_distance = obs.bb.safety_x_stern * obs.bb.dim_x/2;
+                obs_dist.safe_y_distance = obs.bb.safety_y_starboard * obs.bb.dim_y/2;
+            }
+        }
+        message.obs_distances.push_back(obs_dist);
+    }
+
+    if(!active_){
+        message.status = "Not active";
+
+    }else{
+      /*Path path_temp = path_;
+      path_temp.pop();
+      ctb::LatLong next_wp = GetLatLong(path_temp.top().position);*/
+      message.status = "Active";
+      message.colregs_compliant = colregs_;
+      /*message.goal.longitude = goal_.longitude;
+      message.goal.latitude = goal_.latitude;
+      message.next_wp.longitude = next_wp.longitude;
+      message.next_wp.latitude = next_wp.latitude;
+      message.speed = path_.top().speed_to_it;*/
+
+      auto path_msg = ulisse_msgs::msg::AvoidancePath();
+      SetPathMsg(path_, obstacles, path_msg);
+      message.current_path = path_msg;
+    }
     avoidanceStatusPub_->publish(message);
 }
 
