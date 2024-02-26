@@ -206,8 +206,8 @@ void OalInterfaceNode::CheckProgress() {
                     }
 
                     last_path_computation_ = rclcpp::Clock().now();
-                    coordinates_pub();
                     path_ = new_path;
+                    coordinates_pub();
                     sendNew = true;
                     std::cout << "-----------------------------" << std::endl;
                     std::cout << "Here is the new path:" << std::endl;
@@ -333,28 +333,50 @@ void OalInterfaceNode::status_pub_callback() {
     std::vector<Obstacle> obstacles;
     SyncObssData(last_pos_update_, obstacles);
     auto obs_dist = ulisse_msgs::msg::ObsDistance();
-    for (const Obstacle& obs : obstacles) {
+    for (Obstacle obs : obstacles) {
         Eigen::Vector2d obs_to_vh = GetLocal(vh_position_) - obs.position;
         Eigen::Rotation2D<double> rotation(obs.head);
         obs_to_vh = rotation.inverse() * obs_to_vh;
         obs_dist.x_distance = abs(obs_to_vh.x());
         obs_dist.y_distance = abs(obs_to_vh.y());
+
         double theta = atan2(obs_to_vh.y(), obs_to_vh.x()); // error for (0,0)
+        vx_id vxId = FR;
         if(theta > 0){
             if (theta < M_PI/2 ){
-                obs_dist.safe_x_distance = obs.bb.safety_x_bow * obs.bb.dim_x/2;
-                obs_dist.safe_y_distance = obs.bb.safety_y_port * obs.bb.dim_y/2;
+                obs_dist.safe_bb_x_dim = obs.bb.safety_x_bow * obs.bb.dim_x/2;
+                obs_dist.safe_bb_y_dim = obs.bb.safety_y_port * obs.bb.dim_y/2;
+                obs_dist.max_bb_x_dim = obs.bb.max_x_bow * obs.bb.dim_x/2;
+                obs_dist.max_bb_y_dim = obs.bb.max_y_port * obs.bb.dim_y/2;
+                vxId = FL;
             }else{
-                obs_dist.safe_x_distance = obs.bb.safety_x_stern * obs.bb.dim_x/2;
-                obs_dist.safe_y_distance = obs.bb.safety_y_port * obs.bb.dim_y/2;
+                obs_dist.safe_bb_x_dim = obs.bb.safety_x_stern * obs.bb.dim_x/2;
+                obs_dist.safe_bb_y_dim = obs.bb.safety_y_port * obs.bb.dim_y/2;
+                obs_dist.max_bb_x_dim = obs.bb.max_x_stern * obs.bb.dim_x/2;
+                obs_dist.max_bb_y_dim = obs.bb.max_y_port * obs.bb.dim_y/2;
+                vxId = RL;
             }
         }else{
             if (theta > -M_PI/2 ){
-                obs_dist.safe_x_distance = obs.bb.safety_x_bow * obs.bb.dim_x/2;
-                obs_dist.safe_y_distance = obs.bb.safety_y_starboard * obs.bb.dim_y/2;
+                obs_dist.safe_bb_x_dim = obs.bb.safety_x_bow * obs.bb.dim_x/2;
+                obs_dist.safe_bb_y_dim = obs.bb.safety_y_starboard * obs.bb.dim_y/2;
+                obs_dist.max_bb_x_dim = obs.bb.max_x_bow * obs.bb.dim_x/2;
+                obs_dist.max_bb_y_dim = obs.bb.max_y_starboard * obs.bb.dim_y/2;
+                vxId = FR;
             }else{
-                obs_dist.safe_x_distance = obs.bb.safety_x_stern * obs.bb.dim_x/2;
-                obs_dist.safe_y_distance = obs.bb.safety_y_starboard * obs.bb.dim_y/2;
+                obs_dist.safe_bb_x_dim = obs.bb.safety_x_stern * obs.bb.dim_x/2;
+                obs_dist.safe_bb_y_dim = obs.bb.safety_y_starboard * obs.bb.dim_y/2;
+                obs_dist.max_bb_x_dim = obs.bb.max_x_stern * obs.bb.dim_x/2;
+                obs_dist.max_bb_y_dim = obs.bb.max_y_starboard * obs.bb.dim_y/2;
+                vxId = RR;
+            }
+        }
+        obs.uncertainty = true;
+        obs.FindLocalVxs(GetLocal(vh_position_));
+        for(const auto& vx : obs.vxs){
+            if(vx.id == vxId){
+                obs_dist.current_bb_x_dim = abs(vx.position.x());
+                obs_dist.current_bb_y_dim = abs(vx.position.y());
             }
         }
         message.obs_distances.push_back(obs_dist);

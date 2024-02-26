@@ -1,4 +1,8 @@
 float64 x_distance
 float64 y_distance 
-float64 safe_x_distance
-float64 safe_y_distance
+float64 safe_bb_x_dim
+float64 safe_bb_y_dim
+float64 max_bb_x_dim
+float64 max_bb_y_dim
+float64 current_bb_x_dim
+float64 current_bb_y_dim
