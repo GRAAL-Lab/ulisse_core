@@ -24,6 +24,13 @@
 #include "eigen3/Eigen/Dense"
 #include "rml/RML.h"
 
+#include "geometry_msgs/msg/transform_stamped.hpp"
+#include "geometry_msgs/msg/pose_stamped.hpp"
+
+#include "tf2/LinearMath/Quaternion.h"
+#include "tf2_ros/static_transform_broadcaster.h"
+#include "tf2_ros/transform_broadcaster.h"
+
 namespace ulisse {
 
 class VehicleSimulator : public rclcpp::Node {
@@ -40,7 +47,7 @@ class VehicleSimulator : public rclcpp::Node {
     Eigen::Vector6d bodyF_relativeVelocity_, worldF_relativeVelocity_, worldF_velocity_, worldF_waterVelocity_;
     Eigen::Vector6d bodyF_relativeAcceleration_, worldF_relativeAcceleration_, bodyF_relativeAcceleration_projected_, bodyF_wavesEffects_;
 
-    ctb::LatLong vehiclePos, vehiclePreviousPos, centroidLocation;
+    ctb::LatLong vehiclePos_, vehiclePreviousPos_, centroidLocation_;
     double altitude_;
 
     Eigen::Matrix3d P_;
@@ -100,6 +107,9 @@ class VehicleSimulator : public rclcpp::Node {
     bool LoadConfiguration(const std::string file_name);
     void SimulateActuation();
 
+    std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_ASV;
+    geometry_msgs::msg::TransformStamped t_stamp_ASV; // ASV/ROV
+
 public:
     VehicleSimulator(const std::string file_name);
 
@@ -108,6 +118,7 @@ public:
     void ExecuteStep();
     void SimulateSensors();
     void PublishSensors();
+    void PublishTf();
 
     auto WorldF_Velocity() const -> const Eigen::Vector6d& { return worldF_velocity_; }
     /*auto Altitude() const -> const rml::EulerRPY& { return bodyF_orientation_; }

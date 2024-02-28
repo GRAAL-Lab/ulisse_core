@@ -18,6 +18,7 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(surface_vehicle_model REQUIRED)
 find_package(ulisse_msgs REQUIRED)
+find_package(rov_msgs REQUIRED) #ROV
 find_package(ulisse_driver REQUIRED)
 find_package(rml REQUIRED)
 find_package(fsm REQUIRED)
@@ -94,7 +95,7 @@ set(ulisse_dynamic_ctrl_lib_sources
 
 ## Libraries
 add_library(ulisse_kinematic_ctrl_lib ${ulisse_kinematic_ctrl_lib_sources})
-ament_target_dependencies(ulisse_kinematic_ctrl_lib rclcpp std_msgs ulisse_msgs surface_vehicle_model ament_index_cpp)
+ament_target_dependencies(ulisse_kinematic_ctrl_lib rclcpp std_msgs ulisse_msgs rov_msgs surface_vehicle_model ament_index_cpp)
 target_link_libraries(ulisse_kinematic_ctrl_lib ${surface_vehicle_model_LIBRARIES} ${ulisse_msgs_LIBRARIES} ${Boost_LIBRARIES} ikcl tpik config++ Geographic rml fsm ctrl_toolbox sisl_toolbox)
 
 add_library(ulisse_dynamic_ctrl_lib ${ulisse_dynamic_ctrl_lib_sources})

@@ -35,7 +35,9 @@ VehicleController::VehicleController(std::string conf_filename)
 
     // Sensor Subscriptions
     navFilterSub_ = this->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 10, std::bind(&VehicleController::NavFilterCB, this, _1));
+    navFilterROVSub_ = this->create_subscription<rov_msgs::msg::NavFilterData>("/rov/nav_filter/data", 10, std::bind(&VehicleController::NavFilterRovCB, this, _1)); //ROV
     llcStatusSub_ = this->create_subscription<ulisse_msgs::msg::LLCStatus>(ulisse_msgs::topicnames::llc_status, 10, std::bind(&VehicleController::LLCStatusCB, this, _1));
+    cableROVSub_ = this->create_subscription<rov_msgs::msg::CableData>("/rov/cable_data", 10, std::bind(&VehicleController::CableDataRovCB, this, _1)); //ROV
 
     // Data Subscriptions
     surgeHeadingSub_ = this->create_subscription<ulisse_msgs::msg::SurgeHeading>(ulisse_msgs::topicnames::surge_heading, 10, std::bind(&VehicleController::SurgeHeadingCB, this, _1));
@@ -581,6 +583,33 @@ void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::Share
 
     robotModel_->PositionOnInertialFrame(worldF_T_vehicleF);
     robotModel_->VelocityVector(ulisse::robotModelID::ASV, velocity_fbk);
+}
+
+void VehicleController::NavFilterRovCB(const rov_msgs::msg::NavFilterData::SharedPtr msg){ //ROV
+    rovData_->inertialF_linearPosition.latitude = msg->inertialframe_linear_position.latlong.latitude;
+    rovData_->inertialF_linearPosition.longitude = msg->inertialframe_linear_position.latlong.longitude;
+    rovData_->inertialF_altitude = msg->inertialframe_linear_position.altitude;
+
+    // Get the water current for hold state
+    rovData_->inertialF_waterCurrent[0] = msg->inertialframe_water_current[0];
+    rovData_->inertialF_waterCurrent[1] = msg->inertialframe_water_current[1];
+    rovData_->inertialF_waterCurrent[2] = msg->inertialframe_water_current[2];
+
+    ctrlData_->bodyF_angularPosition.Pitch(msg->bodyframe_angular_position.pitch);
+    ctrlData_->bodyF_angularPosition.Roll(msg->bodyframe_angular_position.roll);
+    ctrlData_->bodyF_angularPosition.Yaw(msg->bodyframe_angular_position.yaw);
+
+    ctrlData_->bodyF_linearVelocity[0] = msg->bodyframe_linear_velocity[0];
+    ctrlData_->bodyF_linearVelocity[1] = msg->bodyframe_linear_velocity[1];
+    ctrlData_->bodyF_linearVelocity[2] = msg->bodyframe_linear_velocity[2];
+}
+
+void VehicleController::CableDataRovCB(const rov_msgs::msg::CableData::SharedPtr msg){ //ROV
+    cableData_.released_cable_length = msg->released_cable_length;
+    cableData_.layer_n = msg->layer_n;
+    cableData_.winding_radius = msg->winding_radius;
+    cableData_.winch_rpm = msg->winch_rpm;
+
 }
 
 void VehicleController::LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg)

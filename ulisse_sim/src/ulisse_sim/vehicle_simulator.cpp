@@ -34,8 +34,8 @@ VehicleSimulator::VehicleSimulator(const std::string file_name)
     ulisseModel_.params = config_->modelParams;
     std::cout << config_->modelParams << std::endl;
 
-    vehiclePos = vehiclePreviousPos = centroidLocation;
-    std::cout << "INITIAL POS: LatLong = " << vehiclePos.latitude << ", " << vehiclePos.longitude << "\n";
+    vehiclePos_ = vehiclePreviousPos_ = centroidLocation_;
+    std::cout << "INITIAL POS: LatLong = " << vehiclePos_.latitude << ", " << vehiclePos_.longitude << "\n";
 
     t_start_ = t_last_ = t_now_ = std::chrono::system_clock::now();
 
@@ -51,6 +51,8 @@ VehicleSimulator::VehicleSimulator(const std::string file_name)
     appliedMotorRefPub_ = this->create_publisher<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_applied_perc, 1);
     simulatedSystemPub_ = this->create_publisher<ulisse_msgs::msg::SimulatedSystem>(ulisse_msgs::topicnames::simulated_system, 1);
     motorsDataPub_ = this->create_publisher<ulisse_msgs::msg::LLCThrusters>(ulisse_msgs::topicnames::llc_thrusters, 1);
+
+    tf_broadcaster_ASV = std::make_shared<tf2_ros::TransformBroadcaster>(this); //ASV/ROV
 
     thrustersSub_ = this->create_subscription<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_reference_perc, 1,
                                                                                     std::bind(&VehicleSimulator::ThrustersReferenceCB, this, _1));
@@ -105,7 +107,7 @@ bool VehicleSimulator::LoadConfiguration(const std::string file_name)
         return false;
     };
 
-    centroidLocation = ctb::LatLong(centroidLocationTmp[0], centroidLocationTmp[1]);
+    centroidLocation_ = ctb::LatLong(centroidLocationTmp[0], centroidLocationTmp[1]);
 
     ///////////////////////////////////////////////////////////////////////////////
     /////       LOAD SIMULATOR CONFIGURATION
@@ -150,6 +152,7 @@ void VehicleSimulator::Run()
     ExecuteStep();
     SimulateSensors();
     PublishSensors();
+    PublishTf();
 }
 
 
@@ -182,7 +185,7 @@ void VehicleSimulator::ExecuteStep()
 
     t_last_ = t_now_;
     previous_bodyF_orientation_ = bodyF_orientation_;
-    vehiclePreviousPos = vehiclePos;
+    vehiclePreviousPos_ = vehiclePos_;
     altitude_ = 0.0;
 }
 
@@ -263,7 +266,7 @@ void VehicleSimulator::SimulateActuation()
     vehicleSpeed_ = std::sqrt(worldF_velocity_(0) * worldF_velocity_(0) + worldF_velocity_(1) * worldF_velocity_(1));
     double distance_ = vehicleSpeed_ * Ts_;
 
-    geod_.Direct(vehiclePreviousPos.latitude, vehiclePreviousPos.longitude, vehicleTrack_ * 180.0 / M_PI, distance_, vehiclePos.latitude, vehiclePos.longitude);
+    geod_.Direct(vehiclePreviousPos_.latitude, vehiclePreviousPos_.longitude, vehicleTrack_ * 180.0 / M_PI, distance_, vehiclePos_.latitude, vehiclePos_.longitude);
 
     // Integrating the Euler rates to get the new Euler angles and wrapping around PI
     bodyF_orientation_.Roll(std::fmod((previous_bodyF_orientation_.Roll() + rpyEulerRates(0) * Ts_) + 2 * M_PI, M_PI));
@@ -295,7 +298,7 @@ void VehicleSimulator::SimulateSensors()
 
     //Transform to cartesian
     Eigen::Vector3d worldF_com, worldF_antenna;
-    ctb::LatLong2LocalNED(vehiclePos, altitude_, centroidLocation, worldF_com);
+    ctb::LatLong2LocalNED(vehiclePos_, altitude_, centroidLocation_, worldF_com);
 
     //move the gps from COM to the antenna
     worldF_antenna = worldF_com + worldF_R_bodyF_ * config_->bodyF_gps_sensor_position;
@@ -307,7 +310,7 @@ void VehicleSimulator::SimulateSensors()
 
     ctb::LatLong gpsLatlong;
     double gpsAltitude;
-    ctb::LocalNED2LatLong(worldF_antenna, centroidLocation, gpsLatlong, gpsAltitude);
+    ctb::LocalNED2LatLong(worldF_antenna, centroidLocation_, gpsLatlong, gpsAltitude);
 
     gpsMsg_.time = static_cast<double>(now_nanosecs / 1E9);
     gpsMsg_.track = vehicleTrack_;
@@ -466,8 +469,8 @@ void VehicleSimulator::SimulateSensors()
     // Fill the ground truth msg
     groundTruthMsg_.stamp.sec = now_stamp_secs;
     groundTruthMsg_.stamp.nanosec = now_stamp_nanosecs;
-    groundTruthMsg_.inertialframe_linear_position.latlong.latitude = vehiclePos.latitude;
-    groundTruthMsg_.inertialframe_linear_position.latlong.longitude = vehiclePos.longitude;
+    groundTruthMsg_.inertialframe_linear_position.latlong.latitude = vehiclePos_.latitude;
+    groundTruthMsg_.inertialframe_linear_position.latlong.longitude = vehiclePos_.longitude;
     groundTruthMsg_.inertialframe_linear_position.altitude = altitude_;
     groundTruthMsg_.bodyframe_angular_position.roll = bodyF_orientation_.Roll();
     groundTruthMsg_.bodyframe_angular_position.pitch = bodyF_orientation_.Pitch();
@@ -535,6 +538,26 @@ void VehicleSimulator::PublishSensors()
         dvlPubCounter_ = static_cast<int>(timestamp_count_ / 20);
         dvlPub_->publish(dvlMsg_);
     }
+}
+
+void VehicleSimulator::PublishTf(){
+    Eigen::Vector3d ASVpos;
+    ctb::LatLong2LocalUTM(vehiclePos_, altitude_, centroidLocation_, ASVpos);
+
+    tf2::Quaternion q1;
+    q1.setRPY(bodyF_orientation_.Roll(),bodyF_orientation_.Pitch(),bodyF_orientation_.Yaw());
+
+    t_stamp_ASV.header.stamp = this->get_clock()->now();
+    t_stamp_ASV.header.frame_id = "world";
+    t_stamp_ASV.child_frame_id = "ASV";
+    t_stamp_ASV.transform.translation.x = ASVpos.x();
+    t_stamp_ASV.transform.translation.y = ASVpos.y();
+    t_stamp_ASV.transform.translation.z = ASVpos.z();
+    t_stamp_ASV.transform.rotation.x = q1.x();
+    t_stamp_ASV.transform.rotation.y = q1.y();
+    t_stamp_ASV.transform.rotation.z = q1.z();
+    t_stamp_ASV.transform.rotation.w = q1.w();
+    tf_broadcaster_ASV>sendTransform(t_stamp_ASV);
 }
 
 double VehicleSimulator::GetCurrentTimeStamp() const
