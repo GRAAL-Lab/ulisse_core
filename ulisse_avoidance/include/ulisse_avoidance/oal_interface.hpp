@@ -92,6 +92,7 @@ private:
     // Environment
     ctb::LatLong vh_position_;
     double vh_heading_;
+    double last_cmd_speed;
     std::vector <ObstacleWithTime> obstacles_;
 
     // Timestamps

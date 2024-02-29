@@ -26,6 +26,10 @@ RosbagRecorder::RosbagRecorder() :
     std::string ulisse_sim_dir = ament_index_cpp::get_package_share_directory("ulisse_sim");
     ulisse_sim_conf_ = ulisse_sim_dir;
     ulisse_sim_conf_.append("/conf/simulator_ulisse.conf");
+    
+    std::string ulisse_avoidance_dir = ament_index_cpp::get_package_share_directory("ulisse_avoidance");
+    ulisse_avoidance_conf_ = ulisse_avoidance_dir;
+    ulisse_avoidance_conf_.append("/conf/configuration.cfg");
 
     trigger_srv_ = this->create_service<ulisse_msgs::srv::RosbagCmd>(ulisse_msgs::topicnames::rosbag_service,
         std::bind(&RosbagRecorder::ServiceHandler, this, _1, _2));
@@ -120,6 +124,8 @@ void RosbagRecorder::ServiceHandler(const std::shared_ptr<ulisse_msgs::srv::Rosb
             futils::CopyFile(ulisse_ctrl_dcl_conf_, bag_folder_ + "/conf/dcl_ulisse.conf");
             futils::CopyFile(nav_filter_conf_, bag_folder_ + "/conf/navigation_filter.conf");
             futils::CopyFile(ulisse_sim_conf_, bag_folder_ + "/conf/simulator_ulisse.conf");
+            futils::CopyFile(ulisse_avoidance_conf_, bag_folder_ + "/conf/configuration.cfg");
+
 
             if (!bag_info_.empty()){
                 std::ofstream out(bag_folder_ + "/bag_info.txt");

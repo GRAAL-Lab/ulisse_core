@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source /opt/ros/foxy/setup.bash
+source /opt/ros/humble/setup.bash
 source ~/ros2_ws/install/setup.bash
 
 if [ -z "$1" ]

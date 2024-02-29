@@ -32,6 +32,8 @@
 #include "ulisse_msgs/msg/reference_velocities.hpp"
 #include "ulisse_msgs/msg/vehicle_status.hpp"
 #include "ulisse_msgs/msg/simulated_system.hpp"
+#include "ulisse_msgs/msg/avoidance_path.hpp"
+#include "ulisse_msgs/msg/avoidance_status.hpp"
 
 //#include "ulisse_msgs/msg/llc_sw485_status.hpp"
 //#include "ulisse_msgs/msg/micro_loop_count.hpp"
@@ -47,6 +49,9 @@ private:
     std::string bagPath_, saveFolder_;
 
     ulisse_msgs::msg::GPSData gpsData_;
+    
+    ulisse_msgs::msg::AvoidancePath avoidancePath_;
+    ulisse_msgs::msg::AvoidanceStatus avoidanceStatus_;
     //ulisse_msgs::msg::AmbientSensors ambientSensors_;
     ulisse_msgs::msg::Compass compassData_;
     ulisse_msgs::msg::IMUData imuData_;
@@ -74,6 +79,10 @@ private:
     std::ofstream refVelFile_;
     //std::ofstream vehicleStatusFile_;
     std::ofstream groundtruthFile_;
+    
+    // Tesi Depalo
+    std::ofstream avoidancePathFile_;
+    std::ofstream avoidanceStatusFile_;
 
     bool ConvertToCSV();
     bool OpenFiles();

@@ -30,6 +30,7 @@ class RosbagRecorder : public rclcpp::Node
     std::string ulisse_ctrl_dcl_conf_;
     std::string nav_filter_conf_;
     std::string ulisse_sim_conf_;
+    std::string ulisse_avoidance_conf_;
 
 
     void ServiceHandler(const std::shared_ptr<ulisse_msgs::srv::RosbagCmd::Request> request,

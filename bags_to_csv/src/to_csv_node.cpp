@@ -15,6 +15,7 @@
 #include "ulisse_msgs/msg/reference_velocities.hpp"
 #include "ulisse_msgs/msg/thrusters_reference.hpp"
 #include "ulisse_msgs/msg/llc_battery.hpp"
+
 #include "ulisse_msgs/topicnames.hpp"
 #include <iomanip> // put_time
 
@@ -35,6 +36,7 @@ ulisse_msgs::msg::Magnetometer magnetometerData;
 ulisse_msgs::msg::ReferenceVelocities refVelocities;
 ulisse_msgs::msg::LLCBattery batteryLeft, batteryRight;
 
+
 void FilterDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
 
 void GroundTruthDataCB(const ulisse_msgs::msg::SimulatedSystem::SharedPtr msg);
@@ -54,6 +56,7 @@ void MagnetometerDataCB(const ulisse_msgs::msg::Magnetometer::SharedPtr msg);
 void BatteryLeftCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg);
 
 void BatteryRightCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg);
+
 
 /**
  * @brief Create folder if not existing
@@ -111,6 +114,7 @@ int main(int argc, char* argv[])
     auto refVelocitiesSub = node->create_subscription<ulisse_msgs::msg::ReferenceVelocities>(ulisse_msgs::topicnames::reference_velocities, 10, RefVelocitiesCB);
     auto batteryLeftSub = node->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_left, 10, BatteryLeftCB);
     auto batteryRightSub = node->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_right, 10, BatteryRightCB);
+    
 
     auto in_time_t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 

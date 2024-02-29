@@ -68,6 +68,7 @@ bool OalInterfaceNode::CallKCL(const std::string &cmd_type) {
             serviceReq->latlong_cmd.goal.latitude = goal.latitude;
             serviceReq->latlong_cmd.goal.longitude = goal.longitude;
             serviceReq->latlong_cmd.ref_speed = path.waypoints.top().speed_to_it;
+            last_cmd_speed = path.waypoints.top().speed_to_it;
             
             if (path.size() == 1) {
                 // Last wp
@@ -391,6 +392,7 @@ void OalInterfaceNode::status_pub_callback() {
       ctb::LatLong next_wp = GetLatLong(path_temp.top().position);*/
       message.status = "Active";
       message.colregs_compliant = colregs_;
+      message.desired_speed = last_cmd_speed;
       /*message.goal.longitude = goal_.longitude;
       message.goal.latitude = goal_.latitude;
       message.next_wp.longitude = next_wp.longitude;
