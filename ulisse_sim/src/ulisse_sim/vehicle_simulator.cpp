@@ -557,7 +557,7 @@ void VehicleSimulator::PublishTf(){
     t_stamp_ASV.transform.rotation.y = q1.y();
     t_stamp_ASV.transform.rotation.z = q1.z();
     t_stamp_ASV.transform.rotation.w = q1.w();
-    tf_broadcaster_ASV>sendTransform(t_stamp_ASV);
+    tf_broadcaster_ASV->sendTransform(t_stamp_ASV);
 }
 
 double VehicleSimulator::GetCurrentTimeStamp() const

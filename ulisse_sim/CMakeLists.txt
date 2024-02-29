@@ -18,6 +18,9 @@ find_package(surface_vehicle_model REQUIRED)
 find_package(ulisse_msgs REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(ctrl_toolbox REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
 
 # Add files in the tree of "Projects" view in QtCreator
 file(GLOB_RECURSE SOURCE_FILES
@@ -37,7 +40,7 @@ include_directories(
 
 ## Libraries
 add_library(VehicleSimulatorClass src/ulisse_sim/vehicle_simulator.cpp)
-ament_target_dependencies(VehicleSimulatorClass rclcpp ulisse_msgs ament_index_cpp)
+ament_target_dependencies(VehicleSimulatorClass rclcpp ulisse_msgs geometry_msgs tf2 tf2_ros ament_index_cpp)
 target_link_libraries(VehicleSimulatorClass ${surface_vehicle_model_LIBRARIES} Geographic rml)
 
 ## Executables
