@@ -37,7 +37,7 @@ VehicleController::VehicleController(std::string conf_filename)
     navFilterSub_ = this->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 10, std::bind(&VehicleController::NavFilterCB, this, _1));
     navFilterROVSub_ = this->create_subscription<rov_msgs::msg::NavFilterData>("/rov/nav_filter/data", 10, std::bind(&VehicleController::NavFilterRovCB, this, _1)); //ROV
     llcStatusSub_ = this->create_subscription<ulisse_msgs::msg::LLCStatus>(ulisse_msgs::topicnames::llc_status, 10, std::bind(&VehicleController::LLCStatusCB, this, _1));
-    cableROVSub_ = this->create_subscription<rov_msgs::msg::CableData>("/rov/cable_data", 10, std::bind(&VehicleController::CableDataRovCB, this, _1)); //ROV
+    cableROVSub_ = this->create_subscription<rov_msgs::msg::CableData>("/winch/cable_data", 10, std::bind(&VehicleController::CableDataRovCB, this, _1)); //ROV
 
     // Data Subscriptions
     surgeHeadingSub_ = this->create_subscription<ulisse_msgs::msg::SurgeHeading>(ulisse_msgs::topicnames::surge_heading, 10, std::bind(&VehicleController::SurgeHeadingCB, this, _1));
