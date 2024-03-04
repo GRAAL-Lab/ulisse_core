@@ -6,8 +6,9 @@
 #include "std_msgs/msg/bool.hpp"
 #include "ulisse_msgs/msg/llc_status.hpp"
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
-#include "rov_msgs/msg/nav_filter_data.hpp" //ROV
-#include "rov_msgs/msg/cable_data.hpp"//ROV
+#include "rov_msgs/msg/nav_filter_data.hpp" // ASV-ROV
+#include "rov_msgs/msg/cable_data.hpp" // ASV-ROV
+#include "rov_msgs/msg/cable_length_reference.hpp" // ASV-ROV
 #include "ulisse_msgs/msg/task_status.hpp"
 #include "ulisse_msgs/msg/feedback_gui.hpp"
 #include "ulisse_msgs/msg/reference_velocities.hpp"
@@ -62,9 +63,9 @@ class VehicleController : public rclcpp::Node {
     rclcpp::Service<ulisse_msgs::srv::SetCruiseControl>::SharedPtr srvCruise_;
 
     rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr navFilterSub_;
-    rclcpp::Subscription<rov_msgs::msg::NavFilterData>::SharedPtr navFilterROVSub_; //ROV
+    rclcpp::Subscription<rov_msgs::msg::NavFilterData>::SharedPtr navFilterROVSub_; // ASV-ROV
     rclcpp::Subscription<ulisse_msgs::msg::LLCStatus>::SharedPtr llcStatusSub_;
-    rclcpp::Subscription<rov_msgs::msg::CableData>::SharedPtr cableROVSub_; //ROV
+    rclcpp::Subscription<rov_msgs::msg::CableData>::SharedPtr cableROVSub_; // ASV-ROV
 
     rclcpp::Subscription<ulisse_msgs::msg::SurgeHeading>::SharedPtr surgeHeadingSub_;
     rclcpp::Subscription<ulisse_msgs::msg::SurgeYawRate>::SharedPtr surgeYawRateSub_;
@@ -74,6 +75,7 @@ class VehicleController : public rclcpp::Node {
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr genericLogPub_;
     rclcpp::Publisher<ulisse_msgs::msg::FeedbackGui>::SharedPtr feedbackGuiPub_;
     rclcpp::Publisher<ulisse_msgs::msg::TPIKAction>::SharedPtr tpikActionPub_;
+    rclcpp::Publisher<rov_msgs::msg::CableLengthReference>::SharedPtr referenceCableLengthPub_; // ASV-ROV
 
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr safetyBoundarySetPub_;
 
@@ -164,9 +166,9 @@ class VehicleController : public rclcpp::Node {
     void SurgeHeadingCB(const ulisse_msgs::msg::SurgeHeading::SharedPtr msg);
     void SurgeYawRateCB(const ulisse_msgs::msg::SurgeYawRate::SharedPtr msg);
     void NavFilterCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
-    void NavFilterRovCB(const rov_msgs::msg::NavFilterData::SharedPtr msg); //ROV
+    void NavFilterRovCB(const rov_msgs::msg::NavFilterData::SharedPtr msg); // ASV-ROV
     void LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg);
-    void CableDataRovCB(const rov_msgs::msg::CableData::SharedPtr msg); //ROV
+    void CableDataRovCB(const rov_msgs::msg::CableData::SharedPtr msg); // ASV-ROV
 
     void PublishLog(std::string log);
 
