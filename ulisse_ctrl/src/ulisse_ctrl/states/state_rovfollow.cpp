@@ -25,6 +25,9 @@ namespace states {
             return false;
         if (!ctb::GetParam(state, minHeadingError_, "minHeadingError"))
             return false;
+        if (!ctb::GetParam(state, acceptanceRadius, "minAcceptanceRadius"))
+            return false;
+
         return true;
     }
 
@@ -33,8 +36,8 @@ namespace states {
         //set tasks
         safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
         absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
-        cartesianDistanceTask_ = std::dynamic_pointer_cast<ikcl::CartesianDistance>(tasksMap.find(ulisse::task::asvCartesianDistance)->second.task);
-        alignToTargetTask_ = std::dynamic_pointer_cast<ikcl::AlignToTarget>(tasksMap.find(ulisse::task::asvAngularPosition)->second.task);
+        cartesianDistanceTask_ = std::dynamic_pointer_cast<ikcl::CartesianDistance>(tasksMap.find(ulisse::task::asvCartesianDistanceRovFollowing)->second.task);
+        alignToTargetTask_ = std::dynamic_pointer_cast<ikcl::AlignToTarget>(tasksMap.find(ulisse::task::asvAngularPositionRovFollow)->second.task);
 
         if (actionManager->SetAction(ulisse::action::rovfollow, true)) {
             return fsm::ok;
@@ -106,8 +109,8 @@ namespace states {
         //ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, goalPosition, finalGoalDistance, finalGoalHeading);
 
         if (goalDistance < acceptanceRadius) {
-            std::cout << "*** GOAL REACHED! ***" << std::endl;
-            fsm_->EmitEvent(ulisse::events::names::neargoalposition, ulisse::events::priority::medium);
+            std::cout << "*** AREA REACHED! ***" << std::endl;
+            //fsm_->EmitEvent(ulisse::events::names::neargoalposition, ulisse::events::priority::medium);
         } else {
 
             //Set the distance vector to the target

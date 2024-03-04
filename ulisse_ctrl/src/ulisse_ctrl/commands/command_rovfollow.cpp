@@ -22,7 +22,7 @@ namespace commands {
             return false;
         } else {
             stateRovFollow_->goalPosition = goalPosition;
-            stateRovFollow_->acceptanceRadius = acceptanceRadius;
+            //stateRovFollow_->acceptanceRadius = acceptanceRadius;
             return true;
         }
     }

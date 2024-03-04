@@ -24,10 +24,6 @@ namespace states {
         double goalDistance;
         double acceptanceRadius;
 
-        // Classe PathController
-
-        // Variabili ostacoli
-        // Variabili polyline
 
         bool ConfigureStateFromFile(libconfig::Config& confObj) override;
     };

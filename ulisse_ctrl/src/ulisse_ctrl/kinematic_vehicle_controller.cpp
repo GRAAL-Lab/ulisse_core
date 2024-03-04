@@ -249,6 +249,7 @@ bool VehicleController::LoadConfiguration(std::shared_ptr<KCLConfiguration>& con
     statesMap_.insert({ ulisse::states::ID::pathfollow, statePathFollowing_ });
     statesMap_.insert({ ulisse::states::ID::surgeheading, stateSurgeHeading_ });
     statesMap_.insert({ ulisse::states::ID::surgeyawrate, stateSurgeYawRate_ });
+    statesMap_.insert({ ulisse::states::ID::rovfollow, stateRovFollowing_ });
 
     if (!ConfigureSatesFromFile(statesMap_, confObj)) {
         std::cerr << "Failed to load States from file" << std::endl;
@@ -262,6 +263,7 @@ bool VehicleController::LoadConfiguration(std::shared_ptr<KCLConfiguration>& con
     commandsMap_.insert({ ulisse::commands::ID::pathfollow, commandPathFollowing_ });
     commandsMap_.insert({ ulisse::commands::ID::surgeheading, commandSurgeHeading_ });
     commandsMap_.insert({ ulisse::commands::ID::surgeyawrate, commandSurgeYawRate_ });
+    commandsMap_.insert({ ulisse::commands::ID::rovfollow, commandRovFollowing_ });
 
     return true;
 }
@@ -294,6 +296,9 @@ void VehicleController::SetUpFSM()
 
     commandPathFollowing_.SetFSM(&uFsm_);
     commandPathFollowing_.SetState(statePathFollowing_);
+
+    commandRovFollowing_.SetFSM(&uFsm_);
+    commandRovFollowing_.SetState(stateRovFollowing_);
 
     // ***** STATES ***** //
     //Set the fsm and the structure that the states need.
@@ -429,11 +434,22 @@ void VehicleController::CommandsHandler(const std::shared_ptr<rmw_request_id_t> 
 
             if (!statePathFollowing_->LoadPath(request->path_cmd.path)) {
                 response->res = "CommandAnswer::fail - Malformed Path Message.";
-                ret = fsm::retval::fail;
+                ret = fsm::retval::fail;  
             }
-
             log << "Received Command PathFollowing (id: " << request->path_cmd.path.id << " )";
             PublishLog(log.str().c_str());
+
+        } else if (request->command_type == ulisse::commands::ID::rovfollow) {
+
+                    std::cout << "Received Command ROV Following" << std::endl;
+                    //if(!commandRovFollowing_.SetGoTo(LatLong(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude),
+                    //        request->latlong_cmd.acceptance_radius)){
+                    //    response->res = "CommandAnswer::fail - Malformed ROV follow Message.";
+                    //    ret = fsm::retval::fail;
+                    //}
+
+                    //log << "Received Command ROV following (lat: " << request->latlong_cmd.goal.latitude << " , long: " << request->latlong_cmd.goal.longitude << " )";
+                    //PublishLog(log.str().c_str());
 
         } else {
             response->res = "CommandAnswer::fail - Unsupported command: " + request->command_type;

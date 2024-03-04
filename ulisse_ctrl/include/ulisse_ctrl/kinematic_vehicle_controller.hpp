@@ -28,6 +28,7 @@
 #include "ulisse_ctrl/commands/command_hold.hpp"
 #include "ulisse_ctrl/commands/command_latlong.hpp"
 #include "ulisse_ctrl/commands/command_pathfollow.hpp"
+#include "ulisse_ctrl/commands/command_rovfollow.hpp" // ASV ROV
 #include "ulisse_ctrl/commands/command_surgeheading.hpp"
 #include "ulisse_ctrl/commands/command_surgeyawrate.hpp"
 
@@ -38,6 +39,7 @@
 #include "ulisse_ctrl/states/state_hold.hpp"
 #include "ulisse_ctrl/states/state_latlong.hpp"
 #include "ulisse_ctrl/states/state_pathfollow.hpp"
+#include "ulisse_ctrl/states/state_rovfollow.hpp" // ASV ROV
 #include "ulisse_ctrl/states/state_surgeheading.hpp"
 #include "ulisse_ctrl/states/state_surgeyawrate.hpp"
 
@@ -120,6 +122,7 @@ class VehicleController : public rclcpp::Node {
     std::shared_ptr<states::StateSurgeHeading> stateSurgeHeading_;
     std::shared_ptr<states::StateSurgeYawRate> stateSurgeYawRate_;
     std::shared_ptr<states::StatePathFollow> statePathFollowing_;
+    std::shared_ptr<states::StateRovFollow> stateRovFollowing_; // ASV-ROV
 
     commands::CommandHalt commandHalt_;
     commands::CommandHold commandHold_;
@@ -127,6 +130,7 @@ class VehicleController : public rclcpp::Node {
     commands::CommandSurgeHeading commandSurgeHeading_;
     commands::CommandSurgeYawRate commandSurgeYawRate_;
     commands::CommandPathFollow commandPathFollowing_;
+    commands::CommandRovFollow commandRovFollowing_; // ASV-ROV
 
     events::EventRCEnabled eventRcEnabled_;
     events::EventNearGoalPosition eventNearGoalPosition_;
