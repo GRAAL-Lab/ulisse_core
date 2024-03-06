@@ -17,7 +17,8 @@ namespace commands {
         CommandRovFollow();
         virtual ~CommandRovFollow() override;
         virtual fsm::retval Execute(void) override;
-        bool SetGoTo(LatLong goalPosition, double acceptanceRadius);
+        //bool SetGoTo(LatLong goalPosition, double acceptanceRadius);
+        bool SetGoTo(LatLong goalPosition);
 
         void SetState(std::shared_ptr<states::GenericState> state) override;
     };

@@ -56,6 +56,7 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/CommandLatLong.msg"
   "msg/CommandSpeedHeading.msg"
   "msg/CommandPathFollow.msg"
+  "msg/CommandRovFollow.msg"
   
   # LLC
   "msg/LLCAck.msg"

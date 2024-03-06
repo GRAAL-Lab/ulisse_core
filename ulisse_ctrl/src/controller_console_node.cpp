@@ -44,6 +44,7 @@ int main(int argc, char* argv[])
         std::cout << tc::bluL << "2)  " << tc::none << "Hold Position" << std::endl;
         std::cout << tc::bluL << "3)  " << tc::none << "Move to Lat-Long" << std::endl;
         std::cout << tc::bluL << "4)  " << tc::none << "Speed-Heading reference" << std::endl;
+        std::cout << tc::bluL << "5)  " << tc::none << "ROV Following" << std::endl;
         std::cout << "Enter command..." << std::endl;
         std::cin >> choice;
 
@@ -86,6 +87,12 @@ int main(int argc, char* argv[])
             std::cout << "timeout [s] ";
             std::cin >> serviceReq->sh_cmd.timeout.sec;
             serviceReq->sh_cmd.timeout.nanosec = 0;
+        } break;
+        case 5: {
+            serviceReq->command_type = ulisse::commands::ID::rovfollow;
+            std::cout << "acceptanceRadius ";
+            std::cin >> serviceReq->rov_cmd.acceptance_radius;
+
         } break;
         default:
             std::cout << "Unsupported choice! " << choice << std::endl;

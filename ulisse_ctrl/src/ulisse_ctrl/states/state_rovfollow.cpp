@@ -34,8 +34,8 @@ namespace states {
     fsm::retval StateRovFollow::OnEntry()
     {
         //set tasks
-        safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
-        absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
+        //safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
+        //absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
         cartesianDistanceTask_ = std::dynamic_pointer_cast<ikcl::CartesianDistance>(tasksMap.find(ulisse::task::asvCartesianDistanceRovFollowing)->second.task);
         alignToTargetTask_ = std::dynamic_pointer_cast<ikcl::AlignToTarget>(tasksMap.find(ulisse::task::asvAngularPositionRovFollow)->second.task);
 
@@ -61,7 +61,7 @@ namespace states {
         //SafetyBoundaries task: it's a velocity task base on the distance from the boundaries. The behaviour that has to achive is align to
         //a desired escape directon and to generate a desired velocity. To do this we use the task AbsoluteAxisAlignment to cope with
         //the align behavior activated in function of the internal actiovation function of the safety task.
-
+/*
         safetyBoundariesTask_->VehiclePosition() = ctrlData->inertialF_linearPosition;
 
         Eigen::MatrixXd Aexternal;
@@ -87,7 +87,7 @@ namespace states {
         safetyBoundariesTask_->ExternalActivationFunction() = taskGainSafety * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
 
 
-
+*/
 
         //goto task
         /** if (we have obstacles){

@@ -3,5 +3,6 @@ CommandHold hold_cmd
 CommandLatLong latlong_cmd
 CommandSpeedHeading sh_cmd
 CommandPathFollow path_cmd
+CommandRovFollow rov_cmd
 ---
 string res

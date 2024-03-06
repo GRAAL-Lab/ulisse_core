@@ -18,8 +18,8 @@ namespace states {
         //inertialF_waterCurrent = std::make_shared<Eigen::Vector2d>();
 
         // Set tasks
-        safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
-        absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
+        //safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
+        //absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
         linearVelocityTask_ = std::dynamic_pointer_cast<ikcl::LinearVelocity>(tasksMap.find(ulisse::task::asvLinearVelocityHold)->second.task);
         absoluteAxisAlignmentTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentHold)->second.task);
 
@@ -59,7 +59,7 @@ namespace states {
     fsm::retval StateHold::Execute()
     {
         CheckRadioController();
-
+/*
         safetyBoundariesTask_->VehiclePosition() = ctrlData->inertialF_linearPosition;
 
         Eigen::MatrixXd Aexternal;
@@ -86,7 +86,7 @@ namespace states {
 
         // Set the gain of the cartesian distance task
         safetyBoundariesTask_->TaskParameter().gain = taskGainSafety * safetyBoundariesTask_->TaskParameter().conf_gain;
-
+*/
         /*std::cout << "minHeadingError_: " << minHeadingError_ << std::endl;
         std::cout << "maxHeadingError_: " << maxHeadingError_ << std::endl;
         std::cout << "headingErrorsafety: " << absoluteAxisAlignmentSafetyTask_->ControlVariable().norm() << std::endl;

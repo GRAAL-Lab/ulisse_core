@@ -59,8 +59,8 @@ class VehicleController : public rclcpp::Node {
     //ulisse_msgs::msg::TaskStatus taskstatusMsg_;
     std::string fileName_;
     rclcpp::Service<ulisse_msgs::srv::ControlCommand>::SharedPtr srvCommand_;
-    rclcpp::Service<ulisse_msgs::srv::SetBoundaries>::SharedPtr srvSetBoundaries_;
-    rclcpp::Service<ulisse_msgs::srv::GetBoundaries>::SharedPtr srvGetBoundaries_;
+    //rclcpp::Service<ulisse_msgs::srv::SetBoundaries>::SharedPtr srvSetBoundaries_;
+    //rclcpp::Service<ulisse_msgs::srv::GetBoundaries>::SharedPtr srvGetBoundaries_;
     rclcpp::Service<ulisse_msgs::srv::ResetConfiguration>::SharedPtr srvResetConf_;
     rclcpp::Service<ulisse_msgs::srv::SetCruiseControl>::SharedPtr srvCruise_;
 
@@ -79,7 +79,7 @@ class VehicleController : public rclcpp::Node {
     rclcpp::Publisher<ulisse_msgs::msg::TPIKAction>::SharedPtr tpikActionPub_;
     rclcpp::Publisher<rov_msgs::msg::CableLengthReference>::SharedPtr referenceCableLengthPub_; // ASV-ROV
 
-    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr safetyBoundarySetPub_;
+    //rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr safetyBoundarySetPub_;
 
     rclcpp::TimerBase::SharedPtr runTimer_;
     rclcpp::TimerBase::SharedPtr slow_timer_;
@@ -103,12 +103,14 @@ class VehicleController : public rclcpp::Node {
     std::shared_ptr<ikcl::LinearVelocity> asvLinearVelocity_;
     std::shared_ptr<ikcl::LinearVelocity> asvLinearVelocityHold_;
     std::shared_ptr<ikcl::AlignToTarget> asvAngularPosition_;
+    std::shared_ptr<ikcl::AlignToTarget> asvAngularPositionRovFollowing_; // ASV-ROV
     std::shared_ptr<ikcl::CartesianDistance> asvCartesianDistance_;
-    std::shared_ptr<ikcl::SafetyBoundaries> asvSafetyBoundaries_;
+    //std::shared_ptr<ikcl::SafetyBoundaries> asvSafetyBoundaries_;
     std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignment_;
-    std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentSafety_;
+    //std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentSafety_;
     std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentHold_;
     std::shared_ptr<ikcl::CartesianDistance> asvCartesianDistancePathFollowing_;
+    std::shared_ptr<ikcl::CartesianDistance> asvCartesianDistanceRovFollowing_; // ASV-ROV
 
     double timestamp_;
     bool boundariesSet_;
@@ -156,12 +158,12 @@ class VehicleController : public rclcpp::Node {
     void CommandsHandler(const std::shared_ptr<rmw_request_id_t> request_header,
         const std::shared_ptr<ulisse_msgs::srv::ControlCommand::Request> request,
         std::shared_ptr<ulisse_msgs::srv::ControlCommand::Response> response);
-    void SetBoundariesHandler(const std::shared_ptr<rmw_request_id_t> request_header,
+    /*void SetBoundariesHandler(const std::shared_ptr<rmw_request_id_t> request_header,
         const std::shared_ptr<ulisse_msgs::srv::SetBoundaries::Request> request,
         std::shared_ptr<ulisse_msgs::srv::SetBoundaries::Response> response);
     void GetBoundariesHandler(const std::shared_ptr<rmw_request_id_t> request_header,
         const std::shared_ptr<ulisse_msgs::srv::GetBoundaries::Request> request,
-        std::shared_ptr<ulisse_msgs::srv::GetBoundaries::Response> response);
+        std::shared_ptr<ulisse_msgs::srv::GetBoundaries::Response> response);*/
     void ResetConfHandler(const std::shared_ptr<rmw_request_id_t> request_header,
         const std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Request> request,
         std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Response> response);

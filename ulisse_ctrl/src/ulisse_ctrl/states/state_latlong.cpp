@@ -31,8 +31,8 @@ namespace states {
     fsm::retval StateLatLong::OnEntry()
     {
         //set tasks
-        safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
-        absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
+        //safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
+        //absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
         cartesianDistanceTask_ = std::dynamic_pointer_cast<ikcl::CartesianDistance>(tasksMap.find(ulisse::task::asvCartesianDistance)->second.task);
         alignToTargetTask_ = std::dynamic_pointer_cast<ikcl::AlignToTarget>(tasksMap.find(ulisse::task::asvAngularPosition)->second.task);
 
@@ -59,7 +59,7 @@ namespace states {
         //a desired escape directon and to generate a desired velocity. To do this we use the task AbsoluteAxisAlignment to cope with
         //the align behavior activated in function of the internal actiovation function of the safety task.
 
-        safetyBoundariesTask_->VehiclePosition() = ctrlData->inertialF_linearPosition;
+        /*safetyBoundariesTask_->VehiclePosition() = ctrlData->inertialF_linearPosition;
 
         Eigen::MatrixXd Aexternal;
 
@@ -82,7 +82,7 @@ namespace states {
 
         // Set the gain of the cartesian distance task
         safetyBoundariesTask_->ExternalActivationFunction() = taskGainSafety * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
-
+*/
 
 
 

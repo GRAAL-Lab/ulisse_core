@@ -18,17 +18,19 @@ namespace ulisse {
 
 VehicleController::VehicleController(std::string conf_filename)
     : Node("kinematic_control_node")
-    , boundariesSet_(false)
+    , boundariesSet_(true) // changed to true!!
 {
     conf_ = std::make_shared<KCLConfiguration>();
 
     ctrlData_ = std::make_shared<ControlData>();
+    rovData_ = std::make_shared<ControlData>();
 
     fileName_ = conf_filename;
 
     stateHalt_ = std::make_shared<states::StateHalt>();
     stateHold_ = std::make_shared<states::StateHold>();
     statePathFollowing_ = std::make_shared<states::StatePathFollow>();
+    stateRovFollowing_ = std::make_shared<states::StateRovFollow>(); // ROV-ASV
     stateLatLong_ = std::make_shared<states::StateLatLong>();
     stateSurgeHeading_ = std::make_shared<states::StateSurgeHeading>();
     stateSurgeYawRate_ = std::make_shared<states::StateSurgeYawRate>();
@@ -51,7 +53,7 @@ VehicleController::VehicleController(std::string conf_filename)
     tpikActionPub_ = this->create_publisher<ulisse_msgs::msg::TPIKAction>(ulisse_msgs::topicnames::tpik_action, 10);
     referenceCableLengthPub_ = this->create_publisher<rov_msgs::msg::CableLengthReference>("/winch/reference_cable_length", 10);
 
-    safetyBoundarySetPub_ = this->create_publisher<std_msgs::msg::Bool>(ulisse_msgs::topicnames::safety_boundary_set, 10);
+    //safetyBoundarySetPub_ = this->create_publisher<std_msgs::msg::Bool>(ulisse_msgs::topicnames::safety_boundary_set, 10);
 
     /// TPIK Manager
     actionManager_ = std::make_shared<tpik::ActionManager>(tpik::ActionManager());
@@ -80,6 +82,12 @@ VehicleController::VehicleController(std::string conf_filename)
     taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_angular_position, 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvAngularPosition, taskInfo_));
 
+    // AUV CONTROL ANGULAR POSITION ASV-ROV
+    asvAngularPositionRovFollowing_ = std::make_shared<ikcl::AlignToTarget>(ikcl::AlignToTarget(ulisse::task::asvAngularPositionRovFollow, robotModel_, ulisse::robotModelID::ASV));
+    taskInfo_.task = asvAngularPositionRovFollowing_;
+    taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_angular_position_rov_follow, 1);
+    tasksMap_.insert(std::make_pair(ulisse::task::asvAngularPositionRovFollow, taskInfo_));
+
     // ASV CONTROL DISTANCE
     asvCartesianDistance_ = std::make_shared<ikcl::CartesianDistance>(ikcl::CartesianDistance(ulisse::task::asvCartesianDistance, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvCartesianDistance_;
@@ -92,11 +100,17 @@ VehicleController::VehicleController(std::string conf_filename)
     taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_cartesian_distance_path_follow, 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvCartesianDistancePathFollowing, taskInfo_));
 
+    // ASV CONTROL DISTANCE PATH FOLLOWING ASV-ROV
+    asvCartesianDistanceRovFollowing_ = std::make_shared<ikcl::CartesianDistance>(ikcl::CartesianDistance(ulisse::task::asvCartesianDistanceRovFollowing, robotModel_, ulisse::robotModelID::ASV));
+    taskInfo_.task = asvCartesianDistanceRovFollowing_;
+    taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_cartesian_distance_rov_follow, 1);
+    tasksMap_.insert(std::make_pair(ulisse::task::asvCartesianDistanceRovFollowing, taskInfo_));
+
     // ASV SAFETY BOUNDARIES (INEQUALITY TASK)
-    asvSafetyBoundaries_ = std::make_shared<ikcl::SafetyBoundaries>(ikcl::SafetyBoundaries(ulisse::task::asvSafetyBoundaries, robotModel_, ulisse::robotModelID::ASV));
+    /*asvSafetyBoundaries_ = std::make_shared<ikcl::SafetyBoundaries>(ikcl::SafetyBoundaries(ulisse::task::asvSafetyBoundaries, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvSafetyBoundaries_;
     taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_safety_boundaries, 1);
-    tasksMap_.insert(std::make_pair(ulisse::task::asvSafetyBoundaries, taskInfo_));
+    tasksMap_.insert(std::make_pair(ulisse::task::asvSafetyBoundaries, taskInfo_)); */
 
     // ASV absolute axis alignment task
     asvAbsoluteAxisAlignment_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asvAbsoluteAxisAlignment, robotModel_, ulisse::robotModelID::ASV));
@@ -105,10 +119,10 @@ VehicleController::VehicleController(std::string conf_filename)
     tasksMap_.insert(std::make_pair(ulisse::task::asvAbsoluteAxisAlignment, taskInfo_));
 
     // ASV absolute axis alignment task
-    asvAbsoluteAxisAlignmentSafety_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asvAbsoluteAxisAlignmentSafety, robotModel_, ulisse::robotModelID::ASV));
+    /*asvAbsoluteAxisAlignmentSafety_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asvAbsoluteAxisAlignmentSafety, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvAbsoluteAxisAlignmentSafety_;
     taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment_safety, 1);
-    tasksMap_.insert(std::make_pair(ulisse::task::asvAbsoluteAxisAlignmentSafety, taskInfo_));
+    tasksMap_.insert(std::make_pair(ulisse::task::asvAbsoluteAxisAlignmentSafety, taskInfo_)); */
 
     // ASV absolute axis alignment task hold
     asvAbsoluteAxisAlignmentHold_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asvAbsoluteAxisAlignmentHold, robotModel_, ulisse::robotModelID::ASV));
@@ -133,28 +147,31 @@ VehicleController::VehicleController(std::string conf_filename)
         std::cerr << "Failed to load KCL configuration from file" << std::endl;
         return;
     }
+    std::cout << "Configuration Done: " << std::endl;
 
     // solver_ definition
     solver_ = std::make_shared<tpik::Solver>(tpik::Solver(actionManager_, iCat_));
+    std::cout << "Define Solver Done: " << std::endl;
 
     // FSM Initialization
     SetUpFSM();
+    std::cout << "SetUpFSM: " << std::endl;
 
     srvCommand_ = this->create_service<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service,
         std::bind(&VehicleController::CommandsHandler, this, _1, _2, _3));
 
-    srvSetBoundaries_ = this->create_service<ulisse_msgs::srv::SetBoundaries>(ulisse_msgs::topicnames::set_boundaries_service,
+    /*srvSetBoundaries_ = this->create_service<ulisse_msgs::srv::SetBoundaries>(ulisse_msgs::topicnames::set_boundaries_service,
         std::bind(&VehicleController::SetBoundariesHandler, this, _1, _2, _3));
 
     srvGetBoundaries_ = this->create_service<ulisse_msgs::srv::GetBoundaries>(ulisse_msgs::topicnames::get_boundaries_service,
-        std::bind(&VehicleController::GetBoundariesHandler, this, _1, _2, _3));
+        std::bind(&VehicleController::GetBoundariesHandler, this, _1, _2, _3));*/
 
     srvResetConf_ = this->create_service<ulisse_msgs::srv::ResetConfiguration>(ulisse_msgs::topicnames::reset_kcl_conf_service,
         std::bind(&VehicleController::ResetConfHandler, this, _1, _2, _3));
 
     // Main function timer
     int msRunPeriod = 1.0 / (conf_->controlLoopRate) * 1000;
-    //std::cout << "Controller Rate: " << conf_->controlLoopRate << "Hz" << std::endl;
+    std::cout << "Controller Rate: " << conf_->controlLoopRate << "Hz" << std::endl;
     runTimer_ = this->create_wall_timer(std::chrono::milliseconds(msRunPeriod), std::bind(&VehicleController::Run, this));
 
     // Timer for slow check operations
@@ -196,7 +213,7 @@ bool VehicleController::LoadConfiguration(std::shared_ptr<KCLConfiguration>& con
 
     std::cout << "Centroid: " << centroidLocation_.latitude << ", " << centroidLocation_.longitude << std::endl;
 
-    asvSafetyBoundaries_->Centroid() = centroidLocation_;
+    //asvSafetyBoundaries_->Centroid() = centroidLocation_;
 
     ///////////////////////////////////////////////////////////////////////////
     /////        LOAD KCL CONFIGURATION
@@ -236,11 +253,13 @@ bool VehicleController::LoadConfiguration(std::shared_ptr<KCLConfiguration>& con
         std::cerr << "Failed to load Priority Levels from file" << std::endl;
         return false;
     };
+    std::cout<< "PLs configured!" <<std::endl <<std::endl;
 
     if (!ConfigureActionsFromFile(actionManager_, confObj)) {
         std::cerr << "Failed to load  Actions from file" << std::endl;
         return false;
     };
+    std::cout<< "Actions configured!" <<std::endl << std::endl;
 
     //insert states in the map
     statesMap_.insert({ ulisse::states::ID::halt, stateHalt_ });
@@ -255,6 +274,8 @@ bool VehicleController::LoadConfiguration(std::shared_ptr<KCLConfiguration>& con
         std::cerr << "Failed to load States from file" << std::endl;
         return false;
     };
+    std::cout<< "Map configured!" <<std::endl << std::endl;
+
 
     //insert command in the map
     commandsMap_.insert({ ulisse::commands::ID::halt, commandHalt_ });
@@ -300,6 +321,8 @@ void VehicleController::SetUpFSM()
     commandRovFollowing_.SetFSM(&uFsm_);
     commandRovFollowing_.SetState(stateRovFollowing_);
 
+    std::cout << "Command and States are set" << std::endl;
+
     // ***** STATES ***** //
     //Set the fsm and the structure that the states need.
     for (auto& state : statesMap_) {
@@ -309,6 +332,7 @@ void VehicleController::SetUpFSM()
         state.second->ctrlData = ctrlData_;
         state.second->SetFSM(&uFsm_);
     }
+    std::cout << "State.second are set" << std::endl;
 
     // ***** EVENTS ***** //
     eventRcEnabled_.SetFSM(&uFsm_);
@@ -316,6 +340,7 @@ void VehicleController::SetUpFSM()
     eventNearGoalPosition_.ControlData() = ctrlData_;
     eventNearGoalPosition_.GoToHoldAfterMove(conf_->goToHoldAfterMove);
     eventNearGoalPosition_.StateHold() = std::dynamic_pointer_cast<ulisse::states::StateHold>(statesMap_.find(ulisse::states::ID::hold)->second);
+    std::cout << "Events are configured" << std::endl;
 
     // ***** FSM CONFIGURATION ***** //
     // ADD COMMANDS
@@ -434,22 +459,22 @@ void VehicleController::CommandsHandler(const std::shared_ptr<rmw_request_id_t> 
 
             if (!statePathFollowing_->LoadPath(request->path_cmd.path)) {
                 response->res = "CommandAnswer::fail - Malformed Path Message.";
-                ret = fsm::retval::fail;  
+                ret = fsm::retval::fail;
             }
             log << "Received Command PathFollowing (id: " << request->path_cmd.path.id << " )";
             PublishLog(log.str().c_str());
 
         } else if (request->command_type == ulisse::commands::ID::rovfollow) {
 
-                    std::cout << "Received Command ROV Following" << std::endl;
-                    //if(!commandRovFollowing_.SetGoTo(LatLong(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude),
-                    //        request->latlong_cmd.acceptance_radius)){
-                    //    response->res = "CommandAnswer::fail - Malformed ROV follow Message.";
-                    //    ret = fsm::retval::fail;
-                    //}
+            std::cout << "Received Command ROV Following" << std::endl;
+            if(!commandRovFollowing_.SetGoTo(LatLong(rovData_->inertialF_linearPosition.latitude, rovData_->inertialF_linearPosition.longitude))){
+                response->res = "CommandAnswer::fail - Malformed ROV following Message.";
+                ret = fsm::retval::fail;
+            }
 
-                    //log << "Received Command ROV following (lat: " << request->latlong_cmd.goal.latitude << " , long: " << request->latlong_cmd.goal.longitude << " )";
-                    //PublishLog(log.str().c_str());
+            //log << "Received Command ROV Follow (lat: " << request->rov_cmd.goal.latitude << " , long: " << request->rov_cmd.goal.longitude << " )";
+            PublishLog(log.str().c_str());
+
 
         } else {
             response->res = "CommandAnswer::fail - Unsupported command: " + request->command_type;
@@ -474,7 +499,7 @@ void VehicleController::CommandsHandler(const std::shared_ptr<rmw_request_id_t> 
     RCLCPP_INFO(this->get_logger(), "Service Response: %s", response->res.c_str());
 }
 
-void VehicleController::SetBoundariesHandler(const std::shared_ptr<rmw_request_id_t> request_header,
+/*void VehicleController::SetBoundariesHandler(const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<ulisse_msgs::srv::SetBoundaries::Request> request,
     std::shared_ptr<ulisse_msgs::srv::SetBoundaries::Response> response)
 {
@@ -509,7 +534,7 @@ void VehicleController::GetBoundariesHandler(const std::shared_ptr<rmw_request_i
     } else {
         response->res = "[KCL] NoBoundSet";
     }
-}
+}*/
 
 void VehicleController::ResetConfHandler(const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Request> request,
@@ -538,7 +563,7 @@ void VehicleController::SlowTimerCB()
     return;*/
     std_msgs::msg::Bool sbSet;
     sbSet.data = boundariesSet_;
-    safetyBoundarySetPub_->publish(sbSet);
+    //safetyBoundarySetPub_->publish(sbSet);
 
     // Publish Hierarchy Info
     ulisse_msgs::msg::TPIKAction tpikActionMsg_;
@@ -612,13 +637,13 @@ void VehicleController::NavFilterRovCB(const rov_msgs::msg::NavFilterData::Share
     rovData_->inertialF_waterCurrent[1] = msg->inertialframe_water_current[1];
     rovData_->inertialF_waterCurrent[2] = msg->inertialframe_water_current[2];
 
-    ctrlData_->bodyF_angularPosition.Pitch(msg->bodyframe_angular_position.pitch);
-    ctrlData_->bodyF_angularPosition.Roll(msg->bodyframe_angular_position.roll);
-    ctrlData_->bodyF_angularPosition.Yaw(msg->bodyframe_angular_position.yaw);
+    rovData_->bodyF_angularPosition.Pitch(msg->bodyframe_angular_position.pitch);
+    rovData_->bodyF_angularPosition.Roll(msg->bodyframe_angular_position.roll);
+    rovData_->bodyF_angularPosition.Yaw(msg->bodyframe_angular_position.yaw);
 
-    ctrlData_->bodyF_linearVelocity[0] = msg->bodyframe_linear_velocity[0];
-    ctrlData_->bodyF_linearVelocity[1] = msg->bodyframe_linear_velocity[1];
-    ctrlData_->bodyF_linearVelocity[2] = msg->bodyframe_linear_velocity[2];
+    rovData_->bodyF_linearVelocity[0] = msg->bodyframe_linear_velocity[0];
+    rovData_->bodyF_linearVelocity[1] = msg->bodyframe_linear_velocity[1];
+    rovData_->bodyF_linearVelocity[2] = msg->bodyframe_linear_velocity[2];
 }
 
 void VehicleController::CableDataRovCB(const rov_msgs::msg::CableData::SharedPtr msg){ //ROV
@@ -638,6 +663,9 @@ void VehicleController::Run()
 {
     if (boundariesSet_) {
 
+        if (uFsm_.GetCurrentStateName() == ulisse::states::ID::rovfollow){
+            commandRovFollowing_.SetGoTo(LatLong(rovData_->inertialF_linearPosition.latitude, rovData_->inertialF_linearPosition.longitude));
+        }
         // Switch State (if something happens)
         uFsm_.SwitchState();
         // Process Events
@@ -657,13 +685,6 @@ void VehicleController::Run()
         // Computing Kinematic Control via TPIK
         yTpik_ = solver_->ComputeVelocities();
 
-        /*auto deltays = solver_->DeltaYs();
-        int i = 0;
-        Eigen::IOFormat CommaInitFmt(Eigen::StreamPrecision, Eigen::DontAlignCols, ", ", " / ", "", "", "", ";");
-        for (auto& deltay : deltays) {
-            std::cout << "[ VC 2 ] deltay_" << i << ": " << deltay.transpose().format(CommaInitFmt) << std::endl;
-            i++;
-        }*/
 
         for (int i = 0; i < yTpik_.size(); i++) {
             if (std::isnan(yTpik_(i))) {
@@ -776,6 +797,12 @@ void VehicleController::PublishTasksInfo()
         feedbackGuiMsg.current_track_point.latitude = statePathFollowing_->GetCurrentTrackPoint().latitude;
         feedbackGuiMsg.current_track_point.longitude = statePathFollowing_->GetCurrentTrackPoint().longitude;
         feedbackGuiMsg.goal_distance = statePathFollowing_->GetDistanceToEnd();
+    } else if (uFsm_.GetCurrentStateName() == ulisse::states::ID::rovfollow) {
+        feedbackGuiMsg.goal_position.latitude = stateRovFollowing_->goalPosition.latitude;
+        feedbackGuiMsg.goal_position.longitude = stateRovFollowing_->goalPosition.longitude;
+        feedbackGuiMsg.goal_heading = stateRovFollowing_->goalHeading;
+        feedbackGuiMsg.acceptance_radius = stateRovFollowing_->acceptanceRadius;
+        feedbackGuiMsg.goal_distance = stateRovFollowing_->goalDistance;
     }
     feedbackGuiPub_->publish(feedbackGuiMsg);
 }

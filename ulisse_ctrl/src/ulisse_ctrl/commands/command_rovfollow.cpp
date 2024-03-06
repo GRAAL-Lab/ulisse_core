@@ -14,11 +14,12 @@ namespace commands {
         return fsm_->SetNextState(ulisse::states::ID::rovfollow);
     }
 
-    bool CommandRovFollow::SetGoTo(LatLong goalPosition, double acceptanceRadius)
+    bool CommandRovFollow::SetGoTo(LatLong goalPosition)
     {
         if (std::isnan(goalPosition.latitude) ||
-            std::isnan(goalPosition.longitude) ||
-            std::isnan(acceptanceRadius)) {
+            std::isnan(goalPosition.longitude)) //||
+            //std::isnan(acceptanceRadius))
+        {
             return false;
         } else {
             stateRovFollow_->goalPosition = goalPosition;

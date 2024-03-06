@@ -82,8 +82,8 @@ bool StatePathFollow::ConfigureStateFromFile(libconfig::Config& confObj)
 fsm::retval StatePathFollow::OnEntry()
 {
     //set tasks
-    safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
-    absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
+    //safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
+    //absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
     cartesianDistanceTask_ = std::dynamic_pointer_cast<ikcl::CartesianDistance>(tasksMap.find(ulisse::task::asvCartesianDistance)->second.task);
     alignToTargetTask_ = std::dynamic_pointer_cast<ikcl::AlignToTarget>(tasksMap.find(ulisse::task::asvAngularPosition)->second.task);
     cartesianDistancePathFollowingTask_ = std::dynamic_pointer_cast<ikcl::CartesianDistance>(tasksMap.find(ulisse::task::asvCartesianDistancePathFollowing)->second.task);
@@ -101,7 +101,7 @@ fsm::retval StatePathFollow::Execute()
     //a desired escape directon and to generate a desired velocity. To do this we use the task AbsoluteAxisAlignment to cope with
     //the align behavior activated in function of the internal actiovation function of the safety task.
 
-    safetyBoundariesTask_->VehiclePosition() = ctrlData->inertialF_linearPosition;
+/*    safetyBoundariesTask_->VehiclePosition() = ctrlData->inertialF_linearPosition;
 
 
     //std::cout << "*** Is this allocation failing? ***" << std::endl;
@@ -129,7 +129,7 @@ fsm::retval StatePathFollow::Execute()
 
     // Set the gain of the cartesian distance task
     safetyBoundariesTask_->ExternalActivationFunction() = taskGainSafety * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
-
+*/
     double goalDistance, goalHeading;
     //pathfollow action
     if (isCurveSet_) {
