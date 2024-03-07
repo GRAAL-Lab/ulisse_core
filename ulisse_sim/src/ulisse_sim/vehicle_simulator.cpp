@@ -550,8 +550,8 @@ void VehicleSimulator::PublishTf(){
     t_stamp_ASV.header.stamp = this->get_clock()->now();
     t_stamp_ASV.header.frame_id = "world";
     t_stamp_ASV.child_frame_id = "ASV";
-    t_stamp_ASV.transform.translation.x = ASVpos.x();
-    t_stamp_ASV.transform.translation.y = ASVpos.y();
+    t_stamp_ASV.transform.translation.x = ASVpos.y(); // inverted
+    t_stamp_ASV.transform.translation.y = ASVpos.x(); // inverted
     t_stamp_ASV.transform.translation.z = ASVpos.z();
     t_stamp_ASV.transform.rotation.x = q1.x();
     t_stamp_ASV.transform.rotation.y = q1.y();

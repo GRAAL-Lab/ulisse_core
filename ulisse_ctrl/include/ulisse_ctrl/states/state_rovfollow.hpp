@@ -13,6 +13,8 @@ namespace states {
         std::shared_ptr<ikcl::AlignToTarget> alignToTargetTask_;
         std::shared_ptr<ikcl::CartesianDistance> cartesianDistanceTask_;
 
+        bool normalZone;
+
     public:
         StateRovFollow();
         ~StateRovFollow() override;

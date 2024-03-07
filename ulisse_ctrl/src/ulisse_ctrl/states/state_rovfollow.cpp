@@ -10,6 +10,7 @@ namespace states {
     {
         maxHeadingError_ = M_PI / 16;
         minHeadingError_ = M_PI / 32;
+        normalZone = false;
     }
 
     StateRovFollow::~StateRovFollow() { }
@@ -103,29 +104,33 @@ namespace states {
 
         ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, goalPosition, goalDistance, goalHeading);
 
-        // }
+        //Set the align vector to the target
+        alignToTargetTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(goalHeading), goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame);
 
-        //double finalGoalDistance, finalGoalHeading;
-        //ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, goalPosition, finalGoalDistance, finalGoalHeading);
+        //Set the vector that has to been align to the distance vector
+        alignToTargetTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
+        //compute the heading error
+        double headingError = alignToTargetTask_->ControlVariable().norm();
+        if(headingError > maxHeadingError_-0.1){
+            cartesianDistanceTask_->ExternalActivationFunction() = 1.0 * Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
+        }
+        else
+            cartesianDistanceTask_->ExternalActivationFunction() = 0.0 * Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
+
+
 
         if (goalDistance < acceptanceRadius) {
-            std::cout << "*** AREA REACHED! ***" << std::endl;
+            if(!normalZone){
+                std::cout << "*** Normal zone REACHED! ***" << std::endl;
+                normalZone = true;
+            }
+            cartesianDistanceTask_->ExternalActivationFunction() = 0.0 * Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
             //fsm_->EmitEvent(ulisse::events::names::neargoalposition, ulisse::events::priority::medium);
+
         } else {
 
             //Set the distance vector to the target
             cartesianDistanceTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(goalHeading), goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame);
-            //Set the align vector to the target
-            alignToTargetTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(goalHeading), goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame);
-
-            //Set the vector that has to been align to the distance vector
-            alignToTargetTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
-
-            //To avoid the case in which the error between the goal heading and the current heading is too big
-            //we activate the the cartesian distance through the gain based on a bell-shaped function on the heading error
-
-            //compute the heading error
-            double headingError = alignToTargetTask_->ControlVariable().norm();
 
             //compute the gain of the cartesian distance
             double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingError);
