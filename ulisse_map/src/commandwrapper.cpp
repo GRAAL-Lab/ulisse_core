@@ -246,6 +246,12 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
     }
     //std::cout << "Lap 4:" << executionTime.Elapsed() << std::endl;
 
+    // Saving curve as list of points to a txt file
+    std::string home_path = futils::get_homepath();
+    std::string save_path = home_path;
+    //std::filesystem::create_directories(save_path);
+    PersistenceManager::SaveObj(newPath->Sampling(512), save_path + "/gui_last_loaded_path.txt");
+
     return pathVectorGeo;
 }
 
