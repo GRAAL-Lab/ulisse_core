@@ -651,7 +651,19 @@ void VehicleController::CableDataRovCB(const rov_msgs::msg::CableData::SharedPtr
     cableData_.layer_n = msg->layer_n;
     cableData_.winding_radius = msg->winding_radius;
     cableData_.winch_rpm = msg->winch_rpm;
+    cableData_.max_length = msg->max_length;
 
+}
+
+void VehicleController::ComputeCableLength(){
+
+    double goalDistance, goalHeading;
+    ctb::DistanceAndAzimuthRad(ctrlData_->inertialF_linearPosition, rovData_->inertialF_linearPosition, goalDistance, goalHeading);
+    float alfa_, beta_; // cable params
+    alfa_ = conf_->alfa;
+    beta_ = conf_->beta;
+
+    controlledCable_.reference_cable_length = (beta_ + alfa_ * goalHeading ) * goalDistance;
 }
 
 void VehicleController::LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg)
@@ -694,9 +706,12 @@ void VehicleController::Run()
         }
     }
 
+    ComputeCableLength();
+
     tNow_ = std::chrono::system_clock::now();
     PublishControl();
     PublishTasksInfo();
+
 }
 
 void VehicleController::PublishControl()
@@ -728,6 +743,11 @@ void VehicleController::PublishControl()
             referenceVelocities.desired_yaw_rate = yTpik_[5];
         }
         referenceVelocitiesPub_->publish(referenceVelocities);
+    }
+    if(abs(controlledCable_.reference_cable_length - cableData_.released_cable_length) > 2){
+        controlledCable_.stamp.sec = now_stamp_secs;
+        controlledCable_.stamp.nanosec = now_stamp_nanosecs;
+        referenceCableLengthPub_->publish(controlledCable_);
     }
 }
 

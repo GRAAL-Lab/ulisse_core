@@ -44,6 +44,7 @@ struct KCLConfiguration {
     double posAcceptanceRadius;
     double controlLoopRate;
     Eigen::VectorXd saturationMin, saturationMax;
+    float alfa, beta;
 
     KCLConfiguration()
         : goToHoldAfterMove(false)
@@ -62,6 +63,10 @@ struct KCLConfiguration {
         if (!ctb::GetParamVector(confObj, saturationMax, "saturationMax"))
             return false;
         if (!ctb::GetParamVector(confObj, saturationMin, "saturationMin"))
+            return false;
+        if (!ctb::GetParam(confObj, alfa, "cableAlfa"))
+            return false;
+        if (!ctb::GetParam(confObj, beta, "cableBeta"))
             return false;
 
         return true;

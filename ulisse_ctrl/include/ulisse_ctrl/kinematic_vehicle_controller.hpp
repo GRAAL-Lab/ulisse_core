@@ -148,6 +148,8 @@ class VehicleController : public rclcpp::Node {
     std::shared_ptr<ControlData> ctrlData_;
     std::shared_ptr<ControlData> rovData_;
     rov_msgs::msg::CableData cableData_;
+    rov_msgs::msg::CableLengthReference controlledCable_;
+
     //std::shared_ptr<ctb::LatLong> vehiclePosition_;
     //std::shared_ptr<Eigen::Vector2d> inertialF_waterCurrent_;
 
@@ -175,6 +177,7 @@ class VehicleController : public rclcpp::Node {
     void NavFilterRovCB(const rov_msgs::msg::NavFilterData::SharedPtr msg); // ASV-ROV
     void LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg);
     void CableDataRovCB(const rov_msgs::msg::CableData::SharedPtr msg); // ASV-ROV
+    void ComputeCableLength(); // ASV-ROV
 
     void PublishLog(std::string log);
 

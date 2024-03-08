@@ -90,8 +90,8 @@ int main(int argc, char* argv[])
         } break;
         case 5: {
             serviceReq->command_type = ulisse::commands::ID::rovfollow;
-            std::cout << "acceptanceRadius ";
-            std::cin >> serviceReq->rov_cmd.acceptance_radius;
+            //std::cout << "acceptanceRadius ";
+            //std::cin >> serviceReq->rov_cmd.acceptance_radius;
 
         } break;
         default:
