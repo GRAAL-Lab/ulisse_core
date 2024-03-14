@@ -26,6 +26,8 @@ namespace states {
         double goalDistance;
         double acceptanceRadius;
 
+        double headingError;
+
 
         bool ConfigureStateFromFile(libconfig::Config& confObj) override;
     };

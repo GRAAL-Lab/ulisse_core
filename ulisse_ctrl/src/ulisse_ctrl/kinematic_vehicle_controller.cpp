@@ -52,6 +52,7 @@ VehicleController::VehicleController(std::string conf_filename)
     feedbackGuiPub_ = this->create_publisher<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10);
     tpikActionPub_ = this->create_publisher<ulisse_msgs::msg::TPIKAction>(ulisse_msgs::topicnames::tpik_action, 10);
     referenceCableLengthPub_ = this->create_publisher<rov_msgs::msg::CableLengthReference>("/winch/reference_cable_length", 10);
+    plotVarPub_ = this->create_publisher<ulisse_msgs::msg::PlotVariables>(ulisse_msgs::topicnames::plot_variables, 10); // ASV-ROV plot
 
     //safetyBoundarySetPub_ = this->create_publisher<std_msgs::msg::Bool>(ulisse_msgs::topicnames::safety_boundary_set, 10);
 
@@ -659,6 +660,7 @@ void VehicleController::ComputeCableLength(){
 
     double goalDistance, goalHeading;
     ctb::DistanceAndAzimuthRad(ctrlData_->inertialF_linearPosition, rovData_->inertialF_linearPosition, goalDistance, goalHeading);
+    goalDistance = sqrt(pow(goalDistance,2) + pow(rovData_->inertialF_altitude,2));
     float alfa_, beta_; // cable params
     alfa_ = conf_->alfa;
     beta_ = conf_->beta;
@@ -743,12 +745,20 @@ void VehicleController::PublishControl()
             referenceVelocities.desired_yaw_rate = yTpik_[5];
         }
         referenceVelocitiesPub_->publish(referenceVelocities);
+
+        if (uFsm_.GetCurrentStateName() == ulisse::states::ID::rovfollow) {
+            controlledCable_.stamp.sec = now_stamp_secs;
+            controlledCable_.stamp.nanosec = now_stamp_nanosecs;
+            referenceCableLengthPub_->publish(controlledCable_);
+
+            plotVar_.stamp.sec = now_stamp_secs;
+            plotVar_.stamp.nanosec = now_stamp_nanosecs;
+            plotVar_.heading_error = stateRovFollowing_->headingError;
+            plotVar_.goal_distance = stateRovFollowing_->goalDistance;
+            plotVarPub_->publish(plotVar_);
+        }
     }
-    if(abs(controlledCable_.reference_cable_length - cableData_.released_cable_length) > 2){
-        controlledCable_.stamp.sec = now_stamp_secs;
-        controlledCable_.stamp.nanosec = now_stamp_nanosecs;
-        referenceCableLengthPub_->publish(controlledCable_);
-    }
+
 }
 
 void VehicleController::PublishTasksInfo()
