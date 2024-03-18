@@ -17,7 +17,7 @@
 #include "ulisse_msgs/msg/surge_yaw_rate.hpp"
 #include "ulisse_msgs/msg/tpik_action.hpp"
 #include "ulisse_msgs/msg/tpik_priority_level.hpp"
-#include "ulisse_msgs/msg/plot_variables.hpp"
+//#include "ulisse_msgs/msg/plot_variables.hpp"
 
 #include "ulisse_msgs/srv/control_command.hpp"
 #include "ulisse_msgs/srv/get_boundaries.hpp"
@@ -78,7 +78,7 @@ class VehicleController : public rclcpp::Node {
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr genericLogPub_;
     rclcpp::Publisher<ulisse_msgs::msg::FeedbackGui>::SharedPtr feedbackGuiPub_;
     rclcpp::Publisher<ulisse_msgs::msg::TPIKAction>::SharedPtr tpikActionPub_;
-    rclcpp::Publisher<ulisse_msgs::msg::PlotVariables>::SharedPtr plotVarPub_; // ASV-ROV plot
+    //rclcpp::Publisher<ulisse_msgs::msg::PlotVariables>::SharedPtr plotVarPub_; // ASV-ROV plot
     rclcpp::Publisher<rov_msgs::msg::CableLengthReference>::SharedPtr referenceCableLengthPub_; // ASV-ROV
 
     //rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr safetyBoundarySetPub_;
@@ -151,7 +151,7 @@ class VehicleController : public rclcpp::Node {
     std::shared_ptr<ControlData> rovData_;
     rov_msgs::msg::CableData cableData_;
     rov_msgs::msg::CableLengthReference controlledCable_;
-    ulisse_msgs::msg::PlotVariables plotVar_;
+    //ulisse_msgs::msg::PlotVariables plotVar_;
 
     //std::shared_ptr<ctb::LatLong> vehiclePosition_;
     //std::shared_ptr<Eigen::Vector2d> inertialF_waterCurrent_;
