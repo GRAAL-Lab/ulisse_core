@@ -31,6 +31,9 @@
 #include "tf2_ros/static_transform_broadcaster.h"
 #include "tf2_ros/transform_broadcaster.h"
 
+#include <visualization_msgs/msg/marker.hpp>
+#include "visualization_msgs/msg/marker_array.hpp"
+
 namespace ulisse {
 
 class VehicleSimulator : public rclcpp::Node {
@@ -88,6 +91,9 @@ class VehicleSimulator : public rclcpp::Node {
     rclcpp::Publisher<ulisse_msgs::msg::ThrustersReference>::SharedPtr appliedMotorRefPub_;
     rclcpp::Publisher<ulisse_msgs::msg::SimulatedSystem>::SharedPtr simulatedSystemPub_;
     rclcpp::Publisher<ulisse_msgs::msg::LLCThrusters>::SharedPtr motorsDataPub_;
+
+    //rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr visualizationPub_;
+    rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr visualizationPub_;
     
     rclcpp::Subscription<ulisse_msgs::msg::ThrustersReference>::SharedPtr thrustersSub_;
 
@@ -100,6 +106,8 @@ class VehicleSimulator : public rclcpp::Node {
     bool realTime_;
 
     Eigen::RotationMatrix worldF_R_bodyF_;
+    Eigen::RotationMatrix worldF_ASV_meshF_;
+    rml::EulerRPY bodyF_ASVmesh_;
 
     std::shared_ptr<SimulatorConfiguration> config_;
     SurfaceVehicleModel ulisseModel_;

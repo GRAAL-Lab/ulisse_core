@@ -52,6 +52,9 @@ VehicleSimulator::VehicleSimulator(const std::string file_name)
     simulatedSystemPub_ = this->create_publisher<ulisse_msgs::msg::SimulatedSystem>(ulisse_msgs::topicnames::simulated_system, 1);
     motorsDataPub_ = this->create_publisher<ulisse_msgs::msg::LLCThrusters>(ulisse_msgs::topicnames::llc_thrusters, 1);
 
+    //visualizationPub_ = this->create_publisher<visualization_msgs::msg::Marker> ("visualization_marker", 0 );
+    visualizationPub_ = this->create_publisher<visualization_msgs::msg::MarkerArray> ("visualization_marker_array", 0 );
+
     tf_broadcaster_ASV = std::make_shared<tf2_ros::TransformBroadcaster>(this); //ASV/ROV
 
     thrustersSub_ = this->create_subscription<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_reference_perc, 1,
@@ -209,6 +212,22 @@ void VehicleSimulator::SimulateActuation()
         0, sin(bodyF_orientation_.Roll()), cos(bodyF_orientation_.Roll());
 
     worldF_R_bodyF_ = Rz * Ry * Rx;
+
+    Eigen::RotationMatrix Rx_n, Ry_n, Rz_n;
+    Rx_n << 1, 0, 0,
+            0, cos(-M_PI/2), -sin(-M_PI/2),
+            0, sin(-M_PI/2), cos(-M_PI/2);
+
+    Ry_n << cos(-M_PI/2), 0, sin(-M_PI/2),
+            0, 1, 0,
+            -sin(-M_PI/2), 0, cos(-M_PI/2);
+
+    Rz_n << cos(-M_PI/2), -sin(-M_PI/2), 0,
+        sin(-M_PI/2), cos(-M_PI/2), 0,
+        0, 0, 1;
+
+    worldF_ASV_meshF_ = Ry_n *Rz_n* worldF_R_bodyF_   ;
+    bodyF_ASVmesh_ = worldF_ASV_meshF_.eulerAngles(2, 1, 0);
 
     // Compute the projection of the velocity on the plane (non "vola")
     Eigen::Vector3d worldF_wFk = { 0.0, 0.0, 1.0 };
@@ -558,6 +577,52 @@ void VehicleSimulator::PublishTf(){
     t_stamp_ASV.transform.rotation.z = q1.z();
     t_stamp_ASV.transform.rotation.w = q1.w();
     tf_broadcaster_ASV->sendTransform(t_stamp_ASV);
+
+    visualization_msgs::msg::Marker marker;
+    visualization_msgs::msg::MarkerArray markerArray;
+    marker.header.frame_id = "world";
+    marker.header.stamp = this->get_clock()->now();
+    marker.ns = "rov_link";
+    marker.id = 1;
+    //marker.type = visualization_msgs::msg::Marker::CUBE;
+    marker.type = visualization_msgs::msg::Marker::MESH_RESOURCE;
+    //marker.action = visualization_msgs::msg::Marker::ADD;
+    /*marker.pose.position.x = ROVpose_.x();
+    marker.pose.position.y = ROVpose_.y();
+    marker.pose.position.z = altitude_;
+    marker.pose.orientation.x = q2.x();
+    marker.pose.orientation.y = q2.y();
+    marker.pose.orientation.z = q2.z();
+    marker.pose.orientation.w = q2.w();*/
+
+    /*marker.pose.position.x = ASVpos.y(); // inverted
+    marker.pose.position.y = ASVpos.x(); // inverted
+    marker.pose.position.z = ASVpos.z();*/
+
+    tf2::Quaternion asv_q;
+    //rov2_q.setRPY(bodyF_orientation_.Roll(),bodyF_orientation_.Pitch(),bodyF_orientation_.Yaw() + M_PI/2);
+    asv_q.setEuler(bodyF_ASVmesh_.Yaw(),bodyF_ASVmesh_.Pitch(),bodyF_ASVmesh_.Roll());
+    marker.pose.position.x = ASVpos.y(); // inverted
+    marker.pose.position.y = ASVpos.x(); // inverted
+    marker.pose.position.z = ASVpos.z();
+
+    marker.pose.orientation.x = asv_q.x();
+    marker.pose.orientation.y = asv_q.y();
+    marker.pose.orientation.z = asv_q.z();
+    marker.pose.orientation.w = asv_q.w();
+    marker.scale.x = 0.0005;
+    marker.scale.y = 0.0005;
+    marker.scale.z = 0.0005;
+    marker.color.a = 1.0; // Don't forget to set the alpha!
+    marker.color.r = 1.0; //0
+    marker.color.g = 0.678;
+    marker.color.b = 0.184; //0
+
+    marker.mesh_resource = "package://ulisse_sim/meshes/ulisse2_simplified.dae";
+    markerArray.markers.push_back(marker);
+
+    visualizationPub_->publish( markerArray );
+
 }
 
 double VehicleSimulator::GetCurrentTimeStamp() const
