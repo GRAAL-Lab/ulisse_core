@@ -42,6 +42,7 @@ void OalInterfaceNode::handleComputePathRequest(
             sendNew = true;
             response->res = true;
             last_check_progress_ = last_pos_update_;
+            last_path_change_reason_ = "new_request";
             startTracking();
             return;
         }
@@ -202,8 +203,10 @@ void OalInterfaceNode::CheckProgress() {
                     if (isNewBetter) {
                         double perc = new_path.metrics.totDistance / path_temp.metrics.totDistance * 100;
                         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), " - changing path to one [%f]%% shorter", 100 - perc);
+                        last_path_change_reason_ = "found_one_better"+std::to_string(100-perc);
                     } else {
                         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), " - path is NOT safe, found new one.");
+                        last_path_change_reason_ = "risk_of_collision";
                     }
 
                     last_path_computation_ = rclcpp::Clock().now();
@@ -219,6 +222,7 @@ void OalInterfaceNode::CheckProgress() {
                 if (!isOldSafe) {
                     // old sucks and there is no new, fuck
                     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), " - path is NOT safe and no other exists, stop.");
+                    last_path_change_reason_ = "risk_of_collision_without_alternatives";
                     stopTracking();
                     CallKCL(ulisse::commands::ID::hold);
                     return;
@@ -385,12 +389,13 @@ void OalInterfaceNode::status_pub_callback() {
 
     if(!active_){
         message.status = "Not active";
-
     }else{
       /*Path path_temp = path_;
       path_temp.pop();
       ctb::LatLong next_wp = GetLatLong(path_temp.top().position);*/
       message.status = "Active";
+      message.path_change = last_path_change_reason_;
+      last_path_change_reason_ = "";
       message.colregs_compliant = colregs_;
       message.desired_speed = last_cmd_speed;
       /*message.goal.longitude = goal_.longitude;

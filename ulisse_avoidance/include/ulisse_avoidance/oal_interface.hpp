@@ -102,6 +102,7 @@ private:
     //path_planner planner;
     Path path_;
     std::vector<std::string> overtaking_list_;  // useless at the moment
+    std::string last_path_change_reason_;
 
     // Goal related
     bool colregs_;
