@@ -24,6 +24,8 @@ bool StatePathFollow::LoadPath(const ulisse_msgs::msg::PathData& path){
         std::cerr << "PathManager::Initialization: fails" << std::endl;
         return false;
     }
+    loopPath_ = true; // SETTING PATH LOOPING TO TRUE BY DEFAULT
+
     isCurveSet_ = true;
 
     // Get the staring and ending point of the path
@@ -130,7 +132,7 @@ fsm::retval StatePathFollow::Execute()
 
     absoluteAxisAlignmentSafetyTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
     absoluteAxisAlignmentSafetyTask_->SetDirectionAlignment(safetyBoundariesTask_->GetAlignVector(rml::FrameID::WorldFrame),
-        rml::FrameID::WorldFrame);
+                                                            rml::FrameID::WorldFrame);
 
     //To avoid the case in which the error between the goal heading and the current heading is too big
     //we activate the the cartesian distance through the gain based on a bell-shaped function on the heading error
@@ -186,8 +188,13 @@ fsm::retval StatePathFollow::Execute()
 
             if (pathManager_.DistanceToEnd() < tolleranceEndingPoint_) {
 
-                std::cout << "*** MISSION FINISHED! ***" << std::endl;
-                fsm_->EmitEvent(ulisse::events::names::neargoalposition, ulisse::events::priority::medium);
+                if (loopPath_) {
+                    std::cout << "** Restarting Path! **" << std::endl;
+                    pathManager_.RestartPath();
+                } else {
+                    std::cout << "*** MISSION FINISHED! ***" << std::endl;
+                    fsm_->EmitEvent(ulisse::events::names::neargoalposition, ulisse::events::priority::medium);
+                }
 
             } else {
                 ctb::LatLong closePoint2path;

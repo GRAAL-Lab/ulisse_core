@@ -60,6 +60,11 @@ public:
     /*
      * Method that get the starting point of the path in cartesian coordinates
     */
+    auto StartingPointILOS() const -> const ctb::LatLong& { return ILOSstartP_; }
+
+    /*
+     * Method that get the starting point of the path in cartesian coordinates
+    */
     auto EndingPoint() const -> const ctb::LatLong& { return endP_; }
 
     /*
@@ -73,6 +78,18 @@ public:
      * @return
      */
     double DistanceToEnd() const;
+
+    /**
+     * @brief DistanceToStart
+     *
+     * @return
+     */
+    double DistanceToStart() const;
+
+    /**
+     * @brief RestartPath resets the current abscissa to 0.0 and restarts the path
+     */
+    void RestartPath();
 
     /*
      * Method that set the delta incrementation
@@ -103,7 +120,10 @@ public:
 
         bool variableDelta;
         double sigmaY;
+        double gammaY;
+        double kappaY;
         double deltaY;
+        double y_int_saturation;
 
         bool configureFromFile(const libconfig::Config& confObj, const std::string& stateName)
         {
@@ -127,7 +147,13 @@ public:
                 return false;
             if (!ctb::GetParam(state, sigmaY, "sigmaY"))
                 return false;
+            if (!ctb::GetParam(state, gammaY, "gammaY"))
+                return false;
+            if (!ctb::GetParam(state, kappaY, "kappaY"))
+                return false;
             if (!ctb::GetParam(state, deltaY, "deltaY"))
+                return false;
+            if (!ctb::GetParam(state, y_int_saturation, "y_int_saturation"))
                 return false;
             if (!ctb::GetParam(state, variableDelta, "variableDelta"))
                 return false;
@@ -173,6 +199,7 @@ private:
     double angle_, size_1_, size_2_;
     sisl::Path::Direction direction_;
     ctb::LatLong startP_;                       // Starting point of the nurbs path
+    ctb::LatLong ILOSstartP_;                // Starting point of the nurbs path for ILOS
     ctb::LatLong endP_;                         // Ending point of the nurbs path
     double currentAbscissa_;                         // The current parameter value on the path
     ctb::LatLong currentGoal_;

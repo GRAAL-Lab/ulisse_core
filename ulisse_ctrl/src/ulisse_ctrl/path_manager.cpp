@@ -22,11 +22,11 @@ PathManager::PathManager()
     nurbsParam.deltaStep = 0.05;
 
     // Default initialization for ILOS
-    sigma_y = 0.01;//0.1;
-    delta_y = 5;
-    y_int = 0;
-    y_int_dot = 0;
-    delta_t = std::chrono::duration_cast<std::chrono::nanoseconds>(T_last_ - T_now_);
+    //sigma_y = 0.01;//0.1;
+    //delta_y = 5;
+    //y_int = 0;
+    //y_int_dot = 0;
+    //delta_t = std::chrono::duration_cast<std::chrono::nanoseconds>(T_last_ - T_now_);
 }
 
 PathManager::~PathManager() { }
@@ -125,10 +125,10 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
 
     currentTrackPoint_ = startP_;
 
-    y_int_dot = 0.0;
-    y_int = 0.0;
-    T_last_ = T_now_;
-    delta_t = std::chrono::duration_cast<std::chrono::nanoseconds>(T_last_ - T_now_);
+    //y_int_dot = 0.0;
+    //y_int = 0.0;
+    //T_last_ = T_now_;
+    //delta_t = std::chrono::duration_cast<std::chrono::nanoseconds>(T_last_ - T_now_);
     return true;
 
 }
@@ -272,4 +272,18 @@ double PathManager::DistanceToEnd() const
     return std::fabs(path_->EndParameter() - currentAbscissa_);
 }
 
+void PathManager::RestartPath()
+{
+    double altitude;
+
+    currentAbscissa_ = 0.0;
+
+    double goalAbscissa = currentAbscissa_ + delta_;
+    goalAbscissa = std::clamp(goalAbscissa, path_->StartParameter(), path_->EndParameter());
+    Eigen::Vector3d goalPos_UTM = path_->At(goalAbscissa);
+    ctb::LocalUTM2LatLong(goalPos_UTM, centroid_, currentGoal_, altitude);
+    //std::cout << "currentGoal: " << currentGoal_ << std::endl;
+
+    currentTrackPoint_ = startP_;
+}
 

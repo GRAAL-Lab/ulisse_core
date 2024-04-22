@@ -25,6 +25,7 @@ bool StatePathFollowILOS::LoadPath(const ulisse_msgs::msg::PathData& path){
         std::cerr << "PathManager::Initialization: fails" << std::endl;
         return false;
     }
+    loopPath_ = true; // SETTING PATH LOOPING TO TRUE BY DEFAULT
     isCurveSet_ = true;
 
     // Get the staring and ending point of the path
@@ -173,7 +174,8 @@ fsm::retval StatePathFollowILOS::Execute()
         //Going to the starting point
         if (!vehicleOnTrack_) {
 
-            ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, pathManager_.StartingPoint(), goalDistance, goalHeading);
+            //ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, pathManager_.StartingPoint(), goalDistance, goalHeading);
+            ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, pathManager_.StartingPointILOS(), goalDistance, goalHeading);
 
             if (goalDistance < tolleranceStartingPoint_) {
                 vehicleOnTrack_ = true;
@@ -212,8 +214,50 @@ fsm::retval StatePathFollowILOS::Execute()
 
             if (pathManager_.DistanceToEnd() < tolleranceEndingPoint_) {
 
-                std::cout << "*** MISSION FINISHED! ***" << std::endl;
-                fsm_->EmitEvent(ulisse::events::names::neargoalposition, ulisse::events::priority::medium);
+                if (loopPath_) {
+                    nextP_ = pathManager_.StartingPointILOS();
+                    //currentTrackPoint_ = pathManager_.StartingPointILOS();
+                    ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, nextP_, goalDistance, Heading1);
+                    double ILOS_INFO[6]; // Information matrix that has variables to be published (y, y_int, y_int_dot)
+
+                    //Set the distance vector to the target
+                    cartesianDistanceTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(Heading1), goalDistance * sin(Heading1), 0), rml::FrameID::WorldFrame);
+                    //Set the align vector to the target
+                    alignToTargetTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(Heading1), goalDistance * sin(Heading1), 0), rml::FrameID::WorldFrame);
+                    //alignToTargetTask_->SetTargetDistance(Eigen::Vector3d(cos(goalHeading), sin(goalHeading), 0), rml::FrameID::WorldFrame);
+
+                    //Set the vector that has to been align to the distance vector
+                    alignToTargetTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
+
+                    //To avoid the case in which the error between the goal heading and the current heading is too big
+                    //we activate the the cartesian distance through the gain based on a bell-shaped function on the heading error
+
+                    //compute the heading error
+                    double headingError = alignToTargetTask_->ControlVariable().norm();
+
+                    //compute the gain of the cartesian distance
+                    double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingError);
+
+                    //Set the gain of the cartesian distance task
+                    //cartesianDistanceTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
+
+                    cartesianDistanceTask_->TaskParameter().gain = taskGain * cartesianDistanceTask_->TaskParameter().conf_gain;
+                    cartesianDistanceTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
+                    alignToTargetTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(alignToTargetTask_->TaskSpace(), alignToTargetTask_->TaskSpace());
+
+                    cartesianDistancePathFollowingTask_->ExternalActivationFunction() = 0.0 * Eigen::MatrixXd::Identity(cartesianDistancePathFollowingTask_->TaskSpace(), cartesianDistancePathFollowingTask_->TaskSpace());
+                    absoluteAxisAlignmentILOSTask_->ExternalActivationFunction() = 0.0*Eigen::MatrixXd::Identity(absoluteAxisAlignmentILOSTask_->TaskSpace(), absoluteAxisAlignmentILOSTask_->TaskSpace());
+
+
+                    if (goalDistance < 5.0){
+                        std::cout << "** Restarting Path! **" << std::endl;
+                        pathManager_.RestartPath();
+                    }
+
+                } else {
+                    std::cout << "*** MISSION FINISHED! ***" << std::endl;
+                    fsm_->EmitEvent(ulisse::events::names::neargoalposition, ulisse::events::priority::medium);
+                }
 
             } else {
 

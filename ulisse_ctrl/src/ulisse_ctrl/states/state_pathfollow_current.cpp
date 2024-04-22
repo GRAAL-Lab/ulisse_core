@@ -24,6 +24,7 @@ bool StatePathFollowCurrent::LoadPath(const ulisse_msgs::msg::PathData& path){
         std::cerr << "PathManager::Initialization: fails" << std::endl;
         return false;
     }
+    loopPath_ = true; // SETTING PATH LOOPING TO TRUE BY DEFAULT
     isCurveSet_ = true;
 
     // Get the staring and ending point of the path
@@ -206,8 +207,13 @@ fsm::retval StatePathFollowCurrent::Execute()
 
             if (pathManager_.DistanceToEnd() < tolleranceEndingPoint_) {
 
-                std::cout << "*** MISSION FINISHED! ***" << std::endl;
-                fsm_->EmitEvent(ulisse::events::names::neargoalposition, ulisse::events::priority::medium);
+                if (loopPath_) {
+                    std::cout << "** Restarting Path! **" << std::endl;
+                    pathManager_.RestartPath();
+                } else {
+                    std::cout << "*** MISSION FINISHED! ***" << std::endl;
+                    fsm_->EmitEvent(ulisse::events::names::neargoalposition, ulisse::events::priority::medium);
+                }
 
             } else {
                 ctb::LatLong closePoint2path;

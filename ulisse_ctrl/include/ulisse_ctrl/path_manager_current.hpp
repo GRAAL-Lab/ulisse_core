@@ -80,6 +80,11 @@ public:
      */
     double DistanceToEnd() const;
 
+    /**
+     * @brief RestartPath resets the current abscissa to 0.0 and restarts the path
+     */
+    void RestartPath();
+
     /*
      * Method that set the delta incrementation
     */

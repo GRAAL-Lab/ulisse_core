@@ -89,7 +89,8 @@ struct SimulatorConfiguration {
     SensorsNoise sensorsNoise;
     int rate;
     double modelErrorPercentage;
-    UlisseModelParameters modelParams;
+    //UlisseModelParameters modelParams;
+    SurfaceVehicleModelParameters modelParams;
     Eigen::Vector2d inertialF_waterCurrent;
     Eigen::Vector3d bodyF_gps_sensor_position;
     Eigen::Vector6d bodyF_dvl_sensor_pose;

@@ -120,7 +120,7 @@ bool PathManagerILOS::Initialization(const ulisse_msgs::msg::PathData& path)
     Eigen::Vector3d goalPos_UTM = path_->At(goalAbscissa);
     ctb::LocalUTM2LatLong(goalPos_UTM, centroid_, currentGoal_, altitude);
     //std::cout << "currentGoal: " << currentGoal_ << std::endl;
-
+    ILOSstartP_ = currentGoal_;
     currentTrackPoint_ = startP_;
 
     // resetting variables in ILOS equation
@@ -335,16 +335,23 @@ double PathManagerILOS::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos, c
 
         double y = sign * sqrt(pow(distanceVector.x(),2) + pow(distanceVector.y(),2));
         y_int_dot = delta_ * y / ( pow((y + nurbsParam.sigmaY *y_int),2) + pow(delta_,2));
-        //y_int_dot = delta_ * y / ( pow((y + nurbsParam.sigmaY *y_int),2) + pow(nurbsParam.sigmaY,2));
+
+        // y_int_dot saturation
+        //if(y_int_dot > 0.3) y_int_dot = 0.3;
+        //else if(y_int_dot < -0.3) y_int_dot = -0.3;
+
+        //y_int_dot = nurbsParam.sigmaY * y / ( pow((y + nurbsParam.sigmaY *y_int),2) + pow(nurbsParam.sigmaY,2));
         delta_t = std::chrono::duration_cast<std::chrono::nanoseconds>(T_now_ - T_last_);
         T_last_ = T_now_;
         y_int = y_int + y_int_dot * delta_t.count() / 1E9;
 
             // in case of saturation of y_int
-        //if(y_int > 5) y_int = 5;
-        //else if(y_int < -5) y_int = -5;
+        if(y_int > nurbsParam.y_int_saturation) y_int = nurbsParam.y_int_saturation;
+        else if(y_int < -nurbsParam.y_int_saturation) y_int = -nurbsParam.y_int_saturation;
 
-        psi_ILOS = - atan2((y + nurbsParam.sigmaY * y_int),delta_);
+        psi_ILOS = - atan2((nurbsParam.kappaY * y + nurbsParam.sigmaY * y_int + nurbsParam.gammaY * y_int_dot) , delta_);
+        //psi_ILOS = - atan2((nurbsParam.kappaY * y + nurbsParam.sigmaY * y_int + nurbsParam.gammaY * y_int_dot) , delta_); // original
+        //psi_ILOS = - atan2((y + nurbsParam.sigmaY * y_int) , delta_);
         if(sign < 0 )
             goal_heading = Heading2ClosetPoint - M_PI_2 + psi_ILOS;
         else goal_heading = Heading2ClosetPoint + M_PI_2 + psi_ILOS;
@@ -431,6 +438,28 @@ double PathManagerILOS::ComputeRealErrorILOS(const ctb::LatLong &currentPos,cons
 double PathManagerILOS::DistanceToEnd() const
 {
     return std::fabs(path_->EndParameter() - currentAbscissa_);
+    //return path_->EndParameter() - currentAbscissa_ + 2; // shift 2 m
 }
 
+double PathManagerILOS::DistanceToStart() const
+{
+    //return std::fabs(path_->EndParameter() - currentAbscissa_);
+    return path_->EndParameter() - currentAbscissa_ + 2; // shift 5 m
+}
+
+void PathManagerILOS::RestartPath()
+{
+    double altitude;
+
+    currentAbscissa_ = 0.0;
+
+    double goalAbscissa = currentAbscissa_ + delta_;
+    goalAbscissa = std::clamp(goalAbscissa, path_->StartParameter(), path_->EndParameter());
+    Eigen::Vector3d goalPos_UTM = path_->At(goalAbscissa);
+    ctb::LocalUTM2LatLong(goalPos_UTM, centroid_, currentGoal_, altitude);
+    //std::cout << "currentGoal: " << currentGoal_ << std::endl;
+
+    //currentTrackPoint_ = startP_;
+    currentTrackPoint_ = ILOSstartP_;
+}
 

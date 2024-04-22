@@ -203,7 +203,8 @@ struct DCLConfiguration {
     double surgeMin, surgeMax;
     double yawRateMin, yawRateMax;
 
-    UlisseModelParameters ulisseModel;
+    //UlisseModelParameters ulisseModel;
+    SurfaceVehicleModelParameters ulisseModel;
     ThrusterMapping thrusterMapping;
     DynamicPid classicPidControl;
     DynamicPid computedTorqueControl;

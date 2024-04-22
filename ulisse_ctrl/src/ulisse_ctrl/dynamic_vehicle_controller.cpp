@@ -6,7 +6,7 @@
 #include "ulisse_ctrl/ulisse_defines.hpp"
 #include "ulisse_ctrl/configuration.hpp"
 
-#include "ulisse_msgs/terminal_utils.hpp"
+#include "ulisse_msgs/futils.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 
 

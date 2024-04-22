@@ -460,4 +460,19 @@ double PathManagerILOSCurrent::DistanceToEnd() const
     return std::fabs(path_->EndParameter() - currentAbscissa_);
 }
 
+void PathManagerILOSCurrent::RestartPath()
+{
+    double altitude;
+
+    currentAbscissa_ = 0.0;
+
+    double goalAbscissa = currentAbscissa_ + delta_;
+    goalAbscissa = std::clamp(goalAbscissa, path_->StartParameter(), path_->EndParameter());
+    Eigen::Vector3d goalPos_UTM = path_->At(goalAbscissa);
+    ctb::LocalUTM2LatLong(goalPos_UTM, centroid_, currentGoal_, altitude);
+    //std::cout << "currentGoal: " << currentGoal_ << std::endl;
+
+    currentTrackPoint_ = startP_;
+}
+
 
