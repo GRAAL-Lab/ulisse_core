@@ -183,7 +183,7 @@ fsm::retval StatePathFollowILOS::Execute()
             } else {
 
                 //Set the distance vector to the target
-                cartesianDistanceTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(goalHeading), goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame);
+                cartesianDistanceTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(goalHeading), 1.5 * goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame); // goalDistance multiplied by 1.5 to avoid being very slow at the start
                 //Set the align vector to the target
                 alignToTargetTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(goalHeading), goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame);
                 //alignToTargetTask_->SetTargetDistance(Eigen::Vector3d(cos(goalHeading), sin(goalHeading), 0), rml::FrameID::WorldFrame);
@@ -240,7 +240,7 @@ fsm::retval StatePathFollowILOS::Execute()
 
                     //Set the gain of the cartesian distance task
                     //cartesianDistanceTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
-
+                    taskGain = 1.0;
                     cartesianDistanceTask_->TaskParameter().gain = taskGain * cartesianDistanceTask_->TaskParameter().conf_gain;
                     cartesianDistanceTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
                     alignToTargetTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(alignToTargetTask_->TaskSpace(), alignToTargetTask_->TaskSpace());

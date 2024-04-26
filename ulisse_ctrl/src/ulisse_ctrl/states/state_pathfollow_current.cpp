@@ -223,6 +223,65 @@ fsm::retval StatePathFollowCurrent::Execute()
 
                 ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, nextP_, goalDistance, goalHeading);
 
+                double water_angle = atan(ctrlData->inertialF_waterCurrent[1]/ctrlData->inertialF_waterCurrent[0]);
+
+                double phi = goalHeading - water_angle;
+                double C = ctrlData->inertialF_waterCurrent.norm();
+                double Vapp = linearVelocityPathFollowingCurrentTask_->TaskParameter().saturation;
+                double Vtot = C * cos(phi) + sqrt( pow(Vapp,2) - pow(C*sin(phi),2) );
+                double psi = acos( (Vtot - C*cos(phi)) / Vapp );
+                double heading_angle;
+                if(phi > M_PI ) // <0
+                    heading_angle = goalHeading - psi; // goalHeading - psi;  - M_PI_2 + psi;
+                else heading_angle = goalHeading + psi; // goalHeading + psi; + M_PI_2 + psi;
+
+                while(heading_angle > 2*M_PI)
+                {
+                    heading_angle = heading_angle - 2*M_PI;
+                }
+                while(heading_angle < 0)
+                {
+                    heading_angle = heading_angle + 2*M_PI;
+                }
+                std::cout << "goalHeading: " <<goalHeading << std::endl;
+                std::cout << "water_angle: " <<water_angle << std::endl;
+                std::cout << "phi: " <<phi << std::endl;
+                std::cout << "heading_angle: " <<heading_angle << std::endl;
+                std::cout << std::endl;
+
+                absoluteAxisAlignmentTask_->ExternalActivationFunction().setIdentity();
+                absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
+                absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(cos(heading_angle), sin(heading_angle), 0.0), rml::FrameID::WorldFrame);
+                absoluteAxisAlignmentTask_->Update();
+
+                //compute the heading error
+                double headingError = absoluteAxisAlignmentTask_->ControlVariable().norm();
+                //compute the gain of the cartesian distance
+                double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingError);
+                taskGain = 1.0;
+                //Set the gain of the cartesian linearVelocity task
+                linearVelocityPathFollowingCurrentTask_->TaskParameter().gain = taskGain * linearVelocityPathFollowingCurrentTask_->TaskParameter().conf_gain;
+                linearVelocityPathFollowingCurrentTask_->SetReferenceRate(Eigen::Vector3d(Vapp, 0, 0), robotModel->BodyFrameID());
+
+                // for publishing msgs
+                pathManager_.ComputeError(ctrlData->inertialF_linearPosition, *real_position, nextP_, closePoint2path, y_, yReal_);
+                LOS_goalHeading = heading_angle;
+                LOS_headingError = absoluteAxisAlignmentTask_->ControlVariable().norm();
+
+                cartesianDistanceTask_->ExternalActivationFunction() = 0.0 * Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
+                alignToTargetTask_->ExternalActivationFunction() = 0.0 * Eigen::MatrixXd::Identity(alignToTargetTask_->TaskSpace(), alignToTargetTask_->TaskSpace());
+                absoluteAxisAlignmentTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(absoluteAxisAlignmentTask_->TaskSpace(), absoluteAxisAlignmentTask_->TaskSpace());
+                linearVelocityPathFollowingCurrentTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(linearVelocityPathFollowingCurrentTask_->TaskSpace(), linearVelocityPathFollowingCurrentTask_->TaskSpace());
+
+
+                /*
+                ctb::LatLong closePoint2path;
+                if (!pathManager_.ComputeGoalPosition(ctrlData->inertialF_linearPosition, nextP_,delta_y_,closePoint2path)) {
+                    return fsm::fail;
+                }
+
+                ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, nextP_, goalDistance, goalHeading);
+
 
                 Eigen::Vector2d appliedVelocity;
                 pathManager_.ComputeAppliedVelocity(goalHeading, linearVelocityPathFollowingCurrentTask_->TaskParameter().saturation,
@@ -255,6 +314,8 @@ fsm::retval StatePathFollowCurrent::Execute()
                 alignToTargetTask_->ExternalActivationFunction() = 0 * Eigen::MatrixXd::Identity(alignToTargetTask_->TaskSpace(), alignToTargetTask_->TaskSpace());
                 absoluteAxisAlignmentTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(absoluteAxisAlignmentTask_->TaskSpace(), absoluteAxisAlignmentTask_->TaskSpace());
                 linearVelocityPathFollowingCurrentTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(linearVelocityPathFollowingCurrentTask_->TaskSpace(), linearVelocityPathFollowingCurrentTask_->TaskSpace());
+                */
+
                 //cartesianDistancePathFollowingTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(cartesianDistancePathFollowingTask_->TaskSpace(), cartesianDistancePathFollowingTask_->TaskSpace());
             }
         }
