@@ -243,11 +243,11 @@ fsm::retval StatePathFollowCurrent::Execute()
                 {
                     heading_angle = heading_angle + 2*M_PI;
                 }
-                std::cout << "goalHeading: " <<goalHeading << std::endl;
-                std::cout << "water_angle: " <<water_angle << std::endl;
-                std::cout << "phi: " <<phi << std::endl;
-                std::cout << "heading_angle: " <<heading_angle << std::endl;
-                std::cout << std::endl;
+                //std::cout << "goalHeading: " <<goalHeading << std::endl;
+                //std::cout << "water_angle: " <<water_angle << std::endl;
+                //std::cout << "phi: " <<phi << std::endl;
+                //std::cout << "heading_angle: " <<heading_angle << std::endl;
+                //std::cout << std::endl;
 
                 absoluteAxisAlignmentTask_->ExternalActivationFunction().setIdentity();
                 absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
