@@ -20,7 +20,6 @@ bool StatePathFollowILOS::LoadPath(const ulisse_msgs::msg::PathData& path){
     vehicleOnTrack_ = false;
 
     std::cout << "LOADING Path" << std::endl;
-    //pathManager_.ResetPath();
     if (!pathManager_.Initialization(path)) {
         std::cerr << "PathManager::Initialization: fails" << std::endl;
         return false;
@@ -34,9 +33,6 @@ bool StatePathFollowILOS::LoadPath(const ulisse_msgs::msg::PathData& path){
 
     // Evaluete the end curve length
     double length;
-    // pathManager_.ComputeCurveLength(pathManager_.Path()[pathManager_.Path().size() - 1], length);
-    // Compute the prametric tollerance of the end curve
-    //tolleranceEndingPoint_ = pathManager_.Path().size() - tolleranceEndingPoint_ / length;
 
     length = pathManager_.GetPath()->Length();
     // Check if the curves are greater than the delta max
@@ -71,14 +67,6 @@ bool StatePathFollowILOS::ConfigureStateFromFile(libconfig::Config& confObj)
         return false;
     if (!ctb::GetParam(state, logPathOnFile_, "logPathOnFile"))
         return false;
-
-    //ILOS
-    //if (!ctb::GetParam(state, sigma_y_, "sigmaY"))
-    //    return false;
-    //if (!ctb::GetParam(state, delta_y_, "deltaY"))
-    //    return false;
-    //if (!ctb::GetParam(state, variableDelta_, "variableDelta"))
-    //    return false;
 
     //configure the nurbs param
     if (!pathManager_.nurbsParam.configureFromFile(confObj, ulisse::states::ID::pathfollow_ilos)) {
@@ -148,9 +136,6 @@ fsm::retval StatePathFollowILOS::Execute()
 
     Aexternal = safetyBoundariesTask_->InternalActivationFunction().maxCoeff() * Aexternal.setIdentity(absoluteAxisAlignmentSafetyTask_->TaskSpace(), absoluteAxisAlignmentSafetyTask_->TaskSpace());
     absoluteAxisAlignmentSafetyTask_->ExternalActivationFunction() = Aexternal;
-    //safetyBoundariesTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
-    //absoluteAxisAlignmentSafetyTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(absoluteAxisAlignmentSafetyTask_->TaskSpace(), absoluteAxisAlignmentSafetyTask_->TaskSpace());
-
     absoluteAxisAlignmentSafetyTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
     absoluteAxisAlignmentSafetyTask_->SetDirectionAlignment(safetyBoundariesTask_->GetAlignVector(rml::FrameID::WorldFrame),
         rml::FrameID::WorldFrame);
@@ -183,7 +168,7 @@ fsm::retval StatePathFollowILOS::Execute()
             } else {
 
                 //Set the distance vector to the target
-                cartesianDistanceTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(goalHeading), 1.5 * goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame); // goalDistance multiplied by 1.5 to avoid being very slow at the start
+                cartesianDistanceTask_->SetTargetDistance(Eigen::Vector3d(1.5 * goalDistance * cos(goalHeading), 1.5 * goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame); // goalDistance multiplied by 1.5 to avoid being very slow at the start
                 //Set the align vector to the target
                 alignToTargetTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(goalHeading), goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame);
                 //alignToTargetTask_->SetTargetDistance(Eigen::Vector3d(cos(goalHeading), sin(goalHeading), 0), rml::FrameID::WorldFrame);
@@ -215,39 +200,27 @@ fsm::retval StatePathFollowILOS::Execute()
             if (pathManager_.DistanceToEnd() < tolleranceEndingPoint_) {
 
                 if (loopPath_) {
+                    // When the loop is finished, the new starting point is taken by calling StartingPointILOS() function
                     nextP_ = pathManager_.StartingPointILOS();
-                    //currentTrackPoint_ = pathManager_.StartingPointILOS();
+
                     ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, nextP_, goalDistance, Heading1);
                     double ILOS_INFO[6]; // Information matrix that has variables to be published (y, y_int, y_int_dot)
 
                     //Set the distance vector to the target
-                    cartesianDistanceTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(Heading1), goalDistance * sin(Heading1), 0), rml::FrameID::WorldFrame);
+                    cartesianDistanceTask_->SetTargetDistance(Eigen::Vector3d(1.5 * goalDistance * cos(Heading1), 1.5 * goalDistance * sin(Heading1), 0), rml::FrameID::WorldFrame);
                     //Set the align vector to the target
                     alignToTargetTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(Heading1), goalDistance * sin(Heading1), 0), rml::FrameID::WorldFrame);
-                    //alignToTargetTask_->SetTargetDistance(Eigen::Vector3d(cos(goalHeading), sin(goalHeading), 0), rml::FrameID::WorldFrame);
-
                     //Set the vector that has to been align to the distance vector
                     alignToTargetTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
 
-                    //To avoid the case in which the error between the goal heading and the current heading is too big
-                    //we activate the the cartesian distance through the gain based on a bell-shaped function on the heading error
-
-                    //compute the heading error
-                    double headingError = alignToTargetTask_->ControlVariable().norm();
-
-                    //compute the gain of the cartesian distance
-                    double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingError);
-
-                    //Set the gain of the cartesian distance task
-                    //cartesianDistanceTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
-                    taskGain = 1.0;
+                    // In this case we need the ASV keep moving without slowing down even when there is a heading error. So we set taskGain to one
+                    double taskGain = 1.0;
                     cartesianDistanceTask_->TaskParameter().gain = taskGain * cartesianDistanceTask_->TaskParameter().conf_gain;
                     cartesianDistanceTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
                     alignToTargetTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(alignToTargetTask_->TaskSpace(), alignToTargetTask_->TaskSpace());
 
                     cartesianDistancePathFollowingTask_->ExternalActivationFunction() = 0.0 * Eigen::MatrixXd::Identity(cartesianDistancePathFollowingTask_->TaskSpace(), cartesianDistancePathFollowingTask_->TaskSpace());
                     absoluteAxisAlignmentILOSTask_->ExternalActivationFunction() = 0.0*Eigen::MatrixXd::Identity(absoluteAxisAlignmentILOSTask_->TaskSpace(), absoluteAxisAlignmentILOSTask_->TaskSpace());
-
 
                     if (goalDistance < 5.0){
                         std::cout << "** Restarting Path! **" << std::endl;
@@ -305,10 +278,9 @@ fsm::retval StatePathFollowILOS::Execute()
 
                 //compute the gain of the cartesian distance
                 double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, ILOS_headingError);
-
+                //taskGain = 1.0;
                 //Set the gain of the cartesian distance task
                 cartesianDistancePathFollowingTask_->TaskParameter().gain = taskGain * cartesianDistancePathFollowingTask_->TaskParameter().conf_gain;
-                //std::cout <<std::endl;
                 cartesianDistanceTask_->ExternalActivationFunction() = 0.0 * Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
                 cartesianDistancePathFollowingTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(cartesianDistancePathFollowingTask_->TaskSpace(), cartesianDistancePathFollowingTask_->TaskSpace());
                 alignToTargetTask_->ExternalActivationFunction() = 0.0 * Eigen::MatrixXd::Identity(alignToTargetTask_->TaskSpace(), alignToTargetTask_->TaskSpace());
@@ -316,8 +288,6 @@ fsm::retval StatePathFollowILOS::Execute()
             }
         }
     }
-
-    //std::cout << "STATE PATH FOLLOWING" << std::endl;
 
     return fsm::ok;
 }

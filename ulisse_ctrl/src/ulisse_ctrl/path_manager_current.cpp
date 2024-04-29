@@ -226,25 +226,28 @@ bool PathManagerCurrent::ComputeError(const ctb::LatLong &currentPos,const ctb::
     T_now_ = std::chrono::system_clock::now();
 
     Eigen::Vector3d distanceVector, distanceVector_real;
+
+    // defining local path frame
+    // W. Caharija et al., "Integral Line-of-Sight Guidance and Control of Underactuated Marine Vehicles: Theory, Simulations, and Experiments,"
+    // fig.1 p. 1626
     Eigen::Vector3d X_p; // vector directed from the closestPointOnPath towards the goalPos
-    Eigen::Vector3d Y_p;
+    Eigen::Vector3d Y_p; // vector directed from the closestPointOnPath towards the vehicle position
     Eigen::Vector3d Z_p; // (0, 0, -1) with respect to the world frame
-    //double y_real;
 
     try {
-        X_p = goalPos_UTM - closestPointOnPath_UTM; // the vector directed from the closestPointOnPath towards the goalPos
+        X_p = goalPos_UTM - closestPointOnPath_UTM;
         X_p = X_p / X_p.norm(); // the unit vector of X_p
 
-            // the cross product Y_p = Z_p*X_p
+        // the cross product Y_p = Z_p*X_p
         Y_p.x() = X_p.y();
         Y_p.y() = -X_p.x();
         Y_p.z() = 0;
 
-            // the vector directed from the closestPointOnPath towards the currentPos
+        // the vector directed from the closestPointOnPath towards the currentPos
         distanceVector =  currentPos_UTM - closestPointOnPath_UTM;
         distanceVector_real = currentPosReal_UTM - closestPointOnPath_UTM;
 
-            // compute the sign of y (the error)
+        // compute the sign of y (the error)
         double k = Y_p.x() * distanceVector.x() + Y_p.y() * distanceVector.y();
 
         int sign;
@@ -273,6 +276,28 @@ bool PathManagerCurrent::ComputeAppliedVelocity(const double &goal_heading, cons
     return true;
 }
 
+bool PathManagerCurrent::ComputeHeadingAngle(const double &goalHeading, const double &waterC_angle,
+                                             const double &waterC_intensity, const double &ASV_speed, double &heading_angle){
+    double phi = goalHeading - waterC_angle;
+    double C = waterC_intensity;
+    double Vapp = ASV_speed;
+    double Vtot = C * cos(phi) + sqrt( pow(Vapp,2) - pow(C*sin(phi),2) );
+    double psi = acos( (Vtot - C*cos(phi)) / Vapp );
+    //double heading_angle;
+    if(phi > M_PI ) // <0
+        heading_angle = goalHeading - psi; // goalHeading - psi;  - M_PI_2 + psi;
+    else heading_angle = goalHeading + psi; // goalHeading + psi; + M_PI_2 + psi;
+
+    while(heading_angle > 2*M_PI)
+    {
+        heading_angle = heading_angle - 2*M_PI;
+    }
+    while(heading_angle < 0)
+    {
+        heading_angle = heading_angle + 2*M_PI;
+    }
+}
+
 double PathManagerCurrent::DistanceToEnd() const
 {
     return std::fabs(path_->EndParameter() - currentAbscissa_);
@@ -288,7 +313,6 @@ void PathManagerCurrent::RestartPath()
     goalAbscissa = std::clamp(goalAbscissa, path_->StartParameter(), path_->EndParameter());
     Eigen::Vector3d goalPos_UTM = path_->At(goalAbscissa);
     ctb::LocalUTM2LatLong(goalPos_UTM, centroid_, currentGoal_, altitude);
-    //std::cout << "currentGoal: " << currentGoal_ << std::endl;
 
     currentTrackPoint_ = startP_;
 }

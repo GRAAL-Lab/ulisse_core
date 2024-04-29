@@ -20,13 +20,6 @@ PathManager::PathManager()
     // Default initialization of the currentDelta
     delta_ = nurbsParam.deltaMin;
     nurbsParam.deltaStep = 0.05;
-
-    // Default initialization for ILOS
-    //sigma_y = 0.01;//0.1;
-    //delta_y = 5;
-    //y_int = 0;
-    //y_int_dot = 0;
-    //delta_t = std::chrono::duration_cast<std::chrono::nanoseconds>(T_last_ - T_now_);
 }
 
 PathManager::~PathManager() { }
@@ -102,7 +95,6 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
 
     std::cout << *path_ << std::endl;
 
-    //lookAheadDistance = (path_->Length()/path_->CurvesNumber())/2.0;
     std::cout << "lookAheadDistance: " << nurbsParam.lookAheadDistance << " m" << std::endl;
 
     double altitude;
@@ -121,14 +113,9 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
     goalAbscissa = std::clamp(goalAbscissa, path_->StartParameter(), path_->EndParameter());
     Eigen::Vector3d goalPos_UTM = path_->At(goalAbscissa);
     ctb::LocalUTM2LatLong(goalPos_UTM, centroid_, currentGoal_, altitude);
-    //std::cout << "currentGoal: " << currentGoal_ << std::endl;
 
     currentTrackPoint_ = startP_;
 
-    //y_int_dot = 0.0;
-    //y_int = 0.0;
-    //T_last_ = T_now_;
-    //delta_t = std::chrono::duration_cast<std::chrono::nanoseconds>(T_last_ - T_now_);
     return true;
 
 }
@@ -171,8 +158,6 @@ bool PathManager::ComputeGoalPosition(const ctb::LatLong &currentPos, ctb::LatLo
         delta_ = delta_ - nurbsParam.deltaStep;
     }
 
-
-
     // Limit delta between min and max if varialbe delta is enabled
     if(nurbsParam.variableDelta){
         delta_ = std::clamp(delta_, nurbsParam.deltaMin, nurbsParam.deltaMax);
@@ -214,25 +199,28 @@ bool PathManager::ComputeErrorLOS(const ctb::LatLong &currentPos,const ctb::LatL
     T_now_ = std::chrono::system_clock::now();
 
     Eigen::Vector3d distanceVector, distanceVector_real;
+
+    // defining local path frame
+    // W. Caharija et al., "Integral Line-of-Sight Guidance and Control of Underactuated Marine Vehicles: Theory, Simulations, and Experiments,"
+    // fig.1 p. 1626
     Eigen::Vector3d X_p; // vector directed from the closestPointOnPath towards the goalPos
-    Eigen::Vector3d Y_p;
+    Eigen::Vector3d Y_p; // vector directed from the closestPointOnPath towards the vehicle position
     Eigen::Vector3d Z_p; // (0, 0, -1) with respect to the world frame
-    //double y_real;
 
     try {
         X_p = goalPos_UTM - closestPointOnPath_UTM; // the vector directed from the closestPointOnPath towards the goalPos
         X_p = X_p / X_p.norm(); // the unit vector of X_p
 
-            // the cross product Y_p = Z_p*X_p
+        // the cross product Y_p = Z_p*X_p
         Y_p.x() = X_p.y();
         Y_p.y() = -X_p.x();
         Y_p.z() = 0;
 
-            // the vector directed from the closestPointOnPath towards the currentPos
+        // the vector directed from the closestPointOnPath towards the currentPos
         distanceVector =  currentPos_UTM - closestPointOnPath_UTM;
         distanceVector_real = currentPosReal_UTM - closestPointOnPath_UTM;
 
-            // compute the sign of y (the error)
+        // compute the sign of y (the error)
         double k = Y_p.x() * distanceVector.x() + Y_p.y() * distanceVector.y();
 
         int sign;
@@ -250,23 +238,7 @@ bool PathManager::ComputeErrorLOS(const ctb::LatLong &currentPos,const ctb::LatL
     return true;
 }
 
-//bool PathManager::ComputeWaterCurrentHeading(const Eigen::Vector2d& waterCurrent,const double& goal_heading ,double& applied_heading){
-//    ctb::LatLong Watercurrent;
-//    Eigen::Vector3d currentEst_UTM;
-//    double altitude;
-//    //currentEst_UTM[0] = ctrlData->inertialF_waterCurrent[0];
-//    //currentEst_UTM[1] = ctrlData->inertialF_waterCurrent[1];
-//    currentEst_UTM[0] = waterCurrent[0];
-//    currentEst_UTM[1] = waterCurrent[1];
-//    currentEst_UTM[2] = 0;
 
-//    ctb::LocalUTM2LatLong(currentEst_UTM,centroid_,Watercurrent,altitude);
-//    //Eigen::Vector3d currentEst_UTM;
-//    //ctb::LatLong2LocalUTM(currentPos, 0.0, centroid_, currentEst_UTM);
-//    //if(){
-
-//    //}
-//}
 double PathManager::DistanceToEnd() const
 {
     return std::fabs(path_->EndParameter() - currentAbscissa_);
@@ -282,7 +254,6 @@ void PathManager::RestartPath()
     goalAbscissa = std::clamp(goalAbscissa, path_->StartParameter(), path_->EndParameter());
     Eigen::Vector3d goalPos_UTM = path_->At(goalAbscissa);
     ctb::LocalUTM2LatLong(goalPos_UTM, centroid_, currentGoal_, altitude);
-    //std::cout << "currentGoal: " << currentGoal_ << std::endl;
 
     currentTrackPoint_ = startP_;
 }

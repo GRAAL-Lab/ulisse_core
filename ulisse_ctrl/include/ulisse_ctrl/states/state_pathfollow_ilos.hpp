@@ -24,17 +24,13 @@ namespace states {
         bool isCurveSet_;               // Flag for checking if a curve has been loaded
         bool vehicleOnTrack_;           // Flag for checking is the robot at the path start
         bool loopPath_;                 // Flag for setting the infinite loop for the path
-        //ctb::LatLong startP_, endP_;    // Starting and ending point
         ctb::LatLong nextP_;            // Next point of the path
         ctb::LatLong closestP_;            // Closest point from the path ILOS
-        //ctb::LatLong nextPilos_;            // Next point of the path ILOS
         double tolleranceStartingPoint_; // Tolerance on the starting point
         double tolleranceEndingPoint_;  // Tolerance on the ending point
         bool logPathOnFile_;
 
         //ILOS
-        //double sigma_y_;
-        //double delta_y_;
         double ILOS_Heading2ClosetPoint;
         double ILOS_goalHeading;
         double ILOS_headingError;
@@ -48,7 +44,6 @@ namespace states {
             double psi_;
             double sigma_y_;
             double delta_y_;
-            //double goal_heading_;
         };
         info_ INFO;
         //double info_[5];

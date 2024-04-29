@@ -14,8 +14,6 @@ int main(int argc, char* argv[])
     exe.add_node(vehicleController);
     exe.spin();
 
-    //rclcpp::spin(vehicleController);
-
     rclcpp::shutdown();
 
     return 0;

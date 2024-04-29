@@ -39,9 +39,8 @@ bool StatePathFollow::LoadPath(const ulisse_msgs::msg::PathData& path){
     //tolleranceEndingPoint_ = pathManager_.Path().size() - tolleranceEndingPoint_ / length;
 
     length = pathManager_.GetPath()->Length();
+
     // Check if the curves are greater than the delta max
-
-
     if (length < pathManager_.nurbsParam.deltaMax) {
         std::cerr << "State pathfollow: Delta is too high" << std::endl;
         return fsm::fail;

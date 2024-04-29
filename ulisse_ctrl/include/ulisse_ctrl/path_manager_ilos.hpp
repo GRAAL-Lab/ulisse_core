@@ -162,60 +162,31 @@ public:
         }
     } nurbsParam;
 
-    //struct info{
-   //     double y_;
-    //    double y_int;
-    //    double y_int_dot_;
-    //    double psi_;
-    //} INFO;
-
     std::chrono::system_clock::time_point T_last_, T_now_; // ILOS
     std::chrono::nanoseconds delta_t; // ILOS time interval
-
-    //double sigma_y;
-    //double delta_y;
-    //bool configureFromFile(const libconfig::Config& confObj, const std::string& stateName)
-    //{
-    //    const libconfig::Setting& root = confObj.getRoot();
-    //    const libconfig::Setting& states = root["states"];
-
-    //    const libconfig::Setting& state = states.lookup(stateName);
-    //    if (!ctb::GetParam(state, sigma_y, "sigma_y"))
-    //        return false;
-    //    if (!ctb::GetParam(state, delta_y, "delta_y"))
-    //        return false;
-
-    //    return true;
-    //}
-    //rclcpp::Publisher<ulisse_msgs::msg::PathFollowILOS>::SharedPtr pathFolllowILOSPub_; // ILOS
 
 private:
     std::string pathName_;
     std::string pathType_;
     std::string polypathType_;
-    std::shared_ptr<sisl::Path> path_;                // The Curve
+    std::shared_ptr<sisl::Path> path_;          // The Curve
     ctb::LatLong centroid_;                     // The centroid for the convertion from/to cartesian/latlong
     std::vector<ctb::LatLong> coordinates_;     // Coordinate List of polypath
     double angle_, size_1_, size_2_;
     sisl::Path::Direction direction_;
     ctb::LatLong startP_;                       // Starting point of the nurbs path
-    ctb::LatLong ILOSstartP_;                // Starting point of the nurbs path for ILOS
+    ctb::LatLong ILOSstartP_;                   // Starting point of the nurbs path for ILOS
     ctb::LatLong endP_;                         // Ending point of the nurbs path
-    double currentAbscissa_;                         // The current parameter value on the path
+    double currentAbscissa_;                    // The current parameter value on the path
     ctb::LatLong currentGoal_;
     ctb::LatLong currentTrackPoint_;
 
-    double delta_;                       // The current delta increment
+    double delta_;                              // The current delta increment
 
     double y_int;
     double y_int_dot;
     bool FirstEntry;
 
-    //bool variableDelta;
-    //double sigmaY;
-    //double deltaY;
-
-    //bool ConfigureStateFromFile(libconfig::Config& confObj) override;
 };
 
 #endif // ULISSE_CONFIGURATION_H

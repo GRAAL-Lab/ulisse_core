@@ -235,7 +235,6 @@ bool PathManagerILOS::ComputeGoalPositionILOS(const ctb::LatLong &currentPos, ct
     }
     else
         delta_ = nurbsParam.deltaY;
-    //delta_ = std::clamp(delta_, nurbsParam.deltaMax, nurbsParam.deltaMax);
 
     // Limit goalParam abscissa between startParam and endParam
     double goalAbscissa = closestPointAbscissa + delta_;
@@ -296,7 +295,7 @@ double PathManagerILOS::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos, c
 {
     double psi_ILOS, goal_heading;
 
-       // Converting the current geographical position to UTM coordinates
+    // Converting the current geographical position to UTM coordinates
     Eigen::Vector3d currentPos_UTM, closestPointOnPath_UTM, goalPos_UTM;
     ctb::LatLong2LocalUTM(currentPos, 0.0, centroid_, currentPos_UTM);
     ctb::LatLong2LocalUTM(ClosestPoint, 0.0, centroid_, closestPointOnPath_UTM);
@@ -304,30 +303,34 @@ double PathManagerILOS::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos, c
     T_now_ = std::chrono::system_clock::now();
 
     Eigen::Vector3d distanceVector;
+
+    // defining local path frame
+    // W. Caharija et al., "Integral Line-of-Sight Guidance and Control of Underactuated Marine Vehicles: Theory, Simulations, and Experiments,"
+    // fig.1 p. 1626
     Eigen::Vector3d X_p; // vector directed from the closestPointOnPath towards the goalPos
-    Eigen::Vector3d Y_p;
+    Eigen::Vector3d Y_p; // vector directed from the closestPointOnPath towards the vehicle position
     Eigen::Vector3d Z_p; // (0, 0, -1) with respect to the world frame
 
 
     try {
-        X_p = goalPos_UTM - closestPointOnPath_UTM; // the vector directed from the closestPointOnPath towards the goalPos
+        X_p = goalPos_UTM - closestPointOnPath_UTM;
         X_p = X_p / X_p.norm(); // the unit vector of X_p
 
-            // the cross product Y_p = Z_p*X_p
+        // the cross product Y_p = Z_p x X_p
         Y_p.x() = X_p.y();
         Y_p.y() = -X_p.x();
         Y_p.z() = 0;
 
-            // reset timer in case of first entry of the function
+        // reset timer in case of first entry of the function
         if(FirstEntry){
             T_last_ = T_now_;
             FirstEntry = 0;
         }
 
-            // the vector directed from the closestPointOnPath towards the currentPos
+        // the vector directed from the closestPointOnPath towards the currentPos
         distanceVector =  currentPos_UTM - closestPointOnPath_UTM;
 
-            // compute the sign of y (the error)
+        // compute the sign of y (the error)
         double k = Y_p.x() * distanceVector.x() + Y_p.y() * distanceVector.y();
         int sign;
         if(k>0) sign = 1;
@@ -335,28 +338,22 @@ double PathManagerILOS::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos, c
 
         double y = sign * sqrt(pow(distanceVector.x(),2) + pow(distanceVector.y(),2));
         y_int_dot = delta_ * y / ( pow((y + nurbsParam.sigmaY *y_int),2) + pow(delta_,2));
-
-        // y_int_dot saturation
-        //if(y_int_dot > 0.3) y_int_dot = 0.3;
-        //else if(y_int_dot < -0.3) y_int_dot = -0.3;
-
-        //y_int_dot = nurbsParam.sigmaY * y / ( pow((y + nurbsParam.sigmaY *y_int),2) + pow(nurbsParam.sigmaY,2));
+        //y_int_dot = nurbsParam.sigmaY * y / ( pow((y + nurbsParam.sigmaY *y_int),2) + pow(nurbsParam.deltaY,2));
         delta_t = std::chrono::duration_cast<std::chrono::nanoseconds>(T_now_ - T_last_);
         T_last_ = T_now_;
         y_int = y_int + y_int_dot * delta_t.count() / 1E9;
 
-            // in case of saturation of y_int
+        // in case of saturation of y_int
         if(y_int > nurbsParam.y_int_saturation) y_int = nurbsParam.y_int_saturation;
         else if(y_int < -nurbsParam.y_int_saturation) y_int = -nurbsParam.y_int_saturation;
 
         psi_ILOS = - atan2((nurbsParam.kappaY * y + nurbsParam.sigmaY * y_int + nurbsParam.gammaY * y_int_dot) , delta_);
-        //psi_ILOS = - atan2((nurbsParam.kappaY * y + nurbsParam.sigmaY * y_int + nurbsParam.gammaY * y_int_dot) , delta_); // original
-        //psi_ILOS = - atan2((y + nurbsParam.sigmaY * y_int) , delta_);
+        //psi_ILOS = - atan2((y + nurbsParam.sigmaY * y_int) , delta_); // original
         if(sign < 0 )
             goal_heading = Heading2ClosetPoint - M_PI_2 + psi_ILOS;
         else goal_heading = Heading2ClosetPoint + M_PI_2 + psi_ILOS;
 
-            // goalHead must be in the range [0,2PI]
+        // goalHead must be in the range [0,2PI]
         while(goal_heading > 2*M_PI)
         {
             goal_heading = goal_heading - 2*M_PI;
@@ -390,7 +387,7 @@ double PathManagerILOS::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos, c
 double PathManagerILOS::ComputeRealErrorILOS(const ctb::LatLong &currentPos,const ctb::LatLong &currentRealPos,const ctb::LatLong &goalPos,
                                            const ctb::LatLong &closestPos)
 {
-       // Converting the current geographical position to UTM coordinates
+    // Converting the current geographical position to UTM coordinates
     Eigen::Vector3d currentPos_UTM, currentPosReal_UTM, closestPointOnPath_UTM, goalPos_UTM;
     ctb::LatLong2LocalUTM(currentPos, 0.0, centroid_, currentPos_UTM);
     ctb::LatLong2LocalUTM(currentRealPos, 0.0, centroid_, currentPosReal_UTM);
@@ -400,25 +397,29 @@ double PathManagerILOS::ComputeRealErrorILOS(const ctb::LatLong &currentPos,cons
     T_now_ = std::chrono::system_clock::now();
 
     Eigen::Vector3d distanceVector, distanceVector_real;
+
+    // defining local path frame
+    // W. Caharija et al., "Integral Line-of-Sight Guidance and Control of Underactuated Marine Vehicles: Theory, Simulations, and Experiments,"
+    // fig.1 p. 1626
     Eigen::Vector3d X_p; // vector directed from the closestPointOnPath towards the goalPos
-    Eigen::Vector3d Y_p;
+    Eigen::Vector3d Y_p; // vector directed from the closestPointOnPath towards the vehicle position
     Eigen::Vector3d Z_p; // (0, 0, -1) with respect to the world frame
     double y_real;
 
     try {
-        X_p = goalPos_UTM - closestPointOnPath_UTM; // the vector directed from the closestPointOnPath towards the goalPos
+        X_p = goalPos_UTM - closestPointOnPath_UTM;
         X_p = X_p / X_p.norm(); // the unit vector of X_p
 
-            // the cross product Y_p = Z_p*X_p
+        // the cross product Y_p = Z_p*X_p
         Y_p.x() = X_p.y();
         Y_p.y() = -X_p.x();
         Y_p.z() = 0;
 
-            // the vector directed from the closestPointOnPath towards the currentPos
+        // the vector directed from the closestPointOnPath towards the currentPos
         distanceVector =  currentPos_UTM - closestPointOnPath_UTM;
         distanceVector_real = currentPosReal_UTM - closestPointOnPath_UTM;
 
-            // compute the sign of y (the error)
+        // compute the sign of y (the error)
         double k = Y_p.x() * distanceVector.x() + Y_p.y() * distanceVector.y();
 
         int sign;
@@ -438,13 +439,12 @@ double PathManagerILOS::ComputeRealErrorILOS(const ctb::LatLong &currentPos,cons
 double PathManagerILOS::DistanceToEnd() const
 {
     return std::fabs(path_->EndParameter() - currentAbscissa_);
-    //return path_->EndParameter() - currentAbscissa_ + 2; // shift 2 m
 }
 
 double PathManagerILOS::DistanceToStart() const
 {
-    //return std::fabs(path_->EndParameter() - currentAbscissa_);
-    return path_->EndParameter() - currentAbscissa_ + 2; // shift 5 m
+    // starting target point for looping path is 2 meters behind the normal starting point
+    return path_->EndParameter() - currentAbscissa_ + 2; // 2 m shift forward
 }
 
 void PathManagerILOS::RestartPath()
@@ -457,9 +457,7 @@ void PathManagerILOS::RestartPath()
     goalAbscissa = std::clamp(goalAbscissa, path_->StartParameter(), path_->EndParameter());
     Eigen::Vector3d goalPos_UTM = path_->At(goalAbscissa);
     ctb::LocalUTM2LatLong(goalPos_UTM, centroid_, currentGoal_, altitude);
-    //std::cout << "currentGoal: " << currentGoal_ << std::endl;
 
-    //currentTrackPoint_ = startP_;
     currentTrackPoint_ = ILOSstartP_;
 }
 

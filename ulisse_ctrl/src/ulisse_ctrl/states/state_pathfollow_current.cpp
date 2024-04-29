@@ -33,9 +33,6 @@ bool StatePathFollowCurrent::LoadPath(const ulisse_msgs::msg::PathData& path){
 
     // Evaluete the end curve length
     double length;
-    // pathManager_.ComputeCurveLength(pathManager_.Path()[pathManager_.Path().size() - 1], length);
-    // Compute the prametric tollerance of the end curve
-    //tolleranceEndingPoint_ = pathManager_.Path().size() - tolleranceEndingPoint_ / length;
 
     length = pathManager_.GetPath()->Length();
     // Check if the curves are greater than the delta max
@@ -95,8 +92,6 @@ fsm::retval StatePathFollowCurrent::OnEntry()
     cartesianDistanceTask_ = std::dynamic_pointer_cast<ikcl::CartesianDistance>(tasksMap.find(ulisse::task::asvCartesianDistance)->second.task);
     alignToTargetTask_ = std::dynamic_pointer_cast<ikcl::AlignToTarget>(tasksMap.find(ulisse::task::asvAngularPosition)->second.task);
 
-    //cartesianDistancePathFollowingTask_ = std::dynamic_pointer_cast<ikcl::CartesianDistance>(tasksMap.find(ulisse::task::asvCartesianDistancePathFollowing)->second.task);
-
     linearVelocityPathFollowingCurrentTask_ = std::dynamic_pointer_cast<ikcl::LinearVelocity>(tasksMap.find(ulisse::task::asvLinearVelocityCurrentEst)->second.task);
     absoluteAxisAlignmentTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentCurrentEst)->second.task);
 
@@ -123,8 +118,6 @@ fsm::retval StatePathFollowCurrent::OnExit(){
     cartesianDistanceTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
     linearVelocityPathFollowingCurrentTask_->TaskParameter().gain = linearVelocityPathFollowingCurrentTask_->TaskParameter().conf_gain;
     linearVelocityPathFollowingCurrentTask_->ExternalActivationFunction() = 0 * Eigen::MatrixXd::Identity(linearVelocityPathFollowingCurrentTask_->TaskSpace(), linearVelocityPathFollowingCurrentTask_->TaskSpace());
-    //alignToTargetTask_->TaskParameter().gain = alignToTargetTask_->TaskParameter().conf_gain;
-    //alignToTargetTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(alignToTargetTask_->TaskSpace(), alignToTargetTask_->TaskSpace());
     return fsm::ok;
 }
 
@@ -155,7 +148,6 @@ fsm::retval StatePathFollowCurrent::Execute()
 
     //compute the heading error
     double headingErrorsafety = absoluteAxisAlignmentSafetyTask_->ControlVariable().norm();
-    //std::cout << "headingErrorsafety: " << headingErrorsafety << std::endl;
 
     //compute the gain of the cartesian distance
     double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingErrorsafety);
@@ -225,6 +217,11 @@ fsm::retval StatePathFollowCurrent::Execute()
 
                 double water_angle = atan(ctrlData->inertialF_waterCurrent[1]/ctrlData->inertialF_waterCurrent[0]);
 
+                double heading_angle;
+                double ASV_speed = linearVelocityPathFollowingCurrentTask_->TaskParameter().saturation;
+                pathManager_.ComputeHeadingAngle(goalHeading, water_angle, ctrlData->inertialF_waterCurrent.norm(), ASV_speed , heading_angle);
+
+                /*
                 double phi = goalHeading - water_angle;
                 double C = ctrlData->inertialF_waterCurrent.norm();
                 double Vapp = linearVelocityPathFollowingCurrentTask_->TaskParameter().saturation;
@@ -243,6 +240,8 @@ fsm::retval StatePathFollowCurrent::Execute()
                 {
                     heading_angle = heading_angle + 2*M_PI;
                 }
+                */
+
                 //std::cout << "goalHeading: " <<goalHeading << std::endl;
                 //std::cout << "water_angle: " <<water_angle << std::endl;
                 //std::cout << "phi: " <<phi << std::endl;
@@ -258,10 +257,12 @@ fsm::retval StatePathFollowCurrent::Execute()
                 double headingError = absoluteAxisAlignmentTask_->ControlVariable().norm();
                 //compute the gain of the cartesian distance
                 double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingError);
-                taskGain = 1.0;
+
+                // clear this to slow down on curves
+                //taskGain = 1.0;
                 //Set the gain of the cartesian linearVelocity task
                 linearVelocityPathFollowingCurrentTask_->TaskParameter().gain = taskGain * linearVelocityPathFollowingCurrentTask_->TaskParameter().conf_gain;
-                linearVelocityPathFollowingCurrentTask_->SetReferenceRate(Eigen::Vector3d(Vapp, 0, 0), robotModel->BodyFrameID());
+                linearVelocityPathFollowingCurrentTask_->SetReferenceRate(Eigen::Vector3d(ASV_speed, 0, 0), robotModel->BodyFrameID());
 
                 // for publishing msgs
                 pathManager_.ComputeError(ctrlData->inertialF_linearPosition, *real_position, nextP_, closePoint2path, y_, yReal_);
@@ -273,6 +274,10 @@ fsm::retval StatePathFollowCurrent::Execute()
                 absoluteAxisAlignmentTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(absoluteAxisAlignmentTask_->TaskSpace(), absoluteAxisAlignmentTask_->TaskSpace());
                 linearVelocityPathFollowingCurrentTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(linearVelocityPathFollowingCurrentTask_->TaskSpace(), linearVelocityPathFollowingCurrentTask_->TaskSpace());
 
+
+                // This following method computes the applied vector by substracting the water-current velocity vector from the needed velocity vector
+                // so the intensity and the direction of the applied vector is considered unknown
+                // The drawback of this method is that the intensity is not saturated (could be more than 1.5m/s depending on the computation value)
 
                 /*
                 ctb::LatLong closePoint2path;

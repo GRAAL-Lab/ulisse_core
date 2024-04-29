@@ -131,25 +131,25 @@ VehicleController::VehicleController(std::string conf_filename)
     tasksMap_.insert(std::make_pair(ulisse::task::asvLinearVelocityHold, taskInfo_));
 
 
-       // AUV CONTROL ANGULAR POSITION ILOS
+    // AUV CONTROL ANGULAR POSITION ILOS
     //asvAngularPositionILOS_ = std::make_shared<ikcl::AlignToTarget>(ikcl::AlignToTarget(ulisse::task::asvAngularPositionILOS, robotModel_, ulisse::robotModelID::ASV));
     //taskInfo_.task = asvAngularPositionILOS_;
     //taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_angular_position_ilos, 1);
     //tasksMap_.insert(std::make_pair(ulisse::task::asvAngularPositionILOS, taskInfo_));
 
-       // ASV absolute axis alignment task
+    // ASV absolute axis alignment task
     asvAbsoluteAxisAlignmentILOS_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asvAbsoluteAxisAlignmentILOS, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvAbsoluteAxisAlignmentILOS_;
     taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment_ilos, 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvAbsoluteAxisAlignmentILOS, taskInfo_));
 
-      // ASV CONTROL VELOCITY LINEAR
+    // ASV CONTROL VELOCITY LINEAR
     asvLinearVelocityCurrentEst_ = std::make_shared<ikcl::LinearVelocity>(ikcl::LinearVelocity(ulisse::task::asvLinearVelocityCurrentEst, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvLinearVelocityCurrentEst_;
     taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_linear_velocity_current, 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvLinearVelocityCurrentEst, taskInfo_));
 
-      // ASV absolute axis alignment task
+    // ASV absolute axis alignment task
     asvAbsoluteAxisAlignmentCurrentEst_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asvAbsoluteAxisAlignmentCurrentEst, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvAbsoluteAxisAlignmentCurrentEst_;
     taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment_current, 1);

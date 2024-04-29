@@ -53,6 +53,9 @@ public:
 
     Eigen::Vector3d ComputeDirectionVector(const Eigen::Vector2d &applied_velocity);
 
+    bool ComputeHeadingAngle(const double &goalHeading, const double &waterC_angle,
+                             const double &waterC_intensity, const double &ASV_speed, double &heading_angle);
+
     /*
      * Method that resets the path
     */
