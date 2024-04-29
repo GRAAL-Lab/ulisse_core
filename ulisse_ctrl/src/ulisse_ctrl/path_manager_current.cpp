@@ -281,8 +281,13 @@ bool PathManagerCurrent::ComputeHeadingAngle(const double &goalHeading, const do
     double phi = goalHeading - waterC_angle;
     double C = waterC_intensity;
     double Vapp = ASV_speed;
-    double Vtot = C * cos(phi) + sqrt( pow(Vapp,2) - pow(C*sin(phi),2) );
-    double psi = acos( (Vtot - C*cos(phi)) / Vapp );
+
+    // equation (1) and (2) are computed from 2 equations
+    // eq. 1 the projection of Vapp on Vtot: Vapp*cos(phi) = Vtot + C*cos(180-phi)
+    // eq. 2 triangle: Vapp^2 = [Vtot + C*cos(180-phi)]^2 + [C*sin(180-phi)]^2
+
+    double Vtot = C * cos(phi) + sqrt( pow(Vapp,2) - pow(C*sin(phi),2) );   // (1)
+    double psi = acos( (Vtot - C*cos(phi)) / Vapp );                        // (2)
     //double heading_angle;
     if(phi > M_PI ) // <0
         heading_angle = goalHeading - psi; // goalHeading - psi;  - M_PI_2 + psi;
