@@ -30,6 +30,7 @@
 #include "ulisse_ctrl/commands/command_pathfollow_ilos.hpp"
 #include "ulisse_ctrl/commands/command_pathfollow_current.hpp"
 #include "ulisse_ctrl/commands/command_pathfollow_iloscurrent.hpp"
+#include "ulisse_ctrl/commands/command_pathfollow_alos.hpp"
 #include "ulisse_ctrl/commands/command_surgeheading.hpp"
 #include "ulisse_ctrl/commands/command_surgeyawrate.hpp"
 
@@ -43,6 +44,7 @@
 #include "ulisse_ctrl/states/state_pathfollow_ilos.hpp"
 #include "ulisse_ctrl/states/state_pathfollow_current.hpp"
 #include "ulisse_ctrl/states/state_pathfollow_iloscurrent.hpp"
+#include "ulisse_ctrl/states/state_pathfollow_alos.hpp"
 #include "ulisse_ctrl/states/state_surgeheading.hpp"
 #include "ulisse_ctrl/states/state_surgeyawrate.hpp"
 
@@ -117,6 +119,7 @@ class VehicleController : public rclcpp::Node {
     std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentHold_;
     std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentILOS_;
     std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentCurrentEst_;
+    std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentALOS_;
     std::shared_ptr<ikcl::CartesianDistance> asvCartesianDistancePathFollowing_;
     std::shared_ptr<ikcl::LinearVelocity> asvLinearVelocityCurrentEst_;
 
@@ -135,6 +138,7 @@ class VehicleController : public rclcpp::Node {
     std::shared_ptr<states::StatePathFollowILOS> statePathFollowingILOS_;
     std::shared_ptr<states::StatePathFollowCurrent> statePathFollowingCurrent_;
     std::shared_ptr<states::StatePathFollowILOSCurrent> statePathFollowingILOSCurrent_;
+    std::shared_ptr<states::StatePathFollowALOS> statePathFollowingALOS_;
 
     commands::CommandHalt commandHalt_;
     commands::CommandHold commandHold_;
@@ -145,6 +149,7 @@ class VehicleController : public rclcpp::Node {
     commands::CommandPathFollowILOS commandPathFollowingILOS_;
     commands::CommandPathFollowCurrent commandPathFollowingCurrent_;
     commands::CommandPathFollowILOSCurrent commandPathFollowingILOSCurrent_;
+    commands::CommandPathFollowALOS commandPathFollowingALOS_;
 
     events::EventRCEnabled eventRcEnabled_;
     events::EventNearGoalPosition eventNearGoalPosition_;

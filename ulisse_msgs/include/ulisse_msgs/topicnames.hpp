@@ -66,6 +66,7 @@ const std::string task_absolute_axis_alignment_ilos = "/ulisse/task/ASV_Absolute
 const std::string task_linear_velocity_hold = "/ulisse/task/ASV_Linear_Velocity_Hold";
 const std::string task_linear_velocity_current = "/ulisse/task/ASV_Linear_Velocity_Current";
 const std::string task_absolute_axis_alignment_current = "/ulisse/task/ASV_Absolute_Axis_Alignment_CurrentEst";
+const std::string task_absolute_axis_alignment_alos = "/ulisse/task/ASV_Absolute_Axis_Alignment_ALOS";
 
 const std::string tpik_action = "/ulisse/task/tpik_action";
 

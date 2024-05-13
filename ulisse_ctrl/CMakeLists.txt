@@ -65,6 +65,7 @@ set(ulisse_kinematic_ctrl_lib_sources
     src/ulisse_ctrl/path_manager_ilos.cpp
     src/ulisse_ctrl/path_manager_current.cpp
     src/ulisse_ctrl/path_manager_iloscurrent.cpp
+    src/ulisse_ctrl/path_manager_alos.cpp
     # States
     src/ulisse_ctrl/states/generic_state.cpp
     src/ulisse_ctrl/states/state_halt.cpp
@@ -76,6 +77,7 @@ set(ulisse_kinematic_ctrl_lib_sources
     src/ulisse_ctrl/states/state_pathfollow_ilos.cpp
     src/ulisse_ctrl/states/state_pathfollow_current.cpp
     src/ulisse_ctrl/states/state_pathfollow_iloscurrent.cpp
+    src/ulisse_ctrl/states/state_pathfollow_alos.cpp
     # Commands
     src/ulisse_ctrl/commands/generic_command.cpp
     src/ulisse_ctrl/commands/command_halt.cpp
@@ -87,6 +89,7 @@ set(ulisse_kinematic_ctrl_lib_sources
     src/ulisse_ctrl/commands/command_pathfollow_ilos.cpp
     src/ulisse_ctrl/commands/command_pathfollow_current.cpp
     src/ulisse_ctrl/commands/command_pathfollow_iloscurrent.cpp
+    src/ulisse_ctrl/commands/command_pathfollow_alos.cpp
     # Events
     #src/ulisse_ctrl/events/generic_event.cpp
     src/ulisse_ctrl/events/event_rc_enabled.cpp

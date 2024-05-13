@@ -28,6 +28,7 @@ const std::string asvAbsoluteAxisAlignmentILOS = "ASV_Absolute_Axis_Alignment_IL
 const std::string asvLinearVelocityHold = "ASV_Linear_Velocity_Hold";
 const std::string asvLinearVelocityCurrentEst = "ASV_Linear_Velocity_CurrentEst";
 const std::string asvAbsoluteAxisAlignmentCurrentEst = "ASV_Absolute_Axis_Alignment_CurrentEst";
+const std::string asvAbsoluteAxisAlignmentALOS = "ASV_Absolute_Axis_Alignment_ALOS"; //ALOS
 
 }
 
@@ -39,9 +40,10 @@ const std::string hold = "Hold";
 const std::string surge_heading = "Surge_Heading";
 const std::string surge_yawrate = "Surge_YawRate";
 const std::string pathfollow = "Path_Following";
-const std::string pathfollow_ilos = "Path_FollowingILOS"; //ILOS
+const std::string pathfollow_ilos = "Path_FollowingILOS"; // ILOS
 const std::string pathfollow_current = "Path_FollowingCurrentEst";
 const std::string pathfollow_iloscurrent = "Path_FollowingILOSCurrentEst"; // ILOS current
+const std::string pathfollow_alos = "Path_FollowingALOS"; // ALOS
 }
 
 namespace commands {
@@ -57,6 +59,7 @@ const std::string pathfollow = "pathfollow_command";
 const std::string pathfollow_ilos = "pathfollow_ilos_command";
 const std::string pathfollow_current = "pathfollow_current_command";
 const std::string pathfollow_iloscurrent = "pathfollow_iloscurrent_command";
+const std::string pathfollow_alos = "pathfollow_alos_command";
 }
 }
 
@@ -73,6 +76,7 @@ const std::string pathfollow = "Path_Following";
 const std::string pathfollow_ilos = "Path_FollowingILOS";
 const std::string pathfollow_current = "Path_FollowingCurrentEst";
 const std::string pathfollow_iloscurrent = "Path_FollowingILOSCurrentEst";
+const std::string pathfollow_alos = "Path_FollowingALOS";
 }
 }
 
@@ -98,7 +102,7 @@ const uint8_t low = 1;
 }
 
 namespace pathFollowModes {
-enum { LOS = 0, ILOS = 1 ,LOSandCurrentEst = 2, ILOS_LOSandCurrentEst = 3};
+enum { LOS = 0, ILOS = 1 ,LOSandCurrentEst = 2, ILOS_LOSandCurrentEst = 3, ALOS = 4};
 }
 
 }
