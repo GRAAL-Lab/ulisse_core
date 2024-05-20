@@ -45,7 +45,8 @@ class TaskDataUpdater : public QObject, rclcpp::Node {
     std::map<std::string, ulisse_msgs::msg::TaskStatus> tasksMessageMap_;
 
     rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr absoluteAxisAlignmentSub_;
-    rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr absoluteAxisAlignmentILOSSub_;
+    rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr absoluteAxisAlignmentILOSSub_; //ILOS
+    rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr absoluteAxisAlignmentALOSSub_; //ALOS
     rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr absoluteAxisAlignmentHoldSub_;
     rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr absoluteAxisAlignmentCurrentSub_;
     rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr absoluteAxisAlignmentSafetySub_;
@@ -66,6 +67,7 @@ class TaskDataUpdater : public QObject, rclcpp::Node {
     void TPIKActionCB(const ulisse_msgs::msg::TPIKAction::SharedPtr msg);
     void AbsoluteAxisAlignmentCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
     void AbsoluteAxisAlignmentILOSCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg); // ILOS
+    void AbsoluteAxisAlignmentALOSCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg); // ALOS
     void AbsoluteAxisAlignmentHoldCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
     void AbsoluteAxisAlignmentCurrentCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg); // Current
     void AbsoluteAxisAlignmentSafetyCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);

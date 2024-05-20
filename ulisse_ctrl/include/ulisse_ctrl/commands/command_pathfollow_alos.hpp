@@ -10,7 +10,7 @@ namespace commands {
 
     class CommandPathFollowALOS : public GenericCommand {
 
-        std::shared_ptr<states::StatePathFollowILOS> statePathFollowingALOS_;
+        std::shared_ptr<states::StatePathFollowALOS> statePathFollowingALOS_;
 
     public:
         CommandPathFollowALOS();

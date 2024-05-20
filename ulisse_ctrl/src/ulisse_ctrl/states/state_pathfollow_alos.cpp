@@ -58,7 +58,7 @@ bool StatePathFollowALOS::ConfigureStateFromFile(libconfig::Config& confObj)
     const libconfig::Setting& root = confObj.getRoot();
     const libconfig::Setting& states = root["states"];
 
-    const libconfig::Setting& state = states.lookup(ulisse::states::ID::pathfollow);
+    const libconfig::Setting& state = states.lookup(ulisse::states::ID::pathfollow_alos);
 
     if (!ctb::GetParam(state, maxHeadingError_, "maxHeadingError"))
         return false;
@@ -72,7 +72,7 @@ bool StatePathFollowALOS::ConfigureStateFromFile(libconfig::Config& confObj)
         return false;
 
     //configure the nurbs param
-    if (!pathManager_.nurbsParam.configureFromFile(confObj, ulisse::states::ID::pathfollow)) {
+    if (!pathManager_.nurbsParam.configureFromFile(confObj, ulisse::states::ID::pathfollow_alos)) {
         std::cerr << "Failed to load Nurbs Params" << std::endl;
         return false;
     }
@@ -82,7 +82,7 @@ bool StatePathFollowALOS::ConfigureStateFromFile(libconfig::Config& confObj)
 
 fsm::retval StatePathFollowALOS::OnEntry()
 {
-    std::cout << "************* LOS starts ***************" << std::endl;
+    std::cout << "************* ALOS starts ***************" << std::endl;
 
     //set tasks
     safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
@@ -92,8 +92,9 @@ fsm::retval StatePathFollowALOS::OnEntry()
     alignToTargetTask_ = std::dynamic_pointer_cast<ikcl::AlignToTarget>(tasksMap.find(ulisse::task::asvAngularPosition)->second.task);
 
     cartesianDistancePathFollowingTask_ = std::dynamic_pointer_cast<ikcl::CartesianDistance>(tasksMap.find(ulisse::task::asvCartesianDistancePathFollowing)->second.task);
+    absoluteAxisAlignmentALOSTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentALOS)->second.task);
 
-    if (actionManager->SetAction(ulisse::action::pathfollow, true)) {
+    if (actionManager->SetAction(ulisse::action::pathfollow_alos, true)) {
         return fsm::ok;
     } else {
         return fsm::fail;
@@ -101,11 +102,11 @@ fsm::retval StatePathFollowALOS::OnEntry()
 }
 
 fsm::retval StatePathFollowALOS::OnExit(){
-    std::cout << "************* LOS finished ***************" << std::endl;
+    std::cout << "************* ALOS finished ***************" << std::endl;
     delta_y_ = 0;
     y_ = 0;
-    LOS_goalHeading = 0;
-    LOS_headingError = 0;
+    ALOS_goalHeading = 0;
+    ALOS_headingError = 0;
     yReal_ = 0;
     return fsm::ok;
 }
@@ -146,13 +147,14 @@ fsm::retval StatePathFollowALOS::Execute()
     // Set the gain of the cartesian distance task
     safetyBoundariesTask_->ExternalActivationFunction() = taskGainSafety * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
 
-    double goalDistance, goalHeading;
+    double goalDistance, goalHeading, targetHeading, DistanceToClosestPoint;
+    ctb::LatLong closestP;
     //pathfollow action
     if (isCurveSet_) {
         //Going to the starting point
         if (!vehicleOnTrack_) {
 
-            ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, pathManager_.StartingPoint(), goalDistance, goalHeading);
+            ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, pathManager_.StartingPointALOS(), goalDistance, goalHeading);
 
             if (goalDistance < tolleranceStartingPoint_) {
                 vehicleOnTrack_ = true;
@@ -160,7 +162,7 @@ fsm::retval StatePathFollowALOS::Execute()
             } else {
 
                 //Set the distance vector to the target
-                cartesianDistanceTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(goalHeading), goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame);
+                cartesianDistanceTask_->SetTargetDistance(Eigen::Vector3d(1.5 * goalDistance * cos(goalHeading), 1.5 * goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame);
                 //Set the align vector to the target
                 alignToTargetTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(goalHeading), goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame);
 
@@ -181,7 +183,9 @@ fsm::retval StatePathFollowALOS::Execute()
 
                 cartesianDistanceTask_->TaskParameter().gain = taskGain * cartesianDistanceTask_->TaskParameter().conf_gain;
                 cartesianDistanceTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
+                alignToTargetTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(alignToTargetTask_->TaskSpace(), alignToTargetTask_->TaskSpace());
                 cartesianDistancePathFollowingTask_->ExternalActivationFunction() = 0.0 * Eigen::MatrixXd::Identity(cartesianDistancePathFollowingTask_->TaskSpace(), cartesianDistancePathFollowingTask_->TaskSpace());
+                absoluteAxisAlignmentALOSTask_->ExternalActivationFunction() = 0.0*Eigen::MatrixXd::Identity(absoluteAxisAlignmentALOSTask_->TaskSpace(), absoluteAxisAlignmentALOSTask_->TaskSpace());
             }
         } else {
 
@@ -189,50 +193,93 @@ fsm::retval StatePathFollowALOS::Execute()
 
                 if (loopPath_) {
                     std::cout << "** Restarting Path! **" << std::endl;
-                    pathManager_.RestartPath();
+                    //pathManager_.RestartPath();
+                    // When the loop is finished, the new starting point is taken by calling StartingPointILOS() function
+                    nextP_ = pathManager_.StartingPointALOS();
+                    double Heading1;
+                    ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, nextP_, goalDistance, Heading1);
+                    double ILOS_INFO[6]; // Information matrix that has variables to be published (y, y_int, y_int_dot)
+
+                    //Set the distance vector to the target
+                    cartesianDistanceTask_->SetTargetDistance(Eigen::Vector3d(1.5 * goalDistance * cos(Heading1), 1.5 * goalDistance * sin(Heading1), 0), rml::FrameID::WorldFrame);
+                    //Set the align vector to the target
+                    alignToTargetTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(Heading1), goalDistance * sin(Heading1), 0), rml::FrameID::WorldFrame);
+                    //Set the vector that has to been align to the distance vector
+                    alignToTargetTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
+
+                    // In this case we need the ASV keep moving without slowing down even when there is a heading error. So we set taskGain to one
+                    double taskGain = 1.0;
+                    cartesianDistanceTask_->TaskParameter().gain = taskGain * cartesianDistanceTask_->TaskParameter().conf_gain;
+                    cartesianDistanceTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
+                    alignToTargetTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(alignToTargetTask_->TaskSpace(), alignToTargetTask_->TaskSpace());
+
+                    cartesianDistancePathFollowingTask_->ExternalActivationFunction() = 0.0 * Eigen::MatrixXd::Identity(cartesianDistancePathFollowingTask_->TaskSpace(), cartesianDistancePathFollowingTask_->TaskSpace());
+                    absoluteAxisAlignmentALOSTask_->ExternalActivationFunction() = 0.0*Eigen::MatrixXd::Identity(absoluteAxisAlignmentALOSTask_->TaskSpace(), absoluteAxisAlignmentALOSTask_->TaskSpace());
+
+                    if (goalDistance < 5.0){
+                        std::cout << "** Restarting Path! **" << std::endl;
+                        pathManager_.RestartPath();
+                    }
+
+
                 } else {
                     std::cout << "*** MISSION FINISHED! ***" << std::endl;
                     fsm_->EmitEvent(ulisse::events::names::neargoalposition, ulisse::events::priority::medium);
                 }
 
             } else {
-                ctb::LatLong closePoint2path;
-                if (!pathManager_.ComputeGoalPosition(ctrlData->inertialF_linearPosition, nextP_,delta_y_,closePoint2path)) {
+                if (!pathManager_.ComputeGoalPositionALOS(ctrlData->inertialF_linearPosition, nextP_)) {
                     return fsm::fail;
                 }
 
-                ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, nextP_, goalDistance, goalHeading);
-                ALOS_goalHeading = goalHeading;
+                ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, nextP_, goalDistance, targetHeading);
 
-                //Set the distance vector to the target
-                cartesianDistancePathFollowingTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(goalHeading), goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame);
-                //Set the align vector to the target
-                alignToTargetTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(goalHeading), goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame);
+                // Set the distance vector to the target
+                cartesianDistancePathFollowingTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(targetHeading), goalDistance * sin(targetHeading), 0), rml::FrameID::WorldFrame);
 
-                //Set the vector that has to been align to the distance vector
-                alignToTargetTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
+                // Set the align vector to the target
+                pathManager_.ComputeClosetPointOnPathALOS(ctrlData->inertialF_linearPosition, closestP);
+                ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, closestP, DistanceToClosestPoint, ALOS_Heading2ClosetPoint);
 
-                //To avoid the case in which the error between the goal heading and the current heading is too big
-                // we activate the the cartesian distance through the gain based on a bell-shaped function on the heading error
+                double ILOS_INFO[6]; // Information matrix that has variables to be published (y, y_int, y_int_dot)
 
-                //compute the heading error
-                double headingError = alignToTargetTask_->ControlVariable().norm();
+                //  Compute ILOS heading (psi angle)
+                ALOS_goalHeading = pathManager_.ComputeGoalHeadingALOS(ctrlData->inertialF_linearPosition, nextP_, closestP,
+                                                                      ALOS_Heading2ClosetPoint, targetHeading, ILOS_INFO);
+                // set information in a global variable in order to be published
+                //SetInformation(ILOS_INFO,INFO);
+
+                // Compute real error y_real (to be published)
+                yReal_ = pathManager_.ComputeRealErrorALOS(ctrlData->inertialF_linearPosition, *real_position, nextP_, closestP);
+
+                // Absolute alignment ILOS
+
+                // OPTION 1
+                //Aexternal = alignToTargetILOSTask_->InternalActivationFunction().maxCoeff() * Aexternal.setIdentity(absoluteAxisAlignmentSafetyTask_->TaskSpace(), absoluteAxisAlignmentSafetyTask_->TaskSpace());
+                //alignToTargetILOSTask_->ExternalActivationFunction() = Aexternal;
+
+                // OPTION 2
+                absoluteAxisAlignmentALOSTask_->ExternalActivationFunction().setIdentity();
+
+                absoluteAxisAlignmentALOSTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
+                absoluteAxisAlignmentALOSTask_->SetDirectionAlignment(Eigen::Vector3d(cos(ALOS_goalHeading), sin(ALOS_goalHeading), 0),rml::FrameID::WorldFrame);
+                //std::cout << "Heading2ClosetPoint = " << ILOS_Heading2ClosetPoint<< std::endl;
+                //std::cout << "goalHeading = " << ILOS_goalHeading << std::endl;
+                //std::cout << "ULISSE heading = " << ctrlData->bodyF_angularPosition.Yaw() << std::endl;
+                //double headingErrorILOS = absoluteAxisAlignmentILOSTask_->ControlVariable().norm();
+                ALOS_headingError = absoluteAxisAlignmentALOSTask_->ControlVariable().norm();
+                //std::cout << "heading Error = " << ILOS_headingError << std::endl;
 
                 //compute the gain of the cartesian distance
-                double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingError);
-
-                // for publishing msgs
-                pathManager_.ComputeErrorLOS(ctrlData->inertialF_linearPosition, *real_position, nextP_, closePoint2path, y_, yReal_);
-
-                ALOS_headingError = headingError;
-
+                double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, ALOS_headingError);
+                //taskGain = 1.0;
                 //Set the gain of the cartesian distance task
-                //cartesianDistancePathFollowingTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(cartesianDistancePathFollowingTask_->TaskSpace(), cartesianDistancePathFollowingTask_->TaskSpace());
                 cartesianDistancePathFollowingTask_->TaskParameter().gain = taskGain * cartesianDistancePathFollowingTask_->TaskParameter().conf_gain;
-
                 cartesianDistanceTask_->ExternalActivationFunction() = 0.0 * Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
                 cartesianDistancePathFollowingTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(cartesianDistancePathFollowingTask_->TaskSpace(), cartesianDistancePathFollowingTask_->TaskSpace());
-            }
+                alignToTargetTask_->ExternalActivationFunction() = 0.0 * Eigen::MatrixXd::Identity(alignToTargetTask_->TaskSpace(), alignToTargetTask_->TaskSpace());
+                absoluteAxisAlignmentALOSTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(absoluteAxisAlignmentALOSTask_->TaskSpace(), absoluteAxisAlignmentALOSTask_->TaskSpace());
+                }
         }
     }
 

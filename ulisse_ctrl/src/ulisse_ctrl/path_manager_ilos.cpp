@@ -115,6 +115,7 @@ bool PathManagerILOS::Initialization(const ulisse_msgs::msg::PathData& path)
         std::cerr << "Error: " << e.what() << std::endl;
     }
 
+    // Setting ILOS starting point = first point on the path + delta
     double goalAbscissa = currentAbscissa_ + delta_;
     goalAbscissa = std::clamp(goalAbscissa, path_->StartParameter(), path_->EndParameter());
     Eigen::Vector3d goalPos_UTM = path_->At(goalAbscissa);
@@ -136,14 +137,12 @@ bool PathManagerILOS::Initialization(const ulisse_msgs::msg::PathData& path)
 
 bool PathManagerILOS::ComputeGoalPosition(const ctb::LatLong &currentPos, ctb::LatLong &goalPos)
 {
-
     double closestPointAbscissa;
     std::vector<Eigen::Vector3d> currentPosDot, goalPosDot;
 
     // Converting the current geographical position to UTM coordinates
     Eigen::Vector3d currentPos_UTM;
     ctb::LatLong2LocalUTM(currentPos, 0.0, centroid_, currentPos_UTM);
-
 
     try {
         // Retreiving closest point parameter
@@ -171,7 +170,6 @@ bool PathManagerILOS::ComputeGoalPosition(const ctb::LatLong &currentPos, ctb::L
         delta_ = delta_ - nurbsParam.deltaStep;
     }
 
-
     // Limit delta between min and max
     delta_ = std::clamp(delta_, nurbsParam.deltaMin, nurbsParam.deltaMax);
 
@@ -187,7 +185,6 @@ bool PathManagerILOS::ComputeGoalPosition(const ctb::LatLong &currentPos, ctb::L
 
     currentAbscissa_ = closestPointAbscissa;
     ctb::LocalUTM2LatLong(path_->At(currentAbscissa_), centroid_, currentTrackPoint_, altitude);
-
 
     return true;
 }

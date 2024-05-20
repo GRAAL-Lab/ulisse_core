@@ -962,10 +962,10 @@ void VehicleController::PublishTasksInfo()
         pathFollowAlosMsg.psi = statePathFollowingALOS_->GetPsi();
         */
 
-        pathFollowAlosMsg.heading2closest_point = statePathFollowingILOS_->GetHeading2ClosetPoint();
-        pathFollowAlosMsg.goal_heading = statePathFollowingILOS_->GetGoalHeading();
-        pathFollowAlosMsg.heading_error = statePathFollowingILOS_->GetHeadingError();
-        pathFollowAlosMsg.y_real = statePathFollowingILOS_->GetYReal();
+       // pathFollowAlosMsg.heading2closest_point = statePathFollowingALOS_->GetHeading2ClosetPoint();
+        pathFollowAlosMsg.goal_heading = statePathFollowingALOS_->GetGoalHeading();
+        pathFollowAlosMsg.heading_error = statePathFollowingALOS_->GetHeadingError();
+        pathFollowAlosMsg.y_real = statePathFollowingALOS_->GetYReal();
         //pathFollowIlosMsg.y_real = simulatedData_.n_p;
         pathFolllowPub_->publish(pathFollowAlosMsg);
     }

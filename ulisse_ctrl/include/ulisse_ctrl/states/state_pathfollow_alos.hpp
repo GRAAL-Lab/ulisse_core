@@ -1,5 +1,5 @@
 #ifndef ULISSE_CTRL_STATE_PATHFOLLOW_ALOS_HPP
-#define ULISSE_CTRL_STATE_PATHFOLLOW_ALOSHPP
+#define ULISSE_CTRL_STATE_PATHFOLLOW_ALOS_HPP
 
 #include "sisl_toolbox/sisl_toolbox.hpp"
 #include "ulisse_ctrl/states/generic_state.hpp"
@@ -17,6 +17,7 @@ namespace states {
         std::shared_ptr<ikcl::AlignToTarget> alignToTargetTask_;
         std::shared_ptr<ikcl::CartesianDistance> cartesianDistanceTask_;
         std::shared_ptr<ikcl::CartesianDistance> cartesianDistancePathFollowingTask_;
+        std::shared_ptr<ikcl::AbsoluteAxisAlignment> absoluteAxisAlignmentALOSTask_;
 
         bool isCurveSet_;               // Flag for checking if a curve has been loaded
         bool vehicleOnTrack_;           // Flag for checking is the robot at the path start
@@ -27,12 +28,13 @@ namespace states {
         double tolleranceEndingPoint_;  // Tolerance on the ending point
         bool logPathOnFile_;
 
-        PathManager pathManager_;       // Object to handle the path
+        PathManagerALOS pathManager_;       // Object to handle the path
 
         double delta_y_;
         double y_;
         double ALOS_goalHeading; // ALOS
         double ALOS_headingError; // ALOS
+        double ALOS_Heading2ClosetPoint;
         double yReal_;
 
     public:

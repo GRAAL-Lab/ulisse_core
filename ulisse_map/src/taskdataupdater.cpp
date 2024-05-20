@@ -81,6 +81,7 @@ void TaskDataUpdater::Init(QQmlApplicationEngine* engine)
 
     tasksMessageMap_.insert( { ulisse::task::asvAbsoluteAxisAlignment, ulisse_msgs::msg::TaskStatus() } );
     tasksMessageMap_.insert( { ulisse::task::asvAbsoluteAxisAlignmentILOS, ulisse_msgs::msg::TaskStatus() } );//ILOS
+    tasksMessageMap_.insert( { ulisse::task::asvAbsoluteAxisAlignmentALOS, ulisse_msgs::msg::TaskStatus() } );//ALOS
     tasksMessageMap_.insert( { ulisse::task::asvAbsoluteAxisAlignmentHold, ulisse_msgs::msg::TaskStatus() } );
     tasksMessageMap_.insert( { ulisse::task::asvAbsoluteAxisAlignmentSafety, ulisse_msgs::msg::TaskStatus() } );
     tasksMessageMap_.insert( { ulisse::task::asvAngularPosition, ulisse_msgs::msg::TaskStatus()});
@@ -114,6 +115,9 @@ void TaskDataUpdater::RegisterSubscribers(){
 
     absoluteAxisAlignmentILOSSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment_ilos, 10,
         std::bind(&TaskDataUpdater::AbsoluteAxisAlignmentILOSCB, this, _1));
+        
+    absoluteAxisAlignmentALOSSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment_alos, 10,
+                                                                                            std::bind(&TaskDataUpdater::AbsoluteAxisAlignmentALOSCB, this, _1));
 
     absoluteAxisAlignmentHoldSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment_hold, 10,
                                                                                             std::bind(&TaskDataUpdater::AbsoluteAxisAlignmentHoldCB, this, _1));
@@ -152,7 +156,8 @@ void TaskDataUpdater::resetPublishersAndSubscribers()
     tpikActionSub_.reset();
 
     absoluteAxisAlignmentSub_         .reset();
-    absoluteAxisAlignmentILOSSub_         .reset(); // ILOS
+    absoluteAxisAlignmentILOSSub_     .reset(); // ILOS
+    absoluteAxisAlignmentALOSSub_     .reset(); // ALOS
     absoluteAxisAlignmentCurrentSub_  .reset(); // Current
     absoluteAxisAlignmentHoldSub_     .reset();
     absoluteAxisAlignmentSafetySub_   .reset();
@@ -184,6 +189,11 @@ void TaskDataUpdater::AbsoluteAxisAlignmentCB(const ulisse_msgs::msg::TaskStatus
 void TaskDataUpdater::AbsoluteAxisAlignmentILOSCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)// ILOS
 {
     tasksMessageMap_.at(ulisse::task::asvAbsoluteAxisAlignmentILOS) = *msg;
+}
+
+void TaskDataUpdater::AbsoluteAxisAlignmentALOSCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)// ALOS
+{
+    tasksMessageMap_.at(ulisse::task::asvAbsoluteAxisAlignmentALOS) = *msg;
 }
 
 void TaskDataUpdater::AbsoluteAxisAlignmentHoldCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)

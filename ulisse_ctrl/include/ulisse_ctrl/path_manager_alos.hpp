@@ -1,5 +1,5 @@
-#ifndef PATHMANAGER_H
-#define PATHMANAGER_H
+#ifndef PATHMANAGERALOS_H
+#define PATHMANAGERALOS_H
 
 #include "ctrl_data_structs.hpp"
 
@@ -12,18 +12,18 @@
 #include <memory>
 
 
-class PathManager {
+class PathManagerALOS {
 
 public:
     /*
      * Constructor
     */
-    PathManager();
+    PathManagerALOS();
 
     /*
      * Default Destructor
     */
-    virtual ~PathManager();
+    virtual ~PathManagerALOS();
 
     /*
      * Method that allow the load of the path and to compute the starting/ending point and the starting direction
@@ -43,13 +43,17 @@ public:
 
     bool ComputeClosetPointALOS(const ctb::LatLong& currentP, ctb::LatLong& goalP);
 
+    bool ComputeClosetPointOnPathALOS(const ctb::LatLong &currentPos, ctb::LatLong &closestPointOnPath);
+
     //bool ComputeGoalHeadingALOS(const ctb::LatLong &currentPos,const double& Heading2ClosetPoint, double& goalHead);
 
-    bool ComputeErrorLOS(const ctb::LatLong &currentPos,const ctb::LatLong &currentRealPos,const ctb::LatLong &goalPos,
+    bool ComputeErrorALOS(const ctb::LatLong &currentPos,const ctb::LatLong &currentRealPos,const ctb::LatLong &goalPos,
                                                const ctb::LatLong &closestPos, double& estimated, double& real);
 
     double ComputeGoalHeadingALOS(const ctb::LatLong &currentPos, const ctb::LatLong &goalPos, const ctb::LatLong &ClosestPoint,
-                                                  const double& Heading2ClosetPoint, double INFO[]);
+                                                  const double& Heading2ClosetPoint, const double& Heading2target, double INFO[]);
+    double ComputeRealErrorALOS(const ctb::LatLong &currentPos,const ctb::LatLong &currentRealPos,const ctb::LatLong &goalPos,
+                              const ctb::LatLong &closestPos);
     /*
      * Method that resets the path
     */
@@ -59,6 +63,11 @@ public:
      * Method that get the starting point of the path in cartesian coordinates
     */
     auto StartingPoint() const -> const ctb::LatLong& { return startP_; }
+
+    /*
+     * Method that get the starting goal of ALOS of the path in cartesian coordinates
+    */
+    auto StartingPointALOS() const -> const ctb::LatLong& { return ALOSstartP_; }
 
     /*
      * Method that get the starting point of the path in cartesian coordinates
@@ -111,6 +120,7 @@ public:
 
         bool variableDelta; // enable/disable delta variation (delta is fixed or has a range)
         double deltaY;
+        double gammaY;
 
         bool configureFromFile(const libconfig::Config& confObj, const std::string& stateName)
         {
@@ -134,6 +144,8 @@ public:
                 return false;
             if (!ctb::GetParam(state, deltaY, "deltaY"))
                 return false;
+            if (!ctb::GetParam(state, gammaY, "gammaY"))
+                return false;
             if (!ctb::GetParam(state, variableDelta, "variableDelta"))
                 return false;
 
@@ -154,6 +166,7 @@ private:
     double angle_, size_1_, size_2_;
     sisl::Path::Direction direction_;
     ctb::LatLong startP_;                       // Starting point of the nurbs path
+    ctb::LatLong ALOSstartP_;                   // Starting point of the nurbs path for ALOS
     ctb::LatLong endP_;                         // Ending point of the nurbs path
     double currentAbscissa_;                    // The current parameter value on the path
     ctb::LatLong currentGoal_;
@@ -161,10 +174,10 @@ private:
 
     double delta_;  // The current delta increment
 
-    double sigma_y;
-    double delta_y;
-    double y_int;
-    double y_int_dot;
+    //double gamma_y;
+    //double delta_y;
+    double Bc_hat;
+    double Bc_hat_dot;
     bool FirstEntry;
 };
 

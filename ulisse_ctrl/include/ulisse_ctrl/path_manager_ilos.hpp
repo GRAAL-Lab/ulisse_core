@@ -58,7 +58,7 @@ public:
     auto StartingPoint() const -> const ctb::LatLong& { return startP_; }
 
     /*
-     * Method that get the starting point of the path in cartesian coordinates
+     * Method that get the starting goal of ILOS of the path in cartesian coordinates
     */
     auto StartingPointILOS() const -> const ctb::LatLong& { return ILOSstartP_; }
 

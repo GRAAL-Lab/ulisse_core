@@ -129,6 +129,7 @@ namespace states {
 
             //Set the gain of the cartesian distance task
             cartesianDistanceTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
+            alignToTargetTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(alignToTargetTask_->TaskSpace(), alignToTargetTask_->TaskSpace());
         }
 
         //std::cout << "STATE LATLONG" << std::endl;
