@@ -256,7 +256,7 @@ fsm::retval StatePathFollowILOS::Execute()
                 SetInformation(ILOS_INFO,INFO);
 
                 // Compute real error y_real (to be published)
-                yReal_ = pathManager_.ComputeRealTrackingError(ctrlData->inertialF_linearPosition, *real_position, nextP_, closestP_);
+                yReal_ = pathManager_.ComputeRealCrossTrackError(ctrlData->inertialF_linearPosition, *real_position, nextP_, closestP_);
 
                 // Absolute alignment ILOS
 

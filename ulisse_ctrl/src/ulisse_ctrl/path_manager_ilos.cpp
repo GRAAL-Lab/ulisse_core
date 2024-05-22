@@ -381,7 +381,7 @@ double PathManagerILOS::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos, c
     return goal_heading;
 }
 
-double PathManagerILOS::ComputeRealTrackingError(const ctb::LatLong &currentPos,const ctb::LatLong &currentRealPos,const ctb::LatLong &goalPos,
+double PathManagerILOS::ComputeRealCrossTrackError(const ctb::LatLong &currentPos,const ctb::LatLong &currentRealPos,const ctb::LatLong &goalPos,
                                            const ctb::LatLong &closestPos)
 {
     // Converting the current geographical position to UTM coordinates

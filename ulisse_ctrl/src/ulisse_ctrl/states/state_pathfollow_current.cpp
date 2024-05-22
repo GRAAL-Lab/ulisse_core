@@ -265,7 +265,7 @@ fsm::retval StatePathFollowCurrent::Execute()
                 linearVelocityPathFollowingCurrentTask_->SetReferenceRate(Eigen::Vector3d(ASV_speed, 0, 0), robotModel->BodyFrameID());
 
                 // for publishing msgs
-                pathManager_.ComputeTrackingErrors(ctrlData->inertialF_linearPosition, *real_position, nextP_, closePoint2path, y_, yReal_);
+                pathManager_.ComputeCrossTrackErrors(ctrlData->inertialF_linearPosition, *real_position, nextP_, closePoint2path, y_, yReal_);
                 LOS_goalHeading = heading_angle;
                 LOS_headingError = absoluteAxisAlignmentTask_->ControlVariable().norm();
 

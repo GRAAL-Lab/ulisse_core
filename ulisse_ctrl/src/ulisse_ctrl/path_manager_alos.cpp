@@ -196,7 +196,7 @@ bool PathManagerALOS::ComputeGoalPosition(const ctb::LatLong &currentPos, ctb::L
     return true;
 }
 
-double PathManagerALOS::ComputeRealTrackingError(const ctb::LatLong &currentPos,const ctb::LatLong &currentRealPos,const ctb::LatLong &goalPos,
+double PathManagerALOS::ComputeRealCrossTrackError(const ctb::LatLong &currentPos,const ctb::LatLong &currentRealPos,const ctb::LatLong &goalPos,
                                            const ctb::LatLong &closestPos)
 {
     // Converting the current geographical position to UTM coordinates
@@ -248,7 +248,7 @@ double PathManagerALOS::ComputeRealTrackingError(const ctb::LatLong &currentPos,
     return y_real;
 }
 
-bool PathManagerALOS::ComputeTrackingErrors(const ctb::LatLong &currentPos,const ctb::LatLong &currentRealPos,const ctb::LatLong &goalPos,
+bool PathManagerALOS::ComputeCrossTrackErrors(const ctb::LatLong &currentPos,const ctb::LatLong &currentRealPos,const ctb::LatLong &goalPos,
                                            const ctb::LatLong &closestPos, double& estimated, double& real)
 {
     Eigen::Vector3d currentPos_UTM, currentPosReal_UTM, closestPointOnPath_UTM, goalPos_UTM;
@@ -396,7 +396,7 @@ bool PathManagerALOS::ComputeClosetPointOnPathALOS(const ctb::LatLong &currentPo
 }
 
 double PathManagerALOS::ComputeGoalHeadingALOS(const ctb::LatLong &currentPos, const ctb::LatLong &goalPos, const ctb::LatLong &ClosestPoint,
-                                              const double& Heading2ClosetPoint, const double& Heading2target, double INFO[])
+                                               const double& Heading2target, double INFO[])
 {
     double goal_heading;
 

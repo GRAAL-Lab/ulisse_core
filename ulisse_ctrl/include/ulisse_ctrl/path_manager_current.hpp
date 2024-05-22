@@ -45,7 +45,7 @@ public:
 
     bool ComputeGoalHeadingILOS(const ctb::LatLong &currentPos,const double& Heading2ClosetPoint, double& goalHead);
 
-    bool ComputeTrackingErrors(const ctb::LatLong &currentPos,const ctb::LatLong &currentRealPos,const ctb::LatLong &goalPos,
+    bool ComputeCrossTrackErrors(const ctb::LatLong &currentPos,const ctb::LatLong &currentRealPos,const ctb::LatLong &goalPos,
                                                const ctb::LatLong &closestPos, double& estimated, double& real);
 
     bool ComputeAppliedVelocity(const double &goal_heading, const double &goal_surge,

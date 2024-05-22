@@ -196,7 +196,6 @@ fsm::retval StatePathFollowALOS::Execute()
                     nextP_ = pathManager_.StartingPointALOS();
                     double Heading1;
                     ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, nextP_, goalDistance, Heading1);
-                    double ILOS_INFO[6]; // Information matrix that has variables to be published (y, y_int, y_int_dot)
 
                     //Set the distance vector to the target
                     cartesianDistanceTask_->SetTargetDistance(Eigen::Vector3d(1.5 * goalDistance * cos(Heading1), 1.5 * goalDistance * sin(Heading1), 0), rml::FrameID::WorldFrame);
@@ -243,7 +242,7 @@ fsm::retval StatePathFollowALOS::Execute()
 
                 //  Compute ILOS heading (psi angle)
                 ALOS_goalHeading = pathManager_.ComputeGoalHeadingALOS(ctrlData->inertialF_linearPosition, nextP_, closestP,
-                                                                      ALOS_Heading2ClosetPoint, targetHeading, ALOS_INFO);
+                                                                      targetHeading, ALOS_INFO);
 
                 // set information in a global variable in order to be published
                 //SetInformation(ILOS_INFO,INFO);
@@ -254,7 +253,7 @@ fsm::retval StatePathFollowALOS::Execute()
                 gamma_y_ = ALOS_INFO[5] ;
 
                 // Compute real error y_real (to be published)
-                yReal_ = pathManager_.ComputeRealTrackingError(ctrlData->inertialF_linearPosition, *real_position, nextP_, closestP);
+                yReal_ = pathManager_.ComputeRealCrossTrackError(ctrlData->inertialF_linearPosition, *real_position, nextP_, closestP);
                 //pathManager_.ComputeTrackingErrors(ctrlData->inertialF_linearPosition, *real_position, nextP_, closestP, y_, yReal_);
 
 
