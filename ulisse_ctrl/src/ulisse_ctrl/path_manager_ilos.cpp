@@ -344,8 +344,8 @@ double PathManagerILOS::ComputeGoalHeadingILOS(const ctb::LatLong &currentPos, c
         if(y_int > nurbsParam.y_int_saturation) y_int = nurbsParam.y_int_saturation;
         else if(y_int < -nurbsParam.y_int_saturation) y_int = -nurbsParam.y_int_saturation;
 
-        psi_ILOS = - atan2((nurbsParam.kappaY * y + nurbsParam.sigmaY * y_int + nurbsParam.gammaY * y_int_dot) , delta_);
-        //psi_ILOS = - atan2((y + nurbsParam.sigmaY * y_int) , delta_); // original
+        //psi_ILOS = - atan2((nurbsParam.kappaY * y + nurbsParam.sigmaY * y_int + nurbsParam.gammaY * y_int_dot) , delta_);
+        psi_ILOS = - atan2((y + nurbsParam.sigmaY * y_int) , delta_); // original
         if(sign < 0 )
             goal_heading = Heading2ClosetPoint - M_PI_2 + psi_ILOS;
         else goal_heading = Heading2ClosetPoint + M_PI_2 + psi_ILOS;
