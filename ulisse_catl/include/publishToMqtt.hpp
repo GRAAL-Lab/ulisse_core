@@ -8,12 +8,13 @@
 
 #include <json_utils/json_utils.hpp>
 #include <mqttt/mqtt_publisher.hpp>
+#include <mqttt/paho_publisher.hpp>
 
 #include <ulisse_msgs/msg/nav_filter_data.hpp>
 
 using namespace ctljsn;
 
-std::shared_ptr<mqttt::MQTTPublisher> mqttPub;
+std::shared_ptr<pahho::MQTTPublisher> mqttPub;
 
 bool enableDebugPrint = false;
 
@@ -42,7 +43,7 @@ T CheckFromJson(T obj, const std::string typeName, const bool printData) {
 template <typename T>
 T CheckFromJson(const T obj, const std::string typeName) { return CheckFromJson(obj, typeName, false); }
 
-void TestPubStatus(mqttt::MQTTPublisher& mqttPub) {
+void TestPubStatus(pahho::MQTTPublisher& mqttPub) {
 
   task::TaskID taskId1("task_id1", 1);
   task::TaskStatus taskStatus1(task::TaskState::TSK_STATE_ACTIVE, 0.8, std::make_shared<ctljsn::time::DirectDuration>(10));
@@ -80,7 +81,7 @@ void TestPubStatus(mqttt::MQTTPublisher& mqttPub) {
 
 
   // Test world model.
-void TestWorldModel(mqttt::MQTTPublisher& mqttPub) {
+void TestWorldModel(pahho::MQTTPublisher& mqttPub) {
   ctljsn::wm::Labels labels( { "resource_label1", "resource_label2" });
 
   ctljsn::wm::LabelledSpace pointA(CATLIdentifier("PointA", 0), geographic::Position(geographic::GenerateLatLongPosition(40,10)));

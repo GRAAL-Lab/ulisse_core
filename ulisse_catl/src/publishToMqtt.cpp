@@ -6,17 +6,17 @@ using std::placeholders::_1;
 /* This example creates a subclass of Node and uses std::bind() to register a
 * member function as a callback from the timer. */
 
-class MQTTPublisher : public rclcpp::Node
+class CATLPublisher : public rclcpp::Node
 {
   public:
-    MQTTPublisher()
+    CATLPublisher()
     : Node("mqtt_publisher"), count_(0)
     {
       //publisher_ = this->create_publisher<std_msgs::msg::String>("topic", 10); // TODO REMOVE
-      statusTimer_ = this->create_wall_timer(1000ms, std::bind(&MQTTPublisher::StatusCallback, this));
-      worldModelTimer_ = this->create_wall_timer(4000ms, std::bind(&MQTTPublisher::WorldModelCallback, this));
-      subscription_ = this->create_subscription<ulisse_msgs::msg::NavFilterData>("/ulisse/nav_filter/data", 10, std::bind(&MQTTPublisher::NavFilterCallback, this, _1));
-      mqttPub = std::make_shared<mqttt::MQTTPublisher>("ulisseStatusPub", "catl/unige/ulisse/status",  "127.0.0.1", 1883); // TODO CHECK ARGUMENTS
+      statusTimer_ = this->create_wall_timer(1000ms, std::bind(&CATLPublisher::StatusCallback, this));
+      worldModelTimer_ = this->create_wall_timer(4000ms, std::bind(&CATLPublisher::WorldModelCallback, this));
+      subscription_ = this->create_subscription<ulisse_msgs::msg::NavFilterData>("/ulisse/nav_filter/data", 10, std::bind(&CATLPublisher::NavFilterCallback, this, _1));
+      mqttPub = std::make_shared<pahho::MQTTPublisher>("ulisseStatusPub", "catl/unige/ulisse/status",  "127.0.0.1", 1883); // TODO CHECK ARGUMENTS
     }
 
   private:
@@ -41,7 +41,7 @@ class MQTTPublisher : public rclcpp::Node
 int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<MQTTPublisher>());
+  rclcpp::spin(std::make_shared<CATLPublisher>());
   rclcpp::shutdown();
   return 0;
 }
