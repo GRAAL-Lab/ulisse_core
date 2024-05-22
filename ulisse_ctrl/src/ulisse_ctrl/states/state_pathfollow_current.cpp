@@ -218,7 +218,8 @@ fsm::retval StatePathFollowCurrent::Execute()
                 double water_angle = atan(ctrlData->inertialF_waterCurrent[1]/ctrlData->inertialF_waterCurrent[0]);
 
                 double heading_angle;
-                double ASV_speed = linearVelocityPathFollowingCurrentTask_->TaskParameter().saturation;
+                double ASV_speed = linearVelocityPathFollowingCurrentTask_->TaskParameter().saturation * delta_y_ / pathManager_.nurbsParam.deltaMax;
+
                 pathManager_.ComputeHeadingAngle(goalHeading, water_angle, ctrlData->inertialF_waterCurrent.norm(), ASV_speed , heading_angle);
 
                 /*
