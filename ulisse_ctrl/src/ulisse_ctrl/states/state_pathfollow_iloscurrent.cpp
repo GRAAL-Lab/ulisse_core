@@ -270,7 +270,7 @@ fsm::retval StatePathFollowILOSCurrent::Execute()
                     linearVelocityPathFollowingCurrentTask_->SetReferenceRate(Eigen::Vector3d(appliedVelocity.norm(), 0, 0), robotModel->BodyFrameID());
 
                     // for publishing msgs
-                    pathManager_.ComputeError(ctrlData->inertialF_linearPosition, *real_position, nextP_, closePoint2path, y_, yReal_);
+                    pathManager_.ComputeTrackingErrors(ctrlData->inertialF_linearPosition, *real_position, nextP_, closePoint2path, y_, yReal_);
                     LOS_goalHeading = goalHeading;
                     LOS_headingError = absoluteAxisAlignmentTask_->ControlVariable().norm();
 
@@ -314,7 +314,7 @@ fsm::retval StatePathFollowILOSCurrent::Execute()
                     LOS_headingError = ILOS_headingError;// in order to be published
 
                     // Compute real error y_real (to be published)
-                    yReal_ = pathManager_.ComputeRealErrorILOS(ctrlData->inertialF_linearPosition, *real_position, nextP_, closestP_);
+                    yReal_ = pathManager_.ComputeRealTrackingError(ctrlData->inertialF_linearPosition, *real_position, nextP_, closestP_);
 
                     // Absolute alignment ILOS
 

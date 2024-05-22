@@ -45,7 +45,7 @@ public:
     double ComputeGoalHeadingILOS(const ctb::LatLong &currentPos,const ctb::LatLong &goalP, const ctb::LatLong &ClosestPoint, const double& Heading2ClosetPoint,
                                  double INFO[]);
 
-    double ComputeRealErrorILOS(const ctb::LatLong &currentPos,const ctb::LatLong &currentRealPos,const ctb::LatLong &goalPos,
+    double ComputeRealTrackingError(const ctb::LatLong &currentPos,const ctb::LatLong &currentRealPos,const ctb::LatLong &goalPos,
                               const ctb::LatLong &closestPos);
     /*
      * Method that resets the path

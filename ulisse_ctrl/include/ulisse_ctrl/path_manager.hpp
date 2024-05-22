@@ -45,7 +45,7 @@ public:
 
     bool ComputeGoalHeadingILOS(const ctb::LatLong &currentPos,const double& Heading2ClosetPoint, double& goalHead);
 
-    bool ComputeErrorLOS(const ctb::LatLong &currentPos,const ctb::LatLong &currentRealPos,const ctb::LatLong &goalPos,
+    bool ComputeTrackingErrors(const ctb::LatLong &currentPos,const ctb::LatLong &currentRealPos,const ctb::LatLong &goalPos,
                                                const ctb::LatLong &closestPos, double& estimated, double& real);
     /*
      * Method that resets the path

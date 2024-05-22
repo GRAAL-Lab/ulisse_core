@@ -47,13 +47,14 @@ public:
 
     //bool ComputeGoalHeadingALOS(const ctb::LatLong &currentPos,const double& Heading2ClosetPoint, double& goalHead);
 
-    bool ComputeErrorALOS(const ctb::LatLong &currentPos,const ctb::LatLong &currentRealPos,const ctb::LatLong &goalPos,
+    double ComputeRealTrackingError(const ctb::LatLong &currentPos,const ctb::LatLong &currentRealPos,const ctb::LatLong &goalPos,
+                                const ctb::LatLong &closestPos);
+
+    bool ComputeTrackingErrors(const ctb::LatLong &currentPos,const ctb::LatLong &currentRealPos,const ctb::LatLong &goalPos,
                                                const ctb::LatLong &closestPos, double& estimated, double& real);
 
     double ComputeGoalHeadingALOS(const ctb::LatLong &currentPos, const ctb::LatLong &goalPos, const ctb::LatLong &ClosestPoint,
                                                   const double& Heading2ClosetPoint, const double& Heading2target, double INFO[]);
-    double ComputeRealErrorALOS(const ctb::LatLong &currentPos,const ctb::LatLong &currentRealPos,const ctb::LatLong &goalPos,
-                              const ctb::LatLong &closestPos);
     /*
      * Method that resets the path
     */

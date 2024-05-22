@@ -222,7 +222,7 @@ Eigen::Vector3d PathManagerILOSCurrent::ComputeDirectionVector(const Eigen::Vect
     return vector;
 }
 
-bool PathManagerILOSCurrent::ComputeError(const ctb::LatLong &currentPos,const ctb::LatLong &currentRealPos,const ctb::LatLong &goalPos,
+bool PathManagerILOSCurrent::ComputeTrackingErrors(const ctb::LatLong &currentPos,const ctb::LatLong &currentRealPos,const ctb::LatLong &goalPos,
                                            const ctb::LatLong &closestPos, double& estimated, double& real)
 {
     Eigen::Vector3d currentPos_UTM, currentPosReal_UTM, closestPointOnPath_UTM, goalPos_UTM;
@@ -407,7 +407,7 @@ double PathManagerILOSCurrent::ComputeGoalHeadingILOS(const ctb::LatLong &curren
     return goal_heading;
 }
 
-double PathManagerILOSCurrent::ComputeRealErrorILOS(const ctb::LatLong &currentPos,const ctb::LatLong &currentRealPos,const ctb::LatLong &goalPos,
+double PathManagerILOSCurrent::ComputeRealTrackingError(const ctb::LatLong &currentPos,const ctb::LatLong &currentRealPos,const ctb::LatLong &goalPos,
                                            const ctb::LatLong &closestPos)
 {
        // Converting the current geographical position to UTM coordinates

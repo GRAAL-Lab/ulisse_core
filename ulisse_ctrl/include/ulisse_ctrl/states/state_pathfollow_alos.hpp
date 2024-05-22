@@ -31,6 +31,8 @@ namespace states {
         PathManagerALOS pathManager_;       // Object to handle the path
 
         double delta_y_;
+        double gamma_y_;
+        double beta_hat_, beta_hat_dot_;
         double y_;
         double ALOS_goalHeading; // ALOS
         double ALOS_headingError; // ALOS
@@ -52,11 +54,14 @@ namespace states {
         double GetDistanceToEnd() const { return pathManager_.DistanceToEnd(); }
 
         double GetDeltaY() const { return delta_y_; } // LOS
+        double GetGammaY() const { return gamma_y_; } // ALOS
         double GetY() const { return y_; }
         double GetGoalHeading() const { return ALOS_goalHeading; }
         double GetHeadingError() const { return ALOS_headingError; }
+        double GetHeading2ClosetPoint() const { return ALOS_Heading2ClosetPoint; }
         double GetYReal() const { return yReal_; }
-
+        double GetBeta() const { return beta_hat_; }
+        double GetBetaDot() const { return beta_hat_dot_; }
 
     };
 }

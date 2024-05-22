@@ -214,7 +214,7 @@ Eigen::Vector3d PathManagerCurrent::ComputeDirectionVector(const Eigen::Vector2d
     return vector;
 }
 
-bool PathManagerCurrent::ComputeError(const ctb::LatLong &currentPos,const ctb::LatLong &currentRealPos,const ctb::LatLong &goalPos,
+bool PathManagerCurrent::ComputeTrackingErrors(const ctb::LatLong &currentPos,const ctb::LatLong &currentRealPos,const ctb::LatLong &goalPos,
                                            const ctb::LatLong &closestPos, double& estimated, double& real)
 {
     Eigen::Vector3d currentPos_UTM, currentPosReal_UTM, closestPointOnPath_UTM, goalPos_UTM;

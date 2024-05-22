@@ -251,12 +251,12 @@ fsm::retval StatePathFollowILOS::Execute()
 
                 //  Compute ILOS heading (psi angle)
                 ILOS_goalHeading = pathManager_.ComputeGoalHeadingILOS(ctrlData->inertialF_linearPosition, nextP_, closestP_,
-                                                                      ILOS_Heading2ClosetPoint,ILOS_INFO);
+                                                                      ILOS_Heading2ClosetPoint, ILOS_INFO);
                 // set information in a global variable in order to be published
                 SetInformation(ILOS_INFO,INFO);
 
                 // Compute real error y_real (to be published)
-                yReal_ = pathManager_.ComputeRealErrorILOS(ctrlData->inertialF_linearPosition, *real_position, nextP_, closestP_);
+                yReal_ = pathManager_.ComputeRealTrackingError(ctrlData->inertialF_linearPosition, *real_position, nextP_, closestP_);
 
                 // Absolute alignment ILOS
 

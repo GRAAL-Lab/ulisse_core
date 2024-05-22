@@ -224,7 +224,7 @@ fsm::retval StatePathFollow::Execute()
                 double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingError);
 
                 // for publishing msgs
-                pathManager_.ComputeErrorLOS(ctrlData->inertialF_linearPosition, *real_position, nextP_, closePoint2path, y_, yReal_);
+                pathManager_.ComputeTrackingErrors(ctrlData->inertialF_linearPosition, *real_position, nextP_, closePoint2path, y_, yReal_);
                 LOS_goalHeading = goalHeading;
                 LOS_headingError = headingError;
 
