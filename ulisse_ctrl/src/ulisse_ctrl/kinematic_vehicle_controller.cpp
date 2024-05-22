@@ -863,11 +863,11 @@ void VehicleController::PublishTasksInfo()
         ulisse_msgs::msg::PathFollow pathFollowMsg;
         pathFollowMsg.stamp.sec = now_stamp_secs;
         pathFollowMsg.stamp.nanosec = now_stamp_nanosecs;
-        pathFollowMsg.sigma = 0;
+        pathFollowMsg.gain = 0;
         pathFollowMsg.delta = statePathFollowing_->GetDeltaY();
         pathFollowMsg.y = statePathFollowing_->GetY();
-        pathFollowMsg.y_int = 0;
-        pathFollowMsg.y_int_dot = 0;
+        pathFollowMsg.x = 0;
+        pathFollowMsg.x_dot = 0;
         pathFollowMsg.psi = 0;
 
         pathFollowMsg.heading2closest_point = 0;
@@ -885,11 +885,11 @@ void VehicleController::PublishTasksInfo()
         ulisse_msgs::msg::PathFollow pathFollowIlosMsg;
         pathFollowIlosMsg.stamp.sec = now_stamp_secs;
         pathFollowIlosMsg.stamp.nanosec = now_stamp_nanosecs;
-        pathFollowIlosMsg.sigma = statePathFollowingILOS_->GetSigmaY();
+        pathFollowIlosMsg.gain = statePathFollowingILOS_->GetSigmaY();
         pathFollowIlosMsg.delta = statePathFollowingILOS_->GetDeltaY();
         pathFollowIlosMsg.y = statePathFollowingILOS_->GetY();
-        pathFollowIlosMsg.y_int = statePathFollowingILOS_->GetYint();
-        pathFollowIlosMsg.y_int_dot = statePathFollowingILOS_->GetYintDot();
+        pathFollowIlosMsg.x = statePathFollowingILOS_->GetYint();
+        pathFollowIlosMsg.x_dot = statePathFollowingILOS_->GetYintDot();
         pathFollowIlosMsg.psi = statePathFollowingILOS_->GetPsi();
 
         pathFollowIlosMsg.heading2closest_point = statePathFollowingILOS_->GetHeading2ClosetPoint();
@@ -908,11 +908,11 @@ void VehicleController::PublishTasksInfo()
         ulisse_msgs::msg::PathFollow pathFollowMsg;
         pathFollowMsg.stamp.sec = now_stamp_secs;
         pathFollowMsg.stamp.nanosec = now_stamp_nanosecs;
-        pathFollowMsg.sigma = 0;
+        pathFollowMsg.gain = 0;
         pathFollowMsg.delta = statePathFollowingCurrent_->GetDeltaY();
         pathFollowMsg.y = statePathFollowingCurrent_->GetY();
-        pathFollowMsg.y_int = 0;
-        pathFollowMsg.y_int_dot = 0;
+        pathFollowMsg.x = 0;
+        pathFollowMsg.x_dot = 0;
         pathFollowMsg.psi = 0;
 
         pathFollowMsg.heading2closest_point = 0;
@@ -931,11 +931,11 @@ void VehicleController::PublishTasksInfo()
         ulisse_msgs::msg::PathFollow pathFollowMsg;
         pathFollowMsg.stamp.sec = now_stamp_secs;
         pathFollowMsg.stamp.nanosec = now_stamp_nanosecs;
-        pathFollowMsg.sigma = statePathFollowingILOSCurrent_->GetSigmaY();
+        pathFollowMsg.gain = statePathFollowingILOSCurrent_->GetSigmaY();
         pathFollowMsg.delta = statePathFollowingILOSCurrent_->GetDeltaY();
         pathFollowMsg.y = statePathFollowingILOSCurrent_->GetY();
-        pathFollowMsg.y_int = statePathFollowingILOSCurrent_->GetYint();
-        pathFollowMsg.y_int_dot = statePathFollowingILOSCurrent_->GetYintDot();
+        pathFollowMsg.x = statePathFollowingILOSCurrent_->GetYint();
+        pathFollowMsg.x_dot = statePathFollowingILOSCurrent_->GetYintDot();
         pathFollowMsg.psi = statePathFollowingILOSCurrent_->GetPsi();
 
         pathFollowMsg.heading2closest_point = statePathFollowingILOSCurrent_->GetHeading2ClosetPoint();
@@ -954,11 +954,11 @@ void VehicleController::PublishTasksInfo()
         pathFollowAlosMsg.stamp.sec = now_stamp_secs;
         pathFollowAlosMsg.stamp.nanosec = now_stamp_nanosecs;
 
-        pathFollowAlosMsg.sigma = statePathFollowingALOS_->GetGammaY(); // gamma in ALOS case
+        pathFollowAlosMsg.gain = statePathFollowingALOS_->GetGammaY(); // gamma in ALOS case
         pathFollowAlosMsg.delta = statePathFollowingALOS_->GetDeltaY();
         pathFollowAlosMsg.y = statePathFollowingALOS_->GetY();
-        pathFollowAlosMsg.y_int = statePathFollowingALOS_->GetBeta(); // Beta_hat in ALOS case
-        pathFollowAlosMsg.y_int_dot = statePathFollowingALOS_->GetBetaDot(); // Beta_hat_dot in ALOS case
+        pathFollowAlosMsg.x = statePathFollowingALOS_->GetBeta(); // Beta_hat in ALOS case
+        pathFollowAlosMsg.x_dot = statePathFollowingALOS_->GetBetaDot(); // Beta_hat_dot in ALOS case
         pathFollowAlosMsg.psi = 0.0;
         pathFollowAlosMsg.heading2closest_point = statePathFollowingALOS_->GetHeading2ClosetPoint();
         pathFollowAlosMsg.goal_heading = statePathFollowingALOS_->GetGoalHeading();

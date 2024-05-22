@@ -1,10 +1,10 @@
 Time stamp
 float64 delta
-float64 sigma
+float64 gain
 float64 y
 float64 y_real
-float64 y_int_dot
-float64 y_int
+float64 x_dot
+float64 x
 float64 psi
 float64 heading2closest_point
 float64 goal_heading

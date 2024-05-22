@@ -167,7 +167,7 @@ bool OfflineBagConverter::ConvertToCSV()
                                << bag_message->time_stamp  * 1e-9 << ", "
                                << pathFollow_.stamp.sec + (pathFollow_.stamp.nanosec * 1e-9) << ", "
                                << pathFollow_.delta << ", " << pathFollow_.y << ", " << pathFollow_.y_real << ", "
-                               << pathFollow_.y_int_dot << ", " << pathFollow_.y_int << ", " << pathFollow_.psi
+                               << pathFollow_.x_dot << ", " << pathFollow_.x << ", " << pathFollow_.psi
                                << "\n";
         }
         // else if (bag_message->topic_name == ulisse_msgs::topicnames::llc_battery_left) {
