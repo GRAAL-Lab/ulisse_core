@@ -32,16 +32,16 @@ include_directories(
 ## Libraries
 add_library(offline_bag_converter src/bags_to_csv/offline_bag_converter.cpp)
 ament_target_dependencies(offline_bag_converter rclcpp rosbag2_cpp rosbag2_storage ulisse_msgs)
-target_link_libraries(offline_bag_converter ${bags_to_csv_LIBRARIES} ${ulisse_msgs_LIBRARIES})
+target_link_libraries(offline_bag_converter stdc++fs ${bags_to_csv_LIBRARIES} ${ulisse_msgs_LIBRARIES})
 
 ## Executables
 add_executable(to_csv_node src/to_csv_node.cpp)
 ament_target_dependencies(to_csv_node rclcpp std_msgs ulisse_msgs ctrl_toolbox ament_index_cpp)
-target_link_libraries(to_csv_node ctrl_toolbox ${ulisse_msgs_LIBRARIES})
+target_link_libraries(to_csv_node ctrl_toolbox stdc++fs ${ulisse_msgs_LIBRARIES})
 
 add_executable(offline_bag2csv_node src/offline_bag2csv_node.cpp)
 ament_target_dependencies(offline_bag2csv_node rclcpp std_msgs ulisse_msgs rosbag2_cpp ament_index_cpp)
-target_link_libraries(offline_bag2csv_node offline_bag_converter ${ulisse_msgs_LIBRARIES})
+target_link_libraries(offline_bag2csv_node offline_bag_converter stdc++fs ${ulisse_msgs_LIBRARIES})
 
 ament_export_include_directories(include)
 

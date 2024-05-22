@@ -30,8 +30,8 @@ bool OfflineBagConverter::ConvertToCSV()
 {
     rosbag2_cpp::Reader reader(std::make_unique<rosbag2_cpp::readers::SequentialReader>());
 
-    //rosbag2_storage::StorageOptions storage_options{};  // ROS2 Galactic
-    rosbag2_cpp::StorageOptions storage_options{};
+    rosbag2_storage::StorageOptions storage_options{};  // ROS2 Galactic
+    //rosbag2_bag::StorageOptions storage_options{};
     storage_options.uri = bagPath_;
     storage_options.storage_id = "sqlite3";
 
