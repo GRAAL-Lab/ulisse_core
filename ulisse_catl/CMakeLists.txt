@@ -18,6 +18,7 @@ find_package(OpenCV REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(ulisse_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(ctrl_toolbox REQUIRED)
@@ -44,7 +45,7 @@ include_directories(
 
 ## Executables
 add_executable(ulisse_catl src/publishToMqtt.cpp)
-ament_target_dependencies(ulisse_catl rclcpp std_msgs ament_index_cpp)
+ament_target_dependencies(ulisse_catl rclcpp std_msgs ament_index_cpp ulisse_msgs)
 target_link_libraries(ulisse_catl config++ mqttt stng json_utils ${OpenCV_LIBS} stdc++fs)
 
 target_include_directories(ulisse_catl PUBLIC

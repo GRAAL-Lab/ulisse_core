@@ -103,6 +103,7 @@ rosidl_generate_interfaces(ulisse_msgs
   
   ## Other ##
 
+  DEPENDENCIES builtin_interfaces std_msgs
 )
 
 ament_export_include_directories(include)

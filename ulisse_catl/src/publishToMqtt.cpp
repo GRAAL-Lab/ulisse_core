@@ -15,7 +15,7 @@ class MQTTPublisher : public rclcpp::Node
       //publisher_ = this->create_publisher<std_msgs::msg::String>("topic", 10); // TODO REMOVE
       statusTimer_ = this->create_wall_timer(1000ms, std::bind(&MQTTPublisher::StatusCallback, this));
       worldModelTimer_ = this->create_wall_timer(4000ms, std::bind(&MQTTPublisher::WorldModelCallback, this));
-      subscription_ = this->create_subscription<std_msgs::msg::String>("topic", 10, std::bind(&MQTTPublisher::NavFilterCallback, this, _1));
+      subscription_ = this->create_subscription<ulisse_msgs::msg::NavFilterData>("/ulisse/nav_filter/data", 10, std::bind(&MQTTPublisher::NavFilterCallback, this, _1));
       mqttPub = std::make_shared<mqttt::MQTTPublisher>("ulisseStatusPub", "catl/unige/ulisse/status",  "127.0.0.1", 1883); // TODO CHECK ARGUMENTS
     }
 
@@ -26,13 +26,16 @@ class MQTTPublisher : public rclcpp::Node
     void WorldModelCallback() {
       TestWorldModel(*mqttPub);
     }
-    void NavFilterCallback(const std_msgs::msg::String::SharedPtr msg) const {}
+    void NavFilterCallback(const ulisse_msgs::msg::NavFilterData::SharedPtr msg) const {
+      //std::cerr << "msg->bodyframe_linear_velocity[0] = " << msg->bodyframe_linear_velocity[0] << std::endl; // TODO REMOVE
+    }
+
 
     rclcpp::TimerBase::SharedPtr statusTimer_;
     rclcpp::TimerBase::SharedPtr worldModelTimer_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
     size_t count_;
-    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_;
+    rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr subscription_;
 };
 
 int main(int argc, char * argv[])

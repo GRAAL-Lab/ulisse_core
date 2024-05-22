@@ -9,6 +9,8 @@
 #include <json_utils/json_utils.hpp>
 #include <mqttt/mqtt_publisher.hpp>
 
+#include <ulisse_msgs/msg/nav_filter_data.hpp>
+
 using namespace ctljsn;
 
 std::shared_ptr<mqttt::MQTTPublisher> mqttPub;
