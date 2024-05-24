@@ -18,10 +18,12 @@ find_package(OpenCV REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(ulisse_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(ctrl_toolbox REQUIRED)
+find_package(cv_bridge REQUIRED)
 
 include_directories(${OpenCV_INCLUDE_DIRS} ${MOSQUITTOPP_INCLUDE_DIR})
 
@@ -43,17 +45,30 @@ include_directories(
 
 ## Libraries
 
+
 ## Executables
-add_executable(ulisse_catl src/publishToMqtt.cpp)
-ament_target_dependencies(ulisse_catl rclcpp std_msgs ament_index_cpp ulisse_msgs)
+add_executable(ulisse_catl src/publishCATL.cpp)
+ament_target_dependencies(ulisse_catl rclcpp std_msgs sensor_msgs ament_index_cpp ulisse_msgs)
 target_link_libraries(ulisse_catl config++ mqttt stng json_utils ${OpenCV_LIBS} stdc++fs)
+
+add_executable(ulisse_camera src/publishImage.cpp)
+ament_target_dependencies(ulisse_camera rclcpp std_msgs sensor_msgs ament_index_cpp ulisse_msgs cv_bridge)
+target_link_libraries(ulisse_camera config++ mqttt stng json_utils ${OpenCV_LIBS} stdc++fs)
 
 target_include_directories(ulisse_catl PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
 
+target_include_directories(ulisse_camera PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
+  
 install(TARGETS
   ulisse_catl
+  DESTINATION lib/${PROJECT_NAME})
+
+install(TARGETS
+  ulisse_camera
   DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY
