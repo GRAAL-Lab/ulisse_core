@@ -16,13 +16,16 @@ endif()
 
 find_package(OpenCV REQUIRED)
 find_package(ament_cmake REQUIRED)
+find_package(ament_index_cpp REQUIRED)
+find_package(Eigen3 REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(ulisse_msgs REQUIRED)
-find_package(Eigen3 REQUIRED)
-find_package(ament_index_cpp REQUIRED)
+
 find_package(ctrl_toolbox REQUIRED)
+find_package(ulisse_msgs REQUIRED)
+find_package(ulisse_ctrl REQUIRED)
+
 find_package(cv_bridge REQUIRED)
 
 include_directories(${OpenCV_INCLUDE_DIRS} ${MOSQUITTOPP_INCLUDE_DIR})
@@ -40,6 +43,7 @@ add_custom_target(.Files. SOURCES ${SOURCE_FILES})
 include_directories(
   include
   ${ulisse_msgs_INCLUDE_DIRS}
+  ${ulisse_ctrl_INCLUDE_DIRS}
   ${surface_vehicle_model_INCLUDE_DIRS}
 )
 
@@ -47,12 +51,12 @@ include_directories(
 
 
 ## Executables
-add_executable(ulisse_catl src/publishCATL.cpp)
+add_executable(ulisse_catl src/publishCATLNode.cpp src/publishCATL.cpp)
 ament_target_dependencies(ulisse_catl rclcpp std_msgs sensor_msgs ament_index_cpp ulisse_msgs)
 target_link_libraries(ulisse_catl config++ mqttt stng json_utils ${OpenCV_LIBS} stdc++fs)
 
 add_executable(ulisse_camera src/publishImage.cpp)
-ament_target_dependencies(ulisse_camera rclcpp std_msgs sensor_msgs ament_index_cpp ulisse_msgs cv_bridge)
+ament_target_dependencies(ulisse_camera ulisse_ctrl rclcpp std_msgs sensor_msgs ament_index_cpp ulisse_msgs cv_bridge)
 target_link_libraries(ulisse_camera config++ mqttt stng json_utils ${OpenCV_LIBS} stdc++fs)
 
 target_include_directories(ulisse_catl PUBLIC
