@@ -14,7 +14,7 @@ CATLPublisher::CATLPublisher()
     : Node("mqtt_publisher"), count_(0) {
       statusTimer_ = this->create_wall_timer(1000ms, std::bind(&CATLPublisher::StatusTimerCallback, this));
       worldModelTimer_ = this->create_wall_timer(4000ms, std::bind(&CATLPublisher::WorldModelTimerCallback, this));
-      changesTimer_ = this->create_wall_timer(100ms, std::bind(&CATLPublisher::ChangesTimerCallback, this));
+      changesTimer_ = this->create_wall_timer(1000ms, std::bind(&CATLPublisher::ChangesTimerCallback, this));
       vehicleStatusSub_ = this->create_subscription<ulisse_msgs::msg::VehicleStatus>(ulisse_msgs::topicnames::vehicle_status, 10,
         std::bind(&CATLPublisher::VehicleStatusCallback, this, _1));
       navFilterSub_ = this->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 10,
@@ -65,6 +65,7 @@ CATLPublisher::CATLPublisher()
           }
           RCLCPP_INFO(get_logger(), "[CATLPublisher] Waiting for Controller service to appear...");
       }
+      oldTaskInfo = nullptr;
 }
 
 void CATLPublisher::NavFilterCallback(const ulisse_msgs::msg::NavFilterData::SharedPtr msg) {
@@ -87,15 +88,16 @@ void CATLPublisher::WorldModelTimerCallback() {
 }
 
 void CATLPublisher::ChangesTimerCallback() {
+  std::cerr << tc::cyanL << "[ChangesTimerCallback] Start..." << tc::none << std::endl;
   if (vehicleStatusMsgOkForChangeChecker_) {
     vehicleStatusMsgOkForChangeChecker_ = false;
     auto statusMsgCopy = vehicleStatusMsg_;
     auto newOwnedTask = GetTaskIdAndStatus(statusMsgCopy.vehicle_state);
-    if ((oldTaskInfo == nullptr) ||
-        (oldTaskInfo->taskStatus.taskState != newOwnedTask.taskStatus.taskState) ||
-        (oldTaskInfo->taskId.name != oldTaskInfo->taskId.name)) {
-
-        std::cerr << tc::cyanL << "[ChangesTimerCallback] State changed! Publishing." << std::endl;
+    auto oldTaskInfoNotInit = oldTaskInfo == nullptr;
+    auto taskStateChanged = (!oldTaskInfoNotInit) && (oldTaskInfo->taskStatus.taskState != newOwnedTask.taskStatus.taskState);
+    auto taskIdChanged = (!oldTaskInfoNotInit) && (oldTaskInfo->taskId.name != newOwnedTask.taskId.name);
+    if (oldTaskInfoNotInit || taskStateChanged || taskIdChanged) {
+        std::cerr << tc::cyanL << "[ChangesTimerCallback] State changed! So, I'm publishing it!" << std::endl;
         PubStatus(*mqttPub_);
     }
     if (oldTaskInfo == nullptr) oldTaskInfo = std::make_unique<task::TaskIdAndStatus>(newOwnedTask);
@@ -114,6 +116,7 @@ void CATLPublisher::PubStatus(pahho::MQTTPublisher& mqttPub) {
   std::cerr << "[TestPubStatus] START "  << std::endl;
   if (!vehicleStatusMsgOk_) return; // TODO HANDLE
   if (!navFilterMsgOk_) return; // TODO HANDLE
+  std::cerr << "[TestPubStatus] Data ok "  << std::endl;
   vehicleStatusMsgOk_ = false;
   navFilterMsgOk_ = true;
   auto statusMsgCopy = vehicleStatusMsg_;
@@ -137,7 +140,7 @@ void CATLPublisher::PubStatus(pahho::MQTTPublisher& mqttPub) {
       );
   
   CheckFromJson(statusMsg, "status");
-  std::cerr << tc::yellow << statusMsgCopy.vehicle_state << std::endl;
+  //std::cerr << tc::yellow << statusMsgCopy.vehicle_state << std::endl;
 
   if (enableDebugPrint) {
     std::cerr << tc::cyanL << "Status:" << std::endl << statusMsg.ToJson() << tc::none << std::endl;

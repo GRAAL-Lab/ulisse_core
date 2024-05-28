@@ -77,16 +77,8 @@ void CATLSubscriber::CommandDispatcher() {
   if (!cb_->flag) return;
   std::cerr << tc::yellow << "[CommandDispatcher] Start..." << tc::none << std::endl;
   cb_->flag = false;
-  RCLCPP_INFO(this->get_logger(), "Sending request");
+  std::cerr << tc::yellow << "[CommandDispatcher] cb_->dataStr = " << cb_->dataStr << std::endl;
   task::TaskAdmin taskAdminMsg(jsoncons::json::parse(cb_->dataStr));
-  /* Should handle:
-      case ACTION_UPDATE: return "UPDATE";
-      case ACTION_PUSH: return "PUSH";
-      case ACTION_PULL: return "PULL";
-      case ACTION_PREDICT: return "PREDICT";
-      case ACTION_CANCEL: return "CANCEL";
-      default: return "ERROR";
-  */
   auto taskAction = taskAdminMsg.action;
   std::shared_ptr<ulisse_msgs::srv::ControlCommand_Request> serviceReq;
   bool tryToSend = false;
@@ -150,6 +142,7 @@ void CATLSubscriber::CommandDispatcher() {
   // Do this instead of rclcpp::spin_until_future_complete()
   if (true) {
     if (tryToSend) {
+      RCLCPP_INFO(this->get_logger(), "Sending request");
       std::future_status status = result_future.wait_for(10s);  // timeout to guarantee a graceful finish
       if (status == std::future_status::ready) {
           RCLCPP_INFO(get_logger(), "Received response");
@@ -214,5 +207,7 @@ T CheckFromJson(const T obj, const std::string typeName) { return CheckFromJson(
 void MQTTUlisseCB::UseText(std::string &s) {
   dataStr = s;
   flag = true;
+  std::cerr << tc::yellow << "[UseText] rx s = " << s << std::endl;
+  std::cerr << tc::yellow << "[UseText] rx s.length() = " << s.length() << std::endl;
   //task::TaskAdmin taskAdminMsg(jsoncons::json::parse(s));
 }
