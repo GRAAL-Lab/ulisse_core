@@ -21,7 +21,50 @@ int main(int argc, char * argv[]) {
     auto whichTest = std::string(argv[1]);
     if (whichTest == "ll") PubTaskAdminLL(*mqttPub);
     if (whichTest == "hold") PubTaskAdminHold(*mqttPub);
+    if (whichTest == "yawsurge") PubTaskAdminYawSurge(*mqttPub);
   }
+}
+
+// Test task admin.
+jsoncons::json PubTaskAdminYawSurge(pahho::MQTTPublisher& mqttPub) {
+
+  auto constr = std::make_shared<task::TaskConstraintsBasic>(
+      task::ActivityType::ACTIVITY_STANDARD
+  );
+
+  constr->dict["heading"] = 0.1;
+  constr->dict["surge"] = 1.0;
+
+  auto perf = std::make_shared<task::TaskPerformanceBasic>(
+      std::make_shared<time::DirectDuration>(22)
+  );
+
+  perf->dict["timeout"] = 10;
+
+  task::TaskDescriptor taskDescriptor(constr, perf);
+
+  auto taskAdminMsg = task::TaskAdmin(
+    "unige.c2",
+    std::make_shared<time::DirectTime>(std::time(0)),
+    task::TaskUpdateType::ACTION_PUSH,
+    nd::NodeIdentifier("unige.mcm.squad", 0),
+    task::TaskID("unige.task.surge_heading", 1),
+    task::TaskType::TSKTP_U_SURGE_HEADING,
+    taskDescriptor);
+
+  CheckFromJson(taskAdminMsg, "task_admin");
+
+  if (true) {
+    std::cerr << tc::bluL << "TaskAdmin:" << std::endl << taskAdminMsg.ToJson() << tc::none << std::endl;
+  }
+
+  auto taskAdminStr = taskAdminMsg.ToJson().to_string();
+  
+  mqttPub.PublishText(taskAdminStr, std::time(0));
+  std::cerr << "[TestPubTaskAdmin] END" << std::endl;
+
+  return taskAdminMsg.ToJson();
+
 }
 
 
@@ -46,7 +89,7 @@ jsoncons::json PubTaskAdminHold(pahho::MQTTPublisher& mqttPub) {
     std::make_shared<time::DirectTime>(std::time(0)),
     task::TaskUpdateType::ACTION_PUSH,
     nd::NodeIdentifier("unige.mcm.squad", 0),
-    task::TaskID("unige.task-1", 1),
+    task::TaskID("unige.task.hold", 1),
     task::TaskType::TSKTP_U_HOLD,
     taskDescriptor);
 
@@ -81,6 +124,8 @@ jsoncons::json PubTaskAdminLL(pahho::MQTTPublisher& mqttPub) {
       std::make_shared<time::DirectDuration>(22)
   );
 
+  perf->dict["timeout"] = 10;
+
   task::TaskDescriptor taskDescriptor(constr, perf);
 
   auto taskAdminMsg = task::TaskAdmin(
@@ -88,7 +133,7 @@ jsoncons::json PubTaskAdminLL(pahho::MQTTPublisher& mqttPub) {
     std::make_shared<time::DirectTime>(std::time(0)),
     task::TaskUpdateType::ACTION_PUSH,
     nd::NodeIdentifier("unige.mcm.squad", 0),
-    task::TaskID("unige.task-1", 1),
+    task::TaskID("unige.task.lat_long", 1),
     task::TaskType::TSKTP_U_MOVE_TO_LATLONG,
     taskDescriptor);
 

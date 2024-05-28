@@ -8,13 +8,13 @@
 using namespace std::chrono_literals;
 using std::placeholders::_1;
 
-bool enableDebugPrint = true;
+bool enableDebugPrint = false;
 
 CATLPublisher::CATLPublisher()
     : Node("mqtt_publisher"), count_(0) {
       statusTimer_ = this->create_wall_timer(1000ms, std::bind(&CATLPublisher::StatusTimerCallback, this));
       worldModelTimer_ = this->create_wall_timer(4000ms, std::bind(&CATLPublisher::WorldModelTimerCallback, this));
-      debugCommandTimer_ = this->create_wall_timer(1000ms, std::bind(&CATLPublisher::DebugCommandTimerCallback, this));
+      changesTimer_ = this->create_wall_timer(100ms, std::bind(&CATLPublisher::ChangesTimerCallback, this));
       vehicleStatusSub_ = this->create_subscription<ulisse_msgs::msg::VehicleStatus>(ulisse_msgs::topicnames::vehicle_status, 10,
         std::bind(&CATLPublisher::VehicleStatusCallback, this, _1));
       navFilterSub_ = this->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 10,
@@ -75,18 +75,39 @@ void CATLPublisher::NavFilterCallback(const ulisse_msgs::msg::NavFilterData::Sha
 void CATLPublisher::VehicleStatusCallback(const ulisse_msgs::msg::VehicleStatus::SharedPtr msg) {
   vehicleStatusMsg_ = *msg;
   vehicleStatusMsgOk_ = true;
+  vehicleStatusMsgOkForChangeChecker_ = true;
 }
 
 void CATLPublisher::StatusTimerCallback() {
   PubStatus(*mqttPub_);
 }
+
 void CATLPublisher::WorldModelTimerCallback() {
   PubWorldModel(*mqttPub_);
 }
 
-void CATLPublisher::DebugCommandTimerCallback() {
-  std::cerr << "[DebugCommandCallback] StarDt..." << std::endl;
-  std::cerr << "[DebugCommandCallback] End!" << std::endl;
+void CATLPublisher::ChangesTimerCallback() {
+  if (vehicleStatusMsgOkForChangeChecker_) {
+    vehicleStatusMsgOkForChangeChecker_ = false;
+    auto statusMsgCopy = vehicleStatusMsg_;
+    auto newOwnedTask = GetTaskIdAndStatus(statusMsgCopy.vehicle_state);
+    if ((oldTaskInfo == nullptr) ||
+        (oldTaskInfo->taskStatus.taskState != newOwnedTask.taskStatus.taskState) ||
+        (oldTaskInfo->taskId.name != oldTaskInfo->taskId.name)) {
+
+        std::cerr << tc::cyanL << "[ChangesTimerCallback] State changed! Publishing." << std::endl;
+        PubStatus(*mqttPub_);
+    }
+    if (oldTaskInfo == nullptr) oldTaskInfo = std::make_unique<task::TaskIdAndStatus>(newOwnedTask);
+    else *oldTaskInfo = newOwnedTask;
+  }
+}
+
+task::TaskIdAndStatus CATLPublisher::GetTaskIdAndStatus(const std::string vehicleState) {
+  task::TaskID taskId(vehicleState, ToInt(vehicleState, strToTaskType));
+  task::TaskStatus taskStatus(task::TaskState::TSK_STATE_ACTIVE, 0.5, std::make_shared<ctljsn::time::DirectDuration>(0));
+  task::TaskIdAndStatus ownedTask(taskStatus, taskId);
+  return ownedTask;
 }
 
 void CATLPublisher::PubStatus(pahho::MQTTPublisher& mqttPub) {
@@ -99,12 +120,9 @@ void CATLPublisher::PubStatus(pahho::MQTTPublisher& mqttPub) {
   auto navFilterMsgCopy = navFilterMsg_;
   auto vehicleState = statusMsgCopy.vehicle_state;
 
-  std::cerr << "[TestPubStatus] V State = " << vehicleState << std::endl;
+  auto ownedTask = GetTaskIdAndStatus(vehicleState);
+  std::cerr << "[PubStatus] V State = " << vehicleState << std::endl;
 
-  task::TaskID taskId(vehicleState, ToInt(vehicleState, strToTaskType));
-  task::TaskStatus taskStatus(task::TaskState::TSK_STATE_ACTIVE, 0.5, std::make_shared<ctljsn::time::DirectDuration>(0));
-  task::TaskIdAndStatus ownedTask(taskStatus, taskId);
-  
   auto vehiclePos = geographic::Position(geographic::GenerateASVPosition(navFilterMsgCopy.inertialframe_linear_position.latlong.latitude,
                                                                         navFilterMsgCopy.inertialframe_linear_position.latlong.longitude,
                                                                         0.0));

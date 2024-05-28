@@ -27,7 +27,7 @@ CATLSubscriber::CATLSubscriber() : Node("catl_subscriber") {
   cb_ = std::make_shared<MQTTUlisseCB>(*cli_, connOpts, listener_);
   cb_->enableDebug = true;
   cli_->set_callback(*cb_);
-  debugCommandTimer_ = this->create_wall_timer(100ms, std::bind(&CATLSubscriber::DebugCommandTimerCallback, this));
+  debugCommandTimer_ = this->create_wall_timer(100ms, std::bind(&CATLSubscriber::CommandDispatcher, this));
 
   // Start the connection.
   // When completed, the callback will subscribe to topic.
@@ -73,9 +73,9 @@ void CATLSubscriber::VehicleStatusCallback(const ulisse_msgs::msg::VehicleStatus
   vehicleStatusMsgOk_ = true;
 }
 
-void CATLSubscriber::DebugCommandTimerCallback() {
+void CATLSubscriber::CommandDispatcher() {
   if (!cb_->flag) return;
-  std::cerr << tc::yellow << "[DebugCommandTimerCallback] Start..." << tc::none << std::endl;
+  std::cerr << tc::yellow << "[CommandDispatcher] Start..." << tc::none << std::endl;
   cb_->flag = false;
   RCLCPP_INFO(this->get_logger(), "Sending request");
   task::TaskAdmin taskAdminMsg(jsoncons::json::parse(cb_->dataStr));
@@ -114,30 +114,26 @@ void CATLSubscriber::DebugCommandTimerCallback() {
       else if (taskAdminMsg.taskType == task::TSKTP_U_HOLD) {
           serviceReq->command_type = ulisse::commands::ID::hold;
           serviceReq->hold_cmd.acceptance_radius = taskAdminMsg.taskDescriptor.taskConstraints->dict["acceptance_radius"];
-          std::cerr << "[DebugCommandTimerCallback/HOLD] acceptance radius = " << serviceReq->hold_cmd.acceptance_radius << std::endl;
+          std::cerr << "[CommandDispatcher/HOLD] acceptance radius = " << serviceReq->hold_cmd.acceptance_radius << std::endl;
       }
       else if (taskAdminMsg.taskType == task::TSKTP_U_MOVE_TO_LATLONG) {
           serviceReq->command_type = ulisse::commands::ID::latlong;
           serviceReq->latlong_cmd.goal.latitude = taskAdminMsg.taskDescriptor.taskConstraints->p.ToJson()["latitude"].as<double>();
           serviceReq->latlong_cmd.goal.longitude = taskAdminMsg.taskDescriptor.taskConstraints->p.ToJson()["longitude"].as<double>();
           serviceReq->hold_cmd.acceptance_radius = taskAdminMsg.taskDescriptor.taskConstraints->dict["acceptance_radius"];
-          std::cerr << "[DebugCommandTimerCallback/LATLONG] lat = " << serviceReq->latlong_cmd.goal.latitude << std::endl;
-          std::cerr << "[DebugCommandTimerCallback/LATLONG] long = " << serviceReq->latlong_cmd.goal.longitude << std::endl;
-          std::cerr << "[DebugCommandTimerCallback/LATLONG] acceptance radius = " << serviceReq->hold_cmd.acceptance_radius << std::endl;
+          std::cerr << "[CommandDispatcher/LATLONG] lat = " << serviceReq->latlong_cmd.goal.latitude << std::endl;
+          std::cerr << "[CommandDispatcher/LATLONG] long = " << serviceReq->latlong_cmd.goal.longitude << std::endl;
+          std::cerr << "[CommandDispatcher/LATLONG] acceptance radius = " << serviceReq->hold_cmd.acceptance_radius << std::endl;
       }
-      /*case 4: {
+      else if (taskAdminMsg.taskType == task::TSKTP_U_SURGE_HEADING) {
           serviceReq->command_type = ulisse::commands::ID::surgeheading;
-
-          std::cout << "speed ";
-          std::cin >> serviceReq->sh_cmd.speed;
-
-          std::cout << "heading ";
-          std::cin >> serviceReq->sh_cmd.heading;
-
-          std::cout << "timeout [s] ";
-          std::cin >> serviceReq->sh_cmd.timeout.sec;
-          serviceReq->sh_cmd.timeout.nanosec = 0;
-      } break; */
+          serviceReq->sh_cmd.speed = taskAdminMsg.taskDescriptor.taskConstraints->dict["surge"];
+          serviceReq->sh_cmd.heading = taskAdminMsg.taskDescriptor.taskConstraints->dict["heading"];
+          serviceReq->sh_cmd.timeout.sec = taskAdminMsg.taskDescriptor.taskPerformance->dict["timeout"];
+          serviceReq->sh_cmd.timeout.nanosec = 0.0;
+          std::cerr << "[CommandDispatcher/SURGE_HEADING)] heading = " << serviceReq->sh_cmd.heading << std::endl;
+          std::cerr << "[CommandDispatcher/SURGE_HEADING)] surge = " << serviceReq->sh_cmd.speed << std::endl;
+      }
       else {
           std::cout << "Unsupported choice! " << ToString(taskAdminMsg.taskType) << std::endl;
           tryToSend = false;
@@ -152,13 +148,35 @@ void CATLSubscriber::DebugCommandTimerCallback() {
   auto result_future = ctrlClient->async_send_request(serviceReq);
 
   // Do this instead of rclcpp::spin_until_future_complete()
-  std::future_status status = result_future.wait_for(10s);  // timeout to guarantee a graceful finish
-  if (status == std::future_status::ready) {
-      RCLCPP_INFO(this->get_logger(), "Received response");
-      auto response = result_future.get();
-      // Do something with response 
+  if (true) {
+    if (tryToSend) {
+      std::future_status status = result_future.wait_for(10s);  // timeout to guarantee a graceful finish
+      if (status == std::future_status::ready) {
+          RCLCPP_INFO(get_logger(), "Received response");
+          auto response = result_future.get();
+          std::cerr << "[CommandDispatcher] Response = " << response->res << std::endl;
+          // Do something with response 
+      }
+      else if (status == std::future_status::timeout) {
+        RCLCPP_INFO(get_logger(), "[CommandDispatcher] Timeout");
+      }
+      else if (status == std::future_status::deferred) {
+        RCLCPP_INFO(get_logger(), "[CommandDispatcher] Deferred");
+      }
+    }
   }
-  std::cerr << tc::yellow << "[DebugCommandTimerCallback] End!" << tc::none << std::endl;
+  if (false) {
+    if (tryToSend) {
+        std::cout << "Sent Request to controller" << std::endl;
+        if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
+            RCLCPP_ERROR(get_logger(), "service call failed :(");
+        } else {
+            auto result = result_future.get();
+            RCLCPP_INFO(get_logger(), "Service returned: %s", (result->res).c_str());
+        }
+    }
+  }
+  std::cerr << tc::yellow << "[CommandDispatcher] End!" << tc::none << std::endl;
 }
 
 CATLSubscriber::~CATLSubscriber() {

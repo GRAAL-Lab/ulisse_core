@@ -52,7 +52,7 @@ class CATLPublisher : public rclcpp::Node
   private:
     void StatusTimerCallback();
     void WorldModelTimerCallback();
-    void DebugCommandTimerCallback();
+    void ChangesTimerCallback();
 
     void PubStatus(pahho::MQTTPublisher& mqttPub);
     void AddMyself(pahho::MQTTPublisher& mqttPub);
@@ -66,6 +66,7 @@ class CATLPublisher : public rclcpp::Node
     rclcpp::TimerBase::SharedPtr statusTimer_;
     rclcpp::TimerBase::SharedPtr worldModelTimer_;
     rclcpp::TimerBase::SharedPtr debugCommandTimer_;
+    rclcpp::TimerBase::SharedPtr changesTimer_;
     size_t count_;
 
     ulisse_msgs::msg::NavFilterData navFilterMsg_;
@@ -78,14 +79,15 @@ class CATLPublisher : public rclcpp::Node
 
     bool navFilterMsgOk_ = false;
     bool vehicleStatusMsgOk_ = false;
+    bool vehicleStatusMsgOkForChangeChecker_ = false;
 
     std::vector<CapabilityDescriptor> vehicleCapabilities_;
-
     std::string queryForVehicleExistenceRegion_;
-
     VehicleOperationParams opParams_;
-
     size_t debugTestsCount_ = 0;
+
+    std::unique_ptr<task::TaskIdAndStatus> oldTaskInfo;
+    task::TaskIdAndStatus GetTaskIdAndStatus(const std::string vehicleState);
 };
 
 #endif
