@@ -24,7 +24,11 @@ find_package(sensor_msgs REQUIRED)
 
 find_package(ctrl_toolbox REQUIRED)
 find_package(ulisse_msgs REQUIRED)
+find_package(ulisse_driver REQUIRED)
 find_package(ulisse_ctrl REQUIRED)
+
+find_package(eclipse-paho-mqtt-c REQUIRED) # PAHO
+find_package(PahoMqttCpp REQUIRED) # PAHO
 
 find_package(cv_bridge REQUIRED)
 
@@ -52,12 +56,22 @@ include_directories(
 
 ## Executables
 add_executable(ulisse_catl src/publishCATLNode.cpp src/publishCATL.cpp)
-ament_target_dependencies(ulisse_catl rclcpp std_msgs sensor_msgs ament_index_cpp ulisse_msgs)
+ament_target_dependencies(ulisse_catl rclcpp ulisse_ctrl std_msgs sensor_msgs ament_index_cpp ulisse_msgs)
 target_link_libraries(ulisse_catl config++ mqttt stng json_utils ${OpenCV_LIBS} stdc++fs)
 
 add_executable(ulisse_camera src/publishImage.cpp)
 ament_target_dependencies(ulisse_camera ulisse_ctrl rclcpp std_msgs sensor_msgs ament_index_cpp ulisse_msgs cv_bridge)
 target_link_libraries(ulisse_camera config++ mqttt stng json_utils ${OpenCV_LIBS} stdc++fs)
+
+add_executable(ulisse_catl_listener src/subscribeCATLNode.cpp src/subscribeCATL.cpp)
+ament_target_dependencies(ulisse_catl_listener ulisse_ctrl rclcpp std_msgs sensor_msgs
+  ament_index_cpp ulisse_msgs )
+target_link_libraries(ulisse_catl_listener config++ mqttt stng json_utils ${OpenCV_LIBS} stdc++fs
+  paho-mqtt3a  paho-mqtt3as paho-mqttpp3)
+
+add_executable(externalAgent src/externalAgent.cpp)
+ament_target_dependencies(externalAgent rclcpp std_msgs sensor_msgs ament_index_cpp ulisse_msgs)
+target_link_libraries(externalAgent config++ mqttt stng json_utils ${OpenCV_LIBS} stdc++fs)
 
 target_include_directories(ulisse_catl PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -66,6 +80,15 @@ target_include_directories(ulisse_catl PUBLIC
 target_include_directories(ulisse_camera PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
+
+target_include_directories(ulisse_catl_listener PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
+
+#target_include_directories(externalAgent PUBLIC
+  #$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+ # $<INSTALL_INTERFACE:include>)
+  
   
 install(TARGETS
   ulisse_catl
@@ -73,6 +96,14 @@ install(TARGETS
 
 install(TARGETS
   ulisse_camera
+  DESTINATION lib/${PROJECT_NAME})
+
+install(TARGETS
+  ulisse_catl_listener
+  DESTINATION lib/${PROJECT_NAME})
+
+install(TARGETS
+  externalAgent
   DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY

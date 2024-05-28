@@ -1,13 +1,17 @@
-#include <publishCATL.hpp>
-jsoncons::json CATLPublisher::PubTaskAdminHold(pahho::MQTTPublisher& mqttPub);
-jsoncons::json CATLPublisher::PubTaskAdminLL(pahho::MQTTPublisher& mqttPub);
+
+#include <externalAgent.hpp>
 
 int main () {
-  
+  strToTaskType[ulisse::states::ID::hold] = task::TaskType::TSKTP_U_HOLD;
+  strToNodeStatus[ulisse::states::ID::hold] = NodeStatus::ND_STATUS_U_HOLD;
+
+  auto mqttPub = std::make_shared<pahho::MQTTPublisher>("ulisseStatusPub", "catl/unige/ulisse/command",  "127.0.0.1", 1883); // TODO CHECK ARGUMENTS
+  PubTaskAdminHold(*mqttPub);
 }
 
+
 // Test task admin.
-jsoncons::json CATLPublisher::PubTaskAdminHold(pahho::MQTTPublisher& mqttPub) {
+jsoncons::json PubTaskAdminHold(pahho::MQTTPublisher& mqttPub) {
 
   std::cerr << "[TestPubTaskAdmin] START" << std::endl;
   auto constr = std::make_shared<task::TaskConstraintsBasic>(
@@ -35,7 +39,7 @@ jsoncons::json CATLPublisher::PubTaskAdminHold(pahho::MQTTPublisher& mqttPub) {
 
   task::TaskDescriptor td(taskDescriptor.ToJson(), task::TaskType::TSKTP_U_HOLD);
 
-  if (enableDebugPrint) {
+  if (true) {
     std::cerr << tc::bluL << "TaskAdmin:" << std::endl << taskAdminMsg.ToJson() << tc::none << std::endl;
   }
 
@@ -49,7 +53,7 @@ jsoncons::json CATLPublisher::PubTaskAdminHold(pahho::MQTTPublisher& mqttPub) {
 }
 
 // Test task admin.
-jsoncons::json CATLPublisher::PubTaskAdminLL(pahho::MQTTPublisher& mqttPub) {
+jsoncons::json PubTaskAdminLL(pahho::MQTTPublisher& mqttPub) {
 
   auto constr = std::make_shared<task::TaskConstraintsBasic>(
       task::ActivityType::ACTIVITY_STANDARD,
@@ -75,7 +79,7 @@ jsoncons::json CATLPublisher::PubTaskAdminLL(pahho::MQTTPublisher& mqttPub) {
 
   CheckFromJson(taskAdminMsg, "task_admin");
 
-  if (enableDebugPrint) {
+  if (true) {
     std::cerr << tc::bluL << "TaskAdmin:" << std::endl << taskAdminMsg.ToJson() << tc::none << std::endl;
   }
 

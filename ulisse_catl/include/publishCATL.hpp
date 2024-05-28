@@ -13,6 +13,8 @@
 #include <json_utils/json_utils.hpp>
 #include <mqttt/mqtt_publisher.hpp>
 #include <mqttt/paho_publisher.hpp>
+#include <mqttt/mqtt_subscriber.hpp>
+#include <mqttt/paho_subscriber.hpp>
 
 #include <ulisse_msgs/msg/nav_filter_data.hpp>
 #include <ulisse_msgs/msg/vehicle_status.hpp>
@@ -56,8 +58,7 @@ class CATLPublisher : public rclcpp::Node
     void AddMyself(pahho::MQTTPublisher& mqttPub);
     void PubWorldModel(pahho::MQTTPublisher& mqttPub);
     void TestChat(pahho::MQTTPublisher& mqttPub);
-    jsoncons::json PubTaskAdminHold(pahho::MQTTPublisher& mqttPub);
-    jsoncons::json PubTaskAdminLL(pahho::MQTTPublisher& mqttPub);
+    std::shared_ptr<pahho::MQTTListener> testListener;
 
     void NavFilterCallback(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
     void VehicleStatusCallback(const ulisse_msgs::msg::VehicleStatus::SharedPtr msg);

@@ -65,7 +65,6 @@ CATLPublisher::CATLPublisher()
           }
           RCLCPP_INFO(get_logger(), "[CATLPublisher] Waiting for Controller service to appear...");
       }
-
 }
 
 void CATLPublisher::NavFilterCallback(const ulisse_msgs::msg::NavFilterData::SharedPtr msg) {
@@ -89,8 +88,9 @@ void CATLPublisher::DebugCommandTimerCallback() {
 //  if (debugTestsCount_++ > 0) return;
   std::cerr << "[DebugCommandCallback] StarDt..." << std::endl;
   //auto taskPushJson = PubTaskAdminHold(*mqttPub_);
-  auto taskPushJson = PubTaskAdminLL(*mqttPub_);
-  task::TaskAdmin taskPush(taskPushJson);
+ // auto taskPushJson = PubTaskAdminLL(*mqttPub_);
+  //task::TaskAdmin taskPush(taskPushJson);
+  /*task::TaskAdmin taskPush(jsoncons::json());
 
   auto serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
   std::cerr << "test" << std::endl;
@@ -126,7 +126,7 @@ void CATLPublisher::DebugCommandTimerCallback() {
       std::cout << "timeout [s] ";
       std::cin >> serviceReq->sh_cmd.timeout.sec;
       serviceReq->sh_cmd.timeout.nanosec = 0;
-  } break; */
+  } break; 
   else {
       std::cout << "Unsupported choice! " << ToString(taskPush.taskType) << std::endl;
       send = false;
@@ -137,11 +137,11 @@ void CATLPublisher::DebugCommandTimerCallback() {
       std::cout << "Sent Request to controller" << std::endl;
       if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
           RCLCPP_ERROR(get_logger(), "service call failed :(");
-      /*} else {
+      } else {
           auto result = result_future.get();
-          RCLCPP_INFO(get_logger(), "Service returned: %s", (result->res).c_str());*/
+          RCLCPP_INFO(get_logger(), "Service returned: %s", (result->res).c_str());
       }
-  } 
+  }*/
   std::cerr << "[DebugCommandCallback] End!" << std::endl;
 }
 
