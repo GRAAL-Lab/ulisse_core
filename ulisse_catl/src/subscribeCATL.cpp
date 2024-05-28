@@ -16,7 +16,7 @@ std::shared_ptr<rclcpp::Client<ulisse_msgs::srv::ControlCommand>> ctrlClient;
 
 CATLSubscriber::CATLSubscriber() : Node("catl_subscriber") {
 
-  listener_ = std::make_shared< MQTTUlisseSub>("taskadmin_listener", "catl/uniboh/polifemo/taskadmin");
+  listener_ = std::make_shared< MQTTUlisseSub>("taskadmin_listener", "catl/uniboh/polifemo");
 
   // Install the callback(s) before connecting.
   cli_ = std::make_shared<mqtt::async_client>("mqtt://127.0.0.1:1883", "taskadmin_listener");
@@ -27,7 +27,7 @@ CATLSubscriber::CATLSubscriber() : Node("catl_subscriber") {
   cb_ = std::make_shared<MQTTUlisseCB>(*cli_, connOpts, listener_);
   cb_->enableDebug = true;
   cli_->set_callback(*cb_);
-  debugCommandTimer_ = this->create_wall_timer(100ms, std::bind(&CATLSubscriber::CommandDispatcher, this));
+  debugCommandTimer_ = this->create_wall_timer(100ms, std::bind(&CATLSubscriber::MsgDispatcher, this));
 
   // Start the connection.
   // When completed, the callback will subscribe to topic.
@@ -73,12 +73,26 @@ void CATLSubscriber::VehicleStatusCallback(const ulisse_msgs::msg::VehicleStatus
   vehicleStatusMsgOk_ = true;
 }
 
-void CATLSubscriber::CommandDispatcher() {
+void CATLSubscriber::MsgDispatcher() {
   if (!cb_->flag) return;
-  std::cerr << tc::yellow << "[CommandDispatcher] Start..." << tc::none << std::endl;
+  std::cerr << tc::yellow << "[MsgDispatcher] Start..." << tc::none << std::endl;
   cb_->flag = false;
-  std::cerr << tc::yellow << "[CommandDispatcher] cb_->dataStr = " << cb_->dataStr << std::endl;
-  task::TaskAdmin taskAdminMsg(jsoncons::json::parse(cb_->dataStr));
+  //std::cerr << tc::yellow << "[MsgDispatcher] cb_->dataStr = " << cb_->dataStr << std::endl;
+  auto msgJson = jsoncons::json::parse(cb_->dataStr);
+  auto msgType = msgJson["header"]["message_type"].to_string();
+  std::cerr << tc::cyanL << "[MsgDispatcher] Msg type = " << msgType << tc::none << std::endl;
+  std::cerr << tc::cyanL << "[MsgDispatcher] (msgType == TASK_ADMIN) = " << (msgType == "TASK_ADMIN") << tc::none << std::endl;
+  if (msgType.find("TASK_ADMIN") != std::string::npos) {
+    std::cerr << tc::cyanL << "[MsgDispatcher] Rx task admin msg" << tc::none << std::endl;
+    task::TaskAdmin taskAdminMsg(jsoncons::json::parse(cb_->dataStr));
+    CommandDispatcher(taskAdminMsg);
+  }
+  else {
+
+  }
+}
+
+void CATLSubscriber::CommandDispatcher(const task::TaskAdmin &taskAdminMsg) {
   auto taskAction = taskAdminMsg.action;
   std::shared_ptr<ulisse_msgs::srv::ControlCommand_Request> serviceReq;
   bool tryToSend = false;

@@ -88,6 +88,8 @@ class CATLPublisher : public rclcpp::Node
 
     std::unique_ptr<task::TaskIdAndStatus> oldTaskInfo;
     task::TaskIdAndStatus GetTaskIdAndStatus(const std::string vehicleState);
+
+    std::unique_ptr<wm::WorldModel> worldModel_;
 };
 
 #endif

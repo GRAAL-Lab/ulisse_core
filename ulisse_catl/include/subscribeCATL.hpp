@@ -62,7 +62,8 @@ class CATLSubscriber : public rclcpp::Node
     std::shared_ptr<MQTTUlisseCB> cb_;
     rclcpp::TimerBase::SharedPtr debugCommandTimer_;
 
-    void CommandDispatcher();
+    void MsgDispatcher();
+    void CommandDispatcher(const task::TaskAdmin &ta);
     void VehicleStatusCallback(const ulisse_msgs::msg::VehicleStatus::SharedPtr msg);
 
     rclcpp::Subscription<ulisse_msgs::msg::VehicleStatus>::SharedPtr vehicleStatusSub_;

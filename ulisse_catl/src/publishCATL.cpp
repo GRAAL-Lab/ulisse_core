@@ -19,7 +19,7 @@ CATLPublisher::CATLPublisher()
         std::bind(&CATLPublisher::VehicleStatusCallback, this, _1));
       navFilterSub_ = this->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 10,
         std::bind(&CATLPublisher::NavFilterCallback, this, _1));
-      mqttPub_ = std::make_shared<pahho::MQTTPublisher>("ulisseStatusPub", "catl/unige/ulisse/status",  "127.0.0.1", 1883); // TODO CHECK ARGUMENTS
+      mqttPub_ = std::make_shared<pahho::MQTTPublisher>("ulisseStatusPub", "catl/unige/ulisse",  "127.0.0.1", 1883); // TODO CHECK ARGUMENTS
       
       strToTaskType[ulisse::states::ID::latlong] = task::TaskType::TSKTP_U_MOVE_TO_LATLONG;
       strToTaskType[ulisse::states::ID::halt] = task::TaskType::TSKTP_U_HALT;

@@ -16,12 +16,14 @@ int main(int argc, char * argv[]) {
   strToNodeStatus[ulisse::states::ID::surgeyawrate] = NodeStatus::ND_STATUS_U_SURGE_YAW_RATE;
   strToNodeStatus[ulisse::states::ID::pathfollow] = NodeStatus::ND_STATUS_U_SURGE_PATH_FOLLOW;
 
-  auto mqttPub = std::make_shared<pahho::MQTTPublisher>("taskadmin_publisher", "catl/uniboh/polifemo/taskadmin",  "127.0.0.1", 1883); // TODO CHECK ARGUMENTS
+  auto mqttPub = std::make_shared<pahho::MQTTPublisher>("taskadmin_publisher", "catl/uniboh/polifemo",  "127.0.0.1", 1883); // TODO CHECK ARGUMENTS
+  
   if (argc > 1) {
     auto whichTest = std::string(argv[1]);
     if (whichTest == "ll") PubTaskAdminLL(*mqttPub);
     if (whichTest == "hold") PubTaskAdminHold(*mqttPub);
     if (whichTest == "yawsurge") PubTaskAdminYawSurge(*mqttPub);
+    if (whichTest == "wm") PubWorldModel(*mqttPub);
   }
 }
 
@@ -66,7 +68,6 @@ jsoncons::json PubTaskAdminYawSurge(pahho::MQTTPublisher& mqttPub) {
   return taskAdminMsg.ToJson();
 
 }
-
 
 // Test task admin.
 jsoncons::json PubTaskAdminHold(pahho::MQTTPublisher& mqttPub) {
@@ -150,4 +151,78 @@ jsoncons::json PubTaskAdminLL(pahho::MQTTPublisher& mqttPub) {
 
   return taskAdminMsg.ToJson();
 
+}
+
+jsoncons::json PubWorldModel(pahho::MQTTPublisher& mqttPub) {
+  ctljsn::wm::Labels labels( { "resource_label1", "resource_label2" });
+
+  ctljsn::wm::LabelledSpace pointA(CATLIdentifier("PointA", 0), geographic::Position(geographic::GenerateLatLongPosition(40,10)));
+  ctljsn::wm::LabelledSpace pointB(CATLIdentifier("PointB", 1), geographic::Position(geographic::GenerateLatLongPosition(40,10)));
+
+  ctljsn::wm::LabelledSpace region1(CATLIdentifier("Region1", 0), geographic::GenerateDefinedRegion({}));
+  ctljsn::wm::LabelledSpace region2(CATLIdentifier("Region2", 0), geographic::GenerateDefinedRegion({}));
+  
+  ctljsn::wm::LabelledSpace object1A(CATLIdentifier("Obj1A", 1), 
+    std::string("$.resources.spatial_primitives.positions[?(@.identifier.name=='PointA')]"));
+  ctljsn::wm::LabelledSpace object2A(CATLIdentifier("Obj2A", 2),
+    std::string("$.resources.spatial_primitives.positions[?(@.identifier.name=='PointA')]"));
+  
+  wm::SpatialPrimitives spatialPrimitives( { pointA, pointB}, {region1, region2}, { object1A, object2A });
+  wm::Resource resources(labels, spatialPrimitives);
+
+  ASWContact aswContact1("JodieFoster", std::string("$.resources.spatial_primitives.positions[?(@.identifier.name=='PointA')]"));
+  ASWContact aswContact2("E.T.", std::string("$.resources.spatial_primitives.positions[?(@.identifier.name=='PointB')]"));
+  ASWContact aswContact3("ContactName", std::string("$.resources.spatial_primitives.positions[?(@.identifier.name=='PointA')]"));
+
+  security::Markings markings(ctljsn::security::Classification::CLASSIFICATION_TOP_SECRET);
+  
+  wm::LabelledSpace exclusionZone1(CATLIdentifier("ExclusionZone1",1), std::string("$.resources.spatial_primitives.regions[?(@.identifier.name=='Region1')]"));
+  wm::LabelledSpace inclusionZone1(CATLIdentifier("InclusionZone1",1), std::string("$.resources.spatial_primitives.regions[?(@.identifier.name=='Region2')]"));
+
+  ctljsn::wm::MissionData missionData({ exclusionZone1 }, { inclusionZone1 }, 
+    std::make_shared<ctljsn::time::DirectTime>(ctljsn::time::DirectTime(std::time(0))), 
+    { std::make_shared<ctljsn::ASWContact>(aswContact1),
+      std::make_shared<ctljsn::ASWContact>(aswContact2),
+      std::make_shared<ctljsn::ASWContact>(aswContact3)
+     },
+    ctljsn::wm::DataProducts(ctljsn::CATLIdentifier("0", 1), {}, {"$."}));
+
+  auto terrain1 = wm::Terrain("Name", {});
+  auto terrain2 = wm::Terrain("TerrainName2", {});
+  auto terrain3 = wm::Terrain("TerrainName3", {});
+
+  auto current1 = wm::Currents(1.2, 275, {});
+
+  auto bathygrid1 = wm::Bathymetry(geographic::GenerateLatLongPosition(42,42), 102);
+  auto bathygrid2 = wm::Bathymetry(geographic::GenerateLatLongPosition(42,42), 87);
+    
+  std::vector<ctljsn::wm::Assignment> occupancy;
+  std::vector<ctljsn::wm::Terrain> terrain;
+  std::vector<ctljsn::wm::Currents> currents;
+  std::vector<ctljsn::wm::Bathymetry> bathymetry;
+  ctljsn::wm::Maps maps(occupancy, { terrain1, terrain2, terrain3}, {current1}, {bathygrid1,bathygrid2});
+
+  std::vector<CATLIdentifier> taskTypePairs;
+  
+  for ( size_t idx = task::TaskType::TSKTP_STANDBY; idx != task::TaskType::TSKTP_U_PATH_FOLLOW; idx++ ) {
+    task::TaskType taskType = static_cast<task::TaskType>(idx);
+    taskTypePairs.push_back(CATLIdentifier(ToString(taskType), idx));
+  }
+
+  wm::FlexEnum flexEnum("TaskType", taskTypePairs, "Flexible enumeration for task types");
+
+  auto wmMsg = wm::WorldModel("unige.c2", std::make_shared<time::DirectTime>(std::time(0)),
+    resources, missionData, maps, flexEnum).ToJson();
+
+  if (false) {
+    std::cerr << tc::cyanL << "World model:" << std::endl << wmMsg << tc::none << std::endl;
+  }
+
+  auto wmStr = wmMsg.to_string();
+  
+  mqttPub.PublishText(wmStr, std::time(0)); // send with frequency < 1 Hz
+  
+  std::cerr << "[TestWorldModel] END" << std::endl;
+
+  return wmMsg;
 }
