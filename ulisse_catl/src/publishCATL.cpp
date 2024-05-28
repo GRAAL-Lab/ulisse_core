@@ -86,31 +86,35 @@ void CATLPublisher::WorldModelTimerCallback() {
 }
 
 void CATLPublisher::DebugCommandTimerCallback() {
-  if (debugTestsCount_++ > 0) return;
-  std::cerr << "[DebugCommandCallback] Start..." << std::endl;
+//  if (debugTestsCount_++ > 0) return;
+  std::cerr << "[DebugCommandCallback] StarDt..." << std::endl;
+  //auto taskPushJson = PubTaskAdminHold(*mqttPub_);
   auto taskPushJson = PubTaskAdminLL(*mqttPub_);
   task::TaskAdmin taskPush(taskPushJson);
 
   auto serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
+  std::cerr << "test" << std::endl;
+
+  bool send = true;
 
   if (taskPush.taskType == task::TSKTP_U_HALT) {
       serviceReq->command_type = ulisse::commands::ID::halt;
   }
   else if (taskPush.taskType == task::TSKTP_U_HOLD) {
       serviceReq->command_type = ulisse::commands::ID::hold;
-      std::cout << "acceptanceRadius ";
       serviceReq->hold_cmd.acceptance_radius = taskPush.taskDescriptor.taskConstraints->dict["acceptance_radius"];
+      std::cerr << "[DebugCommandTimerCallback/HOLD] acceptance radius = " << serviceReq->hold_cmd.acceptance_radius << std::endl;
   }
-  /*case 3: {
+  else if (taskPush.taskType == task::TSKTP_U_MOVE_TO_LATLONG) {
       serviceReq->command_type = ulisse::commands::ID::latlong;
-      std::cout << "latitude ";
-      std::cin >> serviceReq->latlong_cmd.goal.latitude;
-      std::cout << "longitude ";
-      std::cin >> serviceReq->latlong_cmd.goal.longitude;
-      std::cout << "acceptanceRadius ";
-      std::cin >> serviceReq->latlong_cmd.acceptance_radius;
-  } break;
-  case 4: {
+      serviceReq->latlong_cmd.goal.latitude = taskPush.taskDescriptor.taskConstraints->p.ToJson()["latitude"].as<double>();
+      serviceReq->latlong_cmd.goal.longitude = taskPush.taskDescriptor.taskConstraints->p.ToJson()["longitude"].as<double>();
+      serviceReq->hold_cmd.acceptance_radius = taskPush.taskDescriptor.taskConstraints->dict["acceptance_radius"];
+      std::cerr << "[DebugCommandTimerCallback/LATLONG] lat = " << serviceReq->latlong_cmd.goal.latitude << std::endl;
+      std::cerr << "[DebugCommandTimerCallback/LATLONG] long = " << serviceReq->latlong_cmd.goal.longitude << std::endl;
+      std::cerr << "[DebugCommandTimerCallback/LATLONG] acceptance radius = " << serviceReq->hold_cmd.acceptance_radius << std::endl;
+  }
+  /*case 4: {
       serviceReq->command_type = ulisse::commands::ID::surgeheading;
 
       std::cout << "speed ";
@@ -122,24 +126,22 @@ void CATLPublisher::DebugCommandTimerCallback() {
       std::cout << "timeout [s] ";
       std::cin >> serviceReq->sh_cmd.timeout.sec;
       serviceReq->sh_cmd.timeout.nanosec = 0;
-  } break;
-  default:
-      std::cout << "Unsupported choice! " << choice << std::endl;
+  } break; */
+  else {
+      std::cout << "Unsupported choice! " << ToString(taskPush.taskType) << std::endl;
       send = false;
-      continue;
-      //break;
   }
 
   if (send) {
-      auto result_future = serviceClient->async_send_request(serviceReq);
+      auto result_future = ctrlClient_->async_send_request(serviceReq);
       std::cout << "Sent Request to controller" << std::endl;
-      if (rclcpp::spin_until_future_complete(node, result_future) != rclcpp::FutureReturnCode::SUCCESS) {
-          RCLCPP_ERROR(node->get_logger(), "service call failed :(");
-      } else {
+      if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
+          RCLCPP_ERROR(get_logger(), "service call failed :(");
+      /*} else {
           auto result = result_future.get();
-          RCLCPP_INFO(node->get_logger(), "Service returned: %s", (result->res).c_str());
+          RCLCPP_INFO(get_logger(), "Service returned: %s", (result->res).c_str());*/
       }
-  }*/
+  } 
   std::cerr << "[DebugCommandCallback] End!" << std::endl;
 }
 
@@ -276,80 +278,6 @@ void CATLPublisher::TestChat(pahho::MQTTPublisher& mqttPub) {
   std::cerr << "[TestChat] END" << std::endl;
 }
 
-// Test task admin.
-jsoncons::json CATLPublisher::PubTaskAdminHold(pahho::MQTTPublisher& mqttPub) {
-
-  auto constr = std::make_shared<task::TaskConstraintsBasic>(
-      task::ActivityType::ACTIVITY_STANDARD
-  );
-
-  auto perf = std::make_shared<task::TaskPerformanceBasic>(
-      time::DirectDuration(22)
-  );
-
-  task::TaskDescriptor taskDescriptor(constr, perf);
-
-  auto taskAdminMsg = task::TaskAdmin(
-    "unige.c2",
-    std::make_shared<time::DirectTime>(std::time(0)),
-    task::TaskUpdateType::ACTION_PUSH,
-    nd::NodeIdentifier("unige.mcm.squad", 0),
-    task::TaskID("unige.task-1", 1),
-    task::TaskType::TSKTP_U_HOLD,
-    taskDescriptor);
-
-  CheckFromJson(taskAdminMsg, "task_admin");
-
-  if (enableDebugPrint) {
-    std::cerr << tc::bluL << "TaskAdmin:" << std::endl << taskAdminMsg.ToJson() << tc::none << std::endl;
-  }
-
-  auto taskAdminStr = taskAdminMsg.ToJson().to_string();
-  
-  mqttPub.PublishText(taskAdminStr, std::time(0));
-  std::cerr << "[TestPubTaskAdmin] END" << std::endl;
-
-  return taskAdminMsg.ToJson();
-
-}
-
-// Test task admin.
-jsoncons::json CATLPublisher::PubTaskAdminLL(pahho::MQTTPublisher& mqttPub) {
-
-  auto constr = std::make_shared<task::TaskConstraintsBasic>(
-      task::ActivityType::ACTIVITY_STANDARD,
-      geographic::Position(geographic::GenerateLatLongPosition(44,44))
-  );
-
-  auto perf = std::make_shared<task::TaskPerformanceBasic>(
-      time::DirectDuration(22)
-  );
-
-  task::TaskDescriptor taskDescriptor(constr, perf);
-
-  auto taskAdminMsg = task::TaskAdmin(
-    "unige.c2",
-    std::make_shared<time::DirectTime>(std::time(0)),
-    task::TaskUpdateType::ACTION_PUSH,
-    nd::NodeIdentifier("unige.mcm.squad", 0),
-    task::TaskID("unige.task-1", 1),
-    task::TaskType::TSKTP_U_HOLD,
-    taskDescriptor);
-
-  CheckFromJson(taskAdminMsg, "task_admin");
-
-  if (enableDebugPrint) {
-    std::cerr << tc::bluL << "TaskAdmin:" << std::endl << taskAdminMsg.ToJson() << tc::none << std::endl;
-  }
-
-  auto taskAdminStr = taskAdminMsg.ToJson().to_string();
-  
-  mqttPub.PublishText(taskAdminStr, std::time(0));
-  std::cerr << "[TestPubTaskAdmin] END" << std::endl;
-
-  return taskAdminMsg.ToJson();
-
-}
 
 void CATLPublisher::AddMyself(pahho::MQTTPublisher& mqttPub) {
 
