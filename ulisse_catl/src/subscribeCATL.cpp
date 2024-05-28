@@ -9,17 +9,25 @@
 #include "ulisse_msgs/topicnames.hpp"
 #include "ulisse_msgs/terminal_utils.hpp"
 
+using namespace std::chrono_literals;
+using std::placeholders::_1;
+
+std::shared_ptr<rclcpp::Client<ulisse_msgs::srv::ControlCommand>> ctrlClient;
+
 CATLSubscriber::CATLSubscriber() : Node("catl_subscriber") {
 
-  listener_ = std::make_shared< MQTTUlisseSub>("mqtt_subscriber", "catl/unige/ulisse/command");
+  listener_ = std::make_shared< MQTTUlisseSub>("taskadmin_listener", "catl/uniboh/polifemo/taskadmin");
 
   // Install the callback(s) before connecting.
-  cli_ = std::make_shared<mqtt::async_client>("mqtt://127.0.0.1:1883", "mqttSubscriber");
+  cli_ = std::make_shared<mqtt::async_client>("mqtt://127.0.0.1:1883", "taskadmin_listener");
+  vehicleStatusSub_ = this->create_subscription<ulisse_msgs::msg::VehicleStatus>(ulisse_msgs::topicnames::vehicle_status, 10,
+    std::bind(&CATLSubscriber::VehicleStatusCallback, this, _1));
   mqtt::connect_options connOpts;
   connOpts.set_clean_session(false);
-  cb_ = std::make_shared<pahho::MQTTSubscriber>(*cli_, connOpts, *listener_);
+  cb_ = std::make_shared<MQTTUlisseCB>(*cli_, connOpts, listener_);
   cb_->enableDebug = true;
   cli_->set_callback(*cb_);
+  debugCommandTimer_ = this->create_wall_timer(100ms, std::bind(&CATLSubscriber::DebugCommandTimerCallback, this));
 
   // Start the connection.
   // When completed, the callback will subscribe to topic.
@@ -33,6 +41,124 @@ CATLSubscriber::CATLSubscriber() : Node("catl_subscriber") {
     throw std::runtime_error("Unable to connect to MQTT server");
   }
   std::cerr << "OK!" << std::endl;
+
+  ctrlClient = create_client<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service);
+
+  while (!ctrlClient->wait_for_service(2s)) {
+      if (!rclcpp::ok()) {
+          RCLCPP_ERROR(get_logger(), "client interrupted while waiting for service to appear.");
+          throw std::runtime_error("[CATLPublisher] Client interruted");
+      }
+      RCLCPP_INFO(get_logger(), "[CATLPublisher] Waiting for Controller service to appear...");
+  }
+  std::cerr << tc::greenL << "[CATLSubscriber] Controller Connection OK!" << tc::none << std::endl;
+
+  strToTaskType[ulisse::states::ID::latlong] = task::TaskType::TSKTP_U_MOVE_TO_LATLONG;
+  strToTaskType[ulisse::states::ID::halt] = task::TaskType::TSKTP_U_HALT;
+  strToTaskType[ulisse::states::ID::hold] = task::TaskType::TSKTP_U_HOLD;
+  strToTaskType[ulisse::states::ID::surgeheading] = task::TaskType::TSKTP_U_SURGE_HEADING;
+  strToTaskType[ulisse::states::ID::surgeyawrate] = task::TaskType::TSKTP_U_SURGE_YAWRATE;
+  strToTaskType[ulisse::states::ID::pathfollow] = task::TaskType::TSKTP_U_PATH_FOLLOW;
+
+  strToNodeStatus[ulisse::states::ID::latlong] = NodeStatus::ND_STATUS_U_LATLONG;
+  strToNodeStatus[ulisse::states::ID::halt] = NodeStatus::ND_STATUS_U_HALT;
+  strToNodeStatus[ulisse::states::ID::hold] = NodeStatus::ND_STATUS_U_HOLD;
+  strToNodeStatus[ulisse::states::ID::surgeheading] = NodeStatus::ND_STATUS_U_SURGE_HEADING;
+  strToNodeStatus[ulisse::states::ID::surgeyawrate] = NodeStatus::ND_STATUS_U_SURGE_YAW_RATE;
+  strToNodeStatus[ulisse::states::ID::pathfollow] = NodeStatus::ND_STATUS_U_SURGE_PATH_FOLLOW;
+}
+
+void CATLSubscriber::VehicleStatusCallback(const ulisse_msgs::msg::VehicleStatus::SharedPtr msg) {
+  vehicleStatusMsg_ = *msg;
+  vehicleStatusMsgOk_ = true;
+}
+
+void CATLSubscriber::DebugCommandTimerCallback() {
+  if (!cb_->flag) return;
+  std::cerr << tc::yellow << "[DebugCommandTimerCallback] Start..." << tc::none << std::endl;
+  cb_->flag = false;
+  RCLCPP_INFO(this->get_logger(), "Sending request");
+  task::TaskAdmin taskAdminMsg(jsoncons::json::parse(cb_->dataStr));
+  /* Should handle:
+      case ACTION_UPDATE: return "UPDATE";
+      case ACTION_PUSH: return "PUSH";
+      case ACTION_PULL: return "PULL";
+      case ACTION_PREDICT: return "PREDICT";
+      case ACTION_CANCEL: return "CANCEL";
+      default: return "ERROR";
+  */
+  auto taskAction = taskAdminMsg.action;
+  std::shared_ptr<ulisse_msgs::srv::ControlCommand_Request> serviceReq;
+  bool tryToSend = false;
+
+  switch (taskAction) {
+
+    case task::TaskUpdateType::ACTION_CANCEL:
+    {
+      auto requestHalt = (!vehicleStatusMsgOk_) || (ToString(taskAdminMsg.taskType) == vehicleStatusMsg_.vehicle_state);
+      if (requestHalt) {
+        serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
+        serviceReq->command_type = ulisse::commands::ID::halt;
+        tryToSend = true;
+      }
+      break;
+    }
+    case task::TaskUpdateType::ACTION_PUSH:
+    {
+      serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
+      tryToSend = true;
+
+      if (taskAdminMsg.taskType == task::TSKTP_U_HALT) {
+          serviceReq->command_type = ulisse::commands::ID::halt;
+      }
+      else if (taskAdminMsg.taskType == task::TSKTP_U_HOLD) {
+          serviceReq->command_type = ulisse::commands::ID::hold;
+          serviceReq->hold_cmd.acceptance_radius = taskAdminMsg.taskDescriptor.taskConstraints->dict["acceptance_radius"];
+          std::cerr << "[DebugCommandTimerCallback/HOLD] acceptance radius = " << serviceReq->hold_cmd.acceptance_radius << std::endl;
+      }
+      else if (taskAdminMsg.taskType == task::TSKTP_U_MOVE_TO_LATLONG) {
+          serviceReq->command_type = ulisse::commands::ID::latlong;
+          serviceReq->latlong_cmd.goal.latitude = taskAdminMsg.taskDescriptor.taskConstraints->p.ToJson()["latitude"].as<double>();
+          serviceReq->latlong_cmd.goal.longitude = taskAdminMsg.taskDescriptor.taskConstraints->p.ToJson()["longitude"].as<double>();
+          serviceReq->hold_cmd.acceptance_radius = taskAdminMsg.taskDescriptor.taskConstraints->dict["acceptance_radius"];
+          std::cerr << "[DebugCommandTimerCallback/LATLONG] lat = " << serviceReq->latlong_cmd.goal.latitude << std::endl;
+          std::cerr << "[DebugCommandTimerCallback/LATLONG] long = " << serviceReq->latlong_cmd.goal.longitude << std::endl;
+          std::cerr << "[DebugCommandTimerCallback/LATLONG] acceptance radius = " << serviceReq->hold_cmd.acceptance_radius << std::endl;
+      }
+      /*case 4: {
+          serviceReq->command_type = ulisse::commands::ID::surgeheading;
+
+          std::cout << "speed ";
+          std::cin >> serviceReq->sh_cmd.speed;
+
+          std::cout << "heading ";
+          std::cin >> serviceReq->sh_cmd.heading;
+
+          std::cout << "timeout [s] ";
+          std::cin >> serviceReq->sh_cmd.timeout.sec;
+          serviceReq->sh_cmd.timeout.nanosec = 0;
+      } break; */
+      else {
+          std::cout << "Unsupported choice! " << ToString(taskAdminMsg.taskType) << std::endl;
+          tryToSend = false;
+      }
+      break;
+    }
+    case task::TaskUpdateType::ACTION_UPDATE: { break; }
+    case task::TaskUpdateType::ACTION_PULL: { break; }
+    case task::TaskUpdateType::ACTION_PREDICT: { break; }
+  }
+
+  auto result_future = ctrlClient->async_send_request(serviceReq);
+
+  // Do this instead of rclcpp::spin_until_future_complete()
+  std::future_status status = result_future.wait_for(10s);  // timeout to guarantee a graceful finish
+  if (status == std::future_status::ready) {
+      RCLCPP_INFO(this->get_logger(), "Received response");
+      auto response = result_future.get();
+      // Do something with response 
+  }
+  std::cerr << tc::yellow << "[DebugCommandTimerCallback] End!" << tc::none << std::endl;
 }
 
 CATLSubscriber::~CATLSubscriber() {
@@ -66,3 +192,9 @@ T CheckFromJson(T obj, const std::string typeName, const bool printData) {
 
 template <typename T>
 T CheckFromJson(const T obj, const std::string typeName) { return CheckFromJson(obj, typeName, false); }
+
+void MQTTUlisseCB::UseText(std::string &s) {
+  dataStr = s;
+  flag = true;
+  //task::TaskAdmin taskAdminMsg(jsoncons::json::parse(s));
+}

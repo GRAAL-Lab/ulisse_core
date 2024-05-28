@@ -55,19 +55,14 @@ include_directories(
 
 
 ## Executables
-add_executable(ulisse_catl src/publishCATLNode.cpp src/publishCATL.cpp)
+add_executable(ulisse_catl src/publishCATLNode.cpp src/publishCATL.cpp src/subscribeCATL.cpp)
 ament_target_dependencies(ulisse_catl rclcpp ulisse_ctrl std_msgs sensor_msgs ament_index_cpp ulisse_msgs)
-target_link_libraries(ulisse_catl config++ mqttt stng json_utils ${OpenCV_LIBS} stdc++fs)
+target_link_libraries(ulisse_catl config++ mqttt stng json_utils ${OpenCV_LIBS} stdc++fs
+paho-mqtt3a  paho-mqtt3as paho-mqttpp3)
 
 add_executable(ulisse_camera src/publishImage.cpp)
 ament_target_dependencies(ulisse_camera ulisse_ctrl rclcpp std_msgs sensor_msgs ament_index_cpp ulisse_msgs cv_bridge)
 target_link_libraries(ulisse_camera config++ mqttt stng json_utils ${OpenCV_LIBS} stdc++fs)
-
-add_executable(ulisse_catl_listener src/subscribeCATLNode.cpp src/subscribeCATL.cpp)
-ament_target_dependencies(ulisse_catl_listener ulisse_ctrl rclcpp std_msgs sensor_msgs
-  ament_index_cpp ulisse_msgs )
-target_link_libraries(ulisse_catl_listener config++ mqttt stng json_utils ${OpenCV_LIBS} stdc++fs
-  paho-mqtt3a  paho-mqtt3as paho-mqttpp3)
 
 add_executable(externalAgent src/externalAgent.cpp)
 ament_target_dependencies(externalAgent rclcpp std_msgs sensor_msgs ament_index_cpp ulisse_msgs)
@@ -78,10 +73,6 @@ target_include_directories(ulisse_catl PUBLIC
   $<INSTALL_INTERFACE:include>)
 
 target_include_directories(ulisse_camera PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
-
-target_include_directories(ulisse_catl_listener PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
 
@@ -96,10 +87,6 @@ install(TARGETS
 
 install(TARGETS
   ulisse_camera
-  DESTINATION lib/${PROJECT_NAME})
-
-install(TARGETS
-  ulisse_catl_listener
   DESTINATION lib/${PROJECT_NAME})
 
 install(TARGETS

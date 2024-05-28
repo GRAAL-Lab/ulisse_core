@@ -12,8 +12,8 @@ bool enableDebugPrint = true;
 
 CATLPublisher::CATLPublisher()
     : Node("mqtt_publisher"), count_(0) {
-     // statusTimer_ = this->create_wall_timer(1000ms, std::bind(&CATLPublisher::StatusTimerCallback, this));
-      //worldModelTimer_ = this->create_wall_timer(4000ms, std::bind(&CATLPublisher::WorldModelTimerCallback, this));
+      statusTimer_ = this->create_wall_timer(1000ms, std::bind(&CATLPublisher::StatusTimerCallback, this));
+      worldModelTimer_ = this->create_wall_timer(4000ms, std::bind(&CATLPublisher::WorldModelTimerCallback, this));
       debugCommandTimer_ = this->create_wall_timer(1000ms, std::bind(&CATLPublisher::DebugCommandTimerCallback, this));
       vehicleStatusSub_ = this->create_subscription<ulisse_msgs::msg::VehicleStatus>(ulisse_msgs::topicnames::vehicle_status, 10,
         std::bind(&CATLPublisher::VehicleStatusCallback, this, _1));
@@ -56,7 +56,7 @@ CATLPublisher::CATLPublisher()
       opParams_.minWindSalinity = 0;
       opParams_.maxWindSalinity = 30;
 
-      ctrlClient_ = create_client<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service);
+      auto ctrlClient_ = create_client<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service);
 
       while (!ctrlClient_->wait_for_service(2s)) {
           if (!rclcpp::ok()) {
@@ -85,63 +85,7 @@ void CATLPublisher::WorldModelTimerCallback() {
 }
 
 void CATLPublisher::DebugCommandTimerCallback() {
-//  if (debugTestsCount_++ > 0) return;
   std::cerr << "[DebugCommandCallback] StarDt..." << std::endl;
-  //auto taskPushJson = PubTaskAdminHold(*mqttPub_);
- // auto taskPushJson = PubTaskAdminLL(*mqttPub_);
-  //task::TaskAdmin taskPush(taskPushJson);
-  /*task::TaskAdmin taskPush(jsoncons::json());
-
-  auto serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
-  std::cerr << "test" << std::endl;
-
-  bool send = true;
-
-  if (taskPush.taskType == task::TSKTP_U_HALT) {
-      serviceReq->command_type = ulisse::commands::ID::halt;
-  }
-  else if (taskPush.taskType == task::TSKTP_U_HOLD) {
-      serviceReq->command_type = ulisse::commands::ID::hold;
-      serviceReq->hold_cmd.acceptance_radius = taskPush.taskDescriptor.taskConstraints->dict["acceptance_radius"];
-      std::cerr << "[DebugCommandTimerCallback/HOLD] acceptance radius = " << serviceReq->hold_cmd.acceptance_radius << std::endl;
-  }
-  else if (taskPush.taskType == task::TSKTP_U_MOVE_TO_LATLONG) {
-      serviceReq->command_type = ulisse::commands::ID::latlong;
-      serviceReq->latlong_cmd.goal.latitude = taskPush.taskDescriptor.taskConstraints->p.ToJson()["latitude"].as<double>();
-      serviceReq->latlong_cmd.goal.longitude = taskPush.taskDescriptor.taskConstraints->p.ToJson()["longitude"].as<double>();
-      serviceReq->hold_cmd.acceptance_radius = taskPush.taskDescriptor.taskConstraints->dict["acceptance_radius"];
-      std::cerr << "[DebugCommandTimerCallback/LATLONG] lat = " << serviceReq->latlong_cmd.goal.latitude << std::endl;
-      std::cerr << "[DebugCommandTimerCallback/LATLONG] long = " << serviceReq->latlong_cmd.goal.longitude << std::endl;
-      std::cerr << "[DebugCommandTimerCallback/LATLONG] acceptance radius = " << serviceReq->hold_cmd.acceptance_radius << std::endl;
-  }
-  /*case 4: {
-      serviceReq->command_type = ulisse::commands::ID::surgeheading;
-
-      std::cout << "speed ";
-      std::cin >> serviceReq->sh_cmd.speed;
-
-      std::cout << "heading ";
-      std::cin >> serviceReq->sh_cmd.heading;
-
-      std::cout << "timeout [s] ";
-      std::cin >> serviceReq->sh_cmd.timeout.sec;
-      serviceReq->sh_cmd.timeout.nanosec = 0;
-  } break; 
-  else {
-      std::cout << "Unsupported choice! " << ToString(taskPush.taskType) << std::endl;
-      send = false;
-  }
-
-  if (send) {
-      auto result_future = ctrlClient_->async_send_request(serviceReq);
-      std::cout << "Sent Request to controller" << std::endl;
-      if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
-          RCLCPP_ERROR(get_logger(), "service call failed :(");
-      } else {
-          auto result = result_future.get();
-          RCLCPP_INFO(get_logger(), "Service returned: %s", (result->res).c_str());
-      }
-  }*/
   std::cerr << "[DebugCommandCallback] End!" << std::endl;
 }
 

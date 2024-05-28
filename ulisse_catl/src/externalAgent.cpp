@@ -1,12 +1,27 @@
 
 #include <externalAgent.hpp>
 
-int main () {
+int main(int argc, char * argv[]) {
+  strToTaskType[ulisse::states::ID::latlong] = task::TaskType::TSKTP_U_MOVE_TO_LATLONG;
+  strToTaskType[ulisse::states::ID::halt] = task::TaskType::TSKTP_U_HALT;
   strToTaskType[ulisse::states::ID::hold] = task::TaskType::TSKTP_U_HOLD;
-  strToNodeStatus[ulisse::states::ID::hold] = NodeStatus::ND_STATUS_U_HOLD;
+  strToTaskType[ulisse::states::ID::surgeheading] = task::TaskType::TSKTP_U_SURGE_HEADING;
+  strToTaskType[ulisse::states::ID::surgeyawrate] = task::TaskType::TSKTP_U_SURGE_YAWRATE;
+  strToTaskType[ulisse::states::ID::pathfollow] = task::TaskType::TSKTP_U_PATH_FOLLOW;
 
-  auto mqttPub = std::make_shared<pahho::MQTTPublisher>("ulisseStatusPub", "catl/unige/ulisse/command",  "127.0.0.1", 1883); // TODO CHECK ARGUMENTS
-  PubTaskAdminHold(*mqttPub);
+  strToNodeStatus[ulisse::states::ID::latlong] = NodeStatus::ND_STATUS_U_LATLONG;
+  strToNodeStatus[ulisse::states::ID::halt] = NodeStatus::ND_STATUS_U_HALT;
+  strToNodeStatus[ulisse::states::ID::hold] = NodeStatus::ND_STATUS_U_HOLD;
+  strToNodeStatus[ulisse::states::ID::surgeheading] = NodeStatus::ND_STATUS_U_SURGE_HEADING;
+  strToNodeStatus[ulisse::states::ID::surgeyawrate] = NodeStatus::ND_STATUS_U_SURGE_YAW_RATE;
+  strToNodeStatus[ulisse::states::ID::pathfollow] = NodeStatus::ND_STATUS_U_SURGE_PATH_FOLLOW;
+
+  auto mqttPub = std::make_shared<pahho::MQTTPublisher>("taskadmin_publisher", "catl/uniboh/polifemo/taskadmin",  "127.0.0.1", 1883); // TODO CHECK ARGUMENTS
+  if (argc > 1) {
+    auto whichTest = std::string(argv[1]);
+    if (whichTest == "ll") PubTaskAdminLL(*mqttPub);
+    if (whichTest == "hold") PubTaskAdminHold(*mqttPub);
+  }
 }
 
 

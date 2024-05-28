@@ -85,8 +85,6 @@ class CATLPublisher : public rclcpp::Node
 
     VehicleOperationParams opParams_;
 
-    std::shared_ptr<rclcpp::Client<ulisse_msgs::srv::ControlCommand>> ctrlClient_;
-
     size_t debugTestsCount_ = 0;
 };
 
