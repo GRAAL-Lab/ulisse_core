@@ -19,7 +19,7 @@ using namespace ctljsn;
 jsoncons::json PubTaskAdminHold(pahho::MQTTPublisher& mqttPub);
 jsoncons::json PubTaskAdminLL(pahho::MQTTPublisher& mqttPub);
 jsoncons::json PubTaskAdminYawSurge(pahho::MQTTPublisher& mqttPub);
-jsoncons::json PubWorldModel(pahho::MQTTPublisher& mqttPub);
+jsoncons::json PubWorldModel(pahho::MQTTPublisher& mqttPub, const size_t version);
 
 template <typename T>
 T CheckFromJson(T obj, const std::string typeName, const bool printData) {

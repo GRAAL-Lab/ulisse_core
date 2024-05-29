@@ -23,7 +23,8 @@ int main(int argc, char * argv[]) {
     if (whichTest == "ll") PubTaskAdminLL(*mqttPub);
     if (whichTest == "hold") PubTaskAdminHold(*mqttPub);
     if (whichTest == "yawsurge") PubTaskAdminYawSurge(*mqttPub);
-    if (whichTest == "wm") PubWorldModel(*mqttPub);
+    if (whichTest == "wm1") PubWorldModel(*mqttPub, 1);
+    if (whichTest == "wm2") PubWorldModel(*mqttPub, 2);
   }
 }
 
@@ -116,10 +117,12 @@ jsoncons::json PubTaskAdminLL(pahho::MQTTPublisher& mqttPub) {
 
   auto constr = std::make_shared<task::TaskConstraintsBasic>(
       task::ActivityType::ACTIVITY_STANDARD,
-      geographic::Position(geographic::GenerateLatLongPosition(44,45))
+     // geographic::Position(geographic::GenerateLatLongPosition(44,45))
+      geographic::Position((std::string)"$.resources.spatial_primitives.positions[?(@.identifier.name=='PointA')]")
   );
 
   constr->dict["acceptance_radius"] = 0.1;
+  std::cerr << "constr = " << constr->ToJson() << std::endl;
 
   auto perf = std::make_shared<task::TaskPerformanceBasic>(
       std::make_shared<time::DirectDuration>(22)
@@ -153,8 +156,8 @@ jsoncons::json PubTaskAdminLL(pahho::MQTTPublisher& mqttPub) {
 
 }
 
-jsoncons::json PubWorldModel(pahho::MQTTPublisher& mqttPub) {
-  ctljsn::wm::Labels labels( { "resource_label1", "resource_label2" });
+jsoncons::json PubWorldModel(pahho::MQTTPublisher& mqttPub, const size_t version) {
+  ctljsn::wm::Labels labels( (std::vector<std::string>){ "resource_label1", "resource_label2" });
 
   ctljsn::wm::LabelledSpace pointA(CATLIdentifier("PointA", 0), geographic::Position(geographic::GenerateLatLongPosition(40,10)));
   ctljsn::wm::LabelledSpace pointB(CATLIdentifier("PointB", 1), geographic::Position(geographic::GenerateLatLongPosition(40,10)));
@@ -181,9 +184,9 @@ jsoncons::json PubWorldModel(pahho::MQTTPublisher& mqttPub) {
 
   ctljsn::wm::MissionData missionData({ exclusionZone1 }, { inclusionZone1 }, 
     std::make_shared<ctljsn::time::DirectTime>(ctljsn::time::DirectTime(std::time(0))), 
-    { std::make_shared<ctljsn::ASWContact>(aswContact1),
-      std::make_shared<ctljsn::ASWContact>(aswContact2),
-      std::make_shared<ctljsn::ASWContact>(aswContact3)
+    { //std::make_shared<ctljsn::ASWContact>(aswContact1),
+      //std::make_shared<ctljsn::ASWContact>(aswContact2),
+      //std::make_shared<ctljsn::ASWContact>(aswContact3)
      },
     ctljsn::wm::DataProducts(ctljsn::CATLIdentifier("0", 1), {}, {"$."}));
 
@@ -193,9 +196,13 @@ jsoncons::json PubWorldModel(pahho::MQTTPublisher& mqttPub) {
 
   auto current1 = wm::Currents(1.2, 275, {});
 
-  auto bathygrid1 = wm::Bathymetry(geographic::GenerateLatLongPosition(42,42), 102);
-  auto bathygrid2 = wm::Bathymetry(geographic::GenerateLatLongPosition(42,42), 87);
-    
+  auto bathygrid1 = wm::Bathymetry(geographic::GenerateLatLongPosition(42,42), 88);
+  auto bathygrid2 = wm::Bathymetry(geographic::GenerateLatLongPosition(45,45), 100);
+  if (version == 2) {
+    bathygrid1 = wm::Bathymetry(geographic::GenerateLatLongPosition(42,42), 88888);
+    bathygrid2 = wm::Bathymetry(geographic::GenerateLatLongPosition(47,47), 102);
+  }
+
   std::vector<ctljsn::wm::Assignment> occupancy;
   std::vector<ctljsn::wm::Terrain> terrain;
   std::vector<ctljsn::wm::Currents> currents;
@@ -212,7 +219,7 @@ jsoncons::json PubWorldModel(pahho::MQTTPublisher& mqttPub) {
   wm::FlexEnum flexEnum("TaskType", taskTypePairs, "Flexible enumeration for task types");
 
   auto wmMsg = wm::WorldModel("unige.c2", std::make_shared<time::DirectTime>(std::time(0)),
-    resources, missionData, maps, flexEnum).ToJson();
+    resources, missionData, maps, { flexEnum }).ToJson();
 
   if (false) {
     std::cerr << tc::cyanL << "World model:" << std::endl << wmMsg << tc::none << std::endl;

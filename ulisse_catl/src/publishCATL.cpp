@@ -20,7 +20,8 @@ CATLPublisher::CATLPublisher()
       navFilterSub_ = this->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 10,
         std::bind(&CATLPublisher::NavFilterCallback, this, _1));
       mqttPub_ = std::make_shared<pahho::MQTTPublisher>("ulisseStatusPub", "catl/unige/ulisse",  "127.0.0.1", 1883); // TODO CHECK ARGUMENTS
-      
+      wmPub_ = this->create_publisher<std_msgs::msg::String>("world_model", 10);
+
       strToTaskType[ulisse::states::ID::latlong] = task::TaskType::TSKTP_U_MOVE_TO_LATLONG;
       strToTaskType[ulisse::states::ID::halt] = task::TaskType::TSKTP_U_HALT;
       strToTaskType[ulisse::states::ID::hold] = task::TaskType::TSKTP_U_HOLD;
@@ -65,8 +66,62 @@ CATLPublisher::CATLPublisher()
           }
           RCLCPP_INFO(get_logger(), "[CATLPublisher] Waiting for Controller service to appear...");
       }
-      oldTaskInfo = nullptr;
+      oldTaskInfo_ = nullptr;
+      worldModel_ = nullptr;
+
+
+      listener_ = std::make_shared< MQTTUlisseSub>("ulisse_listener2", "catl/uniboh/polifemo");
+
+      // Install the callback(s) before connecting.
+      cli_ = std::make_shared<mqtt::async_client>("mqtt://127.0.0.1:1883", "ulisse_listener2");
+      mqtt::connect_options connOpts;
+      connOpts.set_clean_session(false);
+      cb_ = std::make_shared<MQTTUlisseCB>(*cli_, connOpts, listener_);
+      cb_->enableDebug = true;
+      cli_->set_callback(*cb_);
+      debugCommandTimer_ = this->create_wall_timer(100ms, std::bind(&CATLPublisher::MsgDispatcher, this));
+
+      // Start the connection.
+      // When completed, the callback will subscribe to topic.
+
+      try {
+        std::cerr << "Connecting to the MQTT server..." << std::endl;
+        cli_->connect(connOpts, nullptr, *cb_);
+      }
+      catch (const mqtt::exception& exc) {
+        std::cerr << "\nERROR: Unable to connect to MQTT server" << exc << std::endl;
+        throw std::runtime_error("Unable to connect to MQTT server");
+      }
+      std::cerr << "OK!" << std::endl;
 }
+
+void CATLPublisher::MsgDispatcher() {
+  if (!cb_->flag) return;
+  std::cerr << tc::yellow << "[MsgDispatcher] Start..." << tc::none << std::endl;
+  cb_->flag = false;
+  auto msgJson = jsoncons::json::parse(cb_->dataStr);
+  auto msgType = msgJson["header"]["message_type"].to_string();
+  std::cerr << tc::cyanL << "[MsgDispatcher] Msg type = " << msgType << tc::none << std::endl;
+  std::cerr << tc::cyanL << "[MsgDispatcher] (msgType == TASK_ADMIN) = " << (msgType == "TASK_ADMIN") << tc::none << std::endl;
+  if (msgType.find("SET_WORLD_MODEL") != std::string::npos) {
+    std::cerr << tc::cyanL << "[MsgDispatcher] Rx task wm msg" << tc::none << std::endl;
+    std::cerr << tc::greenL << "[MsgDispatcher] rsrc = " << msgJson["body"]["resources"] << tc::none << std::endl;
+    wm::WorldModel newWorldModel(msgJson);
+    if (worldModel_ != nullptr)
+      std::cerr << "worldModel_ before: " << worldModel_->ToJson()["body"]["maps"]["bathymetry"] << std::endl;
+    if (worldModel_ == nullptr) worldModel_ = std::make_unique<wm::WorldModel>(newWorldModel);
+    else worldModel_->Merge(newWorldModel);
+    std::cerr << "worldModel_ after: " << worldModel_->ToJson()["body"]["maps"]["bathymetry"] << std::endl;
+    ProcessWorldModel();
+    auto wmMsg = std_msgs::msg::String();
+    wmMsg.data = worldModel_->ToJson().as_string();
+    wmPub_->publish(wmMsg);
+  }
+  else if (msgType.find("TASK_ADMIN") != std::string::npos) {
+  }
+}
+
+void CATLPublisher::ProcessWorldModel() {}
 
 void CATLPublisher::NavFilterCallback(const ulisse_msgs::msg::NavFilterData::SharedPtr msg) {
   navFilterMsg_ = *msg;
@@ -93,15 +148,15 @@ void CATLPublisher::ChangesTimerCallback() {
     vehicleStatusMsgOkForChangeChecker_ = false;
     auto statusMsgCopy = vehicleStatusMsg_;
     auto newOwnedTask = GetTaskIdAndStatus(statusMsgCopy.vehicle_state);
-    auto oldTaskInfoNotInit = oldTaskInfo == nullptr;
-    auto taskStateChanged = (!oldTaskInfoNotInit) && (oldTaskInfo->taskStatus.taskState != newOwnedTask.taskStatus.taskState);
-    auto taskIdChanged = (!oldTaskInfoNotInit) && (oldTaskInfo->taskId.name != newOwnedTask.taskId.name);
-    if (oldTaskInfoNotInit || taskStateChanged || taskIdChanged) {
+    auto oldTaskInfo_NotInit = oldTaskInfo_ == nullptr;
+    auto taskStateChanged = (!oldTaskInfo_NotInit) && (oldTaskInfo_->taskStatus.taskState != newOwnedTask.taskStatus.taskState);
+    auto taskIdChanged = (!oldTaskInfo_NotInit) && (oldTaskInfo_->taskId.name != newOwnedTask.taskId.name);
+    if (oldTaskInfo_NotInit || taskStateChanged || taskIdChanged) {
         std::cerr << tc::cyanL << "[ChangesTimerCallback] State changed! So, I'm publishing it!" << std::endl;
         PubStatus(*mqttPub_);
     }
-    if (oldTaskInfo == nullptr) oldTaskInfo = std::make_unique<task::TaskIdAndStatus>(newOwnedTask);
-    else *oldTaskInfo = newOwnedTask;
+    if (oldTaskInfo_ == nullptr) oldTaskInfo_ = std::make_unique<task::TaskIdAndStatus>(newOwnedTask);
+    else *oldTaskInfo_ = newOwnedTask;
   }
 }
 
@@ -155,7 +210,7 @@ void CATLPublisher::PubStatus(pahho::MQTTPublisher& mqttPub) {
 
   // Test world model.
 void CATLPublisher::PubWorldModel(pahho::MQTTPublisher& mqttPub) {
-  ctljsn::wm::Labels labels( { "resource_label1", "resource_label2" });
+  ctljsn::wm::Labels labels( (std::vector<std::string>){ "resource_label1", "resource_label2" });
 
   ctljsn::wm::LabelledSpace pointA(CATLIdentifier("PointA", 0), geographic::Position(geographic::GenerateLatLongPosition(40,10)));
   ctljsn::wm::LabelledSpace pointB(CATLIdentifier("PointB", 1), geographic::Position(geographic::GenerateLatLongPosition(40,10)));
@@ -213,7 +268,7 @@ void CATLPublisher::PubWorldModel(pahho::MQTTPublisher& mqttPub) {
   wm::FlexEnum flexEnum("TaskType", taskTypePairs, "Flexible enumeration for task types");
 
   auto wmMsg = wm::WorldModel("unige.c2", std::make_shared<time::DirectTime>(std::time(0)),
-    resources, missionData, maps, flexEnum).ToJson();
+    resources, missionData, maps, { flexEnum }).ToJson();
 
   if (enableDebugPrint) {
     std::cerr << tc::cyanL << "World model:" << std::endl << wmMsg << tc::none << std::endl;

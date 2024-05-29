@@ -19,7 +19,7 @@
 #include <ulisse_msgs/msg/nav_filter_data.hpp>
 #include <ulisse_msgs/msg/vehicle_status.hpp>
 #include "ulisse_msgs/srv/control_command.hpp"
-
+#include <subscribeCATL.hpp>
 
 using namespace ctljsn;
 
@@ -71,7 +71,7 @@ class CATLPublisher : public rclcpp::Node
 
     ulisse_msgs::msg::NavFilterData navFilterMsg_;
     ulisse_msgs::msg::VehicleStatus vehicleStatusMsg_;
-    rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
+    rclcpp::Publisher<std_msgs::msg::String>::SharedPtr wmPub_;
     rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr navFilterSub_;
     rclcpp::Subscription<ulisse_msgs::msg::VehicleStatus>::SharedPtr vehicleStatusSub_;
 
@@ -86,10 +86,17 @@ class CATLPublisher : public rclcpp::Node
     VehicleOperationParams opParams_;
     size_t debugTestsCount_ = 0;
 
-    std::unique_ptr<task::TaskIdAndStatus> oldTaskInfo;
+    std::unique_ptr<task::TaskIdAndStatus> oldTaskInfo_;
     task::TaskIdAndStatus GetTaskIdAndStatus(const std::string vehicleState);
 
     std::unique_ptr<wm::WorldModel> worldModel_;
+
+    std::shared_ptr<MQTTUlisseSub> listener_;
+    std::shared_ptr<mqtt::async_client> cli_;
+    std::shared_ptr<MQTTUlisseCB> cb_;
+
+    void MsgDispatcher();
+    void ProcessWorldModel();
 };
 
 #endif

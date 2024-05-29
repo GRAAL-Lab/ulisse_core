@@ -60,15 +60,20 @@ class CATLSubscriber : public rclcpp::Node
     std::shared_ptr<MQTTUlisseSub> listener_;
     std::shared_ptr<mqtt::async_client> cli_;
     std::shared_ptr<MQTTUlisseCB> cb_;
+
     rclcpp::TimerBase::SharedPtr debugCommandTimer_;
 
     void MsgDispatcher();
     void CommandDispatcher(const task::TaskAdmin &ta);
     void VehicleStatusCallback(const ulisse_msgs::msg::VehicleStatus::SharedPtr msg);
+    void WorldModelCallback(const std_msgs::msg::String::SharedPtr msg);
 
     rclcpp::Subscription<ulisse_msgs::msg::VehicleStatus>::SharedPtr vehicleStatusSub_;
+    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr worldModelSub_;
     ulisse_msgs::msg::VehicleStatus vehicleStatusMsg_;
     bool vehicleStatusMsgOk_ = false;
+
+    std::shared_ptr<wm::WorldModel> worldModel_;
 
 };
 

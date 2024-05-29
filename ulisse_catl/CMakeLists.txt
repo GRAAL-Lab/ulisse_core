@@ -55,9 +55,10 @@ include_directories(
 
 
 ## Executables
-add_executable(ulisse_catl src/publishCATLNode.cpp src/publishCATL.cpp)
+add_executable(ulisse_catl src/publishCATLNode.cpp src/publishCATL.cpp src/subscribeCATL.cpp)
 ament_target_dependencies(ulisse_catl rclcpp ulisse_ctrl std_msgs sensor_msgs ament_index_cpp ulisse_msgs)
-target_link_libraries(ulisse_catl config++ mqttt stng json_utils ${OpenCV_LIBS} stdc++fs)
+target_link_libraries(ulisse_catl config++ mqttt stng json_utils ${OpenCV_LIBS} stdc++fs
+paho-mqtt3a  paho-mqtt3as paho-mqttpp3)
 
 add_executable(ulisse_camera src/publishImage.cpp)
 ament_target_dependencies(ulisse_camera ulisse_ctrl rclcpp std_msgs sensor_msgs ament_index_cpp ulisse_msgs cv_bridge)
