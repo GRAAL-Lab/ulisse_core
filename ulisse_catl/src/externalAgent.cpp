@@ -20,7 +20,8 @@ int main(int argc, char * argv[]) {
   
   if (argc > 1) {
     auto whichTest = std::string(argv[1]);
-    if (whichTest == "ll") PubTaskAdminLL(*mqttPub);
+    if (whichTest == "ll") PubTaskAdminLL(*mqttPub, false);
+    if (whichTest == "llref") PubTaskAdminLL(*mqttPub, true);
     if (whichTest == "hold") PubTaskAdminHold(*mqttPub);
     if (whichTest == "yawsurge") PubTaskAdminYawSurge(*mqttPub);
     if (whichTest == "wm1") PubWorldModel(*mqttPub, 1);
@@ -113,13 +114,20 @@ jsoncons::json PubTaskAdminHold(pahho::MQTTPublisher& mqttPub) {
 }
 
 // Test task admin.
-jsoncons::json PubTaskAdminLL(pahho::MQTTPublisher& mqttPub) {
-
-  auto constr = std::make_shared<task::TaskConstraintsBasic>(
-      task::ActivityType::ACTIVITY_STANDARD,
-     // geographic::Position(geographic::GenerateLatLongPosition(44,45))
-      geographic::Position((std::string)"$.resources.spatial_primitives.positions[?(@.identifier.name=='PointA')]")
-  );
+jsoncons::json PubTaskAdminLL(pahho::MQTTPublisher& mqttPub, const bool useRef) {
+  std::shared_ptr<ctljsn::task::TaskConstraintsBasic> constr;
+  if (useRef) {
+    constr = std::make_shared<task::TaskConstraintsBasic>(
+        task::ActivityType::ACTIVITY_STANDARD,
+        geographic::Position((std::string)"$.resources.spatial_primitives.positions[?(@.identifier.name=='PointA')].region")
+    );
+  }
+  else {
+    constr = std::make_shared<task::TaskConstraintsBasic>(
+        task::ActivityType::ACTIVITY_STANDARD,
+       geographic::Position(geographic::GenerateLatLongPosition(44,45))
+    );
+  }
 
   constr->dict["acceptance_radius"] = 0.1;
   std::cerr << "constr = " << constr->ToJson() << std::endl;

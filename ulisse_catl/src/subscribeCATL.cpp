@@ -22,7 +22,7 @@ CATLSubscriber::CATLSubscriber() : Node("catl_subscriber") {
   cli_ = std::make_shared<mqtt::async_client>("mqtt://127.0.0.1:1883", "taskadmin_listener");
   vehicleStatusSub_ = this->create_subscription<ulisse_msgs::msg::VehicleStatus>(ulisse_msgs::topicnames::vehicle_status, 10,
     std::bind(&CATLSubscriber::VehicleStatusCallback, this, _1));
-  worldModelSub_ = this->create_subscription<std_msgs::msg::String>("world_model", 10,
+  worldModelSub_ = this->create_subscription<std_msgs::msg::String>("/world_model", 10,
     std::bind(&CATLSubscriber::WorldModelCallback, this, _1));
   mqtt::connect_options connOpts;
   connOpts.set_clean_session(false);
@@ -135,19 +135,9 @@ void CATLSubscriber::CommandDispatcher(const task::TaskAdmin &taskAdminMsg) {
           serviceReq->command_type = ulisse::commands::ID::latlong;
           bool errPos, errAcceptanceRadius;
           auto whereToLook = taskAdminMsg.taskDescriptor.taskConstraints->p.ToJson();
-          std::cerr << "Wm null?? " << (worldModel_ == nullptr) << std::endl;
-          auto llJson = ResolveRef(whereToLook, worldModel_, errPos);
-          if (errPos) {
-            tryToSend = false;
-            std::cerr << tc::redL << "[CommandDispatcher] No LL command will be issued because the position with ref " << 
-              llJson["reference"] << " could not be resolved." << std::endl;
-            std::cerr << "Wm null?? " << (worldModel_ == nullptr) << std::endl;
-            std::cerr << "Wm body resources: " << worldModel_->ToJson()["body"]["resources"] << std::endl;
-            return;
-          }
-          else {
-            std::cerr << tc::greenL << "[CommandDispatcher] Found LL data is " << llJson << std::endl;
-          }
+          jsoncons::json llJson;
+          if (!ResolveRef(whereToLook, worldModel_, llJson, "No LL command issued")) return;
+          std::cerr << "[CommandDispatcher] llJson = " << llJson << std::endl;
           serviceReq->latlong_cmd.goal.latitude = llJson["latitude"].as<double>();
           serviceReq->latlong_cmd.goal.longitude = llJson["longitude"].as<double>();
           serviceReq->hold_cmd.acceptance_radius = taskAdminMsg.taskDescriptor.taskConstraints->dict["acceptance_radius"];
