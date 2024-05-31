@@ -16,6 +16,8 @@ int main(int argc, char * argv[]) {
   strToNodeStatus[ulisse::states::ID::surgeyawrate] = NodeStatus::ND_STATUS_U_SURGE_YAW_RATE;
   strToNodeStatus[ulisse::states::ID::pathfollow] = NodeStatus::ND_STATUS_U_SURGE_PATH_FOLLOW;
 
+  jsoncons::json PubDynamicChange(pahho::MQTTPublisher& mqttPub);
+
   auto mqttPub = std::make_shared<pahho::MQTTPublisher>("taskadmin_publisher", "catl/uniboh/polifemo",  "127.0.0.1", 1883); // TODO CHECK ARGUMENTS
   
   if (argc > 1) {
@@ -26,6 +28,7 @@ int main(int argc, char * argv[]) {
     if (whichTest == "yawsurge") PubTaskAdminYawSurge(*mqttPub);
     if (whichTest == "wm1") PubWorldModel(*mqttPub, 1);
     if (whichTest == "wm2") PubWorldModel(*mqttPub, 2);
+    if (whichTest == "du") PubDynamicChange(*mqttPub);
   }
 }
 
@@ -164,19 +167,67 @@ jsoncons::json PubTaskAdminLL(pahho::MQTTPublisher& mqttPub, const bool useRef) 
 
 }
 
+jsoncons::json PubDynamicChange(pahho::MQTTPublisher& mqttPub) {
+  jsoncons::json weirdJson;
+  weirdJson["ulp"] = "gasp";
+ // auto op3 = GenerateDynamicUpdateItem("APPEND", "/header", weirdJson);
+ // jsoncons::json op2 = GenerateDynamicUpdateItem("UPDATE", "/header", json("argh"));
+  jsoncons::json newPos;
+ // newPos["point"]["latitude"] = 29999;
+ // newPos["point"]["longitude"] = 49999;
+  newPos["latitude"] = 29999;
+  newPos["longitude"] = 49999;
+  jsoncons::json op1 = GenerateDynamicUpdateItem("APPEND", 
+    "$.body.resources.spatial_primitives.positions",
+    wm::LabelledSpace(CATLIdentifier("Point33333333333333333333",2),
+                      geographic::Position(geographic::GenerateLatLongPosition(1,2)),
+                      wm::LabelledSpace::SpaceType::POS
+                      ).ToJson());
+  jsoncons::json op2 = GenerateDynamicUpdateItem("DELETE", 
+    "$.body.resources.spatial_primitives.positions[?(@.identifier.name=='PointA')]", "");
+
+  DynamicUpdate du(std::string("boh"), std::make_shared<time::DirectTime>(std::time(0)), "WORLD_MODEL",
+   { op1, op2 });
+
+  std::cerr << "du before = " << du.ToJson() << std::endl;
+
+  auto duJ = du.ToJson();
+  DynamicUpdate du2(duJ);
+
+  std::cerr << "du after = " << du2.ToJson() << std::endl;
+  //auto wmPtr = std::make_shared<wm::WorldModel>(wm);
+
+  //jsoncons::json result;
+
+  //EvalDynamicUpdate(du, wmPtr, result, "test");
+  auto duStr = duJ.as_string();
+  
+  mqttPub.PublishText(duStr, std::time(0)); // send with frequency < 1 Hz
+  
+  std::cerr << "[TestWorldModel] END" << std::endl;
+
+  return du.ToJson();
+}
+
 jsoncons::json PubWorldModel(pahho::MQTTPublisher& mqttPub, const size_t version) {
   ctljsn::wm::Labels labels( (std::vector<std::string>){ "resource_label1", "resource_label2" });
 
-  ctljsn::wm::LabelledSpace pointA(CATLIdentifier("PointA", 0), geographic::Position(geographic::GenerateLatLongPosition(40,10)));
-  ctljsn::wm::LabelledSpace pointB(CATLIdentifier("PointB", 1), geographic::Position(geographic::GenerateLatLongPosition(40,10)));
+  ctljsn::wm::LabelledSpace pointA(CATLIdentifier("PointA", 0), geographic::Position(geographic::GenerateLatLongPosition(40,10)),
+                      wm::LabelledSpace::SpaceType::POS);
+  ctljsn::wm::LabelledSpace pointB(CATLIdentifier("PointB", 1), geographic::Position(geographic::GenerateLatLongPosition(40,10)),
+                      wm::LabelledSpace::SpaceType::POS);
 
-  ctljsn::wm::LabelledSpace region1(CATLIdentifier("Region1", 0), geographic::GenerateDefinedRegion({}));
-  ctljsn::wm::LabelledSpace region2(CATLIdentifier("Region2", 0), geographic::GenerateDefinedRegion({}));
+  ctljsn::wm::LabelledSpace region1(CATLIdentifier("Region1", 0), geographic::GenerateDefinedRegion({}),
+                      wm::LabelledSpace::SpaceType::REG);
+  ctljsn::wm::LabelledSpace region2(CATLIdentifier("Region2", 0), geographic::GenerateDefinedRegion({}),
+                      wm::LabelledSpace::SpaceType::REG);
   
   ctljsn::wm::LabelledSpace object1A(CATLIdentifier("Obj1A", 1), 
-    std::string("$.resources.spatial_primitives.positions[?(@.identifier.name=='PointA')]"));
+    std::string("$.resources.spatial_primitives.positions[?(@.identifier.name=='PointA')]"),
+                      wm::LabelledSpace::SpaceType::OBJ);
   ctljsn::wm::LabelledSpace object2A(CATLIdentifier("Obj2A", 2),
-    std::string("$.resources.spatial_primitives.positions[?(@.identifier.name=='PointA')]"));
+    std::string("$.resources.spatial_primitives.positions[?(@.identifier.name=='PointA')]"),
+                      wm::LabelledSpace::SpaceType::OBJ);
   
   wm::SpatialPrimitives spatialPrimitives( { pointA, pointB}, {region1, region2}, { object1A, object2A });
   wm::Resource resources(labels, spatialPrimitives);
@@ -187,8 +238,12 @@ jsoncons::json PubWorldModel(pahho::MQTTPublisher& mqttPub, const size_t version
 
   security::Markings markings(ctljsn::security::Classification::CLASSIFICATION_TOP_SECRET);
   
-  wm::LabelledSpace exclusionZone1(CATLIdentifier("ExclusionZone1",1), std::string("$.resources.spatial_primitives.regions[?(@.identifier.name=='Region1')]"));
-  wm::LabelledSpace inclusionZone1(CATLIdentifier("InclusionZone1",1), std::string("$.resources.spatial_primitives.regions[?(@.identifier.name=='Region2')]"));
+  wm::LabelledSpace exclusionZone1(CATLIdentifier("ExclusionZone1",1),
+    std::string("$.resources.spatial_primitives.regions[?(@.identifier.name=='Region1')]"),
+                      wm::LabelledSpace::SpaceType::REG);
+  wm::LabelledSpace inclusionZone1(CATLIdentifier("InclusionZone1",1),
+    std::string("$.resources.spatial_primitives.regions[?(@.identifier.name=='Region2')]"),
+                      wm::LabelledSpace::SpaceType::REG);
 
   ctljsn::wm::MissionData missionData({ exclusionZone1 }, { inclusionZone1 }, 
     std::make_shared<ctljsn::time::DirectTime>(ctljsn::time::DirectTime(std::time(0))), 

@@ -12,7 +12,7 @@ bool enableDebugPrint = false;
 
 CATLPublisher::CATLPublisher()
     : Node("mqtt_publisher"), count_(0) {
-      statusTimer_ = this->create_wall_timer(1000ms, std::bind(&CATLPublisher::StatusTimerCallback, this));
+      statusTimer_ = this->create_wall_timer(2000ms, std::bind(&CATLPublisher::StatusTimerCallback, this));
       worldModelTimer_ = this->create_wall_timer(4000ms, std::bind(&CATLPublisher::WorldModelTimerCallback, this));
       changesTimer_ = this->create_wall_timer(1000ms, std::bind(&CATLPublisher::ChangesTimerCallback, this));
       vehicleStatusSub_ = this->create_subscription<ulisse_msgs::msg::VehicleStatus>(ulisse_msgs::topicnames::vehicle_status, 10,
@@ -109,7 +109,7 @@ void CATLPublisher::MsgDispatcher() {
     wm::WorldModel newWorldModel(msgJson);
     if (worldModel_ != nullptr)
       std::cerr << "worldModel_ before: " << worldModel_->ToJson()["body"]["maps"]["bathymetry"] << std::endl;
-    if (worldModel_ == nullptr) worldModel_ = std::make_unique<wm::WorldModel>(newWorldModel);
+    if (worldModel_ == nullptr) worldModel_ = std::make_shared<wm::WorldModel>(newWorldModel);
     else worldModel_->Merge(newWorldModel);
     std::cerr << "worldModel_ after: " << worldModel_->ToJson()["body"]["maps"]["bathymetry"] << std::endl;
     ProcessWorldModel();
@@ -118,6 +118,17 @@ void CATLPublisher::MsgDispatcher() {
     wmPub_->publish(wmMsg);
   }
   else if (msgType.find("TASK_ADMIN") != std::string::npos) {
+  }
+  else if (msgType.find("DYNAMIC_UPDATE") != std::string::npos) {
+    DynamicUpdate du(msgJson);
+    std::cerr << tc::magL << "[MsgDispatcher] dyn update!" << tc::none << std::endl;
+    if (worldModel_ == nullptr) {
+      std::cerr << tc::yellow << "[MsgDispatcher] No WM yet." << std::endl;
+    }
+    else {
+      jsoncons::json result;
+      EvalDynamicUpdate2(du, worldModel_, result, "test");
+    }
   }
 }
 
@@ -212,16 +223,22 @@ void CATLPublisher::PubStatus(pahho::MQTTPublisher& mqttPub) {
 void CATLPublisher::PubWorldModel(pahho::MQTTPublisher& mqttPub) {
   ctljsn::wm::Labels labels( (std::vector<std::string>){ "resource_label1", "resource_label2" });
 
-  ctljsn::wm::LabelledSpace pointA(CATLIdentifier("PointA", 0), geographic::Position(geographic::GenerateLatLongPosition(40,10)));
-  ctljsn::wm::LabelledSpace pointB(CATLIdentifier("PointB", 1), geographic::Position(geographic::GenerateLatLongPosition(40,10)));
+  ctljsn::wm::LabelledSpace pointA(CATLIdentifier("PointA", 0), geographic::Position(geographic::GenerateLatLongPosition(40,10)),
+                      wm::LabelledSpace::SpaceType::POS);
+  ctljsn::wm::LabelledSpace pointB(CATLIdentifier("PointB", 1), geographic::Position(geographic::GenerateLatLongPosition(40,10)),
+                      wm::LabelledSpace::SpaceType::POS);
 
-  ctljsn::wm::LabelledSpace region1(CATLIdentifier("Region1", 0), geographic::GenerateDefinedRegion({}));
-  ctljsn::wm::LabelledSpace region2(CATLIdentifier("Region2", 0), geographic::GenerateDefinedRegion({}));
+  ctljsn::wm::LabelledSpace region1(CATLIdentifier("Region1", 0), geographic::GenerateDefinedRegion({}),
+                      wm::LabelledSpace::SpaceType::REG);
+  ctljsn::wm::LabelledSpace region2(CATLIdentifier("Region2", 0), geographic::GenerateDefinedRegion({}),
+                      wm::LabelledSpace::SpaceType::REG);
   
   ctljsn::wm::LabelledSpace object1A(CATLIdentifier("Obj1A", 1), 
-    std::string("$.resources.spatial_primitives.positions[?(@.identifier.name=='PointA')]"));
+    std::string("$.resources.spatial_primitives.positions[?(@.identifier.name=='PointA')]"),
+                      wm::LabelledSpace::SpaceType::OBJ);
   ctljsn::wm::LabelledSpace object2A(CATLIdentifier("Obj2A", 2),
-    std::string("$.resources.spatial_primitives.positions[?(@.identifier.name=='PointA')]"));
+    std::string("$.resources.spatial_primitives.positions[?(@.identifier.name=='PointA')]"),
+                      wm::LabelledSpace::SpaceType::OBJ);
   
   wm::SpatialPrimitives spatialPrimitives( { pointA, pointB}, {region1, region2}, { object1A, object2A });
   wm::Resource resources(labels, spatialPrimitives);
@@ -232,8 +249,12 @@ void CATLPublisher::PubWorldModel(pahho::MQTTPublisher& mqttPub) {
 
   security::Markings markings(ctljsn::security::Classification::CLASSIFICATION_TOP_SECRET);
   
-  wm::LabelledSpace exclusionZone1(CATLIdentifier("ExclusionZone1",1), std::string("$.resources.spatial_primitives.regions[?(@.identifier.name=='Region1')]"));
-  wm::LabelledSpace inclusionZone1(CATLIdentifier("InclusionZone1",1), std::string("$.resources.spatial_primitives.regions[?(@.identifier.name=='Region2')]"));
+  wm::LabelledSpace exclusionZone1(CATLIdentifier("ExclusionZone1",1),
+    std::string("$.resources.spatial_primitives.regions[?(@.identifier.name=='Region1')]"),
+                      wm::LabelledSpace::SpaceType::REG);
+  wm::LabelledSpace inclusionZone1(CATLIdentifier("InclusionZone1",1),
+    std::string("$.resources.spatial_primitives.regions[?(@.identifier.name=='Region2')]"),
+                      wm::LabelledSpace::SpaceType::REG);
 
   ctljsn::wm::MissionData missionData({ exclusionZone1 }, { inclusionZone1 }, 
     std::make_shared<ctljsn::time::DirectTime>(ctljsn::time::DirectTime(std::time(0))), 
