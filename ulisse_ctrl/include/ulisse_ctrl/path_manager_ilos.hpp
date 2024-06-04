@@ -181,7 +181,7 @@ private:
     ctb::LatLong ILOSstartP_;                   // Starting point of the nurbs path for ILOS
     ctb::LatLong endP_;                         // Ending point of the nurbs path
     double currentAbscissa_;                    // The current parameter value on the path
-    double currentGoalAbscissa_;                    // The current parameter value on the path
+    double currentGoalAbscissa_;                // The current parameter value on the path for goal computation
     ctb::LatLong currentGoal_;
     ctb::LatLong currentTrackPoint_;
 

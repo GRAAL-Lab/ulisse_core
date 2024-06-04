@@ -22,6 +22,7 @@ namespace states {
         bool isCurveSet_;               // Flag for checking if a curve has been loaded
         bool vehicleOnTrack_;           // Flag for checking is the robot at the path start
         bool loopPath_;                 // Flag for setting the infinite loop for the path
+        bool restartingPath_;           // Flag for starting a new loop
         //ctb::LatLong startP_, endP_;    // Starting and ending point
         ctb::LatLong nextP_;            // Next point of the path
         double tolleranceStartingPoint_; // Tolerance on the starting point

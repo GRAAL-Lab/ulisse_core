@@ -116,6 +116,7 @@ public:
         double deltaStep; //the step increment for the delta (in meters)
         double aepsge; // geometric tollerance
         double aepsco; // computational tollerance
+        double tolleranceEndingPoint;
         double lookAheadDistance; //max delta increment for select a part of a curve for computing the nearest point
         double directionError; // threshold for the difference between the current and the next tangent direction of the path
 
@@ -138,6 +139,8 @@ public:
             if (!ctb::GetParam(state, aepsge, "geometricTollerance"))
                 return false;
             if (!ctb::GetParam(state, aepsco, "computationalTollerance"))
+                return false;
+            if (!ctb::GetParam(state, tolleranceEndingPoint, "tolleranceEndingPoint"))
                 return false;
             if (!ctb::GetParam(state, lookAheadDistance, "lookAheadDistance"))
                 return false;
@@ -170,6 +173,7 @@ private:
     ctb::LatLong ALOSstartP_;                   // Starting point of the nurbs path for ALOS
     ctb::LatLong endP_;                         // Ending point of the nurbs path
     double currentAbscissa_;                    // The current parameter value on the path
+    double currentGoalAbscissa_;                // The current parameter value on the path for goal computation
     ctb::LatLong currentGoal_;
     ctb::LatLong currentTrackPoint_;
 
