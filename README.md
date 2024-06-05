@@ -57,26 +57,30 @@ colcon build --symlink-install
 ```
 
 ## Run the ULISSE architecture
-
+execute the following commands (each one in a different shell)
 
 ```bash
-
+# Shell A 
 ros2 launch ulisse_sim launchSim.py        # simulating
 
+# Shell B 
 ros2 launch ulisse_ctrl launchControl.py   # control
 
+# Shell C
 ros2 run ulisse_ctrl controller_console_node # user interface
 ```
 
 ## Run the BlueROV2 architecture
-
+execute the following commands (each one in a different shell)
 
 ```bash
-
+# Shell D
 ros2 launch rov_ctrl launchControl.py      # control
 
+# Shell E
 ros2 run rov_sim simulator_node		   # simulating
 
+# Shell F
 ros2 run rov_ctrl controller_console_node # user interface
 ```
 
@@ -85,6 +89,7 @@ ros2 run rov_ctrl controller_console_node # user interface
 To launch the **Rviz**, type on a separate shell of your on-shore device type (no need for screen here):
 
 ```bash
+# Shell G
 rviz2
 ```
 
