@@ -1,4 +1,4 @@
-# Ulisse Catamaran Control
+# Ulisse Catamaran Control for ASV/ROV cooperative system
 
 Ulisse catamaran controller revamped with ROS2.
 
@@ -56,115 +56,35 @@ sourceros2
 colcon build --symlink-install
 ```
 
-## Run the architecture
+## Run the ULISSE architecture
 
-With your on-shore device connect to the Wi-Fi network of the catamaran "ISME AUV", and give yourself a static IP in the network `192.168.1.*`. Then connect via SSH with the catamaran (user:graal, pwd: graal) using:
-
-```bash
-
-ssh graal@192.168.1.100
-```
-
-When using remote terminals, to prevent problems related to network failures, it is strongly advised to use `screen` sessions in the terminal where you launch the controller and the driver. Useful commands:
-
- - Create named session: `screen -S session_name`
- - Detach session: `Ctrl+A`, then press `D`
- - Reattach to session: `screen -r session_name`
- - List all the sessions: `screen -ls`
-
-Once on the catamaran, firstly be sure to configure the GPS itself, and then **synchronize your system time** using the GPS by running these commands:
 
 ```bash
 
-ros2 launch ulisse_driver launchGPSSetup.py
-cd ros2_ws/src/ulisse_core/scripts
-python3 gpstime.py
-
-```
-
-Wait till the launch files finishes printing info, then you can kill the process if hanging.
-
-The following launch files will run all the necessary nodes (all with `sourceros2`):
-
-```bash
-
-# Shell A (driver)
-screen -S driver
-ros2 launch ulisse_driver launchDriver.py  # real case
--or-
 ros2 launch ulisse_sim launchSim.py        # simulating
 
-# Shell B (controller)
-screen -S control
-ros2 launch ulisse_ctrl launchControl.py
+ros2 launch ulisse_ctrl launchControl.py   # control
+
+ros2 run ulisse_ctrl controller_console_node # user interface
 ```
 
-## Run the GUI
-
-To launch the **GUI**, type on a separate shell of your on-shore device type (no need for screen here):
-
-```bash
-# Shell C (optional, GUI)
-ros2 run ulisse_map ulisse_map_node
-```
-
-## GPS Setup
-To enable the GPS on a fresh install of Linux you will have to:
-
-- Add in **/etc/default/gpsd** the following line: `DEVICE:"/dev/ttyS1"`.
-- Add your user to the `dialout` user group.
-
-
-### Testing the serial
-
-⚠️ Be sure that in the driver configuration file *ulisse_driver/conf/ulisse_driver.conf* the **SerialDevice** paramater is set to `"/tmp/serial1"`. Then, run the following commands in three separate ROS2 sourced terminals (`sourceros2` command):
+## Run the BlueROV2 architecture
 
 
 ```bash
 
-# Shell A (setup serial)
-socat -d -d pty,raw,echo=0,link=/tmp/serial1 pty,raw,echo=0,link=/tmp/serial2
+ros2 launch rov_ctrl launchControl.py      # control
 
-# Shell B (launch driver)
-ros2 launch ulisse_driver launchDriver.py
+ros2 run rov_sim simulator_node		   # simulating
 
-# Shell C (echo on any topic of interest, e,g. /sensor/ambient)
-ros2 topic echo /sensor/ambient
-
-# Shell D (transmit data on serial)
-# '80' is the limit of bytes/sec, to slow down the cat command output
-cat serial_file.log | pv -l -L 80 -q > /tmp/serial2
+ros2 run rov_ctrl controller_console_node # user interface
 ```
 
-You can also use the file *play_serial.sh* to continuosly replay the logfile.
+## Run for Visualization
 
-## Network Configuration
+To launch the **Rviz**, type on a separate shell of your on-shore device type (no need for screen here):
 
-IP Table:
+```bash
+rviz2
+```
 
-| Device                  | IP            | hostname      |
-|-------------------------|---------------|---------------|
-| Main CPU                | 192.168.1.100 | ulisse        |
-| Ulisse Wireless Antenna | 192.168.1.251 |               |
-| Ground Wireless Antenna | 192.168.1.252 |               |
-
-
-### Configure Ethernet-WiFi Bridge
-
-#### Windows (host) side:
-
-- Connect to WiFi Hotspot.
-- Connect ethernet cable to catamaran.
-- Share WiFi connection with "Ethernet" in Control Panel: Network Connections->*Left Click on* WiFi Connection->Properties->Sharing Tab.
-- Set the IPv4 of the Ethernet Connection as 192.168.1.169 (and it's gateway as the IP of the WiFi connection -> UPDATE: leave the gateway blank or it doesn't work).
-
-#### Ubuntu side (Catamaran or VirtualBox):
-
-- Use the following command to set the correct gateway:
-sudo route add default gw 192.168.1.169
-
-
-
-## Misc
-
-For additional info look [info.txt](./info.txt).
