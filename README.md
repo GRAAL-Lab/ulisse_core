@@ -32,6 +32,8 @@ In order of installation to respect dependencies:
 
 `sudo apt install gpsd-clients qtquickcontrols2-5-dev qtlocation5-dev qtpositioning5-dev qml-module-qtquick-controls2 qml-module-qt-labs-settings qml-module-qt-labs-folderlistmodel qml-module-qtlocation  qml-module-qtpositioning qml-module-qtquick-extras qml-module-qtgraphicaleffects qml-module-qtquick-dialogs qml-module-qtquick-controls python3-colcon-common-extensions qml-module-qtqml-models2`
 
+- **marine_vehicle_models**: https://bitbucket.org/isme_robotics/marine_vehicle_models/src/main/
+- **rov_core**: https://bitbucket.org/isme_robotics/rov_core/src/master/
 
 ### Additional packages not coming with ros2
 
