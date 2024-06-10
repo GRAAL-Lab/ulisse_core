@@ -9,24 +9,25 @@
   <author>Francesco Wanderlingh</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-
+  <depend>rov_msgs</depend>
   <build_depend>rclcpp</build_depend>
   <build_depend>std_msgs</build_depend>
+  <build_depend>surface_vehicle_model</build_depend>
   <build_depend>ulisse_msgs</build_depend>
   <build_depend>ulisse_driver</build_depend>
   <build_depend>rml</build_depend>
   <build_depend>fsm</build_depend>
   <build_depend>ctrl_toolbox</build_depend>
-  <build_depend>surface_vehicle_model</build_depend>
 
   <exec_depend>rclcpp</exec_depend>
   <exec_depend>std_msgs</exec_depend>
+  <exec_depend>surface_vehicle_model</exec_depend>
   <exec_depend>ulisse_msgs</exec_depend>
   <exec_depend>ulisse_driver</exec_depend>
   <exec_depend>rml</exec_depend>
   <exec_depend>fsm</exec_depend>
   <exec_depend>ctrl_toolbox</exec_depend>
-  <exec_depend>surface_vehicle_model</exec_depend>
+  
 
   <export>
     <build_type>ament_cmake</build_type>
