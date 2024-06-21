@@ -40,6 +40,7 @@ VehicleController::VehicleController(std::string conf_filename)
     navFilterROVSub_ = this->create_subscription<rov_msgs::msg::NavFilterData>("/rov/nav_filter/data", 10, std::bind(&VehicleController::NavFilterRovCB, this, _1)); //ROV
     llcStatusSub_ = this->create_subscription<ulisse_msgs::msg::LLCStatus>(ulisse_msgs::topicnames::llc_status, 10, std::bind(&VehicleController::LLCStatusCB, this, _1));
     cableROVSub_ = this->create_subscription<rov_msgs::msg::CableData>("/winch/cable_data", 10, std::bind(&VehicleController::CableDataRovCB, this, _1)); //ROV
+    obstacleSub_ = this->create_subscription<ulisse_msgs::msg::Obstacle>(ulisse_msgs::topicnames::obstacle, 10, std::bind(&VehicleController::ObstacleCB, this, _1)); // ASV-ROV
 
     // Data Subscriptions
     surgeHeadingSub_ = this->create_subscription<ulisse_msgs::msg::SurgeHeading>(ulisse_msgs::topicnames::surge_heading, 10, std::bind(&VehicleController::SurgeHeadingCB, this, _1));
@@ -131,11 +132,23 @@ VehicleController::VehicleController(std::string conf_filename)
     taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment_hold, 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvAbsoluteAxisAlignmentHold, taskInfo_));
 
+    // ASV absolute axis alignment task obstacle avoidance
+    asvAbsoluteAxisAlignmentObstacle_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asvAbsoluteAxisAlignmentObstacle, robotModel_, ulisse::robotModelID::ASV));
+    taskInfo_.task = asvAbsoluteAxisAlignmentObstacle_;
+    taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment_obstacle, 1);
+    tasksMap_.insert(std::make_pair(ulisse::task::asvAbsoluteAxisAlignmentObstacle, taskInfo_));
+
     // ASV CONTROL VELOCITY LINEAR HOLD
     asvLinearVelocityHold_ = std::make_shared<ikcl::LinearVelocity>(ikcl::LinearVelocity(ulisse::task::asvLinearVelocityHold, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvLinearVelocityHold_;
     taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_linear_velocity_hold, 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvLinearVelocityHold, taskInfo_));
+
+    // ASV obstacle avoidance task
+    asvAbsoluteAxisAlignmentObstacle_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asvAbsoluteAxisAlignmentObstacle, robotModel_, ulisse::robotModelID::ASV));
+    taskInfo_.task = asvAbsoluteAxisAlignmentObstacle_;
+    taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment_obstacle, 1);
+    tasksMap_.insert(std::make_pair(ulisse::task::asvAbsoluteAxisAlignmentObstacle, taskInfo_));
 
     // Initialize solver_ and iCAT
     int dof = 6;
@@ -653,6 +666,12 @@ void VehicleController::CableDataRovCB(const rov_msgs::msg::CableData::SharedPtr
     cableData_.winding_radius = msg->winding_radius;
     cableData_.winch_rpm = msg->winch_rpm;
     cableData_.max_length = msg->max_length;
+
+}
+
+void VehicleController::ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr msg){ //ROV
+    //obstacleData_.
+
 
 }
 

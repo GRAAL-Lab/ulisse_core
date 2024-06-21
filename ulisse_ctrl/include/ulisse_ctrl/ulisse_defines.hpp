@@ -25,6 +25,7 @@ const std::string asvCartesianDistanceRovFollowing = "ASV_Cartesian_Distance_ROV
 const std::string asvSafetyBoundaries = "ASV_Safety_Boundaries";
 const std::string asvAbsoluteAxisAlignmentSafety = "ASV_Absolute_Axis_Alignment_Safety";
 const std::string asvAbsoluteAxisAlignmentHold = "ASV_Absolute_Axis_Alignment_Hold";
+const std::string asvAbsoluteAxisAlignmentObstacle = "ASV_Absolute_Axis_Alignment_Obstacle"; // ASV-ROV obstacle avoidance
 const std::string asvLinearVelocityHold = "ASV_Linear_Velocity_Hold";
 
 }

@@ -18,6 +18,7 @@
 #include "ulisse_msgs/msg/tpik_action.hpp"
 #include "ulisse_msgs/msg/tpik_priority_level.hpp"
 //#include "ulisse_msgs/msg/plot_variables.hpp"
+#include "ulisse_msgs/msg/obstacle.hpp" // ASV-ROV
 
 #include "ulisse_msgs/srv/control_command.hpp"
 #include "ulisse_msgs/srv/get_boundaries.hpp"
@@ -69,6 +70,7 @@ class VehicleController : public rclcpp::Node {
     rclcpp::Subscription<rov_msgs::msg::NavFilterData>::SharedPtr navFilterROVSub_; // ASV-ROV
     rclcpp::Subscription<ulisse_msgs::msg::LLCStatus>::SharedPtr llcStatusSub_;
     rclcpp::Subscription<rov_msgs::msg::CableData>::SharedPtr cableROVSub_; // ASV-ROV
+    rclcpp::Subscription<ulisse_msgs::msg::Obstacle>::SharedPtr obstacleSub_; // ASV-ROV
 
     rclcpp::Subscription<ulisse_msgs::msg::SurgeHeading>::SharedPtr surgeHeadingSub_;
     rclcpp::Subscription<ulisse_msgs::msg::SurgeYawRate>::SharedPtr surgeYawRateSub_;
@@ -111,8 +113,10 @@ class VehicleController : public rclcpp::Node {
     std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignment_;
     //std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentSafety_;
     std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentHold_;
+    std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentObstacle_; // ASV-ROV
     std::shared_ptr<ikcl::CartesianDistance> asvCartesianDistancePathFollowing_;
     std::shared_ptr<ikcl::CartesianDistance> asvCartesianDistanceRovFollowing_; // ASV-ROV
+    std::shared_ptr<ikcl::ObstacleAvoidance> asvObstacleAvoidance_; // ASV-ROV
 
     double timestamp_;
     bool boundariesSet_;
@@ -151,6 +155,7 @@ class VehicleController : public rclcpp::Node {
     std::shared_ptr<ControlData> rovData_;
     rov_msgs::msg::CableData cableData_;
     rov_msgs::msg::CableLengthReference controlledCable_;
+    ulisse_msgs::msg::Obstacle obstacleData_;
     //ulisse_msgs::msg::PlotVariables plotVar_;
 
     //std::shared_ptr<ctb::LatLong> vehiclePosition_;
@@ -181,6 +186,7 @@ class VehicleController : public rclcpp::Node {
     void LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg);
     void CableDataRovCB(const rov_msgs::msg::CableData::SharedPtr msg); // ASV-ROV
     void ComputeCableLength(); // ASV-ROV
+    void ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr msg);  // ASV-ROV
 
     void PublishLog(std::string log);
 

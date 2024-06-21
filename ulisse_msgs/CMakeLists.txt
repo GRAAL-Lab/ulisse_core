@@ -100,6 +100,8 @@ rosidl_generate_interfaces(ulisse_msgs
   "srv/MinSrv.srv"
   
   ## Other ##
+  "msg/ColorRGB.msg"
+  "msg/BoundingBox.msg"
 
 )
 
