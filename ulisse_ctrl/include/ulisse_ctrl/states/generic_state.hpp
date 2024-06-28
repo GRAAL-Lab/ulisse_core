@@ -25,6 +25,7 @@ namespace states {
         std::shared_ptr<tpik::ActionManager> actionManager;
         std::shared_ptr<rml::RobotModel> robotModel;
         std::unordered_map<std::string, TasksInfo> tasksMap;
+        std::vector<std::shared_ptr<ikcl::Obstacle>> obstaclesVector; // Obstacle Avoidance
 
         GenericState();
         virtual ~GenericState(void);

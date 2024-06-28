@@ -156,6 +156,19 @@ class VehicleController : public rclcpp::Node {
     rov_msgs::msg::CableData cableData_;
     rov_msgs::msg::CableLengthReference controlledCable_;
     ulisse_msgs::msg::Obstacle obstacleData_;
+
+    std::vector<std::shared_ptr<ikcl::Obstacle>> obstaclesVector_;
+    Eigen::TransformationMatrix frameID_T_sphereCenter;
+    /// OBSTACLE MODELS
+    Eigen::TransformationMatrix world_T_obstacle1_;
+    Eigen::TransformationMatrix world_T_obstacle2_;
+    Eigen::TransformationMatrix world_T_obstacle3_;
+    //Eigen::VectorXd v(3);
+    //v << 1, 2, 3;
+    //Eigen::AngleAxis<float> aa(0.0, Eigen::Vector3f::UnitZ());
+    //frameID_T_sphereCenter(Eigen::Matrix4d::Identity(4,4));
+    std::string frameID; double sphereRadius;
+    std::shared_ptr<ikcl::SphereObstacle> obs1;
     //ulisse_msgs::msg::PlotVariables plotVar_;
 
     //std::shared_ptr<ctb::LatLong> vehiclePosition_;

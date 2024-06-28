@@ -32,11 +32,16 @@ bool StateRovFollow::ConfigureStateFromFile(libconfig::Config& confObj)
     return true;
 }
 
+void StateRovFollow::UpdateObstacles(){
+
+}
+
 fsm::retval StateRovFollow::OnEntry()
 {
     //set tasks
     //safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
     //absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
+    obstacleAvoidanceTask_ = std::dynamic_pointer_cast<ikcl::ObstacleAvoidance>(tasksMap.find(ulisse::task::asvObstacleAvoidance)->second.task);
     cartesianDistanceTask_ = std::dynamic_pointer_cast<ikcl::CartesianDistance>(tasksMap.find(ulisse::task::asvCartesianDistanceRovFollowing)->second.task);
     alignToTargetTask_ = std::dynamic_pointer_cast<ikcl::AlignToTarget>(tasksMap.find(ulisse::task::asvAngularPositionRovFollow)->second.task);
 
@@ -58,6 +63,11 @@ fsm::retval StateRovFollow::Execute()
 {
 
     CheckRadioController();
+    UpdateObstacles();
+
+
+    // Obstacle Avoidance task
+    obstacleAvoidanceTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(obstacleAvoidanceTask_->TaskSpace(), obstacleAvoidanceTask_->TaskSpace());
 
     //SafetyBoundaries task: it's a velocity task base on the distance from the boundaries. The behaviour that has to achive is align to
     //a desired escape directon and to generate a desired velocity. To do this we use the task AbsoluteAxisAlignment to cope with

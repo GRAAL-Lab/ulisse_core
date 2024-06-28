@@ -32,6 +32,10 @@ struct TasksInfo {
     rclcpp::Publisher<ulisse_msgs::msg::TaskStatus>::SharedPtr taskPub;
 };
 
+struct ObstacleData{
+
+};
+
 enum class ControlMode : int {
     ThrusterMapping,
     ClassicPIDControl,

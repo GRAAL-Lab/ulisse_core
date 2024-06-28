@@ -27,6 +27,7 @@ const std::string asvAbsoluteAxisAlignmentSafety = "ASV_Absolute_Axis_Alignment_
 const std::string asvAbsoluteAxisAlignmentHold = "ASV_Absolute_Axis_Alignment_Hold";
 const std::string asvAbsoluteAxisAlignmentObstacle = "ASV_Absolute_Axis_Alignment_Obstacle"; // ASV-ROV obstacle avoidance
 const std::string asvLinearVelocityHold = "ASV_Linear_Velocity_Hold";
+const std::string asvObstacleAvoidance = "ASV_Obstacle_Avoidance"; // ASV-ROV obstacle avoidance
 
 }
 
@@ -39,6 +40,14 @@ const std::string surge_heading = "Surge_Heading";
 const std::string surge_yawrate = "Surge_YawRate";
 const std::string pathfollow = "Path_Following";
 const std::string rovfollow = "ROV_Following";
+}
+
+namespace obstacle {
+
+const std::string obstacle1 = "Obstacle_1";
+const std::string obstacle2 = "Obstacle_2";
+const std::string obstacle3 = "Obstacle_3";
+
 }
 
 namespace commands {

@@ -12,6 +12,7 @@ namespace states {
     protected:
         std::shared_ptr<ikcl::AlignToTarget> alignToTargetTask_;
         std::shared_ptr<ikcl::CartesianDistance> cartesianDistanceTask_;
+        std::shared_ptr<ikcl::ObstacleAvoidance> obstacleAvoidanceTask_;
 
         bool normalZone;
 
@@ -30,6 +31,8 @@ namespace states {
 
 
         bool ConfigureStateFromFile(libconfig::Config& confObj) override;
+
+        void UpdateObstacles();
     };
 }
 }
