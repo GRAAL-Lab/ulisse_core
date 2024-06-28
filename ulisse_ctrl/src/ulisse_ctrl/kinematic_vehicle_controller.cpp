@@ -138,33 +138,33 @@ VehicleController::VehicleController(std::string conf_filename)
     tasksMap_.insert(std::make_pair(ulisse::task::asvAbsoluteAxisAlignmentHold, taskInfo_));
 
     // ASV absolute axis alignment task obstacle avoidance
+    /*
     asvAbsoluteAxisAlignmentObstacle_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asvAbsoluteAxisAlignmentObstacle, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvAbsoluteAxisAlignmentObstacle_;
     taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment_obstacle, 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvAbsoluteAxisAlignmentObstacle, taskInfo_));
-
+*/
     // ASV CONTROL VELOCITY LINEAR HOLD
     asvLinearVelocityHold_ = std::make_shared<ikcl::LinearVelocity>(ikcl::LinearVelocity(ulisse::task::asvLinearVelocityHold, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvLinearVelocityHold_;
     taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_linear_velocity_hold, 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvLinearVelocityHold, taskInfo_));
 
-    // ASV obstacle avoidance task
-    //std::shared_ptr<ikcl::SphereObstacle> obs1, obs2, obs3;
-    obs1 = std::make_shared<ikcl::SphereObstacle>(world_T_obstacle1, ulisse::obstacle::obstacle1, 3.0);
-    //obs2 = std::make_shared<ikcl::SphereObstacle>(world_T_obstacle2, ulisse::obstacle::obstacle2, 3.0);
-    //obs3 = std::make_shared<ikcl::SphereObstacle>(world_T_obstacle3, ulisse::obstacle::obstacle3, 3.0);
-    obstaclesVector_.push_back(obs1);
-    //obstacles_vector_.push_back(obs2);
-    //obstacles_vector_.push_back(obs3);
-    std::vector<std::string> obstacleFrames(1);
-    obstacleFrames.push_back(ulisse::obstacle::obstacle1);
-    //obstacleFrames.push_back(ulisse::obstacle::obstacle2);
-    //obstacleFrames.push_back(ulisse::obstacle::obstacle3);
+    // ASV obstacle avoidance task  
+    world_T_obstacle1_.setZero();
+    Eigen::Vector3d vec(3.0, 3.0, 0.0);
+    world_T_obstacle1_.TranslationVector(vec);
+    obs1_ = std::make_shared<ikcl::SphereObstacle>(world_T_obstacle1_, rml::FrameID::WorldFrame, 3.0);
+    obstaclesVector_.push_back(obs1_);
+    //std::vector<std::string> obstacleFrames(1,ulisse::robotModelID::ASV);
+    std::vector<std::string> obstacleFrames = {ulisse::robotModelID::ASV};
+    //obstacleFrames.push_back(ulisse::robotModelID::ASV);
+
     asvObstacleAvoidance_ = std::make_shared<ikcl::ObstacleAvoidance>(ikcl::ObstacleAvoidance(ulisse::task::asvObstacleAvoidance, robotModel_, obstacleFrames, obstaclesVector_));
     taskInfo_.task = asvObstacleAvoidance_;
     taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_obstacle_avoidance, 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvObstacleAvoidance, taskInfo_));
+
 
     // Initialize solver_ and iCAT
     int dof = 6;
@@ -360,7 +360,7 @@ void VehicleController::SetUpFSM()
         state.second->robotModel = robotModel_;
         state.second->tasksMap = tasksMap_;
         state.second->ctrlData = ctrlData_;
-        state.second->obstaclesVector = obstaclesVector_; // Obstacle Avoidance
+        //state.second->obstaclesVector = obstaclesVector_; // Obstacle Avoidance
         state.second->SetFSM(&uFsm_);
     }
     std::cout << "State.second are set" << std::endl;
@@ -691,11 +691,11 @@ void VehicleController::ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr m
     ulisse_msgs::msg::Obstacle obs;
     obs.id = msg->id;
     obs.center = msg->center;
-    if(obs.id == "wind_turbine_1"){
+    /*if(obs.id == "wind_turbine_1"){
         world_T_obstacle1_.setZero(4);
         Eigen::Vector3f vec(3,3,0);
         world_T_obstacle1_.TranslationVector(vec);
-    }
+    }*/
 
 
 }
