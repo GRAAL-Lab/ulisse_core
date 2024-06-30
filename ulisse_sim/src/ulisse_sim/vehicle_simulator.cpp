@@ -59,7 +59,8 @@ VehicleSimulator::VehicleSimulator(const std::string file_name)
 
     thrustersSub_ = this->create_subscription<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_reference_perc, 1,
                                                                                     std::bind(&VehicleSimulator::ThrustersReferenceCB, this, _1));
-
+    ObstacleSub_ = this->create_subscription<ulisse_msgs::msg::Obstacle>(ulisse_msgs::topicnames::task_obstacle_avoidance, 1,
+                                                                                   std::bind(&VehicleSimulator::ObstacleCB, this, _1));
     worldF_waterVelocity_(0) = 0.0;
     worldF_waterVelocity_(1) = 0.0;
 
@@ -70,6 +71,11 @@ VehicleSimulator::VehicleSimulator(const std::string file_name)
     llcStatusMsg_.flags.ppm_remote_enabled = false;
 
     bodyF_projection_.setZero(6, 6);
+
+    ulisse_msgs::msg::Obstacle obs;
+    obs.id = "";
+    obstacle_ = std::make_shared<ulisse_msgs::msg::Obstacle>(obs);
+    obstaclesVector_.push_back(obstacle_);
 
     // Main function timer
     int msRunPeriod = 1.0/(config_->rate) * 1000;
@@ -154,8 +160,10 @@ void VehicleSimulator::Run()
 {
     ExecuteStep();
     SimulateSensors();
+    bool update = UpdateObstacles();
     PublishSensors();
     PublishTf();
+    VisualizeObstacles();
 }
 
 
@@ -625,6 +633,58 @@ void VehicleSimulator::PublishTf(){
 
 }
 
+bool VehicleSimulator::UpdateObstacles(){
+    for(int i=0; i< obstaclesVector_.size(); i++){
+        if(obstacle_->id == obstaclesVector_[i]->id){
+            obstaclesVector_[i]->center.latitude = obstacle_->center.latitude;
+            obstaclesVector_[i]->center.longitude = obstacle_->center.longitude;
+            return true;
+        }
+    }
+    obstaclesVector_.push_back(obstacle_);
+    return true;
+}
+
+void VehicleSimulator::VisualizeObstacles(){
+    visualization_msgs::msg::Marker marker;
+    visualization_msgs::msg::MarkerArray markerArray;
+
+    for(int i=0; i< obstaclesVector_.size(); i++){
+        marker.header.frame_id = "world";
+        marker.header.stamp = this->get_clock()->now();
+        marker.ns = obstaclesVector_[i]->id;
+        marker.id = i;
+        marker.type = visualization_msgs::msg::Marker::CYLINDER;
+        //marker.action = visualization_msgs::Marker::ADD;
+        Eigen::Vector3d Pos_UTM;
+        ctb::LatLong Pos_LatLong;
+        Pos_LatLong.latitude = obstaclesVector_[i]->center.latitude;
+        Pos_LatLong.longitude = obstaclesVector_[i]->center.longitude;
+        ctb::LatLong2LocalUTM(Pos_LatLong, 0.0, centroidLocation_, Pos_UTM);
+        marker.pose.position.x = Pos_UTM.y();
+        marker.pose.position.y = Pos_UTM.x(); // inverted
+        marker.pose.position.z = 0;
+
+        marker.pose.orientation.x = 0.0;
+        marker.pose.orientation.y = 0.0;
+        marker.pose.orientation.z = 5.0;
+        marker.pose.orientation.w = 1.0;
+        marker.scale.x = 6.0;
+        marker.scale.y = 6.0;
+        marker.scale.z = 10.0;
+        marker.color.a = 1.0; // Don't forget to set the alpha!
+        marker.color.r = 0.0; //0
+        marker.color.g = 1.0;
+        marker.color.b = 0.0; //0
+
+        markerArray.markers.push_back(marker);
+
+        obstaclesVector_[i]->center.latitude = obstacle_->center.latitude;
+        obstaclesVector_[i]->center.longitude = obstacle_->center.longitude;
+    }
+    visualizationPub_->publish( markerArray );
+}
+
 double VehicleSimulator::GetCurrentTimeStamp() const
 {
     long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
@@ -638,4 +698,12 @@ void VehicleSimulator::ThrustersReferenceCB(const ulisse_msgs::msg::ThrustersRef
 
     motorTimeout_.Start();
 }
+
+void VehicleSimulator::ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr msg){
+    obstacle_->id = msg->id;
+    obstacle_->center.latitude = msg->center.latitude;
+    obstacle_->center.longitude = msg->center.longitude;
+}
+
+
 }

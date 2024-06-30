@@ -17,6 +17,7 @@
 #include "ulisse_msgs/msg/llc_thrusters.hpp"
 #include "ulisse_msgs/msg/thrusters_reference.hpp"
 #include "ulisse_msgs/msg/llc_status.hpp"
+#include "ulisse_msgs/msg/obstacle.hpp"
 
 #include "ulisse_sim/simulator_defines.hpp"
 
@@ -96,6 +97,7 @@ class VehicleSimulator : public rclcpp::Node {
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr visualizationPub_;
     
     rclcpp::Subscription<ulisse_msgs::msg::ThrustersReference>::SharedPtr thrustersSub_;
+    rclcpp::Subscription<ulisse_msgs::msg::Obstacle>::SharedPtr ObstacleSub_;
 
     int gpsPubCounter_, compassPubCounter_, imuPubCounter_, magnetometerPubCounter_, ambientPubCounter_;
     int orientusPubCounter_, dvlPubCounter_, fogPubCounter_;
@@ -117,6 +119,8 @@ class VehicleSimulator : public rclcpp::Node {
 
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_ASV;
     geometry_msgs::msg::TransformStamped t_stamp_ASV; // ASV/ROV
+    std::shared_ptr<ulisse_msgs::msg::Obstacle> obstacle_; // Obstacle Avoidance
+    std::vector<std::shared_ptr<ulisse_msgs::msg::Obstacle>> obstaclesVector_; // Obstacle Avoidance
 
 public:
     VehicleSimulator(const std::string file_name);
@@ -127,6 +131,9 @@ public:
     void SimulateSensors();
     void PublishSensors();
     void PublishTf();
+    void VisualizeObstacles(); // Obstacle Avoidance
+
+    bool UpdateObstacles(); // Obstacle Avoidance
 
     auto WorldF_Velocity() const -> const Eigen::Vector6d& { return worldF_velocity_; }
     /*auto Altitude() const -> const rml::EulerRPY& { return bodyF_orientation_; }
@@ -147,6 +154,7 @@ public:
     double GetCurrentTimeStamp() const;
 
     void ThrustersReferenceCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg);
+    void ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr msg);
 };
 }
 
