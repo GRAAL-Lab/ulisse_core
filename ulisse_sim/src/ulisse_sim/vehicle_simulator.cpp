@@ -55,11 +55,12 @@ VehicleSimulator::VehicleSimulator(const std::string file_name)
     //visualizationPub_ = this->create_publisher<visualization_msgs::msg::Marker> ("visualization_marker", 0 );
     visualizationPub_ = this->create_publisher<visualization_msgs::msg::MarkerArray> ("visualization_marker_array", 0 );
 
+    tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
     tf_broadcaster_ASV = std::make_shared<tf2_ros::TransformBroadcaster>(this); //ASV/ROV
 
     thrustersSub_ = this->create_subscription<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_reference_perc, 1,
                                                                                     std::bind(&VehicleSimulator::ThrustersReferenceCB, this, _1));
-    ObstacleSub_ = this->create_subscription<ulisse_msgs::msg::Obstacle>(ulisse_msgs::topicnames::task_obstacle_avoidance, 1,
+    ObstacleSub_ = this->create_subscription<ulisse_msgs::msg::Obstacle>(ulisse_msgs::topicnames::obstacle, 10,
                                                                                    std::bind(&VehicleSimulator::ObstacleCB, this, _1));
     worldF_waterVelocity_(0) = 0.0;
     worldF_waterVelocity_(1) = 0.0;
@@ -72,10 +73,13 @@ VehicleSimulator::VehicleSimulator(const std::string file_name)
 
     bodyF_projection_.setZero(6, 6);
 
-    ulisse_msgs::msg::Obstacle obs;
-    obs.id = "";
-    obstacle_ = std::make_shared<ulisse_msgs::msg::Obstacle>(obs);
-    obstaclesVector_.push_back(obstacle_);
+    //ulisse_msgs::msg::Obstacle obs;
+    //obs.id = "";
+    //obstacle_ = std::make_shared<ulisse_msgs::msg::Obstacle>(obs);
+    //obstaclesVector_.push_back(obstacle_);
+    obstaclesPointerVector_.resize(0);
+    obstaclesVector_.resize(0);
+    obstacleMsg = false;
 
     // Main function timer
     int msRunPeriod = 1.0/(config_->rate) * 1000;
@@ -160,7 +164,9 @@ void VehicleSimulator::Run()
 {
     ExecuteStep();
     SimulateSensors();
-    bool update = UpdateObstacles();
+    UpdateObstacles();
+    //printObstacleVector(obstaclesVector_);
+    printObstacle(obstaclesPointerVector_);
     PublishSensors();
     PublishTf();
     VisualizeObstacles();
@@ -568,6 +574,21 @@ void VehicleSimulator::PublishSensors()
 }
 
 void VehicleSimulator::PublishTf(){
+
+    Eigen::Vector3d LaSpezia_centroid;
+    ctb::LatLong2LocalUTM(centroidLocation_, 0.0, centroidLocation_, LaSpezia_centroid);
+    t_stamp.header.stamp = this->get_clock()->now();
+    t_stamp.header.frame_id = "world";
+    t_stamp.child_frame_id = "centroid";
+    t_stamp.transform.translation.x = LaSpezia_centroid(0);
+    t_stamp.transform.translation.y = LaSpezia_centroid(1);
+    t_stamp.transform.translation.z = LaSpezia_centroid(2);
+    t_stamp.transform.rotation.x = 1.0;
+    t_stamp.transform.rotation.y = 0.0;
+    t_stamp.transform.rotation.z = 0.0;
+    t_stamp.transform.rotation.w = 0.0;
+    tf_broadcaster_->sendTransform(t_stamp);
+
     Eigen::Vector3d ASVpos;
     ctb::LatLong2LocalUTM(vehiclePos_, altitude_, centroidLocation_, ASVpos);
 
@@ -590,7 +611,7 @@ void VehicleSimulator::PublishTf(){
     visualization_msgs::msg::MarkerArray markerArray;
     marker.header.frame_id = "world";
     marker.header.stamp = this->get_clock()->now();
-    marker.ns = "rov_link";
+    marker.ns = "asv_link";
     marker.id = 1;
     //marker.type = visualization_msgs::msg::Marker::CUBE;
     marker.type = visualization_msgs::msg::Marker::MESH_RESOURCE;
@@ -633,44 +654,66 @@ void VehicleSimulator::PublishTf(){
 
 }
 
-bool VehicleSimulator::UpdateObstacles(){
-    for(int i=0; i< obstaclesVector_.size(); i++){
-        if(obstacle_->id == obstaclesVector_[i]->id){
-            obstaclesVector_[i]->center.latitude = obstacle_->center.latitude;
-            obstaclesVector_[i]->center.longitude = obstacle_->center.longitude;
-            return true;
+void VehicleSimulator::UpdateObstacles(){
+    //std::cout << "obstacle_update : " << obstacle_.id <<std::endl;
+    //bool ExsiteObs = false;
+    if(obstaclesVector_.size() > obstaclesPointerVector_.size()){
+        for(unsigned long i = obstaclesPointerVector_.size(); i < obstaclesVector_.size(); i++){
+            std::shared_ptr<ulisse_msgs::msg::Obstacle> obs_pointer;
+            obs_pointer = std::make_shared<ulisse_msgs::msg::Obstacle>(obstaclesVector_[i]);
+            obstaclesPointerVector_.push_back(obs_pointer);
         }
     }
-    obstaclesVector_.push_back(obstacle_);
-    return true;
+
+
+
+
+}
+
+void VehicleSimulator::printObstacle(const std::vector<std::shared_ptr<ulisse_msgs::msg::Obstacle>> obstaclesVector){
+    for(unsigned long i=0; i< obstaclesVector.size(); i++){
+        std::cout << "i : " << i <<std::endl;
+        std::cout << "obstaclesVector.size() : " << obstaclesVector.size() <<std::endl;
+        std::cout << obstaclesVector[i]->id <<": " <<std::endl;
+        std::cout << obstaclesVector[i]->center.latitude <<", " << obstaclesVector[i]->center.longitude <<std::endl;
+    }
+}
+
+void VehicleSimulator::printObstacleVector(const std::vector<ulisse_msgs::msg::Obstacle> obstaclesVector){
+    for(unsigned long i=0; i< obstaclesVector.size(); i++){
+        std::cout << "i : " << i <<std::endl;
+        std::cout << "obstaclesVector.size() : " << obstaclesVector.size() <<std::endl;
+        std::cout << obstaclesVector[i].id <<": " <<std::endl;
+        std::cout << obstaclesVector[i].center.latitude <<", " << obstaclesVector[i].center.longitude <<std::endl;
+    }
 }
 
 void VehicleSimulator::VisualizeObstacles(){
     visualization_msgs::msg::Marker marker;
     visualization_msgs::msg::MarkerArray markerArray;
 
-    for(int i=0; i< obstaclesVector_.size(); i++){
+    for(unsigned long i=0; i< obstaclesPointerVector_.size(); i++){
         marker.header.frame_id = "world";
         marker.header.stamp = this->get_clock()->now();
-        marker.ns = obstaclesVector_[i]->id;
+        marker.ns = obstaclesPointerVector_[i]->id;
         marker.id = i;
         marker.type = visualization_msgs::msg::Marker::CYLINDER;
         //marker.action = visualization_msgs::Marker::ADD;
         Eigen::Vector3d Pos_UTM;
         ctb::LatLong Pos_LatLong;
-        Pos_LatLong.latitude = obstaclesVector_[i]->center.latitude;
-        Pos_LatLong.longitude = obstaclesVector_[i]->center.longitude;
+        Pos_LatLong.latitude = obstaclesPointerVector_[i]->center.latitude;
+        Pos_LatLong.longitude = obstaclesPointerVector_[i]->center.longitude;
         ctb::LatLong2LocalUTM(Pos_LatLong, 0.0, centroidLocation_, Pos_UTM);
         marker.pose.position.x = Pos_UTM.y();
         marker.pose.position.y = Pos_UTM.x(); // inverted
-        marker.pose.position.z = 0;
+        marker.pose.position.z = 5;
 
         marker.pose.orientation.x = 0.0;
         marker.pose.orientation.y = 0.0;
-        marker.pose.orientation.z = 5.0;
+        marker.pose.orientation.z = 0.0;
         marker.pose.orientation.w = 1.0;
-        marker.scale.x = 6.0;
-        marker.scale.y = 6.0;
+        marker.scale.x = 2.0;
+        marker.scale.y = 2.0;
         marker.scale.z = 10.0;
         marker.color.a = 1.0; // Don't forget to set the alpha!
         marker.color.r = 0.0; //0
@@ -679,8 +722,8 @@ void VehicleSimulator::VisualizeObstacles(){
 
         markerArray.markers.push_back(marker);
 
-        obstaclesVector_[i]->center.latitude = obstacle_->center.latitude;
-        obstaclesVector_[i]->center.longitude = obstacle_->center.longitude;
+        obstaclesVector_[i].center.latitude = obstacle_.center.latitude;
+        obstaclesVector_[i].center.longitude = obstacle_.center.longitude;
     }
     visualizationPub_->publish( markerArray );
 }
@@ -700,9 +743,24 @@ void VehicleSimulator::ThrustersReferenceCB(const ulisse_msgs::msg::ThrustersRef
 }
 
 void VehicleSimulator::ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr msg){
-    obstacle_->id = msg->id;
-    obstacle_->center.latitude = msg->center.latitude;
-    obstacle_->center.longitude = msg->center.longitude;
+    obstacle_.id = msg->id;
+    obstacle_.center.latitude = msg->center.latitude;
+    obstacle_.center.longitude = msg->center.longitude;
+    obstacleMsg = true;
+    bool ExistsObs = false;
+    for(unsigned long i=0; i < obstaclesVector_.size(); i++){
+        if(obstacle_.id == obstaclesVector_[i].id){
+            obstaclesVector_[i].center.latitude = obstacle_.center.latitude;
+            obstaclesVector_[i].center.longitude = obstacle_.center.longitude;
+            ExistsObs = true;
+        }
+    }
+    if(!ExistsObs){
+        obstaclesVector_.push_back(obstacle_);
+    }
+
+
+    //std::cout << "obstacle_ : " << obstacle_.id <<std::endl;
 }
 
 

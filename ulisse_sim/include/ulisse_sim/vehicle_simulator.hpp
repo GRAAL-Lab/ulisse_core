@@ -102,6 +102,7 @@ class VehicleSimulator : public rclcpp::Node {
     int gpsPubCounter_, compassPubCounter_, imuPubCounter_, magnetometerPubCounter_, ambientPubCounter_;
     int orientusPubCounter_, dvlPubCounter_, fogPubCounter_;
 
+
     futils::Timer motorTimeout_;
     double hp_, hs_;
 
@@ -117,10 +118,15 @@ class VehicleSimulator : public rclcpp::Node {
     bool LoadConfiguration(const std::string file_name);
     void SimulateActuation();
 
+    std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+    geometry_msgs::msg::TransformStamped t_stamp;
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_ASV;
     geometry_msgs::msg::TransformStamped t_stamp_ASV; // ASV/ROV
-    std::shared_ptr<ulisse_msgs::msg::Obstacle> obstacle_; // Obstacle Avoidance
-    std::vector<std::shared_ptr<ulisse_msgs::msg::Obstacle>> obstaclesVector_; // Obstacle Avoidance
+    ulisse_msgs::msg::Obstacle obstacle_; // Obstacle Avoidance
+    std::vector<std::shared_ptr<ulisse_msgs::msg::Obstacle>> obstaclesPointerVector_; // Obstacle Avoidance
+    std::vector<ulisse_msgs::msg::Obstacle> obstaclesVector_;
+
+    bool obstacleMsg;
 
 public:
     VehicleSimulator(const std::string file_name);
@@ -133,7 +139,9 @@ public:
     void PublishTf();
     void VisualizeObstacles(); // Obstacle Avoidance
 
-    bool UpdateObstacles(); // Obstacle Avoidance
+    void UpdateObstacles(); // Obstacle Avoidance
+    void printObstacle(const std::vector<std::shared_ptr<ulisse_msgs::msg::Obstacle>> obstaclesVector);
+    void printObstacleVector(const std::vector<ulisse_msgs::msg::Obstacle> obstaclesVector);
 
     auto WorldF_Velocity() const -> const Eigen::Vector6d& { return worldF_velocity_; }
     /*auto Altitude() const -> const rml::EulerRPY& { return bodyF_orientation_; }

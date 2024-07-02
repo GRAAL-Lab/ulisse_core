@@ -111,7 +111,7 @@ fsm::retval StateRovFollow::Execute()
     // Set the align vector to the target
     alignToTargetTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(goalHeading), goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame);
 
-    // Set the vector that has to been align to the distance vector
+    // Set the vector that has to be aligned to the distance vector
     alignToTargetTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
 
     // Compute the heading error
