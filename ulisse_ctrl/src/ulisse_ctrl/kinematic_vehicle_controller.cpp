@@ -690,14 +690,33 @@ void VehicleController::ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr m
     //obstacleData_.
     ulisse_msgs::msg::Obstacle obs;
     obs.id = msg->id;
-    obs.center = msg->center;
-    /*if(obs.id == "wind_turbine_1"){
-        world_T_obstacle1_.setZero(4);
-        Eigen::Vector3f vec(3,3,0);
-        world_T_obstacle1_.TranslationVector(vec);
-    }*/
+    obs.center.latitude = msg->center.latitude;
+    obs.center.longitude = msg->center.longitude;
+    //obstacleMsg = true;
+    bool ExistsObs = false;
+    for(unsigned long i=0; i < obstaclesVector_.size(); i++){
+        if(obs.id == obstaclesVector_[i].id){
+            obstaclesVector_[i].center.latitude = obs.center.latitude;
+            obstaclesVector_[i].center.longitude = obs.center.longitude;
+            ExistsObs = true;
+        }
+    }
+    if(!ExistsObs){
+        obstaclesVector_.push_back(obs);
+    }
+}
 
+void VehicleController::UpdateObstacles(){
+    world_T_obstacle1_.setZero();
+    Eigen::Vector3d vec(3.0, 3.0, 0.0);
+    world_T_obstacle1_.TranslationVector(vec);
 
+    obs1_ = std::make_shared<ikcl::SphereObstacle>(world_T_obstacle1_, rml::FrameID::WorldFrame, 3.0);
+    obstaclesVector_.push_back(obs1_);
+
+    for(unsigned long i =1; i < obstaclePointers_.size(); i++){
+        obstaclePointers_[i]->id
+    }
 }
 
 void VehicleController::ComputeCableLength(){

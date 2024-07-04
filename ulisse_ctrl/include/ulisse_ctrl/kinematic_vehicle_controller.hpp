@@ -156,9 +156,10 @@ class VehicleController : public rclcpp::Node {
     rov_msgs::msg::CableData cableData_;
     rov_msgs::msg::CableLengthReference controlledCable_;
     ulisse_msgs::msg::Obstacle obstacleData_;
+    std::vector<ulisse_msgs::msg::Obstacle> obstaclesVector_;
+    std::vector<std::shared_ptr<ikcl::Obstacle>> obstaclePointers_;
 
-
-    std::vector<std::shared_ptr<ikcl::Obstacle>> obstaclesVector_;
+    //std::vector<std::shared_ptr<ikcl::Obstacle>> obstaclePointers_;
     //Eigen::TransformationMatrix frameID_T_sphereCenter;
     /// OBSTACLE MODELS
     Eigen::TransformationMatrix world_T_obstacle1_;
@@ -195,6 +196,7 @@ class VehicleController : public rclcpp::Node {
     void CableDataRovCB(const rov_msgs::msg::CableData::SharedPtr msg); // ASV-ROV
     void ComputeCableLength(); // ASV-ROV
     void ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr msg);  // ASV-ROV
+    void UpdateObstacles(); // Obstacle Avoidance
 
     void PublishLog(std::string log);
 

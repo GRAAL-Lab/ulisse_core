@@ -123,7 +123,7 @@ class VehicleSimulator : public rclcpp::Node {
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_ASV;
     geometry_msgs::msg::TransformStamped t_stamp_ASV; // ASV/ROV
     ulisse_msgs::msg::Obstacle obstacle_; // Obstacle Avoidance
-    std::vector<std::shared_ptr<ulisse_msgs::msg::Obstacle>> obstaclesPointerVector_; // Obstacle Avoidance
+    //std::vector<std::shared_ptr<ulisse_msgs::msg::Obstacle>> obstaclesPointerVector_; // Obstacle Avoidance
     std::vector<ulisse_msgs::msg::Obstacle> obstaclesVector_;
 
     bool obstacleMsg;
@@ -139,8 +139,8 @@ public:
     void PublishTf();
     void VisualizeObstacles(); // Obstacle Avoidance
 
-    void UpdateObstacles(); // Obstacle Avoidance
-    void printObstacle(const std::vector<std::shared_ptr<ulisse_msgs::msg::Obstacle>> obstaclesVector);
+    //void UpdateObstacles(); // Obstacle Avoidance
+    //void printObstacle(const std::vector<std::shared_ptr<ulisse_msgs::msg::Obstacle>> obstaclesVector);
     void printObstacleVector(const std::vector<ulisse_msgs::msg::Obstacle> obstaclesVector);
 
     auto WorldF_Velocity() const -> const Eigen::Vector6d& { return worldF_velocity_; }
