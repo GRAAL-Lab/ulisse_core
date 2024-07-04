@@ -151,16 +151,21 @@ VehicleController::VehicleController(std::string conf_filename)
     tasksMap_.insert(std::make_pair(ulisse::task::asvLinearVelocityHold, taskInfo_));
 
     // ASV obstacle avoidance task  
-    world_T_obstacle1_.setZero();
-    Eigen::Vector3d vec(3.0, 3.0, 0.0);
-    world_T_obstacle1_.TranslationVector(vec);
-    obs1_ = std::make_shared<ikcl::SphereObstacle>(world_T_obstacle1_, rml::FrameID::WorldFrame, 3.0);
-    obstaclesVector_.push_back(obs1_);
+    /*Eigen::TransformationMatrix world_T_obstacle;
+    world_T_obstacle.setZero();
+    Eigen::Vector3d vec(0.0, 5.0, 0.0);
+    world_T_obstacle.TranslationVector(vec);
+    obs1_ = std::make_shared<ikcl::SphereObstacle>(world_T_obstacle, rml::FrameID::WorldFrame, 3.0);
+    //obs1_ = std::make_shared<ikcl::SphereObstacle>();
+
+    obstaclePointers_.push_back(obs1_);
+*/
+
     //std::vector<std::string> obstacleFrames(1,ulisse::robotModelID::ASV);
     std::vector<std::string> obstacleFrames = {ulisse::robotModelID::ASV};
     //obstacleFrames.push_back(ulisse::robotModelID::ASV);
 
-    asvObstacleAvoidance_ = std::make_shared<ikcl::ObstacleAvoidance>(ikcl::ObstacleAvoidance(ulisse::task::asvObstacleAvoidance, robotModel_, obstacleFrames, obstaclesVector_));
+    asvObstacleAvoidance_ = std::make_shared<ikcl::ObstacleAvoidance>(ikcl::ObstacleAvoidance(ulisse::task::asvObstacleAvoidance, robotModel_, obstacleFrames, obstaclePointers_));
     taskInfo_.task = asvObstacleAvoidance_;
     taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_obstacle_avoidance, 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvObstacleAvoidance, taskInfo_));
@@ -689,34 +694,49 @@ void VehicleController::CableDataRovCB(const rov_msgs::msg::CableData::SharedPtr
 void VehicleController::ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr msg){ //ROV
     //obstacleData_.
     ulisse_msgs::msg::Obstacle obs;
-    obs.id = msg->id;
+    obs = *msg;
+    /*obs.id = msg->id;
     obs.center.latitude = msg->center.latitude;
     obs.center.longitude = msg->center.longitude;
+    obs.b_box_dim_x = msg->b_box_dim_x;
+    obs.b_box_dim_y = msg->b_box_dim_y;*/
     //obstacleMsg = true;
     bool ExistsObs = false;
-    for(unsigned long i=0; i < obstaclesVector_.size(); i++){
-        if(obs.id == obstaclesVector_[i].id){
-            obstaclesVector_[i].center.latitude = obs.center.latitude;
-            obstaclesVector_[i].center.longitude = obs.center.longitude;
+    for(unsigned long i=0; i < obstacleMsgVector_.size(); i++){
+        if(obs.id == obstacleMsgVector_[i].id){
+            obstacleMsgVector_[i].center.latitude = obs.center.latitude;
+            obstacleMsgVector_[i].center.longitude = obs.center.longitude;
             ExistsObs = true;
         }
     }
     if(!ExistsObs){
-        obstaclesVector_.push_back(obs);
+        obstacleMsgVector_.push_back(obs);
     }
 }
 
 void VehicleController::UpdateObstacles(){
-    world_T_obstacle1_.setZero();
-    Eigen::Vector3d vec(3.0, 3.0, 0.0);
-    world_T_obstacle1_.TranslationVector(vec);
-
-    obs1_ = std::make_shared<ikcl::SphereObstacle>(world_T_obstacle1_, rml::FrameID::WorldFrame, 3.0);
-    obstaclesVector_.push_back(obs1_);
-
-    for(unsigned long i =1; i < obstaclePointers_.size(); i++){
-        obstaclePointers_[i]->id
+    for(unsigned long i= obstaclePointers_.size(); i < obstacleMsgVector_.size(); i++){
+        Eigen::Vector3d centerUTM;
+        ctb::LatLong2LocalUTM(LatLong(obstacleMsgVector_[i].center.latitude, obstacleMsgVector_[i].center.longitude), 0.0, centroidLocation_, centerUTM);
+        Eigen::TransformationMatrix world_T_obstacle;
+        world_T_obstacle.setZero();
+        world_T_obstacle.TranslationVector(centerUTM);
+        std::shared_ptr<ikcl::SphereObstacle> obs;
+        obs = std::make_shared<ikcl::SphereObstacle>(world_T_obstacle, rml::FrameID::WorldFrame, obstacleMsgVector_[i].b_box_dim_x);
+        obstaclePointers_.push_back(obs);
     }
+
+}
+
+void VehicleController::PrintObstacles(std::vector<std::shared_ptr<ikcl::Obstacle>> obstaclePointers){
+    for(unsigned long i=0; i < obstaclePointers.size(); i++){
+        std::shared_ptr<ikcl::SphereObstacle> obs_i = std::dynamic_pointer_cast<ikcl::SphereObstacle>(obstaclePointers[i]);
+        Eigen::TransformationMatrix world_T_obstacle = obs_i->CenterFrame();
+        std::cout << " obstaclePointers_" << i+1 << std::endl;
+        std::cout << world_T_obstacle  << std::endl;
+        std::cout << "radius = " << obs_i->Radius() << std::endl;
+    }
+    std::cout << std::endl;
 }
 
 void VehicleController::ComputeCableLength(){
@@ -774,6 +794,13 @@ void VehicleController::Run()
     ComputeCableLength();
 
     tNow_ = std::chrono::system_clock::now();
+    UpdateObstacles();
+    std::cout << "-- orig obs --"<< std::endl;
+    PrintObstacles(obstaclePointers_);
+    std::cout << "--task obs--"<< std::endl;
+    PrintObstacles(asvObstacleAvoidance_->Obstacles());
+
+
     PublishControl();
     PublishTasksInfo();
 

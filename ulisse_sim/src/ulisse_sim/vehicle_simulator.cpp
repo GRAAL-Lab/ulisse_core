@@ -696,8 +696,8 @@ void VehicleSimulator::VisualizeObstacles(){
         marker.pose.orientation.y = 0.0;
         marker.pose.orientation.z = 0.0;
         marker.pose.orientation.w = 1.0;
-        marker.scale.x = 2.0;
-        marker.scale.y = 2.0;
+        marker.scale.x = obstaclesVector_[i].b_box_dim_x;
+        marker.scale.y = obstaclesVector_[i].b_box_dim_y;
         marker.scale.z = 11.0;
         marker.color.a = 1.0; // Don't forget to set the alpha!
         marker.color.r = 1.0; //0
@@ -730,6 +730,8 @@ void VehicleSimulator::ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr ms
     obstacle_.id = msg->id;
     obstacle_.center.latitude = msg->center.latitude;
     obstacle_.center.longitude = msg->center.longitude;
+    obstacle_.b_box_dim_x = msg->b_box_dim_x;
+    obstacle_.b_box_dim_y = msg->b_box_dim_y;
     obstacleMsg = true;
     bool ExistsObs = false;
     for(unsigned long i=0; i < obstaclesVector_.size(); i++){
