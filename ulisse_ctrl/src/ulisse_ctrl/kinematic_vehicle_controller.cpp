@@ -795,10 +795,10 @@ void VehicleController::Run()
 
     tNow_ = std::chrono::system_clock::now();
     UpdateObstacles();
-    std::cout << "-- orig obs --"<< std::endl;
-    PrintObstacles(obstaclePointers_);
-    std::cout << "--task obs--"<< std::endl;
-    PrintObstacles(asvObstacleAvoidance_->Obstacles());
+    //std::cout << "-- orig obs --"<< std::endl;
+    //PrintObstacles(obstaclePointers_);
+    //std::cout << "--task obs--"<< std::endl;
+    //PrintObstacles(asvObstacleAvoidance_->Obstacles());
 
 
     PublishControl();

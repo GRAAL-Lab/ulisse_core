@@ -165,11 +165,11 @@ void VehicleSimulator::Run()
     ExecuteStep();
     SimulateSensors();
     //UpdateObstacles();
-    printObstacleVector(obstaclesVector_);
+    //printObstacleVector(obstaclesVector_);
     //printObstacle(obstaclesPointerVector_);
     PublishSensors();
     PublishTf();
-    VisualizeObstacles();
+    //VisualizeObstacles(); // this one
 }
 
 
@@ -607,14 +607,7 @@ void VehicleSimulator::PublishTf(){
     t_stamp_ASV.transform.rotation.w = q1.w();
     tf_broadcaster_ASV->sendTransform(t_stamp_ASV);
 
-    visualization_msgs::msg::Marker marker;
-    visualization_msgs::msg::MarkerArray markerArray;
-    marker.header.frame_id = "world";
-    marker.header.stamp = this->get_clock()->now();
-    marker.ns = "asv_link";
-    marker.id = 1;
-    //marker.type = visualization_msgs::msg::Marker::CUBE;
-    marker.type = visualization_msgs::msg::Marker::MESH_RESOURCE;
+
     //marker.action = visualization_msgs::msg::Marker::ADD;
     /*marker.pose.position.x = ROVpose_.x();
     marker.pose.position.y = ROVpose_.y();
@@ -628,6 +621,15 @@ void VehicleSimulator::PublishTf(){
     marker.pose.position.y = ASVpos.x(); // inverted
     marker.pose.position.z = ASVpos.z();*/
 
+    /*
+    visualization_msgs::msg::Marker marker;
+    visualization_msgs::msg::MarkerArray markerArray;
+    marker.header.frame_id = "world";
+    marker.header.stamp = this->get_clock()->now();
+    marker.ns = "asv_link";
+    marker.id = 1;
+    //marker.type = visualization_msgs::msg::Marker::CUBE;
+    marker.type = visualization_msgs::msg::Marker::MESH_RESOURCE;
     tf2::Quaternion asv_q;
     //rov2_q.setRPY(bodyF_orientation_.Roll(),bodyF_orientation_.Pitch(),bodyF_orientation_.Yaw() + M_PI/2);
     asv_q.setEuler(bodyF_ASVmesh_.Yaw(),bodyF_ASVmesh_.Pitch(),bodyF_ASVmesh_.Roll());
@@ -650,7 +652,7 @@ void VehicleSimulator::PublishTf(){
     marker.mesh_resource = "package://ulisse_sim/meshes/ulisse2_simplified.dae";
     markerArray.markers.push_back(marker);
 
-    visualizationPub_->publish( markerArray );
+    visualizationPub_->publish( markerArray ); */
 
 }
 
