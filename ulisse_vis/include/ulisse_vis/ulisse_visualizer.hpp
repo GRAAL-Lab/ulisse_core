@@ -64,15 +64,32 @@ class VehicleVisualizer : public rclcpp::Node {
 
     std::shared_ptr<VisualizerConfiguration> config_;
 
-    geometry_msgs::msg::TransformStamped t_stamp;
-    geometry_msgs::msg::TransformStamped t_stamp_ROV;
+    geometry_msgs::msg::TransformStamped t_stamp_;
+    geometry_msgs::msg::TransformStamped t_stamp_ASV_;
 
     rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr navDataSub_;
+    rclcpp::Subscription<ulisse_msgs::msg::SimulatedSystem>::SharedPtr simulatedSysSub_;
     ulisse_msgs::msg::NavFilterData navData_;
+    ulisse_msgs::msg::SimulatedSystem simData_;
 
-    rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr visualizationPub_;
+    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr visualizationPub_;
+    rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr visualizationArrayPub_;
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
-    std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_ROV;
+    std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_ASV;
+
+    visualization_msgs::msg::Marker ulisseMarker_;
+    visualization_msgs::msg::Marker obstacleMarker_;
+    visualization_msgs::msg::MarkerArray obstacleMarkerArray_;
+    Eigen::Vector3d obsUTM_;
+    ctb::LatLong obsLatLong_;
+
+    Eigen::Vector3d asvSimUTM_;
+    ctb::LatLong asvSimLatLong_;
+    tf2::Quaternion asvSimQ_;
+
+    Eigen::Vector3d asvNavUTM_;
+    ctb::LatLong asvNavLatLong_;
+    tf2::Quaternion asvNavQ_;
 
     rclcpp::Subscription<ulisse_msgs::msg::Obstacle>::SharedPtr ObstacleSub_;
 
@@ -83,12 +100,14 @@ class VehicleVisualizer : public rclcpp::Node {
     bool LoadConfiguration(const std::string file_name);
 
     void NavDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
+    void SimSystemCB(const ulisse_msgs::msg::SimulatedSystem::SharedPtr msg);
     void ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr msg);
 
     ulisse_msgs::msg::Obstacle obstacle_; // Obstacle Avoidance
     //std::vector<std::shared_ptr<ulisse_msgs::msg::Obstacle>> obstaclesPointerVector_; // Obstacle Avoidance
     std::vector<ulisse_msgs::msg::Obstacle> obstaclesVector_;
     bool obstacleMsg;
+
 
 public:
     VehicleVisualizer(const std::string file_name);
@@ -98,8 +117,9 @@ public:
     void ExecuteStep();
     void AssignMessage(std::array<double,6>& msg, const Eigen::Vector6d& vector);
     void UpdateFrames();
-    void PublishTf();
+    void PublishMarker();
     void VisualizeObstacles(); // Obstacle Avoidance
+    void PublishTf();
 
     double GetCurrentTimeStamp() const;
 

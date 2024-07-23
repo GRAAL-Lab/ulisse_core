@@ -168,7 +168,7 @@ void VehicleSimulator::Run()
     //printObstacleVector(obstaclesVector_);
     //printObstacle(obstaclesPointerVector_);
     PublishSensors();
-    PublishTf();
+    //PublishTf();
     //VisualizeObstacles(); // this one
 }
 

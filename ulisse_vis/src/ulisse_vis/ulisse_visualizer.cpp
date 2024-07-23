@@ -19,9 +19,15 @@ using std::placeholders::_1;
 using std::placeholders::_2;
 using std::placeholders::_3;
 
+enum {
+    VEHICLE_MODEL = 0,
+    OBS_1,
+    OBS_2
+};
+
 namespace ulisse {
 using namespace std::chrono_literals;
-using std::placeholders::_1;
+
 
 VehicleVisualizer::VehicleVisualizer(const std::string file_name)
     : Node("simulator_node1")
@@ -38,13 +44,41 @@ VehicleVisualizer::VehicleVisualizer(const std::string file_name)
     t_start_ = t_last_ = t_now_ = std::chrono::system_clock::now();
 
     navDataSub_ = this->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data,1, std::bind(&VehicleVisualizer::NavDataCB, this, _1));
-    visualizationPub_ = this->create_publisher<visualization_msgs::msg::MarkerArray> ("visualization_marker_array", 0 );
+    simulatedSysSub_ = this->create_subscription<ulisse_msgs::msg::SimulatedSystem>(ulisse_msgs::topicnames::simulated_system,1, std::bind(&VehicleVisualizer::SimSystemCB, this, _1));
+    visualizationPub_ = this->create_publisher<visualization_msgs::msg::Marker> ("visualization_marker", 0 );
+    visualizationArrayPub_ = this->create_publisher<visualization_msgs::msg::MarkerArray> ("visualization_marker_array", 0 );
 
     tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
-    tf_broadcaster_ROV = std::make_shared<tf2_ros::TransformBroadcaster>(this);
+    tf_broadcaster_ASV = std::make_shared<tf2_ros::TransformBroadcaster>(this);
 
     ObstacleSub_ = this->create_subscription<ulisse_msgs::msg::Obstacle>(ulisse_msgs::topicnames::obstacle, 10,
                                                                                    std::bind(&VehicleVisualizer::ObstacleCB, this, _1));
+
+    obstacleMarkerArray_.markers.resize(0);
+
+    ulisseMarker_.header.frame_id = "NED";
+    ulisseMarker_.ns = "asv_link";
+    ulisseMarker_.id = 0;
+    ulisseMarker_.type = visualization_msgs::msg::Marker::MESH_RESOURCE;
+    ulisseMarker_.scale.x = 0.0005;
+    ulisseMarker_.scale.y = 0.0005;
+    ulisseMarker_.scale.z = 0.0005;
+    ulisseMarker_.color.a = 1.0; // Don't forget to set the alpha!
+    ulisseMarker_.color.r = 1.0; //0
+    ulisseMarker_.color.g = 0.678;
+    ulisseMarker_.color.b = 0.184; //0
+    ulisseMarker_.mesh_resource = "package://ulisse_sim/meshes/ulisse2_simplified.dae";
+
+    obstacleMarker_.header.frame_id = "world";
+    obstacleMarker_.type = visualization_msgs::msg::Marker::CYLINDER;
+    obstacleMarker_.pose.orientation.x = 0.0;
+    obstacleMarker_.pose.orientation.y = 0.0;
+    obstacleMarker_.pose.orientation.z = 0.0;
+    obstacleMarker_.pose.orientation.w = 1.0;
+    obstacleMarker_.color.a = 1.0; // Don't forget to set the alpha!
+    obstacleMarker_.color.r = 1.0; //0
+    obstacleMarker_.color.g = 1.0;
+    obstacleMarker_.color.b = 1.0; //0
 
     obstaclesVector_.resize(0);
     obstacleMsg = false;
@@ -122,12 +156,10 @@ bool VehicleVisualizer::LoadConfiguration(const std::string file_name)
 
 void VehicleVisualizer::Run()
 {
-    //getchar();
     ExecuteStep();
-    //SimulateSensors();
-    //PublishSensors();
     UpdateFrames();
     PublishTf();
+    PublishMarker();
     VisualizeObstacles();
 }
 
@@ -179,7 +211,7 @@ double VehicleVisualizer::GetCurrentTimeStamp() const
     return static_cast<double>(now_nanosecs / 1E9);
 }
 
-void VehicleVisualizer::PublishTf(){
+void VehicleVisualizer::PublishMarker(){
 /*
     t_stamp.header.stamp = this->get_clock()->now();
     t_stamp.header.frame_id = "world";
@@ -197,84 +229,46 @@ void VehicleVisualizer::PublishTf(){
     //Eigen::Vector3d ASVpos;
     //ctb::LatLong2LocalUTM(vehiclePos_, altitude_, centroidLocation_, ASVpos);
 
-    Eigen::Vector3d ASVpos;
-    ctb::LatLong ASVposLatLong(navData_.inertialframe_linear_position.latlong.latitude, navData_.inertialframe_linear_position.latlong.longitude);
-    double altitude = navData_.inertialframe_linear_position.altitude;
-    ctb::LatLong2LocalUTM(ASVposLatLong, altitude, centroidLocation_, ASVpos);
+
+    asvNavLatLong_.latitude = navData_.inertialframe_linear_position.latlong.latitude;
+    asvNavLatLong_.longitude = navData_.inertialframe_linear_position.latlong.longitude;
+    ctb::LatLong2LocalUTM(asvNavLatLong_, navData_.inertialframe_linear_position.altitude, centroidLocation_, asvNavUTM_);
+    //double altitude = ;
 
 
+/*
     tf2::Quaternion q1;
     //q1.setRPY(bodyF_orientation_.Roll(),bodyF_orientation_.Pitch(),bodyF_orientation_.Yaw());
     q1.setRPY(navData_.bodyframe_angular_position.roll, navData_.bodyframe_angular_position.pitch, navData_.bodyframe_angular_position.yaw);
 
-    t_stamp.header.stamp = this->get_clock()->now();
-    t_stamp.header.frame_id = "world";
-    t_stamp.child_frame_id = "ASV";
-    t_stamp.transform.translation.x = ASVpos.y(); // inverted
-    t_stamp.transform.translation.y = ASVpos.x(); // inverted
-    t_stamp.transform.translation.z = ASVpos.z();
-    t_stamp.transform.rotation.x = q1.x();
-    t_stamp.transform.rotation.y = q1.y();
-    t_stamp.transform.rotation.z = q1.z();
-    t_stamp.transform.rotation.w = q1.w();
-    tf_broadcaster_->sendTransform(t_stamp);
+    t_stamp_.header.stamp = this->get_clock()->now();
+    t_stamp_.header.frame_id = "centroid";
+    t_stamp_.child_frame_id = "ASV";
+    t_stamp_.transform.translation.x = ASVpos.y(); // inverted
+    t_stamp_.transform.translation.y = ASVpos.x(); // inverted
+    t_stamp_.transform.translation.z = ASVpos.z();
+    t_stamp_.transform.rotation.x = q1.x();
+    t_stamp_.transform.rotation.y = q1.y();
+    t_stamp_.transform.rotation.z = q1.z();
+    t_stamp_.transform.rotation.w = q1.w();
+    tf_broadcaster_->sendTransform(t_stamp_); */
 
-    //Eigen::Quaterniond eq1(worldF_ROV_bodyF_);
-    //tf2::Quaternion ASVq;
-    //ASVq.setRPY(navData_.bodyframe_angular_position.roll, navData_.bodyframe_angular_position.pitch, navData_.bodyframe_angular_position.yaw);
-
-
-/*
-    t_stamp_ROV.header.stamp = this->get_clock()->now();
-    t_stamp_ROV.header.frame_id = "world";
-    t_stamp_ROV.child_frame_id = "ROV";
-    t_stamp_ROV.transform.translation.x = ROVpose.x();
-    t_stamp_ROV.transform.translation.y = ROVpose.y();
-    t_stamp_ROV.transform.translation.z = altitude;
-    t_stamp_ROV.transform.rotation.x = ROVq.x();
-    t_stamp_ROV.transform.rotation.y = ROVq.y();
-    t_stamp_ROV.transform.rotation.z = ROVq.z();
-    t_stamp_ROV.transform.rotation.w = ROVq.w();
-    tf_broadcaster_ROV->sendTransform(t_stamp_ROV);
-*/
-
+    ulisseMarker_.header.stamp = this->get_clock()->now();
     //tf2::Quaternion asv_q;
     //rov2_q.setRPY(bodyF_orientation_.Roll(),bodyF_orientation_.Pitch(),bodyF_orientation_.Yaw() + M_PI/2);
-    //asv_q.setEuler(navData_.bodyframe_angular_position.pitch, -navData_.bodyframe_angular_position.roll, navData_.bodyframe_angular_position.yaw - M_PI/2);
+    asvNavQ_.setEuler(bodyF_ASVmesh_.Yaw(),bodyF_ASVmesh_.Pitch(),bodyF_ASVmesh_.Roll());
+    ulisseMarker_.pose.position.x = asvNavUTM_.y(); // inverted
+    ulisseMarker_.pose.position.y = asvNavUTM_.x(); // inverted
+    ulisseMarker_.pose.position.z = asvNavUTM_.z();
 
-    visualization_msgs::msg::Marker marker;
-    visualization_msgs::msg::MarkerArray markerArray;
+    ulisseMarker_.pose.orientation.x = asvNavQ_.x();
+    ulisseMarker_.pose.orientation.y = asvNavQ_.y();
+    ulisseMarker_.pose.orientation.z = asvNavQ_.z();
+    ulisseMarker_.pose.orientation.w = asvNavQ_.w();
 
-    marker.header.frame_id = "world";
-    marker.header.stamp = this->get_clock()->now();
-    marker.ns = "asv_link";
-    marker.id = 0;
-    marker.type = visualization_msgs::msg::Marker::MESH_RESOURCE;    
+    //markerArray_.markers.at(VEHICLE_MODEL) = ulisseMarker_;
 
-
-    tf2::Quaternion asv_q;
-    //rov2_q.setRPY(bodyF_orientation_.Roll(),bodyF_orientation_.Pitch(),bodyF_orientation_.Yaw() + M_PI/2);
-    asv_q.setEuler(bodyF_ASVmesh_.Yaw(),bodyF_ASVmesh_.Pitch(),bodyF_ASVmesh_.Roll());
-    marker.pose.position.x = ASVpos.y(); // inverted
-    marker.pose.position.y = ASVpos.x(); // inverted
-    marker.pose.position.z = ASVpos.z();
-
-    marker.pose.orientation.x = asv_q.x();
-    marker.pose.orientation.y = asv_q.y();
-    marker.pose.orientation.z = asv_q.z();
-    marker.pose.orientation.w = asv_q.w();
-    marker.scale.x = 0.0005;
-    marker.scale.y = 0.0005;
-    marker.scale.z = 0.0005;
-    marker.color.a = 1.0; // Don't forget to set the alpha!
-    marker.color.r = 1.0; //0
-    marker.color.g = 0.678;
-    marker.color.b = 0.184; //0
-
-    marker.mesh_resource = "package://ulisse_sim/meshes/ulisse2_simplified.dae";
-    markerArray.markers.push_back(marker);
-
-    visualizationPub_->publish(markerArray);
+    visualizationPub_->publish(ulisseMarker_);
 
 }
 
@@ -317,46 +311,75 @@ void VehicleVisualizer::UpdateFrames(){
 }
 
 void VehicleVisualizer::VisualizeObstacles(){
-    visualization_msgs::msg::Marker marker;
-    visualization_msgs::msg::MarkerArray markerArray;
-
+    //visualization_msgs::msg::Marker marker;
+    //visualization_msgs::msg::MarkerArray markerArray;
+    obstacleMarkerArray_.markers.clear();
     for(unsigned long i=0; i< obstaclesVector_.size(); i++){
-        marker.header.frame_id = "world";
-        marker.header.stamp = this->get_clock()->now();
-        marker.ns = obstaclesVector_[i].id;
-        marker.id = i;
-        marker.type = visualization_msgs::msg::Marker::CYLINDER;
-        //marker.action = visualization_msgs::Marker::ADD;
-        Eigen::Vector3d Pos_UTM;
-        ctb::LatLong Pos_LatLong;
-        Pos_LatLong.latitude = obstaclesVector_[i].center.latitude;
-        Pos_LatLong.longitude = obstaclesVector_[i].center.longitude;
-        ctb::LatLong2LocalUTM(Pos_LatLong, 0.0, centroidLocation_, Pos_UTM);
-        marker.pose.position.x = Pos_UTM.y();
-        marker.pose.position.y = Pos_UTM.x(); // inverted
-        marker.pose.position.z = 0;
 
-        marker.pose.orientation.x = 0.0;
-        marker.pose.orientation.y = 0.0;
-        marker.pose.orientation.z = 0.0;
-        marker.pose.orientation.w = 1.0;
-        marker.scale.x = obstaclesVector_[i].b_box_dim_x;
-        marker.scale.y = obstaclesVector_[i].b_box_dim_y;
-        marker.scale.z = 11.0;
-        marker.color.a = 1.0; // Don't forget to set the alpha!
-        marker.color.r = 1.0; //0
-        marker.color.g = 1.0;
-        marker.color.b = 1.0; //0
+        obstacleMarker_.header.stamp = this->get_clock()->now();
+        obstacleMarker_.ns = obstaclesVector_[i].id;
+        obstacleMarker_.id = i;
 
-        markerArray.markers.push_back(marker);
+        obstacleMarker_.action = visualization_msgs::msg::Marker::ADD;
 
-    //    obstaclesVector_[i].center.latitude = obstacle_.center.latitude;
-    //    obstaclesVector_[i].center.longitude = obstacle_.center.longitude;
+        obsLatLong_.latitude = obstaclesVector_[i].center.latitude;
+        obsLatLong_.longitude = obstaclesVector_[i].center.longitude;
+        ctb::LatLong2LocalUTM(obsLatLong_, 0.0, centroidLocation_, obsUTM_);
+        obstacleMarker_.pose.position.x = obsUTM_.y();
+        obstacleMarker_.pose.position.y = obsUTM_.x(); // inverted
+        obstacleMarker_.pose.position.z = 0;
+
+        obstacleMarker_.scale.x = obstaclesVector_[i].b_box_dim_x;
+        obstacleMarker_.scale.y = obstaclesVector_[i].b_box_dim_y;
+        obstacleMarker_.scale.z = 11.0;
+
+        obstacleMarkerArray_.markers.push_back(obstacleMarker_);
     }
-    visualizationPub_->publish( markerArray );
+
+    visualizationArrayPub_->publish(obstacleMarkerArray_);
+}
+
+void VehicleVisualizer::PublishTf(){
+
+    //Eigen::Vector3d LaSpezia_centroid;
+    //ctb::LatLong2LocalUTM(centroidLocation_, 0.0, centroidLocation_, LaSpezia_centroid);
+    t_stamp_.header.stamp = this->get_clock()->now();
+    t_stamp_.header.frame_id = "world";
+    t_stamp_.child_frame_id = "NED";
+    t_stamp_.transform.translation.x = centerUTM_(0);
+    t_stamp_.transform.translation.y = centerUTM_(1);
+    t_stamp_.transform.translation.z = centerUTM_(2);
+    t_stamp_.transform.rotation.x = 1.0;
+    t_stamp_.transform.rotation.y = 0.0;
+    t_stamp_.transform.rotation.z = 0.0;
+    t_stamp_.transform.rotation.w = 0.0;
+    tf_broadcaster_->sendTransform(t_stamp_);
+
+    //Eigen::Vector3d ASVpos;
+    asvSimLatLong_.latitude = simData_.inertialframe_linear_position.latlong.latitude;
+    asvSimLatLong_.longitude = simData_.inertialframe_linear_position.latlong.longitude;
+    ctb::LatLong2LocalUTM(asvSimLatLong_, simData_.inertialframe_linear_position.altitude, centroidLocation_, asvSimUTM_);
+
+    //tf2::Quaternion q1;
+    asvSimQ_.setRPY(simData_.bodyframe_angular_position.roll, simData_.bodyframe_angular_position.pitch, simData_.bodyframe_angular_position.yaw);
+
+    t_stamp_ASV_.header.stamp = this->get_clock()->now();
+    t_stamp_ASV_.header.frame_id = "NED";
+    t_stamp_ASV_.child_frame_id = "ASV";
+    t_stamp_ASV_.transform.translation.x = asvSimUTM_.y(); // inverted
+    t_stamp_ASV_.transform.translation.y = asvSimUTM_.x(); // inverted
+    t_stamp_ASV_.transform.translation.z = asvSimUTM_.z();
+    t_stamp_ASV_.transform.rotation.x = asvSimQ_.x();
+    t_stamp_ASV_.transform.rotation.y = asvSimQ_.y();
+    t_stamp_ASV_.transform.rotation.z = asvSimQ_.z();
+    t_stamp_ASV_.transform.rotation.w = asvSimQ_.w();
+    tf_broadcaster_ASV->sendTransform(t_stamp_ASV_);
+
 }
 
 void VehicleVisualizer::NavDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg) { navData_ = *msg; }
+
+void VehicleVisualizer::SimSystemCB(const ulisse_msgs::msg::SimulatedSystem::SharedPtr msg) { simData_ = *msg; }
 
 void VehicleVisualizer::ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr msg){
     obstacle_.id = msg->id;
