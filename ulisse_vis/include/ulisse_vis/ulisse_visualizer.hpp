@@ -79,7 +79,7 @@ class VehicleVisualizer : public rclcpp::Node {
 
     visualization_msgs::msg::Marker ulisseMarker_;
     visualization_msgs::msg::Marker obstacleMarker_;
-    visualization_msgs::msg::MarkerArray obstacleMarkerArray_;
+    visualization_msgs::msg::MarkerArray MarkerArray_;
     Eigen::Vector3d obsUTM_;
     ctb::LatLong obsLatLong_;
 
@@ -117,9 +117,10 @@ public:
     void ExecuteStep();
     void AssignMessage(std::array<double,6>& msg, const Eigen::Vector6d& vector);
     void UpdateFrames();
-    void PublishMarker();
+    void VisualizeASV();
     void VisualizeObstacles(); // Obstacle Avoidance
     void PublishTf();
+    void PublishMarkerArray();
 
     double GetCurrentTimeStamp() const;
 

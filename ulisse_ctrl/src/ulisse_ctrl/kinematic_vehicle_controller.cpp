@@ -53,6 +53,7 @@ VehicleController::VehicleController(std::string conf_filename)
     feedbackGuiPub_ = this->create_publisher<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10);
     tpikActionPub_ = this->create_publisher<ulisse_msgs::msg::TPIKAction>(ulisse_msgs::topicnames::tpik_action, 10);
     referenceCableLengthPub_ = this->create_publisher<rov_msgs::msg::CableLengthReference>("/winch/reference_cable_length", 10);
+    referenceWinchMotorPub_ = this->create_publisher<rov_msgs::msg::WinchMotorReference>("/winch/reference_motor", 10);
     //plotVarPub_ = this->create_publisher<ulisse_msgs::msg::PlotVariables>(ulisse_msgs::topicnames::plot_variables, 10); // ASV-ROV plot
 
     //safetyBoundarySetPub_ = this->create_publisher<std_msgs::msg::Bool>(ulisse_msgs::topicnames::safety_boundary_set, 10);
@@ -683,12 +684,13 @@ void VehicleController::NavFilterRovCB(const rov_msgs::msg::NavFilterData::Share
 }
 
 void VehicleController::CableDataRovCB(const rov_msgs::msg::CableData::SharedPtr msg){ //ROV
-    cableData_.released_cable_length = msg->released_cable_length;
+    /*cableData_.released_cable_length = msg->released_cable_length;
     cableData_.layer_n = msg->layer_n;
     cableData_.winding_radius = msg->winding_radius;
     cableData_.winch_rpm = msg->winch_rpm;
     cableData_.max_length = msg->max_length;
-
+*/
+    cableData_ = *msg;
 }
 
 void VehicleController::ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr msg){ //ROV
@@ -751,6 +753,32 @@ void VehicleController::ComputeCableLength(){
     controlledCable_.reference_cable_length = (beta_ + alfa_ * goalHeading ) * goalDistance;
 }
 
+void VehicleController::CableWinchControl(const float &rpm_percentage, float &reference_length){
+    float precision = 1; //float w;
+
+    if(reference_length > cableData_.max_length)
+        reference_length = cableData_.max_length;
+    else if(reference_length < cableData_.min_length)
+        reference_length = cableData_.min_length;
+
+    if(abs(cableData_.released_cable_length - reference_length) > precision){
+        winchMotorRef_.on_off = 1;
+        if(cableData_.released_cable_length < reference_length){
+            //w = M_PI/30 * rpm;
+            winchMotorRef_.rpm_percentage = rpm_percentage;
+        }
+        else{
+            //w = - M_PI/30 * rpm;
+            winchMotorRef_.rpm_percentage = - rpm_percentage;
+        }
+        //float v = w * cableData_.winding_radius / 1000;
+        //UpdateCableLength(v,dt);
+    }
+    else winchMotorRef_.on_off =0;
+    //winchMotorRef_.stamp =
+    //referenceWinchMotorPub_->publish(winchMotorRef_);
+}
+
 void VehicleController::LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg)
 {
     ctrlData_->radioControllerEnabled = msg->flags.ppm_remote_enabled;
@@ -792,6 +820,8 @@ void VehicleController::Run()
     }
 
     ComputeCableLength();
+    double rpm_percentage = 1;
+    CableWinchControl(rpm_percentage, controlledCable_.reference_cable_length);
 
     tNow_ = std::chrono::system_clock::now();
     UpdateObstacles();
@@ -840,6 +870,10 @@ void VehicleController::PublishControl()
             controlledCable_.stamp.sec = now_stamp_secs;
             controlledCable_.stamp.nanosec = now_stamp_nanosecs;
             referenceCableLengthPub_->publish(controlledCable_);
+
+            winchMotorRef_.stamp.sec = now_stamp_secs;
+            winchMotorRef_.stamp.nanosec = now_stamp_nanosecs;
+            referenceWinchMotorPub_->publish(winchMotorRef_);
 
             //plotVar_.stamp.sec = now_stamp_secs;
             //plotVar_.stamp.nanosec = now_stamp_nanosecs;

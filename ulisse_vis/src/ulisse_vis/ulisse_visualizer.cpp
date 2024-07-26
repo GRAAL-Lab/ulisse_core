@@ -54,7 +54,7 @@ VehicleVisualizer::VehicleVisualizer(const std::string file_name)
     ObstacleSub_ = this->create_subscription<ulisse_msgs::msg::Obstacle>(ulisse_msgs::topicnames::obstacle, 10,
                                                                                    std::bind(&VehicleVisualizer::ObstacleCB, this, _1));
 
-    obstacleMarkerArray_.markers.resize(0);
+    MarkerArray_.markers.resize(0);
 
     ulisseMarker_.header.frame_id = "NED";
     ulisseMarker_.ns = "asv_link";
@@ -159,8 +159,10 @@ void VehicleVisualizer::Run()
     ExecuteStep();
     UpdateFrames();
     PublishTf();
-    PublishMarker();
+
+    VisualizeASV();
     VisualizeObstacles();
+    PublishMarkerArray();
 }
 
 void VehicleVisualizer::ExecuteStep()
@@ -211,7 +213,7 @@ double VehicleVisualizer::GetCurrentTimeStamp() const
     return static_cast<double>(now_nanosecs / 1E9);
 }
 
-void VehicleVisualizer::PublishMarker(){
+void VehicleVisualizer::VisualizeASV(){
 /*
     t_stamp.header.stamp = this->get_clock()->now();
     t_stamp.header.frame_id = "world";
@@ -267,8 +269,8 @@ void VehicleVisualizer::PublishMarker(){
     ulisseMarker_.pose.orientation.w = asvNavQ_.w();
 
     //markerArray_.markers.at(VEHICLE_MODEL) = ulisseMarker_;
-
-    visualizationPub_->publish(ulisseMarker_);
+    MarkerArray_.markers.push_back(ulisseMarker_);
+    //visualizationPub_->publish(ulisseMarker_);
 
 }
 
@@ -311,9 +313,7 @@ void VehicleVisualizer::UpdateFrames(){
 }
 
 void VehicleVisualizer::VisualizeObstacles(){
-    //visualization_msgs::msg::Marker marker;
-    //visualization_msgs::msg::MarkerArray markerArray;
-    obstacleMarkerArray_.markers.clear();
+    //MarkerArray_.markers.clear();
     for(unsigned long i=0; i< obstaclesVector_.size(); i++){
 
         obstacleMarker_.header.stamp = this->get_clock()->now();
@@ -333,10 +333,10 @@ void VehicleVisualizer::VisualizeObstacles(){
         obstacleMarker_.scale.y = obstaclesVector_[i].b_box_dim_y;
         obstacleMarker_.scale.z = 11.0;
 
-        obstacleMarkerArray_.markers.push_back(obstacleMarker_);
+        MarkerArray_.markers.push_back(obstacleMarker_);
     }
 
-    visualizationArrayPub_->publish(obstacleMarkerArray_);
+    //visualizationArrayPub_->publish(MarkerArray_);
 }
 
 void VehicleVisualizer::PublishTf(){
@@ -375,6 +375,11 @@ void VehicleVisualizer::PublishTf(){
     t_stamp_ASV_.transform.rotation.w = asvSimQ_.w();
     tf_broadcaster_ASV->sendTransform(t_stamp_ASV_);
 
+}
+
+void VehicleVisualizer::PublishMarkerArray(){
+    visualizationArrayPub_->publish(MarkerArray_);
+    MarkerArray_.markers.clear();
 }
 
 void VehicleVisualizer::NavDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg) { navData_ = *msg; }
