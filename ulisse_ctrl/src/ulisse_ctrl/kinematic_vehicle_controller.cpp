@@ -152,7 +152,7 @@ VehicleController::VehicleController(std::string conf_filename)
     tasksMap_.insert(std::make_pair(ulisse::task::asvLinearVelocityHold, taskInfo_));
 
     // ASV obstacle avoidance task  
-    /*Eigen::TransformationMatrix world_T_obstacle;
+    Eigen::TransformationMatrix world_T_obstacle;
     world_T_obstacle.setZero();
     Eigen::Vector3d vec(0.0, 5.0, 0.0);
     world_T_obstacle.TranslationVector(vec);
@@ -160,7 +160,7 @@ VehicleController::VehicleController(std::string conf_filename)
     //obs1_ = std::make_shared<ikcl::SphereObstacle>();
 
     obstaclePointers_.push_back(obs1_);
-*/
+
 
     //std::vector<std::string> obstacleFrames(1,ulisse::robotModelID::ASV);
     std::vector<std::string> obstacleFrames = {ulisse::robotModelID::ASV};
@@ -171,6 +171,15 @@ VehicleController::VehicleController(std::string conf_filename)
     taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_obstacle_avoidance, 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvObstacleAvoidance, taskInfo_));
 
+    /*Eigen::TransformationMatrix world_T_obstacle;
+    world_T_obstacle.setZero();
+    Eigen::Vector3d vec(0.0, 5.0, 0.0);
+    world_T_obstacle.TranslationVector(vec);
+    obs1_ = std::make_shared<ikcl::SphereObstacle>(world_T_obstacle, rml::FrameID::WorldFrame, 3.0);
+
+    std::vector<std::shared_ptr<ikcl::Obstacle>> Obs_vect;
+    Obs_vect.push_back(obs1_);
+    asvObstacleAvoidance_->Obstacles() = Obs_vect; */
 
     // Initialize solver_ and iCAT
     int dof = 6;
@@ -706,6 +715,7 @@ void VehicleController::ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr m
     bool ExistsObs = false;
     for(unsigned long i=0; i < obstacleMsgVector_.size(); i++){
         if(obs.id == obstacleMsgVector_[i].id){
+            //std::shared_ptr<ikcl::SphereObstacle> obs;
             obstacleMsgVector_[i].center.latitude = obs.center.latitude;
             obstacleMsgVector_[i].center.longitude = obs.center.longitude;
             ExistsObs = true;
@@ -726,12 +736,23 @@ void VehicleController::UpdateObstacles(){
         std::shared_ptr<ikcl::SphereObstacle> obs;
         obs = std::make_shared<ikcl::SphereObstacle>(world_T_obstacle, rml::FrameID::WorldFrame, obstacleMsgVector_[i].b_box_dim_x);
         obstaclePointers_.push_back(obs);
+        asvObstacleAvoidance_->Obstacles()=obstaclePointers_; // new line code
+/*
+        //compute the heading error
+        double obstacleError = asvObstacleAvoidance_->ControlVariable().norm();
+
+        //compute the gain of the cartesian distance
+        double maxObstacleError_ = asvObstacleAvoidance_->GreaterThanParams().xmax[0];
+        double minObstacleError_ = asvObstacleAvoidance_->GreaterThanParams().xmin[0];
+        double taskGain = rml::IncreasingBellShapedFunction(minObstacleError_, maxObstacleError_ , 0, 1.0, obstacleError);
+        asvObstacleAvoidance_->TaskParameter().gain = taskGain * asvObstacleAvoidance_->TaskParameter().conf_gain;
+        */
     }
 
 }
 
 void VehicleController::PrintObstacles(std::vector<std::shared_ptr<ikcl::Obstacle>> obstaclePointers){
-    for(unsigned long i=0; i < obstaclePointers.size(); i++){
+    for(unsigned long i=0; i < obstaclePointers.size(); i++) {
         std::shared_ptr<ikcl::SphereObstacle> obs_i = std::dynamic_pointer_cast<ikcl::SphereObstacle>(obstaclePointers[i]);
         Eigen::TransformationMatrix world_T_obstacle = obs_i->CenterFrame();
         std::cout << " obstaclePointers_" << i+1 << std::endl;
@@ -824,11 +845,38 @@ void VehicleController::Run()
     CableWinchControl(rpm_percentage, controlledCable_.reference_cable_length);
 
     tNow_ = std::chrono::system_clock::now();
-    UpdateObstacles();
-    //std::cout << "-- orig obs --"<< std::endl;
-    //PrintObstacles(obstaclePointers_);
-    //std::cout << "--task obs--"<< std::endl;
-    //PrintObstacles(asvObstacleAvoidance_->Obstacles());
+
+    //UpdateObstacles();
+    std::cout << "-- orig obs --"<< std::endl;
+    PrintObstacles(obstaclePointers_);
+    std::cout << "--task obs--"<< std::endl;
+    PrintObstacles(asvObstacleAvoidance_->Obstacles());
+
+    //compute the heading error
+    std::vector<Eigen::Vector3d> ObsDistance;
+
+    ObsDistance = asvObstacleAvoidance_->GetDistance(ulisse::robotModelID::ASV);
+    //ObsDistance = asvObstacleAvoidance_->GetDistance(rml::FrameID::WorldFrame);
+    Eigen::Vector3d ObsDistance1 = ObsDistance[0];
+    double DistanceFromObs1 = ObsDistance1.norm();
+
+    double obstacleError = asvObstacleAvoidance_->ControlVariable().norm();
+    //compute the gain of the cartesian distance
+    double maxObstacleError_ = asvObstacleAvoidance_->GreaterThanParams().xmax[0];
+    double minObstacleError_ = asvObstacleAvoidance_->GreaterThanParams().xmin[0];
+    //double taskGain = rml::DecreasingBellShapedFunction(minObstacleError_, maxObstacleError_ , 0, 1.0, obstacleError);
+    double taskGain = rml::DecreasingBellShapedFunction(minObstacleError_, maxObstacleError_ , 0, 1.0, DistanceFromObs1);
+    asvObstacleAvoidance_->TaskParameter().gain = taskGain * asvObstacleAvoidance_->TaskParameter().conf_gain;
+
+    std::cout << "ObsDistance1_vector = "<< ObsDistance1<< std::endl;
+    std::cout << "DistanceFromObs1 = "<< DistanceFromObs1<< std::endl;
+    std::cout << "obstacleError = "<< obstacleError<< std::endl;
+    //std::cout << "maxObstacleError_ = "<< maxObstacleError_<< std::endl;
+    //std::cout << "minObstacleError_ = "<< minObstacleError_<< std::endl;
+    std::cout << "taskGain = "<< taskGain<< std::endl;
+    std::cout << "gain = "<< asvObstacleAvoidance_->TaskParameter().gain<< std::endl;
+
+    //asvObstacleAvoidance_->Update();
 
 
     PublishControl();
