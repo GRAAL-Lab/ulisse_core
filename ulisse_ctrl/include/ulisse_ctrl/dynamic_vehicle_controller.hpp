@@ -21,7 +21,7 @@
 
 #include "surface_vehicle_model/surfacevehiclemodel.hpp"
 
-#include "ulisse_msgs/terminal_utils.hpp"
+//#include "ulisse_msgs/terminal_utils.hpp"
 #include <ament_index_cpp/get_package_share_directory.hpp>
 
 namespace ulisse {
