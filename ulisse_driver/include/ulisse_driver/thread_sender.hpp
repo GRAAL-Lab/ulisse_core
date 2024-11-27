@@ -38,8 +38,8 @@ namespace llc {
         std::string confPath_;
         libconfig::Config confObj_;
 
-        LLCData data_;
-        LLCHelper llcHlp_;
+        //LLCData data_;
+        //LLCHelper llcHlp_;
         LowLevelConfiguration lowlevelconf_;
 
         rclcpp::AsyncParametersClient::SharedPtr par_client_;

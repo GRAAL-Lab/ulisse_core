@@ -39,7 +39,7 @@ namespace llc {
         : Node("llc_thread_sender")
     {
 
-        // Reading Parameters
+   /*     // Reading Parameters
         libconfig::Config confObj;
         std::string fileName = "ulisse_driver.conf";
         std::string package_share_directory = ament_index_cpp::get_package_share_directory("ulisse_driver");
@@ -105,7 +105,7 @@ namespace llc {
             std::bind(&ThreadSender::ThrustersReferenceCB, this, _1));
 
         srv_ = create_service<ulisse_msgs::srv::LLCCommand>(ulisse_msgs::topicnames::llc_cmd_service,
-            std::bind(&ThreadSender::CommandsHandler, this, _1, _2, _3));
+            std::bind(&ThreadSender::CommandsHandler, this, _1, _2, _3));*/
 
     }
 
@@ -113,7 +113,7 @@ namespace llc {
         const std::shared_ptr<ulisse_msgs::srv::LLCCommand::Request> request,
         std::shared_ptr<ulisse_msgs::srv::LLCCommand::Response> response)
     {
-        // Create a callback function for when service requests are received.
+   /*     // Create a callback function for when service requests are received.
         (void)request_header;
         RCLCPP_INFO(this->get_logger(), "Incoming request: %s", CommandTypeToString((CommandType)(request->command_type)).c_str());
 
@@ -188,23 +188,24 @@ namespace llc {
             response->res = (int16_t)(RetVal::fail);
         } else {
             response->res = (int16_t)(RetVal::ok);
-        }
+        }*/
     }
 
     void ThreadSender::ThrustersReferenceCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg)
     {
-        data_.messageType = MessageType::reference;
+    /*    data_.messageType = MessageType::reference;
         data_.references.leftThruster = static_cast<int16_t>(msg->left_percentage * 10); // we multiply be 10 since the micro reads 'Per mille'
         data_.references.rightThruster = static_cast<int16_t>(msg->right_percentage * 10);
         clamp(data_.references.leftThruster, -1000, 1000);
         clamp(data_.references.rightThruster, -1000, 1000);
         llcHlp_.SendMessage(data_);
         //RCLCPP_INFO(this->get_logger(), "ControlContext_cb() sending reference! (L:%d, R:%d)", data_.references.leftThruster, data_.references.rightThruster);
-    }
+  */
+  }
 
     void ThreadSender::CopyConfigMsg2LLCStruct(const std::shared_ptr<ulisse_msgs::srv::LLCCommand::Request> request)
     {
-        lowlevelconf_.hbCompass0 = request->config_data.hbcompass0;
+      /*  lowlevelconf_.hbCompass0 = request->config_data.hbcompass0;
         lowlevelconf_.hbCompassMax = request->config_data.hbcompassmax;
         lowlevelconf_.hbMagnetometer0 = request->config_data.hbmagnetometer0;
         lowlevelconf_.hbMagnetometerMax = request->config_data.hbmagnetometermax;
@@ -226,12 +227,12 @@ namespace llc {
         lowlevelconf_.pwmTimeThreshold = request->config_data.pwmtimethreshold;
         lowlevelconf_.pwmZeroThreshold = request->config_data.pwmzerothreshold;
         lowlevelconf_.deadzoneTime = request->config_data.deadzonetime;
-        lowlevelconf_.thrusterSaturation = request->config_data.thrustersaturation;
+        lowlevelconf_.thrusterSaturation = request->config_data.thrustersaturation;*/
     }
 
     void ThreadSender::LoadConfigFile()
     {
-        // This temporary variablea are needed since the libconfig function does not
+   /*     // This temporary variablea are needed since the libconfig function does not
         // have any implementation for bit specific types
         uint temp_uint;
         ctb::GetParam(confObj_, temp_uint, "LLC.Config.HbCompass0");
@@ -285,8 +286,24 @@ namespace llc {
 
         //std::cout << "=====    Reload Sender Config    =====" << std::endl;
         lowlevelconf_.DebugPrint(this->get_logger());
-        //std::cout << "======================================" << std::endl;
+        //std::cout << "======================================" << std::endl;*/
     }
+
+
+    /*uint16_t ThreadSender::FinalizePacket()
+    {
+        uint16_t checksum;
+
+        // checksum calculation does not involve the first two bytes
+        // offset is the current size of the message
+        checksum = CalculateChecksum(buffer_.get() + 2, offset - 2);
+
+        // add checksum and the packet is complete
+        offset = PacketAdd_uint16(packetPointer, offset, checksum);
+
+        size = offset;
+    }*/
+
 
 } // namespace llc
 } // namespace ulisse
