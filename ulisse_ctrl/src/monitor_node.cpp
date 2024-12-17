@@ -64,7 +64,7 @@ int main(int argc, char* argv[])
 //        std::cout << tc::blu << "Motor Map Out:\t" << tc::none << thrusters_data.motor_mapout.left << ", " << thrusters_data.motor_mapout.right << std::endl;
 //        std::cout << tc::blu << "Motor Ctrl Ref:\t" << tc::none << thrusters_data.motor_ctrlref.left << ", " << thrusters_data.motor_ctrlref.right << std::endl;
 
-        std::cout << tc::mag << "Battery Level (L,R): " << tc::none << battery_left.charge_percent << "%, " << battery_right.charge_percent << "%" << std::endl;
+//        std::cout << tc::mag << "Battery Level (L,R): " << tc::none << battery_left.charge_percent << "%, " << battery_right.charge_percent << "%" << std::endl;
 
         std::cout << "------------------------------------" << std::endl;
 
