@@ -86,6 +86,7 @@ private:
     std::ofstream avoidancePathFile_;
     std::ofstream avoidanceStatusFile_;
     std::ofstream obstacleFile_;
+    std::ofstream obstacleGTFile_;
 
     bool ConvertToCSV();
     bool OpenFiles();

@@ -15,6 +15,8 @@ find_package(ctrl_toolbox REQUIRED)
 find_package(oal REQUIRED)
 find_package(ament_index_cpp)
 
+find_package(detav_msgs REQUIRED)
+
 # Add files in the tree of "Projects" view in QtCreator
 file(GLOB_RECURSE SOURCE_FILES
     "msg/*.msg"
@@ -29,6 +31,7 @@ add_custom_target(.ProjectFiles. SOURCES ${SOURCE_FILES})
 include_directories(
         include
         ${ulisse_msgs_INCLUDE_DIRS}
+        ${detav_msgs_INCLUDE_DIRS}
 )
 
 add_executable(oal_interface src/oal_interface.cpp)
@@ -39,12 +42,16 @@ target_compile_features(oal_interface PUBLIC c_std_99 cxx_std_17)  # Require C99
 ament_target_dependencies(
         oal_interface
         ament_index_cpp
-        "rclcpp"
-        "ulisse_msgs"
-        "ulisse_ctrl"
-        "ctrl_toolbox"
-        "oal"
+        rclcpp
+        ulisse_msgs
+        detav_msgs
+        ulisse_ctrl
+        ctrl_toolbox
+        oal
 )
+
+# Install target
+install(TARGETS oal_interface DESTINATION lib/${PROJECT_NAME})
 target_link_libraries(oal_interface Geographic oal config++)
 
 if(BUILD_TESTING)

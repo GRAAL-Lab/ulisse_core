@@ -165,7 +165,7 @@ bool OfflineBagConverter::ConvertToCSV()
             serialization.deserialize_message(&extracted_serialized_msg, &avoidancePath_);
             avoidancePathFile_ << std::fixed << std::setprecision(6)
                            << bag_message->time_stamp  * 1e-9                                << ", "
-                           << avoidancePath_.creation_time                                    << ", "
+                           << avoidancePath_.stamp.sec + (avoidanceStatus_.stamp.nanosec * 1e-9) << ", "
                            << avoidancePath_.colregs_compliant                                  << ", "
                            << avoidancePath_.vh_position.latitude << ", "
                            << avoidancePath_.vh_position.longitude << ", "    
@@ -181,7 +181,7 @@ bool OfflineBagConverter::ConvertToCSV()
                            }
                            
                            avoidancePathFile_ << "\n";
-                        
+                      
         
         } else if (bag_message->topic_name == ulisse_msgs::topicnames::avoidance_status) {
             rclcpp::Serialization<ulisse_msgs::msg::AvoidanceStatus> serialization;
@@ -189,23 +189,27 @@ bool OfflineBagConverter::ConvertToCSV()
             serialization.deserialize_message(&extracted_serialized_msg, &avoidanceStatus_);
             avoidanceStatusFile_ << std::fixed << std::setprecision(6)
                            << bag_message->time_stamp  * 1e-9      << ", "
+                           << avoidanceStatus_.stamp.sec + (avoidanceStatus_.stamp.nanosec * 1e-9) << ", "
+                           << avoidanceStatus_.current_path_creation.sec + (avoidanceStatus_.current_path_creation.nanosec * 1e-9) << ", "
                            << avoidanceStatus_.status              << ", "
                            << avoidanceStatus_.path_change	       << ", "
                            << avoidanceStatus_.n_known_obs         << ", "
                            << avoidanceStatus_.colregs_compliant   << ", "
                            << avoidanceStatus_.desired_speed       << ", ";
+
+
                       
-                           for(size_t i = 0; i < avoidanceStatus_.obs_distances.size(); i++) {
-                           	avoidanceStatusFile_ 
-                           	<< avoidanceStatus_.obs_distances.at(i).x_distance << " "
-                           	<< avoidanceStatus_.obs_distances.at(i).y_distance << " "
-                           	<< avoidanceStatus_.obs_distances.at(i).safe_bb_x_dim << " "
-                           	<< avoidanceStatus_.obs_distances.at(i).safe_bb_y_dim << " "
-                           	<< avoidanceStatus_.obs_distances.at(i).max_bb_x_dim << " "
-                           	<< avoidanceStatus_.obs_distances.at(i).max_bb_y_dim << " "
-                           	<< avoidanceStatus_.obs_distances.at(i).current_bb_x_dim << " "
-                           	<< avoidanceStatus_.obs_distances.at(i).current_bb_y_dim << "; ";
-                           }
+                        //    for(size_t i = 0; i < avoidanceStatus_.obs_distances.size(); i++) {
+                        //    	avoidanceStatusFile_ 
+                        //    	<< avoidanceStatus_.obs_distances.at(i).x_distance << " "
+                        //    	<< avoidanceStatus_.obs_distances.at(i).y_distance << " "
+                        //    	<< avoidanceStatus_.obs_distances.at(i).safe_bb_x_dim << " "
+                        //    	<< avoidanceStatus_.obs_distances.at(i).safe_bb_y_dim << " "
+                        //    	<< avoidanceStatus_.obs_distances.at(i).max_bb_x_dim << " "
+                        //    	<< avoidanceStatus_.obs_distances.at(i).max_bb_y_dim << " "
+                        //    	<< avoidanceStatus_.obs_distances.at(i).current_bb_x_dim << " "
+                        //    	<< avoidanceStatus_.obs_distances.at(i).current_bb_y_dim << "; ";
+                        //    }
                            avoidanceStatusFile_ << "\n";
         } else if(bag_message->topic_name == ulisse_msgs::topicnames::obstacle) {
             rclcpp::Serialization<ulisse_msgs::msg::Obstacle> serialization;
@@ -213,6 +217,7 @@ bool OfflineBagConverter::ConvertToCSV()
             serialization.deserialize_message(&extracted_serialized_msg, &Obstacle_);
         	obstacleFile_ << std::fixed << std::setprecision(6)
                            << bag_message->time_stamp  * 1e-9      << ", "
+                           << Obstacle_.stamp.sec + (Obstacle_.stamp.nanosec * 1e-9) << ", "
                            << Obstacle_.id              		 << ", "
                            << Obstacle_.center.latitude            << ", "
                            << Obstacle_.center.longitude           << ", "
@@ -223,13 +228,38 @@ bool OfflineBagConverter::ConvertToCSV()
                            << Obstacle_.bb_safe.x_stern_ratio      << ", "
                            << Obstacle_.bb_safe.y_starboard_ratio  << ", "
                            << Obstacle_.bb_safe.y_port_ratio       << ", "
+                           << Obstacle_.bb_max.x_bow_ratio        << ", "
+                           << Obstacle_.bb_max.x_stern_ratio      << ", "
+                           << Obstacle_.bb_max.y_starboard_ratio  << ", "
+                           << Obstacle_.bb_max.y_port_ratio       << ", "
                            << Obstacle_.uncertainty_gap            << ", ";
                            obstacleFile_ <<"\n";
-	}
-        
-        
+	} else if(bag_message->topic_name == ulisse_msgs::topicnames::obstacleGT) {
+            rclcpp::Serialization<ulisse_msgs::msg::Obstacle> serialization;
+            rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
+            serialization.deserialize_message(&extracted_serialized_msg, &Obstacle_);
+        	obstacleGTFile_ << std::fixed << std::setprecision(6)
+                           << bag_message->time_stamp  * 1e-9      << ", "
+                           << Obstacle_.stamp.sec + (Obstacle_.stamp.nanosec * 1e-9) << ", "
+                           << Obstacle_.id              		 << ", "
+                           << Obstacle_.center.latitude            << ", "
+                           << Obstacle_.center.longitude           << ", "
+                           << Obstacle_.heading            		 << ", "
+                           << Obstacle_.b_box_dim_x              	 << ", "
+                           << Obstacle_.b_box_dim_y                << ", "
+                           << Obstacle_.bb_safe.x_bow_ratio        << ", "
+                           << Obstacle_.bb_safe.x_stern_ratio      << ", "
+                           << Obstacle_.bb_safe.y_starboard_ratio  << ", "
+                           << Obstacle_.bb_safe.y_port_ratio       << ", "
+                           << Obstacle_.bb_max.x_bow_ratio        << ", "
+                           << Obstacle_.bb_max.x_stern_ratio      << ", "
+                           << Obstacle_.bb_max.y_starboard_ratio  << ", "
+                           << Obstacle_.bb_max.y_port_ratio       << ", "
+                           << Obstacle_.uncertainty_gap            << ", ";
+                           obstacleGTFile_ <<"\n";
+	} 
 
-        
+            
         // else if (bag_message->topic_name == ulisse_msgs::topicnames::llc_battery_left) {
         //    batteryFile_ << batteryLeft_.stamp.sec + (batteryLeft_.stamp.nanosec * 1e-9) << ", " << batteryLeft_.charge_percent  << "\n";
         //}
@@ -284,18 +314,19 @@ bool OfflineBagConverter::OpenFiles()
                         "i_wat_vel_x, i_wat_vel_y, gyro_bias_x, gyro_bias_y, gyro_bias_z, n_p, n_s\n";
                         
     avoidancePathFile_.open(std::string(saveFolder_ + "/avoidance_path.txt"));
-    avoidancePathFile_ << "ros_time, path_creation_time, colregs_compliant, vh_lat, vh_long, max_vel, "
+    avoidancePathFile_ << "ros_time, time, colregs_compliant, vh_lat, vh_long, max_vel, "
     				  " wps_lat_long_speed_obs_vx\n";	
     				  
     avoidanceStatusFile_.open(std::string(saveFolder_ + "/avoidance_status.txt"));
-    avoidanceStatusFile_ << "ros_time, status, last_path_change_reason, n_known_obs, colregs_compliant, desired_speed, "
-    				    " obs_distances_x_y_safeX_safeY_maxX_maxY_currX_currY\n"; 	
+    avoidanceStatusFile_ << "ros_time, time, current_path_creation, status, last_path_change_reason, n_known_obs, colregs_compliant, desired_speed,\n"; 	
+
     				    
     obstacleFile_.open(std::string(saveFolder_ + "/obstacle.txt"));
-    obstacleFile_ << "ros_time, id, center_lat, center_long, heading, dim_x, dim_y, safe_x_bow, safe_x_stern, safe_y_starboard, sage_y_port, gap\n";
+    obstacleFile_ << "ros_time, time, id, center_lat, center_long, heading, dim_x, dim_y, safe_x_bow, safe_x_stern, safe_y_starboard, safe_y_port, max_x_bow, max_x_stern, max_y_starboard, max_y_port, gap\n";
+
+    obstacleGTFile_.open(std::string(saveFolder_ + "/obstacleGT.txt"));
+    obstacleGTFile_ << "ros_time, time, id, center_lat, center_long, heading, dim_x, dim_y, safe_x_bow, safe_x_stern, safe_y_starboard, safe_y_port, max_x_bow, max_x_stern, max_y_starboard, max_y_port, gap\n";
          
-
-
     //vehicleStatusFile_.open(std::string(saveFolder_ + "/vehicle_status.txt"));
 
     return true;

@@ -1,3 +1,4 @@
+Time stamp
 string id
 LatLong center
 float64 heading

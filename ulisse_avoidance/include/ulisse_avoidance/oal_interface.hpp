@@ -87,7 +87,9 @@ private:
 
     AvoidanceConf conf_;
 
-    int qos_sensor = 10;  // TODO CHECK VALUE AND USE
+	long last_path_creation_time;	
+
+    int qos_sensor = 1;  // TODO CHECK VALUE AND USE
 
     // Environment
     ctb::LatLong vh_position_;
@@ -132,7 +134,7 @@ private:
     bool CallKCL(const std::string& cmd_type = ulisse::commands::ID::latlong);
 
     // Look for a path to GUI given goal, save it in path_
-    bool ComputePath(Path& path);
+    bool ComputePath(Path& path, long& creation_time);
 
     // Look if path_ still doable with current env data
     bool CheckPath(Path& path);
@@ -165,19 +167,21 @@ private:
       active_ = true;
       checkProgressTimer_->reset();
     }
-
+  
     void stopTracking() {
       checkProgressTimer_->cancel();
       active_ = false;
       actual_path_.push_back(vh_position_);
-      std::cout<<" Last path actual waypoints: "<<std::endl;
-      std::cout << std::setprecision(8);
-      for(ctb::LatLong pos : actual_path_){
-        std::cout<<"    - "<<pos.latitude<<",   "<<pos.longitude<<std::endl;
+      
+      RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Last path actual waypoints:");
+
+      for (const ctb::LatLong& pos : actual_path_) {
+          RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "    - %.8f,   %.8f", pos.latitude, pos.longitude);
       }
-      actual_path_ = {};
-      std::cout << std::setprecision(3);
+
+      actual_path_.clear();
     }
+
 
     Eigen::Vector2d GetLocal(ctb::LatLong point, bool NED = false) const;
 
@@ -216,78 +220,81 @@ private:
       conf_.obs_expired_time = cfg_.lookup("obs_expired_time");
       conf_.waypoint_acceptance_radius = cfg_.lookup("waypoint_acceptance_radius");
 
-      if(print){
-        std::cout << "Loaded configuration:\n"
-                  //<< "  - COLREGS COMPLIANCE: " << conf_.colregs << "\n"
-                  << "  - Centroid: { " << conf_.centroid.latitude << ", " << conf_.centroid.longitude << " }\n";
+      if (print) {
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Loaded configuration:");
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "  - Centroid: { %.8f, %.8f }", conf_.centroid.latitude, conf_.centroid.longitude);
 
-        if(conf_.rotational_speed == 0) {std::cout<< "  - Considering the vehicles turns instantaneously\n";}
-        else{
-            std::cout<< "  - Considering the vehicles turns at " << conf_.rotational_speed << " rad/s\n";
-        }
+        RCLCPP_INFO(
+            rclcpp::get_logger("rclcpp"), 
+            "  - Considering the vehicle turns %s", 
+            conf_.rotational_speed == 0 ? "instantaneously" : ("at " + std::to_string(conf_.rotational_speed) + " rad/s").c_str()
+        );
 
-        std::cout<< "  - Path following progress is checked every " << conf_.check_progress_rate << "s\n"
-                  << "  - Inner waypoints acceptance radius: " << conf_.waypoint_acceptance_radius << "m\n"
-                  << "  - New path is followed if shorter than " << conf_.better_path_distance_perc*100 << "% of current one\n"
-                  << "  - Avoidance status is updated every " << conf_.status_pub_rate << "s\n"
-                  << "  - Obstacles are ignored " << conf_.obs_expired_time << "s after the last status update\n"
-                  << "  - Avoidance stops " << conf_.max_pos_delay_time << "s after the last vehicle position update\n"
-                  << std::endl;
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), 
+                    "  - Path progress check every %.2fs, Waypoint acceptance radius: %.2fm", 
+                    conf_.check_progress_rate, conf_.waypoint_acceptance_radius);
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), 
+                    "  - New path if %.2f%% shorter, Pub avoidance update every %.2fs", 
+                    conf_.better_path_distance_perc * 100, conf_.status_pub_rate);
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), 
+                    "  - Obstacle ignore time after %.2fs without updates, Max delay in receiving position: %.2fs", 
+                    conf_.obs_expired_time, conf_.max_pos_delay_time);
       }
+
     }
 
-    void SetPathMsg(Path path, std::vector<Obstacle> obstacles, ulisse_msgs::msg::AvoidancePath &message){
-      message.creation_time = last_pos_update_.seconds();
-      message.colregs_compliant = colregs_;
-      message.vh_position.latitude = vh_position_.latitude;
-      message.vh_position.longitude = vh_position_.longitude;
-      message.vh_heading = vh_heading_;
-      message.vh_rot_speed = conf_.rotational_speed;
-      for(double vel : velocities_) message.velocities.push_back(vel);
-      message.goal.latitude = goal_.latitude;
-      message.goal.longitude = goal_.longitude;
-      message.max_heading_change = path.metrics.maxHeadingChange;
-      message.tot_heading_change = path.metrics.totHeadingChange;
-      message.tot_distance = path.metrics.totDistance;
-      message.estimated_time_to_goal = path.metrics.estimatedTime;
-      // Waypoints
-      while(!path.empty()){
-        auto wp = ulisse_msgs::msg::Waypoint();
-        auto abs = GetLatLong(path.top().position);
-        wp.position.latitude = abs.latitude;
-        wp.position.longitude = abs.longitude;
-        wp.speed = path.top().speed_to_it;
-        if(path.top().obs_ptr != nullptr){
-          wp.obs_id = path.top().obs_ptr->id;
-          switch(path.top().vx){
-            case FR:
-              wp.vx = "FR";
-              break;
-            case FL:
-              wp.vx = "FL";
-              break;
-            case RR:
-              wp.vx = "RR";
-              break;
-            case RL:
-              wp.vx = "RL";
-              break;
-            case NA:
-              wp.vx = "NA";
-              break;
-          }
-        }
-        message.wps.push_back(wp);
-        path.pop();
-      }
-      // Obstacles
-      for (const Obstacle& obs : obstacles) {
-        auto obs_msg = ulisse_msgs::msg::Obstacle();
-        SetObsMsg(obs, obs_msg);
-        message.obs.push_back(obs_msg);
-      }
-      compPathPub_->publish(message);
-    }
+    // void SetPathMsg(Path path, std::vector<Obstacle> obstacles, ulisse_msgs::msg::AvoidancePath &message){
+    // //   message.creation_time = last_pos_update_.seconds();
+    // //   message.colregs_compliant = colregs_;
+    // //   message.vh_position.latitude = vh_position_.latitude;
+    // //   message.vh_position.longitude = vh_position_.longitude;
+    // //   message.vh_heading = vh_heading_;
+    // //   message.vh_rot_speed = conf_.rotational_speed;
+    // //   for(double vel : velocities_) message.velocities.push_back(vel);
+    // //   message.goal.latitude = goal_.latitude;
+    // //   message.goal.longitude = goal_.longitude;
+    // //   message.max_heading_change = path.metrics.maxHeadingChange;
+    // //   message.tot_heading_change = path.metrics.totHeadingChange;
+    // //   message.tot_distance = path.metrics.totDistance;
+    // //   message.estimated_time_to_goal = path.metrics.estimatedTime;
+    // //   // Waypoints
+    // //   while(!path.empty()){
+    // //     auto wp = ulisse_msgs::msg::Waypoint();
+    // //     auto abs = GetLatLong(path.top().position);
+    // //     wp.position.latitude = abs.latitude;
+    // //     wp.position.longitude = abs.longitude;
+    // //     wp.speed = path.top().speed_to_it;
+    // //     if(path.top().obs_ptr != nullptr){
+    // //       wp.obs_id = path.top().obs_ptr->id;
+    // //       switch(path.top().vx){
+    // //         case FR:
+    // //           wp.vx = "FR";
+    // //           break;
+    // //         case FL:
+    // //           wp.vx = "FL";
+    // //           break;
+    // //         case RR:
+    // //           wp.vx = "RR";
+    // //           break;
+    // //         case RL:
+    // //           wp.vx = "RL";
+    // //           break;
+    // //         case NA:
+    // //           wp.vx = "NA";
+    // //           break;
+    // //       }
+    // //     }
+    // //     message.wps.push_back(wp);
+    // //     path.pop();
+    // //   }
+    //   // Obstacles
+    //   for (const Obstacle& obs : obstacles) {
+    //     auto obs_msg = ulisse_msgs::msg::Obstacle();
+    //     SetObsMsg(obs, obs_msg);
+    //     message.obs.push_back(obs_msg);
+    //   }
+    //   //compPathPub_->publish(message);
+    // }
 
     void SetObsMsg(const Obstacle& obs, ulisse_msgs::msg::Obstacle &msg){
         ctb::LatLong pos = GetLatLong(obs.position);
@@ -311,44 +318,18 @@ private:
         msg.higher_priority = obs.higher_priority;
     }
 
-    void printPath() const{
-      std::cout << std::setprecision(3);
-      Path temp = path_;
-      temp.UpdateMetrics(GetLocal(vh_position_), vh_heading_, conf_.rotational_speed);
-      temp.print();
-      std::cout<<" Waypoint list:"<<std::endl;
-      std::cout << std::setprecision(8);
-      while(!temp.empty()){
-        auto node = temp.top();
-        ctb::LatLong pos = GetLatLong(node.position);
-        std::cout << "   - time: " << temp.top().time << "  Pos: " << pos.latitude << " " << pos.longitude;
-        if(node.obs_ptr != nullptr){
-          switch (node.vx){
-            case 0:
-              std::cout << "   Obs: " << node.obs_ptr->id << "/FR";
-              break;
-            case 1:
-              std::cout << "   Obs: " << node.obs_ptr->id << "/FL";
-              break;
-            case 2:
-              std::cout << "   Obs: " << node.obs_ptr->id << "/RR";
-              break;
-            case 3:
-              std::cout << "   Obs: " << node.obs_ptr->id << "/RL";
-              break;
-            case 5:
-              std::cout << "   Obs: " << node.obs_ptr->id << "/W";
-              break;
-            default:
-              std::cout << " <Obs has undefined vx ?!?!> "<<std::endl;
-          }
-        }
-        if(node.speed_to_it != 0) std::cout << "   reaching speed: " << node.speed_to_it;
-        std::cout << std::endl;
-        temp.pop();
-      }
-      std::cout << std::setprecision(3);
-    }
+    void printPath() const {
+		Path temp = path_;
+		temp.UpdateMetrics(GetLocal(vh_position_), vh_heading_, conf_.rotational_speed);
+
+		// Get the path details from the library's `print()` function
+		std::string pathDetails = temp.print(true);
+
+		// Log the path details using RCLCPP_INFO
+		RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%s", pathDetails.c_str());
+	}
+
+
 
 };
 

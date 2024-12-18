@@ -81,6 +81,7 @@ const std::string get_boundaries_service = "/ulisse/ctrl/get_boundaries";
 
 // OTHER
 const std::string obstacle = "/ulisse/ctrl/obstacle";
+const std::string obstacleGT = "/obstacles/ground_truth";
 const std::string avoidance_path = "/ulisse/ctrl/avoidance_path";
 }
 }

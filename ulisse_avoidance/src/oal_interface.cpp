@@ -33,8 +33,9 @@ void OalInterfaceNode::handleComputePathRequest(
         goal_ = ctb::LatLong(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude);
         colregs_ = request->colregs_compliant;
         radius_ = request->latlong_cmd.acceptance_radius; // used also for waypoint acceptance
-
-        if (ComputePath(path_)) {
+        
+        
+        if (ComputePath(path_, last_path_creation_time)) {
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), " Path found:");
             printPath();
             last_path_computation_ = rclcpp::Clock().now();
@@ -102,7 +103,7 @@ bool OalInterfaceNode::CallKCL(const std::string &cmd_type) {
     }
 }
 
-bool OalInterfaceNode::ComputePath(Path &path) {
+bool OalInterfaceNode::ComputePath(Path &path, long& creation_time) {
     VehicleInfo v_info({GetLocal(vh_position_), velocities_, vh_heading_, conf_.rotational_speed});
     Eigen::Vector2d goal = GetLocal(goal_);
 
@@ -114,18 +115,75 @@ bool OalInterfaceNode::ComputePath(Path &path) {
     SyncObssData(last_pos_update_, obstacles);
     planner.SetObssData(obstacles);
     path = Path();
-    if (planner.ComputePath(goal, colregs_, path)) {
-      path.UpdateMetrics(GetLocal(vh_position_), vh_heading_, conf_.rotational_speed);
-      auto message = ulisse_msgs::msg::AvoidancePath();
-      SetPathMsg(path, obstacles, message);
-      compPathPub_->publish(message);
-      // If close to next wp, ignore it
-      Path path_temp = path;
-      path_temp.pop();
-      if ((GetLocal(vh_position_) - path_temp.top().position).norm() < conf_.waypoint_acceptance_radius) path.pop();
-      return true;
-    }
-    return false;
+    
+    if (!planner.ComputePath(goal, colregs_, path)) return false;
+    
+    path.UpdateMetrics(GetLocal(vh_position_), vh_heading_, conf_.rotational_speed);
+    auto message = ulisse_msgs::msg::AvoidancePath();
+
+    creation_time = (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch())).count();
+    auto now_stamp_secs = static_cast<unsigned int>(creation_time / static_cast<int>(1E9));
+    auto now_stamp_nanosecs = static_cast<unsigned int>(creation_time % static_cast<int>(1E9));
+    message.stamp.sec = now_stamp_secs;
+    message.stamp.nanosec = now_stamp_nanosecs;
+
+
+    message.colregs_compliant = colregs_;
+    message.vh_position.latitude = vh_position_.latitude;
+    message.vh_position.longitude = vh_position_.longitude;
+    message.vh_heading = vh_heading_;
+    message.vh_rot_speed = conf_.rotational_speed;
+    for(double vel : velocities_) message.velocities.push_back(vel);
+    message.goal.latitude = goal_.latitude;
+    message.goal.longitude = goal_.longitude;
+    message.max_heading_change = path.metrics.maxHeadingChange;
+    message.tot_heading_change = path.metrics.totHeadingChange;
+    message.tot_distance = path.metrics.totDistance;
+    message.estimated_time_to_goal = path.metrics.estimatedTime;
+
+    // Waypoints
+    Path path_temp = path;
+    while(!path_temp.empty()){
+        auto wp = ulisse_msgs::msg::Waypoint();
+        auto abs = GetLatLong(path_temp.top().position);
+        wp.position.latitude = abs.latitude;
+        wp.position.longitude = abs.longitude;
+        wp.speed = path_temp.top().speed_to_it;
+        if(path_temp.top().obs_ptr != nullptr){
+            wp.obs_id = path_temp.top().obs_ptr->id;
+            switch(path_temp.top().vx){
+            case FR:
+                wp.vx = "FR";
+                break;
+            case FL:
+                wp.vx = "FL";
+                break;
+            case RR:
+                wp.vx = "RR";
+                break;
+            case RL:
+                wp.vx = "RL";
+                break;
+            case NA:
+                wp.vx = "NA";
+                break;
+            }
+        }
+        message.wps.push_back(wp);
+        path_temp.pop();
+    }   
+
+
+    //SetPathMsg(path, obstacles, message);
+    compPathPub_->publish(message);
+ 
+    // If close to next wp, ignore it
+    path_temp = path;
+    path_temp.pop();
+    if ((GetLocal(vh_position_) - path_temp.top().position).norm() < conf_.waypoint_acceptance_radius) path.pop();
+
+    return true;
+
 }
 
 bool OalInterfaceNode::CheckPath(Path &path) {
@@ -192,7 +250,8 @@ void OalInterfaceNode::CheckProgress() {
             bool isOldSafe = CheckPath(path_);
 
             Path new_path;
-            if (ComputePath(new_path)) {
+            long creation_time;
+            if (ComputePath(new_path, creation_time)) {
                 path_temp = path_;
                 path_temp.UpdateMetrics(GetLocal(vh_position_), vh_heading_, conf_.rotational_speed);
                 //new_path.UpdateMetrics(GetLocal(vh_position_), vh_heading_); done when computing it
@@ -210,6 +269,7 @@ void OalInterfaceNode::CheckProgress() {
                     }
 
                     last_path_computation_ = rclcpp::Clock().now();
+                    last_path_creation_time = creation_time;
                     path_ = new_path;
                     coordinates_pub();
                     sendNew = true;
@@ -328,6 +388,13 @@ ctb::LatLong OalInterfaceNode::GetLatLong(Eigen::Vector2d pos_2d, bool NED) cons
 
 void OalInterfaceNode::status_pub_callback() {
     auto message = ulisse_msgs::msg::AvoidanceStatus();
+
+    long now_stamp = (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch())).count();
+    auto now_stamp_secs = static_cast<unsigned int>(now_stamp / static_cast<int>(1E9));
+    auto now_stamp_nanosecs = static_cast<unsigned int>(now_stamp % static_cast<int>(1E9));
+    message.stamp.sec = now_stamp_secs;
+    message.stamp.nanosec = now_stamp_nanosecs;
+
     // DELETING OLD OBSTACLE
     auto old = [this](const ObstacleWithTime &obs_t) -> bool {
         return (conf_.obs_expired_time <= (rclcpp::Clock().now().seconds() - obs_t.timestamp.seconds()));
@@ -335,57 +402,57 @@ void OalInterfaceNode::status_pub_callback() {
     obstacles_.erase(std::remove_if(obstacles_.begin(), obstacles_.end(), old), obstacles_.end());
 
     message.n_known_obs = obstacles_.size();  
-    std::vector<Obstacle> obstacles;
-    SyncObssData(last_pos_update_, obstacles);
-    auto obs_dist = ulisse_msgs::msg::ObsDistance();
-    for (Obstacle obs : obstacles) {
-        Eigen::Vector2d obs_to_vh = GetLocal(vh_position_) - obs.position;
-        Eigen::Rotation2D<double> rotation(obs.head);
-        obs_to_vh = rotation.inverse() * obs_to_vh;
-        obs_dist.x_distance = abs(obs_to_vh.x());
-        obs_dist.y_distance = abs(obs_to_vh.y());
+    // std::vector<Obstacle> obstacles;
+    // SyncObssData(last_pos_update_, obstacles);
+    // auto obs_dist = ulisse_msgs::msg::ObsDistance();
+    // for (Obstacle obs : obstacles) {
+    //     Eigen::Vector2d obs_to_vh = GetLocal(vh_position_) - obs.position;
+    //     Eigen::Rotation2D<double> rotation(obs.head);
+    //     obs_to_vh = rotation.inverse() * obs_to_vh;
+    //     obs_dist.x_distance = abs(obs_to_vh.x());
+    //     obs_dist.y_distance = abs(obs_to_vh.y());
 
-        double theta = atan2(obs_to_vh.y(), obs_to_vh.x()); // error for (0,0)
-        vx_id vxId = FR;
-        if(theta > 0){
-            if (theta < M_PI/2 ){
-                obs_dist.safe_bb_x_dim = obs.bb.safety_x_bow * obs.bb.dim_x/2;
-                obs_dist.safe_bb_y_dim = obs.bb.safety_y_port * obs.bb.dim_y/2;
-                obs_dist.max_bb_x_dim = obs.bb.max_x_bow * obs.bb.dim_x/2;
-                obs_dist.max_bb_y_dim = obs.bb.max_y_port * obs.bb.dim_y/2;
-                vxId = FL;
-            }else{
-                obs_dist.safe_bb_x_dim = obs.bb.safety_x_stern * obs.bb.dim_x/2;
-                obs_dist.safe_bb_y_dim = obs.bb.safety_y_port * obs.bb.dim_y/2;
-                obs_dist.max_bb_x_dim = obs.bb.max_x_stern * obs.bb.dim_x/2;
-                obs_dist.max_bb_y_dim = obs.bb.max_y_port * obs.bb.dim_y/2;
-                vxId = RL;
-            }
-        }else{
-            if (theta > -M_PI/2 ){
-                obs_dist.safe_bb_x_dim = obs.bb.safety_x_bow * obs.bb.dim_x/2;
-                obs_dist.safe_bb_y_dim = obs.bb.safety_y_starboard * obs.bb.dim_y/2;
-                obs_dist.max_bb_x_dim = obs.bb.max_x_bow * obs.bb.dim_x/2;
-                obs_dist.max_bb_y_dim = obs.bb.max_y_starboard * obs.bb.dim_y/2;
-                vxId = FR;
-            }else{
-                obs_dist.safe_bb_x_dim = obs.bb.safety_x_stern * obs.bb.dim_x/2;
-                obs_dist.safe_bb_y_dim = obs.bb.safety_y_starboard * obs.bb.dim_y/2;
-                obs_dist.max_bb_x_dim = obs.bb.max_x_stern * obs.bb.dim_x/2;
-                obs_dist.max_bb_y_dim = obs.bb.max_y_starboard * obs.bb.dim_y/2;
-                vxId = RR;
-            }
-        }
-        obs.uncertainty = true;
-        obs.FindLocalVxs(GetLocal(vh_position_));
-        for(const auto& vx : obs.vxs){
-            if(vx.id == vxId){
-                obs_dist.current_bb_x_dim = abs(vx.position.x());
-                obs_dist.current_bb_y_dim = abs(vx.position.y());
-            }
-        }
-        message.obs_distances.push_back(obs_dist);
-    }
+    //     double theta = atan2(obs_to_vh.y(), obs_to_vh.x()); // error for (0,0)
+    //     vx_id vxId = FR;
+    //     if(theta > 0){
+    //         if (theta < M_PI/2 ){
+    //             obs_dist.safe_bb_x_dim = obs.bb.safety_x_bow * obs.bb.dim_x/2;
+    //             obs_dist.safe_bb_y_dim = obs.bb.safety_y_port * obs.bb.dim_y/2;
+    //             obs_dist.max_bb_x_dim = obs.bb.max_x_bow * obs.bb.dim_x/2;
+    //             obs_dist.max_bb_y_dim = obs.bb.max_y_port * obs.bb.dim_y/2;
+    //             vxId = FL;
+    //         }else{
+    //             obs_dist.safe_bb_x_dim = obs.bb.safety_x_stern * obs.bb.dim_x/2;
+    //             obs_dist.safe_bb_y_dim = obs.bb.safety_y_port * obs.bb.dim_y/2;
+    //             obs_dist.max_bb_x_dim = obs.bb.max_x_stern * obs.bb.dim_x/2;
+    //             obs_dist.max_bb_y_dim = obs.bb.max_y_port * obs.bb.dim_y/2;
+    //             vxId = RL;
+    //         }
+    //     }else{
+    //         if (theta > -M_PI/2 ){
+    //             obs_dist.safe_bb_x_dim = obs.bb.safety_x_bow * obs.bb.dim_x/2;
+    //             obs_dist.safe_bb_y_dim = obs.bb.safety_y_starboard * obs.bb.dim_y/2;
+    //             obs_dist.max_bb_x_dim = obs.bb.max_x_bow * obs.bb.dim_x/2;
+    //             obs_dist.max_bb_y_dim = obs.bb.max_y_starboard * obs.bb.dim_y/2;
+    //             vxId = FR;
+    //         }else{
+    //             obs_dist.safe_bb_x_dim = obs.bb.safety_x_stern * obs.bb.dim_x/2;
+    //             obs_dist.safe_bb_y_dim = obs.bb.safety_y_starboard * obs.bb.dim_y/2;
+    //             obs_dist.max_bb_x_dim = obs.bb.max_x_stern * obs.bb.dim_x/2;
+    //             obs_dist.max_bb_y_dim = obs.bb.max_y_starboard * obs.bb.dim_y/2;
+    //             vxId = RR;
+    //         }
+    //     }
+    //     obs.uncertainty = true;
+    //     obs.FindLocalVxs(GetLocal(vh_position_));
+    //     for(const auto& vx : obs.vxs){
+    //         if(vx.id == vxId){
+    //             obs_dist.current_bb_x_dim = abs(vx.position.x());
+    //             obs_dist.current_bb_y_dim = abs(vx.position.y());
+    //         }
+    //     }
+    //     message.obs_distances.push_back(obs_dist);
+    // }
 
     if(!active_){
         message.status = "Not active";
@@ -404,9 +471,15 @@ void OalInterfaceNode::status_pub_callback() {
       message.next_wp.latitude = next_wp.latitude;
       message.speed = path_.top().speed_to_it;*/
 
-      auto path_msg = ulisse_msgs::msg::AvoidancePath();
-      SetPathMsg(path_, obstacles, path_msg);
-      message.current_path = path_msg;
+    //   auto path_msg = ulisse_msgs::msg::AvoidancePath();
+    //   SetPathMsg(path_, obstacles, path_msg);
+    //   message.current_path_creation = path_msg.stamp;
+
+        auto now_stamp_secs = static_cast<unsigned int>(last_path_creation_time / static_cast<int>(1E9));
+        auto now_stamp_nanosecs = static_cast<unsigned int>(last_path_creation_time % static_cast<int>(1E9));
+        message.current_path_creation.sec = now_stamp_secs;
+        message.current_path_creation.nanosec = now_stamp_nanosecs;
+
     }
     avoidanceStatusPub_->publish(message);
 }
