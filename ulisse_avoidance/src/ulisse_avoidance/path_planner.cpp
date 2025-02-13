@@ -1,45 +1,32 @@
-#include "ulisse_avoidance/oal_interface.hpp"
+#include "ulisse_avoidance/path_planner.hpp"
+#include "oal/path_planner.hpp"
 
-void OalInterfaceNode::handleComputePathRequest(
-        std::shared_ptr<rmw_request_id_t> request_header,
+void PathPlannerNode::handleComputePathRequest(
+        [[maybe_unused]] std::shared_ptr<rmw_request_id_t> request_header,
         std::shared_ptr<ulisse_msgs::srv::ComputeAvoidancePath::Request> request,
         std::shared_ptr<ulisse_msgs::srv::ComputeAvoidancePath::Response> response) {
 
     if (last_known_vhStatus_ == ulisse::states::ID::halt) {
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), " VEHICLE NOT READY (HALT STATE) ");
-    } else {
-        std::cout << "---------------------------------" << std::endl;
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "New request.");
-        if (active_) stopTracking(); // stop tracking old path
-        if (!isPosUpToDate()) {
-            response->res = false;
-            return;
-        }
+        return;
+    } 
 
-        auto generateRange = [](double start, double end, double step) {
-            std::vector<double> result;
-            for (double i = start; i <= end; i += step) {
-              double num = std::round(i * 100) / 100;
-              if (num != 0) result.push_back(num);
-            }
-            return result;
-        };
-        velocities_ = generateRange(conf_.speed_min, request->latlong_cmd.ref_speed, conf_.speed_step);
-        /*std::cout<< "vel: ";
-        for(auto vel : velocities_){
-          std::cout<< vel<<", ";
-        }
-        std::cout<<std::endl;*/
-        goal_ = ctb::LatLong(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude);
-        colregs_ = request->colregs_compliant;
-        radius_ = request->latlong_cmd.acceptance_radius; // used also for waypoint acceptance
-        
-        
+    std::cout << "---------------------------------" << std::endl;
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "New request.");
+    if (active_) stopTracking(); // stop tracking old path
+
+
+    velocities_ = generateRange(conf_.speed_min, request->latlong_cmd.ref_speed, conf_.speed_step);
+    goal_ = ctb::LatLong(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude);
+    colregs_ = request->colregs_compliant;
+    radius_ = request->latlong_cmd.acceptance_radius; // used also for waypoint acceptance
+    
+    try {
         if (ComputePath(path_, last_path_creation_time)) {
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), " Path found:");
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Path found:");
             printPath();
             last_path_computation_ = rclcpp::Clock().now();
-            coordinates_pub();
+            CoordinatesPub();
             sendNew = true;
             response->res = true;
             last_check_progress_ = last_pos_update_;
@@ -47,11 +34,20 @@ void OalInterfaceNode::handleComputePathRequest(
             startTracking();
             return;
         }
-        response->res = false;
+    } catch (const std::bad_alloc& e) {
+        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Memory allocation failed in ComputePath: %s", e.what());
+    } catch (const std::length_error& e) {
+        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Length error in ComputePath: %s", e.what());
+    } catch (const std::exception& e) {
+        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Exception occurred in ComputePath: %s", e.what());
+    } catch (...) {
+        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Unknown exception occurred in ComputePath");
     }
+    response->res = false;
+
 }
 
-bool OalInterfaceNode::CallKCL(const std::string &cmd_type) {
+bool PathPlannerNode::CallKCL(const std::string &cmd_type) {
     auto serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
     if (cmd_type == ulisse::commands::ID::halt) {
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "  Sending HALT command to KCL. ");
@@ -70,6 +66,7 @@ bool OalInterfaceNode::CallKCL(const std::string &cmd_type) {
             serviceReq->latlong_cmd.goal.latitude = goal.latitude;
             serviceReq->latlong_cmd.goal.longitude = goal.longitude;
             serviceReq->latlong_cmd.ref_speed = path.waypoints.top().speed_to_it;
+            std::cerr<<" sending cmd with speed: "<< serviceReq->latlong_cmd.ref_speed<<"\n";
             last_cmd_speed = path.waypoints.top().speed_to_it;
             
             if (path.size() == 1) {
@@ -103,30 +100,41 @@ bool OalInterfaceNode::CallKCL(const std::string &cmd_type) {
     }
 }
 
-bool OalInterfaceNode::ComputePath(Path &path, long& creation_time) {
+bool PathPlannerNode::ComputePath(Path &path, rclcpp::Time& creation_time) {
     VehicleInfo v_info({GetLocal(vh_position_), velocities_, vh_heading_, conf_.rotational_speed});
     Eigen::Vector2d goal = GetLocal(goal_);
 
     // Sync vh_data and obs data
-    path_planner planner;
+    oal::PathPlanner planner;
     std::vector<Obstacle> obstacles;
     planner.SetVhData(v_info);
     planner.SetAccRadius(conf_.waypoint_acceptance_radius);
     SyncObssData(last_pos_update_, obstacles);
     planner.SetObssData(obstacles);
     path = Path();
+
+    std::chrono::milliseconds time_limit = std::chrono::milliseconds(30);
     
-    if (!planner.ComputePath(goal, colregs_, path)) return false;
+    oal::PathReport report;
+    planner.ComputePath(goal, colregs_, path, report, time_limit);
+    
+    if(report.result == oal::SearchResult::TIMEOUT){
+        RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Path computation timeout");
+        return false;
+    }else if(report.result == oal::SearchResult::NOWAYOUT){
+        RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "No way out of first position, %s", report.failMsg.c_str());
+        return false;
+    }else if(report.result == oal::SearchResult::PARTIAL){
+        RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Partial path found, %s", report.failMsg.c_str());
+    }
+
     
     path.UpdateMetrics(GetLocal(vh_position_), vh_heading_, conf_.rotational_speed);
     auto message = ulisse_msgs::msg::AvoidancePath();
 
-    creation_time = (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch())).count();
-    auto now_stamp_secs = static_cast<unsigned int>(creation_time / static_cast<int>(1E9));
-    auto now_stamp_nanosecs = static_cast<unsigned int>(creation_time % static_cast<int>(1E9));
-    message.stamp.sec = now_stamp_secs;
-    message.stamp.nanosec = now_stamp_nanosecs;
-
+    creation_time = rclcpp::Clock().now();
+    message.stamp.sec = creation_time.seconds();
+    message.stamp.nanosec = creation_time.nanoseconds();
 
     message.colregs_compliant = colregs_;
     message.vh_position.latitude = vh_position_.latitude;
@@ -149,6 +157,7 @@ bool OalInterfaceNode::ComputePath(Path &path, long& creation_time) {
         wp.position.latitude = abs.latitude;
         wp.position.longitude = abs.longitude;
         wp.speed = path_temp.top().speed_to_it;
+        //std::cerr<<"---"<<wp.speed<<"\n";
         if(path_temp.top().obs_ptr != nullptr){
             wp.obs_id = path_temp.top().obs_ptr->id;
             switch(path_temp.top().vx){
@@ -180,15 +189,18 @@ bool OalInterfaceNode::ComputePath(Path &path, long& creation_time) {
     // If close to next wp, ignore it
     path_temp = path;
     path_temp.pop();
-    if ((GetLocal(vh_position_) - path_temp.top().position).norm() < conf_.waypoint_acceptance_radius) path.pop();
+    if ((GetLocal(vh_position_) - path_temp.top().position).norm() < conf_.waypoint_acceptance_radius) {
+        //std::cerr<<"close to next wp, skipping it\n"; 
+        path.pop();
+    }
 
     return true;
 
 }
 
-bool OalInterfaceNode::CheckPath(Path &path) {
+bool PathPlannerNode::CheckPath(Path &path) {
     // Update environment info
-    path_planner planner;
+    oal::PathPlanner planner;
     Eigen::Vector2d vh_pos = GetLocal(vh_position_);
     VehicleInfo v_info({vh_pos, velocities_, vh_heading_, conf_.rotational_speed});
     planner.SetVhData(v_info);
@@ -202,7 +214,7 @@ bool OalInterfaceNode::CheckPath(Path &path) {
     return ret;
 }
 
-void OalInterfaceNode::CheckProgress() {
+void PathPlannerNode::CheckProgress() {
 
     if (last_known_vhStatus_ == ulisse::states::ID::halt) {
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), " VEHICLE NOT READY (HALT STATE) ");
@@ -250,14 +262,14 @@ void OalInterfaceNode::CheckProgress() {
             bool isOldSafe = CheckPath(path_);
 
             Path new_path;
-            long creation_time;
+            rclcpp::Time creation_time;
             if (ComputePath(new_path, creation_time)) {
                 path_temp = path_;
                 path_temp.UpdateMetrics(GetLocal(vh_position_), vh_heading_, conf_.rotational_speed);
                 //new_path.UpdateMetrics(GetLocal(vh_position_), vh_heading_); done when computing it
 
                 bool isNewBetter =
-                        new_path.metrics.totDistance < conf_.better_path_distance_perc * path_temp.metrics.totDistance;
+                        new_path.metrics.totDistance / path_temp.metrics.totDistance < 1 - conf_.better_path_distance_perc;
                 if (!isOldSafe || isNewBetter) {
                     if (isNewBetter) {
                         double perc = new_path.metrics.totDistance / path_temp.metrics.totDistance * 100;
@@ -271,7 +283,7 @@ void OalInterfaceNode::CheckProgress() {
                     last_path_computation_ = rclcpp::Clock().now();
                     last_path_creation_time = creation_time;
                     path_ = new_path;
-                    coordinates_pub();
+                    CoordinatesPub();
                     sendNew = true;
                     std::cout << "-----------------------------" << std::endl;
                     std::cout << "Here is the new path:" << std::endl;
@@ -297,74 +309,83 @@ void OalInterfaceNode::CheckProgress() {
 
         } else {
             // Check if position is very old
-            if (!isPosUpToDate()) {
-                RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "  Own Ship position unknown.");
-                stopTracking();
-                CallKCL(ulisse::commands::ID::hold);
-            }
+            // if (!isPosUpToDate()) {
+            //     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "  Own Ship position unknown.");
+            //     stopTracking();
+            //     CallKCL(ulisse::commands::ID::hold);
+            // }
         }
     }
 }
 
-void OalInterfaceNode::VehicleStatusCB(const ulisse_msgs::msg::VehicleStatus::SharedPtr msg) {
+void PathPlannerNode::VehicleStatusCB(const ulisse_msgs::msg::VehicleStatus::SharedPtr msg) {
     last_known_vhStatus_ = msg->vehicle_state;
 }
 
-void OalInterfaceNode::addObstacle(const Obstacle &obs) {
-    auto it = std::find_if(obstacles_.begin(), obstacles_.end(),
-                           [&obs](const ObstacleWithTime &entry) {
-        return entry.data.id == obs.id;
-    });
-    if (it != obstacles_.end()) {
-        // Update existing entry
-        it->data = obs;
-        it->timestamp = rclcpp::Clock().now();
-    } else {
-        // Add new entry
-        ObstacleWithTime entry;
-        entry.data = obs;
-        entry.timestamp = rclcpp::Clock().now();
-        obstacles_.push_back(entry);
+
+void PathPlannerNode::ObstacleCB(const detav_msgs::msg::ObstacleList::SharedPtr msg) {
+    lastObsUpdate_ = msg->header.stamp;
+    
+    if(msg->obstacles.size() != obstacles_.size()) {
+        RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Now tracking %ld instead of %ld obstacles!", msg->obstacles.size(), obstacles_.size());
     }
+
+    obstacles_.clear(); //TODO just update existing ones + new
+    for( const auto& obs : msg->obstacles){
+
+        // TODO Delete once Luca fixes the obs_id
+        std::string obs_id = obs.id;
+        if ( obs_id.empty() || !std::all_of(obs_id.begin(), obs_id.end(), ::isalnum)) {
+            obs_id = "unknown" + std::to_string(obstacles_.size());
+        }
+
+        bool higherPriority = false;
+        if(obs.obs_class == detav_msgs::obstypes::higher_priority) higherPriority = true;
+
+        Eigen::Vector2d position = GetLocal(ctb::LatLong(obs.pose.position.position.latitude, obs.pose.position.position.longitude));
+        double heading = M_PI_2 - obs.pose.orientation.yaw; //Heading so far refers to the north axis, but in obstacle ENU is used
+        Eigen::Vector2d velocity = {obs.twist.twist.linear.x, obs.twist.twist.linear.y};
+
+        auto bb_dimension = bb_dimension_default_;
+        bb_dimension.dim_x = obs.size.size.length;
+        bb_dimension.dim_y = obs.size.size.width;
+
+        bb_dimension.Set(conf_.bb_gain,
+            {obs.twist.twist.linear.x, obs.twist.twist.linear.y}, //obs velocity
+            obs.obs_class,
+            obs.size.covariance[0], //size_x_sigma
+            obs.size.covariance[1], //size_y_sigma
+            obs.pose.position.north_cov, //pose_x_sigma
+            obs.pose.position.east_cov, //pose_y_sigma
+            obs.pose.orientation.covariance, //pose_yaw_sigma
+            obs.twist.covariance[0], //vel_x_sigma
+            obs.twist.covariance[1] //vel_y_sigma
+        );
+
+        Obstacle obstacle(obs_id, position, heading, velocity.norm(), atan2(velocity.y(), velocity.x()), bb_dimension, higherPriority);
+        
+        obstacles_.push_back(obstacle);
+
+        auto gui_msg = ulisse_msgs::msg::Obstacle();
+        SetObsMsg(obstacle, gui_msg);
+        obsGuiPub_->publish(gui_msg);
+
+
+    }
+
 }
 
-void OalInterfaceNode::ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr msg) {
-    Eigen::Vector2d pos = GetLocal(ctb::LatLong(msg->center.latitude, msg->center.longitude));
-
-    // HERE CONVERSION OF DIRECTION FROM NED TO UTM
-    // (v_x' = v_y, v_y'= v_x, heading' = M_PI/2-heading)
-    // Handle topic message
-    Eigen::Vector2d velocity(msg->vel_y, msg->vel_x);
-    bb_data bb_dimension(msg->b_box_dim_x, msg->b_box_dim_y,
-                         msg->bb_max.x_bow_ratio, msg->bb_max.x_stern_ratio,
-                         msg->bb_max.y_starboard_ratio, msg->bb_max.y_port_ratio,
-                         msg->bb_safe.x_bow_ratio, msg->bb_safe.x_stern_ratio,
-                         msg->bb_safe.y_starboard_ratio, msg->bb_safe.y_port_ratio,
-                         msg->uncertainty_gap);
-    Obstacle obs(msg->id, pos,
-                 M_PI / 2 - msg->heading, velocity.norm(), atan2(velocity.y(), velocity.x()),
-                 bb_dimension,
-                 msg->higher_priority);
-    addObstacle(obs);
-
-    //std::cout << "NEW OBS IN LIBRARY: "<<msg->id<<" in localUTM pos: ("<<(int)pos.x()<<", "<<(int)pos.y()<<"), heading: "<< M_PI/2-msg->heading<<" with speed vector: ("<<velocity.x()<<", "<<velocity.y()<<") "<<std::endl;
-    /*Eigen::Vector3d pos_test;
-  ctb::LatLong2LocalNED(ctb::LatLong(msg->center.latitude, msg->center.longitude), 0, centroid_, pos_test);
-  std::cout<<"NED: "<<pos_test.x()<<", "<< pos_test.y()<<std::endl;*/
-
-}
-
-void OalInterfaceNode::NavFilterCB(ulisse_msgs::msg::NavFilterData::SharedPtr msg) {
+void PathPlannerNode::NavFilterCB(ulisse_msgs::msg::NavFilterData::SharedPtr msg) {
     last_pos_update_ = rclcpp::Clock().now();
     vh_position_ = ctb::LatLong(msg->inertialframe_linear_position.latlong.latitude,
                                 msg->inertialframe_linear_position.latlong.longitude);
-    // assuming given yam is in NED coordinates
+    // assuming given yaw is in NED coordinates
     vh_heading_ = M_PI / 2 - msg->bodyframe_angular_position.yaw;
     if(vh_heading_>M_PI) vh_heading_ -= 2*M_PI;
     if(vh_heading_<-M_PI) vh_heading_ += 2*M_PI;
 }
 
-Eigen::Vector2d OalInterfaceNode::GetLocal(ctb::LatLong LatLong, bool NED) const {
+Eigen::Vector2d PathPlannerNode::GetLocal(ctb::LatLong LatLong, bool NED) const {
     Eigen::Vector3d pos;
     if (NED) {
         ctb::LatLong2LocalNED(LatLong, 0, conf_.centroid, pos);
@@ -374,7 +395,7 @@ Eigen::Vector2d OalInterfaceNode::GetLocal(ctb::LatLong LatLong, bool NED) const
     return {pos.x(), pos.y()};
 }
 
-ctb::LatLong OalInterfaceNode::GetLatLong(Eigen::Vector2d pos_2d, bool NED) const {
+ctb::LatLong PathPlannerNode::GetLatLong(Eigen::Vector2d pos_2d, bool NED) const {
     Eigen::Vector3d pos(pos_2d.x(), pos_2d.y(), 0);
     double alt;
     ctb::LatLong LatLong;
@@ -386,7 +407,7 @@ ctb::LatLong OalInterfaceNode::GetLatLong(Eigen::Vector2d pos_2d, bool NED) cons
     return LatLong;
 }
 
-void OalInterfaceNode::status_pub_callback() {
+void PathPlannerNode::StatusPub() {
     auto message = ulisse_msgs::msg::AvoidanceStatus();
 
     long now_stamp = (std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch())).count();
@@ -394,97 +415,23 @@ void OalInterfaceNode::status_pub_callback() {
     auto now_stamp_nanosecs = static_cast<unsigned int>(now_stamp % static_cast<int>(1E9));
     message.stamp.sec = now_stamp_secs;
     message.stamp.nanosec = now_stamp_nanosecs;
-
-    // DELETING OLD OBSTACLE
-    auto old = [this](const ObstacleWithTime &obs_t) -> bool {
-        return (conf_.obs_expired_time <= (rclcpp::Clock().now().seconds() - obs_t.timestamp.seconds()));
-    };
-    obstacles_.erase(std::remove_if(obstacles_.begin(), obstacles_.end(), old), obstacles_.end());
-
     message.n_known_obs = obstacles_.size();  
-    // std::vector<Obstacle> obstacles;
-    // SyncObssData(last_pos_update_, obstacles);
-    // auto obs_dist = ulisse_msgs::msg::ObsDistance();
-    // for (Obstacle obs : obstacles) {
-    //     Eigen::Vector2d obs_to_vh = GetLocal(vh_position_) - obs.position;
-    //     Eigen::Rotation2D<double> rotation(obs.head);
-    //     obs_to_vh = rotation.inverse() * obs_to_vh;
-    //     obs_dist.x_distance = abs(obs_to_vh.x());
-    //     obs_dist.y_distance = abs(obs_to_vh.y());
-
-    //     double theta = atan2(obs_to_vh.y(), obs_to_vh.x()); // error for (0,0)
-    //     vx_id vxId = FR;
-    //     if(theta > 0){
-    //         if (theta < M_PI/2 ){
-    //             obs_dist.safe_bb_x_dim = obs.bb.safety_x_bow * obs.bb.dim_x/2;
-    //             obs_dist.safe_bb_y_dim = obs.bb.safety_y_port * obs.bb.dim_y/2;
-    //             obs_dist.max_bb_x_dim = obs.bb.max_x_bow * obs.bb.dim_x/2;
-    //             obs_dist.max_bb_y_dim = obs.bb.max_y_port * obs.bb.dim_y/2;
-    //             vxId = FL;
-    //         }else{
-    //             obs_dist.safe_bb_x_dim = obs.bb.safety_x_stern * obs.bb.dim_x/2;
-    //             obs_dist.safe_bb_y_dim = obs.bb.safety_y_port * obs.bb.dim_y/2;
-    //             obs_dist.max_bb_x_dim = obs.bb.max_x_stern * obs.bb.dim_x/2;
-    //             obs_dist.max_bb_y_dim = obs.bb.max_y_port * obs.bb.dim_y/2;
-    //             vxId = RL;
-    //         }
-    //     }else{
-    //         if (theta > -M_PI/2 ){
-    //             obs_dist.safe_bb_x_dim = obs.bb.safety_x_bow * obs.bb.dim_x/2;
-    //             obs_dist.safe_bb_y_dim = obs.bb.safety_y_starboard * obs.bb.dim_y/2;
-    //             obs_dist.max_bb_x_dim = obs.bb.max_x_bow * obs.bb.dim_x/2;
-    //             obs_dist.max_bb_y_dim = obs.bb.max_y_starboard * obs.bb.dim_y/2;
-    //             vxId = FR;
-    //         }else{
-    //             obs_dist.safe_bb_x_dim = obs.bb.safety_x_stern * obs.bb.dim_x/2;
-    //             obs_dist.safe_bb_y_dim = obs.bb.safety_y_starboard * obs.bb.dim_y/2;
-    //             obs_dist.max_bb_x_dim = obs.bb.max_x_stern * obs.bb.dim_x/2;
-    //             obs_dist.max_bb_y_dim = obs.bb.max_y_starboard * obs.bb.dim_y/2;
-    //             vxId = RR;
-    //         }
-    //     }
-    //     obs.uncertainty = true;
-    //     obs.FindLocalVxs(GetLocal(vh_position_));
-    //     for(const auto& vx : obs.vxs){
-    //         if(vx.id == vxId){
-    //             obs_dist.current_bb_x_dim = abs(vx.position.x());
-    //             obs_dist.current_bb_y_dim = abs(vx.position.y());
-    //         }
-    //     }
-    //     message.obs_distances.push_back(obs_dist);
-    // }
 
     if(!active_){
         message.status = "Not active";
     }else{
-      /*Path path_temp = path_;
-      path_temp.pop();
-      ctb::LatLong next_wp = GetLatLong(path_temp.top().position);*/
-      message.status = "Active";
-      message.path_change = last_path_change_reason_;
-      last_path_change_reason_ = "";
-      message.colregs_compliant = colregs_;
-      message.desired_speed = last_cmd_speed;
-      /*message.goal.longitude = goal_.longitude;
-      message.goal.latitude = goal_.latitude;
-      message.next_wp.longitude = next_wp.longitude;
-      message.next_wp.latitude = next_wp.latitude;
-      message.speed = path_.top().speed_to_it;*/
-
-    //   auto path_msg = ulisse_msgs::msg::AvoidancePath();
-    //   SetPathMsg(path_, obstacles, path_msg);
-    //   message.current_path_creation = path_msg.stamp;
-
-        auto now_stamp_secs = static_cast<unsigned int>(last_path_creation_time / static_cast<int>(1E9));
-        auto now_stamp_nanosecs = static_cast<unsigned int>(last_path_creation_time % static_cast<int>(1E9));
-        message.current_path_creation.sec = now_stamp_secs;
-        message.current_path_creation.nanosec = now_stamp_nanosecs;
-
+        message.status = "Active";
+        message.path_change = last_path_change_reason_;
+        last_path_change_reason_ = "";
+        message.colregs_compliant = colregs_;
+        message.desired_speed = last_cmd_speed;
+        message.current_path_creation.sec = last_path_creation_time.seconds();
+        message.current_path_creation.nanosec = last_path_creation_time.nanoseconds();
     }
     avoidanceStatusPub_->publish(message);
 }
 
-void OalInterfaceNode::coordinates_pub() {
+void PathPlannerNode::CoordinatesPub() {
     auto message = ulisse_msgs::msg::CoordinateList();
     Path path_temp = path_;
     message.id = "Path";
@@ -499,16 +446,53 @@ void OalInterfaceNode::coordinates_pub() {
     coordinatesPub_->publish(message);
 }
 
-int main(int argc, char **argv) {
-    rclcpp::init(argc, argv);
+void PathPlannerNode::LoadConf(bool print){
+    libconfig::Config cfg_;
+    std::string ulisse_avoidance_dir = ament_index_cpp::get_package_share_directory("ulisse_avoidance");
+    std::string ulisse_avoidance_dir_conf = ulisse_avoidance_dir;
+    ulisse_avoidance_dir_conf.append("/conf/configuration.cfg");
+    cfg_.readFile(ulisse_avoidance_dir_conf.c_str());
+    //conf_.colregs = cfg_.lookup("colregs");
+    conf_.bb_gain = cfg_.lookup("bb_gain");
+    conf_.centroid.latitude = cfg_.lookup("centroid.latitude");
+    conf_.centroid.longitude = cfg_.lookup("centroid.longitude");
+    conf_.rotational_speed = cfg_.lookup("rotational_speed");
+    conf_.speed_min = cfg_.lookup("starting_velocity");
+    conf_.speed_step = cfg_.lookup("velocity_step");
+    conf_.better_path_distance_perc = cfg_.lookup("better_path_distance_perc");
+    conf_.max_pos_delay_time = cfg_.lookup("max_pos_delay_time");
+    conf_.check_progress_rate = cfg_.lookup("check_progress_rate");
+    conf_.status_pub_rate = cfg_.lookup("status_pub_rate");
+    conf_.obs_expired_time = cfg_.lookup("obs_expired_time");
+    conf_.waypoint_acceptance_radius = cfg_.lookup("waypoint_acceptance_radius");
 
-    auto oalInterface = std::make_shared<OalInterfaceNode>();
+    bb_dimension_default_.minDistFromObs = cfg_.lookup("min_distance_from_obs");
+    bb_dimension_default_.reductionWhileCheckingPath = cfg_.lookup("reduction_while_checking_path");
+    bb_dimension_default_.safeMaxGap = cfg_.lookup("safe_max_gap");
+    bb_dimension_default_.lookAheadSafetySpan = cfg_.lookup("look_ahead_safety_span");
 
-    rclcpp::executors::MultiThreadedExecutor exe;
-    exe.add_node(oalInterface);
-    exe.spin();
+    if (print) {
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Loaded configuration:");
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "  - Centroid: { %.8f, %.8f }", conf_.centroid.latitude, conf_.centroid.longitude);
 
-    rclcpp::shutdown();
+    RCLCPP_INFO(
+        rclcpp::get_logger("rclcpp"), 
+        "  - Considering the vehicle turns %s", 
+        conf_.rotational_speed == 0 ? "instantaneously" : ("at " + std::to_string(conf_.rotational_speed) + " rad/s").c_str()
+    );
 
-    return 0;
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), 
+                "  - Path progress check every %.2fs, Waypoint acceptance radius: %.2fm", 
+                conf_.check_progress_rate, conf_.waypoint_acceptance_radius);
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), 
+                "  - New path if %.2f%% shorter, Pub avoidance update every %.2fs", 
+                conf_.better_path_distance_perc * 100, conf_.status_pub_rate);
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), 
+                "  - Obstacle ignore time after %.2fs without updates, Max delay in receiving position: %.2fs", 
+                conf_.obs_expired_time, conf_.max_pos_delay_time);
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), 
+                "  - Min speed: %.2f, Speed step: %.2f, BB uncertainty multiplier: %.2f", 
+                conf_.speed_min, conf_.speed_step, conf_.bb_gain);  
+    }
+
 }

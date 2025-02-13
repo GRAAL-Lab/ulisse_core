@@ -1,7 +1,9 @@
 #ifndef ULISSE_AVOIDANCE_DATA_STRUCTS_HPP
 #define ULISSE_AVOIDANCE_DATA_STRUCTS_HPP
 
-#include "oal/data_structs/obstacle.hpp"
+#include "oal/obstacle.hpp"
+#include "rclcpp/rclcpp.hpp"
+#include "ctrl_toolbox/DataStructs.h"
 
 struct ObstacleWithTime {
     Obstacle data;
@@ -9,6 +11,7 @@ struct ObstacleWithTime {
 };
 
 struct AvoidanceConf{
+    double bb_gain;
     bool colregs{};
     ctb::LatLong centroid;  //{44.0956, 9.8631}   La Spezia coordinates
     double rotational_speed;
@@ -21,5 +24,7 @@ struct AvoidanceConf{
     double better_path_distance_perc{};
     double waypoint_acceptance_radius{};
 };
+
+
 
 #endif //ULISSE_AVOIDANCE_DATA_STRUCTS_HPP

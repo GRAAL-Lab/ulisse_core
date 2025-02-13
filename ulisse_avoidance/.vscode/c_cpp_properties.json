@@ -1,0 +1,20 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/home/graal/ros2_ws/install/**/include",
+                "/opt/ros/humble/include/**",
+                "/home/graal/ros2_ws/build/ulisse_msgs/rosidl_generator_cpp",
+                "/home/graal/ros2_ws/build/detav_msgs/rosidl_generator_cpp"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/clang-14",
+            "cStandard": "c17",
+            "cppStandard": "c++14",
+            "intelliSenseMode": "linux-clang-x64"
+        }
+    ],
+    "version": 4
+}
