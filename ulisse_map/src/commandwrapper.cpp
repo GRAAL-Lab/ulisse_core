@@ -412,6 +412,8 @@ bool CommandWrapper::sendLatLongCommand(const QGeoCoordinate& goal, double radiu
 }
 
 /// Tesi Depalo
+#include <chrono>  // For duration and timeout
+
 bool CommandWrapper::sendLatLongAvoidanceCommand(const QGeoCoordinate& goal, double radius, double ref_speed, bool COLREGS)
 {
   auto serviceReq = std::make_shared<ulisse_msgs::srv::ComputeAvoidancePath::Request>();
@@ -422,29 +424,38 @@ bool CommandWrapper::sendLatLongAvoidanceCommand(const QGeoCoordinate& goal, dou
   serviceReq->latlong_cmd.ref_speed = ref_speed;
   serviceReq->colregs_compliant = COLREGS;
 
-  //Chiama servizio di avoidance
+  // Chiama servizio di avoidance
   static std::string result_msg;
   bool serviceAvailable;
+
   if (avoidance_path_srv_->service_is_ready()) {
     auto result_future = avoidance_path_srv_->async_send_request(serviceReq);
     std::cout << "Sent Request to Avoidance" << std::endl;
-    if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future) != rclcpp::FutureReturnCode::SUCCESS) {
-      result_msg = " Avoidance service call failed :(";
+
+    // Set the timeout for 0.5 seconds (500 milliseconds)
+    auto timeout = std::chrono::milliseconds(500);
+
+    // Wait for the result or timeout
+    if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future, timeout) != rclcpp::FutureReturnCode::SUCCESS) {
+      result_msg = "Avoidance service call failed or timed out :(";
       RCLCPP_ERROR_STREAM(this->get_logger(), result_msg.c_str());
     } else {
       auto result = result_future.get();
-      result_msg = " Avoidance service returned: " + std::to_string(result->res);
+      result_msg = "Avoidance service returned: " + std::to_string(result->res);
       RCLCPP_INFO_STREAM(this->get_logger(), result_msg);
     }
+
     serviceAvailable = true;
     StopOngoingTimers();
   } else {
     result_msg = "The Avoidance Node doesn't seem to be active.";
     serviceAvailable = false;
   }
+
   ShowToast(result_msg.c_str(), 4000);
   return serviceAvailable;
 }
+
 
 bool CommandWrapper::sendSurgeHeadingCommand(double surge, double heading)
 {

@@ -109,6 +109,7 @@ bool PathPlannerNode::ComputePath(Path &path, rclcpp::Time& creation_time) {
     std::vector<Obstacle> obstacles;
     planner.SetVhData(v_info);
     planner.SetAccRadius(conf_.waypoint_acceptance_radius);
+
     SyncObssData(last_pos_update_, obstacles);
     planner.SetObssData(obstacles);
     path = Path();
@@ -116,6 +117,7 @@ bool PathPlannerNode::ComputePath(Path &path, rclcpp::Time& creation_time) {
     std::chrono::milliseconds time_limit = std::chrono::milliseconds(30);
     
     oal::PathReport report;
+
     planner.ComputePath(goal, colregs_, path, report, time_limit);
     
     if(report.result == oal::SearchResult::TIMEOUT){
@@ -325,7 +327,7 @@ void PathPlannerNode::VehicleStatusCB(const ulisse_msgs::msg::VehicleStatus::Sha
 
 void PathPlannerNode::ObstacleCB(const detav_msgs::msg::ObstacleList::SharedPtr msg) {
     lastObsUpdate_ = msg->header.stamp;
-    
+     
     if(msg->obstacles.size() != obstacles_.size()) {
         RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Now tracking %ld instead of %ld obstacles!", msg->obstacles.size(), obstacles_.size());
     }
@@ -369,14 +371,12 @@ void PathPlannerNode::ObstacleCB(const detav_msgs::msg::ObstacleList::SharedPtr 
         auto gui_msg = ulisse_msgs::msg::Obstacle();
         SetObsMsg(obstacle, gui_msg);
         obsGuiPub_->publish(gui_msg);
-
-
     }
-
 }
 
 void PathPlannerNode::NavFilterCB(ulisse_msgs::msg::NavFilterData::SharedPtr msg) {
-    last_pos_update_ = rclcpp::Clock().now();
+    rclcpp::Time msg_time(msg->stamp.sec, msg->stamp.nanosec);
+    last_pos_update_ = msg_time;
     vh_position_ = ctb::LatLong(msg->inertialframe_linear_position.latlong.latitude,
                                 msg->inertialframe_linear_position.latlong.longitude);
     // assuming given yaw is in NED coordinates

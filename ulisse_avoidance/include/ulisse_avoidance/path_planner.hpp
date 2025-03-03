@@ -174,15 +174,16 @@ private:
     Eigen::Vector2d GetLocal(ctb::LatLong point, bool NED = false) const;
 
     ctb::LatLong GetLatLong(Eigen::Vector2d pos_2d, bool NED = false) const;
-
+        
     void SyncObssData(const rclcpp::Time& time, std::vector<Obstacle>& obstacles) {
-			for (const auto& obs: obstacles_) {
-				Obstacle obs_t = obs;
-                auto time_diff = time - lastObsUpdate_;
-				obs_t.pose.position = ComputePosition(obs, time_diff.to_chrono<std::chrono::seconds>());
-				obstacles.push_back(obs_t);
-			}
-		}
+        auto time_diff_chrono = ToChrono(time) - ToChrono(lastObsUpdate_);
+        for (const auto& obs : obstacles_) {
+            Obstacle obs_t = obs;
+            obs_t.pose.position = ComputePosition(obs, time_diff_chrono);
+            obstacles.push_back(obs_t);
+        }
+    }
+
 
     void StatusPub();
 

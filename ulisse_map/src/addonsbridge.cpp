@@ -112,19 +112,20 @@ void AddonsBridge::ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr msg)
     double dim_x = msg->b_box_dim_x / 2;
     double dim_y = msg->b_box_dim_y / 2;
 
-    DrawObstacle(id, QVariant::fromValue(center), headingDEG, dim_x, dim_x, dim_y, dim_y, false, QColor(255, 255, 255, 255));
+    DrawObstacle(id, QVariant::fromValue(center), headingDEG, dim_x, dim_x, dim_y, dim_y, false, QColor(0, 0, 0, 255));
+    if(msg->show_bbs){
+        QString bb_max{"bb_max_"};
+        QString bb_max_id = bb_max + id;
+        DrawObstacle(bb_max_id, QVariant::fromValue(center), headingDEG,
+                    msg->bb_max.x_bow, msg->bb_max.x_stern, msg->bb_max.y_starboard, msg->bb_max.y_port,
+                    false, QColor(0, 128, 0, 255));
 
-    QString bb_max{"bb_max_"};
-    QString bb_max_id = bb_max + id;
-    DrawObstacle(bb_max_id, QVariant::fromValue(center), headingDEG,
-                 dim_x * msg->bb_max.x_bow_ratio, dim_x * msg->bb_max.x_stern_ratio, dim_y * msg->bb_max.y_starboard_ratio, dim_y * msg->bb_max.y_port_ratio,
-                 false, QColor(0, 128, 0, 255));
-
-    QString bb_safe{"bb_safe_"};
-    QString bb_safe_id = bb_safe + id;
-    DrawObstacle(bb_safe_id, QVariant::fromValue(center), headingDEG,
-                 dim_x * msg->bb_safe.x_bow_ratio, dim_x * msg->bb_safe.x_stern_ratio, dim_y * msg->bb_safe.y_starboard_ratio, dim_y * msg->bb_safe.y_port_ratio,
-                 false, QColor(255, 0, 0, 255));
+        QString bb_safe{"bb_safe_"};
+        QString bb_safe_id = bb_safe + id;
+        DrawObstacle(bb_safe_id, QVariant::fromValue(center), headingDEG,
+                    msg->bb_safe.x_bow, msg->bb_safe.x_stern, msg->bb_safe.y_starboard, msg->bb_safe.y_port,
+                    false, QColor(255, 0, 0, 255));
+    }
 
     //ulisse_msgs::msg::Obstacle
 }

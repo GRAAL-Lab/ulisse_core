@@ -2,6 +2,7 @@
 #define UA_UTILITIES_HPP
 
 #include "rclcpp/rclcpp.hpp"
+#include <chrono>
 #include "oal/obstacle.hpp"
 #include "oal/helper_functions.hpp"
 #include "oal/misc.hpp"
@@ -19,6 +20,11 @@ inline auto generateRange = [](double start, double end, double step) {
     }
     return result;
 };
+
+inline std::chrono::seconds ToChrono(const rclcpp::Time& time) {
+    auto out = time.seconds();
+    return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::duration<double>(out));
+}
 
 
 

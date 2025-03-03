@@ -10,5 +10,6 @@ float64 uncertainty_gap
 float64 vel_x
 float64 vel_y
 bool show_id
+bool show_bbs
 ColorRGB color
 bool higher_priority
