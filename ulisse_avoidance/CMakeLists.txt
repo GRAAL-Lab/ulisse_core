@@ -12,6 +12,7 @@ find_package(ulisse_ctrl REQUIRED)
 
 find_package(rclcpp REQUIRED)
 find_package(ctrl_toolbox REQUIRED)
+find_package(sisl_toolbox REQUIRED)
 
 find_package(ament_index_cpp)
 
@@ -35,7 +36,7 @@ include_directories(
         ${detav_msgs_INCLUDE_DIRS}
 )
 
-add_executable(oal_interface src/planner_node.cpp src/ulisse_avoidance/path_planner.cpp)
+add_executable(oal_interface src/planner_node.cpp src/ulisse_avoidance/local_planner.cpp src/ulisse_avoidance/plan.cpp)
 ament_target_dependencies(
         oal_interface
         ament_index_cpp
@@ -47,7 +48,7 @@ ament_target_dependencies(
         
         
 )
-target_link_libraries(oal_interface Geographic oal config++)
+target_link_libraries(oal_interface Geographic oal config++ sisl_toolbox)
 target_include_directories(oal_interface PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>)

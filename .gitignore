@@ -193,6 +193,8 @@ rml.config
 *.files
 *.includes
 
+# vscode stuff
+**/.vscode/
 
 srv/_*.py
 *.pcd
@@ -214,3 +216,5 @@ COLCON_IGNORE
 
 ulisse_ctrl/cmake-build-debug/*
 Experiments/*
+
+

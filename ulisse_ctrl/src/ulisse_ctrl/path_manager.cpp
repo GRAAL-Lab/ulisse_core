@@ -34,11 +34,18 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
     std::cout << "nurbsParam.deltaMax: " << nurbsParam.deltaMax << std::endl;
 
     std::cout.precision(10);
-    //std::cout  << "Path Message:\n" << rosidl_generator_traits::to_yaml(path) << std::fixed << std::endl;
+    std::cout  << "Path Message:\n" << rosidl_generator_traits::to_yaml(path) << std::fixed << std::endl;
 
     pathName_ = path.id;
     pathType_ = path.type;
     polypathType_ = path.polypath_type;
+
+    velocities_ = path.velocities;
+    velocities_abscissas_ = path.velocities_abscissas;
+    if (velocities_abscissas_.size() != velocities_.size()) {
+        std::cerr << "Error: Input vectors (velocities & abscissas) must have the same size.";
+        return false;
+    }
 
     centroid_.latitude = path.centroid.latitude;
     centroid_.longitude = path.centroid.longitude;
@@ -82,12 +89,18 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
         }
 
     } else if (pathType_ == "PointPath") {
-        path_ = sisl::PathFactory::NewPolygonalChain(direction_, polyVerticesUTM);
+
+        try{
+            path_ = sisl::PathFactory::NewPolygonalChain(direction_, polyVerticesUTM);
+        }catch(const std::exception &e){
+            std::cerr<< std::string(e.what());
+        }
+        
     } else {
         std::cerr << "Error: pathType not recognized.";
         return false;
     }
-
+    
     std::cout << *path_ << std::endl;
 
     //lookAheadDistance = (path_->Length()/path_->CurvesNumber())/2.0;
@@ -180,4 +193,24 @@ double PathManager::DistanceToEnd() const
     return std::fabs(path_->EndParameter() - currentAbscissa_);
 }
 
+bool PathManager::GetVelocity(const ctb::LatLong& position, double& velocity) const
+{
+    if(velocities_.empty()) return false;
+    Eigen::Vector3d currentPos_UTM;
+    ctb::LatLong2LocalUTM(position, 0.0, centroid_, currentPos_UTM);
+    int id;
+    double abscissa;
+    path_->FindClosestPoint(currentPos_UTM, id, abscissa);
+
+    // Find the first position where velocities_abscissas[i] > abscissa
+    auto it = std::lower_bound(velocities_abscissas_.begin(), velocities_abscissas_.end(), abscissa);
+    if (it == velocities_abscissas_.begin()) {
+        velocity = velocities_.front();
+    }else if (it == velocities_abscissas_.end()) {
+        velocity = velocities_.back();
+    }else{
+        velocity = velocities_[std::distance(velocities_abscissas_.begin(), it) - 1];
+    }
+    return true;
+}
 

@@ -1,9 +1,9 @@
-#include "ulisse_avoidance/path_planner.hpp"
+#include "ulisse_avoidance/local_planner.hpp"
 
 int main(int argc, char **argv) {
     rclcpp::init(argc, argv);
 
-    auto plannerNode = std::make_shared<PathPlannerNode>();
+    auto plannerNode = std::make_shared<LocalPlannerNode>();
 
     rclcpp::executors::MultiThreadedExecutor exe;
     exe.add_node(plannerNode);

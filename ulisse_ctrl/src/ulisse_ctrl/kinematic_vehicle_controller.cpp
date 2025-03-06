@@ -542,8 +542,6 @@ void VehicleController::SlowTimerCB()
 
 void VehicleController::SurgeHeadingCB(const ulisse_msgs::msg::SurgeHeading::SharedPtr msg)
 {
-    std::cout<<" headinnnnggggggggggggggggg: "<<msg->heading<<std::endl;	
-    RCLCPP_INFO(this->get_logger(), "OOOOOOOOOOOOOOOOOOOOOH %d", msg->heading);
     stateSurgeHeading_->SetSurgeHeading(msg->surge, msg->heading);
 }
 

@@ -29,6 +29,8 @@ namespace states {
         } else {
             return fsm::fail;
         }
+
+        
     }
 
     bool StateHold::ConfigureStateFromFile(libconfig::Config& confObj)
@@ -97,7 +99,11 @@ namespace states {
         ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, positionToHold, goalDistance, goalHeading); //compute the distanza between the current position and the position to hold
 
         // If the robot is inside the circle put the catamaran countercurrent, otherwise
-        // point to the hold circle defined by maxAcceptanceRadius and minAcceptanceRadiuos
+        // point to the hold circle defined by maxAcceptanceRadius and minAcceptanceRadius
+
+        // std::cerr << "maxAcceptanceRadius: " << maxAcceptanceRadius << std::endl;
+        // std::cerr << "minAcceptanceRadius: " << minAcceptanceRadius << std::endl; 
+        // std::cerr << "goalDistance: " << goalDistance << std::endl; 
         if (goalDistance < minAcceptanceRadius) {
             hysteresisState_ = HysteresisState::Align;
         } else if (goalDistance > maxAcceptanceRadius) {
@@ -119,6 +125,7 @@ namespace states {
 
         } else if (hysteresisState_ == HysteresisState::ComeBack) {
             // If the previos action was comeback to the hold acceptance radius, keep do it until d < minAcceptanceRadius.
+            absoluteAxisAlignmentTask_->ExternalActivationFunction().setIdentity();
             absoluteAxisAlignmentTask_->SetDirectionAlignment(Eigen::Vector3d(cos(goalHeading), sin(goalHeading), 0.0), rml::FrameID::WorldFrame);
             double surgeReference = rml::IncreasingBellShapedFunction(minAcceptanceRadius, maxAcceptanceRadius, 0.25, maxSurgeComeback2HoldAcceptanceRadius_, goalDistance);
             absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);

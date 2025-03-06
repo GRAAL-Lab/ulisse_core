@@ -81,6 +81,11 @@ public:
     */
     auto GetPath() const -> const std::shared_ptr<sisl::Path> { return path_; }
 
+    /*
+     * Method that gets the desired velocity
+    */
+    bool GetVelocity(const ctb::LatLong& position, double& velocity) const;
+
 
 
     // Nurbs parameters
@@ -125,6 +130,8 @@ private:
     std::shared_ptr<sisl::Path> path_;                // The Curve
     ctb::LatLong centroid_;                     // The centroid for the convertion from/to cartesian/latlong
     std::vector<ctb::LatLong> coordinates_;     // Coordinate List of polypath
+    std::vector<double> velocities_;
+    std::vector<double> velocities_abscissas_;
     double angle_, size_1_, size_2_;
     sisl::Path::Direction direction_;
     ctb::LatLong startP_;                       // Starting point of the nurbs path
