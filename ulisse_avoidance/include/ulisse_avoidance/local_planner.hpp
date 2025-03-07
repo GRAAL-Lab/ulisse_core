@@ -45,8 +45,8 @@
 class LocalPlannerNode : public rclcpp::Node {
 public:
     LocalPlannerNode() : Node("local_planner") {
-        RCLCPP_INFO(this->get_logger(), "Loading configuration file..");
-        LoadConf(true);
+        
+        LoadConf();
 
 		std::vector<std::string> highPriorityList = {detav_msgs::obstypes::higher_priority};
     	oal::PathEvaluator::SetHighPriorityObstacles(highPriorityList);
@@ -71,12 +71,11 @@ public:
 private:
 
     LPConfig conf_;
-    DebugUA debugSettings;
+    std::shared_ptr<DebugUA> debugSettings;
     int qos_sensor = 1; 
 
     ctb::LatLong vh_position_;
     double vh_heading_;
-    //double last_cmd_speed;
     std::vector<ObsPtr> obstacles_;
     rclcpp::Time lastObsUpdate_, lastPosUpdate_, lastCheckProgress_;
 
@@ -106,7 +105,8 @@ private:
     rclcpp::TimerBase::SharedPtr avoidanceStatusTimer_;
 
 
-    void LoadConf(bool print = false);
+    void LoadConf();
+    void TopicSetup();
 
     // Callbacks
     // Search for path to GUI-sent new goal and make KCL track it
@@ -120,113 +120,36 @@ private:
     void ObstacleCB(detav_msgs::msg::ObstacleList::SharedPtr msg);
     // Check if it is supposed to send commands to KCL
     void VehicleStatusCB(ulisse_msgs::msg::VehicleStatus::SharedPtr msg);
+    // Pub avoidance status
+    void StatusPub();
+    // Pub coordinates for display
+    void CoordinatesPub();
+
     // Check vehicle progress along trajectory and send commands to KCL
     void CheckProgress();
+    void StartCheckingProgress();
+    void StopCheckingProgress();
 
+    //kcl cmds
 	bool HaltCmd();
-
 	bool HoldCmd();
-
 	bool PathCmd(const ulisse_msgs::msg::PathData& path);
-
 	bool WaitForResponse(std::shared_ptr<ulisse_msgs::srv::ControlCommand::Request>& serviceReq);
 
 	void SyncObsToLastVhUpdate(std::vector<ObsPtr>& obstacles);
 
-    // Mind that timer starting and stopping are placed only in callbacks (single thread node)
-    void StartCheckingProgress();
-  
-    void stopCheckingProgress();
 
-
+    // Utilities
     Eigen::Vector2d GetLocal(ctb::LatLong point, bool NED = false) const;
-
     ctb::LatLong GetLatLong(Eigen::Vector2d pos_2d, bool NED = false) const;
-        
-    // void SyncObssData(const rclcpp::Time& time, std::vector<Obstacle>& obstacles) {
-    //     auto time_diff_chrono = ToChrono(time) - ToChrono(lastObsUpdate_);
-    //     for (const auto& obs : obstacles_) {
-    //         Obstacle obs_t = obs;
-    //         obs_t.pose.position = ComputePosition(obs, time_diff_chrono);
-    //         obstacles.push_back(obs_t);
-    //     }
-    // }
-
-
-    void StatusPub();
-
-    void CoordinatesPub();
-
     void SetObsMsg(const std::shared_ptr<oal::Obstacle>& obs, ulisse_msgs::msg::Obstacle &msg);
+        
 
-    void TopicSetup();
 
-//     void printPath() const {
-// 		Path temp = path_;
-// 		temp.UpdateMetrics(GetLocal(vh_position_), vh_heading_, conf_.rotational_speed);
+    
 
-// 		// Get the path details from the library's `print()` function
-// 		std::string pathDetails = temp.print(true);
+    
 
-// 		// Log the path details using RCLCPP_INFO
-// 		RCLCPP_INFO(this->get_logger(), "%s", pathDetails.c_str());
-// 	}
-
-//   void PubComputedPath(Path &path, rclcpp::Time& creation_time){
-//     auto message = ulisse_msgs::msg::AvoidancePath();
-
-//     creation_time = rclcpp::Clock().now();
-//     message.stamp.sec = creation_time.seconds();
-//     message.stamp.nanosec = creation_time.nanoseconds();
-
-//     message.colregs_compliant = colregs_;
-//     message.vh_position.latitude = vh_position_.latitude;
-//     message.vh_position.longitude = vh_position_.longitude;
-//     message.vh_heading = vh_heading_;
-//     message.vh_rot_speed = conf_.rotational_speed;
-//     for(double vel : velocities_) message.velocities.push_back(vel);
-//     message.goal.latitude = goal_.latitude;
-//     message.goal.longitude = goal_.longitude;
-//     message.max_heading_change = path.metrics.maxHeadingChange;
-//     message.tot_heading_change = path.metrics.totHeadingChange;
-//     message.tot_distance = path.metrics.totDistance;
-//     message.estimated_time_to_goal = path.metrics.estimatedTime;
-
-//     // Waypoints
-//     Path path_temp = path;
-//     while(!path_temp.empty()){
-//         auto wp = ulisse_msgs::msg::Waypoint();
-//         auto abs = GetLatLong(path_temp.top().position);
-//         wp.position.latitude = abs.latitude;
-//         wp.position.longitude = abs.longitude;
-//         wp.speed = path_temp.top().speed_to_it;
-//         //std::cerr<<"---"<<wp.speed<<"\n";
-//         if(path_temp.top().obs_ptr != nullptr){
-//             wp.obs_id = path_temp.top().obs_ptr->id;
-//             switch(path_temp.top().vx){
-//             case FR:
-//                 wp.vx = "FR";
-//                 break;
-//             case FL:
-//                 wp.vx = "FL";
-//                 break;
-//             case RR:
-//                 wp.vx = "RR";
-//                 break;
-//             case RL:
-//                 wp.vx = "RL";
-//                 break;
-//             case NA:
-//                 wp.vx = "NA";
-//                 break;
-//             }
-//         }
-//         message.wps.push_back(wp);
-//         path_temp.pop();
-//     }   
-//     //SetPathMsg(path, obstacles, message);
-//     compPathPub_->publish(message);
-//   }
 
 
 };

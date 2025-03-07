@@ -188,9 +188,7 @@ fsm::retval StatePathFollow::Execute()
 
                 // Saturate the input value between min and max
                 if(pathManager_.GetVelocity(ctrlData->inertialF_linearPosition, ref_speed)){
-                    std::cerr<< " GetVel: "<< ref_speed<<", maxVehicle: "<<maxVehicleSpeed_<<", so task param: ";
                     ref_speed = std::clamp(ref_speed, 0.0, maxVehicleSpeed_);
-                    std::cerr<<ref_speed<<std::endl;
                     // Setting the gain like this ensures that "v_ref > ref_speed"
                     // for distances greater than the acceptance radius.
                     taskGain = ref_speed/pathManager_.nurbsParam.deltaMin;

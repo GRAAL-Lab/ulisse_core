@@ -15,8 +15,9 @@ using Path = oal::AstarPath;
 
 
 struct DebugUA {
-    oal::DebugSettings oal;
+    std::shared_ptr<oal::DebugSettings> oal;
     bool printActualPath = false;
+    bool obsBbsInGui = false;
 };
 
 struct vhDataStatic{

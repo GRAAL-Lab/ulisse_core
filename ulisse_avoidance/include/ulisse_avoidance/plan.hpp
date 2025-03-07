@@ -15,6 +15,7 @@ private:
     ctb::LatLong centroid_;
 
     std::unique_ptr<oal::Generator> gen_;
+    std::shared_ptr<DebugUA> debug_;
 
     rclcpp::Time pathCreationTime_;
     oal::PathReport searchReport_;
@@ -32,7 +33,15 @@ public:
     
    
 
-    Plan(const ctb::LatLong& vhPos, const double& vhHeading, const ctb::LatLong& goal, const ctb::LatLong& centroid, const std::vector<ObsPtr>& obs, bool rulesCompliant, rclcpp::Time now)
+    Plan(const ctb::LatLong& vhPos, 
+         const double& vhHeading, 
+         const ctb::LatLong& goal, 
+         const ctb::LatLong& centroid, 
+         const std::vector<ObsPtr>& obs, 
+         bool rulesCompliant, 
+         rclcpp::Time now,
+         std::shared_ptr<DebugUA> debug = nullptr
+         )
         : centroid_(centroid), obstacles(obs), colregs(rulesCompliant) {
 
         //TODO colregs
@@ -44,11 +53,14 @@ public:
         ctb::LatLong2LocalUTM(goal, 0.0, centroid, cartesian);
         goal_ = cartesian.head(2);
         
-        // std::cerr<<" Planning with vel:\n   ";
-        // for(const auto& v : vhData.velocities) std::cerr<<v<<", ";
-        // std::cerr<<"\n";
+        
+        if(debug != nullptr){ 
+            debug_ = debug;
+        }else{
+            debug_ = std::make_shared<DebugUA>(); //default values
+        }
 
-        gen_ = std::make_unique<oal::Generator>(vhData, pParams);
+        gen_ = std::make_unique<oal::Generator>(vhData, pParams, debug_->oal);
         
         searchReport_ = gen_->FindPath(vhPose, goal_, obstacles, path);
         if (searchReport_.result != oal::SearchResult::FAIL) {
@@ -117,7 +129,6 @@ public:
             path_abscissa += (wp->data.position - vh_pos).norm();
             vh_pos = wp->data.position;
             msg.velocities.push_back(wp->data.approachingSpeed);
-            std::cerr<<"\n speed ref: "<<wp->data.approachingSpeed<<"\n";
             msg.velocities_abscissas.push_back(path_abscissa);            
         }
         return msg;

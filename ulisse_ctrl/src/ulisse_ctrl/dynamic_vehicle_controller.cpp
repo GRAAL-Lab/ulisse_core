@@ -264,9 +264,16 @@ void DynamicVehicleController::PublishControl()
     long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(tNow.time_since_epoch())).count();
     auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
     auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
-    thrustersReference.stamp.sec = now_stamp_secs;
-    thrustersReference.stamp.nanosec = now_stamp_nanosecs;
-    thrusterDataPub_->publish(thrustersReference);
+
+    auto time_diff = now_stamp_secs - static_cast<unsigned int>(referenceVelocities.stamp.sec);
+    
+    if ( time_diff > 2 ) { 
+        //RCLCPP_ERROR_ONCE(this->get_logger(), "KCL Timeout (> 2s)!");
+    } else {
+        thrustersReference.stamp.sec = now_stamp_secs;
+        thrustersReference.stamp.nanosec = now_stamp_nanosecs;
+        thrusterDataPub_->publish(thrustersReference);
+    }
 }
 
 bool DynamicVehicleController::LoadDclConfiguration(std::shared_ptr<DCLConfiguration> dcl_conf, std::string filename)

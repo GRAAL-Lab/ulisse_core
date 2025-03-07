@@ -1,4 +1,5 @@
 from launch import LaunchDescription
+from launch.actions import Shutdown
 import launch_ros.actions
 import os
 
@@ -12,28 +13,37 @@ def generate_launch_description():
             package='ulisse_ctrl',
             executable='dynamic_control_node',
             output='screen',
-            arguments=[])
+            arguments=[],
+            on_exit=Shutdown()
+            )
     kcl_node = launch_ros.actions.Node(
             package='ulisse_ctrl',
             executable='kinematic_control_node',
             #prefix=['gdb -ex=r --args'],
             output='screen',
-            arguments=[])
+            arguments=[],
+            on_exit=Shutdown()
+            )
     nav_filter_node = launch_ros.actions.Node(
             package='nav_filter',
             executable='nav_filter_node',
             output='screen',
-            arguments=[])
+            arguments=[],
+            on_exit=Shutdown()
+            )
     nav_filter_udp_sender = launch_ros.actions.Node(
             package='nav_filter',
             executable='nav_filter_udp_sender',
             output='screen',
-            arguments=["192.168.1.153"])
+            arguments=["192.168.1.153"]
+            )
     bag_recorder_node = launch_ros.actions.Node(
             package='bag_recorder',
             executable='bag_recorder_node',
             output='screen',
-            arguments=[])
+            arguments=[],
+            on_exit=Shutdown()
+            )
     
     return LaunchDescription([
         dcl_node,

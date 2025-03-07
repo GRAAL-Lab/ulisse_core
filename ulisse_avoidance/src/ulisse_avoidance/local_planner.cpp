@@ -5,13 +5,14 @@ void LocalPlannerNode::handleComputePathRequest(
         std::shared_ptr<ulisse_msgs::srv::ComputeAvoidancePath::Request> request,
         std::shared_ptr<ulisse_msgs::srv::ComputeAvoidancePath::Response> response) {
 
+    response->res = false;
     if (lastKnownVhStatus_ == ulisse::states::ID::halt) {
         RCLCPP_INFO(this->get_logger(), " VEHICLE NOT READY (HALT STATE) ");
         return;
     } 
     std::cout << "---------------------------------" << std::endl;
     RCLCPP_INFO(this->get_logger(), "New request.");
-    if (followingPlan_) stopCheckingProgress(); // stop tracking old path
+    if (followingPlan_) StopCheckingProgress(); // stop tracking old path
 
     Plan::vhData.velocities = generateRange(conf_.vhData.speedMin, request->latlong_cmd.ref_speed, conf_.vhData.speedStep);
 
@@ -21,17 +22,17 @@ void LocalPlannerNode::handleComputePathRequest(
     auto syncedObs = obstacles_;
     SyncObsToLastVhUpdate(syncedObs);
 
-    plan = std::make_shared<Plan>(vh_position_, vh_heading_, goal, conf_.centroid, syncedObs, colregs, this->now());
+    plan = std::make_shared<Plan>(vh_position_, vh_heading_, goal, conf_.centroid, syncedObs, colregs, this->now(), debugSettings);
     if(plan->Report().result == oal::SearchResult::FAIL){
         RCLCPP_WARN(this->get_logger(), "Path computation failed: %s", plan->Report().failMsg.c_str());
-        response->res = false;
+        return;
     }
 
     if(plan->Report().result == oal::SearchResult::PARTIAL){
         RCLCPP_WARN(this->get_logger(), "Cannot reach goal, reaching one closer (%s)", plan->Report().failMsg.c_str());
     }
 
-    PathCmd(plan->GetPathMsg());
+    if(!PathCmd(plan->GetPathMsg())) return;
     
     response->res = true;
     //last_check_progress_ = last_pos_update_;
@@ -43,7 +44,7 @@ void LocalPlannerNode::CheckProgress() {
 
     if (lastKnownVhStatus_ != ulisse::states::ID::pathfollow) {
         //RCLCPP_INFO(this->get_logger(), " VEHICLE NOT READY (HALT STATE) ");
-        stopCheckingProgress();
+        StopCheckingProgress();
     } else {
         // If new pos update exists, check progress
         if (lastPosUpdate_ > lastCheckProgress_) {
@@ -60,7 +61,7 @@ void LocalPlannerNode::CheckProgress() {
 
             if(!isOldSafe && !existBetterPlan){
                 RCLCPP_INFO(this->get_logger(), "Old path is not safe and no new path can be found.");
-                stopCheckingProgress();
+                StopCheckingProgress();
                 HoldCmd();
                 return;
             }
@@ -134,8 +135,8 @@ void LocalPlannerNode::NavFilterCB(ulisse_msgs::msg::NavFilterData::SharedPtr ms
     if(followingPlan_){
         if(plan->UpdateStatus(vh_position_, conf_.waypointAcceptanceRadius)){
             RCLCPP_INFO(this->get_logger(), "Reached end of path!");
-            stopCheckingProgress();
-            HoldCmd();
+            StopCheckingProgress();
+            //HoldCmd();
         }
     }
 }
@@ -235,22 +236,23 @@ bool LocalPlannerNode::PathCmd(const ulisse_msgs::msg::PathData& path){
 
 bool LocalPlannerNode::WaitForResponse(std::shared_ptr<ulisse_msgs::srv::ControlCommand::Request>& serviceReq){
     static std::string result_msg;
-    RCLCPP_INFO(this->get_logger(), "service request: %s", serviceReq->command_type.c_str());
+    RCLCPP_INFO(this->get_logger(), "sending ctrl cmd: %s", serviceReq->command_type.c_str());
     if (command_srv_->service_is_ready()) {
         auto result_future = command_srv_->async_send_request(serviceReq);
         std::future_status status = result_future.wait_for(std::chrono::seconds(2));  // timeout to guarantee a graceful finish
         if (status != std::future_status::ready) {
-            result_msg = "Service call failed :(";
+            result_msg = " ---> service call failed.";
             RCLCPP_ERROR_STREAM(this->get_logger(), result_msg.c_str());
-            //TODO stopTracking();
+            StopCheckingProgress();
             return false;
         }
         auto result = result_future.get();
-        result_msg = "Service returned: " + result->res;
+        result_msg = " ---> service returned: " + result->res;
         RCLCPP_INFO(this->get_logger(), "%s", result_msg.c_str());
         return true;
     } 
-    RCLCPP_INFO(this->get_logger(), "The controller doesn't seem to be active.\n(No CommandServer available)");
+    RCLCPP_WARN(this->get_logger(), "The controller doesn't seem to be active (No CommandServer available)");
+    StopCheckingProgress();
     return false;
 }
 
@@ -280,7 +282,7 @@ void LocalPlannerNode::StartCheckingProgress() {
     checkProgressTimer_->reset();
 }
 
-void LocalPlannerNode::stopCheckingProgress() {
+void LocalPlannerNode::StopCheckingProgress() {
     checkProgressTimer_->cancel();
     followingPlan_ = false;
     actual_path_.push_back(vh_position_);
@@ -302,6 +304,7 @@ void LocalPlannerNode::SetObsMsg(const std::shared_ptr<oal::Obstacle>& obs, ulis
     msg.heading = M_PI_2 - obs->InitialPose().Heading();
     msg.b_box_dim_x = obs->BBData().dim_x;
     msg.b_box_dim_y = obs->BBData().dim_y;
+    msg.show_bbs = debugSettings->obsBbsInGui;
     msg.bb_max.x_bow = obs->BBData().max_x_bow;
     msg.bb_max.x_stern = obs->BBData().max_x_stern;
     msg.bb_max.y_starboard = obs->BBData().max_y_starboard;
@@ -356,11 +359,12 @@ void LocalPlannerNode::TopicSetup(){
 
 }
 
-void LocalPlannerNode::LoadConf(bool print) {
+void LocalPlannerNode::LoadConf() {
     libconfig::Config cfg_;
     std::string ulisse_avoidance_dir = ament_index_cpp::get_package_share_directory("ulisse_avoidance");
     std::string ulisse_avoidance_dir_conf = ulisse_avoidance_dir + "/conf/configuration.cfg";
     cfg_.readFile(ulisse_avoidance_dir_conf.c_str());
+    RCLCPP_INFO(this->get_logger(), "Loading configuration file:\n      %s", ulisse_avoidance_dir_conf.c_str());
 
     // Load vehicle data
     const libconfig::Setting& vehicle_data = cfg_.getRoot()["vehicle_data"];
@@ -391,6 +395,36 @@ void LocalPlannerNode::LoadConf(bool print) {
     const libconfig::Setting& centroid = cfg_.getRoot()["centroid"];
     centroid.lookupValue("latitude", conf_.centroid.latitude);
     centroid.lookupValue("longitude", conf_.centroid.longitude);
+
+    // Load debug
+    const libconfig::Setting& debug = cfg_.getRoot()["debug"];
+    debugSettings = std::make_shared<DebugUA>();
+    debugSettings->oal = std::make_shared<oal::DebugSettings>();
+    bool print;
+    debug.lookupValue("print_conf", print);
+    bool logNodes = false;
+    std::string logNodesPathDir;
+    debug.lookupValue("log_nodes", logNodes);
+    debug.lookupValue("log_nodes_path_dir", logNodesPathDir);
+    if(logNodes){
+        debugSettings->oal->completePath.log = true;
+        debugSettings->oal->completePath.dirPath = logNodesPathDir;
+        debugSettings->oal->completePath.fileName = "completePathNodes.txt";
+        debugSettings->oal->failedPath.log = true;
+        debugSettings->oal->failedPath.dirPath = logNodesPathDir;
+        debugSettings->oal->failedPath.fileName = "failedPathNodes.txt";
+        debugSettings->oal->validPath.log = true;
+        debugSettings->oal->validPath.dirPath = logNodesPathDir;
+        debugSettings->oal->validPath.fileName = "validPathNodes.txt";
+        debugSettings->oal->notValidPath.log = true;
+        debugSettings->oal->notValidPath.dirPath = logNodesPathDir;
+        debugSettings->oal->notValidPath.fileName = "notValidPathNodes.txt";
+    }
+
+    debug.lookupValue("log_obs", debugSettings->oal->logObstacles);
+    debug.lookupValue("log_obs_path_file", debugSettings->oal->logObstaclesPathFile);
+    debug.lookupValue("obs_bbs_in_gui", debugSettings->obsBbsInGui);
+
 
     if (print) {
         RCLCPP_INFO(this->get_logger(), "Loaded configuration:");
