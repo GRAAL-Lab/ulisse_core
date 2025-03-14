@@ -568,7 +568,10 @@ void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::Share
     ctrlData_->bodyF_linearVelocity[2] = msg->bodyframe_linear_velocity[2];
 
     // Linear position in world frame
-    Eigen::Vector3d worldF_vehicleLinearPosition(ctrlData_->inertialF_linearPosition.latitude, ctrlData_->inertialF_linearPosition.longitude, 0.0);
+    Eigen::Vector3d bodyPosUTM;
+    ctb::LatLong2LocalUTM(ctrlData_->inertialF_linearPosition, 0.0, centroidLocation_, bodyPosUTM);
+
+    Eigen::Vector3d worldF_vehicleLinearPosition(bodyPosUTM.x, bodyPosUTM.y, 0.0);
 
     // Updating the robot model
     Eigen::TransformationMatrix worldF_T_vehicleF;
