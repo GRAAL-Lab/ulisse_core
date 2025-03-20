@@ -17,6 +17,9 @@ find_package(sisl_toolbox REQUIRED)
 find_package(ament_index_cpp)
 
 find_package(detav_msgs REQUIRED)
+find_package(Boost REQUIRED COMPONENTS filesystem system)
+
+
 
 # Add files in the tree of "Projects" view in QtCreator
 file(GLOB_RECURSE SOURCE_FILES
@@ -48,7 +51,8 @@ ament_target_dependencies(
         
         
 )
-target_link_libraries(oal_interface Geographic oal config++ sisl_toolbox)
+target_link_libraries(oal_interface Geographic oal config++ sisl_toolbox Boost::filesystem Boost::system)
+
 target_include_directories(oal_interface PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>)

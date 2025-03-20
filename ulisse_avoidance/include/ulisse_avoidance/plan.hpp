@@ -1,175 +1,105 @@
-#ifndef SEARCH_HPP
-#define SEARCH_HPP
+#ifndef PLAN_HPP
+#define PLAN_HPP
 
+#include "ctrl_toolbox/HelperFunctions.h"
 #include "rclcpp/rclcpp.hpp"
 #include "ulisse_avoidance/data_structs.hpp"
+#include "ulisse_avoidance/directory_manager.hpp"
 #include "ulisse_msgs/msg/path_data.hpp"
-#include "ctrl_toolbox/HelperFunctions.h"
+
+#include <memory>
+#include <nlohmann/json.hpp>
+#include <vector>
+
+using json = nlohmann::ordered_json;
 
 using oal::VehicleData, oal::PruningParams;
 
 class Plan {
 private:
-
     Eigen::Vector2d goal_;
     ctb::LatLong centroid_;
+
+    ObsPtr currentSupportObs_ = nullptr;
+    oal::VxId currentSupportVx_ = oal::NA;
 
     std::unique_ptr<oal::Generator> gen_;
     std::shared_ptr<DebugUA> debug_;
 
-    rclcpp::Time pathCreationTime_;
+    rclcpp::Time lastStatusUpdate_;
     oal::PathReport searchReport_;
+    std::unique_ptr<DirectoryManager> currentRequestDir_;
+
+    Eigen::Vector2d GetLocal2d(const ctb::LatLong& position) const;
+
+    json LogCurrentSearchData(rclcpp::Time now);
 
 public:
-
     static VehicleData vhData;
     static PruningParams pParams;
 
     oal::Pose vhPose;
     std::vector<ObsPtr> obstacles;
+
     bool colregs;
-
     Path path;
-    
-   
 
-    Plan(const ctb::LatLong& vhPos, 
-         const double& vhHeading, 
-         const ctb::LatLong& goal, 
-         const ctb::LatLong& centroid, 
-         const std::vector<ObsPtr>& obs, 
-         bool rulesCompliant, 
-         rclcpp::Time now,
-         std::shared_ptr<DebugUA> debug = nullptr
-         )
-        : centroid_(centroid), obstacles(obs), colregs(rulesCompliant) {
+    /* Create a new plan */
+    Plan(const ctb::LatLong& vhPos,
+        const double& vhHeading,
+        const ctb::LatLong& goal,
+        const ctb::LatLong& centroid,
+        const std::vector<ObsPtr>& obs,
+        bool rulesCompliant,
+        rclcpp::Time now,
+        const std::string& logDirectory,
+        std::shared_ptr<DebugUA> debug = nullptr)
+        : centroid_(centroid)
+        , obstacles(obs)
+        , colregs(rulesCompliant)
+    {
+        vhPose = oal::Pose(GetLocal2d(vhPos), vhHeading);
+        goal_ = GetLocal2d(goal);
 
-        //TODO colregs
-        
-        Eigen::Vector3d cartesian;
-        ctb::LatLong2LocalUTM(vhPos, 0.0, centroid, cartesian);
-        vhPose = oal::Pose(cartesian.head(2), vhHeading);
-
-        ctb::LatLong2LocalUTM(goal, 0.0, centroid, cartesian);
-        goal_ = cartesian.head(2);
-        
-        
-        if(debug != nullptr){ 
-            debug_ = debug;
-        }else{
-            debug_ = std::make_shared<DebugUA>(); //default values
-        }
-
+        debug_ = debug ? debug : std::make_shared<DebugUA>();
         gen_ = std::make_unique<oal::Generator>(vhData, pParams, debug_->oal);
-        
+
         searchReport_ = gen_->FindPath(vhPose, goal_, obstacles, path);
+
         if (searchReport_.result != oal::SearchResult::FAIL) {
-            pathCreationTime_ = now;
-        }
-    }
-
-    auto When() const -> const rclcpp::Time& {return pathCreationTime_;};
-    auto Report() const -> const oal::PathReport& {return searchReport_;};
-
-    bool IsValid(const ctb::LatLong& vhPos, const double& vhHeading, const std::vector<ObsPtr>& new_obs, Eigen::Vector2d& unreachableWp) {
-        Eigen::Vector3d cartesian;
-        ctb::LatLong2LocalUTM(vhPos, 0.0, centroid_, cartesian);
-        auto vhPoseNew = oal::Pose(cartesian.head(2), vhHeading);
-        return gen_->IsPathValid(path, vhPoseNew, new_obs, unreachableWp);
-    }
-
-    bool ExistBetterPlan(double betterPlanPercThreshold, const ctb::LatLong& vhPos, const double& vhHeading, const std::vector<ObsPtr>& obs, bool rulesCompliant, rclcpp::Time now){
-        Eigen::Vector3d cartesian;
-        ctb::LatLong2LocalUTM(vhPos, 0.0, centroid_, cartesian);
-        auto vhPoseNew = oal::Pose(cartesian.head(2), vhHeading);
-        
-        Path tentative;
-        auto out = gen_->FindPath(vhPose, goal_, obs, tentative);
-        if (out.result == oal::SearchResult::FAIL) return false;
-
-        if(path.Length(vhPoseNew.Position())*betterPlanPercThreshold >= tentative.Length(vhPoseNew.Position())){
-            vhPose = vhPoseNew;
-            obstacles = obs;
-            searchReport_ = out;
-            path = tentative;
-            pathCreationTime_ = now;
-            return true;
-        }
-        return false;
-    }
-
-    ulisse_msgs::msg::PathData GetPathMsg() {
-        auto msg = ulisse_msgs::msg::PathData();
-        auto coordinate = ulisse_msgs::msg::LatLong();
-        msg.id = "AvoidancePath";
-        msg.type = "PointPath";
-        msg.centroid.latitude = centroid_.latitude;
-        msg.centroid.longitude = centroid_.longitude;
-
-        //Adding starting point
-        ctb::LatLong startingPos;
-        double alt;
-        ctb::LocalUTM2LatLong(Eigen::Vector3d(vhPose.Position().x(), vhPose.Position().y(), 0), centroid_, startingPos, alt);
-        coordinate.latitude = startingPos.latitude;
-        coordinate.longitude = startingPos.longitude;
-        msg.coordinates.push_back(coordinate);
-
-        double path_abscissa = 0;
-        Eigen::Vector2d vh_pos = vhPose.Position();
-        for(const auto& wp : path.Data()){
-            Eigen::Vector3d cartesian(wp->data.position.x(), wp->data.position.y(), 0);
-            double alt;
-            ctb::LatLong position;
-            ctb::LocalUTM2LatLong(cartesian, centroid_, position, alt);
+            lastStatusUpdate_ = now;
             
-            coordinate.latitude = position.latitude;
-            coordinate.longitude = position.longitude;
-            msg.coordinates.push_back(coordinate);
-
-            path_abscissa += (wp->data.position - vh_pos).norm();
-            vh_pos = wp->data.position;
-            msg.velocities.push_back(wp->data.approachingSpeed);
-            msg.velocities_abscissas.push_back(path_abscissa);            
+            std::vector<ObsPtr> surrounding_obs;    
+            gen_->IsInBB(oal::TimeDouble(0), vhPose.Position(), obstacles, surrounding_obs);
+            if(!surrounding_obs.empty()) currentSupportObs_ = surrounding_obs[0];
         }
-        return msg;
+
+        currentRequestDir_ = std::make_unique<DirectoryManager>(logDirectory);
+        std::ofstream* outFile = currentRequestDir_->openFile("newPath");
+        json pathLog;
+        pathLog["Type"] = "new";
+        pathLog["SearchStatus"] = LogCurrentSearchData(now);
+        pathLog["NewPath"] = { { "Path", path.LogTrace() }, { "SearchResult", searchReport_.result }, { "FailMsg", searchReport_.failMsg } };
+        currentRequestDir_->saveToFile(outFile, pathLog.dump(4));
     }
 
-    bool UpdateStatus(const ctb::LatLong& vhPos, const double& wpAcceptanceRadius){
-        Eigen::Vector3d cartesian;
-        ctb::LatLong2LocalUTM(vhPos, 0.0, centroid_, cartesian);
-        if((cartesian.head(2) - path.Data().front()->data.position).norm() < wpAcceptanceRadius){
-            path.Data().pop_front();
-            if(path.Data().empty()) return true; //Reached end
-        }
-        return false;
-    }
+    /* Get msg for kcl */
+    ulisse_msgs::msg::PathData GetPathMsg();
 
-    // std::shared_ptr<sisl::Path> GetPath(){
-    //         std::vector<Eigen::Vector3d> polyVerticesUTM(path.Data().size());
-    //         int i{0};
-    //         for (const auto &coord : path.Data()) {
-    //                 polyVerticesUTM.at(i) = coord->data.position;
-    //                 polyVerticesUTM.at(i)(2) = 0.0;
-    //                 i++;
-    //         }
-            
-    //         return sisl::PathFactory::NewPolygonalChain(sisl::Path::Direction::Forward, polyVerticesUTM);
-    // }
+    /* Pop reached waypoints from path */
+    bool UpdateStatus(const ctb::LatLong& vhPos, const double& wpAcceptanceRadius);
+
+    /* Check if previous path is still safe */
+    std::string HandleEnvironmentDifferences(const ctb::LatLong& vhPos,
+        const double& vhHeading,
+        const std::vector<ObsPtr>& currentObs,
+        const double& betterPlanPercThreshold,
+        rclcpp::Time now);
+
+    const rclcpp::Time& When() const;
+    const oal::PathReport& Report() const;
+    const Eigen::Vector2d& Goal() const;
+    const ctb::LatLong& Centroid() const;
 };
 
-
-
-// string id
-// string type             # PolyPath, PolyLine
-// LatLong[] coordinates   # Coordinates of path
-// LatLong centroid
-// float64[] velocities 
-// float64[] velocities_abscissas
-// string polypath_type    # Serpentine, RaceTrack
-// float64 size_1
-// float64 size_2
-// float64 angle
-// bool direction
-
-
-#endif
+#endif // PLAN_HPP

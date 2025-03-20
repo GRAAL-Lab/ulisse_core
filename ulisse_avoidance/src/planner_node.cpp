@@ -1,6 +1,7 @@
 #include "ulisse_avoidance/local_planner.hpp"
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv)
+{
     rclcpp::init(argc, argv);
 
     auto plannerNode = std::make_shared<LocalPlannerNode>();

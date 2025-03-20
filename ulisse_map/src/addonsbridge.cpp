@@ -112,7 +112,7 @@ void AddonsBridge::ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr msg)
     double dim_x = msg->b_box_dim_x / 2;
     double dim_y = msg->b_box_dim_y / 2;
 
-    DrawObstacle(id, QVariant::fromValue(center), headingDEG, dim_x, dim_x, dim_y, dim_y, false, QColor(0, 0, 0, 255));
+    DrawObstacle(id, QVariant::fromValue(center), headingDEG, dim_x, dim_x, dim_y, dim_y, obsShowID, QColor(0, 0, 0, 255));
     if(msg->show_bbs){
         QString bb_max{"bb_max_"};
         QString bb_max_id = bb_max + id;

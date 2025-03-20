@@ -10,11 +10,13 @@ MapPolyline {
     z: map.z + 4
 
     property real markerRadius: 1
-    property color objectColor: red
+    property real headingLineLength: markerRadius * 3  // Length of the heading indicator
+    property color objectColor: "red"
     property real objectOpacity: 1.0
     property real labelOpacity: 1.0
     property var obstacleMarker
     property var objectTextOverlay
+    property var headingLine   // New: heading line object
     property real lineWidth: 2
     property var coordinate: QtPositioning.coordinate(44.0956, 9.8631)
     property int timeoutSeconds: settings.visualizerTimeout
@@ -59,7 +61,6 @@ MapPolyline {
                     color: objectColor
                     opacity: objectOpacity * labelOpacity
                     font.weight: Font.DemiBold
-
                 }
             }
             anchorPoint.x: overlayText.width / 2
@@ -67,18 +68,37 @@ MapPolyline {
         }
     }
 
-    ////////////////////////////////////
-    // Initializazion / deinitialization
-    Component.onCompleted: {
+    // New Component for the heading line indicator
+    Component {
+        id: headingLineComponent
+        MapPolyline {
+            line.width: lineWidth
+            line.color: objectColor
+            opacity: objectOpacity * labelOpacity
+            z: map.z + 4
+            // Draw a short line from the circle center toward the heading direction.
+            // The line starts at 'coords' and ends at a point computed using the heading.
+            path: [
+                coords,
+                coords.atDistanceAndAzimuth(headingLineLength, heading)
+            ]
+        }
+    }
 
+    ////////////////////////////////////
+    // Initialization / deinitialization
+    Component.onCompleted: {
         obstacleMarker = obstacleMarkerComponent.createObject(map);
         map.addMapItem(obstacleMarker);
 
         objectTextOverlay = objectTextOverlayComponent.createObject(map);
         map.addMapItem(objectTextOverlay);
 
-        _internalUpdate()
+        // Create and add the heading line indicator.
+        headingLine = headingLineComponent.createObject(map);
+        map.addMapItem(headingLine);
 
+        _internalUpdate()
     }
 
     function update(obsCoords, obsHeading, obsBBoxXBow, obsBBoxXStern, obsBBoxYStarboard, obsBBoxYPort, showID, color) {
@@ -103,36 +123,31 @@ MapPolyline {
     function _internalUpdate(){
         var obsCorners = []
 
-        /*// Mine, UTM
-        var _top = coords.atDistanceAndAzimuth(bBoxXBow, heading)
-        var _bottom = coords.atDistanceAndAzimuth(bBoxXStern, heading + 180)
-        obsCorners.push(_top.atDistanceAndAzimuth(bBoxYPort, heading + 90))    // _topLeft
-        obsCorners.push(_top.atDistanceAndAzimuth(bBoxYStarboard, heading + 270))     // _topRight
-        obsCorners.push(_bottom.atDistanceAndAzimuth(bBoxYStarboard, heading + 270))  // _bottomRight
-        obsCorners.push(_bottom.atDistanceAndAzimuth(bBoxYPort, heading + 90)) // _bottomLeft
-        obsCorners.push(_top.atDistanceAndAzimuth(bBoxYPort, heading + 90)) // _topLeft*/
-        // NED
+        // NED coordinates
         var _top = coords.atDistanceAndAzimuth(bBoxXBow, heading)
         var _bottom = coords.atDistanceAndAzimuth(bBoxXStern, heading + 180)
         obsCorners.push(_top.atDistanceAndAzimuth(bBoxYPort, heading + 270))    // _topLeft
-        obsCorners.push(_top.atDistanceAndAzimuth(bBoxYStarboard, heading + 90))     // _topRight
-        obsCorners.push(_bottom.atDistanceAndAzimuth(bBoxYStarboard, heading + 90))  // _bottomRight
-        obsCorners.push(_bottom.atDistanceAndAzimuth(bBoxYPort, heading + 270)) // _bottomLeft
-        obsCorners.push(_top.atDistanceAndAzimuth(bBoxYPort, heading + 270)) // _topLeft
-
+        obsCorners.push(_top.atDistanceAndAzimuth(bBoxYStarboard, heading + 90))   // _topRight
+        obsCorners.push(_bottom.atDistanceAndAzimuth(bBoxYStarboard, heading + 90))// _bottomRight
+        obsCorners.push(_bottom.atDistanceAndAzimuth(bBoxYPort, heading + 270))     // _bottomLeft
+        obsCorners.push(_top.atDistanceAndAzimuth(bBoxYPort, heading + 270))        // closing point
 
         obstacle.path = []
         for (var i = 0; i < obsCorners.length; i++){
             obstacle.addCoordinate(obsCorners[i])
         }
-        // console.log("[MapObstacle] Obstacle Update (timeout: " + timeoutSeconds + " s)")
-        /*console.log("obstacleID: " + id + ", coords: (" + coords.latitude + "," + coords.longitude + "), heading: " + heading
-            + ", size: (" + bBoxX + ", " + bBoxY + ")")*/
+
+        // Update the heading line's path to reflect new coordinates or heading changes.
+        headingLine.path = [
+            coords,
+            coords.atDistanceAndAzimuth(headingLineLength, heading)
+        ]
     }
 
     function deregister_map_items() {
         map.removeMapItem(obstacleMarker)
         map.removeMapItem(objectTextOverlay)
+        map.removeMapItem(headingLine)
     }
 
     Timer {
@@ -142,9 +157,8 @@ MapPolyline {
         repeat: true
         onTriggered: {
             countDownTimer = countDownTimer - 1;
-            objectOpacity = countDownTimer/timeoutSeconds;
+            objectOpacity = countDownTimer / timeoutSeconds;
             if(countDownTimer == 0){
-                //console.log("Obstacle '" + id + "' reached timeout.")
                 deregister_map_items();
                 addonsBridgeVisualizer.deleteObstacle(id)
             }
