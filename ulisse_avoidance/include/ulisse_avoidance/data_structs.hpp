@@ -39,6 +39,7 @@ struct LPConfig {
     double guiObsPubRate;
 
     double betterPathDistancePerc;
+    double staticObsMaxSpeed;
 };
 
 namespace pathProgress{

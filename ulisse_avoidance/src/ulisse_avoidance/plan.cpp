@@ -23,25 +23,31 @@ std::string Plan::HandleEnvironmentDifferences(const ctb::LatLong& vhPos,
 {
     vhPose = oal::Pose(GetLocal2d(vhPos), vhHeading);
 
-    if (currentObs.size() != obstacles.size()) {
-        std::cerr << "[WARNING] Checking path on different number of obstacles." << std::endl;
-    }
+    // if (currentObs.size() != obstacles.size()) {
+    //     std::cerr << "[WARNING] Checking path on different number of obstacles." << std::endl;
+    // }
     obstacles = currentObs;
 
-    //TODO still not getting vx
-    // ObsPtr trespasseObs = nullptr;
-    // std::vector<ObsPtr> surrounding_obs;    
-    // gen_->IsInBB(oal::TimeDouble(0), vhPose.Position(), obstacles, surrounding_obs);
-    // if(!surrounding_obs.empty()) trespasseObs = surrounding_obs[0];
-    // if(surrounding_obs.size() > 2){
-    //     std::cerr << "[FATAL] Starting in more than one bb" << std::endl;
-    //     response.failMsg = "Start position is in more than one BB";
-    //     response.result = SearchResult::FAIL;
-    //     return false;
-    // }
+    // TODO still not getting vx
+    //  ObsPtr trespasseObs = nullptr;
+    //  std::vector<ObsPtr> surrounding_obs;
+    //  gen_->IsInBB(oal::TimeDouble(0), vhPose.Position(), obstacles, surrounding_obs);
+    //  if(!surrounding_obs.empty()) trespasseObs = surrounding_obs[0];
+    //  if(surrounding_obs.size() > 2){
+    //      std::cerr << "[FATAL] Starting in more than one bb" << std::endl;
+    //      response.failMsg = "Start position is in more than one BB";
+    //      response.result = SearchResult::FAIL;
+    //      return false;
+    //  }
 
     Eigen::Vector2d unreachableWaypoint;
     bool isOldSafe = gen_->IsPathValid(path, vhPose, obstacles, unreachableWaypoint, currentSupportObs_, currentSupportVx_);
+    if (!isOldSafe) {
+        // TEMP
+        // for (const auto& wp : path.Data()) {
+        //     wp->Print();
+        // }
+    }
 
     Path possiblyBetterPath;
     oal::PathReport newSearchReport;
@@ -141,14 +147,15 @@ ulisse_msgs::msg::PathData Plan::GetPathMsg()
 }
 
 bool Plan::UpdateStatus(const ctb::LatLong& vhPos, const double& wpAcceptanceRadius)
-{   
+{
     // TODO should I update vhPose? prob unncessary
     // Remove reached waypoints and stop saving them as nodes parents
     if ((GetLocal2d(vhPos) - path.Data().front()->data.position).norm() < wpAcceptanceRadius) {
-        currentSupportObs_ =  path.Data().front()->data.obs_ptr;
+        std::cerr << "Reached waypoint" << std::endl;
+        currentSupportObs_ = path.Data().front()->data.obs_ptr;
         currentSupportVx_ = path.Data().front()->data.vx;
 
-        //path.Data().front()->reached = true; //TODO before uncomment check every 'front' call
+        // path.Data().front()->reached = true; //TODO before uncomment check every 'front' call
         path.Data().pop_front();
         if (path.Data().empty()) {
             return true; // Reached end

@@ -18,6 +18,11 @@ void LocalPlannerNode::handlePlanRequest(
     }
 
     Plan::vhData.velocities = generateRange(conf_.vhData.speedMin, request->latlong_cmd.ref_speed, conf_.vhData.speedStep);
+    // std::cerr << "Speeds: ";
+    // for (const auto& v : Plan::vhData.velocities) {
+    //     std::cerr << v << " ";
+    // }
+    // std::cerr << std::endl;
 
     currentGoal_ = ctb::LatLong(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude);
     bool colregs = request->colregs_compliant;
@@ -77,9 +82,6 @@ void LocalPlannerNode::CheckProgress()
             } else if (out == pathProgress::switchingToSaferPlan) {
                 RCLCPP_INFO(this->get_logger(), "Switching to safer path.");
                 PathCmd(plan->GetPathMsg());
-                // TEMP !!!!!!!!!!!!!!!!!!!
-                // StopCheckingProgress();
-                // HoldCmd();
                 return;
             } else if (out == pathProgress::keepingSamePath) {
                 return;
@@ -100,9 +102,9 @@ void LocalPlannerNode::ObstaclesDetectionCB(const detav_msgs::msg::ObstacleList:
     }
 
     rclcpp::Time newObsMsgTime = msg->header.stamp;
-    if (newObsMsgTime.nanoseconds() < lastObsUpdate_.nanoseconds()) {
-        RCLCPP_WARN(this->get_logger(), "Received an old obstacle message: Last prediction is more recent than last detection.");
-    }
+    // if (newObsMsgTime.nanoseconds() < lastObsUpdate_.nanoseconds()) {
+    //     RCLCPP_WARN(this->get_logger(), "Received an old obstacle message: Last prediction is more recent than last detection.");
+    // }
 
     lastObsUpdate_ = newObsMsgTime;
     obstacles_.clear();
@@ -115,7 +117,12 @@ void LocalPlannerNode::ObstaclesDetectionCB(const detav_msgs::msg::ObstacleList:
 
         Eigen::Vector2d position = GetLocal(ctb::LatLong(obs.pose.position.position.latitude, obs.pose.position.position.longitude));
         double heading = M_PI_2 - obs.pose.orientation.yaw; // Heading so far refers to the north axis, but in obstacle ENU is used
-        Eigen::Vector2d velocity = { obs.twist.twist.linear.x, obs.twist.twist.linear.y };
+        Eigen::Vector2d velocity = { obs.twist.twist.linear.y, -obs.twist.twist.linear.x }; // ENU to NED
+        if(velocity.norm() <= conf_.staticObsMaxSpeed){
+            velocity = {0, 0};
+            RCLCPP_WARN(this->get_logger(), "Static obstacle with id %s have velocity norm of %.2f m/s, setting it to 0.",
+                obsId.c_str(), velocity.norm());
+        }
 
         oal::BoundingBoxData bbData = conf_.bbDataDefault;
         bbData.dim_x = obs.size.size.length;
@@ -264,7 +271,7 @@ bool LocalPlannerNode::PathCmd(const ulisse_msgs::msg::PathData& path)
     commandPathFollow.path = path;
     serviceReq->command_type = ulisse::commands::ID::pathfollow;
     serviceReq->path_cmd = commandPathFollow;
-
+    GuiPathPub();
     StartCheckingProgress();
     return WaitForResponse(serviceReq);
 }
@@ -415,6 +422,7 @@ void LocalPlannerNode::LoadConf()
     vehicle_data.lookupValue("rotational_speed", conf_.vhData.maxYawRate);
     vehicle_data.lookupValue("starting_velocity", conf_.vhData.speedMin);
     vehicle_data.lookupValue("velocity_step", conf_.vhData.speedStep);
+    Plan::vhData.max_yaw_rate = conf_.vhData.maxYawRate;
 
     // Load bounding box data
     const libconfig::Setting& bounding_box = cfg_.getRoot()["bounding_box"];
@@ -436,6 +444,9 @@ void LocalPlannerNode::LoadConf()
     planning.lookupValue("gui_obs_pub_rate", conf_.guiObsPubRate);
     planning.lookupValue("better_path_distance_perc", conf_.betterPathDistancePerc);
     planning.lookupValue("search_time_out", conf_.searchTreePruningParams.timeOut);
+    planning.lookupValue("static_obs_max_speed", conf_.staticObsMaxSpeed);
+    Plan::pParams = conf_.searchTreePruningParams;
+
 
     // Load centroid
     const libconfig::Setting& centroid = cfg_.getRoot()["centroid"];
@@ -476,6 +487,8 @@ void LocalPlannerNode::LoadConf()
     debug.lookupValue("log_obs_path_file", debugSettings->oal->logObstaclesPathFile);
     debug.lookupValue("obs_bbs_in_gui", debugSettings->obsBbsInGui);
 
+    
+    
 
     if (print) {
         RCLCPP_INFO(this->get_logger(), "Loaded configuration:");
