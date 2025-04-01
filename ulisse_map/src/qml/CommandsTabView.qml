@@ -250,10 +250,14 @@ Rectangle {
                         id: speedRef
                         Layout.preferredWidth: sliderWidth
                         Layout.leftMargin: 0
-                        value: 1.0
+                        value: settings.cruiseSpeedReference
                         stepSize: 0.1
                         from: 0.1
                         to: 4.0
+
+                        onValueChanged: function(){
+                            settings.cruiseSpeedReference = speedRef.value
+                        }
                     }
 
                     Text {

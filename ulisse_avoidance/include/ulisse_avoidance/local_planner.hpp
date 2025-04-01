@@ -51,7 +51,7 @@ public:
 
         LoadConf();
 
-        std::vector<std::string> highPriorityList = { detav_msgs::obstypes::higher_priority };
+        std::vector<std::string> highPriorityList = { detav_msgs::obstypes::higher_priority, "sailboat" };
         oal::PathEvaluator::SetHighPriorityObstacles(highPriorityList);
 
         TopicSetup();
@@ -90,6 +90,7 @@ private:
     ctb::LatLong currentGoal_;
     // std::vector<std::string> overtaking_list_;  // useless at the moment
     std::string lastPathChangeReason_; // avoidance status
+    ulisse_msgs::msg::CommandPathFollow currentPathMsg;
 
     std::string lastKnownVhStatus_ = ulisse::states::ID::hold;
 
@@ -106,6 +107,8 @@ private:
     rclcpp::Publisher<ulisse_msgs::msg::CoordinateList>::SharedPtr guiPathPub_;
     rclcpp::Publisher<ulisse_msgs::msg::AvoidancePath>::SharedPtr avoidancePathPub_; // log
     rclcpp::Publisher<ulisse_msgs::msg::Obstacle>::SharedPtr guiObsPub_;
+
+    rclcpp::Publisher<ulisse_msgs::msg::CommandPathFollow>::SharedPtr currentPathPub_;
 
     rclcpp::TimerBase::SharedPtr checkProgressTimer_;
     rclcpp::TimerBase::SharedPtr avoidanceStatusTimer_;
@@ -141,7 +144,7 @@ private:
     // kcl cmds
     bool HaltCmd();
     bool HoldCmd();
-    bool PathCmd(const ulisse_msgs::msg::PathData& path);
+    bool PathCmd();
     bool WaitForResponse(std::shared_ptr<ulisse_msgs::srv::ControlCommand::Request>& serviceReq);
 
     void SyncObsToLastVhUpdate();

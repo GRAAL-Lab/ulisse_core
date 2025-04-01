@@ -18,6 +18,7 @@ void LocalPlannerNode::handlePlanRequest(
     }
 
     Plan::vhData.velocities = generateRange(conf_.vhData.speedMin, request->latlong_cmd.ref_speed, conf_.vhData.speedStep);
+    Plan::pParams.colregsCompliant = request->colregs_compliant;
     // std::cerr << "Speeds: ";
     // for (const auto& v : Plan::vhData.velocities) {
     //     std::cerr << v << " ";
@@ -25,13 +26,13 @@ void LocalPlannerNode::handlePlanRequest(
     // std::cerr << std::endl;
 
     currentGoal_ = ctb::LatLong(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude);
-    bool colregs = request->colregs_compliant;
+    // bool colregs = request->colregs_compliant;
 
     // auto syncedObs = obstacles_;
     // SyncObsToLastVhUpdate(syncedObs);
     SyncObsToLastVhUpdate();
 
-    plan = std::make_shared<Plan>(vh_position_, vh_heading_, currentGoal_, conf_.centroid, obstacles_, colregs,
+    plan = std::make_shared<Plan>(vh_position_, vh_heading_, currentGoal_, conf_.centroid, obstacles_,
         this->now(), debugSettings->logDirectory, debugSettings);
 
     if (plan->Report().result == oal::SearchResult::FAIL) {
@@ -43,7 +44,7 @@ void LocalPlannerNode::handlePlanRequest(
     if (plan->Report().result == oal::SearchResult::PARTIAL)
         RCLCPP_WARN(this->get_logger(), "Cannot reach goal, reaching one closer (%s)", plan->Report().failMsg.c_str());
 
-    if (!PathCmd(plan->GetPathMsg()))
+    if (!PathCmd())
         return;
 
     response->res = true;
@@ -70,22 +71,20 @@ void LocalPlannerNode::CheckProgress()
             SyncObsToLastVhUpdate();
 
             auto out = plan->HandleEnvironmentDifferences(vh_position_, vh_heading_, obstacles_, conf_.betterPathDistancePerc, this->now());
+
             if (out == pathProgress::interruptedPlan) {
                 StopCheckingProgress();
                 HoldCmd();
                 RCLCPP_WARN(this->get_logger(), "Old path is not safe and no new path can be found.");
                 return;
-            } else if (out == pathProgress::switchingToBetterPlan) {
-                RCLCPP_INFO(this->get_logger(), "Switching to better path.");
-                PathCmd(plan->GetPathMsg());
-                return;
-            } else if (out == pathProgress::switchingToSaferPlan) {
-                RCLCPP_INFO(this->get_logger(), "Switching to safer path.");
-                PathCmd(plan->GetPathMsg());
-                return;
-            } else if (out == pathProgress::keepingSamePath) {
-                return;
             }
+
+            if (out == pathProgress::keepingSamePath)
+                return;
+
+            RCLCPP_INFO(this->get_logger(),
+                out == pathProgress::switchingToBetterPlan ? "Switching to better path." : "Switching to safer path.");
+            PathCmd();
         }
     }
 }
@@ -118,11 +117,11 @@ void LocalPlannerNode::ObstaclesDetectionCB(const detav_msgs::msg::ObstacleList:
         Eigen::Vector2d position = GetLocal(ctb::LatLong(obs.pose.position.position.latitude, obs.pose.position.position.longitude));
         double heading = M_PI_2 - obs.pose.orientation.yaw; // Heading so far refers to the north axis, but in obstacle ENU is used
         Eigen::Vector2d velocity = { obs.twist.twist.linear.y, -obs.twist.twist.linear.x }; // ENU to NED
-        if(velocity.norm() <= conf_.staticObsMaxSpeed){
-            velocity = {0, 0};
-            RCLCPP_WARN(this->get_logger(), "Static obstacle with id %s have velocity norm of %.2f m/s, setting it to 0.",
-                obsId.c_str(), velocity.norm());
-        }
+        // if (velocity.norm() <= conf_.staticObsMaxSpeed) {
+        //     velocity = { 0, 0 };
+        //     RCLCPP_WARN(this->get_logger(), "Static obstacle with id %s have velocity norm of %.2f m/s, setting it to 0.",
+        //         obsId.c_str(), velocity.norm());
+        // }
 
         oal::BoundingBoxData bbData = conf_.bbDataDefault;
         bbData.dim_x = obs.size.size.length;
@@ -217,7 +216,7 @@ void LocalPlannerNode::AvoidanceStatusPub()
         msg.status = "Active";
         msg.path_change = lastPathChangeReason_;
         lastPathChangeReason_ = "";
-        msg.colregs_compliant = plan->colregs;
+        msg.colregs_compliant = Plan::pParams.colregsCompliant;
         msg.desired_speed = plan->path.Data().front()->data.approachingSpeed;
         msg.current_path_creation.sec = plan->When().seconds();
         msg.current_path_creation.nanosec = plan->When().nanoseconds();
@@ -264,13 +263,16 @@ bool LocalPlannerNode::HoldCmd()
     return WaitForResponse(serviceReq);
 }
 
-bool LocalPlannerNode::PathCmd(const ulisse_msgs::msg::PathData& path)
+bool LocalPlannerNode::PathCmd()
 {
     auto serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
-    auto commandPathFollow = ulisse_msgs::msg::CommandPathFollow();
-    commandPathFollow.path = path;
+    currentPathMsg.stamp.sec = plan->When().seconds();
+    currentPathMsg.stamp.nanosec = plan->When().nanoseconds();
+    currentPathMsg.path = plan->GetPathMsg();
+    currentPathPub_->publish(currentPathMsg);
+
     serviceReq->command_type = ulisse::commands::ID::pathfollow;
-    serviceReq->path_cmd = commandPathFollow;
+    serviceReq->path_cmd = currentPathMsg;
     GuiPathPub();
     StartCheckingProgress();
     return WaitForResponse(serviceReq);
@@ -407,6 +409,9 @@ void LocalPlannerNode::TopicSetup()
 
     guiObsPub_ = create_publisher<ulisse_msgs::msg::Obstacle>(
         ulisse_msgs::topicnames::obstacle, qos_sensor);
+
+    currentPathPub_ = create_publisher<ulisse_msgs::msg::CommandPathFollow>(
+        "ulisse/avoidance/current_path", qos_sensor);
 }
 
 void LocalPlannerNode::LoadConf()
@@ -447,7 +452,6 @@ void LocalPlannerNode::LoadConf()
     planning.lookupValue("static_obs_max_speed", conf_.staticObsMaxSpeed);
     Plan::pParams = conf_.searchTreePruningParams;
 
-
     // Load centroid
     const libconfig::Setting& centroid = cfg_.getRoot()["centroid"];
     centroid.lookupValue("latitude", conf_.centroid.latitude);
@@ -486,9 +490,6 @@ void LocalPlannerNode::LoadConf()
     debug.lookupValue("log_obs", debugSettings->oal->logObstacles);
     debug.lookupValue("log_obs_path_file", debugSettings->oal->logObstaclesPathFile);
     debug.lookupValue("obs_bbs_in_gui", debugSettings->obsBbsInGui);
-
-    
-    
 
     if (print) {
         RCLCPP_INFO(this->get_logger(), "Loaded configuration:");

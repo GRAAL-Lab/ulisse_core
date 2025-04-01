@@ -6,11 +6,6 @@
 
 #include "oal/obstacle.hpp"
 
-// inline void SyncObsData(const Obstacle& old_obs, Obstacle& new_obs, std::chrono::milliseconds time_diff) {
-//     new_obs = old_obs;
-//     new_obs.pose.position = ComputePosition(new_obs, std::chrono::duration_cast<std::chrono::seconds>(time_diff));
-// }
-
 inline auto generateRange = [](double start, double end, double step) {
     std::vector<double> result;
     for (double i = start; i <= end; i += step) {

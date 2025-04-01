@@ -41,7 +41,7 @@ public:
     oal::Pose vhPose;
     std::vector<ObsPtr> obstacles;
 
-    bool colregs;
+    // bool colregs;
     Path path;
 
     /* Create a new plan */
@@ -50,13 +50,13 @@ public:
         const ctb::LatLong& goal,
         const ctb::LatLong& centroid,
         const std::vector<ObsPtr>& obs,
-        bool rulesCompliant,
+        // bool rulesCompliant,
         rclcpp::Time now,
         const std::string& logDirectory,
         std::shared_ptr<DebugUA> debug = nullptr)
         : centroid_(centroid)
         , obstacles(obs)
-        , colregs(rulesCompliant)
+    //, colregs(rulesCompliant)
     {
         vhPose = oal::Pose(GetLocal2d(vhPos), vhHeading);
         goal_ = GetLocal2d(goal);
@@ -64,14 +64,17 @@ public:
         debug_ = debug ? debug : std::make_shared<DebugUA>();
         gen_ = std::make_unique<oal::Generator>(vhData, pParams, debug_->oal);
 
+        std::cerr << "[WARNING] Creating plan with COLREGS: " << pParams.colregsCompliant << std::endl;
+
         searchReport_ = gen_->FindPath(vhPose, goal_, obstacles, path);
 
         if (searchReport_.result != oal::SearchResult::FAIL) {
             lastStatusUpdate_ = now;
-            
-            std::vector<ObsPtr> surrounding_obs;    
+
+            std::vector<ObsPtr> surrounding_obs;
             gen_->IsInBB(oal::TimeDouble(0), vhPose.Position(), obstacles, surrounding_obs);
-            if(!surrounding_obs.empty()) currentSupportObs_ = surrounding_obs[0];
+            if (!surrounding_obs.empty())
+                currentSupportObs_ = surrounding_obs[0];
         }
 
         currentRequestDir_ = std::make_unique<DirectoryManager>(logDirectory);

@@ -94,6 +94,7 @@ ApplicationWindow {
         property int visualizerTimeout: 30
         property int pathLineWidth: 2
         property int ulisseLineWidth: 1
+        property real cruiseSpeedReference: 2.0
 
         property bool bypassSafetyBoundaryCheck: false
 

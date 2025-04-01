@@ -19,7 +19,7 @@ def generate_launch_description():
     kcl_node = launch_ros.actions.Node(
             package='ulisse_ctrl',
             executable='kinematic_control_node',
-            prefix=['gdb -ex=r --args'],
+            #prefix=['gdb -ex=r --args'],
             output='screen',
             arguments=[],
             on_exit=Shutdown()

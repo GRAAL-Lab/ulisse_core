@@ -42,12 +42,12 @@ std::string Plan::HandleEnvironmentDifferences(const ctb::LatLong& vhPos,
 
     Eigen::Vector2d unreachableWaypoint;
     bool isOldSafe = gen_->IsPathValid(path, vhPose, obstacles, unreachableWaypoint, currentSupportObs_, currentSupportVx_);
-    if (!isOldSafe) {
-        // TEMP
-        // for (const auto& wp : path.Data()) {
-        //     wp->Print();
-        // }
-    }
+    // if (!isOldSafe) {
+    //     // TEMP
+    //     // for (const auto& wp : path.Data()) {
+    //     //     wp->Print();
+    //     // }
+    // }
 
     Path possiblyBetterPath;
     oal::PathReport newSearchReport;
@@ -72,6 +72,7 @@ std::string Plan::HandleEnvironmentDifferences(const ctb::LatLong& vhPos,
 
             path = possiblyBetterPath;
             searchReport_ = newSearchReport;
+            lastStatusUpdate_ = now;
 
             return isOldSafe ? pathProgress::switchingToBetterPlan : pathProgress::switchingToSaferPlan;
         }
