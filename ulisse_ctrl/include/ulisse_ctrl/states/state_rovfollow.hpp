@@ -2,6 +2,7 @@
 #define ULISSE_CTRL_STATEROVFOLLOW_HPP
 
 #include "ulisse_ctrl/states/generic_state.hpp"
+#include <ulisse_ctrl/path_manager.hpp>
 
 namespace ulisse {
 
@@ -12,9 +13,16 @@ namespace states {
     protected:
         std::shared_ptr<ikcl::AlignToTarget> alignToTargetTask_;
         std::shared_ptr<ikcl::CartesianDistance> cartesianDistanceTask_;
+        std::shared_ptr<ikcl::AlignToTarget> alignToTargetObstacleTask_; // Obstacle
+        std::shared_ptr<ikcl::CartesianDistance> cartesianDistanceObstacleTask_; // Obstacle
         std::shared_ptr<ikcl::ObstacleAvoidance> obstacleAvoidanceTask_;
+        //std::shared_ptr<ikcl::AbsoluteAxisAlignment> obstacleAlignmentTask_;
+        //std::shared_ptr<ikcl::LinearVelocity> obstacleVelocityTask_;
+        //std::shared_ptr<ikcl::AlignToTarget> obstacleAlignTask_;
 
-        bool normalZone;
+        bool normalZone, normalZoneObs;
+
+        PathManager pathManager_;
 
     public:
         StateRovFollow();
@@ -25,9 +33,25 @@ namespace states {
         LatLong goalPosition;
         double goalHeading;
         double goalDistance;
+        double goalHeadingObstacle;
+        double goalDistanceObstacle;
         double acceptanceRadius;
 
+        LatLong centroidLocation;
+        Eigen::Vector3d worldF_obstacle;
+        LatLong obstaclePosition;
+        double obstacleHeading;
+        double obstacleDistance;
+        double ROV2obstacleHeading;
+        double ROV2obstacleDistance;
+
+        double obsAltitude;
+
         double headingError;
+        double headingErrorObstacle;
+        double cartesianErrorObstacle;
+
+        double minCartesianObstacleError_, maxCartesianObstacleError_, obstacleZone_radius_, obstacleGoalAcceptanceRadius;
 
 
         bool ConfigureStateFromFile(libconfig::Config& confObj) override;

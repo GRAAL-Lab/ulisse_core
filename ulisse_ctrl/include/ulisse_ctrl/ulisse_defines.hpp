@@ -17,17 +17,20 @@ const std::string asvLinearVelocity = "ASV_Linear_Velocity";
 const std::string asvAngularPosition = "ASV_Angular_Position";
 const std::string asvAngularPositionHold = "ASV_Angular_Position_Hold";
 const std::string asvAngularPositionRovFollow = "ASV_Angular_Position_ROV_Follow"; // ROV
+const std::string asvAngularPositionObstacle = "ASV_Angular_Position_Obstacle"; // Obstacle
 const std::string asvAbsoluteAxisAlignment = "ASV_Absolute_Axis_Alignment";
 const std::string asvCartesianDistance = "ASV_Cartesian_Distance";
 const std::string asvCartesianDistanceHold = "ASV_Cartesian_Distance_Hold";
 const std::string asvCartesianDistancePathFollowing = "ASV_Cartesian_Distance_Path_Follow";
 const std::string asvCartesianDistanceRovFollowing = "ASV_Cartesian_Distance_ROV_Follow"; // ROV
+const std::string asvCartesianDistanceObstacle = "ASV_Cartesian_Distance_Obstacle"; // Obstacle
 const std::string asvSafetyBoundaries = "ASV_Safety_Boundaries";
 const std::string asvAbsoluteAxisAlignmentSafety = "ASV_Absolute_Axis_Alignment_Safety";
 const std::string asvAbsoluteAxisAlignmentHold = "ASV_Absolute_Axis_Alignment_Hold";
 const std::string asvAbsoluteAxisAlignmentObstacle = "ASV_Absolute_Axis_Alignment_Obstacle"; // ASV-ROV obstacle avoidance
 const std::string asvLinearVelocityHold = "ASV_Linear_Velocity_Hold";
 const std::string asvObstacleAvoidance = "ASV_Obstacle_Avoidance"; // ASV-ROV obstacle avoidance
+const std::string asvLinearVelocityObstacle = "ASV_Linear_Velocity_Obstacle"; // ASV-ROV obstacle
 
 }
 

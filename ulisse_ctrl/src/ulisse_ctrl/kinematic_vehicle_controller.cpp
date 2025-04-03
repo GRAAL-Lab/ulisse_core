@@ -53,8 +53,8 @@ VehicleController::VehicleController(std::string conf_filename)
     feedbackGuiPub_ = this->create_publisher<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10);
     tpikActionPub_ = this->create_publisher<ulisse_msgs::msg::TPIKAction>(ulisse_msgs::topicnames::tpik_action, 10);
     referenceCableLengthPub_ = this->create_publisher<rov_msgs::msg::CableLengthReference>("/winch/reference_cable_length", 10);
-    referenceWinchMotorPub_ = this->create_publisher<rov_msgs::msg::WinchMotorReference>("/winch/reference_motor", 10);
-    //plotVarPub_ = this->create_publisher<ulisse_msgs::msg::PlotVariables>(ulisse_msgs::topicnames::plot_variables, 10); // ASV-ROV plot
+    //referenceWinchMotorPub_ = this->create_publisher<rov_msgs::msg::WinchMotorReference>("/winch/reference_motor", 10);
+    plotVarPub_ = this->create_publisher<ulisse_msgs::msg::PlotVariables>(ulisse_msgs::topicnames::plot_variables, 10); // ASV-ROV plot
 
     //safetyBoundarySetPub_ = this->create_publisher<std_msgs::msg::Bool>(ulisse_msgs::topicnames::safety_boundary_set, 10);
 
@@ -96,6 +96,12 @@ VehicleController::VehicleController(std::string conf_filename)
     taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_angular_position_rov_follow, 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvAngularPositionRovFollow, taskInfo_));
 
+    // ASV CONTROL OBSTACLE AVOIDANCE
+    asvAngularPositionObstacle_ = std::make_shared<ikcl::AlignToTarget>(ikcl::AlignToTarget(ulisse::task::asvAngularPositionObstacle, robotModel_, ulisse::robotModelID::ASV));
+    taskInfo_.task = asvAngularPositionObstacle_;
+    taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_angular_position_obstacle, 1);
+    tasksMap_.insert(std::make_pair(ulisse::task::asvAngularPositionObstacle, taskInfo_));
+
     // ASV CONTROL DISTANCE
     asvCartesianDistance_ = std::make_shared<ikcl::CartesianDistance>(ikcl::CartesianDistance(ulisse::task::asvCartesianDistance, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvCartesianDistance_;
@@ -113,6 +119,12 @@ VehicleController::VehicleController(std::string conf_filename)
     taskInfo_.task = asvCartesianDistanceRovFollowing_;
     taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_cartesian_distance_rov_follow, 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvCartesianDistanceRovFollowing, taskInfo_));
+
+    // ASV CONTROL DISTANCE Obstacle ASV-ROV
+    asvCartesianDistanceObstacle_ = std::make_shared<ikcl::CartesianDistance>(ikcl::CartesianDistance(ulisse::task::asvCartesianDistanceObstacle, robotModel_, ulisse::robotModelID::ASV));
+    taskInfo_.task = asvCartesianDistanceObstacle_;
+    taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_cartesian_distance_obstacle, 1);
+    tasksMap_.insert(std::make_pair(ulisse::task::asvCartesianDistanceObstacle, taskInfo_));
 
     // ASV SAFETY BOUNDARIES (INEQUALITY TASK)
     /*asvSafetyBoundaries_ = std::make_shared<ikcl::SafetyBoundaries>(ikcl::SafetyBoundaries(ulisse::task::asvSafetyBoundaries, robotModel_, ulisse::robotModelID::ASV));
@@ -138,25 +150,37 @@ VehicleController::VehicleController(std::string conf_filename)
     taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment_hold, 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvAbsoluteAxisAlignmentHold, taskInfo_));
 
-    // ASV absolute axis alignment task obstacle avoidance
-    /*
-    asvAbsoluteAxisAlignmentObstacle_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asvAbsoluteAxisAlignmentObstacle, robotModel_, ulisse::robotModelID::ASV));
+    // ASV absolute axis alignment task obstacle avoidance  
+/*    asvAbsoluteAxisAlignmentObstacle_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asvAbsoluteAxisAlignmentObstacle, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvAbsoluteAxisAlignmentObstacle_;
     taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment_obstacle, 1);
-    tasksMap_.insert(std::make_pair(ulisse::task::asvAbsoluteAxisAlignmentObstacle, taskInfo_));
-*/
+    tasksMap_.insert(std::make_pair(ulisse::task::asvAbsoluteAxisAlignmentObstacle, taskInfo_)); */
+
     // ASV CONTROL VELOCITY LINEAR HOLD
     asvLinearVelocityHold_ = std::make_shared<ikcl::LinearVelocity>(ikcl::LinearVelocity(ulisse::task::asvLinearVelocityHold, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvLinearVelocityHold_;
     taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_linear_velocity_hold, 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvLinearVelocityHold, taskInfo_));
 
-    // ASV obstacle avoidance task  
+    // ASV CONTROL VELOCITY LINEAR Obstacle
+/*    asvLinearVelocityObstacle_ = std::make_shared<ikcl::LinearVelocity>(ikcl::LinearVelocity(ulisse::task::asvLinearVelocityObstacle, robotModel_, ulisse::robotModelID::ASV));
+    taskInfo_.task = asvLinearVelocityObstacle_;
+    taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_linear_velocity_obstacle, 1);
+    tasksMap_.insert(std::make_pair(ulisse::task::asvLinearVelocityObstacle, taskInfo_)); */
+
+    // ASV Obstacle Avoidance task
     Eigen::TransformationMatrix world_T_obstacle;
     world_T_obstacle.setZero();
     Eigen::Vector3d vec(0.0, 5.0, 0.0);
     world_T_obstacle.TranslationVector(vec);
-    obs1_ = std::make_shared<ikcl::SphereObstacle>(world_T_obstacle, rml::FrameID::WorldFrame, 3.0);
+    obs1_ = std::make_shared<ikcl::SphereObstacle>(world_T_obstacle, rml::FrameID::WorldFrame, 1.5);
+
+
+    const Eigen::Vector3d W_position;
+    W_position.Zero();
+    obs_distance = obs1_->ComputeDistance(W_position);
+    //const std::string obs1_id = "obstacle1_frameID";
+    //obs1_ = std::make_shared<ikcl::SphereObstacle>(world_T_obstacle, obs1_id, 3.0);
     //obs1_ = std::make_shared<ikcl::SphereObstacle>();
 
     obstaclePointers_.push_back(obs1_);
@@ -659,9 +683,15 @@ void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::Share
 
     // Linear position in world frame
     Eigen::Vector3d worldF_vehicleLinearPosition(ctrlData_->inertialF_linearPosition.latitude, ctrlData_->inertialF_linearPosition.longitude, 0.0);
-
     // Updating the robot model
     Eigen::TransformationMatrix worldF_T_vehicleF;
+    Eigen::TransformationMatrix worldCentroidF_T_vehicleF; //juri
+
+    Eigen::Vector3d worldF_vehicleLinearPositionUTM;
+    ctb::LatLong2LocalUTM(LatLong(ctrlData_->inertialF_linearPosition.latitude, ctrlData_->inertialF_linearPosition.longitude), 0.0, centroidLocation_, worldF_vehicleLinearPositionUTM);
+    worldCentroidF_T_vehicleF.TranslationVector(worldF_vehicleLinearPositionUTM);
+    worldCentroidF_T_vehicleF.RotationMatrix(ctrlData_->bodyF_angularPosition.ToRotationMatrix());
+
     worldF_T_vehicleF.TranslationVector(worldF_vehicleLinearPosition);
     worldF_T_vehicleF.RotationMatrix(ctrlData_->bodyF_angularPosition.ToRotationMatrix());
 
@@ -669,7 +699,8 @@ void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::Share
     velocity_fbk(0) = ctrlData_->bodyF_linearVelocity[0];
     velocity_fbk(1) = ctrlData_->bodyF_linearVelocity[1];
 
-    robotModel_->PositionOnInertialFrame(worldF_T_vehicleF);
+    //robotModel_->PositionOnInertialFrame(worldF_T_vehicleF); // original
+    robotModel_->PositionOnInertialFrame(worldCentroidF_T_vehicleF); // juri
     robotModel_->VelocityVector(ulisse::robotModelID::ASV, velocity_fbk);
 }
 
@@ -736,7 +767,7 @@ void VehicleController::UpdateObstacles(){
         std::shared_ptr<ikcl::SphereObstacle> obs;
         obs = std::make_shared<ikcl::SphereObstacle>(world_T_obstacle, rml::FrameID::WorldFrame, obstacleMsgVector_[i].b_box_dim_x);
         obstaclePointers_.push_back(obs);
-        asvObstacleAvoidance_->Obstacles()=obstaclePointers_; // new line code
+        //asvObstacleAvoidance_->Obstacles()=obstaclePointers_; // new line code --needed!!!--
 /*
         //compute the heading error
         double obstacleError = asvObstacleAvoidance_->ControlVariable().norm();
@@ -767,11 +798,12 @@ void VehicleController::ComputeCableLength(){
     double goalDistance, goalHeading;
     ctb::DistanceAndAzimuthRad(ctrlData_->inertialF_linearPosition, rovData_->inertialF_linearPosition, goalDistance, goalHeading);
     goalDistance = sqrt(pow(goalDistance,2) + pow(rovData_->inertialF_altitude,2));
-    float alfa_, beta_; // cable params
+    float alfa_, beta_, gamma_; // cable params
     alfa_ = conf_->alfa;
     beta_ = conf_->beta;
+    gamma_ = 100;
 
-    controlledCable_.reference_cable_length = (beta_ + alfa_ * goalHeading ) * goalDistance;
+    controlledCable_.reference_cable_length = (beta_ + alfa_ * goalHeading ) * goalDistance + gamma_;
 }
 
 void VehicleController::CableWinchControl(const float &rpm_percentage, float &reference_length){
@@ -841,20 +873,21 @@ void VehicleController::Run()
     }
 
     ComputeCableLength();
-    double rpm_percentage = 1;
-    CableWinchControl(rpm_percentage, controlledCable_.reference_cable_length);
+    //double rpm_percentage = 1;
+    //CableWinchControl(rpm_percentage, controlledCable_.reference_cable_length);
 
     tNow_ = std::chrono::system_clock::now();
 
     //UpdateObstacles();
-    std::cout << "-- orig obs --"<< std::endl;
-    PrintObstacles(obstaclePointers_);
-    std::cout << "--task obs--"<< std::endl;
-    PrintObstacles(asvObstacleAvoidance_->Obstacles());
+    //std::cout << "-- orig obs --"<< std::endl;
+    //PrintObstacles(obstaclePointers_);
+
+    //std::cout << "--task obs--"<< std::endl;
+    //PrintObstacles(asvObstacleAvoidance_->Obstacles());
 
     //compute the heading error
     std::vector<Eigen::Vector3d> ObsDistance;
-
+    asvObstacleAvoidance_->Update();
     ObsDistance = asvObstacleAvoidance_->GetDistance(ulisse::robotModelID::ASV);
     //ObsDistance = asvObstacleAvoidance_->GetDistance(rml::FrameID::WorldFrame);
     Eigen::Vector3d ObsDistance1 = ObsDistance[0];
@@ -868,16 +901,17 @@ void VehicleController::Run()
     double taskGain = rml::DecreasingBellShapedFunction(minObstacleError_, maxObstacleError_ , 0, 1.0, DistanceFromObs1);
     asvObstacleAvoidance_->TaskParameter().gain = taskGain * asvObstacleAvoidance_->TaskParameter().conf_gain;
 
-    std::cout << "ObsDistance1_vector = "<< ObsDistance1<< std::endl;
-    std::cout << "DistanceFromObs1 = "<< DistanceFromObs1<< std::endl;
-    std::cout << "obstacleError = "<< obstacleError<< std::endl;
+    //std::cout << "ObsDistance1_vector = "<< ObsDistance1<< std::endl;
+    //std::cout << "DistanceFromObs1 = "<< DistanceFromObs1<< std::endl;
+    //std::cout << "obstacleError = "<< obstacleError<< std::endl;
     //std::cout << "maxObstacleError_ = "<< maxObstacleError_<< std::endl;
     //std::cout << "minObstacleError_ = "<< minObstacleError_<< std::endl;
-    std::cout << "taskGain = "<< taskGain<< std::endl;
-    std::cout << "gain = "<< asvObstacleAvoidance_->TaskParameter().gain<< std::endl;
+    //std::cout << "taskGain = "<< taskGain<< std::endl;
+    //std::cout << "gain = "<< asvObstacleAvoidance_->TaskParameter().gain<< std::endl;
 
     //asvObstacleAvoidance_->Update();
-
+    //Eigen::Vector3d vec(0.0, 5.0, 0.0);
+    //std::cout << "vec= "<< vec<< std::endl;
 
     PublishControl();
     PublishTasksInfo();
@@ -919,15 +953,21 @@ void VehicleController::PublishControl()
             controlledCable_.stamp.nanosec = now_stamp_nanosecs;
             referenceCableLengthPub_->publish(controlledCable_);
 
-            winchMotorRef_.stamp.sec = now_stamp_secs;
-            winchMotorRef_.stamp.nanosec = now_stamp_nanosecs;
-            referenceWinchMotorPub_->publish(winchMotorRef_);
+            //winchMotorRef_.stamp.sec = now_stamp_secs;
+            //winchMotorRef_.stamp.nanosec = now_stamp_nanosecs;
+            //referenceWinchMotorPub_->publish(winchMotorRef_);
 
-            //plotVar_.stamp.sec = now_stamp_secs;
-            //plotVar_.stamp.nanosec = now_stamp_nanosecs;
-            //plotVar_.heading_error = stateRovFollowing_->headingError;
-            //plotVar_.goal_distance = stateRovFollowing_->goalDistance;
-            //plotVarPub_->publish(plotVar_);
+            plotVar_.stamp.sec = now_stamp_secs;
+            plotVar_.stamp.nanosec = now_stamp_nanosecs;
+            plotVar_.heading_error_rov = stateRovFollowing_->headingError;
+            plotVar_.goal_distance_rov = stateRovFollowing_->goalDistance;
+
+            plotVar_.heading_error_obstacle = stateRovFollowing_->headingErrorObstacle;
+            plotVar_.goal_distance_obstacle = stateRovFollowing_->goalDistanceObstacle;
+
+            plotVar_.distance_rov_obstacle = stateRovFollowing_->ROV2obstacleDistance;
+            plotVar_.distance_rov_asv = stateRovFollowing_->goalDistance;
+            plotVarPub_->publish(plotVar_);
         }
     }
 

@@ -18,7 +18,7 @@
 #include "ulisse_msgs/msg/surge_yaw_rate.hpp"
 #include "ulisse_msgs/msg/tpik_action.hpp"
 #include "ulisse_msgs/msg/tpik_priority_level.hpp"
-//#include "ulisse_msgs/msg/plot_variables.hpp"
+#include "ulisse_msgs/msg/plot_variables.hpp" // Plotting
 #include "ulisse_msgs/msg/obstacle.hpp" // ASV-ROV
 
 
@@ -82,7 +82,7 @@ class VehicleController : public rclcpp::Node {
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr genericLogPub_;
     rclcpp::Publisher<ulisse_msgs::msg::FeedbackGui>::SharedPtr feedbackGuiPub_;
     rclcpp::Publisher<ulisse_msgs::msg::TPIKAction>::SharedPtr tpikActionPub_;
-    //rclcpp::Publisher<ulisse_msgs::msg::PlotVariables>::SharedPtr plotVarPub_; // ASV-ROV plot
+    rclcpp::Publisher<ulisse_msgs::msg::PlotVariables>::SharedPtr plotVarPub_; // ASV-ROV plot
     rclcpp::Publisher<rov_msgs::msg::CableLengthReference>::SharedPtr referenceCableLengthPub_; // ASV-ROV
     rclcpp::Publisher<rov_msgs::msg::WinchMotorReference>::SharedPtr referenceWinchMotorPub_; // ASV-ROV
 
@@ -109,16 +109,20 @@ class VehicleController : public rclcpp::Node {
     ///TASKS
     std::shared_ptr<ikcl::LinearVelocity> asvLinearVelocity_;
     std::shared_ptr<ikcl::LinearVelocity> asvLinearVelocityHold_;
+    //std::shared_ptr<ikcl::LinearVelocity> asvLinearVelocityObstacle_; // Obstacle
     std::shared_ptr<ikcl::AlignToTarget> asvAngularPosition_;
     std::shared_ptr<ikcl::AlignToTarget> asvAngularPositionRovFollowing_; // ASV-ROV
+    std::shared_ptr<ikcl::AlignToTarget> asvAngularPositionObstacle_; // Obstacle
     std::shared_ptr<ikcl::CartesianDistance> asvCartesianDistance_;
     //std::shared_ptr<ikcl::SafetyBoundaries> asvSafetyBoundaries_;
     std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignment_;
+    //std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentObstacle_; // Obstacle Alignment
     //std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentSafety_;
     std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentHold_;
     //std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentObstacle_; // ASV-ROV
     std::shared_ptr<ikcl::CartesianDistance> asvCartesianDistancePathFollowing_;
     std::shared_ptr<ikcl::CartesianDistance> asvCartesianDistanceRovFollowing_; // ASV-ROV
+    std::shared_ptr<ikcl::CartesianDistance> asvCartesianDistanceObstacle_; // ASV-ROV Obstacle
     std::shared_ptr<ikcl::ObstacleAvoidance> asvObstacleAvoidance_; // ASV-ROV
 
     double timestamp_;
@@ -163,13 +167,16 @@ class VehicleController : public rclcpp::Node {
     std::vector<ulisse_msgs::msg::Obstacle> obstacleMsgVector_;
     std::vector<std::shared_ptr<ikcl::Obstacle>> obstaclePointers_;
 
+    //const std::string obs1_id = "obstacle1_frameID";
+    Eigen::Vector3d obs_distance; // test
+
     //std::vector<std::shared_ptr<ikcl::Obstacle>> obstaclePointers_;
     //Eigen::TransformationMatrix frameID_T_sphereCenter;
     /// OBSTACLE MODELS
     //Eigen::TransformationMatrix world_T_obstacle1_;
     //std::string frameID; double sphereRadius;
     std::shared_ptr<ikcl::SphereObstacle> obs1_;
-    //ulisse_msgs::msg::PlotVariables plotVar_;
+    ulisse_msgs::msg::PlotVariables plotVar_;
 
     //std::shared_ptr<ctb::LatLong> vehiclePosition_;
     //std::shared_ptr<Eigen::Vector2d> inertialF_waterCurrent_;

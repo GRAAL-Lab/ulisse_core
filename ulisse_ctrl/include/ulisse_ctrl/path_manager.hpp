@@ -39,6 +39,8 @@ public:
      */
     bool ComputeGoalPosition(const ctb::LatLong& currentP, ctb::LatLong& goalP);
 
+    bool ComputeRovObstacleGoalPosition(const ctb::LatLong& rovP, const ctb::LatLong& obsP, ctb::LatLong& goalP);
+
     /*
      * Method that resets the path
     */

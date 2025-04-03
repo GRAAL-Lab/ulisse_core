@@ -175,6 +175,22 @@ bool PathManager::ComputeGoalPosition(const ctb::LatLong &currentPos, ctb::LatLo
     return true;
 }
 
+bool PathManager::ComputeRovObstacleGoalPosition(const ctb::LatLong& rovP, const ctb::LatLong& obsP, ctb::LatLong& goalP){
+    Eigen::Vector3d rov_UTM, obs_UTM, goal_UTM, trans_vec, trans_vec_unit;
+    Eigen::TransformationMatrix goalF_T_rovF;
+    ctb::LatLong2LocalUTM(rovP, 0.0, centroid_, rov_UTM);
+    ctb::LatLong2LocalUTM(obsP, 0.0, centroid_, obs_UTM);
+    trans_vec = rov_UTM - obs_UTM;
+    trans_vec_unit = trans_vec/trans_vec.norm();
+    goalF_T_rovF.TranslationVector(6*trans_vec_unit);
+    goalF_T_rovF.RotationMatrix(Eigen::Matrix3d::Identity());
+    goal_UTM = rov_UTM + goalF_T_rovF.TranslationVector();
+    double altitude;
+    ctb::LocalUTM2LatLong(goal_UTM, centroid_, goalP, altitude);
+
+    return true;
+}
+
 double PathManager::DistanceToEnd() const
 {
     return std::fabs(path_->EndParameter() - currentAbscissa_);
