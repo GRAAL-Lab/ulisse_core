@@ -318,6 +318,7 @@ namespace llc {
     void ThreadReceiver::ParseStatus(std::vector<uint8_t> buffer)
     {
         ulisse_msgs::msg::LLCSw485Status llc_sw485_msg_;
+        uint16_t statusBits;
         Deserializer deserializer(buffer);
         deserializer.MoveOffset(4);
         deserializer.PacketExtract_uint64(&llc_sw485_msg_.timestamp_sw_485);
@@ -330,7 +331,19 @@ namespace llc {
         deserializer.PacketExtract_uint64(&llc_sw485_msg_.left_satellite.sent);
         deserializer.PacketExtract_uint64(&llc_sw485_msg_.right_satellite.received);
         deserializer.PacketExtract_uint64(&llc_sw485_msg_.right_satellite.sent);
+        deserializer.PacketExtract_int16(&llc_sw485_msg_.applied_reference_left);
+        deserializer.PacketExtract_int16(&llc_sw485_msg_.applied_reference_right);
+        deserializer.PacketExtract_float32(&llc_sw485_msg_.humidity);
+        deserializer.PacketExtract_float32(&llc_sw485_msg_.temperature);
+        deserializer.PacketExtract_uint16(&statusBits);
 
+        llc_sw485_msg_.status_flags.enable_reference = (statusBits& STSMASK_ENABLE_REFERENCE);
+        llc_sw485_msg_.status_flags.timeout_reference = (statusBits & STSMASK_TIMEOUT_REFERENCE);
+        llc_sw485_msg_.status_flags.ppm_main_valid = (statusBits & STSMASK_PPM_MAIN_VALID);
+        llc_sw485_msg_.status_flags.ppm_remote_enabled = (statusBits & STSMASK_PPM_ENABLED);
+        llc_sw485_msg_.status_flags.ppm_need_zero_check = (statusBits & STSMASK_PPM_NEEDZEROCHECK);
+        llc_sw485_msg_.status_flags.ppm_channel = (statusBits & STSMASK_PPM_CHANNEL);
+        llc_sw485_msg_.status_flags.ppm_secondary_valid = (statusBits & STSMASK_PPM_SECONDARY_VALID);
         llc_sw485_pub_->publish(llc_sw485_msg_);
     }
 
