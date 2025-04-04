@@ -196,6 +196,24 @@ void CSerialHelper::ChangeBaudRate(uint32_t baudRate) {
 	pthread_mutex_unlock(&critSecSem_);
 }
 
+ssize_t CSerialHelper::Write(const unsigned char *buffer, size_t size) {
+    ssize_t ret = SERIAL_ERROR;
+    int sent = 0;
+
+    while (sent < (int)size) {
+		ret = write(this->fd_, &buffer[sent], size - sent);
+		if (ret > 0) {
+			fsync(this->fd_);
+			sent += ret;
+		} else if (ret == -1) {
+            printf("CSerialHelper::Write, Error on serial writing\n");
+			return SERIAL_ERROR;
+		}
+	}
+
+	return ret;
+}
+
 ssize_t CSerialHelper::Write(const char *buffer, size_t size) {
     ssize_t ret = SERIAL_ERROR;
     int sent = 0;
@@ -213,6 +231,7 @@ ssize_t CSerialHelper::Write(const char *buffer, size_t size) {
 
 	return ret;
 }
+
 
 int CSerialHelper::SetRTS(int level) {
 	return SetLine(TIOCM_RTS, level);

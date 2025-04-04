@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <memory>
+#include <vector>
 
 typedef float float32_t;
 typedef double float64_t;
@@ -10,7 +11,7 @@ typedef double float64_t;
 class Serializer
 {
 public:
-    Serializer(std::shared_ptr<uint8_t*> buffer);
+    Serializer();
 
     uint16_t PacketAdd_char(char value);
 
@@ -38,8 +39,10 @@ public:
 
     uint16_t PacketAdd_uint16Array(uint16_t* value, uint16_t size);
 
+    auto Buffer() const -> const std::vector<uint8_t>& { return buffer_; }
+
 private:
-    std::shared_ptr<uint8_t*> buffer_;
+    std::vector<uint8_t> buffer_;
     uint8_t offset_;
 };
 

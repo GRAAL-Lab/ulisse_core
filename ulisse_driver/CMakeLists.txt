@@ -45,6 +45,7 @@ set(ulisse_driver_lib_sources
     src/ulisse_driver/llc_parser.cpp
     src/ulisse_driver/serializer.cpp
     src/ulisse_driver/deserializer.cpp
+    src/ulisse_driver/LLCHelperDataStructs.cc
 )
 
 
