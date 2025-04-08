@@ -10,6 +10,7 @@
 #include "ctrl_toolbox/pid/DigitalPID.h"
 #include "surface_vehicle_model/surfacevehiclemodel.hpp"
 #include "ulisse_msgs/msg/task_status.hpp"
+#include "ulisse_msgs/msg/obstacle.hpp" // ASV-ROV
 
 
 namespace ulisse {
@@ -22,6 +23,7 @@ struct ControlData {
     Eigen::Vector3d bodyF_angularVelocity;
     Eigen::Vector3d inertialF_waterCurrent;
     bool radioControllerEnabled;
+    std::vector<ulisse_msgs::msg::Obstacle> obstacleMsgVector_;
 
     ControlData() : radioControllerEnabled(false) {}
 };

@@ -17,6 +17,7 @@ def generate_launch_description():
             package='ulisse_ctrl',
             executable='kinematic_control_node',
             output='screen',
+            prefix='gdb --ex run --args',
             arguments=[])
     nav_filter_node = launch_ros.actions.Node(
             package='nav_filter',

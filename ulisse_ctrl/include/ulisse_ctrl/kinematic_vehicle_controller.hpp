@@ -176,6 +176,7 @@ class VehicleController : public rclcpp::Node {
     //Eigen::TransformationMatrix world_T_obstacle1_;
     //std::string frameID; double sphereRadius;
     std::shared_ptr<ikcl::SphereObstacle> obs1_;
+    std::shared_ptr<ikcl::SphereObstacle> obs2_;
     ulisse_msgs::msg::PlotVariables plotVar_;
 
     //std::shared_ptr<ctb::LatLong> vehiclePosition_;
