@@ -23,7 +23,7 @@ struct ControlData {
     Eigen::Vector3d bodyF_angularVelocity;
     Eigen::Vector3d inertialF_waterCurrent;
     bool radioControllerEnabled;
-    std::vector<ulisse_msgs::msg::Obstacle> obstacleMsgVector_;
+    std::vector<ulisse_msgs::msg::Obstacle> obstacleMsgVector;
 
     ControlData() : radioControllerEnabled(false) {}
 };

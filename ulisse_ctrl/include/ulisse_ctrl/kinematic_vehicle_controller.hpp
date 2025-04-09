@@ -164,7 +164,7 @@ class VehicleController : public rclcpp::Node {
     rov_msgs::msg::CableLengthReference controlledCable_;
     rov_msgs::msg::WinchMotorReference winchMotorRef_;
     ulisse_msgs::msg::Obstacle obstacleData_;
-    std::vector<ulisse_msgs::msg::Obstacle> obstacleMsgVector_;
+    //std::vector<ulisse_msgs::msg::Obstacle> obstacleMsgVector_;
     std::vector<std::shared_ptr<ikcl::Obstacle>> obstaclePointers_;
 
     //const std::string obs1_id = "obstacle1_frameID";

@@ -40,10 +40,11 @@ namespace states {
         LatLong centroidLocation;
         Eigen::Vector3d worldF_obstacle;
         LatLong obstaclePosition;
-        double obstacleHeading;
-        double obstacleDistance;
+        double ASV2obstacleHeading;
+        double ASV2obstacleDistance;
         double ROV2obstacleHeading;
         double ROV2obstacleDistance;
+        //int closestObstacle2ROV_id;
 
         double obsAltitude;
 
@@ -51,7 +52,7 @@ namespace states {
         double headingErrorObstacle;
         double cartesianErrorObstacle;
 
-        double minCartesianObstacleError_, maxCartesianObstacleError_, obstacleZone_radius_, obstacleGoalAcceptanceRadius;
+        double minCartesianObstacleError_, maxCartesianObstacleError_, obstacleZoneRadius, obstacleGoalAcceptanceRadius;
 
 
         bool ConfigureStateFromFile(libconfig::Config& confObj) override;

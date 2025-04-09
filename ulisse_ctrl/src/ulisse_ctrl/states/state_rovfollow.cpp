@@ -30,6 +30,11 @@ bool StateRovFollow::ConfigureStateFromFile(libconfig::Config& confObj)
     if (!ctb::GetParam(state, acceptanceRadius, "minAcceptanceRadius"))
         return false;
 
+    if (!ctb::GetParam(state, obstacleGoalAcceptanceRadius, "obstacleGoalAcceptanceRadius"))
+        return false;
+    if (!ctb::GetParam(state, obstacleZoneRadius, "obstacleZoneRadius"))
+        return false;
+
     return true;
 }
 
@@ -77,31 +82,21 @@ fsm::retval StateRovFollow::Execute()
     CheckRadioController();
     //UpdateObstacles();
 
-    worldF_obstacle << 0,5,0;
+    /*worldF_obstacle << 0,5,0;
     centroidLocation.latitude = 44.0956;
     centroidLocation.longitude = 9.8631;
 
     minCartesianObstacleError_ = 2.0;
-    maxCartesianObstacleError_ = 3.0;
-    obstacleGoalAcceptanceRadius = 3.0;
-    obstacleZone_radius_ = 4.0;
+    maxCartesianObstacleError_ = 3.0;*/
 
-    ctb::LocalUTM2LatLong(worldF_obstacle, centroidLocation, obstaclePosition, obsAltitude);
+    //obstacleGoalAcceptanceRadius = 3.0;
+    //obstacleZone_radius_ = 4.0;
 
-    //std::cout << "obstaclePosition = " << obstaclePosition << std::endl;
-    //std::cout << "obsAltitude = " << obsAltitude << std::endl;
+    pathManager_.ComputeDistanceOfClosestObstacle2ROV(goalPosition, ctrlData->obstacleMsgVector,
+                                                              ROV2obstacleDistance, ROV2obstacleHeading, obstaclePosition);
 
-    ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, obstaclePosition, obstacleDistance, obstacleHeading);
-    ctb::DistanceAndAzimuthRad(goalPosition, obstaclePosition, ROV2obstacleDistance, ROV2obstacleHeading);
-    //std::cout << "obstacleDistance = " << obstacleDistance << std::endl;
-    //std::cout << "obstacleHeading = " << obstacleHeading << std::endl;
-    //std::cout << "-----------" << std::endl;
+    double obstacleZone = rml::DecreasingBellShapedFunction(obstacleZoneRadius, obstacleZoneRadius + 1.0, 0.0, 1.0, ROV2obstacleDistance);
 
-    //std::cout << "ROV2obstacleDistance = " << ROV2obstacleDistance << std::endl;
-    double obstacleZone = rml::DecreasingBellShapedFunction(obstacleZone_radius_, obstacleZone_radius_ + 1.0, 0.0, 1.0, ROV2obstacleDistance);
-    //std::cout << "obstacleZone_radius_ = " << obstacleZone_radius_ << std::endl;
-    //std::cout << "obstacleZone = " << obstacleZone << std::endl;
-    // Obstacle Avoidance task
     obstacleAvoidanceTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(obstacleAvoidanceTask_->TaskSpace(), obstacleAvoidanceTask_->TaskSpace());
     obstacleAvoidanceTask_->Update();
 
@@ -122,9 +117,9 @@ fsm::retval StateRovFollow::Execute()
     std::cout << "-----------" << std::endl;
 */
     LatLong RovObstaclePos;
-    // Compute Obstacle-Goal position
+    // Compute Obstacle-Goal position (the red flag)
     pathManager_.ComputeRovObstacleGoalPosition(goalPosition, obstaclePosition, RovObstaclePos);
-    // Compute distance and heading towards Obstacle-Goal
+    // Compute distance and heading towards Obstacle-Goal (the red flag)
     ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, RovObstaclePos, goalDistanceObstacle, goalHeadingObstacle); // align to obstacle
     // Compute distance and heading towards ROV
     ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, goalPosition, goalDistance, goalHeading); //original

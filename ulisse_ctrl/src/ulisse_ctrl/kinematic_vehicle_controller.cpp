@@ -744,28 +744,28 @@ void VehicleController::ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr m
     obs.b_box_dim_y = msg->b_box_dim_y;*/
     //obstacleMsg = true;
     bool ExistsObs = false;
-    for(unsigned long i=0; i < obstacleMsgVector_.size(); i++){
-        if(obs.id == obstacleMsgVector_[i].id){
+    for(unsigned long i=0; i < ctrlData_->obstacleMsgVector.size(); i++){
+        if(obs.id == ctrlData_->obstacleMsgVector[i].id){
             //std::shared_ptr<ikcl::SphereObstacle> obs;
-            obstacleMsgVector_[i].center.latitude = obs.center.latitude;
-            obstacleMsgVector_[i].center.longitude = obs.center.longitude;
+            ctrlData_->obstacleMsgVector[i].center.latitude = obs.center.latitude;
+            ctrlData_->obstacleMsgVector[i].center.longitude = obs.center.longitude;
             ExistsObs = true;
         }
     }
     if(!ExistsObs){
-        obstacleMsgVector_.push_back(obs);
+        ctrlData_->obstacleMsgVector.push_back(obs);
     }
 }
 
 void VehicleController::UpdateObstacles(){
-    for(unsigned long i= obstaclePointers_.size(); i < obstacleMsgVector_.size(); i++){
+    for(unsigned long i= obstaclePointers_.size(); i < ctrlData_->obstacleMsgVector.size(); i++){
         Eigen::Vector3d centerUTM;
-        ctb::LatLong2LocalUTM(LatLong(obstacleMsgVector_[i].center.latitude, obstacleMsgVector_[i].center.longitude), 0.0, centroidLocation_, centerUTM);
+        ctb::LatLong2LocalUTM(LatLong(ctrlData_->obstacleMsgVector[i].center.latitude, ctrlData_->obstacleMsgVector[i].center.longitude), 0.0, centroidLocation_, centerUTM);
         Eigen::TransformationMatrix world_T_obstacle;
         world_T_obstacle.setZero();
         world_T_obstacle.TranslationVector(centerUTM);
         std::shared_ptr<ikcl::SphereObstacle> obs;
-        obs = std::make_shared<ikcl::SphereObstacle>(world_T_obstacle, rml::FrameID::WorldFrame, obstacleMsgVector_[i].b_box_dim_x/2);
+        obs = std::make_shared<ikcl::SphereObstacle>(world_T_obstacle, rml::FrameID::WorldFrame, ctrlData_->obstacleMsgVector[i].b_box_dim_x/2);
         obstaclePointers_.push_back(obs);
         asvObstacleAvoidance_->Obstacles() = obstaclePointers_; // new line code --needed!!!--
 /*

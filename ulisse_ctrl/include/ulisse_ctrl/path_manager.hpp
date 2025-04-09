@@ -83,7 +83,8 @@ public:
     */
     auto GetPath() const -> const std::shared_ptr<sisl::Path> { return path_; }
 
-
+    double ComputeDistanceOfClosestObstacle2ROV(const ctb::LatLong& rov_pos, const std::vector<ulisse_msgs::msg::Obstacle>,
+                                                  double& distance, double& heading, ctb::LatLong& closest_obs);
 
     // Nurbs parameters
     struct NurbsParam {
