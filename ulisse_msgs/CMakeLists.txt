@@ -105,6 +105,8 @@ rosidl_generate_interfaces(ulisse_msgs
 
 )
 
+rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} rosidl_typesupport_cpp)
+
 ament_export_include_directories(include)
 
 ament_export_dependencies(rosidl_default_runtime)

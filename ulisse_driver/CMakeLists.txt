@@ -32,7 +32,8 @@ file(GLOB_RECURSE SOURCE_FILES
 )
 add_custom_target(.Files. SOURCES ${SOURCE_FILES})
 
-include_directories(include
+include_directories(
+	include
     ${ulisse_msgs_INCLUDE_DIRS}
 )
 
@@ -47,7 +48,7 @@ set(ulisse_driver_lib_sources
 ## Libraries
 add_library(ulisse_driver_lib SHARED ${ulisse_driver_lib_sources})
 ament_target_dependencies(ulisse_driver_lib rclcpp std_msgs ulisse_msgs)
-target_link_libraries(ulisse_driver_lib Geographic rml ctrl_toolbox config++)
+target_link_libraries(ulisse_driver_lib GeographicLib rml ctrl_toolbox config++)
 
 add_library(llc_driver_threads SHARED
     src/ulisse_driver/thread_sender.cpp

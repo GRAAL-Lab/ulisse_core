@@ -20,6 +20,8 @@
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>ulisse_msgs</exec_depend>
   <exec_depend>surface_vehicle_model</exec_depend>
+  
+  <depend>rosidl_typesupport_cpp</depend>
 
   <export>
     <build_type>ament_cmake</build_type>

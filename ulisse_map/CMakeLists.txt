@@ -81,14 +81,14 @@ add_library(ulissemap_lib
 # otherwise QT automoc won't parse the files and you'll get
 # "undefined reference to vtable"
 add_executable(${PROJECT_NAME}_node ${SOURCE_FILES} "src/qml.qrc" )
-ament_target_dependencies(${PROJECT_NAME}_node
-        rclcpp
-        ament_index_cpp
-        std_msgs
-        ulisse_msgs
-        rmw_implementation
-        nav_filter
-)
+#ament_target_dependencies(${PROJECT_NAME}_node
+#        rclcpp
+#        ament_index_cpp
+#        std_msgs
+#        ulisse_msgs
+#        rmw_implementation
+#        nav_filter
+#)
 target_link_libraries(${PROJECT_NAME}_node
         Qt5::Core
         Qt5::Quick
@@ -96,9 +96,13 @@ target_link_libraries(${PROJECT_NAME}_node
         Qt5::Positioning
         Qt5::QuickControls2
         ulissemap_lib
-        ${ulisse_msgs_LIBRARIES}
-        ${JSONCPP_LIBRARIES}
-        Geographic
+        rclcpp::rclcpp
+        ament_index_cpp::ament_index_cpp
+        nav_filter::nav_filter
+        ${std_msgs_TARGETS}
+        ${ulisse_msgs_TARGETS}
+        ${JSONCPP_TARGETS}
+        GeographicLib
         config++
         sisl_toolbox
 )

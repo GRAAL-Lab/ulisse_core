@@ -37,21 +37,22 @@ include_directories(
   include
   ${ulisse_msgs_INCLUDE_DIRS}
   ${surface_vehicle_model_INCLUDE_DIRS}
+  ${ament_index_cpp_INCLUDE_DIRS}
 )
 
 ## Libraries
 add_library(VehicleSimulatorClass src/ulisse_sim/vehicle_simulator.cpp)
-ament_target_dependencies(VehicleSimulatorClass rclcpp ulisse_msgs ament_index_cpp)
-target_link_libraries(VehicleSimulatorClass ${surface_vehicle_model_LIBRARIES} Geographic rml)
+#ament_target_dependencies(VehicleSimulatorClass rclcpp ulisse_msgs ament_index_cpp)
+target_link_libraries(VehicleSimulatorClass ${surface_vehicle_model_LIBRARIES} ${ulisse_msgs_LIBRARIES} GeographicLib ament_index_cpp::ament_index_cpp rclcpp::rclcpp rml) 
 
 ## Executables
 add_executable(simulator_node src/simulator_node.cpp)
-ament_target_dependencies(simulator_node rclcpp std_msgs ulisse_msgs surface_vehicle_model ament_index_cpp)
+#ament_target_dependencies(simulator_node rclcpp std_msgs ulisse_msgs surface_vehicle_model ament_index_cpp)
 target_link_libraries(simulator_node VehicleSimulatorClass config++)
 
 add_executable(sim_from_log_node src/sim_from_log_node.cpp)
-ament_target_dependencies(sim_from_log_node rclcpp std_msgs ulisse_msgs ctrl_toolbox ament_index_cpp)
-target_link_libraries(sim_from_log_node Geographic config++ )
+#ament_target_dependencies(sim_from_log_node rclcpp std_msgs ulisse_msgs ctrl_toolbox ament_index_cpp)
+target_link_libraries(sim_from_log_node ${ulisse_msgs_LIBRARIES} ament_index_cpp::ament_index_cpp rclcpp::rclcpp GeographicLib config++ )
 
 target_include_directories(sim_from_log_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

@@ -30,8 +30,8 @@ bool OfflineBagConverter::ConvertToCSV()
 {
     rosbag2_cpp::Reader reader(std::make_unique<rosbag2_cpp::readers::SequentialReader>());
 
-    //rosbag2_storage::StorageOptions storage_options{};  // ROS2 Galactic
-    rosbag2_cpp::StorageOptions storage_options{};
+    rosbag2_storage::StorageOptions storage_options{};  // ROS2 Galactic
+    //rosbag2_cpp::StorageOptions storage_options{};
     storage_options.uri = bagPath_;
     storage_options.storage_id = "sqlite3";
 
@@ -60,7 +60,7 @@ bool OfflineBagConverter::ConvertToCSV()
             rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
             serialization.deserialize_message(&extracted_serialized_msg, &gpsData_);
             gpsFile_ << std::fixed << std::setprecision(10)
-                     << bag_message->time_stamp  * 1e-9 << ", "
+                     << bag_message->send_timestamp * 1e-9 << ", "
                      << gpsData_.time << ", " << gpsData_.latitude << ", " << gpsData_.longitude << ", " << gpsData_.altitude << ", "
                      << gpsData_.speed << ", " << gpsData_.track
                      << "\n";
@@ -94,7 +94,7 @@ bool OfflineBagConverter::ConvertToCSV()
             rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
             serialization.deserialize_message(&extracted_serialized_msg, &llcThrustersData_);
             motorsFile_ << std::fixed << std::setprecision(6)
-                        << bag_message->time_stamp  * 1e-9 << ", "
+                        << bag_message->send_timestamp  * 1e-9 << ", "
                         << llcThrustersData_.stamp.sec + (llcThrustersData_.stamp.nanosec * 1e-9) << ", "
                         << llcThrustersData_.left.timestamp_485 << ", " << llcThrustersData_.left.motor_speed << ", "
                         << llcThrustersData_.right.timestamp_485 << ", " << llcThrustersData_.right.motor_speed
@@ -104,7 +104,7 @@ bool OfflineBagConverter::ConvertToCSV()
             rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
             serialization.deserialize_message(&extracted_serialized_msg, &navFilterData_);
             navFilterFile_ << std::fixed << std::setprecision(6)
-                           << bag_message->time_stamp  * 1e-9 << ", "
+                           << bag_message->send_timestamp  * 1e-9 << ", "
                            << navFilterData_.stamp.sec + (navFilterData_.stamp.nanosec * 1e-9) << ", "
                            << navFilterData_.inertialframe_linear_position.latlong.latitude << ", " << navFilterData_.inertialframe_linear_position.latlong.longitude << ", " << navFilterData_.inertialframe_linear_position.altitude << ", "
                            << navFilterData_.bodyframe_angular_position.roll << ", " << navFilterData_.bodyframe_angular_position.pitch << ", " << navFilterData_.bodyframe_angular_position.yaw << ", "
@@ -119,7 +119,7 @@ bool OfflineBagConverter::ConvertToCSV()
             rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
             serialization.deserialize_message(&extracted_serialized_msg, &navFilterDataAUX_);
             navFilterFileAUX_ << std::fixed << std::setprecision(6)
-                           << bag_message->time_stamp  * 1e-9 << ", "
+                           << bag_message->send_timestamp  * 1e-9 << ", "
                            << navFilterDataAUX_.stamp.sec + (navFilterDataAUX_.stamp.nanosec * 1e-9) << ", "
                            << navFilterDataAUX_.inertialframe_linear_position.latlong.latitude << ", " << navFilterDataAUX_.inertialframe_linear_position.latlong.longitude << ", " << navFilterDataAUX_.inertialframe_linear_position.altitude << ", "
                            << navFilterDataAUX_.bodyframe_angular_position.roll << ", " << navFilterDataAUX_.bodyframe_angular_position.pitch << ", " << navFilterDataAUX_.bodyframe_angular_position.yaw << ", "
@@ -134,7 +134,7 @@ bool OfflineBagConverter::ConvertToCSV()
             rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
             serialization.deserialize_message(&extracted_serialized_msg, &referenceVel_);
             refVelFile_ << std::fixed << std::setprecision(6)
-                        << bag_message->time_stamp  * 1e-9 << ", "
+                        << bag_message->send_timestamp  * 1e-9 << ", "
                         << referenceVel_.stamp.sec + (referenceVel_.stamp.nanosec * 1e-9) << ", "
                         << referenceVel_.desired_surge << ", " << referenceVel_.desired_yaw_rate
                         << "\n";
@@ -143,7 +143,7 @@ bool OfflineBagConverter::ConvertToCSV()
             rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
             serialization.deserialize_message(&extracted_serialized_msg, &thrustersReference_);
             thrustersFile_ << std::fixed << std::setprecision(6)
-                           << bag_message->time_stamp  * 1e-9 << ", "
+                           << bag_message->send_timestamp  * 1e-9 << ", "
                            << thrustersReference_.stamp.sec + (thrustersReference_.stamp.nanosec * 1e-9) << ", "
                            << thrustersReference_.left_percentage << ", " << thrustersReference_.right_percentage
                            << "\n";
@@ -152,7 +152,7 @@ bool OfflineBagConverter::ConvertToCSV()
             rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
             serialization.deserialize_message(&extracted_serialized_msg, &groundtruth_);
             groundtruthFile_ << std::fixed << std::setprecision(6)
-                           << bag_message->time_stamp  * 1e-9 << ", "
+                           << bag_message->send_timestamp  * 1e-9 << ", "
                            << groundtruth_.stamp.sec + (groundtruth_.stamp.nanosec * 1e-9) << ", "
                            << groundtruth_.inertialframe_linear_position.latlong.latitude  << ", "
                            << groundtruth_.inertialframe_linear_position.latlong.longitude << ", "
@@ -182,7 +182,7 @@ bool OfflineBagConverter::ConvertToCSV()
         if (sensorReceived) {
             sensorReceived = false;
             sensorsFile_ << std::fixed << std::setprecision(6)
-                         << bag_message->time_stamp  * 1e-9 << ", "
+                         << bag_message->send_timestamp  * 1e-9 << ", "
                          << imuData_.stamp.sec + (imuData_.stamp.nanosec * 1e-9)<< ", "
                          << imuData_.accelerometer[0] << ", " << imuData_.accelerometer[1] << ", " << imuData_.accelerometer[2] << ", "
                          << imuData_.gyro[0] << ", " << imuData_.gyro[1] << ", " << imuData_.gyro[2] << ", "

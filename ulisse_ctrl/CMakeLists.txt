@@ -93,11 +93,11 @@ set(ulisse_dynamic_ctrl_lib_sources
 ## Libraries
 add_library(ulisse_kinematic_ctrl_lib ${ulisse_kinematic_ctrl_lib_sources})
 ament_target_dependencies(ulisse_kinematic_ctrl_lib rclcpp std_msgs ulisse_msgs surface_vehicle_model ament_index_cpp)
-target_link_libraries(ulisse_kinematic_ctrl_lib ${surface_vehicle_model_LIBRARIES} ${ulisse_msgs_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ikcl tpik config++ Geographic rml fsm ctrl_toolbox sisl_toolbox)
+target_link_libraries(ulisse_kinematic_ctrl_lib ${surface_vehicle_model_LIBRARIES} ${ulisse_msgs_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ikcl tpik config++ GeographicLib rml fsm ctrl_toolbox sisl_toolbox)
 
 add_library(ulisse_dynamic_ctrl_lib ${ulisse_dynamic_ctrl_lib_sources})
 ament_target_dependencies(ulisse_dynamic_ctrl_lib rclcpp std_msgs ulisse_msgs surface_vehicle_model ament_index_cpp)
-target_link_libraries(ulisse_dynamic_ctrl_lib ${surface_vehicle_model_LIBRARIES} ${ulisse_msgs_LIBRARIES} config++ Geographic rml fsm ctrl_toolbox)
+target_link_libraries(ulisse_dynamic_ctrl_lib ${surface_vehicle_model_LIBRARIES} ${ulisse_msgs_LIBRARIES} config++ GeographicLib rml fsm ctrl_toolbox)
 
 ## Executables
 add_executable(control_test test/control_test.cpp)
