@@ -6,7 +6,7 @@
 #include "ulisse_msgs/msg/llc_battery.hpp"
 #include "ulisse_msgs/msg/thrusters_reference.hpp"
 
-#include "ulisse_msgs/terminal_utils.hpp"
+#include "ulisse_msgs/futils.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 
 #include "ulisse_ctrl/ctrl_data_structs.hpp"

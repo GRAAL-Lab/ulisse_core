@@ -2,7 +2,7 @@
 #include "ulisse_msgs/srv/rosbag_cmd.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 #include "ulisse_driver/LLCHelperDataStructs.h"
-#include "ulisse_msgs/terminal_utils.hpp"
+#include "ulisse_msgs/futils.hpp"
 
 
 using namespace ulisse::llc;

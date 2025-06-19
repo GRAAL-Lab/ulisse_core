@@ -280,7 +280,7 @@ namespace llc {
                 llc_sw485_pub_->publish(llc_sw485_msg_);
                 break;
             default:
-                RCLCPP_WARN(this->get_logger(), "Unhandled message type %d", llcData_.messageType);
+                RCLCPP_WARN(this->get_logger(), "Unhandled message type %d", static_cast<int>(llcData_.messageType));
                 break;
             }
             std::this_thread::sleep_for(1ms);

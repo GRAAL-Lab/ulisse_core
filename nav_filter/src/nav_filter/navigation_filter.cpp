@@ -479,7 +479,7 @@ namespace nav {
         if (filterData_.gps_received) {
             if (std::abs(lastValidGPSSecs - timeNowSecs) > sensorsCheckInterval_) {
                 RCLCPP_WARN(this->get_logger(), "GPS Data unavailable for more than %i seconds.", sensorsCheckInterval_);
-                RCLCPP_WARN(this->get_logger(), "GPS Data last valid %lld, now %lld, diff %lld", lastValidGPSSecs, timeNowSecs, std::abs(lastValidGPSSecs - timeNowSecs));
+                RCLCPP_WARN(this->get_logger(), "GPS Data last valid %ld, now %ld, diff %ld", lastValidGPSSecs, timeNowSecs, std::abs(lastValidGPSSecs - timeNowSecs));
                 filterData_.gps_received = false;
 
                 if (std::ctime(&timeNowSecs) != nullptr) {
@@ -503,7 +503,7 @@ namespace nav {
         if (filterData_.imu_received){
             if (std::abs(imuData_.stamp.sec - timeNowSecs) > sensorsCheckInterval_) {
                 RCLCPP_WARN(this->get_logger(), "IMU Data unavailable for more than %i seconds.", sensorsCheckInterval_);
-                RCLCPP_WARN(this->get_logger(), "IMU Data last valid %lld, now %lld, diff %lld", imuData_.stamp.sec, timeNowSecs, std::abs(imuData_.stamp.sec - timeNowSecs));
+                RCLCPP_WARN(this->get_logger(), "IMU Data last valid %u, now %ld, diff %ld", imuData_.stamp.sec, timeNowSecs, std::abs(imuData_.stamp.sec - timeNowSecs));
                 filterData_.imu_received = false;
             }
         }
@@ -511,7 +511,7 @@ namespace nav {
         if (filterData_.compass_received){
             if (std::abs(compassData_.stamp.sec - timeNowSecs) > sensorsCheckInterval_) {
                 RCLCPP_WARN(this->get_logger(), "Compass Data unavailable for more than %i seconds.", sensorsCheckInterval_);
-                RCLCPP_WARN(this->get_logger(), "Compass Data last valid %lld, now %lld, diff %lld", compassData_.stamp.sec, timeNowSecs, std::abs(compassData_.stamp.sec - timeNowSecs));
+                RCLCPP_WARN(this->get_logger(), "Compass Data last valid %u, now %ld, diff %ld", compassData_.stamp.sec, timeNowSecs, std::abs(compassData_.stamp.sec - timeNowSecs));
                 filterData_.compass_received = false;
             }
         }
@@ -519,7 +519,7 @@ namespace nav {
         if (filterData_.magnetometer_received){
             if (std::abs(magnetometerData_.stamp.sec - timeNowSecs) > sensorsCheckInterval_) {
                 RCLCPP_WARN(this->get_logger(), "Magnetometer Data unavailable for more than %i seconds.", sensorsCheckInterval_);
-                RCLCPP_WARN(this->get_logger(), "Magnetometer Data last valid %lld, now %lld, diff %lld", magnetometerData_.stamp.sec, timeNowSecs, std::abs(magnetometerData_.stamp.sec - timeNowSecs));
+                RCLCPP_WARN(this->get_logger(), "Magnetometer Data last valid %u, now %ld, diff %ld", magnetometerData_.stamp.sec, timeNowSecs, std::abs(magnetometerData_.stamp.sec - timeNowSecs));
                 filterData_.magnetometer_received = false;
             }
         }
