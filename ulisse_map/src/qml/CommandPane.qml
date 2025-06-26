@@ -5,7 +5,7 @@ import QtLocation 5.6
 import QtPositioning 5.6
 import QtQuick.Controls.Material 2.1
 import QtGraphicalEffects 1.0
-import QtQuick.Dialogs 1.2
+import QtQuick.Dialogs 1.3
 
 import "."
 import "../scripts/helper.js" as Helper

@@ -4,7 +4,7 @@ import QtQuick.Controls 2.1
 import QtLocation 5.6
 import QtPositioning 5.6
 import QtQuick.Controls.Material 2.1
-import QtQuick.Dialogs 1.2
+import QtQuick.Dialogs 1.3
 import "."
 
 Rectangle {
