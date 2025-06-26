@@ -111,6 +111,8 @@ target_link_libraries(ulisse_kinematic_ctrl_lib PUBLIC
   sisl_toolbox
 )
 
+#message(WARNING "surface_vehicle_model_TARGETS = ${surface_vehicle_model_TARGETS}")
+
 add_library(ulisse_dynamic_ctrl_lib ${ulisse_dynamic_ctrl_lib_sources})
 target_link_libraries(ulisse_dynamic_ctrl_lib PUBLIC
   ${std_msgs_TARGETS}
@@ -118,6 +120,11 @@ target_link_libraries(ulisse_dynamic_ctrl_lib PUBLIC
   ${surface_vehicle_model_TARGETS}
   ament_index_cpp::ament_index_cpp
   rclcpp::rclcpp
+  rml
+  config++
+  GeographicLib
+  fsm
+  ctrl_toolbox
 )
 #ament_target_dependencies(ulisse_dynamic_ctrl_lib rclcpp std_msgs ulisse_msgs surface_vehicle_model ament_index_cpp)
 #target_link_libraries(ulisse_dynamic_ctrl_lib ${surface_vehicle_model_LIBRARIES} ${ulisse_msgs_LIBRARIES} config++ GeographicLib rml fsm ctrl_toolbox)
@@ -135,13 +142,13 @@ target_link_libraries(control_test PUBLIC
 
 add_executable(kinematic_control_node src/kinematic_control_node.cpp)
 target_link_libraries(kinematic_control_node PUBLIC
-      ${std_msgs_TARGETS}
-      ${ulisse_msgs_TARGETS}
-      ${JSONCPP_LIBRARIES}
-      rclcpp::rclcpp
-      ulisse_kinematic_ctrl_lib
-      rml
-    )
+  ${std_msgs_TARGETS}
+  ${ulisse_msgs_TARGETS}
+  ${JSONCPP_LIBRARIES}
+  rclcpp::rclcpp
+  ulisse_kinematic_ctrl_lib
+  rml
+)
 #ament_target_dependencies(kinematic_control_node rclcpp std_msgs ulisse_msgs rml)
 #target_link_libraries(kinematic_control_node rml ulisse_kinematic_ctrl_lib ${JSONCPP_LIBRARIES})
 
@@ -153,8 +160,8 @@ target_link_libraries(dynamic_control_node PUBLIC
   rclcpp::rclcpp
   rml
   ctrl_toolbox
+  ulisse_dynamic_ctrl_lib
 )
-
 #ament_target_dependencies(dynamic_control_node rclcpp std_msgs ulisse_msgs rml ament_index_cpp ctrl_toolbox)
 #target_link_libraries(dynamic_control_node rml ulisse_dynamic_ctrl_lib)
 

@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
     int tryCount(0);
     rclcpp::WallRate loop_rate(rate);
 
-    ulisse::Spinner spinner(5);
+    futils::Spinner spinner(5);
 
     /// SEND REQUEST TO ROSBAG COMMAND SERVICE ///
     auto bagClient = node->create_client<ulisse_msgs::srv::RosbagCmd>(ulisse_msgs::topicnames::rosbag_service);

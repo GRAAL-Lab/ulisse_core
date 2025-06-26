@@ -120,7 +120,7 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
 bool PathManager::ComputeGoalPosition(const ctb::LatLong &currentPos, ctb::LatLong &goalPos)
 {
 
-    double closestPointAbscissa;
+    double closestPointAbscissa = 0;
     std::vector<Eigen::Vector3d> currentPosDot, goalPosDot;
 
     // Converting the current geographical position to UTM coordinates

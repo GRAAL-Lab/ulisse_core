@@ -293,7 +293,7 @@ namespace llc {
                 break;
             }
         } //no break is ok
-            [[clang::fallthrough]];
+            [[fallthrough]];
         case ParseState::checksum: {
             // parse the two bytes checksum
             if (checksumCount_ == 0) {

@@ -342,8 +342,14 @@ bool ComputeIntersectionPointMiddleZone(const std::list<segment_t>& segments, co
             + decreasingBellShapeParameter_.xmax(0) * backSegDirPerp.y() };
 
     std::list<segment_t> newSegments;
-    MakeSegments(newP1, newP2, newSegments.front());
-    MakeSegments(newS1, newS2, newSegments.back());
+    // MakeSegments(newP1, newP2, newSegments.front());
+    // MakeSegments(newS1, newS2, newSegments.back());
+    segment_t s;
+    MakeSegments(newP1, newP2, s);
+    newSegments.push_back(s);
+    MakeSegments(newS1, newS2, s);
+    newSegments.push_back(s);
+
     std::deque<point_t> out;
     // Find the intersection point
     if (!boost::geometry::intersection(newSegments.front(), newSegments.back(), out))
@@ -408,7 +414,7 @@ void ComputeNormalVector2Segment(const segment_t& segment, const polygon_t& poly
     uPerp.set<1>(u.x());
 
     // Compute the controid of the poly
-    point_t centroid;
+    point_t centroid(0.0, 0.0);;
     boost::geometry::centroid(poly, centroid);
 
     point_t direction2Centr;
@@ -458,7 +464,7 @@ void ComputeNormalVector2Segment(const segment_t& segment, const polygon_t& poly
     uPerp.set<1>(u.x());
 
     // Compute the controid of the poly
-    point_t centroid;
+    point_t centroid(0.0, 0.0);
     boost::geometry::centroid(poly, centroid);
 
     point_t direction2Centr;

@@ -76,6 +76,10 @@ add_library(ulissemap_lib
     src/commandwrapper.cpp
     src/addonsbridge.cpp
 )
+target_link_libraries(ulissemap_lib
+  rclcpp::rclcpp
+  ament_index_cpp::ament_index_cpp
+)
 
 # The header files must be included in the add_executable directive
 # otherwise QT automoc won't parse the files and you'll get
@@ -98,7 +102,7 @@ target_link_libraries(${PROJECT_NAME}_node
         ulissemap_lib
         rclcpp::rclcpp
         ament_index_cpp::ament_index_cpp
-        nav_filter::nav_filter
+        ${nav_filter_TARGETS}
         ${std_msgs_TARGETS}
         ${ulisse_msgs_TARGETS}
         ${JSONCPP_TARGETS}
