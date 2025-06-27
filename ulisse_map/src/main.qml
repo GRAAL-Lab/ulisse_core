@@ -85,7 +85,7 @@ ApplicationWindow {
     Settings {
         id: settings
         property int shTimeout: 120
-        property string mapPluginType: "osm"
+        property string mapPluginType: "mapboxgl"
         property string mapCachePath: home_dir + "/.map_offline_tiles/" + mapPluginType + "/"
         property int mapTypeIndex: 0
         property string theme: "Light"

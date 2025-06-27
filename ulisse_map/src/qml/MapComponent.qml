@@ -8,7 +8,7 @@ import Qt.labs.settings 1.0
 import QtQuick.Controls.Material 2.1
 import QtQuick.Controls.Universal 2.1
 import QtGraphicalEffects 1.0
-import QtQuick.Dialogs 1.2
+import QtQuick.Dialogs 1.3
 import "."
 
 MapComponentForm {

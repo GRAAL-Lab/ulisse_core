@@ -1,5 +1,6 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
+#include <QQmlApplicationEngine>
 
 #include <QIcon>
 #include <QObject>
@@ -9,6 +10,7 @@
 #include <QQmlProperty>
 #include <QQuickStyle>
 #include <QSettings>
+//#include <QMainWindow>
 
 #include "rclcpp/rclcpp.hpp"
 #include "ulisse_map/commandwrapper.hpp"
@@ -34,8 +36,9 @@ int main(int argc, char* argv[])
     QGuiApplication::setOrganizationName("GRAAL Lab");
 
     QGuiApplication app(argc, argv);
-    QIcon icon(":/images/ulisse_icon-48.png");
+    QIcon icon(":/images/ulisse_icon.png");
     app.setWindowIcon(icon);
+    //QMainWindow::setWindowIcon(":/images/ulisse_icon-48.png");
 
     // Font with icons. See the fontello-icons folder for more info.
     QFontDatabase fontDatabase;

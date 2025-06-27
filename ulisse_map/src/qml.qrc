@@ -4,6 +4,8 @@
         <file>qtquickcontrols2.conf</file>
         <file>images/map-marker-64.png</file>
         <file>images/ulisse_icon-512.png</file>
+        <file>images/ulisse_icon-48.png</file>
+        <file>images/ulisse_icon.png</file>
         <file>images/catamaran_icon_64.png</file>
         <file>qml/LabelledText.qml</file>
         <file>images/flag_transp.png</file>
@@ -72,8 +74,6 @@
         <file>qml/SettingsSectionLabel.qml</file>
         <file>images/Esri_logo.svg.png</file>
         <file>images/Openstreetmap_logo.svg.png</file>
-        <file>images/ulisse_icon.png</file>
-        <file>images/ulisse_icon-48.png</file>
         <file>images/white_arrow.png</file>
         <file>offline_tiles/osm/osm_100-l-1-10-538-370.png</file>
         <file>offline_tiles/osm/osm_100-l-1-10-538-371.png</file>
