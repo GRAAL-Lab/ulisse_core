@@ -32,7 +32,9 @@ bool StateRovFollow::ConfigureStateFromFile(libconfig::Config& confObj)
 
     if (!ctb::GetParam(state, obstacleGoalAcceptanceRadius, "obstacleGoalAcceptanceRadius"))
         return false;
-    if (!ctb::GetParam(state, obstacleZoneRadius, "obstacleZoneRadius"))
+    if (!ctb::GetParam(state, minObstacleZoneRadius, "minObstacleZoneRadius"))
+        return false;
+    if (!ctb::GetParam(state, maxObstacleZoneRadius, "maxObstacleZoneRadius"))
         return false;
 
     return true;
@@ -95,7 +97,7 @@ fsm::retval StateRovFollow::Execute()
     pathManager_.ComputeDistanceOfClosestObstacle2ROV(goalPosition, ctrlData->obstacleMsgVector,
                                                               ROV2obstacleDistance, ROV2obstacleHeading, obstaclePosition);
 
-    double obstacleZone = rml::DecreasingBellShapedFunction(obstacleZoneRadius, obstacleZoneRadius + 1.0, 0.0, 1.0, ROV2obstacleDistance);
+    double obstacleZone = rml::DecreasingBellShapedFunction(minObstacleZoneRadius, maxObstacleZoneRadius, 0.0, 1.0, ROV2obstacleDistance);
 
     obstacleAvoidanceTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(obstacleAvoidanceTask_->TaskSpace(), obstacleAvoidanceTask_->TaskSpace());
     obstacleAvoidanceTask_->Update();
@@ -116,6 +118,12 @@ fsm::retval StateRovFollow::Execute()
     std::cout << "goalHeading = " << goalHeading << std::endl;
     std::cout << "-----------" << std::endl;
 */
+    std::cout << "ROV2obstacleDistance = " << ROV2obstacleDistance << std::endl;
+    Eigen::Vector3d obstacle_utm;
+    ctb::LatLong2LocalUTM(obstaclePosition, 0.0,centroidLocation,obstacle_utm);
+    std::cout << "obstacle_utm = " << obstacle_utm << std::endl;
+    std::cout << std::endl;
+
     LatLong RovObstaclePos;
     // Compute Obstacle-Goal position (the red flag)
     pathManager_.ComputeRovObstacleGoalPosition(goalPosition, obstaclePosition, RovObstaclePos);

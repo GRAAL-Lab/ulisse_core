@@ -12,6 +12,8 @@
 #include "ulisse_msgs/msg/task_status.hpp"
 #include "ulisse_msgs/msg/obstacle.hpp" // ASV-ROV
 
+#include "detav_msgs/msg/obstacle.hpp"
+
 
 namespace ulisse {
 
@@ -23,7 +25,7 @@ struct ControlData {
     Eigen::Vector3d bodyF_angularVelocity;
     Eigen::Vector3d inertialF_waterCurrent;
     bool radioControllerEnabled;
-    std::vector<ulisse_msgs::msg::Obstacle> obstacleMsgVector;
+    std::vector<detav_msgs::msg::Obstacle> obstacleMsgVector;
 
     ControlData() : radioControllerEnabled(false) {}
 };
@@ -51,6 +53,7 @@ struct KCLConfiguration {
     double controlLoopRate;
     Eigen::VectorXd saturationMin, saturationMax;
     float alfa, beta;
+    Eigen::VectorXd obstacleX, obstacleY, obstacleRadius;
 
     KCLConfiguration()
         : goToHoldAfterMove(false)
@@ -75,6 +78,13 @@ struct KCLConfiguration {
         if (!ctb::GetParam(confObj, beta, "cableBeta"))
             return false;
 
+//        if (!ctb::GetParamVector(confObj, obstacleX, "obstacleX"))
+//            return false;
+//        if (!ctb::GetParamVector(confObj, obstacleY, "obstacleY"))
+//            return false;
+//        if (!ctb::GetParamVector(confObj, obstacleRadius, "obstacleRadius"))
+//            return false;
+
         return true;
     }
 
@@ -87,8 +97,41 @@ struct KCLConfiguration {
                   << "SaturationMin: " << a.saturationMin.transpose() << "\n"
                   << "SaturationMax: " << a.saturationMax.transpose() << "\n"
                   << "===============================\n";
+//                  << "======= Obstacle CONF =======\n"
+//                  << "obstacleX: " << a.obstacleX << "\n"
+//                  << "obstacleY: " << a.obstacleY << "\n"
+//                  << "obstacleRadius: " << a.obstacleRadius.transpose() << "\n";
     }
 };
+
+//struct ObstacleConfiguration {
+//    int obstacleNumber;
+//    Eigen::VectorXd obstacleX, obstacleY, obstacleZ, obstacleRadius;
+
+//    bool ConfigureFromFile(libconfig::Config& confObj)
+//    {
+//        if (!ctb::GetParamVector(confObj, obstacleX, "obstacleX"))
+//            return false;
+//        if (!ctb::GetParamVector(confObj, obstacleY, "obstacleY"))
+//            return false;
+//        if (!ctb::GetParamVector(confObj, obstacleZ, "obstacleZ"))
+//            return false;
+//        if (!ctb::GetParamVector(confObj, obstacleRadius, "obstacleRadius"))
+//            return false;
+
+//        return true;
+//    }
+
+//    friend std::ostream& operator<<(std::ostream& os, ObstacleConfiguration const& a)
+//    {
+//        return os << "======= Obstacle CONF =======\n"
+//                  << "obstacleX: " << a.obstacleX << "\n"
+//                  << "obstacleY: " << a.obstacleY << "\n"
+//                  << "obstacleZ: " << a.obstacleZ << "\n"
+//                  << "obstacleRadius: " << a.obstacleRadius.transpose() << "\n"
+//                  << "===============================\n";
+//    }
+//};
 
 struct ThrusterMapping {
     ctb::PIDGains pidGainsSurge;

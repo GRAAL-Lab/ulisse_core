@@ -1,0 +1,32 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/graal/ros2_ws/install/ulisse_ctrl/include/**",
+        "/home/graal/ros2_ws/install/nav_filter/include/**",
+        "/home/graal/ros2_ws/install/ulisse_driver/include/**",
+        "/home/graal/ros2_ws/install/rov_ctrl/include/**",
+        "/home/graal/ros2_ws/install/ulisse_msgs/include/**",
+        "/home/graal/ros2_ws/install/surface_vehicle_model/include/**",
+        "/home/graal/ros2_ws/install/stonefish_utils/include/**",
+        "/home/graal/ros2_ws/install/stonefish_ros2/include/**",
+        "/home/graal/ros2_ws/install/nav_filter_rov/include/**",
+        "/home/graal/ros2_ws/install/rov_msgs/include/**",
+        "/home/graal/ros2_ws/install/rov_model/include/**",
+        "/home/graal/ros2_ws/install/detav_msgs/include/**",
+        "/opt/ros/humble/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}

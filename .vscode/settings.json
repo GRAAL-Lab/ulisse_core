@@ -1,0 +1,22 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/home/graal/ros2_ws/install/ulisse_msgs/local/lib/python3.10/dist-packages",
+        "/home/graal/ros2_ws/install/stonefish_ros2/local/lib/python3.10/dist-packages",
+        "/home/graal/ros2_ws/install/rov_msgs/local/lib/python3.10/dist-packages",
+        "/home/graal/ros2_ws/install/detav_msgs/local/lib/python3.10/dist-packages",
+        "/home/graal/ros2_ws/build/csv_pkg",
+        "/home/graal/ros2_ws/install/csv_pkg/lib/python3.10/site-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/graal/ros2_ws/install/ulisse_msgs/local/lib/python3.10/dist-packages",
+        "/home/graal/ros2_ws/install/stonefish_ros2/local/lib/python3.10/dist-packages",
+        "/home/graal/ros2_ws/install/rov_msgs/local/lib/python3.10/dist-packages",
+        "/home/graal/ros2_ws/install/detav_msgs/local/lib/python3.10/dist-packages",
+        "/home/graal/ros2_ws/build/csv_pkg",
+        "/home/graal/ros2_ws/install/csv_pkg/lib/python3.10/site-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ]
+}

@@ -35,6 +35,9 @@
 #include <visualization_msgs/msg/marker.hpp>
 #include "visualization_msgs/msg/marker_array.hpp"
 
+#include "detav_msgs/msg/obstacle_list.hpp"
+#include "detav_msgs/msg/obstacle.hpp"
+
 namespace ulisse {
 
 class VehicleSimulator : public rclcpp::Node {
@@ -97,7 +100,7 @@ class VehicleSimulator : public rclcpp::Node {
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr visualizationPub_;
     
     rclcpp::Subscription<ulisse_msgs::msg::ThrustersReference>::SharedPtr thrustersSub_;
-    rclcpp::Subscription<ulisse_msgs::msg::Obstacle>::SharedPtr ObstacleSub_;
+    //rclcpp::Subscription<detav_msgs::msg::ObstacleList>::SharedPtr ObstacleSub_;
 
     int gpsPubCounter_, compassPubCounter_, imuPubCounter_, magnetometerPubCounter_, ambientPubCounter_;
     int orientusPubCounter_, dvlPubCounter_, fogPubCounter_;

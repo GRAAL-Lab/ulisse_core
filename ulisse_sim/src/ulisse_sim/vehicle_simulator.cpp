@@ -60,8 +60,8 @@ VehicleSimulator::VehicleSimulator(const std::string file_name)
 
     thrustersSub_ = this->create_subscription<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_reference_perc, 1,
                                                                                     std::bind(&VehicleSimulator::ThrustersReferenceCB, this, _1));
-    ObstacleSub_ = this->create_subscription<ulisse_msgs::msg::Obstacle>(ulisse_msgs::topicnames::obstacle, 10,
-                                                                                   std::bind(&VehicleSimulator::ObstacleCB, this, _1));
+    //ObstacleSub_ = this->create_subscription<detav_msgs::msg::ObstacleList>(ulisse_msgs::topicnames::obstacle, 10,
+     //                                                                              std::bind(&VehicleSimulator::ObstacleCB, this, _1));
     worldF_waterVelocity_(0) = 0.0;
     worldF_waterVelocity_(1) = 0.0;
 
@@ -728,28 +728,28 @@ void VehicleSimulator::ThrustersReferenceCB(const ulisse_msgs::msg::ThrustersRef
     motorTimeout_.Start();
 }
 
-void VehicleSimulator::ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr msg){
-    obstacle_.id = msg->id;
-    obstacle_.center.latitude = msg->center.latitude;
-    obstacle_.center.longitude = msg->center.longitude;
-    obstacle_.b_box_dim_x = msg->b_box_dim_x;
-    obstacle_.b_box_dim_y = msg->b_box_dim_y;
-    obstacleMsg = true;
-    bool ExistsObs = false;
-    for(unsigned long i=0; i < obstaclesVector_.size(); i++){
-        if(obstacle_.id == obstaclesVector_[i].id){
-            obstaclesVector_[i].center.latitude = obstacle_.center.latitude;
-            obstaclesVector_[i].center.longitude = obstacle_.center.longitude;
-            ExistsObs = true;
-        }
-    }
-    if(!ExistsObs){
-        obstaclesVector_.push_back(obstacle_);
-    }
+//void VehicleSimulator::ObstacleCB(const detav_msgs::msg::ObstacleList::SharedPtr msg){
+//    obstacle_.id = msg->id;
+//    obstacle_.center.latitude = msg->center.latitude;
+//    obstacle_.center.longitude = msg->center.longitude;
+//    obstacle_.b_box_dim_x = msg->b_box_dim_x;
+//    obstacle_.b_box_dim_y = msg->b_box_dim_y;
+//    obstacleMsg = true;
+//    bool ExistsObs = false;
+//    for(unsigned long i=0; i < obstaclesVector_.size(); i++){
+//        if(obstacle_.id == obstaclesVector_[i].id){
+//            obstaclesVector_[i].center.latitude = obstacle_.center.latitude;
+//            obstaclesVector_[i].center.longitude = obstacle_.center.longitude;
+//            ExistsObs = true;
+//        }
+//    }
+//    if(!ExistsObs){
+//        obstaclesVector_.push_back(obstacle_);
+//    }
 
 
-    //std::cout << "obstacle_ : " << obstacle_.id <<std::endl;
-}
+//    //std::cout << "obstacle_ : " << obstacle_.id <<std::endl;
+//}
 
 
 }

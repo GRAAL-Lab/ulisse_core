@@ -52,7 +52,7 @@ namespace states {
         double headingErrorObstacle;
         double cartesianErrorObstacle;
 
-        double minCartesianObstacleError_, maxCartesianObstacleError_, obstacleZoneRadius, obstacleGoalAcceptanceRadius;
+        double minCartesianObstacleError_, maxCartesianObstacleError_, minObstacleZoneRadius, maxObstacleZoneRadius, obstacleGoalAcceptanceRadius;
 
 
         bool ConfigureStateFromFile(libconfig::Config& confObj) override;

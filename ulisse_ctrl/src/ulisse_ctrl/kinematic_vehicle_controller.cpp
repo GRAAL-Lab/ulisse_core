@@ -40,7 +40,7 @@ VehicleController::VehicleController(std::string conf_filename)
     navFilterROVSub_ = this->create_subscription<rov_msgs::msg::NavFilterData>("/rov/nav_filter/data", 10, std::bind(&VehicleController::NavFilterRovCB, this, _1)); //ROV
     llcStatusSub_ = this->create_subscription<ulisse_msgs::msg::LLCStatus>(ulisse_msgs::topicnames::llc_status, 10, std::bind(&VehicleController::LLCStatusCB, this, _1));
     cableROVSub_ = this->create_subscription<rov_msgs::msg::CableData>("/winch/cable_data", 10, std::bind(&VehicleController::CableDataRovCB, this, _1)); //ROV
-    obstacleSub_ = this->create_subscription<ulisse_msgs::msg::Obstacle>(ulisse_msgs::topicnames::obstacle, 10, std::bind(&VehicleController::ObstacleCB, this, _1)); // ASV-ROV
+    obstacleSub_ = this->create_subscription<detav_msgs::msg::ObstacleList>(ulisse_msgs::topicnames::obstacle, 10, std::bind(&VehicleController::ObstacleCB, this, _1)); // ASV-ROV
 
     // Data Subscriptions
     surgeHeadingSub_ = this->create_subscription<ulisse_msgs::msg::SurgeHeading>(ulisse_msgs::topicnames::surge_heading, 10, std::bind(&VehicleController::SurgeHeadingCB, this, _1));
@@ -197,11 +197,12 @@ VehicleController::VehicleController(std::string conf_filename)
 
     obstaclePointers_.clear();
 
+    /*
     world_T_obstacle2.setZero();
     Eigen::Vector3d vec2(0.0, 10.0, 0.0);
     world_T_obstacle2.TranslationVector(vec2);
     obs2_ = std::make_shared<ikcl::SphereObstacle>(world_T_obstacle2, rml::FrameID::WorldFrame, 1.5);
-
+*/
     //obstaclePointers_.push_back(obs2_); // no initialization
     //asvObstacleAvoidance_->Obstacles() = obstaclePointers_; // no initialization
 
@@ -733,17 +734,54 @@ void VehicleController::CableDataRovCB(const rov_msgs::msg::CableData::SharedPtr
     cableData_ = *msg;
 }
 
-void VehicleController::ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr msg){ //ROV
+//void VehicleController::ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr msg){ //ROV
+//    //obstacleData_.
+//    ulisse_msgs::msg::Obstacle obs;
+//    obs = *msg;
+//    /*obs.id = msg->id;
+//    obs.center.latitude = msg->center.latitude;
+//    obs.center.longitude = msg->center.longitude;
+//    obs.b_box_dim_x = msg->b_box_dim_x;
+//    obs.b_box_dim_y = msg->b_box_dim_y;*/
+//    //obstacleMsg = true;
+//    bool ExistsObs = false;
+//    for(unsigned long i=0; i < ctrlData_->obstacleMsgVector.size(); i++){
+//        if(obs.id == ctrlData_->obstacleMsgVector[i].id){
+//            //std::shared_ptr<ikcl::SphereObstacle> obs;
+//            ctrlData_->obstacleMsgVector[i].center.latitude = obs.center.latitude;
+//            ctrlData_->obstacleMsgVector[i].center.longitude = obs.center.longitude;
+//            ExistsObs = true;
+//        }
+//    }
+//    if(!ExistsObs){
+//        ctrlData_->obstacleMsgVector.push_back(obs);
+//    }
+//}
+
+void VehicleController::ObstacleCB(const detav_msgs::msg::ObstacleList::SharedPtr msg){ //ROV
     //obstacleData_.
-    ulisse_msgs::msg::Obstacle obs;
-    obs = *msg;
+    detav_msgs::msg::Obstacle obs;
+    detav_msgs::msg::ObstacleList obs_list;
+
+    unsigned long n;
+    //n = msg->size();
+    obs_list = *msg;
+    n = obs_list.obstacles.size();
+    //std::cout << "size = " << n << std::endl;
     /*obs.id = msg->id;
     obs.center.latitude = msg->center.latitude;
     obs.center.longitude = msg->center.longitude;
     obs.b_box_dim_x = msg->b_box_dim_x;
     obs.b_box_dim_y = msg->b_box_dim_y;*/
     //obstacleMsg = true;
-    bool ExistsObs = false;
+
+    ctrlData_->obstacleMsgVector.clear();
+    for(unsigned long i=0; i < n; i++){
+        //std::shared_ptr<ikcl::SphereObstacle> obs;
+        obs = obs_list.obstacles[i];
+        ctrlData_->obstacleMsgVector.push_back(obs);
+    }
+    /*bool ExistsObs = false;
     for(unsigned long i=0; i < ctrlData_->obstacleMsgVector.size(); i++){
         if(obs.id == ctrlData_->obstacleMsgVector[i].id){
             //std::shared_ptr<ikcl::SphereObstacle> obs;
@@ -754,11 +792,11 @@ void VehicleController::ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr m
     }
     if(!ExistsObs){
         ctrlData_->obstacleMsgVector.push_back(obs);
-    }
+    }*/
 }
 
 void VehicleController::UpdateObstacles(){
-    for(unsigned long i= obstaclePointers_.size(); i < ctrlData_->obstacleMsgVector.size(); i++){
+    /*for(unsigned long i= obstaclePointers_.size(); i < ctrlData_->obstacleMsgVector.size(); i++){
         Eigen::Vector3d centerUTM;
         ctb::LatLong2LocalUTM(LatLong(ctrlData_->obstacleMsgVector[i].center.latitude, ctrlData_->obstacleMsgVector[i].center.longitude), 0.0, centroidLocation_, centerUTM);
         Eigen::TransformationMatrix world_T_obstacle;
@@ -768,18 +806,19 @@ void VehicleController::UpdateObstacles(){
         obs = std::make_shared<ikcl::SphereObstacle>(world_T_obstacle, rml::FrameID::WorldFrame, ctrlData_->obstacleMsgVector[i].b_box_dim_x/2);
         obstaclePointers_.push_back(obs);
         asvObstacleAvoidance_->Obstacles() = obstaclePointers_; // new line code --needed!!!--
-/*
-        //compute the heading error
-        double obstacleError = asvObstacleAvoidance_->ControlVariable().norm();
-
-        //compute the gain of the cartesian distance
-        double maxObstacleError_ = asvObstacleAvoidance_->GreaterThanParams().xmax[0];
-        double minObstacleError_ = asvObstacleAvoidance_->GreaterThanParams().xmin[0];
-        double taskGain = rml::IncreasingBellShapedFunction(minObstacleError_, maxObstacleError_ , 0, 1.0, obstacleError);
-        asvObstacleAvoidance_->TaskParameter().gain = taskGain * asvObstacleAvoidance_->TaskParameter().conf_gain;
-        */
+    }*/
+    obstaclePointers_.clear();
+    for(unsigned long i= 0; i < ctrlData_->obstacleMsgVector.size(); i++){
+        Eigen::Vector3d centerUTM;
+        ctb::LatLong2LocalUTM(LatLong(ctrlData_->obstacleMsgVector[i].pose.position.position.latitude, ctrlData_->obstacleMsgVector[i].pose.position.position.longitude), 0.0, centroidLocation_, centerUTM);
+        Eigen::TransformationMatrix world_T_obstacle;
+        world_T_obstacle.setZero();
+        world_T_obstacle.TranslationVector(centerUTM);
+        std::shared_ptr<ikcl::SphereObstacle> obs;
+        obs = std::make_shared<ikcl::SphereObstacle>(world_T_obstacle, rml::FrameID::WorldFrame, ctrlData_->obstacleMsgVector[i].size.size.length);
+        obstaclePointers_.push_back(obs);
+        asvObstacleAvoidance_->Obstacles() = obstaclePointers_; // new line code --needed!!!--
     }
-
 }
 
 void VehicleController::PrintObstacles(std::vector<std::shared_ptr<ikcl::Obstacle>> obstaclePointers){
@@ -879,13 +918,11 @@ void VehicleController::Run()
     tNow_ = std::chrono::system_clock::now();
 
     UpdateObstacles();
-    std::cout << "-- orig obs --"<< std::endl;
+    //std::cout << "-- orig obs --"<< std::endl;
     //PrintObstacles(obstaclePointers_);
-
-    std::cout << "--task obs--"<< std::endl;
-    PrintObstacles(asvObstacleAvoidance_->Obstacles());
-
-    std::cout<< std::endl;
+    //std::cout << "--task obs--"<< std::endl;
+    //PrintObstacles(asvObstacleAvoidance_->Obstacles());
+    //std::cout<< std::endl;
 
     //compute the heading error
     std::vector<Eigen::Vector3d> ObsDistance;

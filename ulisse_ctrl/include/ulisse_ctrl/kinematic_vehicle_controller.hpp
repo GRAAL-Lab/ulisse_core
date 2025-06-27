@@ -49,6 +49,9 @@
 
 #include "ulisse_ctrl/tasks/SafetyBoundaries.hpp"
 
+#include "detav_msgs/msg/obstacle_list.hpp"
+#include "detav_msgs/msg/obstacle.hpp"
+
 
 namespace ulisse {
 
@@ -72,7 +75,7 @@ class VehicleController : public rclcpp::Node {
     rclcpp::Subscription<rov_msgs::msg::NavFilterData>::SharedPtr navFilterROVSub_; // ASV-ROV
     rclcpp::Subscription<ulisse_msgs::msg::LLCStatus>::SharedPtr llcStatusSub_;
     rclcpp::Subscription<rov_msgs::msg::CableData>::SharedPtr cableROVSub_; // ASV-ROV
-    rclcpp::Subscription<ulisse_msgs::msg::Obstacle>::SharedPtr obstacleSub_; // ASV-ROV
+    rclcpp::Subscription<detav_msgs::msg::ObstacleList>::SharedPtr obstacleSub_; // ASV-ROV
 
     rclcpp::Subscription<ulisse_msgs::msg::SurgeHeading>::SharedPtr surgeHeadingSub_;
     rclcpp::Subscription<ulisse_msgs::msg::SurgeYawRate>::SharedPtr surgeYawRateSub_;
@@ -163,7 +166,7 @@ class VehicleController : public rclcpp::Node {
     rov_msgs::msg::CableData cableData_;
     rov_msgs::msg::CableLengthReference controlledCable_;
     rov_msgs::msg::WinchMotorReference winchMotorRef_;
-    ulisse_msgs::msg::Obstacle obstacleData_;
+    //ulisse_msgs::msg::Obstacle obstacleData_;
     //std::vector<ulisse_msgs::msg::Obstacle> obstacleMsgVector_;
     std::vector<std::shared_ptr<ikcl::Obstacle>> obstaclePointers_;
 
@@ -208,7 +211,7 @@ class VehicleController : public rclcpp::Node {
     void CableDataRovCB(const rov_msgs::msg::CableData::SharedPtr msg); // ASV-ROV
     void ComputeCableLength(); // ASV-ROV
     void CableWinchControl(const float &rpm, float &l); // ASV-ROVs
-    void ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr msg);  // ASV-ROV
+    void ObstacleCB(const detav_msgs::msg::ObstacleList::SharedPtr msg);  // ASV-ROV
     void UpdateObstacles(); // Obstacle Avoidance
     void PrintObstacles(std::vector<std::shared_ptr<ikcl::Obstacle>> obstaclePointers);
 

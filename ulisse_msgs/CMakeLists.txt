@@ -50,6 +50,7 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/FeedbackGui.msg"
   "msg/SimulatedSystem.msg"
   "msg/DynamicPidControl.msg"
+  "msg/NEDPose.msg"
 
   # Commands
   "msg/CommandHold.msg"

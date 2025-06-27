@@ -28,6 +28,8 @@ find_package(ikcl REQUIRED)
 #find_package(Boost REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(sisl_toolbox REQUIRED)
+find_package(detav_msgs REQUIRED)
+find_package(geographic_msgs)
 link_directories(${Boost_LIBRARIES})
 
 find_package(PkgConfig REQUIRED)
@@ -50,6 +52,7 @@ include_directories(
   ${ulisse_driver_INCLUDE_DIRS}
   ${ulisse_msgs_INCLUDE_DIRS}
   ${surface_vehicle_model_INCLUDE_DIRS}
+  ${detav_msgs_INCLUDE_DIRS}
 )
 
 set(use_SYSTEM_BOOST TRUE)
@@ -95,7 +98,7 @@ set(ulisse_dynamic_ctrl_lib_sources
 
 ## Libraries
 add_library(ulisse_kinematic_ctrl_lib ${ulisse_kinematic_ctrl_lib_sources})
-ament_target_dependencies(ulisse_kinematic_ctrl_lib rclcpp std_msgs ulisse_msgs rov_msgs surface_vehicle_model ament_index_cpp)
+ament_target_dependencies(ulisse_kinematic_ctrl_lib rclcpp std_msgs ulisse_msgs rov_msgs surface_vehicle_model ament_index_cpp detav_msgs geographic_msgs)
 target_link_libraries(ulisse_kinematic_ctrl_lib ${surface_vehicle_model_LIBRARIES} ${ulisse_msgs_LIBRARIES} ${Boost_LIBRARIES} ikcl tpik config++ Geographic rml fsm ctrl_toolbox sisl_toolbox)
 
 add_library(ulisse_dynamic_ctrl_lib ${ulisse_dynamic_ctrl_lib_sources})
@@ -108,7 +111,7 @@ ament_target_dependencies(control_test rclcpp std_msgs ulisse_msgs rml)
 target_link_libraries(control_test rml ulisse_kinematic_ctrl_lib ${ulisse_driver_LIBRARIES})
 
 add_executable(kinematic_control_node src/kinematic_control_node.cpp)
-ament_target_dependencies(kinematic_control_node rclcpp std_msgs ulisse_msgs rml)
+ament_target_dependencies(kinematic_control_node rclcpp std_msgs ulisse_msgs rml detav_msgs)
 target_link_libraries(kinematic_control_node rml ulisse_kinematic_ctrl_lib ${JSONCPP_LIBRARIES})
 
 add_executable(dynamic_control_node src/dynamic_control_node.cpp)
