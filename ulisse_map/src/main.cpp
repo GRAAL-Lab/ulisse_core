@@ -30,9 +30,9 @@ int main(int argc, char* argv[])
 
     rclcpp::init(argc, argv);
 
-    //QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    //QGuiApplication::setApplicationName(name);
-    //QGuiApplication::setOrganizationName("GRAAL Lab");
+    QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    QGuiApplication::setApplicationName(name);
+    QGuiApplication::setOrganizationName("GRAAL Lab");
 
     QApplication app(argc, argv);
     app.setApplicationName(name);
