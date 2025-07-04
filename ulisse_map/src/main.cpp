@@ -52,19 +52,36 @@ int main(int argc, char* argv[])
     QQmlApplicationEngine appEngine;
 
     // Making the QML aware of my functions
-    auto fbkUpdater = std::make_shared<FeedbackUpdater>();
+    //auto fbkUpdater = std::make_shared<FeedbackUpdater>();
+    auto fbkUpdater = new FeedbackUpdater();  // no shared_ptr
     auto cmdWrapper = std::make_shared<CommandWrapper>();
     auto taskDataUpdater = std::make_shared<TaskDataUpdater>();
     auto addonsBridge = std::make_shared<AddonsBridge>();
 
-    appEngine.rootContext()->setContextProperty("fbkUpdater", fbkUpdater.get());
+    appEngine.rootContext()->setContextProperty("fbkUpdater", fbkUpdater);
     appEngine.rootContext()->setContextProperty("cmdWrapper", cmdWrapper.get());
     appEngine.rootContext()->setContextProperty("taskdataUpdater", taskDataUpdater.get());
     appEngine.rootContext()->setContextProperty("addonsBridge", addonsBridge.get());
 
+    /*QObject::connect(&app, &QGuiApplication::lastWindowClosed, [&]() {
+        appEngine.rootContext()->setContextProperty("fbkUpdater", nullptr);
+        fbkUpdater->deleteLater();  // defer deletion until safe
+    });
+    QObject::connect(&app, &QGuiApplication::lastWindowClosed, [&]() {
+        appEngine.rootContext()->setContextProperty("cmdWrapper", nullptr);
+    });
+    QObject::connect(&app, &QGuiApplication::lastWindowClosed, [&]() {
+        appEngine.rootContext()->setContextProperty("taskdataUpdater", nullptr);
+    });
+    QObject::connect(&app, &QGuiApplication::lastWindowClosed, [&]() {
+        appEngine.rootContext()->setContextProperty("addonsBridge", nullptr);
+    });*/
+
     appEngine.rootContext()->setContextProperty("home_dir", QDir::homePath());
 
     appEngine.load(QUrl(QStringLiteral("qrc:/main.qml")));
+
+
 
     /**
       * Here we make C++ aware of the QML by passing it the QQmlApplicationEngine*,
@@ -79,6 +96,10 @@ int main(int argc, char* argv[])
     if (appEngine.rootObjects().isEmpty())
         return -1;
     app.exec();
+
+    appEngine.rootContext()->setContextProperty("fbkUpdater", nullptr);
+    fbkUpdater->deleteLater();
+
 
     rclcpp::shutdown();
 

@@ -114,12 +114,8 @@ RowLayout {
             id: polypathType
             hoverEnabled: true
             width: 140
-            model: cmdWrapper.polypath_types
-            currentIndex: cmdWrapper.polypath_types.indexOf(polypath_type_)
-
-            /*Component.onCompleted: {
-
-            }*/
+            model: cmdWrapper !== null ? cmdWrapper.polypath_types : []
+            currentIndex: cmdWrapper !== null ? cmdWrapper.polypath_types.indexOf(polypath_type_) : -1
         }
     }
 

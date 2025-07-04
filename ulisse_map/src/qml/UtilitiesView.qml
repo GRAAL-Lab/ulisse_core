@@ -5,6 +5,7 @@ import QtLocation 5.6
 import QtPositioning 5.6
 import QtQuick.Controls.Material 2.1
 import QtQuick.Dialogs 1.3
+import Qt.labs.platform 1.1
 import "."
 
 Rectangle {
@@ -175,10 +176,10 @@ Rectangle {
                             browseBagDirDialog.open()
                         }
 
-                        FileDialog {
+                        CustomFileDialog {
                             id: browseBagDirDialog
                             title: "Please choose a folder"
-                            folder: shortcuts.home
+                            folder: "file://" + Qt.resolvedUrl("~")
                             selectFolder: true
 
                             onAccepted: {

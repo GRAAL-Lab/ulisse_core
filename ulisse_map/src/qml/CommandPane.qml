@@ -6,6 +6,7 @@ import QtPositioning 5.6
 import QtQuick.Controls.Material 2.1
 import QtGraphicalEffects 1.0
 import QtQuick.Dialogs 1.3
+import Qt.labs.platform 1.1
 
 import "."
 import "../scripts/helper.js" as Helper
@@ -101,13 +102,13 @@ ColumnLayout {
                 Button {
                     id: buttonBoundBoxResend
                     enabled: settings.savedBoundary == "null" ? false : true
-                    text: fbkUpdater.safety_boundary_set? qsTr("Resend") : qsTr("Send")
+                    text: fbkUpdater !== null ? fbkUpdater.safety_boundary_set ? qsTr("Resend") : qsTr("Send") : " "
                     font.pointSize: 9
                     padding: 5
                     antialiasing: false
                     Layout.fillWidth: true
                     highlighted: true
-                    Material.background: fbkUpdater.safety_boundary_set? grey : softorange
+                    Material.background: fbkUpdater !== null ? fbkUpdater.safety_boundary_set? grey : softorange : grey
                     onClicked: cmdWrapper.sendBoundaries(JSON.stringify(map.safety_polygon.serialize()))
                 }
 
@@ -122,7 +123,7 @@ ColumnLayout {
                     Material.background: grey
                     onClicked: {
                         loadPathDialog.loadType = MapView.PolygonType.SafetyArea;
-                        loadPathDialog.open()
+                        loadPathDialog.open = true;
                     }
                 }
 
@@ -163,7 +164,7 @@ ColumnLayout {
             // This is an overlay rectangle to block commands if the Safety Boundary
             // has not been set for the controller.
             Rectangle {
-                visible: !fbkUpdater.safety_boundary_set && !settings.bypassSafetyBoundaryCheck
+                visible: fbkUpdater !== null ? !fbkUpdater.safety_boundary_set && !settings.bypassSafetyBoundaryCheck : false
                 Layout.alignment:  Qt.AlignVCenter | Qt.AlignHCenter
                 height: commandParamsStackContainer.height
                 width: commandParamsStackContainer.width
@@ -260,13 +261,13 @@ ColumnLayout {
 
 
 
-    FileDialog {
+    CustomFileDialog {
         id: loadPathDialog
 
         property int loadType: -1
 
         title: "Please choose a file"
-        folder: shortcuts.home
+        folder: "file://" + Qt.resolvedUrl("~")
         nameFilters: ["Path Files (*.path)"]
 
         onAccepted: {
@@ -286,13 +287,13 @@ ColumnLayout {
         }
     }
 
-    FileDialog {
+    CustomFileDialog {
         id: savePathDialog
         property var pathToSave
 
         title: "Saving path..."
-        folder: shortcuts.home
-        selectExisting: false
+        folder: "file://" + Qt.resolvedUrl("~")
+        saveFile: true
         nameFilters: ["Path Files (*.path)"]
 
         onAccepted: {

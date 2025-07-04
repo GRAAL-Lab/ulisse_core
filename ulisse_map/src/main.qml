@@ -9,6 +9,7 @@ import QtQuick.Dialogs 1.3
 import QtQuick.Controls.Material 2.1
 import QtQuick.Controls.Universal 2.1
 import QtQuick.Controls.Styles 1.4
+import Qt.labs.platform 1.1
 import "./qml"
 
 ApplicationWindow {
@@ -140,10 +141,10 @@ ApplicationWindow {
         height: Math.round(window.height * 0.8)
     }
 
-    FileDialog {
+    CustomFileDialog {
         id: browseCacheDirDialog
         title: "Please choose a folder"
-        folder: shortcuts.home
+        folder: "file://" + Qt.resolvedUrl("~")
         selectFolder: true
 
         onAccepted: {

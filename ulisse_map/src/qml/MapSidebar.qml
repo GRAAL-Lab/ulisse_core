@@ -52,7 +52,7 @@ Rectangle {
                     //w:100
                     labelColor: blue
                     label: "Vehicle State"
-                    text: fbkUpdater.vehicle_state
+                    text: fbkUpdater !== null ? fbkUpdater.vehicle_state : "Undefined"
                     Layout.fillWidth: true
                     textBoldness: Font.DemiBold
                 }
@@ -63,8 +63,8 @@ Rectangle {
                     //w:100
                     labelColor: blue
                     label: "Vehicle Position"
-                    text: fbkUpdater.ulisse_pos.latitude.toFixed(7) + ", " +
-                          fbkUpdater.ulisse_pos.longitude.toFixed(7)
+                    text: fbkUpdater !== null ? fbkUpdater.ulisse_pos.latitude.toFixed(7) + ", " +
+                          fbkUpdater.ulisse_pos.longitude.toFixed(7) : " "
                     Layout.fillWidth: true
                 }
 
@@ -82,7 +82,7 @@ Rectangle {
                     id: goalDistLabel
                     //h:12
                     //w:100
-                    text: fbkUpdater.goal_distance.toFixed(2) + " (m)"
+                    text: fbkUpdater !== null ? fbkUpdater.goal_distance.toFixed(2) + " (m)" : " "
                     objectName: "goalDistance"
                     labelColor: blue
                     label: "Target Distance"

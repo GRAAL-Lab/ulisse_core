@@ -54,7 +54,7 @@ RowLayout {
                 ToolTip.text: qsTr("Load Path")
                 onClicked: {
                     loadPathDialog.loadType = MapView.PolygonType.Path;
-                    loadPathDialog.open()
+                    loadPathDialog.open = true;
                 }
             }
         }
