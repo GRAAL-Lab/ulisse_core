@@ -135,337 +135,365 @@ namespace llc {
                             RCLCPP_INFO(this->get_logger(), "NEW STATUS MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
                             ParseStatus(llcParser_.GetIncomingBuffer());
                             break;
+                        case LLC_MESSAGETYPE_SET_CONFIG:
+                            RCLCPP_INFO(this->get_logger(), "NEW SET CONFIG MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
+                            ParseSetConfig(llcParser_.GetIncomingBuffer());
+                            break;
                         }
-                    }
-
-                    /*switch (llcData_.messageType) {
-                    case MessageType::sensor:
-                        microloopcount_msg_.timestamp = llcData_.sensors.timestamp;
-                        microloopcount_msg_.stepssincepps = llcData_.sensors.stepsSincePPS;
-                        micro_loop_count_pub_->publish(microloopcount_msg_);
-
-                        //if (sensorStatus & EMB_SNSSTSMASK_UPDATEDCOMPASS) {
-                        compass_msg_.stamp = time_msg;
-                        compass_msg_.orientation.roll = llcData_.sensors.compassRoll;
-                        compass_msg_.orientation.pitch = llcData_.sensors.compassPitch;
-                        compass_msg_.orientation.yaw = llcData_.sensors.compassHeading;
-                        compass_pub_->publish(compass_msg_);
-                        //}
-                        //if (sensorStatus & EMB_SNSSTSMASK_UPDATEDCOMPASS) {
-                        magneto_msg_.stamp = time_msg;
-                        magneto_msg_.orthogonalstrength.at(0) = llcData_.sensors.magnetometer[0];
-                        magneto_msg_.orthogonalstrength.at(1) = llcData_.sensors.magnetometer[1];
-                        magneto_msg_.orthogonalstrength.at(2) = llcData_.sensors.magnetometer[2];
-                        magneto_pub_->publish(magneto_msg_);
-                        //}
-
-                        // Separate accelerometer and gyro msg?
-                        //if (sensorStatus & EMB_SNSSTSMASK_UPDATEDACCELEROMETER || sensorStatus & EMB_SNSSTSMASK_UPDATEDANALOG) {
-                        imu_msg_.stamp = time_msg;
-                        imu_msg_.accelerometer.at(0) = llcData_.sensors.accelerometer[0];
-                        imu_msg_.accelerometer.at(1) = llcData_.sensors.accelerometer[1];
-                        imu_msg_.accelerometer.at(2) = llcData_.sensors.accelerometer[2];
-                        imu_msg_.gyro.at(0) = llcData_.sensors.gyro[0];
-                        imu_msg_.gyro.at(1) = llcData_.sensors.gyro[1];
-                        imu_msg_.gyro.at(2) = llcData_.sensors.gyro[2];
-                        imu_msg_.gyro4x.at(0) = llcData_.sensors.gyro4x[0];
-                        imu_msg_.gyro4x.at(1) = llcData_.sensors.gyro4x[1];
-                        imu_pub_->publish(imu_msg_);
-                        //}
-
-                        //if (sensorStatus & EMB_SNSSTSMASK_UPDATEDANALOG) {
-                        ambsens_msg_.stamp = time_msg;
-                        ambsens_msg_.temperaturectrlbox = llcData_.sensors.temperatureCtrlBox;
-                        ambsens_msg_.humidityctrlbox = llcData_.sensors.humidityCtrlBox;
-                        ambsens_pub_->publish(ambsens_msg_);
-                        //}
-
-                        applied_motorref_msg_.left_percentage = llcData_.sensors.leftReference / 10.0;
-                        applied_motorref_msg_.right_percentage = llcData_.sensors.rightReference / 10.0;
-                        applied_motorref_pub_->publish(applied_motorref_msg_);
-                        break;
-                    case MessageType::status:
-                        llc_status_msg_.stamp = time_msg;
-                        llc_status_msg_.commdataerrorcount = llcData_.status.commDataErrorCount;
-                        llc_status_msg_.i2cdatastate = llcData_.status.i2cDataState;
-                        llc_status_msg_.misseddeadlines = llcData_.status.missedDeadlines;
-                        llc_status_msg_.accelerometertimeouts = llcData_.status.accelerometerTimeouts;
-                        llc_status_msg_.compasstimeouts = llcData_.status.compassTimeouts;
-                        llc_status_msg_.magnetometertimeouts = llcData_.status.magnetometerTimeouts;
-                        llc_status_msg_.i2cbusbusy = llcData_.status.i2cbusBusy;
-                        llc_status_msg_.messagesent485 = llcData_.status.messageSent485;
-                        llc_status_msg_.messagereceived485 = llcData_.status.messageReceived485;
-                        llc_status_msg_.errorcount = llcData_.status.errorCount;
-                        llc_status_msg_.overflowcount232 = llcData_.status.overflowCount232; // overflow buffer rs232
-                        llc_status_msg_.overflowcount485 = llcData_.status.overflowCount485; // overflow buffer rs485
-
-                        llc_status_msg_.flags.enable_accelerometer = (llcData_.status.status & EMB_STSMASK_ENABLE_ACCELEROMETER);
-                        llc_status_msg_.flags.enable_compass = (llcData_.status.status & EMB_STSMASK_ENABLE_COMPASS);
-                        llc_status_msg_.flags.enable_magnetometer = (llcData_.status.status & EMB_STSMASK_ENABLE_MAGNETOMETER);
-                        llc_status_msg_.flags.enable_i2c = (llcData_.status.status & EMB_STSMASK_ENABLE_I2C);
-                        llc_status_msg_.flags.enable_analog = (llcData_.status.status & EMB_STSMASK_ENABLE_ANALOG);
-                        llc_status_msg_.flags.mag_calibration = (llcData_.status.status & EMB_STSMASK_MAGNETOMETERCALIBRATION);
-                        llc_status_msg_.flags.enable_reference = (llcData_.status.status & EMB_STSMASK_ENABLE_REFERENCE);
-                        llc_status_msg_.flags.timeout_reference = (llcData_.status.status & EMB_STSMASK_TIMEOUT_REFERENCE);
-                        llc_status_msg_.flags.ppm_main_valid = (llcData_.status.status & EMB_STSMASK_PPM_MAIN_VALID);
-                        llc_status_msg_.flags.ppm_remote_enabled = (llcData_.status.status & EMB_STSMASK_PPM_ENABLED);
-                        llc_status_msg_.flags.ppm_need_zero_check = (llcData_.status.status & EMB_STSMASK_PPM_NEEDZEROCHECK);
-                        llc_status_msg_.flags.ppm_channel = (llcData_.status.status & EMB_STSMASK_PPM_CHANNEL);
-                        llc_status_msg_.flags.ppm_secondary_valid = (llcData_.status.status & EMB_STSMASK_PPM_SECONDARY_VALID);
-
-                        llc_status_pub_->publish(llc_status_msg_);
-                        break;
-                    case MessageType::set_config:
-                        llc_config_msg_.stamp = time_msg;
-                        llc_config_msg_.hbcompass0 = llcData_.config.hbCompass0;
-                        llc_config_msg_.hbcompassmax = llcData_.config.hbCompassMax;
-                        llc_config_msg_.hbmagnetometer0 = llcData_.config.hbMagnetometer0;
-                        llc_config_msg_.hbmagnetometermax = llcData_.config.hbMagnetometerMax;
-                        llc_config_msg_.hbpacketsensors0 = llcData_.config.hbPacketSensors0;
-                        llc_config_msg_.hbpacketsensorsmax = llcData_.config.hbPacketSensorsMax;
-                        llc_config_msg_.hbpacketstatus0 = llcData_.config.hbPacketStatus0;
-                        llc_config_msg_.hbpacketstatusmax = llcData_.config.hbPacketStatusMax;
-                        llc_config_msg_.hbpacketmotors0 = llcData_.config.hbPacketMotors0;
-                        llc_config_msg_.hbpacketmotorsmax = llcData_.config.hbPacketMotorsMax;
-                        llc_config_msg_.hbpacketbattery0 = llcData_.config.hbPacketBattery0;
-                        llc_config_msg_.hbpacketbatterymax = llcData_.config.hbPacketBatteryMax;
-                        llc_config_msg_.timeoutaccelerometer = llcData_.config.timeoutAccelerometer;
-                        llc_config_msg_.timeoutcompass = llcData_.config.timeoutCompass;
-                        llc_config_msg_.timeoutmagnetometer = llcData_.config.timeoutMagnetometer;
-                        llc_config_msg_.pwmupmin = llcData_.config.pwmUpMin;
-                        llc_config_msg_.pwmupmax = llcData_.config.pwmUpMax;
-                        llc_config_msg_.pwmperiodmin = llcData_.config.pwmPeriodMin;
-                        llc_config_msg_.pwmperiodmax = llcData_.config.pwmPeriodMax;
-                        llc_config_msg_.pwmtimethreshold = llcData_.config.pwmTimeThreshold;
-                        llc_config_msg_.pwmzerothreshold = llcData_.config.pwmZeroThreshold;
-                        llc_config_msg_.deadzonetime = llcData_.config.deadzoneTime;
-                        llc_config_msg_.thrustersaturation = llcData_.config.thrusterSaturation;
-                        llc_config_pub_->publish(llc_config_msg_);
-                        break;
-                    case MessageType::motors:
-                        llc_motors_msg_.stamp = time_msg; // since LLC power-on
-                        llc_motors_msg_.timestamp_485 = llcData_.motors.timestamp;
-                        LLCData2RosMsg(llcData_.motors.left, llc_motors_msg_.left);
-                        LLCData2RosMsg(llcData_.motors.right, llc_motors_msg_.right);
-                        llc_motors_pub_->publish(llc_motors_msg_);
-                        break;
-                    case MessageType::version:
-                        llc_version_msg_.md_version = llcData_.version.mdVersion;
-                        llc_version_msg_.sw_version = llcData_.version.swVersion;
-                        llc_version_msg_.lsat_version = llcData_.version.lsatVersion;
-                        llc_version_msg_.rsat_version = llcData_.version.rsatVersion;
-                        llc_version_pub_->publish(llc_version_msg_);
-                        break;
-                    case MessageType::ack:
-                        llc_ack_msg_.stamp = time_msg;
-                        llc_ack_msg_.messagetype = llcData_.ack.messagetype;
-                        llc_ack_msg_.ack = llcData_.ack.ack;
-                        llc_ack_pub_->publish(llc_ack_msg_);
-                        break;
-                    case MessageType::battery:
-
-                        if (llcData_.battery.id == 0) {
-                            llc_battery_left_msg_.stamp = time_msg;
-                            LLCData2RosMsg(llcData_.battery, llc_battery_left_msg_);
-                            llc_battery_left_pub_->publish(llc_battery_left_msg_);
-                        } else if (llcData_.battery.id == 1) {
-                            llc_battery_right_msg_.stamp = time_msg;
-                            LLCData2RosMsg(llcData_.battery, llc_battery_right_msg_);
-                            llc_battery_right_pub_->publish(llc_battery_right_msg_);
-                        } else {
-                            RCLCPP_INFO(this->get_logger(), "Unsupported battery id %d", llcData_.battery.id);
-                        }
-                        break;
-                    case MessageType::sw485Status:
-                        llc_sw485_msg_.stamp = time_msg;
-                        llc_sw485_msg_.timestamp_sw_485 = llcData_.sw485Status.timestampSW485;
-                        llc_sw485_msg_.missed_deadlines = llcData_.sw485Status.missedDeadlines;
-                        llc_sw485_msg_.left_motor.received = llcData_.sw485Status.leftMotor.received;
-                        llc_sw485_msg_.right_motor.received = llcData_.sw485Status.rightMotor.received;
-                        llc_sw485_msg_.left_satellite.received = llcData_.sw485Status.leftSatellite.received;
-                        llc_sw485_msg_.right_satellite.received = llcData_.sw485Status.rightSatellite.received;
-                        llc_sw485_msg_.left_motor.sent = llcData_.sw485Status.leftMotor.sent;
-                        llc_sw485_msg_.right_motor.sent = llcData_.sw485Status.rightMotor.sent;
-                        llc_sw485_msg_.left_satellite.sent = llcData_.sw485Status.leftSatellite.sent;
-                        llc_sw485_msg_.right_satellite.sent = llcData_.sw485Status.rightSatellite.sent;
-                        llc_sw485_pub_->publish(llc_sw485_msg_);
-                        break;
-                    default:
-                        RCLCPP_WARN(this->get_logger(), "Unhandled message type %d", llcData_.messageType);
-                        break;
-                    }*/
-                    std::this_thread::sleep_for(1ms);
                 }
+
+                /*switch (llcData_.messageType) {
+                case MessageType::sensor:
+                    microloopcount_msg_.timestamp = llcData_.sensors.timestamp;
+                    microloopcount_msg_.stepssincepps = llcData_.sensors.stepsSincePPS;
+                    micro_loop_count_pub_->publish(microloopcount_msg_);
+
+                    //if (sensorStatus & EMB_SNSSTSMASK_UPDATEDCOMPASS) {
+                    compass_msg_.stamp = time_msg;
+                    compass_msg_.orientation.roll = llcData_.sensors.compassRoll;
+                    compass_msg_.orientation.pitch = llcData_.sensors.compassPitch;
+                    compass_msg_.orientation.yaw = llcData_.sensors.compassHeading;
+                    compass_pub_->publish(compass_msg_);
+                    //}
+                    //if (sensorStatus & EMB_SNSSTSMASK_UPDATEDCOMPASS) {
+                    magneto_msg_.stamp = time_msg;
+                    magneto_msg_.orthogonalstrength.at(0) = llcData_.sensors.magnetometer[0];
+                    magneto_msg_.orthogonalstrength.at(1) = llcData_.sensors.magnetometer[1];
+                    magneto_msg_.orthogonalstrength.at(2) = llcData_.sensors.magnetometer[2];
+                    magneto_pub_->publish(magneto_msg_);
+                    //}
+
+                    // Separate accelerometer and gyro msg?
+                    //if (sensorStatus & EMB_SNSSTSMASK_UPDATEDACCELEROMETER || sensorStatus & EMB_SNSSTSMASK_UPDATEDANALOG) {
+                    imu_msg_.stamp = time_msg;
+                    imu_msg_.accelerometer.at(0) = llcData_.sensors.accelerometer[0];
+                    imu_msg_.accelerometer.at(1) = llcData_.sensors.accelerometer[1];
+                    imu_msg_.accelerometer.at(2) = llcData_.sensors.accelerometer[2];
+                    imu_msg_.gyro.at(0) = llcData_.sensors.gyro[0];
+                    imu_msg_.gyro.at(1) = llcData_.sensors.gyro[1];
+                    imu_msg_.gyro.at(2) = llcData_.sensors.gyro[2];
+                    imu_msg_.gyro4x.at(0) = llcData_.sensors.gyro4x[0];
+                    imu_msg_.gyro4x.at(1) = llcData_.sensors.gyro4x[1];
+                    imu_pub_->publish(imu_msg_);
+                    //}
+
+                    //if (sensorStatus & EMB_SNSSTSMASK_UPDATEDANALOG) {
+                    ambsens_msg_.stamp = time_msg;
+                    ambsens_msg_.temperaturectrlbox = llcData_.sensors.temperatureCtrlBox;
+                    ambsens_msg_.humidityctrlbox = llcData_.sensors.humidityCtrlBox;
+                    ambsens_pub_->publish(ambsens_msg_);
+                    //}
+
+                    applied_motorref_msg_.left_percentage = llcData_.sensors.leftReference / 10.0;
+                    applied_motorref_msg_.right_percentage = llcData_.sensors.rightReference / 10.0;
+                    applied_motorref_pub_->publish(applied_motorref_msg_);
+                    break;
+                case MessageType::status:
+                    llc_status_msg_.stamp = time_msg;
+                    llc_status_msg_.commdataerrorcount = llcData_.status.commDataErrorCount;
+                    llc_status_msg_.i2cdatastate = llcData_.status.i2cDataState;
+                    llc_status_msg_.misseddeadlines = llcData_.status.missedDeadlines;
+                    llc_status_msg_.accelerometertimeouts = llcData_.status.accelerometerTimeouts;
+                    llc_status_msg_.compasstimeouts = llcData_.status.compassTimeouts;
+                    llc_status_msg_.magnetometertimeouts = llcData_.status.magnetometerTimeouts;
+                    llc_status_msg_.i2cbusbusy = llcData_.status.i2cbusBusy;
+                    llc_status_msg_.messagesent485 = llcData_.status.messageSent485;
+                    llc_status_msg_.messagereceived485 = llcData_.status.messageReceived485;
+                    llc_status_msg_.errorcount = llcData_.status.errorCount;
+                    llc_status_msg_.overflowcount232 = llcData_.status.overflowCount232; // overflow buffer rs232
+                    llc_status_msg_.overflowcount485 = llcData_.status.overflowCount485; // overflow buffer rs485
+
+                    llc_status_msg_.flags.enable_accelerometer = (llcData_.status.status & EMB_STSMASK_ENABLE_ACCELEROMETER);
+                    llc_status_msg_.flags.enable_compass = (llcData_.status.status & EMB_STSMASK_ENABLE_COMPASS);
+                    llc_status_msg_.flags.enable_magnetometer = (llcData_.status.status & EMB_STSMASK_ENABLE_MAGNETOMETER);
+                    llc_status_msg_.flags.enable_i2c = (llcData_.status.status & EMB_STSMASK_ENABLE_I2C);
+                    llc_status_msg_.flags.enable_analog = (llcData_.status.status & EMB_STSMASK_ENABLE_ANALOG);
+                    llc_status_msg_.flags.mag_calibration = (llcData_.status.status & EMB_STSMASK_MAGNETOMETERCALIBRATION);
+                    llc_status_msg_.flags.enable_reference = (llcData_.status.status & EMB_STSMASK_ENABLE_REFERENCE);
+                    llc_status_msg_.flags.timeout_reference = (llcData_.status.status & EMB_STSMASK_TIMEOUT_REFERENCE);
+                    llc_status_msg_.flags.ppm_main_valid = (llcData_.status.status & EMB_STSMASK_PPM_MAIN_VALID);
+                    llc_status_msg_.flags.ppm_remote_enabled = (llcData_.status.status & EMB_STSMASK_PPM_ENABLED);
+                    llc_status_msg_.flags.ppm_need_zero_check = (llcData_.status.status & EMB_STSMASK_PPM_NEEDZEROCHECK);
+                    llc_status_msg_.flags.ppm_channel = (llcData_.status.status & EMB_STSMASK_PPM_CHANNEL);
+                    llc_status_msg_.flags.ppm_secondary_valid = (llcData_.status.status & EMB_STSMASK_PPM_SECONDARY_VALID);
+
+                    llc_status_pub_->publish(llc_status_msg_);
+                    break;
+                case MessageType::set_config:
+                    llc_config_msg_.stamp = time_msg;
+                    llc_config_msg_.hbcompass0 = llcData_.config.hbCompass0;
+                    llc_config_msg_.hbcompassmax = llcData_.config.hbCompassMax;
+                    llc_config_msg_.hbmagnetometer0 = llcData_.config.hbMagnetometer0;
+                    llc_config_msg_.hbmagnetometermax = llcData_.config.hbMagnetometerMax;
+                    llc_config_msg_.hbpacketsensors0 = llcData_.config.hbPacketSensors0;
+                    llc_config_msg_.hbpacketsensorsmax = llcData_.config.hbPacketSensorsMax;
+                    llc_config_msg_.hbpacketstatus0 = llcData_.config.hbPacketStatus0;
+                    llc_config_msg_.hbpacketstatusmax = llcData_.config.hbPacketStatusMax;
+                    llc_config_msg_.hbpacketmotors0 = llcData_.config.hbPacketMotors0;
+                    llc_config_msg_.hbpacketmotorsmax = llcData_.config.hbPacketMotorsMax;
+                    llc_config_msg_.hbpacketbattery0 = llcData_.config.hbPacketBattery0;
+                    llc_config_msg_.hbpacketbatterymax = llcData_.config.hbPacketBatteryMax;
+                    llc_config_msg_.timeoutaccelerometer = llcData_.config.timeoutAccelerometer;
+                    llc_config_msg_.timeoutcompass = llcData_.config.timeoutCompass;
+                    llc_config_msg_.timeoutmagnetometer = llcData_.config.timeoutMagnetometer;
+                    llc_config_msg_.pwmupmin = llcData_.config.pwmUpMin;
+                    llc_config_msg_.pwmupmax = llcData_.config.pwmUpMax;
+                    llc_config_msg_.pwmperiodmin = llcData_.config.pwmPeriodMin;
+                    llc_config_msg_.pwmperiodmax = llcData_.config.pwmPeriodMax;
+                    llc_config_msg_.pwmtimethreshold = llcData_.config.pwmTimeThreshold;
+                    llc_config_msg_.pwmzerothreshold = llcData_.config.pwmZeroThreshold;
+                    llc_config_msg_.deadzonetime = llcData_.config.deadzoneTime;
+                    llc_config_msg_.thrustersaturation = llcData_.config.thrusterSaturation;
+                    llc_config_pub_->publish(llc_config_msg_);
+                    break;
+                case MessageType::motors:
+                    llc_motors_msg_.stamp = time_msg; // since LLC power-on
+                    llc_motors_msg_.timestamp_485 = llcData_.motors.timestamp;
+                    LLCData2RosMsg(llcData_.motors.left, llc_motors_msg_.left);
+                    LLCData2RosMsg(llcData_.motors.right, llc_motors_msg_.right);
+                    llc_motors_pub_->publish(llc_motors_msg_);
+                    break;
+                case MessageType::version:
+                    llc_version_msg_.md_version = llcData_.version.mdVersion;
+                    llc_version_msg_.sw_version = llcData_.version.swVersion;
+                    llc_version_msg_.lsat_version = llcData_.version.lsatVersion;
+                    llc_version_msg_.rsat_version = llcData_.version.rsatVersion;
+                    llc_version_pub_->publish(llc_version_msg_);
+                    break;
+                case MessageType::ack:
+                    llc_ack_msg_.stamp = time_msg;
+                    llc_ack_msg_.messagetype = llcData_.ack.messagetype;
+                    llc_ack_msg_.ack = llcData_.ack.ack;
+                    llc_ack_pub_->publish(llc_ack_msg_);
+                    break;
+                case MessageType::battery:
+
+                    if (llcData_.battery.id == 0) {
+                        llc_battery_left_msg_.stamp = time_msg;
+                        LLCData2RosMsg(llcData_.battery, llc_battery_left_msg_);
+                        llc_battery_left_pub_->publish(llc_battery_left_msg_);
+                    } else if (llcData_.battery.id == 1) {
+                        llc_battery_right_msg_.stamp = time_msg;
+                        LLCData2RosMsg(llcData_.battery, llc_battery_right_msg_);
+                        llc_battery_right_pub_->publish(llc_battery_right_msg_);
+                    } else {
+                        RCLCPP_INFO(this->get_logger(), "Unsupported battery id %d", llcData_.battery.id);
+                    }
+                    break;
+                case MessageType::sw485Status:
+                    llc_sw485_msg_.stamp = time_msg;
+                    llc_sw485_msg_.timestamp_sw_485 = llcData_.sw485Status.timestampSW485;
+                    llc_sw485_msg_.missed_deadlines = llcData_.sw485Status.missedDeadlines;
+                    llc_sw485_msg_.left_motor.received = llcData_.sw485Status.leftMotor.received;
+                    llc_sw485_msg_.right_motor.received = llcData_.sw485Status.rightMotor.received;
+                    llc_sw485_msg_.left_satellite.received = llcData_.sw485Status.leftSatellite.received;
+                    llc_sw485_msg_.right_satellite.received = llcData_.sw485Status.rightSatellite.received;
+                    llc_sw485_msg_.left_motor.sent = llcData_.sw485Status.leftMotor.sent;
+                    llc_sw485_msg_.right_motor.sent = llcData_.sw485Status.rightMotor.sent;
+                    llc_sw485_msg_.left_satellite.sent = llcData_.sw485Status.leftSatellite.sent;
+                    llc_sw485_msg_.right_satellite.sent = llcData_.sw485Status.rightSatellite.sent;
+                    llc_sw485_pub_->publish(llc_sw485_msg_);
+                    break;
+                default:
+                    RCLCPP_WARN(this->get_logger(), "Unhandled message type %d", llcData_.messageType);
+                    break;
+                }*/
+                std::this_thread::sleep_for(1ms);
             }
         }
     }
+}
 
-    /* void ThreadReceiver::LLCData2RosMsg(const batteryData& llc_batt, ulisse_msgs::msg::LLCBattery& batt_msg)
-     {
-         batt_msg.id = llc_batt.id;
-         batt_msg.timestamp_485 = llc_batt.timestampSW485;
-         batt_msg.timestamp_satellite = llc_batt.timestampSatellite;
-         batt_msg.voltage = llc_batt.voltage;
-         batt_msg.current = llc_batt.current;
-         batt_msg.charge_percent = llc_batt.chargePercent;
-         batt_msg.temperature = llc_batt.temperature;
-         batt_msg.equalisation_cells = llc_batt.equalisationCells;
-         batt_msg.command_state = llc_batt.commandState;
-         batt_msg.alarm_state = llc_batt.alarmState;
-         std::copy(llc_batt.cells, llc_batt.cells + 14, batt_msg.cells.begin());
-     }*/
+/* void ThreadReceiver::LLCData2RosMsg(const batteryData& llc_batt, ulisse_msgs::msg::LLCBattery& batt_msg)
+ {
+     batt_msg.id = llc_batt.id;
+     batt_msg.timestamp_485 = llc_batt.timestampSW485;
+     batt_msg.timestamp_satellite = llc_batt.timestampSatellite;
+     batt_msg.voltage = llc_batt.voltage;
+     batt_msg.current = llc_batt.current;
+     batt_msg.charge_percent = llc_batt.chargePercent;
+     batt_msg.temperature = llc_batt.temperature;
+     batt_msg.equalisation_cells = llc_batt.equalisationCells;
+     batt_msg.command_state = llc_batt.commandState;
+     batt_msg.alarm_state = llc_batt.alarmState;
+     std::copy(llc_batt.cells, llc_batt.cells + 14, batt_msg.cells.begin());
+ }*/
 
-    void ThreadReceiver::ParseStatus(std::vector<uint8_t> buffer)
-    {
-        ulisse_msgs::msg::LLCSw485Status llc_sw485_msg_;
-        uint16_t statusBits;
-        Deserializer deserializer(buffer);
-        deserializer.MoveOffset(4);
-        deserializer.PacketExtract_uint64(&llc_sw485_msg_.timestamp_sw_485);
-        deserializer.PacketExtract_uint16(&llc_sw485_msg_.missed_deadlines);
-        deserializer.PacketExtract_uint64(&llc_sw485_msg_.left_motor.received);
-        deserializer.PacketExtract_uint64(&llc_sw485_msg_.left_motor.sent);
-        deserializer.PacketExtract_uint64(&llc_sw485_msg_.right_motor.received);
-        deserializer.PacketExtract_uint64(&llc_sw485_msg_.right_motor.sent);
-        deserializer.PacketExtract_uint64(&llc_sw485_msg_.left_satellite.received);
-        deserializer.PacketExtract_uint64(&llc_sw485_msg_.left_satellite.sent);
-        deserializer.PacketExtract_uint64(&llc_sw485_msg_.right_satellite.received);
-        deserializer.PacketExtract_uint64(&llc_sw485_msg_.right_satellite.sent);
-        deserializer.PacketExtract_int16(&llc_sw485_msg_.applied_reference_left);
-        deserializer.PacketExtract_int16(&llc_sw485_msg_.applied_reference_right);
-        deserializer.PacketExtract_float32(&llc_sw485_msg_.humidity);
-        deserializer.PacketExtract_float32(&llc_sw485_msg_.temperature);
-        deserializer.PacketExtract_uint16(&statusBits);
+void ThreadReceiver::ParseSetConfig(std::vector<uint8_t> buffer)
+{
+    ulisse_msgs::msg::LLCConfig llc_config_msg_;
+    Deserializer deserializer(buffer);
+    deserializer.MoveOffset(4);
 
-        llc_sw485_msg_.status_flags.enable_reference = (statusBits& STSMASK_ENABLE_REFERENCE);
-        llc_sw485_msg_.status_flags.timeout_reference = (statusBits & STSMASK_TIMEOUT_REFERENCE);
-        llc_sw485_msg_.status_flags.ppm_main_valid = (statusBits & STSMASK_PPM_MAIN_VALID);
-        llc_sw485_msg_.status_flags.ppm_remote_enabled = (statusBits & STSMASK_PPM_ENABLED);
-        llc_sw485_msg_.status_flags.ppm_need_zero_check = (statusBits & STSMASK_PPM_NEEDZEROCHECK);
-        llc_sw485_msg_.status_flags.ppm_channel = (statusBits & STSMASK_PPM_CHANNEL);
-        llc_sw485_msg_.status_flags.ppm_secondary_valid = (statusBits & STSMASK_PPM_SECONDARY_VALID);
-        llc_sw485_pub_->publish(llc_sw485_msg_);
+    deserializer.PacketExtract_uint16(&llc_config_msg_.hbpacketstatus0);
+    deserializer.PacketExtract_uint16(&llc_config_msg_.hbpacketstatusmax);
+    deserializer.PacketExtract_uint16(&llc_config_msg_.hbpacketmotors0);
+    deserializer.PacketExtract_uint16(&llc_config_msg_.hbpacketmotorsmax);
+    deserializer.PacketExtract_uint16(&llc_config_msg_.hbpacketbattery0);
+    deserializer.PacketExtract_uint16(&llc_config_msg_.hbpacketbatterymax);
+    deserializer.PacketExtract_float32(&llc_config_msg_.pwmupmin);
+    deserializer.PacketExtract_float32(&llc_config_msg_.pwmupmax);
+    deserializer.PacketExtract_float32(&llc_config_msg_.pwmperiodmin);
+    deserializer.PacketExtract_float32(&llc_config_msg_.pwmperiodmax);
+    deserializer.PacketExtract_float32(&llc_config_msg_.pwmtimethreshold);
+    deserializer.PacketExtract_float32(&llc_config_msg_.pwmzerothreshold);
+    deserializer.PacketExtract_float32(&llc_config_msg_.deadzonetime);
+    deserializer.PacketExtract_uint16(&llc_config_msg_.thrustersaturation);
+
+    llc_config_pub_->publish(llc_config_msg_);
+}
+
+void ThreadReceiver::ParseStatus(std::vector<uint8_t> buffer)
+{
+    ulisse_msgs::msg::LLCSw485Status llc_sw485_msg_;
+    uint16_t statusBits;
+    Deserializer deserializer(buffer);
+    deserializer.MoveOffset(4);
+    deserializer.PacketExtract_uint64(&llc_sw485_msg_.timestamp_sw_485);
+    deserializer.PacketExtract_uint16(&llc_sw485_msg_.missed_deadlines);
+    deserializer.PacketExtract_uint64(&llc_sw485_msg_.left_motor.received);
+    deserializer.PacketExtract_uint64(&llc_sw485_msg_.left_motor.sent);
+    deserializer.PacketExtract_uint64(&llc_sw485_msg_.right_motor.received);
+    deserializer.PacketExtract_uint64(&llc_sw485_msg_.right_motor.sent);
+    deserializer.PacketExtract_uint64(&llc_sw485_msg_.left_satellite.received);
+    deserializer.PacketExtract_uint64(&llc_sw485_msg_.left_satellite.sent);
+    deserializer.PacketExtract_uint64(&llc_sw485_msg_.right_satellite.received);
+    deserializer.PacketExtract_uint64(&llc_sw485_msg_.right_satellite.sent);
+    deserializer.PacketExtract_int16(&llc_sw485_msg_.applied_reference_left);
+    deserializer.PacketExtract_int16(&llc_sw485_msg_.applied_reference_right);
+    deserializer.PacketExtract_float32(&llc_sw485_msg_.humidity);
+    deserializer.PacketExtract_float32(&llc_sw485_msg_.temperature);
+    deserializer.PacketExtract_uint16(&statusBits);
+
+    llc_sw485_msg_.status_flags.enable_reference = (statusBits & STSMASK_ENABLE_REFERENCE);
+    llc_sw485_msg_.status_flags.timeout_reference = (statusBits & STSMASK_TIMEOUT_REFERENCE);
+    llc_sw485_msg_.status_flags.ppm_main_valid = (statusBits & STSMASK_PPM_MAIN_VALID);
+    llc_sw485_msg_.status_flags.ppm_remote_enabled = (statusBits & STSMASK_PPM_ENABLED);
+    llc_sw485_msg_.status_flags.ppm_need_zero_check = (statusBits & STSMASK_PPM_NEEDZEROCHECK);
+    llc_sw485_msg_.status_flags.ppm_channel = (statusBits & STSMASK_PPM_CHANNEL);
+    llc_sw485_msg_.status_flags.ppm_secondary_valid = (statusBits & STSMASK_PPM_SECONDARY_VALID);
+    llc_sw485_pub_->publish(llc_sw485_msg_);
+}
+
+void ThreadReceiver::ParseBattery(std::vector<uint8_t> buffer)
+{
+    ulisse_msgs::msg::LLCBattery llc_battery_left_msg_;
+    ulisse_msgs::msg::LLCBattery llc_battery_right_msg_;
+
+    Deserializer deserializer(buffer);
+    deserializer.MoveOffset(4);
+
+    deserializer.PacketExtract_uint64(&llc_battery_left_msg_.timestamp_485);
+
+    // from left satellite
+    deserializer.PacketExtract_uint64(&llc_battery_left_msg_.timestamp_satellite);
+    deserializer.PacketExtract_uint16(&llc_battery_left_msg_.voltage);
+    deserializer.PacketExtract_int16(&llc_battery_left_msg_.current);
+    deserializer.PacketExtract_uint16(&llc_battery_left_msg_.charge_percent);
+    deserializer.PacketExtract_uint16(&llc_battery_left_msg_.temperature);
+    deserializer.PacketExtract_uint16(&llc_battery_left_msg_.equalisation_cells);
+    deserializer.PacketExtract_uint16(&llc_battery_left_msg_.command_state);
+    deserializer.PacketExtract_uint16(&llc_battery_left_msg_.alarm_state);
+
+    for (int i = 0; i < 14; i++) {
+        deserializer.PacketExtract_float32(&llc_battery_left_msg_.cells[i]);
     }
 
-    void ThreadReceiver::ParseBattery(std::vector<uint8_t> buffer)
-    {
-        ulisse_msgs::msg::LLCBattery llc_battery_left_msg_;
-        ulisse_msgs::msg::LLCBattery llc_battery_right_msg_;
+    // from right satellite
+    deserializer.PacketExtract_uint64(&llc_battery_right_msg_.timestamp_satellite);
+    deserializer.PacketExtract_uint16(&llc_battery_right_msg_.voltage);
+    deserializer.PacketExtract_int16(&llc_battery_right_msg_.current);
+    deserializer.PacketExtract_uint16(&llc_battery_right_msg_.charge_percent);
+    deserializer.PacketExtract_uint16(&llc_battery_right_msg_.temperature);
+    deserializer.PacketExtract_uint16(&llc_battery_right_msg_.equalisation_cells);
+    deserializer.PacketExtract_uint16(&llc_battery_right_msg_.command_state);
+    deserializer.PacketExtract_uint16(&llc_battery_right_msg_.alarm_state);
 
-        Deserializer deserializer(buffer);
-        deserializer.MoveOffset(4);
-
-        deserializer.PacketExtract_uint64(&llc_battery_left_msg_.timestamp_485);
-
-        // from left satellite
-        deserializer.PacketExtract_uint64(&llc_battery_left_msg_.timestamp_satellite);
-        deserializer.PacketExtract_uint16(&llc_battery_left_msg_.voltage);
-        deserializer.PacketExtract_int16(&llc_battery_left_msg_.current);
-        deserializer.PacketExtract_uint16(&llc_battery_left_msg_.charge_percent);
-        deserializer.PacketExtract_uint16(&llc_battery_left_msg_.temperature);
-        deserializer.PacketExtract_uint16(&llc_battery_left_msg_.equalisation_cells);
-        deserializer.PacketExtract_uint16(&llc_battery_left_msg_.command_state);
-        deserializer.PacketExtract_uint16(&llc_battery_left_msg_.alarm_state);
-
-        for (int i = 0; i < 14; i++) {
-            deserializer.PacketExtract_float32(&llc_battery_left_msg_.cells[i]);
-        }
-
-        // from right satellite
-        deserializer.PacketExtract_uint64(&llc_battery_right_msg_.timestamp_satellite);
-        deserializer.PacketExtract_uint16(&llc_battery_right_msg_.voltage);
-        deserializer.PacketExtract_int16(&llc_battery_right_msg_.current);
-        deserializer.PacketExtract_uint16(&llc_battery_right_msg_.charge_percent);
-        deserializer.PacketExtract_uint16(&llc_battery_right_msg_.temperature);
-        deserializer.PacketExtract_uint16(&llc_battery_right_msg_.equalisation_cells);
-        deserializer.PacketExtract_uint16(&llc_battery_right_msg_.command_state);
-        deserializer.PacketExtract_uint16(&llc_battery_right_msg_.alarm_state);
-
-        for (int i = 0; i < 14; i++) {
-            deserializer.PacketExtract_float32(&llc_battery_right_msg_.cells[i]);
-        }
-
-        llc_battery_left_pub_->publish(llc_battery_left_msg_);
-        llc_battery_right_pub_->publish(llc_battery_right_msg_);
+    for (int i = 0; i < 14; i++) {
+        deserializer.PacketExtract_float32(&llc_battery_right_msg_.cells[i]);
     }
 
-    void ThreadReceiver::ParseMotorsFeedback(std::vector<uint8_t> buffer)
-    {
-        ulisse_msgs::msg::LLCThrusters llc_motors_msg_;
+    llc_battery_left_pub_->publish(llc_battery_left_msg_);
+    llc_battery_right_pub_->publish(llc_battery_right_msg_);
+}
 
-        Deserializer deserializer(buffer);
-        deserializer.MoveOffset(4);
+void ThreadReceiver::ParseMotorsFeedback(std::vector<uint8_t> buffer)
+{
+    ulisse_msgs::msg::LLCThrusters llc_motors_msg_;
 
-        uint64_t timestamp;
-        deserializer.PacketExtract_uint64(&timestamp);
-        llc_motors_msg_.timestamp_485 = timestamp;      
-        deserializer.PacketExtract_uint64(&timestamp);
+    Deserializer deserializer(buffer);
+    deserializer.MoveOffset(4);
 
-        llc_motors_msg_.left.timestamp_485 = timestamp;
-        deserializer.PacketExtract_uint8( &llc_motors_msg_.left.flags0);
-        deserializer.PacketExtract_uint8(&llc_motors_msg_.left.flags1);
-        deserializer.PacketExtract_uint8(&llc_motors_msg_.left.master_state);
-        deserializer.PacketExtract_uint8(&llc_motors_msg_.left.master_error_code);
-        deserializer.PacketExtract_uint16(&llc_motors_msg_.left.motor_voltage);
-        deserializer.PacketExtract_int16(&llc_motors_msg_.left.motor_current);
-        deserializer.PacketExtract_uint16(&llc_motors_msg_.left.motor_power);
-        deserializer.PacketExtract_int16(&llc_motors_msg_.left.motor_speed);
-        deserializer.PacketExtract_uint8(&llc_motors_msg_.left.motor_pcb_temp);
-        deserializer.PacketExtract_uint8(&llc_motors_msg_.left.motor_stator_temp);
-        deserializer.PacketExtract_uint8(&llc_motors_msg_.left.battery_charge);
-        deserializer.PacketExtract_uint16(&llc_motors_msg_.left.battery_voltage);
-        deserializer.PacketExtract_uint16(&llc_motors_msg_.left.battery_current);
-        deserializer.PacketExtract_uint16(&llc_motors_msg_.left.gps_speed);
-        deserializer.PacketExtract_uint16(&llc_motors_msg_.left.range_miles);
-        deserializer.PacketExtract_uint16(&llc_motors_msg_.left.range_minutes);
-        deserializer.PacketExtract_uint8(&llc_motors_msg_.left.temperature_sw);
-        deserializer.PacketExtract_uint8(&llc_motors_msg_.left.temperature_rp);
+    uint64_t timestamp;
+    deserializer.PacketExtract_uint64(&timestamp);
+    llc_motors_msg_.timestamp_485 = timestamp;
+    deserializer.PacketExtract_uint64(&timestamp);
 
-        deserializer.PacketExtract_uint64(&timestamp);
-        llc_motors_msg_.right.timestamp_485 = timestamp;
-        deserializer.PacketExtract_uint8(&llc_motors_msg_.right.flags0);
-        deserializer.PacketExtract_uint8(&llc_motors_msg_.right.flags1);
-        deserializer.PacketExtract_uint8(&llc_motors_msg_.right.master_state);
-        deserializer.PacketExtract_uint8(&llc_motors_msg_.right.master_error_code);
-        deserializer.PacketExtract_uint16(&llc_motors_msg_.right.motor_voltage);
-        deserializer.PacketExtract_int16(&llc_motors_msg_.right.motor_current);
-        deserializer.PacketExtract_uint16(&llc_motors_msg_.right.motor_power);
-        deserializer.PacketExtract_int16(&llc_motors_msg_.right.motor_speed);
-        deserializer.PacketExtract_uint8(&llc_motors_msg_.right.motor_pcb_temp);
-        deserializer.PacketExtract_uint8(&llc_motors_msg_.right.motor_stator_temp);
-        deserializer.PacketExtract_uint8(&llc_motors_msg_.right.battery_charge);
-        deserializer.PacketExtract_uint16(&llc_motors_msg_.right.battery_voltage);
-        deserializer.PacketExtract_uint16(&llc_motors_msg_.right.battery_current);
-        deserializer.PacketExtract_uint16(&llc_motors_msg_.right.gps_speed);
-        deserializer.PacketExtract_uint16(&llc_motors_msg_.right.range_miles);
-        deserializer.PacketExtract_uint16(&llc_motors_msg_.right.range_minutes);
-        deserializer.PacketExtract_uint8(&llc_motors_msg_.right.temperature_sw);
-        deserializer.PacketExtract_uint8(&llc_motors_msg_.right.temperature_rp);
+    llc_motors_msg_.left.timestamp_485 = timestamp;
+    deserializer.PacketExtract_uint8(&llc_motors_msg_.left.flags0);
+    deserializer.PacketExtract_uint8(&llc_motors_msg_.left.flags1);
+    deserializer.PacketExtract_uint8(&llc_motors_msg_.left.master_state);
+    deserializer.PacketExtract_uint8(&llc_motors_msg_.left.master_error_code);
+    deserializer.PacketExtract_uint16(&llc_motors_msg_.left.motor_voltage);
+    deserializer.PacketExtract_int16(&llc_motors_msg_.left.motor_current);
+    deserializer.PacketExtract_uint16(&llc_motors_msg_.left.motor_power);
+    deserializer.PacketExtract_int16(&llc_motors_msg_.left.motor_speed);
+    deserializer.PacketExtract_uint8(&llc_motors_msg_.left.motor_pcb_temp);
+    deserializer.PacketExtract_uint8(&llc_motors_msg_.left.motor_stator_temp);
+    deserializer.PacketExtract_uint8(&llc_motors_msg_.left.battery_charge);
+    deserializer.PacketExtract_uint16(&llc_motors_msg_.left.battery_voltage);
+    deserializer.PacketExtract_uint16(&llc_motors_msg_.left.battery_current);
+    deserializer.PacketExtract_uint16(&llc_motors_msg_.left.gps_speed);
+    deserializer.PacketExtract_uint16(&llc_motors_msg_.left.range_miles);
+    deserializer.PacketExtract_uint16(&llc_motors_msg_.left.range_minutes);
+    deserializer.PacketExtract_uint8(&llc_motors_msg_.left.temperature_sw);
+    deserializer.PacketExtract_uint8(&llc_motors_msg_.left.temperature_rp);
 
-        llc_motors_msg_.left.motor_voltage = llc_motors_msg_.left.motor_voltage / 100; // llc value is in [1/100 V] -> msg in [V]
-        llc_motors_msg_.left.motor_current = llc_motors_msg_.left.motor_current / 10; // llc value is in [1/10 A] -> msg in [A]
-        llc_motors_msg_.left.battery_voltage = llc_motors_msg_.left.battery_voltage / 100; // llc value is in [1/100 V] -> msg in [V]
-        llc_motors_msg_.left.battery_current = llc_motors_msg_.left.battery_current / 10; // llc value is in [1/10 A] -> msg in [A]
-        llc_motors_msg_.left.gps_speed = llc_motors_msg_.left.gps_speed / 100.0 * 0.514444; // llc value is in [1/100 knots] -> msg in [m/s]
+    deserializer.PacketExtract_uint64(&timestamp);
+    llc_motors_msg_.right.timestamp_485 = timestamp;
+    deserializer.PacketExtract_uint8(&llc_motors_msg_.right.flags0);
+    deserializer.PacketExtract_uint8(&llc_motors_msg_.right.flags1);
+    deserializer.PacketExtract_uint8(&llc_motors_msg_.right.master_state);
+    deserializer.PacketExtract_uint8(&llc_motors_msg_.right.master_error_code);
+    deserializer.PacketExtract_uint16(&llc_motors_msg_.right.motor_voltage);
+    deserializer.PacketExtract_int16(&llc_motors_msg_.right.motor_current);
+    deserializer.PacketExtract_uint16(&llc_motors_msg_.right.motor_power);
+    deserializer.PacketExtract_int16(&llc_motors_msg_.right.motor_speed);
+    deserializer.PacketExtract_uint8(&llc_motors_msg_.right.motor_pcb_temp);
+    deserializer.PacketExtract_uint8(&llc_motors_msg_.right.motor_stator_temp);
+    deserializer.PacketExtract_uint8(&llc_motors_msg_.right.battery_charge);
+    deserializer.PacketExtract_uint16(&llc_motors_msg_.right.battery_voltage);
+    deserializer.PacketExtract_uint16(&llc_motors_msg_.right.battery_current);
+    deserializer.PacketExtract_uint16(&llc_motors_msg_.right.gps_speed);
+    deserializer.PacketExtract_uint16(&llc_motors_msg_.right.range_miles);
+    deserializer.PacketExtract_uint16(&llc_motors_msg_.right.range_minutes);
+    deserializer.PacketExtract_uint8(&llc_motors_msg_.right.temperature_sw);
+    deserializer.PacketExtract_uint8(&llc_motors_msg_.right.temperature_rp);
 
-        llc_motors_msg_.right.motor_voltage = llc_motors_msg_.right.motor_voltage / 100; // llc value is in [1/100 V] -> msg in [V]
-        llc_motors_msg_.right.motor_current = llc_motors_msg_.right.motor_current / 10; // llc value is in [1/10 A] -> msg in [A]
-        llc_motors_msg_.right.battery_voltage = llc_motors_msg_.right.battery_voltage / 100; // llc value is in [1/100 V] -> msg in [V]
-        llc_motors_msg_.right.battery_current = llc_motors_msg_.right.battery_current / 10; // llc value is in [1/10 A] -> msg in [A]
-        llc_motors_msg_.right.gps_speed = llc_motors_msg_.right.gps_speed / 100.0 * 0.514444; // llc value is in [1/100 knots] -> msg in [m/s]
+    llc_motors_msg_.left.motor_voltage = llc_motors_msg_.left.motor_voltage / 100; // llc value is in [1/100 V] -> msg in [V]
+    llc_motors_msg_.left.motor_current = llc_motors_msg_.left.motor_current / 10; // llc value is in [1/10 A] -> msg in [A]
+    llc_motors_msg_.left.battery_voltage = llc_motors_msg_.left.battery_voltage / 100; // llc value is in [1/100 V] -> msg in [V]
+    llc_motors_msg_.left.battery_current = llc_motors_msg_.left.battery_current / 10; // llc value is in [1/10 A] -> msg in [A]
+    llc_motors_msg_.left.gps_speed = llc_motors_msg_.left.gps_speed / 100.0 * 0.514444; // llc value is in [1/100 knots] -> msg in [m/s]
 
-        // [RPM] Between the motor and the propeller there is a reduction gear with I = 5:1.
-        // Additional check to be sure the published values are within range (-1500, +1500).
-        // sometimes the motor gives an very big value which is invalid and is thus removed
-        if (abs(llc_motors_msg_.left.motor_speed / 5.0) < 1500) {
-            llc_motors_msg_.left.motor_speed = llc_motors_msg_.left.motor_speed / 5.0;
-        }
-        if (abs(llc_motors_msg_.right.motor_speed / 5.0) < 1500) {
-            llc_motors_msg_.right.motor_speed = llc_motors_msg_.right.motor_speed / 5.0;
-        }
+    llc_motors_msg_.right.motor_voltage = llc_motors_msg_.right.motor_voltage / 100; // llc value is in [1/100 V] -> msg in [V]
+    llc_motors_msg_.right.motor_current = llc_motors_msg_.right.motor_current / 10; // llc value is in [1/10 A] -> msg in [A]
+    llc_motors_msg_.right.battery_voltage = llc_motors_msg_.right.battery_voltage / 100; // llc value is in [1/100 V] -> msg in [V]
+    llc_motors_msg_.right.battery_current = llc_motors_msg_.right.battery_current / 10; // llc value is in [1/10 A] -> msg in [A]
+    llc_motors_msg_.right.gps_speed = llc_motors_msg_.right.gps_speed / 100.0 * 0.514444; // llc value is in [1/100 knots] -> msg in [m/s]
 
-        llc_motors_pub_->publish(llc_motors_msg_);
+    // [RPM] Between the motor and the propeller there is a reduction gear with I = 5:1.
+    // Additional check to be sure the published values are within range (-1500, +1500).
+    // sometimes the motor gives an very big value which is invalid and is thus removed
+    if (abs(llc_motors_msg_.left.motor_speed / 5.0) < 1500) {
+        llc_motors_msg_.left.motor_speed = llc_motors_msg_.left.motor_speed / 5.0;
     }
+    if (abs(llc_motors_msg_.right.motor_speed / 5.0) < 1500) {
+        llc_motors_msg_.right.motor_speed = llc_motors_msg_.right.motor_speed / 5.0;
+    }
+
+    llc_motors_pub_->publish(llc_motors_msg_);
+}
 
 } // llc
 } // ulissse

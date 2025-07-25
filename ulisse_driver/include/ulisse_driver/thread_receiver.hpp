@@ -47,6 +47,7 @@ namespace llc {
         void ParseMotorsFeedback(std::vector<uint8_t> buffer);
         void ParseBattery(std::vector<uint8_t> buffer);
         void ParseStatus(std::vector<uint8_t> buffer);
+        void ParseSetConfig(std::vector<uint8_t> buffer);
 
         //void LLCData2RosMsg(const batteryData& llc_batt, ulisse_msgs::msg::LLCBattery& batt_msg);
         //void LLCData2RosMsg(const motorData& llc_motor, ulisse_msgs::msg::ThrusterData& motor_msg);
@@ -72,7 +73,7 @@ namespace llc {
         ulisse_msgs::msg::ThrustersReference applied_motorref_msg_;
         // LLC
         ulisse_msgs::msg::LLCStatus llc_status_msg_;
-        ulisse_msgs::msg::LLCConfig llc_config_msg_;
+        //ulisse_msgs::msg::LLCConfig llc_config_msg_;
         //ulisse_msgs::msg::LLCThrusters llc_motors_msg_;
         ulisse_msgs::msg::LLCVersion llc_version_msg_;
         ulisse_msgs::msg::LLCAck llc_ack_msg_;

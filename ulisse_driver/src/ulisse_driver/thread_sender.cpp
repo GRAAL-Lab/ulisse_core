@@ -162,11 +162,15 @@ namespace llc {
             SendMessage(serializer.Buffer());
             ret = RetVal::ok;
             break;
-        /*case (uint16_t)CommandType::getconfig:
-            data_.messageType = MessageType::get_config;
-            llcHlp_.SendMessage(data_);
+        case (uint16_t)CommandType::getconfig:
+            RCLCPP_INFO(this->get_logger(), "Sending get config command");
+            serializer.PacketAdd_uint16(2);
+            serializer.PacketAdd_uint16(static_cast<uint16_t>(MessageType::get_config));
+            serializer.PacketAdd_uint16(chksm::CalculateChecksum(serializer.Buffer(), 2));
+            SendMessage(serializer.Buffer());
+            ret = RetVal::ok;
             break;
-        case (uint16_t)CommandType::getversion:
+        /*case (uint16_t)CommandType::getversion:
             data_.messageType = MessageType::get_version;
             llcHlp_.SendMessage(data_);
             break;*/
