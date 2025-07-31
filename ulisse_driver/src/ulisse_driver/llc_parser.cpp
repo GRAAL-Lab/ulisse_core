@@ -1,6 +1,6 @@
 #include "ulisse_driver/llc_parser.h"
-#include <string.h>
 #include <iostream>
+#include <string.h>
 
 LLCParser::LLCParser()
 {
@@ -100,10 +100,10 @@ int LLCParser::ParseByte(uint8_t byte)
 
                 return 1;
             } else {
-                 state_ = ParseState::header;
+                state_ = ParseState::header;
                 headerCount_ = 0;
                 errorCount_++;
-                return -1;
+                return -2;
             }
         }
 
@@ -172,8 +172,3 @@ uint16_t LLCParser::CheckChecksum(const uint8_t* bytes, uint16_t size, uint16_t 
         return 0;
     }
 }
-
-
-
-
-

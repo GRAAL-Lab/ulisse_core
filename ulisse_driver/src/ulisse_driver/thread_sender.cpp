@@ -118,7 +118,6 @@ namespace llc {
         (void)request_header;
         RCLCPP_INFO(this->get_logger(), "Incoming request: %s", CommandTypeToString((CommandType)(request->command_type)).c_str());
 
-    ulisse:
         llc::RetVal ret = RetVal::fail;
         Serializer serializer;
         serializer.PacketAdd_char(0x0A);
@@ -170,10 +169,13 @@ namespace llc {
             SendMessage(serializer.Buffer());
             ret = RetVal::ok;
             break;
-        /*case (uint16_t)CommandType::getversion:
-            data_.messageType = MessageType::get_version;
-            llcHlp_.SendMessage(data_);
-            break;*/
+        case (uint16_t)CommandType::getversion:
+            RCLCPP_INFO(this->get_logger(), "Sending get version command");
+            serializer.PacketAdd_uint16(2);
+            serializer.PacketAdd_uint16(static_cast<uint16_t>(MessageType::get_version));
+            serializer.PacketAdd_uint16(chksm::CalculateChecksum(serializer.Buffer(), 2));
+            SendMessage(serializer.Buffer());
+            break;
         case (uint16_t)CommandType::reset:
             RCLCPP_INFO(this->get_logger(), "Reset");
             serializer.PacketAdd_uint16(2);
@@ -226,7 +228,6 @@ namespace llc {
     void ThreadSender::SendMessage(const std::vector<uint8_t> packet)
     {
         if (serial_->IsOpen()) {
-            uint16_t size = 0;
             serial_->Write(packet.data(), packet.size());
         } else {
             RCLCPP_INFO(this->get_logger(), "SendMessage() could not open the serial port");

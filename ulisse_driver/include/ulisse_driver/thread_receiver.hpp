@@ -48,17 +48,13 @@ namespace llc {
         void ParseBattery(std::vector<uint8_t> buffer);
         void ParseStatus(std::vector<uint8_t> buffer);
         void ParseSetConfig(std::vector<uint8_t> buffer);
-
-        //void LLCData2RosMsg(const batteryData& llc_batt, ulisse_msgs::msg::LLCBattery& batt_msg);
-        //void LLCData2RosMsg(const motorData& llc_motor, ulisse_msgs::msg::ThrusterData& motor_msg);
+        void ParseVersion(std::vector<uint8_t> buffer);
 
         std::string confPath_;
         libconfig::Config confObj_;
 
         LLCParser llcParser_;
         CSerialHelper* serial_;
-        //LLCHelper llcHlp_;
-        //LLCData llcData_;
         std::chrono::system_clock::time_point t_now_;
 
         rclcpp::AsyncParametersClient::SharedPtr par_client_;
@@ -73,13 +69,8 @@ namespace llc {
         ulisse_msgs::msg::ThrustersReference applied_motorref_msg_;
         // LLC
         ulisse_msgs::msg::LLCStatus llc_status_msg_;
-        //ulisse_msgs::msg::LLCConfig llc_config_msg_;
-        //ulisse_msgs::msg::LLCThrusters llc_motors_msg_;
-        ulisse_msgs::msg::LLCVersion llc_version_msg_;
         ulisse_msgs::msg::LLCAck llc_ack_msg_;
-        //ulisse_msgs::msg::LLCBattery llc_battery_left_msg_;
-        //ulisse_msgs::msg::LLCBattery llc_battery_right_msg_;
-        //ulisse_msgs::msg::LLCSw485Status llc_sw485_msg_;
+
 
         rclcpp::Publisher<ulisse_msgs::msg::MicroLoopCount>::SharedPtr micro_loop_count_pub_;
         rclcpp::Publisher<ulisse_msgs::msg::GPSData>::SharedPtr gpsdata_pub_;

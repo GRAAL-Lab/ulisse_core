@@ -139,7 +139,13 @@ namespace llc {
                             RCLCPP_INFO(this->get_logger(), "NEW SET CONFIG MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
                             ParseSetConfig(llcParser_.GetIncomingBuffer());
                             break;
+                        case LLC_MESSAGETYPE_VERSION:
+                            RCLCPP_INFO(this->get_logger(), "NEW VERSION MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
+                            ParseVersion(llcParser_.GetIncomingBuffer());
+                            break;
                         }
+                } else if (ret == -2) {
+                    RCLCPP_WARN(this->get_logger(), "WRONG CHECKSUM, DISCARDING PACKET");
                 }
 
                 /*switch (llcData_.messageType) {
@@ -318,6 +324,20 @@ namespace llc {
      batt_msg.alarm_state = llc_batt.alarmState;
      std::copy(llc_batt.cells, llc_batt.cells + 14, batt_msg.cells.begin());
  }*/
+
+void ThreadReceiver::ParseVersion(std::vector<uint8_t> buffer)
+{
+    ulisse_msgs::msg::LLCVersion llc_version_msg_;
+
+    Deserializer deserializer(buffer);
+    deserializer.MoveOffset(4);
+
+    deserializer.PacketExtract_uint16(&llc_version_msg_.sw_version);
+    deserializer.PacketExtract_uint16(&llc_version_msg_.lsat_version);
+    deserializer.PacketExtract_uint16(&llc_version_msg_.rsat_version);
+
+    llc_version_pub_->publish(llc_version_msg_);
+}
 
 void ThreadReceiver::ParseSetConfig(std::vector<uint8_t> buffer)
 {
