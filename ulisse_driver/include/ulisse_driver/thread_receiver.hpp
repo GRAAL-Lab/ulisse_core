@@ -49,14 +49,16 @@ namespace llc {
         void ParseStatus(std::vector<uint8_t> buffer);
         void ParseSetConfig(std::vector<uint8_t> buffer);
         void ParseVersion(std::vector<uint8_t> buffer);
+        void ParseAck(std::vector<uint8_t> buffer);
+
+        ulisse_msgs::msg::Time GetTime();
 
         std::string confPath_;
         libconfig::Config confObj_;
 
         LLCParser llcParser_;
         CSerialHelper* serial_;
-        std::chrono::system_clock::time_point t_now_;
-
+        
         rclcpp::AsyncParametersClient::SharedPtr par_client_;
         rclcpp::TimerBase::SharedPtr timer_;
 

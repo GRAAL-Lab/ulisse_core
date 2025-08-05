@@ -41,6 +41,8 @@ public:
 
     auto Buffer() const -> const std::vector<uint8_t>& { return buffer_; }
 
+    void Reset() { offset_ = 0; }
+
 private:
     std::vector<uint8_t> buffer_;
     uint8_t offset_;
