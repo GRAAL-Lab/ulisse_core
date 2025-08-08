@@ -1,15 +1,6 @@
 #ifndef ULISSE_DRIVER_THREAD_RECEIVER_HPP
 #define ULISSE_DRIVER_THREAD_RECEIVER_HPP
 
-#define STSMASK_ENABLE_REFERENCE        (0x0001)
-#define STSMASK_TIMEOUT_REFERENCE       (0x0002)
-#define STSMASK_PPM_MAIN_VALID          (0x0004)
-#define STSMASK_PPM_ENABLED             (0x0008)
-#define STSMASK_PPM_NEEDZEROCHECK       (0x0010)
-#define STSMASK_PPM_CHANNEL             (0x0020)
-#define STSMASK_TIMEOUTPUMPS            (0x0040)
-#define STSMASK_PPM_SECONDARY_VALID     (0x0080)
-
 #include <libconfig.h++>
 #include "rclcpp/rclcpp.hpp"
 

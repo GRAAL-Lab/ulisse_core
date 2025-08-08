@@ -284,7 +284,7 @@ namespace llc {
         serializer.PacketAdd_uint16(chksm::CalculateChecksum(serializer.Buffer(), 2));
 
         SendMessage(serializer.Buffer());
-        // RCLCPP_INFO(this->get_logger(), "ControlContext_cb() sending reference! (L:%d, R:%d)", data_.references.leftThruster, data_.references.rightThruster);
+        RCLCPP_INFO(this->get_logger(), "Sending reference! (L:%d, R:%d)", leftPercentage, rightPercentage);
     }
 
     void ThreadSender::RetrieveConfiguration()
@@ -303,18 +303,20 @@ namespace llc {
         Serializer serializer;
         serializer.PacketAdd_char(0x0A);
         serializer.PacketAdd_char(0x0B);
-        serializer.PacketAdd_uint16(44);
+        serializer.PacketAdd_uint16(52);
         serializer.PacketAdd_uint16(static_cast<uint16_t>(MessageType::set_config));
-        serializer.PacketAdd_uint16(lowlevelconf_.hbPacketStatus0);
-        serializer.PacketAdd_uint16(lowlevelconf_.hbPacketStatusMax);
-        serializer.PacketAdd_uint16(lowlevelconf_.hbPacketMotors0);
-        serializer.PacketAdd_uint16(lowlevelconf_.hbPacketMotorsMax);
-        serializer.PacketAdd_uint16(lowlevelconf_.hbPacketBattery0);
-        serializer.PacketAdd_uint16(lowlevelconf_.hbPacketBatteryMax);
-        serializer.PacketAdd_float32(lowlevelconf_.pwmUpMin);
-        serializer.PacketAdd_float32(lowlevelconf_.pwmUpMax);
-        serializer.PacketAdd_float32(lowlevelconf_.pwmPeriodMin);
-        serializer.PacketAdd_float32(lowlevelconf_.pwmPeriodMax);
+        serializer.PacketAdd_int16(lowlevelconf_.hbPacketStatus0);
+        serializer.PacketAdd_int16(lowlevelconf_.hbPacketStatusMax);
+        serializer.PacketAdd_int16(lowlevelconf_.hbPacketMotors0);
+        serializer.PacketAdd_int16(lowlevelconf_.hbPacketMotorsMax);
+        serializer.PacketAdd_int16(lowlevelconf_.hbPacketBattery0);
+        serializer.PacketAdd_int16(lowlevelconf_.hbPacketBatteryMax);
+        serializer.PacketAdd_float32(lowlevelconf_.ppmPulseMin);
+        serializer.PacketAdd_float32(lowlevelconf_.ppmPulseMax);
+        serializer.PacketAdd_float32(lowlevelconf_.ppmPeriodMin);
+        serializer.PacketAdd_float32(lowlevelconf_.ppmPeriodMax);
+        serializer.PacketAdd_float32(lowlevelconf_.ppmBlankMin);
+        serializer.PacketAdd_float32(lowlevelconf_.ppmBlankMax);
         serializer.PacketAdd_float32(lowlevelconf_.pwmTimeThreshold);
         serializer.PacketAdd_float32(lowlevelconf_.pwmZeroThreshold);
         serializer.PacketAdd_float32(lowlevelconf_.deadzoneTime);
@@ -376,30 +378,35 @@ namespace llc {
         uint temp_uint;
         RCLCPP_INFO(this->get_logger(), "Loading configuration file");
 
-        ctb::GetParam(confObj_, temp_uint, "LLC.Config.HbPacketStatus0");
-        lowlevelconf_.hbPacketStatus0 = (uint16_t)temp_uint;
-        ctb::GetParam(confObj_, temp_uint, "LLC.Config.HbPacketStatusMax");
-        lowlevelconf_.hbPacketStatusMax = (uint16_t)temp_uint;
-        ctb::GetParam(confObj_, temp_uint, "LLC.Config.HbPacketMotors0");
-        lowlevelconf_.hbPacketMotors0 = (uint16_t)temp_uint;
-        ctb::GetParam(confObj_, temp_uint, "LLC.Config.HbPacketMotorsMax");
-        lowlevelconf_.hbPacketMotorsMax = (uint16_t)temp_uint;
-        ctb::GetParam(confObj_, temp_uint, "LLC.Config.HbPacketBattery0");
-        lowlevelconf_.hbPacketBattery0 = (uint16_t)temp_uint;
-        ctb::GetParam(confObj_, temp_uint, "LLC.Config.HbPacketBatteryMax");
-        lowlevelconf_.hbPacketBatteryMax = (uint16_t)temp_uint;
-        ctb::GetParam(confObj_, temp_uint, "LLC.Config.ThrusterSaturation");
-        lowlevelconf_.thrusterSaturation = (uint16_t)temp_uint;
+        int temp_int;
+        ctb::GetParam(confObj_, temp_int, "LLC.Config.HbPacketStatus0");
+        lowlevelconf_.hbPacketStatus0 = (int16_t)temp_int;
+        ctb::GetParam(confObj_, temp_int, "LLC.Config.HbPacketStatusMax");
+        lowlevelconf_.hbPacketStatusMax = (int16_t)temp_int;
+        ctb::GetParam(confObj_, temp_int, "LLC.Config.HbPacketMotors0");
+        lowlevelconf_.hbPacketMotors0 = (int16_t)temp_int;
+        ctb::GetParam(confObj_, temp_int, "LLC.Config.HbPacketMotorsMax");
+        lowlevelconf_.hbPacketMotorsMax = (int16_t)temp_int;
+        ctb::GetParam(confObj_, temp_int, "LLC.Config.HbPacketBattery0");
+        lowlevelconf_.hbPacketBattery0 = (int16_t)temp_int;
+        ctb::GetParam(confObj_, temp_int, "LLC.Config.HbPacketBatteryMax");
+        lowlevelconf_.hbPacketBatteryMax = (int16_t)temp_int;
+        ctb::GetParam(confObj_, temp_int, "LLC.Config.ThrusterSaturation");
+        lowlevelconf_.thrusterSaturation = (int16_t)temp_int;
 
         double temp_double;
-        ctb::GetParam(confObj_, temp_double, "LLC.Config.PwmUpMin");
-        lowlevelconf_.pwmUpMin = (float32_t)temp_double;
-        ctb::GetParam(confObj_, temp_double, "LLC.Config.PwmUpMax");
-        lowlevelconf_.pwmUpMax = (float32_t)temp_double;
-        ctb::GetParam(confObj_, temp_double, "LLC.Config.PwmPeriodMin");
-        lowlevelconf_.pwmPeriodMin = (float32_t)temp_double;
-        ctb::GetParam(confObj_, temp_double, "LLC.Config.PwmPeriodMax");
-        lowlevelconf_.pwmPeriodMax = (float32_t)temp_double;
+        ctb::GetParam(confObj_, temp_double, "LLC.Config.PpmPulseMin");
+        lowlevelconf_.ppmPulseMin = (float32_t)temp_double;
+        ctb::GetParam(confObj_, temp_double, "LLC.Config.PpmPulseMax");
+        lowlevelconf_.ppmPulseMax = (float32_t)temp_double;
+        ctb::GetParam(confObj_, temp_double, "LLC.Config.PpmPeriodMin");
+        lowlevelconf_.ppmPeriodMin = (float32_t)temp_double;
+        ctb::GetParam(confObj_, temp_double, "LLC.Config.PpmPeriodMax");
+        lowlevelconf_.ppmPeriodMax = (float32_t)temp_double;
+        ctb::GetParam(confObj_, temp_double, "LLC.Config.PpmBlankMin");
+        lowlevelconf_.ppmBlankMin = (float32_t)temp_double;
+        ctb::GetParam(confObj_, temp_double, "LLC.Config.PpmBlankMax");
+        lowlevelconf_.ppmBlankMax = (float32_t)temp_double;
         ctb::GetParam(confObj_, temp_double, "LLC.Config.PwmTimeThreshold");
         lowlevelconf_.pwmTimeThreshold = (float32_t)temp_double;
         ctb::GetParam(confObj_, temp_double, "LLC.Config.PwmZeroThreshold");

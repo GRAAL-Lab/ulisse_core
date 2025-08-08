@@ -34,6 +34,15 @@ typedef double float64_t;
 #define EMB_STSMASK_TIMEOUTPUMPS            (0x1000)
 #define EMB_STSMASK_PPM_SECONDARY_VALID     (0x2000)
 
+#define STSMASK_ENABLE_REFERENCE        (0x0001)
+#define STSMASK_TIMEOUT_REFERENCE       (0x0002)
+#define STSMASK_PPM_MAIN_VALID          (0x0004)
+#define STSMASK_PPM_ENABLED             (0x0008)
+#define STSMASK_PPM_NEEDZEROCHECK       (0x0010)
+#define STSMASK_PPM_CHANNEL             (0x0020)
+#define STSMASK_PPM_SECONDARY_VALID     (0x0040)
+#define STSMASK_PPM_TRANSMITTER_CONNECTED (0x0080)
+
 #define EMB_SNSSTSMASK_UPDATEDACCELEROMETER (0x0001)
 #define EMB_SNSSTSMASK_UPDATEDCOMPASS       (0x0002)
 #define EMB_SNSSTSMASK_UPDATEDMAGNETOMETER  (0x0004)
@@ -85,10 +94,12 @@ namespace llc {
         uint16_t hbPacketBatteryMax;
         uint16_t thrusterSaturation;
 
-        float32_t pwmUpMin;
-        float32_t pwmUpMax;
-        float32_t pwmPeriodMin;
-        float32_t pwmPeriodMax;
+        float32_t ppmPulseMin;
+        float32_t ppmPulseMax;
+        float32_t ppmPeriodMin;
+        float32_t ppmPeriodMax;
+        float32_t ppmBlankMin;
+        float32_t ppmBlankMax;
         float32_t pwmTimeThreshold;
         float32_t pwmZeroThreshold;
         float32_t deadzoneTime;
@@ -96,8 +107,9 @@ namespace llc {
         void DebugPrint(rclcpp::Logger logger)
         {
             RCLCPP_INFO(logger, "Status %u->%u Motors %u->%u Battery %u->%u", hbPacketStatus0, hbPacketStatusMax, hbPacketMotors0, hbPacketMotorsMax, hbPacketBattery0, hbPacketBatteryMax);
-            RCLCPP_INFO(logger, "PWM Up min %f [ms] PWM Up max %f [ms]", pwmUpMin, pwmUpMax);
-            RCLCPP_INFO(logger, "PWM Period min %f [ms] PWM Period Max %f [ms]", pwmPeriodMin, pwmPeriodMax);
+            RCLCPP_INFO(logger, "PWM Up min %f [ms] PWM Up max %f [ms]", ppmPulseMin, ppmPulseMax);
+            RCLCPP_INFO(logger, "PWM Period min %f [ms] PWM Period Max %f [ms]", ppmPeriodMin, ppmPeriodMax);
+            RCLCPP_INFO(logger, "PPM Blank time min %f [ms] PPM Blank time max %f [ms]", ppmBlankMin, ppmBlankMax);
             RCLCPP_INFO(logger, "PWM Time Threshold %f [ms] PWM Zero Threshold %f [ms]\ndeadzone Time %f [s] Thruster Saturation %u/1000", pwmTimeThreshold, pwmZeroThreshold, deadzoneTime, thrusterSaturation);
         }
     };

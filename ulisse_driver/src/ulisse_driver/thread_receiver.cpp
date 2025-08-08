@@ -131,10 +131,11 @@ namespace llc {
                         RCLCPP_WARN(this->get_logger(), "WRONG CHECKSUM, DISCARDING PACKET");
                     }
 
-                    std::this_thread::sleep_for(1ms);
+                    //std::this_thread::sleep_for(1ms);
                 }
             }
         }
+        RCLCPP_WARN(this->get_logger(), "EXIT READLOOP");
     }
 
     /* void ThreadReceiver::LLCData2RosMsg(const batteryData& llc_batt, ulisse_msgs::msg::LLCBattery& batt_msg)
@@ -187,16 +188,18 @@ namespace llc {
         Deserializer deserializer(buffer);
         deserializer.MoveOffset(4);
 
-        deserializer.PacketExtract_uint16(&llc_config_msg.hbpacketstatus0);
-        deserializer.PacketExtract_uint16(&llc_config_msg.hbpacketstatusmax);
-        deserializer.PacketExtract_uint16(&llc_config_msg.hbpacketmotors0);
-        deserializer.PacketExtract_uint16(&llc_config_msg.hbpacketmotorsmax);
-        deserializer.PacketExtract_uint16(&llc_config_msg.hbpacketbattery0);
-        deserializer.PacketExtract_uint16(&llc_config_msg.hbpacketbatterymax);
-        deserializer.PacketExtract_float32(&llc_config_msg.pwmupmin);
-        deserializer.PacketExtract_float32(&llc_config_msg.pwmupmax);
-        deserializer.PacketExtract_float32(&llc_config_msg.pwmperiodmin);
-        deserializer.PacketExtract_float32(&llc_config_msg.pwmperiodmax);
+        deserializer.PacketExtract_int16(&llc_config_msg.hbpacketstatus0);
+        deserializer.PacketExtract_int16(&llc_config_msg.hbpacketstatusmax);
+        deserializer.PacketExtract_int16(&llc_config_msg.hbpacketmotors0);
+        deserializer.PacketExtract_int16(&llc_config_msg.hbpacketmotorsmax);
+        deserializer.PacketExtract_int16(&llc_config_msg.hbpacketbattery0);
+        deserializer.PacketExtract_int16(&llc_config_msg.hbpacketbatterymax);
+        deserializer.PacketExtract_float32(&llc_config_msg.ppmpulsemin);
+        deserializer.PacketExtract_float32(&llc_config_msg.ppmpulsemax);
+        deserializer.PacketExtract_float32(&llc_config_msg.ppmperiodmin);
+        deserializer.PacketExtract_float32(&llc_config_msg.ppmperiodmax);
+        deserializer.PacketExtract_float32(&llc_config_msg.ppmblankmin);
+        deserializer.PacketExtract_float32(&llc_config_msg.ppmblankdmax);
         deserializer.PacketExtract_float32(&llc_config_msg.pwmtimethreshold);
         deserializer.PacketExtract_float32(&llc_config_msg.pwmzerothreshold);
         deserializer.PacketExtract_float32(&llc_config_msg.deadzonetime);
