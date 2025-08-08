@@ -164,6 +164,12 @@ namespace llc {
         deserializer.PacketExtract_uint16(&llc_ack_msg.messagetype);
         deserializer.PacketExtract_uint8(&llc_ack_msg.ack);
 
+        if (llc_ack_msg.ack == 0) {
+            RCLCPP_INFO(this->get_logger(), "Received ACK for command %d", llc_ack_msg.messagetype);
+        } else {
+            RCLCPP_ERROR(this->get_logger(), "Received NACK (%d) for command %d", llc_ack_msg.ack, llc_ack_msg.messagetype);
+        }
+
         llc_ack_pub_->publish(llc_ack_msg);
     }
 
