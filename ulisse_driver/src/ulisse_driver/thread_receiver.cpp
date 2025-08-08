@@ -4,7 +4,7 @@
 #include <ctrl_toolbox/HelperFunctions.h>
 
 #include "ulisse_driver/driver_defines.h"
-#include "ulisse_driver/thread_receiver.hpp"
+#include "ulisse_driver/thread_receiver.h"
 #include "ulisse_msgs/msg/time.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 
@@ -231,13 +231,13 @@ namespace llc {
         deserializer.PacketExtract_float32(&llc_sw485_msg.temperature);
         deserializer.PacketExtract_uint16(&statusBits);
 
-        llc_sw485_msg.status_flags.enable_reference = (statusBits & STSMASK_ENABLE_REFERENCE);
-        llc_sw485_msg.status_flags.timeout_reference = (statusBits & STSMASK_TIMEOUT_REFERENCE);
-        llc_sw485_msg.status_flags.ppm_main_valid = (statusBits & STSMASK_PPM_MAIN_VALID);
-        llc_sw485_msg.status_flags.ppm_remote_enabled = (statusBits & STSMASK_PPM_ENABLED);
-        llc_sw485_msg.status_flags.ppm_need_zero_check = (statusBits & STSMASK_PPM_NEEDZEROCHECK);
-        llc_sw485_msg.status_flags.ppm_channel = (statusBits & STSMASK_PPM_CHANNEL);
-        llc_sw485_msg.status_flags.ppm_secondary_valid = (statusBits & STSMASK_PPM_SECONDARY_VALID);
+        llc_sw485_msg.status_flags.enable_reference = (statusBits & LLC_STSMASK_ENABLE_REFERENCE);
+        llc_sw485_msg.status_flags.timeout_reference = (statusBits & LLC_STSMASK_TIMEOUT_REFERENCE);
+        llc_sw485_msg.status_flags.ppm_main_valid = (statusBits & LLC_STSMASK_PPM_MAIN_VALID);
+        llc_sw485_msg.status_flags.ppm_remote_enabled = (statusBits & LLC_STSMASK_PPM_ENABLED);
+        llc_sw485_msg.status_flags.ppm_need_zero_check = (statusBits & LLC_STSMASK_PPM_NEEDZEROCHECK);
+        llc_sw485_msg.status_flags.ppm_channel = (statusBits & LLC_STSMASK_PPM_CHANNEL);
+        llc_sw485_msg.status_flags.ppm_secondary_valid = (statusBits & LLC_STSMASK_PPM_SECONDARY_VALID);
         llc_sw485_pub_->publish(llc_sw485_msg);
     }
 

@@ -8,9 +8,6 @@
 typedef float float32_t;
 typedef double float64_t;
 
-#define M_PIl_OVER_180        (M_PI / 180.0)
-#define M_180_OVER_M_PIl      (180.0 / M_PI)
-
 #define LLC_MESSAGETYPE_ACK                 (122)
 #define LLC_MESSAGETYPE_SET_CONFIG          (117)
 #define LLC_MESSAGETYPE_GET_CONFIG          (119)
@@ -19,68 +16,17 @@ typedef double float64_t;
 #define LLC_MESSAGETYPE_BATTERY             (133)
 #define LLC_MESSAGETYPE_STATUS              (134)
 
-#define EMB_STSMASK_ENABLE_ACCELEROMETER    (0x0001)
-#define EMB_STSMASK_ENABLE_COMPASS          (0x0002)
-#define EMB_STSMASK_ENABLE_MAGNETOMETER     (0x0004)
-#define EMB_STSMASK_ENABLE_I2C              (0x0008)
-#define EMB_STSMASK_ENABLE_ANALOG           (0x0010)
-#define EMB_STSMASK_MAGNETOMETERCALIBRATION (0x0020)
-#define EMB_STSMASK_ENABLE_REFERENCE        (0x0040)
-#define EMB_STSMASK_TIMEOUT_REFERENCE       (0x0080)
-#define EMB_STSMASK_PPM_MAIN_VALID          (0x0100)
-#define EMB_STSMASK_PPM_ENABLED             (0x0200)
-#define EMB_STSMASK_PPM_NEEDZEROCHECK       (0x0400)
-#define EMB_STSMASK_PPM_CHANNEL             (0x0800)
-#define EMB_STSMASK_TIMEOUTPUMPS            (0x1000)
-#define EMB_STSMASK_PPM_SECONDARY_VALID     (0x2000)
+#define LLC_PWRBUTTONS_FLAG_LEFT            (0x01)
+#define LLC_PWRBUTTONS_FLAG_RIGHT           (0x02)
 
-#define STSMASK_ENABLE_REFERENCE        (0x0001)
-#define STSMASK_TIMEOUT_REFERENCE       (0x0002)
-#define STSMASK_PPM_MAIN_VALID          (0x0004)
-#define STSMASK_PPM_ENABLED             (0x0008)
-#define STSMASK_PPM_NEEDZEROCHECK       (0x0010)
-#define STSMASK_PPM_CHANNEL             (0x0020)
-#define STSMASK_PPM_SECONDARY_VALID     (0x0040)
-#define STSMASK_PPM_TRANSMITTER_CONNECTED (0x0080)
-
-#define EMB_SNSSTSMASK_UPDATEDACCELEROMETER (0x0001)
-#define EMB_SNSSTSMASK_UPDATEDCOMPASS       (0x0002)
-#define EMB_SNSSTSMASK_UPDATEDMAGNETOMETER  (0x0004)
-#define EMB_SNSSTSMASK_UPDATEDANALOG        (0x0008)
-
-#define EMB_MOTORS_FLAG0_SETTHROTTLESTOP    (0x01)
-#define EMB_MOTORS_FLAG0_SETUPALLOWED       (0x02)
-#define EMB_MOTORS_FLAG0_INCHARGE           (0x04)
-#define EMB_MOTORS_FLAG0_INSETUP            (0x08)
-
-#define EMB_MOTORS_FLAG1_MOTORINTEMPLIMIT   (0x01)
-#define EMB_MOTORS_FLAG1_BATTERYCHARGEVALID (0x02)
-#define EMB_MOTORS_FLAG1_BATTERYNEARLYEMPTY (0x04)
-#define EMB_MOTORS_FLAG1_BATTERYCHARGING    (0x08)
-#define EMB_MOTORS_FLAG1_GPSSEARCHING       (0x10)
-#define EMB_MOTORS_FLAG1_GPSSPEEDVALID      (0x20)
-#define EMB_MOTORS_FLAG1_RANGEMILESVALID    (0x40)
-#define EMB_MOTORS_FLAG1_RANGEMINUTESVALID  (0x80)
-
-#define EMB_PUMPS_LEFT_IDX                  (0)
-#define EMB_PUMPS_RIGHT_IDX                 (1)
-
-#define EMB_PUMPS_FLAG_BOWLOADWATER         (0x01)
-#define EMB_PUMPS_FLAG_BOWUNLOADWATER       (0x02)
-#define EMB_PUMPS_FLAG_STERNLOADWATER       (0x04)
-#define EMB_PUMPS_FLAG_STERNUNLOADWATER     (0x08)
-
-#define EMB_PWRBUTTONS_FLAG_LEFT            (0x01)
-#define EMB_PWRBUTTONS_FLAG_RIGHT           (0x02)
-
-#define EMB_CONTROL_SPEED_JOG               (0)
-#define EMB_CONTROL_LEFT_RIGHT              (1)
-
-#define EMB_RV_NACK_INVALID_PAR     (3)
-#define EMB_RV_NACK_UNDEFINED       (2)
-#define EMB_RV_NACK_ERROR           (1)
-#define EMB_RV_ACK                  (0)
-
+#define LLC_STSMASK_ENABLE_REFERENCE        (0x0001)
+#define LLC_STSMASK_TIMEOUT_REFERENCE       (0x0002)
+#define LLC_STSMASK_PPM_MAIN_VALID          (0x0004)
+#define LLC_STSMASK_PPM_ENABLED             (0x0008)
+#define LLC_STSMASK_PPM_NEEDZEROCHECK       (0x0010)
+#define LLC_STSMASK_PPM_CHANNEL             (0x0020)
+#define LLC_STSMASK_PPM_SECONDARY_VALID     (0x0040)
+#define LLC_STSMASK_PPM_TRANSMITTER_CONNECTED (0x0080)
 
 namespace ulisse {
 namespace llc {
@@ -157,18 +103,6 @@ namespace llc {
         reset = 10,
         reloadconfig = 11
     };
-
-    //std::string CommandTypeToString(CommandType type);
-
-    /*struct CommandData {
-        union {
-            beepData beep;
-            enableRefData enableRef;
-            LowLevelConfiguration setConfig;
-            pumpsData pumps;
-            pwrButtonsData powerButtons;
-        };
-    };*/
 
     enum class CommandAnswer : int16_t {
         fail = -1,

@@ -20,7 +20,7 @@
 #include "std_msgs/msg/string.hpp"
 #include "ulisse_driver/checksum.h"
 #include "ulisse_driver/serializer.h"
-#include "ulisse_driver/thread_sender.hpp"
+#include "ulisse_driver/thread_sender.h"
 #include "ulisse_msgs/topicnames.hpp"
 
 using std::placeholders::_1;
@@ -217,7 +217,7 @@ namespace llc {
             ret = RetVal::ok;
             break;
         case (uint16_t)CommandType::setpowerbuttons:
-            RCLCPP_INFO(this->get_logger(), "Set power button: left = %d, right = %d", request->pwr_buttons_data.pwrbuttonsflag & EMB_PWRBUTTONS_FLAG_LEFT, request->pwr_buttons_data.pwrbuttonsflag & EMB_PWRBUTTONS_FLAG_RIGHT);
+            RCLCPP_INFO(this->get_logger(), "Set power button: left = %d, right = %d", request->pwr_buttons_data.pwrbuttonsflag & LLC_PWRBUTTONS_FLAG_LEFT, request->pwr_buttons_data.pwrbuttonsflag & LLC_PWRBUTTONS_FLAG_RIGHT);
             serializer.PacketAdd_uint16(3);
             serializer.PacketAdd_uint16(static_cast<uint16_t>(MessageType::pwrbuttons));
             serializer.PacketAdd_charArray(reinterpret_cast<char*>(&request->pwr_buttons_data.pwrbuttonsflag), 1);
