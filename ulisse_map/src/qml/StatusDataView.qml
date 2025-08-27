@@ -52,7 +52,7 @@ Rectangle {
                     Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                     labelColor: blue
                     textColor: 'grey'
-                    text: fbkUpdater.vehicle_state
+                    text: fbkUpdater ? fbkUpdater.vehicle_state : ""
                     textBoldness: Font.Bold
                     label: "Vehicle State"
                     lsize: labelsize
@@ -64,7 +64,7 @@ Rectangle {
                     labelColor: blue
                     label: "GPS Time"
                     textColor: 'grey'
-                    text: fbkUpdater.gps_time
+                    text: fbkUpdater ? fbkUpdater.gps_time : ""
                     lsize: labelsize
                     tsize: textsize
                 }
@@ -74,8 +74,8 @@ Rectangle {
                     labelColor: blue
                     label: "GPS Position"
                     textColor: 'grey'
-                    text: "%1, %2".arg(fbkUpdater.gps_pos.latitude.toFixed(8)).arg(
-                              fbkUpdater.gps_pos.longitude.toFixed(8))
+                    text: fbkUpdater ? "%1, %2".arg(fbkUpdater.gps_pos.latitude.toFixed(8)).arg(
+                              fbkUpdater.gps_pos.longitude.toFixed(8)) : ""
                     lsize: labelsize
                     tsize: textsize
                 }
@@ -111,8 +111,8 @@ Rectangle {
                     labelColor: blue
                     label: "Position"
                     textColor: 'grey'
-                    text: "%1, %2, %3".arg(fbkUpdater.ulisse_pos.latitude.toFixed(8)).arg(
-                              fbkUpdater.ulisse_pos.longitude.toFixed(8)).arg(fbkUpdater.ulisse_pos.altitude.toFixed(8))
+                    text: fbkUpdater ? "%1, %2, %3".arg(fbkUpdater.ulisse_pos.latitude.toFixed(8)).arg(
+                              fbkUpdater.ulisse_pos.longitude.toFixed(8)).arg(fbkUpdater.ulisse_pos.altitude.toFixed(8)) : ""
                     lsize: labelsize
                     tsize: textsize
                 }
@@ -122,8 +122,8 @@ Rectangle {
                     labelColor: blue
                     label: "Linear Vel. (m/s)"
                     textColor: 'grey'
-                    text: "%1,  %2,  %3".arg(fbkUpdater.ulisse_linear_vel.x.toFixed(2)).arg(
-                            fbkUpdater.ulisse_linear_vel.y.toFixed(2)).arg(fbkUpdater.ulisse_linear_vel.z.toFixed(2))
+                    text: fbkUpdater ? "%1,  %2,  %3".arg(fbkUpdater.ulisse_linear_vel.x.toFixed(2)).arg(
+                            fbkUpdater.ulisse_linear_vel.y.toFixed(2)).arg(fbkUpdater.ulisse_linear_vel.z.toFixed(2)) : ""
                     lsize: labelsize
                     tsize: textsize
                 }
@@ -133,8 +133,8 @@ Rectangle {
                     labelColor: blue
                     label: "Orientation (°)"
                     textColor: 'grey'
-                    text: "%1,  %2,  %3".arg(fbkUpdater.ulisse_rpy_deg.x.toFixed(2)).arg(
-                              fbkUpdater.ulisse_rpy_deg.y.toFixed(2)).arg(fbkUpdater.ulisse_rpy_deg.z.toFixed(2))
+                    text: fbkUpdater ? "%1,  %2,  %3".arg(fbkUpdater.ulisse_rpy_deg.x.toFixed(2)).arg(
+                              fbkUpdater.ulisse_rpy_deg.y.toFixed(2)).arg(fbkUpdater.ulisse_rpy_deg.z.toFixed(2)) : ""
                     lsize: labelsize
                     tsize: textsize
                 }
@@ -144,8 +144,8 @@ Rectangle {
                     labelColor: blue
                     label: "Angular Vel. (°/s)"
                     textColor: 'grey'
-                    text: "%1,  %2,  %3".arg(fbkUpdater.ulisse_rpy_rate_deg.x.toFixed(2)).arg(
-                              fbkUpdater.ulisse_rpy_rate_deg.y.toFixed(2)).arg(fbkUpdater.ulisse_rpy_rate_deg.z.toFixed(2))
+                    text: fbkUpdater ? "%1,  %2,  %3".arg(fbkUpdater.ulisse_rpy_rate_deg.x.toFixed(2)).arg(
+                              fbkUpdater.ulisse_rpy_rate_deg.y.toFixed(2)).arg(fbkUpdater.ulisse_rpy_rate_deg.z.toFixed(2)) : ""
                     lsize: labelsize
                     tsize: textsize
                 }
@@ -167,7 +167,7 @@ Rectangle {
                         Rectangle {
                             width: gpsInfo.contentWidth + 6
                             height: gpsInfo.contentHeight + 6
-                            border.color: fbkUpdater.gps_online ? "green" : "red"
+                            border.color: fbkUpdater ? fbkUpdater.gps_online ? "green" : "red" : ""
                             border.width: 1
                             radius: 5
 
@@ -177,15 +177,15 @@ Rectangle {
                                 horizontalAlignment: Text.AlignHCenter
                                 anchors.fill:parent
                                 font.pointSize: 8
-                                color: fbkUpdater.gps_online ? "green" : "red"
-                                text:  fbkUpdater.gps_online ? qsTr("GPS") : qsTr("GPS N/A")
+                                color: fbkUpdater ? fbkUpdater.gps_online ? "green" : "red" : ""
+                                text:  fbkUpdater ? fbkUpdater.gps_online ? qsTr("GPS") : qsTr("GPS N/A") : ""
                             }
                         }
 
                         Rectangle {
                             width: compassInfo.contentWidth + 6
                             height: compassInfo.contentHeight + 6
-                            border.color: fbkUpdater.compass_online ? "green" : "red"
+                            border.color: fbkUpdater ? fbkUpdater.compass_online ? "green" : "red" : ""
                             border.width: 1
                             radius: 5
 
@@ -195,15 +195,15 @@ Rectangle {
                                 horizontalAlignment: Text.AlignHCenter
                                 anchors.fill:parent
                                 font.pointSize: 8
-                                color: fbkUpdater.compass_online ? "green" : "red"
-                                text:  fbkUpdater.compass_online ? qsTr("Compass") : qsTr("Compass N/A")
+                                color: fbkUpdater ? fbkUpdater.compass_online ? "green" : "red" : ""
+                                text:  fbkUpdater ? fbkUpdater.compass_online ? qsTr("Compass") : qsTr("Compass N/A") : ""
                             }
                         }
 
                         Rectangle {
                             width: imuInfo.contentWidth + 6
                             height: imuInfo.contentHeight + 6
-                            border.color: fbkUpdater.imu_online ? "green" : "red"
+                            border.color: fbkUpdater ? fbkUpdater.imu_online ? "green" : "red" : ""
                             border.width: 1
                             radius: 5
 
@@ -213,15 +213,15 @@ Rectangle {
                                 horizontalAlignment: Text.AlignHCenter
                                 anchors.fill:parent
                                 font.pointSize: 8
-                                color: fbkUpdater.imu_online ? "green" : "red"
-                                text:  fbkUpdater.imu_online ? qsTr("IMU") : qsTr("IMU N/A")
+                                color: fbkUpdater ? fbkUpdater.imu_online ? "green" : "red" : ""
+                                text:  fbkUpdater ? fbkUpdater.imu_online ? qsTr("IMU") : qsTr("IMU N/A") : ""
                             }
                         }
 
                         Rectangle {
                             width: magnetometerInfo.contentWidth + 6
                             height: magnetometerInfo.contentHeight + 6
-                            border.color: fbkUpdater.magnetometer_online ? "green" : "red"
+                            border.color: fbkUpdater ? fbkUpdater.magnetometer_online ? "green" : "red" : ""
                             border.width: 1
                             radius: 5
 
@@ -231,8 +231,8 @@ Rectangle {
                                 horizontalAlignment: Text.AlignHCenter
                                 anchors.fill:parent
                                 font.pointSize: 8
-                                color: fbkUpdater.magnetometer_online ? "green" : "red"
-                                text:  fbkUpdater.magnetometer_online ? qsTr("Magnetometer") : qsTr("Magnetometer N/A")
+                                color: fbkUpdater ? fbkUpdater.magnetometer_online ? "green" : "red" : ""
+                                text:  fbkUpdater ? fbkUpdater.magnetometer_online ? qsTr("Magnetometer") : qsTr("Magnetometer N/A") : ""
                             }
                         }
                     }
@@ -265,7 +265,7 @@ Rectangle {
                     labelColor: darkgrey
                     label: "Micro Loop Count"
                     textColor: 'grey'
-                    text: "%1".arg(fbkUpdater.micro_loop_count)
+                    text: fbkUpdater ? "%1".arg(fbkUpdater.micro_loop_count) : ""
                     lsize: labelsize
                     tsize: textsize
                 }
@@ -275,8 +275,8 @@ Rectangle {
                     labelColor: darkgrey
                     label: "Battery"
                     textColor: 'grey'
-                    text: "Left: %1 \%, Right: %2 \%"
-                    .arg(fbkUpdater.battery_perc_L).arg(fbkUpdater.battery_perc_R)
+                    text: fbkUpdater ? "Left: %1 \%, Right: %2 \%"
+                    .arg(fbkUpdater.battery_perc_L).arg(fbkUpdater.battery_perc_R) : ""
                     lsize: labelsize
                     tsize: textsize
                 }
@@ -296,8 +296,8 @@ Rectangle {
                     labelColor: darkgrey
                     label: "Ambient"
                     textColor: 'grey'
-                    text: "Temperature: %1 °C \nHumidity: %2 \%"
-                    .arg(fbkUpdater.ambient_temperature.toFixed(1)).arg(fbkUpdater.ambient_humidity.toFixed(1))
+                    text: fbkUpdater ? "Temperature: %1 °C \nHumidity: %2 \%"
+                    .arg(fbkUpdater.ambient_temperature.toFixed(1)).arg(fbkUpdater.ambient_humidity.toFixed(1)) : ""
                     lsize: labelsize
                     tsize: textsize
                 }
@@ -307,7 +307,7 @@ Rectangle {
                     labelColor: darkgrey
                     label: "Compass"
                     textColor: 'grey'
-                    text: "RPY: %1".arg(fbkUpdater.compass_RPY)
+                    text: fbkUpdater ? "RPY: %1".arg(fbkUpdater.compass_RPY) : ""
                     lsize: labelsize
                     tsize: textsize
                 }
@@ -317,7 +317,7 @@ Rectangle {
                     labelColor: darkgrey
                     label: "IMU"
                     textColor: 'grey'
-                    text: "Accelerometer: %1 \nGyroscope: %2".arg(fbkUpdater.imu_accelerometer).arg(fbkUpdater.imu_gyro)
+                    text: fbkUpdater ? "Accelerometer: %1 \nGyroscope: %2".arg(fbkUpdater.imu_accelerometer).arg(fbkUpdater.imu_gyro) : ""
                     lsize: labelsize
                     tsize: textsize
                 }
@@ -327,7 +327,7 @@ Rectangle {
                     labelColor: darkgrey
                     label: "Magnetometer"
                     textColor: 'grey'
-                    text: "Strength: %1".arg(fbkUpdater.magnetometer)
+                    text: fbkUpdater ? "Strength: %1".arg(fbkUpdater.magnetometer) : ""
                     lsize: labelsize
                     tsize: textsize
                 }
@@ -337,7 +337,7 @@ Rectangle {
                     labelColor: darkgrey
                     label: "Motors Speed"
                     textColor: 'grey'
-                    text: "Left: %1, Right: %2 (rpm)".arg(fbkUpdater.motor_speed_L).arg(fbkUpdater.motor_speed_R)
+                    text: fbkUpdater ? "Left: %1, Right: %2 (rpm)".arg(fbkUpdater.motor_speed_L).arg(fbkUpdater.motor_speed_R) : ""
                     lsize: labelsize
                     tsize: textsize
                 }
@@ -390,9 +390,9 @@ Rectangle {
                         font.weight: Font.DemiBold
                         Layout.preferredWidth: 140
                     }
-                    Text { text: "%1".arg(fbkUpdater.ulisse_surge); color: grey; Layout.preferredWidth: 120 }
-                    Text { text: "%1".arg(fbkUpdater.desired_surge); color: grey; Layout.preferredWidth: 120 }
-                    Text { text: "%1".arg((fbkUpdater.desired_surge - fbkUpdater.ulisse_surge)); color: grey; Layout.preferredWidth: 120 }
+                    Text { text: fbkUpdater ? "%1".arg(fbkUpdater.ulisse_surge) : ""; color: grey; Layout.preferredWidth: 120 }
+                    Text { text: fbkUpdater ? "%1".arg(fbkUpdater.desired_surge) : ""; color: grey; Layout.preferredWidth: 120 }
+                    Text { text: fbkUpdater ? "%1".arg((fbkUpdater.desired_surge - fbkUpdater.ulisse_surge)) : ""; color: grey; Layout.preferredWidth: 120 }
 
 
                     /// 3rd ROW ///
@@ -404,9 +404,9 @@ Rectangle {
                         font.weight: Font.DemiBold
                         Layout.preferredWidth: 140
                     }
-                    Text { text: "%1".arg(fbkUpdater.ulisse_rpy_rate_deg.z); color: grey; Layout.preferredWidth: 120 }
-                    Text { text: "%1".arg(fbkUpdater.desired_jog); color: grey; Layout.preferredWidth: 120 }
-                    Text { text: "%1".arg((fbkUpdater.desired_jog - fbkUpdater.ulisse_rpy_rate_deg.z)); color: grey; Layout.preferredWidth: 120 }
+                    Text { text: fbkUpdater ? "%1".arg(fbkUpdater.ulisse_rpy_rate_deg.z) : ""; color: grey; Layout.preferredWidth: 120 }
+                    Text { text: fbkUpdater ? "%1".arg(fbkUpdater.desired_jog) : ""; color: grey; Layout.preferredWidth: 120 }
+                    Text { text: fbkUpdater ? "%1".arg((fbkUpdater.desired_jog - fbkUpdater.ulisse_rpy_rate_deg.z)) : ""; color: grey; Layout.preferredWidth: 120 }
                 }
 
                 LabelledText {
@@ -414,8 +414,8 @@ Rectangle {
                     labelColor: blue
                     label: "Thrust. Ref."
                     textColor: 'grey'
-                    text: "Left: %1 \%, Right: %2 \%"
-                    .arg(fbkUpdater.thrust_ref_left).arg(fbkUpdater.thrust_ref_right)
+                    text: fbkUpdater ? "Left: %1 \%, Right: %2 \%"
+                    .arg(fbkUpdater.thrust_ref_left).arg(fbkUpdater.thrust_ref_right) : ""
                     lsize: labelsize
                     tsize: textsize
                 }
@@ -425,8 +425,8 @@ Rectangle {
                     labelColor: blue
                     label: "Thr. Applied Ref."
                     textColor: 'grey'
-                    text: "Left: %1 \%, Right: %2 \%"
-                    .arg(fbkUpdater.thrust_applied_ref_left).arg(fbkUpdater.thrust_applied_ref_right)
+                    text: fbkUpdater ? "Left: %1 \%, Right: %2 \%"
+                    .arg(fbkUpdater.thrust_applied_ref_left).arg(fbkUpdater.thrust_applied_ref_right) : ""
                     lsize: labelsize
                     tsize: textsize
                 }

@@ -137,7 +137,7 @@ MapComponentForm {
         Rotation {
             origin.x: currentArrow.width / 2
             origin.y: currentArrow.height / 2
-            angle: fbkUpdater.water_current_deg - map.bearing
+            angle: fbkUpdater ? fbkUpdater.water_current_deg - map.bearing : 0
         },
         Rotation {
             origin.x: ulisseIcon.sourceItem.width / 2
@@ -149,13 +149,13 @@ MapComponentForm {
         }
     ]
 
-    currentLabel.text:"Current\n%1 m/s".arg(fbkUpdater.water_current_norm.toFixed(2))
+    currentLabel.text: fbkUpdater ? "Current\n%1 m/s".arg(fbkUpdater.water_current_norm.toFixed(2)) : ""
 
     ulisseIcon.transform: [
         Rotation {
             origin.x: ulisseIcon.sourceItem.width / 2
             origin.y: ulisseIcon.sourceItem.height / 2
-            angle: fbkUpdater.ulisse_rpy_deg.z - map.bearing
+            angle: fbkUpdater ? fbkUpdater.ulisse_rpy_deg.z - map.bearing : 0
         },
         Rotation {
             origin.x: ulisseIcon.sourceItem.width / 2
@@ -171,7 +171,7 @@ MapComponentForm {
         Rotation {
             origin.x: ulisseIcon.sourceItem.width / 2
             origin.y: ulisseIcon.sourceItem.height / 2
-            angle: fbkUpdater.ulisse_rpy_deg.z - map.bearing
+            angle: fbkUpdater ? fbkUpdater.ulisse_rpy_deg.z - map.bearing : 0
         },
         Rotation {
             origin.x: ulisseIcon.sourceItem.width / 2

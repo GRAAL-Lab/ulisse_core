@@ -1,0 +1,11 @@
+{
+  "files": [
+    "src/main.qml",
+    "src/qml/",
+    "src/fonts/"
+  ],
+  "importPaths": [
+    "src/qml/",
+    "generated_qml/"
+  ]
+}

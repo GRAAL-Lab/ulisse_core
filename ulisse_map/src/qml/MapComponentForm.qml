@@ -153,7 +153,7 @@ Map {
             font.family: "Courier New"
             font.weight: Font.DemiBold
         }
-        coordinate: fbkUpdater.centroid
+        coordinate: fbkUpdater ? fbkUpdater.centroid : QtPositioning.coordinate(0.0, 0.0)
         z: map.z + 1
         opacity: 0.75
         visible: settings.showCentroid
@@ -167,7 +167,7 @@ Map {
             height: 38
             source: 'qrc:/images/catamaran_icon_64_sat.png'
         }
-        coordinate: fbkUpdater.ulisse_pos
+        coordinate: fbkUpdater ? fbkUpdater.ulisse_pos : QtPositioning.coordinate(0.0, 0.0)
         anchorPoint.x: ulisseImage.width / 2
         anchorPoint.y: ulisseImage.height / 2
         visible: false
@@ -184,7 +184,7 @@ Map {
             visible: gpsIconCBox.checked
             source: 'qrc:/images/catamaran_icon_64_sat.png'
         }
-        coordinate: fbkUpdater.gps_pos
+        coordinate: fbkUpdater ? fbkUpdater.gps_pos : QtPositioning.coordinate(0.0, 0.0)
         anchorPoint.x: ulisseImage.width / 2
         anchorPoint.y: ulisseImage.height / 2
         z: map.z + 6
@@ -199,7 +199,7 @@ Map {
             height: 72
             source: 'qrc:/images/flag_checker.png'
         }
-        coordinate: fbkUpdater.goal_pos
+        coordinate: fbkUpdater ? fbkUpdater.goal_pos : QtPositioning.coordinate(0.0, 0.0)
         anchorPoint.x: flagCheckerImage.width / 2
         anchorPoint.y: flagCheckerImage.height / 2
         z: goalAcceptRadius.z + 2
@@ -217,17 +217,17 @@ Map {
 
         anchorPoint.x: greenFlagImage.width / 2
         anchorPoint.y: greenFlagImage.height / 2
-        coordinate: fbkUpdater.track_pos
+        coordinate: fbkUpdater ? fbkUpdater.track_pos : QtPositioning.coordinate(0.0, 0.0)
         z: goalAcceptRadius.z + 1
-        opacity: (fbkUpdater.vehicle_state === "Path_Following") ? 0.6 : 0.0
+        opacity: fbkUpdater ? (fbkUpdater.vehicle_state === "Path_Following") ? 0.6 : 0.0 : 0.0
     }
 
     MapQuickItem {
         id: ulisseOverlayText
         sourceItem: Text {
             color: 'darkslategrey'
-            text: "Surge: " + fbkUpdater.ulisse_surge + " m/s\nHeading: "
-                  + fbkUpdater.ulisse_rpy_deg.z.toFixed(2) + "°"
+            text: fbkUpdater ? "Surge: " + fbkUpdater.ulisse_surge + " m/s\nHeading: "
+                  + fbkUpdater.ulisse_rpy_deg.z.toFixed(2) + "°" : ""
 
             font.weight: Font.DemiBold
 
@@ -239,7 +239,7 @@ Map {
 
             }
         }
-        coordinate: fbkUpdater.ulisse_pos
+        coordinate: fbkUpdater ? fbkUpdater.ulisse_pos : QtPositioning.coordinate(0.0, 0.0)
         anchorPoint.x: -ulisseImage.width / 2
         anchorPoint.y: -ulisseImage.height / 2
         z: map.z + 5
@@ -260,7 +260,7 @@ Map {
   MapCustomCircle {
       id: goalAcceptRadius
       center: goalFlag.coordinate
-      radius: fbkUpdater.accept_radius
+      radius: fbkUpdater ? fbkUpdater.accept_radius : 0.0
       //color: 'transparent'
       //border.width: 1
       //border.color: grey

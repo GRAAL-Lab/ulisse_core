@@ -29,7 +29,7 @@ Rectangle {
             Rectangle {
                 width: controllerEnabled.contentWidth + 6
                 height: controllerEnabled.contentHeight + 3
-                border.color: fbkUpdater.control_alive ? "green" : "red"
+                border.color: fbkUpdater ? fbkUpdater.control_alive ? "green" : "red" : ""
                 border.width: 1
                 radius: 5
 
@@ -39,15 +39,15 @@ Rectangle {
                     horizontalAlignment: Text.AlignHCenter
                     anchors.fill:parent
                     font.pointSize: 8
-                    color: fbkUpdater.control_alive ? "green" : "red"
-                    text:  fbkUpdater.control_alive ? qsTr("Controller On") : qsTr("Controller Off")
+                    color: fbkUpdater ? fbkUpdater.control_alive ? "green" : "red" : ""
+                    text:  fbkUpdater ? fbkUpdater.control_alive ? qsTr("Controller On") : qsTr("Controller Off") : ""
                 }
             }
 
             Rectangle {
                 width: vehicleOnline.contentWidth + 6
                 height: vehicleOnline.contentHeight + 3
-                border.color: fbkUpdater.vehicle_alive ? "green" : "red"
+                border.color: fbkUpdater ? fbkUpdater.vehicle_alive ? "green" : "red" : ""
                 border.width: 1
                 radius: 5
 
@@ -57,8 +57,8 @@ Rectangle {
                     horizontalAlignment: Text.AlignHCenter
                     anchors.fill:parent
                     font.pointSize: 8
-                    color: fbkUpdater.vehicle_alive ? "green" : "red"
-                    text:  fbkUpdater.vehicle_alive ? qsTr("Vehicle Online") : qsTr("Vehicle Offline")
+                    color: fbkUpdater ? fbkUpdater.vehicle_alive ? "green" : "red" : ""
+                    text:  fbkUpdater ? fbkUpdater.vehicle_alive ? qsTr("Vehicle Online") : qsTr("Vehicle Offline") : ""
                 }
             }
         }
@@ -70,7 +70,7 @@ Rectangle {
             Rectangle {
                 width: rc_enabled.contentWidth + 6
                 height: rc_enabled.contentHeight + 3
-                border.color: fbkUpdater.radio_controller_enabled ? "red" : "green"
+                border.color: fbkUpdater ? fbkUpdater.radio_controller_enabled ? "red" : "green" : ""
                 border.width: 1
                 radius: 5
 
@@ -80,15 +80,15 @@ Rectangle {
                     horizontalAlignment: Text.AlignHCenter
                     anchors.fill:parent
                     font.pointSize: 8
-                    color: fbkUpdater.radio_controller_enabled ? "red" : "green"
-                    text:  fbkUpdater.radio_controller_enabled ? qsTr("Radio Controller On") : qsTr("Radio Controller Off")
+                    color: fbkUpdater ? fbkUpdater.radio_controller_enabled ? "red" : "green" : ""
+                    text:  fbkUpdater ? fbkUpdater.radio_controller_enabled ? qsTr("Radio Controller On") : qsTr("Radio Controller Off") : ""
                 }
             }
 
             Rectangle {
                 width: thrusters_enabled.contentWidth + 6
                 height: thrusters_enabled.contentHeight + 3
-                border.color: fbkUpdater.thruster_ref_enabled ? "green" : "red"
+                border.color: fbkUpdater ? fbkUpdater.thruster_ref_enabled ? "green" : "red" : ""
                 border.width: 1
                 radius: 5
 
@@ -98,8 +98,8 @@ Rectangle {
                     horizontalAlignment: Text.AlignHCenter
                     anchors.fill:parent
                     font.pointSize: 8
-                    color: fbkUpdater.thruster_ref_enabled ? "green" : "red"
-                    text:  fbkUpdater.thruster_ref_enabled ? qsTr("Motor Ref. Enabled") : qsTr("Motor Ref. Disabled")
+                    color: fbkUpdater ? fbkUpdater.thruster_ref_enabled ? "green" : "red" : ""
+                    text:  fbkUpdater ? fbkUpdater.thruster_ref_enabled ? qsTr("Motor Ref. Enabled") : qsTr("Motor Ref. Disabled") : ""
                 }
             }
         }
@@ -152,7 +152,7 @@ Rectangle {
             Material.accent: mainColor
             Layout.alignment: Qt.AlignRight
             Layout.rightMargin: 10
-            enabled: !fbkUpdater.thruster_ref_enabled
+            enabled: fbkUpdater ? !fbkUpdater.thruster_ref_enabled : false
         }
 
         Button {
