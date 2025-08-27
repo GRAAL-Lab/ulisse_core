@@ -112,7 +112,7 @@ ros2 run ulisse_map ulisse_map_node
 To enable the GPS on a fresh install of Linux you will have to:
 
 - Add in **/etc/default/gpsd** the following line: `DEVICE:"/dev/ttyS1"`.
-- Add your user to the `dialout` user group.
+- Add your user to the `dialout` user group: `sudo usermod -G dialout graal`.
 
 
 ### Testing the serial
