@@ -6,14 +6,14 @@ Ulisse catamaran controller revamped with ROS2.
 
 Short description of all the packages included in this meta package:
 
-- **surface_vehicle_model**: Dynamic model of a surface vehicle with two thrusters.
-- **navigation_filter**: The sensor filtering package providing the vehicle status and sea current estimation to the controller.
+- **nav_filter**: The sensor filtering package providing the vehicle status and sea current estimation to the controller.
 - **ulisse_msgs**: Interface and services messages package with headers for topic names and common variables.
 - **ulisse_ctrl**: The catamaran controller.
 - **ulisse_driver**: The low level driver that communicates with the catamaran micro-controllers.
 - **ulisse_sim**: The dynamic simulator, which makes use of `surface_vehicle_model` library or replays data from logs.
 - **ulisse_map**: Graphical interface (Qt based) for controlling the catamaran.
 - **csv_pkg**: Node to log all necessary data to be plotted in matlab.
+- **bag_recorder**: Programmatic ROSBag recorder, configurable and callable via ROS Service.
 
 ## Dependencies
 
@@ -24,6 +24,7 @@ In order of installation to respect dependencies:
 - **fsm**: http://bitbucket.org/isme_robotics/fsm
 - **tpik**: http://bitbucket.org/isme_robotics/tpik
 - **ikcl**: https://bitbucket.org/isme_robotics/ikcl
+- **marine_vehicle_models**: https://bitbucket.org/isme_robotics/marine_vehicle_models
 - **libgps**: `sudo apt install libgps-dev`
 - **SISL lib**: `git clone https://github.com/SINTEF-Geometry/SISL.git`
 - **ctrl_toolbox**: http://bitbucket.org/isme_robotics/ctrl_toolbox

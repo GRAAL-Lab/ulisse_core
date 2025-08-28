@@ -1,82 +1,46 @@
-sudo apt install -y libeigen3-dev
-sudo apt install -y libgeographic-dev
-sudo apt install -y libconfig++-dev
+#!/bin/bash
+GRN='\033[1;32m'
+RED='\033[1;31m'
+NC='\033[0m' # No Color
 
 cd ~
-mkdir graal_ws
-cd graal_ws
 
-git clone git@bitbucket.org:isme_robotics/rml.git
-cd rml
-mkdir build
-cd build
-cmake ..
-sudo make install
-cd ../..
+if [ -d "graal_ws/graal_utils" ]; then
+	cd graal_ws/graal_utils/scripts
+	echo -e "${GRN}Found graal_ws/graal_utils${NC}. Installing deps."
+	./install_update_graal_libs.sh
+	
+else
+	echo -e "${RED}Error: no graal_ws/graal_utils folder found, please clone \"graal_utils\" first and put it inside a graal_ws folder.${NC}"
+	exit
+fi
 
-git clone git@bitbucket.org:isme_robotics/fsm.git
-cd fsm
-mkdir build
-cd build
-cmake ..
-sudo make install
-cd ../..
 
-git clone git@bitbucket.org:isme_robotics/ctrl_toolbox.git
-cd ctrl_toolbox
-mkdir build
-cd build
-cmake ..
-sudo make install
-cd ../..
-
-git clone git@bitbucket.org:isme_robotics/tpik.git
-cd tpik
-mkdir build
-cd build
-cmake ..
-sudo make install
-cd ../..
-
-git clone git@bitbucket.org:isme_robotics/ikcl.git
-cd ikcl
-mkdir build
-cd build
-cmake ..
-sudo make install
-cd ../..
-
-git clone https://github.com/SINTEF-Geometry/SISL.git
-cd SISL
-mkdir build
-cd build
-cmake ..
-sudo make install
-cd ../..
-
-git clone git@bitbucket.org:isme_robotics/sisl_toolbox.git
-cd sisl_toolbox
-mkdir build
-cd build
-cmake ..
-sudo make install
-cd ../..
-
-sudo apt install -y libgps-dev gpsd-clients
-sudo apt install -y qtquickcontrols2-5-dev qtlocation5-dev qtpositioning5-dev qml-module-qtquick-controls2 qml-module-qt-labs-settings qml-module-qt-labs-folderlistmodel qml-module-qtlocation qml-module-qtpositioning qml-module-qtquick-extras qml-module-qtgraphicaleffects qml-module-qtquick-dialogs qml-module-qtquick-controls python3-colcon-common-extensions qml-module-qtqml-models2 qml-module-qt-labs-platform
-
+# Create "ulisse_ws" folder if not existing
 cd ~
-mkdir -p ros2_ws/src
-cd ros2_ws/src
-git clone git@bitbucket.org:isme_robotics/ulisse_core.git
-cd ..
+if ! [ -d "ulisse_ws/src" ]; then
+    mkdir -p "ulisse_ws/src"
+else
+	echo -e "${GRN}Found ulisse_ws/src"
+fi
 
-source /opt/ros/galactic/setup.bash
-source ~/ros2_ws/install/setup.bash
+cd ulisse_ws/src
 
-colcon build --symlink-install --packages-select ulisse_msgs
+if ! [ -d "ulisse_core" ]; then
+    echo -e "Cloning ulisse_core repo..."
+    git clone git@bitbucket.org:isme_robotics/ulisse_core.git
+else
+	echo -e "${GRN}Found ulisse_core repo${NC}"
+fi
 
-source ~/ros2_ws/install/setup.bash
+if ! [ -d "marine_vehicle_models" ]; then
+    echo -e "Cloning marine_vehicle_models repo..."
+    git clone git@bitbucket.org:isme_robotics/marine_vehicle_models.git
+else
+	echo -e "${GRN}Found marine_vehicle_models repo${NC}"
+fi
 
-colcon build --symlink-install
+cd ~/ulisse_ws
+source /opt/ros/kilted/setup.bash
+colcon build --symlink-install --executor sequential
 
