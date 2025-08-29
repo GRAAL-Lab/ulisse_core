@@ -29,9 +29,7 @@ In order of installation to respect dependencies:
 - **SISL lib**: `git clone https://github.com/SINTEF-Geometry/SISL.git`
 - **ctrl_toolbox**: http://bitbucket.org/isme_robotics/ctrl_toolbox
 - **sisl_toolbox**: http://bitbucket.org/isme_robotics/sisl_toolbox
-- **qt5-libraries**: When building the package on the catamaran you don't need the **ulisse_map** sub-package (so you can add a COLCON_IGNORE file inside it), and these dependencies can be skipped.Otherwise, to use the interface, type:
-
-`sudo apt install gpsd-clients qtquickcontrols2-5-dev qtlocation5-dev qtpositioning5-dev qml-module-qtquick-controls2 qml-module-qt-labs-settings qml-module-qt-labs-folderlistmodel qml-module-qtlocation  qml-module-qtpositioning qml-module-qtquick-extras qml-module-qtgraphicaleffects qml-module-qtquick-dialogs qml-module-qtquick-controls python3-colcon-common-extensions qml-module-qtqml-models2`
+- **qt5-libraries**: When building the package on the catamaran you don't need the **ulisse_map** sub-package (so you can add a COLCON_IGNORE file inside it), and these dependencies can be skipped.
 
 
 ### Additional packages not coming with ros2
@@ -113,7 +111,7 @@ ros2 run ulisse_map ulisse_map_node
 To enable the GPS on a fresh install of Linux you will have to:
 
 - Add in **/etc/default/gpsd** the following line: `DEVICE:"/dev/ttyS1"`.
-- Add your user to the `dialout` user group: `sudo usermod -G dialout graal`.
+- Add your user to the `dialout` user group: `sudo usermod -a -G dialout graal`.
 
 
 ### Testing the serial
