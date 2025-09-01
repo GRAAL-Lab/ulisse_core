@@ -74,7 +74,7 @@ namespace llc {
         llc_battery_right_pub_ = this->create_publisher<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_right, 1);
         llc_sw485_pub_ = this->create_publisher<ulisse_msgs::msg::LLCSw485Status>(ulisse_msgs::topicnames::llc_sw485status, 1);
 
-        timer_ = create_wall_timer(50ms, std::bind(&ThreadReceiver::ReadLoop, this));
+        timer_ = create_wall_timer(1ms, std::bind(&ThreadReceiver::ReadLoop, this));
     }
 
     ulisse_msgs::msg::Time ThreadReceiver::GetTime() {
@@ -90,14 +90,13 @@ namespace llc {
 
     void ThreadReceiver::ReadLoop()
     {
-        while (rclcpp::ok()) {
-            char byte;
+        if(rclcpp::ok()) {
+            
             if (serial_->IsOpen()) {
-                
-                //while (1) {
-                    int ret = serial_->ReadBlocking(&byte, 1);
+                //while (1) { 
+                    int ret = serial_->ReadBlocking(&readByte_, 1);
 
-                    ret = llcParser_.ParseByte(byte);
+                    ret = llcParser_.ParseByte(readByte_);
                     if (ret == 1) {
                         // TODO:
                         // publish the time stamp of ROS in the messages!
@@ -132,11 +131,11 @@ namespace llc {
                         RCLCPP_WARN(this->get_logger(), "WRONG CHECKSUM, DISCARDING PACKET");
                     }
 
-                    std::this_thread::sleep_for(1ms);
+                    //std::this_thread::sleep_for(1ms);
                 //}
             }
         }
-        RCLCPP_WARN(this->get_logger(), "EXIT READLOOP");
+        //RCLCPP_WARN(this->get_logger(), "EXIT READLOOP");
     }
 
     /* void ThreadReceiver::LLCData2RosMsg(const batteryData& llc_batt, ulisse_msgs::msg::LLCBattery& batt_msg)

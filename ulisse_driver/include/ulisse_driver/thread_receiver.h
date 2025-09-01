@@ -49,6 +49,7 @@ namespace llc {
 
         LLCParser llcParser_;
         CSerialHelper* serial_;
+        char readByte_;
         
         rclcpp::AsyncParametersClient::SharedPtr par_client_;
         rclcpp::TimerBase::SharedPtr timer_;
