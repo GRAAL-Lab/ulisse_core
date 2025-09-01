@@ -131,7 +131,7 @@ struct GpsData {
     void DebugPrint(rclcpp::Logger logger) {
         RCLCPP_INFO(logger, "-----------------------------------------------------------------------------------------------------------------------");
 
-        RCLCPP_INFO(logger, "time %lf mode %d lat %lf long %lf altitude %lf", time, static_cast<int>(mode), latitude, longitude, altitude);
+        RCLCPP_INFO(logger, "time %lf mode %d lat %lf long %lf altitude %lf", time, mode, latitude, longitude, altitude);
         RCLCPP_INFO(logger, "track %lf speed %lf climb %lf", track, speed, climb);
         RCLCPP_INFO(logger, "err %lf err_t %lf err_lat %lf err_lon %lf", err, err_time, err_latitude, err_longitude);
         RCLCPP_INFO(logger, "err_alt %lf err_tr %lf err_sp %lf err_cl %lf", err_altitude, err_track, err_speed, err_climb);
