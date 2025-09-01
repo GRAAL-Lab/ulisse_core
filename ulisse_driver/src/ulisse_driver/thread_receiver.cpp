@@ -91,9 +91,10 @@ namespace llc {
     void ThreadReceiver::ReadLoop()
     {
         while (rclcpp::ok()) {
+            char byte;
             if (serial_->IsOpen()) {
-                char byte;
-                while (1) {
+                
+                //while (1) {
                     int ret = serial_->ReadBlocking(&byte, 1);
 
                     ret = llcParser_.ParseByte(byte);
@@ -132,7 +133,7 @@ namespace llc {
                     }
 
                     std::this_thread::sleep_for(1ms);
-                }
+                //}
             }
         }
         RCLCPP_WARN(this->get_logger(), "EXIT READLOOP");
