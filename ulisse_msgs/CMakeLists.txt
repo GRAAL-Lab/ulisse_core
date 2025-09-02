@@ -100,6 +100,8 @@ rosidl_generate_interfaces(ulisse_msgs
   "srv/SetCruiseControl.srv"
   "srv/ResetConfiguration.srv"
   "srv/MinSrv.srv"
+  
+  ## Other ##
 
 )
 

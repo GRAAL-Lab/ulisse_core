@@ -14,15 +14,15 @@
 #include "ulisse_msgs/futils.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 
-//#include "ulisse_driver/LLCHelperDataStructs.h"
+#include "ulisse_driver/LLCHelperDataStructs.h"
 
-//using namespace ulisse;
+using namespace ulisse;
 using namespace std::chrono_literals;
 
 int main(int argc, char* argv[])
 {
 
-   /* rclcpp::init(argc, argv);
+    rclcpp::init(argc, argv);
     auto node = rclcpp::Node::make_shared("driver_console_node");
 
     auto llcClient = node->create_client<ulisse_msgs::srv::LLCCommand>(ulisse_msgs::topicnames::llc_cmd_service);
@@ -243,5 +243,5 @@ int main(int argc, char* argv[])
     }
 
     rclcpp::shutdown();
-    return 0;*/
+    return 0;
 }

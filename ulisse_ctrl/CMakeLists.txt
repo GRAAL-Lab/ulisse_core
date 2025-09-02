@@ -130,13 +130,13 @@ target_link_libraries(ulisse_dynamic_ctrl_lib PUBLIC
 #target_link_libraries(ulisse_dynamic_ctrl_lib ${surface_vehicle_model_LIBRARIES} ${ulisse_msgs_LIBRARIES} config++ GeographicLib rml fsm ctrl_toolbox)
 
 ## Executables
-#add_executable(control_test test/control_test.cpp)
-#target_link_libraries(control_test PUBLIC
-#  ${std_msgs_TARGETS}
-#  ${ulisse_msgs_TARGETS}
-# rclcpp::rclcpp
-# rml
-#)
+add_executable(control_test test/control_test.cpp)
+target_link_libraries(control_test PUBLIC
+  ${std_msgs_TARGETS}
+  ${ulisse_msgs_TARGETS}
+  rclcpp::rclcpp
+  rml
+)
 #ament_target_dependencies(control_test rclcpp std_msgs ulisse_msgs rml)
 #target_link_libraries(control_test rml ulisse_kinematic_ctrl_lib ${ulisse_driver_LIBRARIES})
 
@@ -196,7 +196,7 @@ install(TARGETS
   dynamic_control_node
   controller_console_node
   monitor_node
-#  control_test
+  control_test
   DESTINATION lib/${PROJECT_NAME}
 )
   

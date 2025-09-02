@@ -12,15 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <ament_index_cpp/get_package_share_directory.hpp>
 #include <chrono>
 #include <ctrl_toolbox/HelperFunctions.h>
+#include <ament_index_cpp/get_package_share_directory.hpp>
 
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
-#include "ulisse_driver/checksum.h"
-#include "ulisse_driver/serializer.h"
-#include "ulisse_driver/thread_sender.h"
+#include "ulisse_driver/thread_sender.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 
 using std::placeholders::_1;
@@ -37,141 +35,78 @@ namespace ulisse {
 
 namespace llc {
 
-    std::string CommandTypeToString(CommandType type)
-    {
-        std::string name;
-        uint16_t type_uint = (uint16_t)type;
-
-        switch (type_uint) {
-        case (uint16_t)CommandType::undefined:
-            name = "undefined";
-            break;
-        case (uint16_t)CommandType::beep:
-            name = "beep";
-            break;
-        case (uint16_t)CommandType::enableref:
-            name = "enableref";
-            break;
-        case (uint16_t)CommandType::setconfig:
-            name = "setconfig";
-            break;
-        case (uint16_t)CommandType::setpumps:
-            name = "setpumps";
-            break;
-        case (uint16_t)CommandType::setpowerbuttons:
-            name = "setpowerbuttons";
-            break;
-        case (uint16_t)CommandType::getconfig:
-            name = "getconfig";
-            break;
-        case (uint16_t)CommandType::getversion:
-            name = "getversion";
-            break;
-        case (uint16_t)CommandType::startcompasscal:
-            name = "startcompasscal";
-            break;
-        case (uint16_t)CommandType::stopcompasscal:
-            name = "stopcompasscal";
-            break;
-        case (uint16_t)CommandType::reset:
-            name = "reset";
-            break;
-        case (uint16_t)CommandType::reloadconfig:
-            name = "reloadconfig";
-            break;
-        default:
-            name = "Unhandled...please update ulisse::llc::CommandTypeToString method adding command type " + std::to_string(type_uint);
-            break;
-        }
-
-        return name;
-    }
-
-    std::string CommandAnswerToString(CommandAnswer answer)
-    {
-        std::string name;
-        int16_t ans_int = (int16_t)answer;
-
-        switch (ans_int) {
-        case (int16_t)CommandAnswer::fail:
-            name = "fail";
-            break;
-        case (int16_t)CommandAnswer::undefined:
-            name = "undefined";
-            break;
-        case (int16_t)CommandAnswer::ok:
-            name = "ok";
-            break;
-        default:
-            name = "Unhandled...please update ulisse::llc::CommandAnswerToString() method adding answer type " + std::to_string(ans_int);
-            break;
-        }
-
-        return name;
-    }
-
     ThreadSender::ThreadSender()
         : Node("llc_thread_sender")
     {
+
+        // Reading Parameters
         libconfig::Config confObj;
         std::string fileName = "ulisse_driver.conf";
         std::string package_share_directory = ament_index_cpp::get_package_share_directory("ulisse_driver");
         confPath_ = package_share_directory;
         confPath_.append("/conf/");
         confPath_.append(fileName);
-
-        RCLCPP_INFO(this->get_logger(), "Config file path %s", confPath_.c_str());
+        std::cout << "[LLC ThreadSender] Config: " << confPath_ << std::endl;
 
         try {
             confObj_.readFile(confPath_.c_str());
         } catch (const libconfig::FileIOException& fioex) {
-            RCLCPP_ERROR(this->get_logger(), "I/O error while reading file %s", fioex.what());
+            std::cerr << "[LLC ThreadSender] I/O error while reading file: " << fioex.what() << std::endl;
             exit(EXIT_FAILURE);
         } catch (const libconfig::ParseException& pex) {
-            RCLCPP_ERROR(this->get_logger(), "Parse error at %s: %d - %s", pex.getFile(), pex.getLine(), pex.getError());
-            //std::cerr << "Parse error at " << pex.getFile() << ":" << pex.getLine() << " - " << pex.getError() << std::endl;
+            std::cerr << "Parse error at " << pex.getFile() << ":" << pex.getLine() << " - " << pex.getError() << std::endl;
             exit(EXIT_FAILURE);
         }
 
         std::string serialDevice = "";
         uint32_t baudRate = 0;
-        /*bool debugBytes = false;
+        bool debugBytes = false;
         bool debugIncomingValidMessageType = false;
-        bool debugFailedCrc = false;*/
+        bool debugFailedCrc = false;
 
         ctb::GetParam(confObj_, serialDevice, "LLC.SerialDevice");
         ctb::GetParam(confObj_, baudRate, "LLC.BaudRate");
+        ctb::GetParam(confObj_, debugBytes, "LLC.DebugBytes");
+        ctb::GetParam(confObj_, debugIncomingValidMessageType, "LLC.DebugIncomingValidMessageType");
+        ctb::GetParam(confObj_, debugFailedCrc, "LLC.DebugFailedCrc");
 
-        RCLCPP_INFO(this->get_logger(), "Serial device: %s", serialDevice.c_str());
-        RCLCPP_INFO(this->get_logger(), "Baud rate: %u", baudRate);
+        std::cout << "=====    Sender Parameters    =====\n";
+        std::cout << "LLC.SerialDevice: "                  << serialDevice                  << std::endl;
+        std::cout << "LLC.BaudRate: "                      << baudRate                      << std::endl;
+        std::cout << "LLC.DebugBytes: "                    << debugBytes                    << std::endl;
+        std::cout << "LLC.DebugIncomingValidMessageType: " << debugIncomingValidMessageType << std::endl;
+        std::cout << "LLC.DebugFailedCrc: "                << debugFailedCrc                << std::endl;
 
-        serial_ = CSerialHelper::getInstance(serialDevice.c_str(), baudRate);
-        if (!serial_->IsOpen()) {
+        RCLCPP_INFO(this->get_logger(), "Trying to open serialDevice: %s, baudRate: %d ", serialDevice.c_str(), baudRate);
+        llcHlp_.DebugBytes(debugBytes);
+
+        RetVal ret = llcHlp_.SetSerial(serialDevice, baudRate);
+        if (ret != RetVal::ok) {
             RCLCPP_ERROR(this->get_logger(), "Error opening serial %s %d", serialDevice.c_str(), baudRate);
-            exit(EXIT_FAILURE);
+            exit(0);
         }
 
         LoadConfigFile();
-        SendConfiguration();
-        RetrieveConfiguration();
+
+        data_.messageType = MessageType::set_config;
+        data_.config = lowlevelconf_;
+        llcHlp_.SendMessage(data_);
+        data_.messageType = MessageType::get_config;
+        llcHlp_.SendMessage(data_);
 
         /// Sending a message to make the catamaran emit an "alive" beep
-        Serializer serializer;
-        serializer.PacketAdd_char(0x0A);
-        serializer.PacketAdd_char(0x0B);
-        serializer.PacketAdd_uint16(8);
-        serializer.PacketAdd_uint16(static_cast<uint16_t>(MessageType::beep));
-        serializer.PacketAdd_uint8(1);
-        serializer.PacketAdd_uint8(0);
-        serializer.PacketAdd_float32(30);
-        serializer.PacketAdd_uint16(chksm::CalculateChecksum(serializer.Buffer(), 2));
-        SendMessage(serializer.Buffer());
+        //data_.messageType = MessageType::beep;
+        //data_.beep.delay = 30;
+        //data_.beep.loop = 1;
+        //data_.beep.numberOfBeeps = 1;
+        //llcHlp_.SendMessage(data_);
 
         thruster_data_sub_ = create_subscription<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_reference_perc, 10,
             std::bind(&ThreadSender::ThrustersReferenceCB, this, _1));
 
         srv_ = create_service<ulisse_msgs::srv::LLCCommand>(ulisse_msgs::topicnames::llc_cmd_service,
             std::bind(&ThreadSender::CommandsHandler, this, _1, _2, _3));
+
     }
 
     void ThreadSender::CommandsHandler(const std::shared_ptr<rmw_request_id_t> request_header,
@@ -182,77 +117,67 @@ namespace llc {
         (void)request_header;
         RCLCPP_INFO(this->get_logger(), "Incoming request: %s", CommandTypeToString((CommandType)(request->command_type)).c_str());
 
-        llc::RetVal ret = RetVal::fail;
-        Serializer serializer;
-        serializer.PacketAdd_char(0x0A);
-        serializer.PacketAdd_char(0x0B);
+        RetVal ret = RetVal::ok;
 
         switch (request->command_type) {
         case (uint16_t)CommandType::beep:
-            RCLCPP_INFO(this->get_logger(), "Beep command");
-            serializer.PacketAdd_uint16(8);
-            serializer.PacketAdd_uint16(static_cast<uint16_t>(MessageType::beep));
-            serializer.PacketAdd_uint8(request->beep_data.numberofbeeps);
-            serializer.PacketAdd_uint8(request->beep_data.loop);
-            serializer.PacketAdd_float32(request->beep_data.delay);
-            serializer.PacketAdd_uint16(chksm::CalculateChecksum(serializer.Buffer(), 2));
-            SendMessage(serializer.Buffer());
-            ret = RetVal::ok;
+            data_.messageType = MessageType::beep;
+            data_.beep.delay = request->beep_data.delay;
+            data_.beep.loop = request->beep_data.loop;
+            data_.beep.numberOfBeeps = request->beep_data.numberofbeeps;
+            llcHlp_.SendMessage(data_);
             break;
         case (uint16_t)CommandType::enableref:
-            RCLCPP_INFO(this->get_logger(), "Enable reference command: enable = %d", request->enable_ref_data.enable);
-            serializer.PacketAdd_uint16(3);
-            serializer.PacketAdd_uint16(static_cast<uint16_t>(MessageType::enable_ref));
-            serializer.PacketAdd_uint8(request->enable_ref_data.enable);
-            serializer.PacketAdd_uint16(chksm::CalculateChecksum(serializer.Buffer(), 2));
-            SendMessage(serializer.Buffer());
-            ret = RetVal::ok;
+            data_.messageType = MessageType::enable_ref;
+            data_.enableRef.enable = request->enable_ref_data.enable;
+            llcHlp_.SendMessage(data_);
             break;
         case (uint16_t)CommandType::setconfig:
-            RCLCPP_INFO(this->get_logger(), "Sending set config command");
-            SendConfiguration();
-            // send get config to update data
-            RCLCPP_INFO(this->get_logger(), "Sending get config command");
-            RetrieveConfiguration();
-            ret = RetVal::ok;
+            data_.messageType = MessageType::set_config;
+            CopyConfigMsg2LLCStruct(request);
+            data_.config = lowlevelconf_;
+            llcHlp_.SendMessage(data_);
+            data_.messageType = MessageType::get_config;
+            llcHlp_.SendMessage(data_);
+            break;
+        case (uint16_t)CommandType::setpumps:
+            data_.messageType = MessageType::pumps;
+            data_.pumps.pumpsFlag[EMB_PUMPS_LEFT_IDX] = request->pumps_data.pumpsflag[EMB_PUMPS_LEFT_IDX];
+            data_.pumps.pumpsFlag[EMB_PUMPS_RIGHT_IDX] = request->pumps_data.pumpsflag[EMB_PUMPS_RIGHT_IDX];
+            llcHlp_.SendMessage(data_);
             break;
         case (uint16_t)CommandType::setpowerbuttons:
-            RCLCPP_INFO(this->get_logger(), "Set power button: left = %d, right = %d", request->pwr_buttons_data.pwrbuttonsflag & LLC_PWRBUTTONS_FLAG_LEFT, request->pwr_buttons_data.pwrbuttonsflag & LLC_PWRBUTTONS_FLAG_RIGHT);
-            serializer.PacketAdd_uint16(3);
-            serializer.PacketAdd_uint16(static_cast<uint16_t>(MessageType::pwrbuttons));
-            serializer.PacketAdd_charArray(reinterpret_cast<char*>(&request->pwr_buttons_data.pwrbuttonsflag), 1);
-            serializer.PacketAdd_uint16(chksm::CalculateChecksum(serializer.Buffer(), 2));
-            SendMessage(serializer.Buffer());
-            ret = RetVal::ok;
+            data_.messageType = MessageType::pwrbuttons;
+            data_.pwrButtons.pwrButtonsFlag = request->pwr_buttons_data.pwrbuttonsflag;
+            llcHlp_.SendMessage(data_);
             break;
         case (uint16_t)CommandType::getconfig:
-            RCLCPP_INFO(this->get_logger(), "Sending get config command");
-            RetrieveConfiguration();
-            ret = RetVal::ok;
+            data_.messageType = MessageType::get_config;
+            llcHlp_.SendMessage(data_);
             break;
         case (uint16_t)CommandType::getversion:
-            RCLCPP_INFO(this->get_logger(), "Sending get version command");
-            serializer.PacketAdd_uint16(2);
-            serializer.PacketAdd_uint16(static_cast<uint16_t>(MessageType::get_version));
-            serializer.PacketAdd_uint16(chksm::CalculateChecksum(serializer.Buffer(), 2));
-            SendMessage(serializer.Buffer());
+            data_.messageType = MessageType::get_version;
+            llcHlp_.SendMessage(data_);
+            break;
+        case (uint16_t)CommandType::startcompasscal:
+            data_.messageType = MessageType::start_compass_cal;
+            llcHlp_.SendMessage(data_);
+            break;
+        case (uint16_t)CommandType::stopcompasscal:
+            data_.messageType = MessageType::stop_compass_cal;
+            llcHlp_.SendMessage(data_);
             break;
         case (uint16_t)CommandType::reset:
-            RCLCPP_INFO(this->get_logger(), "Reset");
-            serializer.PacketAdd_uint16(2);
-            serializer.PacketAdd_uint16(static_cast<uint16_t>(MessageType::reset));
-            serializer.PacketAdd_uint16(chksm::CalculateChecksum(serializer.Buffer(), 2));
-            SendMessage(serializer.Buffer());
-            ret = RetVal::ok;
+            data_.messageType = MessageType::reset;
+            llcHlp_.SendMessage(data_);
             break;
         case (uint16_t)CommandType::reloadconfig:
             LoadConfigFile();
-            RCLCPP_INFO(this->get_logger(), "Sending set config command");
-            SendConfiguration();
-            // send get config to update data
-            RCLCPP_INFO(this->get_logger(), "Sending get config command");
-            RetrieveConfiguration();
-            ret = RetVal::ok;
+            data_.messageType = MessageType::set_config;
+            data_.config = lowlevelconf_;
+            llcHlp_.SendMessage(data_);
+            data_.messageType = MessageType::get_config;
+            llcHlp_.SendMessage(data_);
             break;
         default:
             RCLCPP_INFO(this->get_logger(), "Unsupported command! [%s]", CommandTypeToString((CommandType)(request->command_type)).c_str());
@@ -268,154 +193,104 @@ namespace llc {
 
     void ThreadSender::ThrustersReferenceCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg)
     {
-        int16_t leftPercentage, rightPercentage;
-        leftPercentage = msg->left_percentage * 10;
-        rightPercentage = msg->right_percentage * 10;
-        clamp(leftPercentage, -1000, 1000);
-        clamp(rightPercentage, -1000, 1000);
-
-        Serializer serializer;
-        serializer.PacketAdd_char(0x0A);
-        serializer.PacketAdd_char(0x0B);
-        serializer.PacketAdd_uint16(6);
-        serializer.PacketAdd_uint16(static_cast<uint16_t>(MessageType::reference));
-        serializer.PacketAdd_int16(leftPercentage);
-        serializer.PacketAdd_int16(rightPercentage);
-        serializer.PacketAdd_uint16(chksm::CalculateChecksum(serializer.Buffer(), 2));
-
-        SendMessage(serializer.Buffer());
-        RCLCPP_INFO(this->get_logger(), "Sending reference! (L:%d, R:%d)", leftPercentage, rightPercentage);
-    }
-
-    void ThreadSender::RetrieveConfiguration()
-    {
-        Serializer serializer;
-        serializer.PacketAdd_char(0x0A);
-        serializer.PacketAdd_char(0x0B);
-        serializer.PacketAdd_uint16(2);
-        serializer.PacketAdd_uint16(static_cast<uint16_t>(MessageType::get_config));
-        serializer.PacketAdd_uint16(chksm::CalculateChecksum(serializer.Buffer(), 2));
-        SendMessage(serializer.Buffer());
-    }
-
-    void ThreadSender::SendConfiguration()
-    {
-        Serializer serializer;
-        serializer.PacketAdd_char(0x0A);
-        serializer.PacketAdd_char(0x0B);
-        serializer.PacketAdd_uint16(52);
-        serializer.PacketAdd_uint16(static_cast<uint16_t>(MessageType::set_config));
-        serializer.PacketAdd_int16(lowlevelconf_.hbPacketStatus0);
-        serializer.PacketAdd_int16(lowlevelconf_.hbPacketStatusMax);
-        serializer.PacketAdd_int16(lowlevelconf_.hbPacketMotors0);
-        serializer.PacketAdd_int16(lowlevelconf_.hbPacketMotorsMax);
-        serializer.PacketAdd_int16(lowlevelconf_.hbPacketBattery0);
-        serializer.PacketAdd_int16(lowlevelconf_.hbPacketBatteryMax);
-        serializer.PacketAdd_float32(lowlevelconf_.ppmPulseMin);
-        serializer.PacketAdd_float32(lowlevelconf_.ppmPulseMax);
-        serializer.PacketAdd_float32(lowlevelconf_.ppmPeriodMin);
-        serializer.PacketAdd_float32(lowlevelconf_.ppmPeriodMax);
-        serializer.PacketAdd_float32(lowlevelconf_.ppmBlankMin);
-        serializer.PacketAdd_float32(lowlevelconf_.ppmBlankMax);
-        serializer.PacketAdd_float32(lowlevelconf_.pwmTimeThreshold);
-        serializer.PacketAdd_float32(lowlevelconf_.pwmZeroThreshold);
-        serializer.PacketAdd_float32(lowlevelconf_.deadzoneTime);
-        serializer.PacketAdd_uint16(lowlevelconf_.thrusterSaturation);
-        serializer.PacketAdd_uint16(chksm::CalculateChecksum(serializer.Buffer(), 2));
-        SendMessage(serializer.Buffer());
-    }
-
-    void ThreadSender::SendMessage(const std::vector<uint8_t> packet)
-    {
-        if (serial_->IsOpen()) {
-            serial_->Write(packet.data(), packet.size());
-        } else {
-            RCLCPP_INFO(this->get_logger(), "SendMessage() could not open the serial port");
-        }
+        data_.messageType = MessageType::reference;
+        data_.references.leftThruster = static_cast<int16_t>(msg->left_percentage * 10); // we multiply be 10 since the micro reads 'Per mille'
+        data_.references.rightThruster = static_cast<int16_t>(msg->right_percentage * 10);
+        clamp(data_.references.leftThruster, -1000, 1000);
+        clamp(data_.references.rightThruster, -1000, 1000);
+        llcHlp_.SendMessage(data_);
+        //RCLCPP_INFO(this->get_logger(), "ControlContext_cb() sending reference! (L:%d, R:%d)", data_.references.leftThruster, data_.references.rightThruster);
     }
 
     void ThreadSender::CopyConfigMsg2LLCStruct(const std::shared_ptr<ulisse_msgs::srv::LLCCommand::Request> request)
     {
-        /*  lowlevelconf_.hbCompass0 = request->config_data.hbcompass0;
-          lowlevelconf_.hbCompassMax = request->config_data.hbcompassmax;
-          lowlevelconf_.hbMagnetometer0 = request->config_data.hbmagnetometer0;
-          lowlevelconf_.hbMagnetometerMax = request->config_data.hbmagnetometermax;
-          lowlevelconf_.hbPacketSensors0 = request->config_data.hbpacketsensors0;
-          lowlevelconf_.hbPacketSensorsMax = request->config_data.hbpacketsensorsmax;
-          lowlevelconf_.hbPacketStatus0 = request->config_data.hbpacketstatus0;
-          lowlevelconf_.hbPacketStatusMax = request->config_data.hbpacketstatusmax;
-          lowlevelconf_.hbPacketMotors0 = request->config_data.hbpacketmotors0;
-          lowlevelconf_.hbPacketMotorsMax = request->config_data.hbpacketmotorsmax;
-          lowlevelconf_.hbPacketBattery0 = request->config_data.hbpacketbattery0;
-          lowlevelconf_.hbPacketBatteryMax = request->config_data.hbpacketbatterymax;
-          lowlevelconf_.timeoutAccelerometer = request->config_data.timeoutaccelerometer;
-          lowlevelconf_.timeoutCompass = request->config_data.timeoutcompass;
-          lowlevelconf_.timeoutMagnetometer = request->config_data.timeoutmagnetometer;
-          lowlevelconf_.pwmUpMin = request->config_data.pwmupmin;
-          lowlevelconf_.pwmUpMax = request->config_data.pwmupmax;
-          lowlevelconf_.pwmPeriodMin = request->config_data.pwmperiodmin;
-          lowlevelconf_.pwmPeriodMax = request->config_data.pwmperiodmax;
-          lowlevelconf_.pwmTimeThreshold = request->config_data.pwmtimethreshold;
-          lowlevelconf_.pwmZeroThreshold = request->config_data.pwmzerothreshold;
-          lowlevelconf_.deadzoneTime = request->config_data.deadzonetime;
-          lowlevelconf_.thrusterSaturation = request->config_data.thrustersaturation;*/
+        lowlevelconf_.hbCompass0 = request->config_data.hbcompass0;
+        lowlevelconf_.hbCompassMax = request->config_data.hbcompassmax;
+        lowlevelconf_.hbMagnetometer0 = request->config_data.hbmagnetometer0;
+        lowlevelconf_.hbMagnetometerMax = request->config_data.hbmagnetometermax;
+        lowlevelconf_.hbPacketSensors0 = request->config_data.hbpacketsensors0;
+        lowlevelconf_.hbPacketSensorsMax = request->config_data.hbpacketsensorsmax;
+        lowlevelconf_.hbPacketStatus0 = request->config_data.hbpacketstatus0;
+        lowlevelconf_.hbPacketStatusMax = request->config_data.hbpacketstatusmax;
+        lowlevelconf_.hbPacketMotors0 = request->config_data.hbpacketmotors0;
+        lowlevelconf_.hbPacketMotorsMax = request->config_data.hbpacketmotorsmax;
+        lowlevelconf_.hbPacketBattery0 = request->config_data.hbpacketbattery0;
+        lowlevelconf_.hbPacketBatteryMax = request->config_data.hbpacketbatterymax;
+        lowlevelconf_.timeoutAccelerometer = request->config_data.timeoutaccelerometer;
+        lowlevelconf_.timeoutCompass = request->config_data.timeoutcompass;
+        lowlevelconf_.timeoutMagnetometer = request->config_data.timeoutmagnetometer;
+        lowlevelconf_.pwmUpMin = request->config_data.pwmupmin;
+        lowlevelconf_.pwmUpMax = request->config_data.pwmupmax;
+        lowlevelconf_.pwmPeriodMin = request->config_data.pwmperiodmin;
+        lowlevelconf_.pwmPeriodMax = request->config_data.pwmperiodmax;
+        lowlevelconf_.pwmTimeThreshold = request->config_data.pwmtimethreshold;
+        lowlevelconf_.pwmZeroThreshold = request->config_data.pwmzerothreshold;
+        lowlevelconf_.deadzoneTime = request->config_data.deadzonetime;
+        lowlevelconf_.thrusterSaturation = request->config_data.thrustersaturation;
     }
 
     void ThreadSender::LoadConfigFile()
     {
-        try {
-            confObj_.readFile(confPath_.c_str());
-        } catch (const libconfig::FileIOException& fioex) {
-            std::cerr << "[LLC ThreadSender] I/O error while reading file: " << fioex.what() << std::endl;
-            exit(EXIT_FAILURE);
-        } catch (const libconfig::ParseException& pex) {
-            std::cerr << "Parse error at " << pex.getFile() << ":" << pex.getLine() << " - " << pex.getError() << std::endl;
-            exit(EXIT_FAILURE);
-        }
-
         // This temporary variablea are needed since the libconfig function does not
         // have any implementation for bit specific types
         uint temp_uint;
-        RCLCPP_INFO(this->get_logger(), "Loading configuration file");
-
-        int temp_int;
-        ctb::GetParam(confObj_, temp_int, "LLC.Config.HbPacketStatus0");
-        lowlevelconf_.hbPacketStatus0 = (int16_t)temp_int;
-        ctb::GetParam(confObj_, temp_int, "LLC.Config.HbPacketStatusMax");
-        lowlevelconf_.hbPacketStatusMax = (int16_t)temp_int;
-        ctb::GetParam(confObj_, temp_int, "LLC.Config.HbPacketMotors0");
-        lowlevelconf_.hbPacketMotors0 = (int16_t)temp_int;
-        ctb::GetParam(confObj_, temp_int, "LLC.Config.HbPacketMotorsMax");
-        lowlevelconf_.hbPacketMotorsMax = (int16_t)temp_int;
-        ctb::GetParam(confObj_, temp_int, "LLC.Config.HbPacketBattery0");
-        lowlevelconf_.hbPacketBattery0 = (int16_t)temp_int;
-        ctb::GetParam(confObj_, temp_int, "LLC.Config.HbPacketBatteryMax");
-        lowlevelconf_.hbPacketBatteryMax = (int16_t)temp_int;
-        ctb::GetParam(confObj_, temp_int, "LLC.Config.ThrusterSaturation");
-        lowlevelconf_.thrusterSaturation = (int16_t)temp_int;
+        ctb::GetParam(confObj_, temp_uint, "LLC.Config.HbCompass0");
+        lowlevelconf_.hbCompass0 = (uint16_t)temp_uint;
+        ctb::GetParam(confObj_, temp_uint, "LLC.Config.HbCompassMax");
+        lowlevelconf_.hbCompassMax = (uint16_t)temp_uint;
+        ctb::GetParam(confObj_, temp_uint, "LLC.Config.HbMagnetometer0"     );
+        lowlevelconf_.hbMagnetometer0 = (uint16_t)temp_uint;
+        ctb::GetParam(confObj_, temp_uint, "LLC.Config.HbMagnetometerMax"   );
+        lowlevelconf_.hbMagnetometerMax = (uint16_t)temp_uint;
+        ctb::GetParam(confObj_, temp_uint, "LLC.Config.HbPacketSensors0"    );
+        lowlevelconf_.hbPacketSensors0 = (uint16_t)temp_uint;
+        ctb::GetParam(confObj_, temp_uint, "LLC.Config.HbPacketSensorsMax"  );
+        lowlevelconf_.hbPacketSensorsMax = (uint16_t)temp_uint;
+        ctb::GetParam(confObj_, temp_uint, "LLC.Config.HbPacketStatus0"     );
+        lowlevelconf_.hbPacketStatus0  = (uint16_t)temp_uint;
+        ctb::GetParam(confObj_, temp_uint, "LLC.Config.HbPacketStatusMax"   );
+        lowlevelconf_.hbPacketStatusMax = (uint16_t)temp_uint;
+        ctb::GetParam(confObj_, temp_uint, "LLC.Config.HbPacketMotors0"     );
+        lowlevelconf_.hbPacketMotors0 = (uint16_t)temp_uint;
+        ctb::GetParam(confObj_, temp_uint, "LLC.Config.HbPacketMotorsMax"   );
+        lowlevelconf_.hbPacketMotorsMax = (uint16_t)temp_uint;
+        ctb::GetParam(confObj_, temp_uint, "LLC.Config.HbPacketBattery0"    );
+        lowlevelconf_.hbPacketBattery0 = (uint16_t)temp_uint;
+        ctb::GetParam(confObj_, temp_uint, "LLC.Config.HbPacketBatteryMax"  );
+        lowlevelconf_.hbPacketBatteryMax = (uint16_t)temp_uint;
+        ctb::GetParam(confObj_, temp_uint, "LLC.Config.ThrusterSaturation"  );
+        lowlevelconf_.thrusterSaturation = (uint16_t)temp_uint;
 
         double temp_double;
-        ctb::GetParam(confObj_, temp_double, "LLC.Config.PpmPulseMin");
-        lowlevelconf_.ppmPulseMin = (float32_t)temp_double;
-        ctb::GetParam(confObj_, temp_double, "LLC.Config.PpmPulseMax");
-        lowlevelconf_.ppmPulseMax = (float32_t)temp_double;
-        ctb::GetParam(confObj_, temp_double, "LLC.Config.PpmPeriodMin");
-        lowlevelconf_.ppmPeriodMin = (float32_t)temp_double;
-        ctb::GetParam(confObj_, temp_double, "LLC.Config.PpmPeriodMax");
-        lowlevelconf_.ppmPeriodMax = (float32_t)temp_double;
-        ctb::GetParam(confObj_, temp_double, "LLC.Config.PpmBlankMin");
-        lowlevelconf_.ppmBlankMin = (float32_t)temp_double;
-        ctb::GetParam(confObj_, temp_double, "LLC.Config.PpmBlankMax");
-        lowlevelconf_.ppmBlankMax = (float32_t)temp_double;
-        ctb::GetParam(confObj_, temp_double, "LLC.Config.PwmTimeThreshold");
+        ctb::GetParam(confObj_, temp_double, "LLC.Config.TimeoutAccelerometer");
+        lowlevelconf_.timeoutAccelerometer = (float32_t)temp_double;
+        ctb::GetParam(confObj_, temp_double, "LLC.Config.TimeoutCompass"      );
+        lowlevelconf_.timeoutCompass = (float32_t)temp_double;
+        ctb::GetParam(confObj_, temp_double,  "LLC.Config.TimeoutMagnetometer");
+        lowlevelconf_.timeoutMagnetometer = (float32_t)temp_double;
+        ctb::GetParam(confObj_, temp_double, "LLC.Config.PwmUpMin"            );
+        lowlevelconf_.pwmUpMin = (float32_t)temp_double;
+        ctb::GetParam(confObj_, temp_double, "LLC.Config.PwmUpMax"            );
+        lowlevelconf_.pwmUpMax = (float32_t)temp_double;
+        ctb::GetParam(confObj_, temp_double, "LLC.Config.PwmPeriodMin"        );
+        lowlevelconf_.pwmPeriodMin = (float32_t)temp_double;
+        ctb::GetParam(confObj_, temp_double, "LLC.Config.PwmPeriodMax"        );
+        lowlevelconf_.pwmPeriodMax = (float32_t)temp_double;
+        ctb::GetParam(confObj_, temp_double, "LLC.Config.PwmTimeThreshold"    );
         lowlevelconf_.pwmTimeThreshold = (float32_t)temp_double;
-        ctb::GetParam(confObj_, temp_double, "LLC.Config.PwmZeroThreshold");
+        ctb::GetParam(confObj_, temp_double, "LLC.Config.PwmZeroThreshold"    );
         lowlevelconf_.pwmZeroThreshold = (float32_t)temp_double;
-        ctb::GetParam(confObj_, temp_double, "LLC.Config.DeadzoneTime");
+        ctb::GetParam(confObj_, temp_double, "LLC.Config.DeadzoneTime"        );
         lowlevelconf_.deadzoneTime = (float32_t)temp_double;
 
+        //std::cout << "=====    Reload Sender Config    =====" << std::endl;
         lowlevelconf_.DebugPrint(this->get_logger());
+        //std::cout << "======================================" << std::endl;
     }
 
 } // namespace llc
 } // namespace ulisse
+/*
+#include "class_loader/register_macro.hpp"
+
+CLASS_LOADER_REGISTER_CLASS(ulisse::llc::ThreadSender, rclcpp::Node)*/
