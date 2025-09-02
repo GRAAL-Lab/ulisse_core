@@ -1,7 +1,7 @@
 #include <QGuiApplication>
 #include <QApplication>
 #include <QQmlApplicationEngine>
-#include <QQmlApplicationEngine>
+//#include <QQmlApplicationEngine>
 
 #include <QIcon>
 #include <QObject>
@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
     app.setApplicationName(name);
     app.setOrganizationName("GRAAL Lab");
 
-    QGuiApplication app(argc, argv);
+    //QGuiApplication app(argc, argv);
     QIcon icon(":/images/ulisse_icon.png");
     app.setWindowIcon(icon);
     //QMainWindow::setWindowIcon(":/images/ulisse_icon-48.png");

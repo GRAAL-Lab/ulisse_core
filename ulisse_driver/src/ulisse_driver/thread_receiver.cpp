@@ -90,52 +90,55 @@ namespace llc {
 
     void ThreadReceiver::ReadLoop()
     {
-        while (rclcpp::ok()) {
-            if (serial_->IsOpen()) {
-                char byte;
-                while (1) {
-                    int ret = serial_->ReadBlocking(&byte, 1);
+       if (serial_->IsOpen()) {
+            while(rclcpp::ok()) {
+            
+                timeval waitTime;
+                waitTime.tv_sec = 0;
+                waitTime.tv_usec = 500;
+                int ret = serial_->ReadNonBlocking(&readByte_, 1, waitTime);
 
-                    ret = llcParser_.ParseByte(byte);
-                    if (ret == 1) {
-                        // TODO:
-                        // publish the time stamp of ROS in the messages!
-                        // change the pointer to a vector
-                        switch (llcParser_.GetLastMessageType()) {
-                        case LLC_MESSAGETYPE_MOTORS_FEEDBACK:
-                            RCLCPP_INFO(this->get_logger(), "NEW MOTOR MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
-                            ParseMotorsFeedback(llcParser_.GetIncomingBuffer());
-                            break;
-                        case LLC_MESSAGETYPE_BATTERY:
-                            RCLCPP_INFO(this->get_logger(), "NEW BATTERY MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
-                            ParseBattery(llcParser_.GetIncomingBuffer());
-                            break;
-                        case LLC_MESSAGETYPE_STATUS:
-                            RCLCPP_INFO(this->get_logger(), "NEW STATUS MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
-                            ParseStatus(llcParser_.GetIncomingBuffer());
-                            break;
-                        case LLC_MESSAGETYPE_SET_CONFIG:
-                            RCLCPP_INFO(this->get_logger(), "NEW SET CONFIG MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
-                            ParseSetConfig(llcParser_.GetIncomingBuffer());
-                            break;
-                        case LLC_MESSAGETYPE_VERSION:
-                            RCLCPP_INFO(this->get_logger(), "NEW VERSION MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
-                            ParseVersion(llcParser_.GetIncomingBuffer());
-                            break;
-                        case LLC_MESSAGETYPE_ACK:
-                            RCLCPP_INFO(this->get_logger(), "NEW ACK MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
-                            ParseAck(llcParser_.GetIncomingBuffer());
-                            break;
-                        }
-                    } else if (ret == -2) {
-                        RCLCPP_WARN(this->get_logger(), "WRONG CHECKSUM, DISCARDING PACKET");
+                if (ret <= 0) break;
+
+                ret = llcParser_.ParseByte(readByte_);
+                if (ret == 1) {
+                    // TODO:
+                    // publish the time stamp of ROS in the messages!
+                    // change the pointer to a vector
+                    switch (llcParser_.GetLastMessageType()) {
+                    case LLC_MESSAGETYPE_MOTORS_FEEDBACK:
+                        RCLCPP_INFO(this->get_logger(), "NEW MOTOR MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
+                        ParseMotorsFeedback(llcParser_.GetIncomingBuffer());
+                        break;
+                    case LLC_MESSAGETYPE_BATTERY:
+                        RCLCPP_INFO(this->get_logger(), "NEW BATTERY MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
+                        ParseBattery(llcParser_.GetIncomingBuffer());
+                        break;
+                    case LLC_MESSAGETYPE_STATUS:
+                        RCLCPP_INFO(this->get_logger(), "NEW STATUS MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
+                        ParseStatus(llcParser_.GetIncomingBuffer());
+                        break;
+                    case LLC_MESSAGETYPE_SET_CONFIG:
+                        RCLCPP_INFO(this->get_logger(), "NEW SET CONFIG MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
+                        ParseSetConfig(llcParser_.GetIncomingBuffer());
+                        break;
+                    case LLC_MESSAGETYPE_VERSION:
+                        RCLCPP_INFO(this->get_logger(), "NEW VERSION MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
+                        ParseVersion(llcParser_.GetIncomingBuffer());
+                        break;
+                    case LLC_MESSAGETYPE_ACK:
+                        RCLCPP_INFO(this->get_logger(), "NEW ACK MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
+                        ParseAck(llcParser_.GetIncomingBuffer());
+                        break;
                     }
-
-                    //std::this_thread::sleep_for(1ms);
+                } else if (ret == -2) {
+                    RCLCPP_WARN(this->get_logger(), "WRONG CHECKSUM, DISCARDING PACKET");
                 }
+
+                //std::this_thread::sleep_for(1ms);
             }
         }
-        RCLCPP_WARN(this->get_logger(), "EXIT READLOOP");
+        //RCLCPP_WARN(this->get_logger(), "EXIT READLOOP");
     }
 
     /* void ThreadReceiver::LLCData2RosMsg(const batteryData& llc_batt, ulisse_msgs::msg::LLCBattery& batt_msg)

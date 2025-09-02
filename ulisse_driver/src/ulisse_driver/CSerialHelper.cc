@@ -287,7 +287,7 @@ int CSerialHelper::ReadLine(char *buffer, int size) {
 	return ret;
 }
 
-int CSerialHelper::ReadNonblocking(char *buffer, int size, struct timeval timeout) {
+int CSerialHelper::ReadNonBlocking(char *buffer, int size, struct timeval timeout) {
 	int ret = 0;
 	int readed = 0;
 	fd_set input;
@@ -304,10 +304,10 @@ int CSerialHelper::ReadNonblocking(char *buffer, int size, struct timeval timeou
 
 		/* See if there was an error */
 		if (ret < 0) {
-            printf("CSerialHelper::ReadNonblocking, Error on select call\n");
+            printf("CSerialHelper::ReadNonBlocking, Error on select call\n");
 			return SERIAL_ERROR;
 		} else if (ret == 0) {
-            printf("CSerialHelper::ReadNonblocking, Timeout\n");
+            //printf("CSerialHelper::ReadNonBlocking, Timeout\n");
 			return SERIAL_TIMEOUT;
 		}
 
@@ -315,7 +315,7 @@ int CSerialHelper::ReadNonblocking(char *buffer, int size, struct timeval timeou
 		if (ret != -1) {
 			readed += ret;
 		} else {
-            printf("CSerialHelper::ReadNonblocking, Error on nonblocking read\n");
+            printf("CSerialHelper::ReadNonBlocking, Error on nonblocking read\n");
 			return SERIAL_ERROR;
 		}
 	}

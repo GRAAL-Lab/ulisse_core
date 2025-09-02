@@ -64,7 +64,7 @@ public:
 	int SetCD(int level);
 	int ReadBlocking(char *buffer, int size);
 	int ReadLine(char *buffer, int size);
-	int ReadNonblocking(char *buffer, int size, struct timeval timeout);
+	int ReadNonBlocking(char *buffer, int size, struct timeval timeout);
 
 	int WaitCDLineRaisingSignal();
 	int WaitCDLineFallingSignal();

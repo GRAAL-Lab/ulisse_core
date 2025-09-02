@@ -248,15 +248,15 @@ bool CheckCommandConfirmation(const char* serialDevice, const char* command, con
     matchingAnswer = true;
 
     while (exit != true) {
-        serialRet = serial->ReadNonblocking(&buffer, 1, tmp);
+        serialRet = serial->ReadNonBlocking(&buffer, 1, tmp);
         switch (serialRet) {
         case SERIAL_ERROR:
-            RCLCPP_ERROR(node->get_logger(), "ReadNonblocking error");
+            RCLCPP_ERROR(node->get_logger(), "ReadNonBlocking error");
             ret = false;
             exit = true;
             break;
         case SERIAL_TIMEOUT:
-            RCLCPP_ERROR(node->get_logger(), "ReadNonblocking timeout");
+            RCLCPP_ERROR(node->get_logger(), "ReadNonBlocking timeout");
             ret = false;
             exit = true;
             break;
