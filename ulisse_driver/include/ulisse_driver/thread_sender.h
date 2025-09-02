@@ -12,12 +12,12 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
-
 #include "ulisse_msgs/msg/thrusters_reference.hpp"
 #include "ulisse_msgs/srv/llc_command.hpp"
-
-#include "ulisse_driver/LLCHelper.h"
 #include "ulisse_driver/visibility.h"
+
+#include "ulisse_driver/CSerialHelper.h"
+#include "ulisse_driver/driver_defines.h"
 
 namespace ulisse {
 
@@ -34,12 +34,15 @@ namespace llc {
         void LoadConfigFile();
         void ThrustersReferenceCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg);
         void CopyConfigMsg2LLCStruct(const std::shared_ptr<ulisse_msgs::srv::LLCCommand::Request> request);
+        void SendMessage(const std::vector<uint8_t> packet);
+        void SendConfiguration();
+        void RetrieveConfiguration();
 
         std::string confPath_;
         libconfig::Config confObj_;
 
-        LLCData data_;
-        LLCHelper llcHlp_;
+        CSerialHelper* serial_;
+
         LowLevelConfiguration lowlevelconf_;
 
         rclcpp::AsyncParametersClient::SharedPtr par_client_;

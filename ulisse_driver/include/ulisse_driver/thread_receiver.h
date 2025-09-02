@@ -20,7 +20,9 @@
 #include "ulisse_msgs/msg/llc_sw485_status.hpp"
 #include "ulisse_msgs/msg/llc_version.hpp"
 
-#include "ulisse_driver/LLCHelper.h"
+//#include "ulisse_driver/LLCHelper.h"
+#include "ulisse_driver/CSerialHelper.h"
+#include "ulisse_driver/llc_parser.h"
 #include "ulisse_driver/visibility.h"
 
 namespace ulisse {
@@ -33,17 +35,21 @@ namespace llc {
 
     private:
         void ReadLoop();
+        void ParseMotorsFeedback(std::vector<uint8_t> buffer);
+        void ParseBattery(std::vector<uint8_t> buffer);
+        void ParseStatus(std::vector<uint8_t> buffer);
+        void ParseSetConfig(std::vector<uint8_t> buffer);
+        void ParseVersion(std::vector<uint8_t> buffer);
+        void ParseAck(std::vector<uint8_t> buffer);
 
-        void LLCData2RosMsg(const batteryData& llc_batt, ulisse_msgs::msg::LLCBattery& batt_msg);
-        void LLCData2RosMsg(const motorData& llc_motor, ulisse_msgs::msg::ThrusterData& motor_msg);
+        ulisse_msgs::msg::Time GetTime();
 
         std::string confPath_;
         libconfig::Config confObj_;
 
-        LLCHelper llcHlp_;
-        LLCData llcData_;
-        std::chrono::system_clock::time_point t_now_;
-
+        LLCParser llcParser_;
+        CSerialHelper* serial_;
+        
         rclcpp::AsyncParametersClient::SharedPtr par_client_;
         rclcpp::TimerBase::SharedPtr timer_;
 
@@ -56,13 +62,8 @@ namespace llc {
         ulisse_msgs::msg::ThrustersReference applied_motorref_msg_;
         // LLC
         ulisse_msgs::msg::LLCStatus llc_status_msg_;
-        ulisse_msgs::msg::LLCConfig llc_config_msg_;
-        ulisse_msgs::msg::LLCThrusters llc_motors_msg_;
-        ulisse_msgs::msg::LLCVersion llc_version_msg_;
         ulisse_msgs::msg::LLCAck llc_ack_msg_;
-        ulisse_msgs::msg::LLCBattery llc_battery_left_msg_;
-        ulisse_msgs::msg::LLCBattery llc_battery_right_msg_;
-        ulisse_msgs::msg::LLCSw485Status llc_sw485_msg_;
+
 
         rclcpp::Publisher<ulisse_msgs::msg::MicroLoopCount>::SharedPtr micro_loop_count_pub_;
         rclcpp::Publisher<ulisse_msgs::msg::GPSData>::SharedPtr gpsdata_pub_;

@@ -1,4 +1,5 @@
 #include <QGuiApplication>
+#include <QApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlApplicationEngine>
 
@@ -31,9 +32,13 @@ int main(int argc, char* argv[])
 
     rclcpp::init(argc, argv);
 
-    QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    QGuiApplication::setApplicationName(name);
-    QGuiApplication::setOrganizationName("GRAAL Lab");
+    //QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    //QGuiApplication::setApplicationName(name);
+    //QGuiApplication::setOrganizationName("GRAAL Lab");
+
+    QApplication app(argc, argv);
+    app.setApplicationName(name);
+    app.setOrganizationName("GRAAL Lab");
 
     QGuiApplication app(argc, argv);
     QIcon icon(":/images/ulisse_icon.png");

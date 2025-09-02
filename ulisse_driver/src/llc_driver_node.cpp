@@ -13,10 +13,8 @@
 #include <libconfig.h++>
 
 #include "ulisse_driver/CSerialHelper.h"
-#include "ulisse_driver/LLCHelper.h"
-
-#include "ulisse_driver/thread_receiver.hpp"
-#include "ulisse_driver/thread_sender.hpp"
+#include "ulisse_driver/thread_receiver.h"
+#include "ulisse_driver/thread_sender.h"
 
 
 using namespace ulisse::llc;

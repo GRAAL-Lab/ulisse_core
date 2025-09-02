@@ -10,7 +10,6 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include "ulisse_ctrl/ulisse_defines.hpp"
-
 #include "ulisse_msgs/srv/control_command.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 #include "ulisse_msgs/futils.hpp"

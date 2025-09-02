@@ -5,7 +5,6 @@
 #include "ulisse_msgs/msg/gps_data.hpp"
 #include "ulisse_msgs/msg/llc_battery.hpp"
 #include "ulisse_msgs/msg/thrusters_reference.hpp"
-
 #include "ulisse_msgs/futils.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 
