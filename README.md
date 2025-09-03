@@ -17,7 +17,7 @@ Short description of all the packages included in this meta package:
 
 ## Dependencies
 
-All the dependencies can be installed using the script contained in this repo: [`install_ulisse_core.sh`](https://bitbucket.org/isme_robotics/ulisse_core/src/master/scripts/install_ulisse_core.sh). The complete list can be found below.
+All the dependencies can be installed using the script contained in this repo: [`install_ulisse_core.sh`](https://bitbucket.org/isme_robotics/ulisse_core/src/master/scripts/install_ulisse_core.sh) (see the _Build_ section). The complete list can be found below.
 
 In order of installation to respect dependencies:
 
@@ -43,7 +43,7 @@ In order of installation to respect dependencies:
 
 <!--⚠️ If you're using both ROS1 and ROS2 it's important that you define separate aliases in your `~/.bashrc` to source your workspace, that are **not** automatically called when launching new terminals, otherwise you will mix environment variables from different ROS versions.-->
 
-To install the dependencies altogether in can use the [`install_ulisse_core.sh`](https://bitbucket.org/isme_robotics/ulisse_core/src/master/scripts/install_ulisse_core.sh) script inside the **scripts** folder. After installing all the needed dependencies, to build the repo for the first time:
+To install the dependencies altogether you can use the [`install_ulisse_core.sh`](https://bitbucket.org/isme_robotics/ulisse_core/src/master/scripts/install_ulisse_core.sh) script inside the **scripts** folder. After installing all the needed dependencies, to build the repo for the first time:
 
 - Create a ros2 workspace using `colcon` (https://docs.ros.org/en/galactic/Tutorials/Colcon-Tutorial.html)
 - Clone in the **src** folder the ulisse_core repo (git clone git@bitbucket.org:isme_robotics/ulisse_core.git)
