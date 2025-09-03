@@ -1,6 +1,6 @@
 # Ulisse Catamaran Control
 
-Ulisse catamaran controller revamped with ROS2.
+Ulisse catamaran controller revamped with ROS2 (Kilted Kaiju), on Ubuntu 24.04.
 
 ## Subpackages
 
@@ -21,7 +21,7 @@ All the dependencies can be installed using the script contained in this repo: [
 
 In order of installation to respect dependencies:
 
-- **ros2 galactic**: https://docs.ros.org/en/galactic/Installation/Ubuntu-Install-Debians.html
+- **ros2 kilted**: https://docs.ros.org/en/kilted/Installation/Ubuntu-Install-Debians.html
 - **rml**: http://bitbucket.org/isme_robotics/rml
 - **fsm**: http://bitbucket.org/isme_robotics/fsm
 - **tpik**: http://bitbucket.org/isme_robotics/tpik
