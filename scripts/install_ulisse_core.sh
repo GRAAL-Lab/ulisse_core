@@ -40,6 +40,13 @@ else
 	echo -e "${GRN}Found marine_vehicle_models repo${NC}"
 fi
 
+if ! [ -d "orientus-ros2-driver" ]; then
+    echo -e "Cloning orientus-ros2-driver repo..."
+    git clone git@bitbucket.org:isme_robotics/orientus-ros2-driver.git
+else
+	echo -e "${GRN}Found orientus-ros2-driver repo${NC}"
+fi
+
 cd ~/ulisse_ws
 source /opt/ros/kilted/setup.bash
 colcon build --symlink-install --executor sequential
