@@ -1,6 +1,6 @@
 # Ulisse Catamaran Control
 
-Ulisse catamaran controller revamped with ROS2.
+Ulisse catamaran controller revamped with ROS2 (Kilted Kaiju), on Ubuntu 24.04.
 
 ## Subpackages
 
@@ -17,30 +17,33 @@ Short description of all the packages included in this meta package:
 
 ## Dependencies
 
+All the dependencies can be installed using the script contained in this repo: [`install_ulisse_core.sh`](https://bitbucket.org/isme_robotics/ulisse_core/src/master/scripts/install_ulisse_core.sh) (see the _Build_ section). The complete list can be found below.
+
 In order of installation to respect dependencies:
 
-- **ros2 galactic**: https://docs.ros.org/en/galactic/Installation/Ubuntu-Install-Debians.html
+- **ros2 kilted**: https://docs.ros.org/en/kilted/Installation/Ubuntu-Install-Debians.html
 - **rml**: http://bitbucket.org/isme_robotics/rml
 - **fsm**: http://bitbucket.org/isme_robotics/fsm
 - **tpik**: http://bitbucket.org/isme_robotics/tpik
 - **ikcl**: https://bitbucket.org/isme_robotics/ikcl
 - **marine_vehicle_models**: https://bitbucket.org/isme_robotics/marine_vehicle_models
 - **libgps**: `sudo apt install libgps-dev`
+- **orientus-ros2-driver**: https://bitbucket.org/isme_robotics/orientus-ros2-driver
 - **SISL lib**: `git clone https://github.com/SINTEF-Geometry/SISL.git`
 - **ctrl_toolbox**: http://bitbucket.org/isme_robotics/ctrl_toolbox
 - **sisl_toolbox**: http://bitbucket.org/isme_robotics/sisl_toolbox
-- **qt5-libraries**: When building the package on the catamaran you don't need the **ulisse_map** sub-package (so you can add a COLCON_IGNORE file inside it), and these dependencies can be skipped.
+- **qt5-libraries**: Installed with the `graal_utils` [script](https://bitbucket.org/isme_robotics/graal_utils/src/master/scripts/install_update_graal_libs.sh). When building the package on the catamaran you don't need the **ulisse_map** sub-package (so you can add a COLCON_IGNORE file inside it), and these dependencies can be skipped.
 
 
-### Additional packages not coming with ros2
+### Additional packages (for building)
 
 - **colcon**: Follow the guide at https://colcon.readthedocs.io/en/master/user/installation.html
 
 ## Build
 
-⚠️ If you're using both ROS1 and ROS2 it's important that you define separate aliases in your `~/.bashrc` to source your workspace, that are **not** automatically called when launching new terminals, otherwise you will mix environment variables from different ROS versions.
+<!--⚠️ If you're using both ROS1 and ROS2 it's important that you define separate aliases in your `~/.bashrc` to source your workspace, that are **not** automatically called when launching new terminals, otherwise you will mix environment variables from different ROS versions.-->
 
-To install the dependencies altogether in can use the `install_ulisse_core.sh` script inside the **scripts** folder. After installing all the needed dependencies, to build the repo for the first time:
+To install the dependencies altogether you can use the [`install_ulisse_core.sh`](https://bitbucket.org/isme_robotics/ulisse_core/src/master/scripts/install_ulisse_core.sh) script inside the **scripts** folder. After installing all the needed dependencies, to build the repo for the first time:
 
 - Create a ros2 workspace using `colcon` (https://docs.ros.org/en/galactic/Tutorials/Colcon-Tutorial.html)
 - Clone in the **src** folder the ulisse_core repo (git clone git@bitbucket.org:isme_robotics/ulisse_core.git)
