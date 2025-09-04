@@ -13,16 +13,43 @@
 #include "ulisse_msgs/srv/llc_command.hpp"
 #include "ulisse_msgs/futils.hpp"
 #include "ulisse_msgs/topicnames.hpp"
+#include "ulisse_driver/driver_defines.h"
+#include "ulisse_driver/thread_sender.h"
 
 //#include "ulisse_driver/LLCHelperDataStructs.h"
 
-//using namespace ulisse;
+using namespace ulisse;
 using namespace std::chrono_literals;
+
+
+std::string CommandAnswerToString(llc::CommandAnswer answer)
+{
+    std::string name;
+    int16_t ans_int = (int16_t)answer;
+
+    switch (ans_int) {
+    case (int16_t)llc::CommandAnswer::fail:
+        name = "fail";
+        break;
+    case (int16_t)llc::CommandAnswer::undefined:
+        name = "undefined";
+        break;
+    case (int16_t)llc::CommandAnswer::ok:
+        name = "ok";
+        break;
+    default:
+        name = "Unhandled...please update ulisse::llc::CommandAnswerToString() method adding answer type " + std::to_string(ans_int);
+        break;
+    }
+
+    return name;
+}
+
 
 int main(int argc, char* argv[])
 {
 
-   /* rclcpp::init(argc, argv);
+    rclcpp::init(argc, argv);
     auto node = rclcpp::Node::make_shared("driver_console_node");
 
     auto llcClient = node->create_client<ulisse_msgs::srv::LLCCommand>(ulisse_msgs::topicnames::llc_cmd_service);
@@ -48,11 +75,11 @@ int main(int argc, char* argv[])
         std::cout << tc::bluL << "3)  " << tc::none << "Enable ref" << std::endl;
         std::cout << tc::bluL << "4)  " << tc::none << "Reload config" << std::endl;
         std::cout << tc::bluL << "5)  " << tc::none << "Get version" << std::endl;
-        std::cout << tc::bluL << "6)  " << tc::none << "Start compass calibration" << std::endl;
-        std::cout << tc::bluL << "7)  " << tc::none << "Stop compass calibration" << std::endl;
+        //std::cout << tc::bluL << "6)  " << tc::none << "Start compass calibration" << std::endl;
+        //std::cout << tc::bluL << "7)  " << tc::none << "Stop compass calibration" << std::endl;
         std::cout << tc::bluL << "8)  " << tc::none << "Reset" << std::endl;
         std::cout << tc::bluL << "9)  " << tc::none << "Get config" << std::endl;
-        std::cout << tc::bluL << "10) " << tc::none << "Set pumps" << std::endl;
+        //std::cout << tc::bluL << "10) " << tc::none << "Set pumps" << std::endl;
         std::cout << tc::bluL << "11) " << tc::none << "Set pwr buttons" << std::endl;
 
         std::cin >> choice;
@@ -121,19 +148,19 @@ int main(int argc, char* argv[])
         case 5: {
             llcRequest->command_type = static_cast<uint16_t>(llc::CommandType::getversion);
         } break;
-        case 6: {
+        /*case 6: {
             llcRequest->command_type = static_cast<uint16_t>(llc::CommandType::startcompasscal);
         } break;
         case 7: {
             llcRequest->command_type = static_cast<uint16_t>(llc::CommandType::stopcompasscal);
-        } break;
+        } break;*/
         case 8: {
             llcRequest->command_type = static_cast<uint16_t>(llc::CommandType::reset);
         } break;
         case 9: {
             llcRequest->command_type = static_cast<uint16_t>(llc::CommandType::getconfig);
         } break;
-        case 10: {
+        /*case 10: {
             llcRequest->command_type = static_cast<uint16_t>(llc::CommandType::setpumps);
             std::cout << "0: stop all\n1: left\n2: right\n3: left+right\n";
             uint8_t flagaction;
@@ -201,7 +228,7 @@ int main(int argc, char* argv[])
                 std::cin >> delayMs;
             }
 
-        } break;
+        } break;*/
         case 11: {
             llcRequest->command_type = static_cast<uint16_t>(llc::CommandType::setpowerbuttons);
             std::cout << "1: left\n2: right\n3: left+right\n";
@@ -210,13 +237,13 @@ int main(int argc, char* argv[])
 
             switch (scelta) {
             case 1:
-                llcRequest->pwr_buttons_data.pwrbuttonsflag = EMB_PWRBUTTONS_FLAG_LEFT;
+                llcRequest->pwr_buttons_data.pwrbuttonsflag = LLC_PWRBUTTONS_FLAG_LEFT; //EMB_PWRBUTTONS_FLAG_LEFT;
                 break;
             case 2:
-                llcRequest->pwr_buttons_data.pwrbuttonsflag = EMB_PWRBUTTONS_FLAG_RIGHT;
+                llcRequest->pwr_buttons_data.pwrbuttonsflag = LLC_PWRBUTTONS_FLAG_RIGHT; //EMB_PWRBUTTONS_FLAG_RIGHT;
                 break;
             case 3:
-                llcRequest->pwr_buttons_data.pwrbuttonsflag = EMB_PWRBUTTONS_FLAG_LEFT | EMB_PWRBUTTONS_FLAG_RIGHT;
+                llcRequest->pwr_buttons_data.pwrbuttonsflag = LLC_PWRBUTTONS_FLAG_LEFT | LLC_PWRBUTTONS_FLAG_RIGHT; //EMB_PWRBUTTONS_FLAG_LEFT | EMB_PWRBUTTONS_FLAG_RIGHT;
                 break;
             default:
                 llcRequest->pwr_buttons_data.pwrbuttonsflag = 0;
@@ -243,5 +270,5 @@ int main(int argc, char* argv[])
     }
 
     rclcpp::shutdown();
-    return 0;*/
+    return 0;
 }

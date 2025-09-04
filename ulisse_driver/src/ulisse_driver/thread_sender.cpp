@@ -87,7 +87,7 @@ namespace llc {
         return name;
     }
 
-    std::string CommandAnswerToString(CommandAnswer answer)
+/*    std::string CommandAnswerToString(CommandAnswer answer)
     {
         std::string name;
         int16_t ans_int = (int16_t)answer;
@@ -108,7 +108,7 @@ namespace llc {
         }
 
         return name;
-    }
+    }*/
 
     ThreadSender::ThreadSender()
         : Node("llc_thread_sender")

@@ -61,7 +61,7 @@ namespace nav {
     };
 
     std::string CommandTypeToString(CommandType type);
-    std::string CommandAnswerToString(CommandAnswer answer);
+    //std::string CommandAnswerToString(CommandAnswer answer);
 }
 }
 

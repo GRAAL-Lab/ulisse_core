@@ -30,7 +30,7 @@ namespace nav {
     }
 
 
-    std::string CommandAnswerToString(CommandAnswer answer)
+    /*std::string CommandAnswerToString(CommandAnswer answer)
     {
         std::string name;
         int16_t ans_int = (int16_t)answer;
@@ -51,6 +51,6 @@ namespace nav {
         }
 
         return name;
-    }
+    }*/
 }
 }
