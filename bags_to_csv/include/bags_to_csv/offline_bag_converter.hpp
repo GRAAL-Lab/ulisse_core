@@ -48,8 +48,8 @@ private:
 
     ulisse_msgs::msg::GPSData gpsData_;
     //ulisse_msgs::msg::AmbientSensors ambientSensors_;
-    ulisse_msgs::msg::Compass compassData_;
-    ulisse_msgs::msg::IMUData imuData_;
+    //ulisse_msgs::msg::Compass compassData_;
+    //ulisse_msgs::msg::IMUData imuData_;
     ulisse_msgs::msg::DVLData dvlData_;
     ulisse_msgs::msg::FOGData fogData_;
     ulisse_msgs::msg::Magnetometer magnetometerData_;

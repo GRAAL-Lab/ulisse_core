@@ -13,6 +13,11 @@
 #include <std_msgs/msg/string.hpp>
 #include <std_msgs/msg/float64.hpp>
 #include <std_msgs/msg/bool.hpp>
+
+#include <sensor_msgs/msg/imu.hpp>
+#include <sensor_msgs/msg/magnetic_field.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+
 #include "ulisse_msgs/msg/compass.hpp"
 #include "ulisse_msgs/msg/gps_data.hpp"
 #include "ulisse_msgs/msg/imu_data.hpp"
@@ -24,6 +29,7 @@
 #include "ulisse_msgs/msg/llc_thrusters.hpp"
 #include "ulisse_msgs/srv/nav_filter_command.hpp"
 #include "ulisse_msgs/topicnames.hpp"
+
 #include "ulisse_driver/GPSDHelperDataStructs.h"
 #include "ctrl_toolbox/HelperFunctions.h"
 #include "ctrl_toolbox/kalman_filter/ExtendedKalmanFilter.h"
@@ -68,28 +74,37 @@ namespace nav {
         rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr rqtRPMStbdPub_;
 
 
-        rclcpp::Subscription<ulisse_msgs::msg::Compass>::SharedPtr compassSub_;
+        //rclcpp::Subscription<ulisse_msgs::msg::Compass>::SharedPtr compassSub_;
         rclcpp::Subscription<ulisse_msgs::msg::GPSData>::SharedPtr gpsdataSub_;
-        rclcpp::Subscription<ulisse_msgs::msg::IMUData>::SharedPtr imudataSub_;
-        rclcpp::Subscription<ulisse_msgs::msg::Magnetometer>::SharedPtr magnetometerSub_;
+        //rclcpp::Subscription<ulisse_msgs::msg::IMUData>::SharedPtr imudataSub_;
+        //rclcpp::Subscription<ulisse_msgs::msg::Magnetometer>::SharedPtr magnetometerSub_;
         rclcpp::Subscription<ulisse_msgs::msg::SimulatedSystem>::SharedPtr simulatedSystemSub_;
         rclcpp::Subscription<ulisse_msgs::msg::ThrustersReference>::SharedPtr thrustersAppliedRefSub_;
         rclcpp::Subscription<ulisse_msgs::msg::LLCThrusters>::SharedPtr llcThrustersSub_;
         rclcpp::Subscription<ulisse_msgs::msg::SimulatedVelocitySensor>::SharedPtr simulatedVelocitySub_;
+        
+        rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr imuPoseSub_;      // substitutes compass
+        rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imuSensorSub_;
+        rclcpp::Subscription<sensor_msgs::msg::MagneticField>::SharedPtr imuMagnetometerSub_;
+        
 
         rclcpp::Service<ulisse_msgs::srv::NavFilterCommand>::SharedPtr navFilterCmdService_;
 
         rclcpp::TimerBase::SharedPtr runTimer_;
         rclcpp::TimerBase::SharedPtr sensorsCheckTimer_;
 
-        ulisse_msgs::msg::Compass compassData_;
+        //ulisse_msgs::msg::Compass compassData_;
         ulisse_msgs::msg::GPSData gpsData_;
-        ulisse_msgs::msg::IMUData imuData_;
+        //ulisse_msgs::msg::IMUData imuData_;
         ulisse_msgs::msg::SimulatedVelocitySensor simulatedVelocitySensor_;
         ulisse_msgs::msg::ThrustersReference thrustersPercReference_;
-        ulisse_msgs::msg::Magnetometer magnetometerData_;
+        //ulisse_msgs::msg::Magnetometer magnetometerData_;
         ulisse_msgs::msg::SimulatedSystem simulatedData_;
         ulisse_msgs::msg::LLCThrusters llcThrustersData_;
+
+        sensor_msgs::msg::Imu imuData_;
+        sensor_msgs::msg::MagneticField imuMagnetometer_;
+        geometry_msgs::msg::PoseStamped imuPose_;
 
         double lastValidGPSTime_;
         double lastValidImuTime_;
@@ -157,13 +172,17 @@ namespace nav {
 
         void ResetFilter();
 
-        void CompassDataCB(const ulisse_msgs::msg::Compass::SharedPtr msg);
+        //void CompassDataCB(const ulisse_msgs::msg::Compass::SharedPtr msg);
 
         void GPSDataCB(const ulisse_msgs::msg::GPSData::SharedPtr msg);
 
-        void IMUDataCB(const ulisse_msgs::msg::IMUData::SharedPtr msg);
+        void IMUDataCB(const sensor_msgs::msg::Imu::SharedPtr msg);
 
-        void MagnetometerDataCB(const ulisse_msgs::msg::Magnetometer::SharedPtr msg);
+        void ImuMagnetometerCB(const sensor_msgs::msg::MagneticField::SharedPtr msg);
+        
+        void ImuPoseCB(const geometry_msgs::msg::PoseStamped::SharedPtr msg);
+
+        //void MagnetometerDataCB(const ulisse_msgs::msg::Magnetometer::SharedPtr msg);
 
         void SimulatedVelocitySensorCB(const ulisse_msgs::msg::SimulatedVelocitySensor::SharedPtr msg);
 

@@ -53,15 +53,24 @@ namespace nav {
         rqtRPMPortPub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/n_p", 1);
         rqtRPMStbdPub_ = this->create_publisher<std_msgs::msg::Float64>("/rqt/n_s", 1);
 
-             //Subscribes to data sensors
-        compassSub_ = this->create_subscription<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass,
-            1, std::bind(&NavigationFilter::CompassDataCB, this, _1));
+        //Subscribes to data sensors
+
+        //compassSub_ = this->create_subscription<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass,
+        //    1, std::bind(&NavigationFilter::CompassDataCB, this, _1));
+        imuPoseSub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(ulisse_msgs::topicnames::sensor_imu_pose,
+            1, std::bind(&NavigationFilter::ImuPoseCB, this, _1));
         gpsdataSub_ = this->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data,
             1, std::bind(&NavigationFilter::GPSDataCB, this, _1));
-        imudataSub_ = this->create_subscription<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu,
+        //imudataSub_ = this->create_subscription<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu,
+        //    1, std::bind(&NavigationFilter::IMUDataCB, this, _1));
+        imuSensorSub_ = this->create_subscription<sensor_msgs::msg::Imu>(ulisse_msgs::topicnames::sensor_imu,
             1, std::bind(&NavigationFilter::IMUDataCB, this, _1));
-        magnetometerSub_ = this->create_subscription<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer,
-            1, std::bind(&NavigationFilter::MagnetometerDataCB, this, _1));
+        
+        //magnetometerSub_ = this->create_subscription<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer,
+        //    1, std::bind(&NavigationFilter::MagnetometerDataCB, this, _1));
+        imuMagnetometerSub_ = this->create_subscription<sensor_msgs::msg::MagneticField>(ulisse_msgs::topicnames::sensor_magnetometer,
+            1, std::bind(&NavigationFilter::ImuMagnetometerCB, this, _1));
+            
         simulatedSystemSub_ = this->create_subscription<ulisse_msgs::msg::SimulatedSystem>(ulisse_msgs::topicnames::simulated_system,
             1, std::bind(&NavigationFilter::GroundTruthDataCB, this, _1));
         thrustersAppliedRefSub_ = this->create_subscription<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_applied_perc,
@@ -184,11 +193,11 @@ namespace nav {
         msg.data = filterData_.bodyframe_angular_velocity[2];
         rqtOmegaZPub_->publish(msg);
 
-        msg.data = imuData_.gyro[0] - filterData_.gyro_bias[0];
+        msg.data = imuData_.angular_velocity.x - filterData_.gyro_bias[0];
         rqtGyroXPub_->publish(msg);
-        msg.data = imuData_.gyro[1] - filterData_.gyro_bias[1];
+        msg.data = imuData_.angular_velocity.y - filterData_.gyro_bias[1];
         rqtGyroYPub_->publish(msg);
-        msg.data = imuData_.gyro[2] - filterData_.gyro_bias[2];
+        msg.data = imuData_.angular_velocity.z - filterData_.gyro_bias[2];
         rqtGyroZPub_->publish(msg);
 
         msg.data = state_[17];
@@ -208,16 +217,20 @@ namespace nav {
             try {
                 GeographicLib::UTMUPS::Forward(gpsData_.latitude, gpsData_.longitude, zone, northp, p_utm.x(), p_utm.y());
 
-                     // The geographic lib conversion outputs UTM coordinates but the filter uses NED.
+                // The geographic lib conversion outputs UTM coordinates but the filter uses NED.
                 Eigen::Vector2d p_ned = { p_utm.y(), p_utm.x() };
+
+                Eigen::Quaterniond poseQ(imuPose_.pose.orientation.w, imuPose_.pose.orientation.x, imuPose_.pose.orientation.y, imuPose_.pose.orientation.z);
+                auto compassRPY = rml::EulerRPY(poseQ);
 
                 if (filterEnable_) {
 
-                    obs_.Update(Eigen::Vector4d { p_ned.x(), p_ned.y(), compassData_.orientation.yaw, simulatedVelocitySensor_.water_relative_surge });
+                    
+                    obs_.Update(Eigen::Vector4d { p_ned.x(), p_ned.y(), compassRPY.Yaw(), simulatedVelocitySensor_.water_relative_surge });
                     filterData_.inertialframe_water_current.fill(0.0);
 
                          //Construct the inertial to body frame rotation
-                    rml::EulerRPY rpy { 0.0, 0.0, compassData_.orientation.yaw };
+                    rml::EulerRPY rpy { 0.0, 0.0, compassRPY.Yaw() };
                     Eigen::Vector3d bodyF_linearVelocity = rpy.ToRotationMatrix().transpose() * Eigen::Vector3d { obs_.LinearVelocity().x(), obs_.LinearVelocity().y(), 0.0 };
 
                     filterData_.bodyframe_linear_velocity[0] = bodyF_linearVelocity.x();
@@ -230,17 +243,22 @@ namespace nav {
                     GeographicLib::UTMUPS::Reverse(zone, northp, p_utm.x(), p_utm.y(), filterData_.inertialframe_linear_position.latlong.latitude, filterData_.inertialframe_linear_position.latlong.longitude);
                 }
 
-                     /// FILL THE MSG WITH ALL THE REST OF UNMANAGED DATA
+                /// FILL THE MSG WITH ALL THE REST OF UNMANAGED DATA
                 filterData_.bodyframe_linear_velocity[2] = 0.0;
                 filterData_.inertialframe_linear_position.altitude = 0.0;
-                filterData_.bodyframe_angular_position = compassData_.orientation;
+                
 
-                filterData_.bodyframe_angular_velocity[0] = imuData_.gyro[0];
-                filterData_.bodyframe_angular_velocity[1] = imuData_.gyro[1];
+                filterData_.bodyframe_angular_position.roll = compassRPY.Roll();
+                filterData_.bodyframe_angular_position.roll = compassRPY.Pitch();
+                filterData_.bodyframe_angular_position.roll = compassRPY.Yaw();
+
+
+                filterData_.bodyframe_angular_velocity[0] = imuData_.angular_velocity.x;
+                filterData_.bodyframe_angular_velocity[1] = imuData_.angular_velocity.y;
 
                      //Yaw rate estimation with a digital filter
-                double omega_dot_dot = ctb::AngleDifference(compassData_.orientation.yaw, previousYaw_) / sampleTime_;
-                previousYaw_ = compassData_.orientation.yaw;
+                double omega_dot_dot = ctb::AngleDifference(compassRPY.Yaw(), previousYaw_) / sampleTime_;
+                previousYaw_ = compassRPY.Yaw();
 
                 filterData_.bodyframe_angular_velocity[2] = yawRateFilterGains_[0] * filterData_.bodyframe_angular_velocity[2] + yawRateFilterGains_[1] * omega_dot_dot;
 
@@ -277,18 +295,21 @@ namespace nav {
 
         if (imuValid_) {
             if (measuresActive_.find("gyro")->second) {
-                gyroMeasurement_->MeasureVector() = Eigen::Vector3d { imuData_.gyro[0], imuData_.gyro[1], imuData_.gyro[2] };
+                // Verify !TODO!
+                gyroMeasurement_->MeasureVector() = Eigen::Vector3d { imuData_.angular_velocity.x, imuData_.angular_velocity.y, imuData_.angular_velocity.z };
                 extendedKalmanFilter_->AddMeasurement(gyroMeasurement_);
             }
             if (measuresActive_.find("accelerometer")->second) {
-                accelerometerMeasurement_->MeasureVector() = Eigen::Vector3d { imuData_.accelerometer[0], imuData_.accelerometer[1], imuData_.accelerometer[2] };
+                accelerometerMeasurement_->MeasureVector() = Eigen::Vector3d { imuData_.linear_acceleration.x, imuData_.linear_acceleration.y, imuData_.linear_acceleration.z };
                 extendedKalmanFilter_->AddMeasurement(accelerometerMeasurement_);
             }
         }
 
         if (compassValid_) {
             if (measuresActive_.find("compass")->second) {
-                compassMeasurement_->MeasureVector() = Eigen::Vector3d { compassData_.orientation.roll, compassData_.orientation.pitch, compassData_.orientation.yaw };
+                Eigen::Quaterniond poseQ(imuPose_.pose.orientation.w, imuPose_.pose.orientation.x, imuPose_.pose.orientation.y, imuPose_.pose.orientation.z);
+                rml::EulerRPY orientationRPY = rml::EulerRPY(poseQ);
+                compassMeasurement_->MeasureVector() = Eigen::Vector3d { orientationRPY.Roll(), orientationRPY.Pitch(), orientationRPY.Yaw() };
                 extendedKalmanFilter_->AddMeasurement(compassMeasurement_);
             }
         }
@@ -296,7 +317,7 @@ namespace nav {
         if (magnetometerValid_) {
             if (measuresActive_.find("magnetometer")->second) {
                 // preprocessing: I compensate for the roll and the pitch and then I pretend to have a sensor that measures the yaw
-                magnetometerMeasurement_->MeasureVector() << -atan2(magnetometerData_.orthogonalstrength[1] * cos(state_[3]) - magnetometerData_.orthogonalstrength[2] * sin(state_[3]), magnetometerData_.orthogonalstrength[0] * cos(state_[4]) + magnetometerData_.orthogonalstrength[2] * cos(state_[3]) * sin(state_[4]) + magnetometerData_.orthogonalstrength[1] * sin(state_[4]) * sin(state_[3]));
+                magnetometerMeasurement_->MeasureVector() << -atan2(imuMagnetometer_.magnetic_field.y * cos(state_[3]) - imuMagnetometer_.magnetic_field.z * sin(state_[3]), imuMagnetometer_.magnetic_field.x * cos(state_[4]) + imuMagnetometer_.magnetic_field.z * cos(state_[3]) * sin(state_[4]) + imuMagnetometer_.magnetic_field.y * sin(state_[4]) * sin(state_[3]));
                 extendedKalmanFilter_->AddMeasurement(magnetometerMeasurement_);
             }
         }
@@ -427,10 +448,10 @@ namespace nav {
             }
         }
 
-        if (imuData_.stamp.sec + (imuData_.stamp.nanosec * 1e-9) > lastValidImuTime_) {
+        if (imuData_.header.stamp.sec + (imuData_.header.stamp.nanosec * 1e-9) > lastValidImuTime_) {
             imuValid_ = true;
             filterData_.imu_received = true;
-            lastValidImuTime_ = imuData_.stamp.sec + (imuData_.stamp.nanosec * 1e-9);
+            lastValidImuTime_ = imuData_.header.stamp.sec + (imuData_.header.stamp.nanosec * 1e-9);
 
         } else {
             imuValid_ = false;
@@ -439,18 +460,18 @@ namespace nav {
         /*RCLCPP_INFO(this->get_logger(), "SensorsValidityCheck(): imuValid=%d, stamp.sec:%ld, stamp.nanosec:%ld, stamp_calculated:%lf",
             imuValid_, imuData_.stamp.sec, imuData_.stamp.nanosec, imuData_.stamp.sec + (imuData_.stamp.nanosec * 1e-9));*/
 
-        if (compassData_.stamp.sec + (compassData_.stamp.nanosec * 1e-9) > lastValidCompassTime_) {
+        if (imuPose_.header.stamp.sec + (imuPose_.header.stamp.nanosec * 1e-9) > lastValidCompassTime_) {
             compassValid_ = true;
             filterData_.compass_received = true;
-            lastValidCompassTime_ = compassData_.stamp.sec + (compassData_.stamp.nanosec * 1e-9);
+            lastValidCompassTime_ = imuPose_.header.stamp.sec + (imuPose_.header.stamp.nanosec * 1e-9);
         } else {
             compassValid_ = false;
         }
 
-        if (magnetometerData_.stamp.sec + (magnetometerData_.stamp.nanosec * 1e-9) > lastValidMagnetomerTime_) {
+        if (imuMagnetometer_.header.stamp.sec + (imuMagnetometer_.header.stamp.nanosec * 1e-9) > lastValidMagnetomerTime_) {
             magnetometerValid_ = true;
             filterData_.magnetometer_received = true;
-            lastValidMagnetomerTime_ = magnetometerData_.stamp.sec + (magnetometerData_.stamp.nanosec * 1e-9);
+            lastValidMagnetomerTime_ = imuMagnetometer_.header.stamp.sec + (imuMagnetometer_.header.stamp.nanosec * 1e-9);
         } else {
             magnetometerValid_ = false;
         }
@@ -501,25 +522,25 @@ namespace nav {
         }
 
         if (filterData_.imu_received){
-            if (std::abs(imuData_.stamp.sec - timeNowSecs) > sensorsCheckInterval_) {
+            if (std::abs(imuData_.header.stamp.sec - timeNowSecs) > sensorsCheckInterval_) {
                 RCLCPP_WARN(this->get_logger(), "IMU Data unavailable for more than %i seconds.", sensorsCheckInterval_);
-                RCLCPP_WARN(this->get_logger(), "IMU Data last valid %u, now %ld, diff %ld", imuData_.stamp.sec, timeNowSecs, std::abs(imuData_.stamp.sec - timeNowSecs));
+                RCLCPP_WARN(this->get_logger(), "IMU Data last valid %u, now %ld, diff %ld", imuData_.header.stamp.sec, timeNowSecs, std::abs(imuData_.header.stamp.sec - timeNowSecs));
                 filterData_.imu_received = false;
             }
         }
 
         if (filterData_.compass_received){
-            if (std::abs(compassData_.stamp.sec - timeNowSecs) > sensorsCheckInterval_) {
+            if (std::abs(imuPose_.header.stamp.sec - timeNowSecs) > sensorsCheckInterval_) {
                 RCLCPP_WARN(this->get_logger(), "Compass Data unavailable for more than %i seconds.", sensorsCheckInterval_);
-                RCLCPP_WARN(this->get_logger(), "Compass Data last valid %u, now %ld, diff %ld", compassData_.stamp.sec, timeNowSecs, std::abs(compassData_.stamp.sec - timeNowSecs));
+                RCLCPP_WARN(this->get_logger(), "Compass Data last valid %u, now %ld, diff %ld", imuPose_.header.stamp.sec, timeNowSecs, std::abs(imuPose_.header.stamp.sec - timeNowSecs));
                 filterData_.compass_received = false;
             }
         }
 
         if (filterData_.magnetometer_received){
-            if (std::abs(magnetometerData_.stamp.sec - timeNowSecs) > sensorsCheckInterval_) {
+            if (std::abs(imuMagnetometer_.header.stamp.sec - timeNowSecs) > sensorsCheckInterval_) {
                 RCLCPP_WARN(this->get_logger(), "Magnetometer Data unavailable for more than %i seconds.", sensorsCheckInterval_);
-                RCLCPP_WARN(this->get_logger(), "Magnetometer Data last valid %u, now %ld, diff %ld", magnetometerData_.stamp.sec, timeNowSecs, std::abs(magnetometerData_.stamp.sec - timeNowSecs));
+                RCLCPP_WARN(this->get_logger(), "Magnetometer Data last valid %u, now %ld, diff %ld", imuMagnetometer_.header.stamp.sec, timeNowSecs, std::abs(imuMagnetometer_.header.stamp.sec - timeNowSecs));
                 filterData_.magnetometer_received = false;
             }
         }
@@ -791,20 +812,22 @@ namespace nav {
             Eigen::Vector3d NED_currentPosition;
             ctb::LatLong2LocalNED(ctb::LatLong(gpsData_.latitude, gpsData_.longitude), gpsData_.altitude, centroidLocation_, NED_currentPosition);
             initialState.segment(0, 2) = NED_currentPosition.segment(0, 2);
-            initialState[5] = -atan2(magnetometerData_.orthogonalstrength[1] * cos(state_[3]) - magnetometerData_.orthogonalstrength[2] * sin(state_[3]), magnetometerData_.orthogonalstrength[0] * cos(state_[4]) + magnetometerData_.orthogonalstrength[2] * cos(state_[3]) * sin(state_[4]) + magnetometerData_.orthogonalstrength[1] * sin(state_[4]) * sin(state_[3]));
+            initialState[5] = -atan2(imuMagnetometer_.magnetic_field.y * cos(state_[3]) - imuMagnetometer_.magnetic_field.z * sin(state_[3]), imuMagnetometer_.magnetic_field.x * cos(state_[4]) + imuMagnetometer_.magnetic_field.z * cos(state_[3]) * sin(state_[4]) + imuMagnetometer_.magnetic_field.y * sin(state_[4]) * sin(state_[3]));
 
             extendedKalmanFilter_->Init(initialState);
             RCLCPP_INFO(this->get_logger(), "Reset EKF");
         }
     }
 
-    void NavigationFilter::CompassDataCB(const ulisse_msgs::msg::Compass::SharedPtr msg) { compassData_ = *msg; }
+    //void NavigationFilter::CompassDataCB(const ulisse_msgs::msg::Compass::SharedPtr msg) { compassData_ = *msg; }
+    void NavigationFilter::ImuPoseCB(const geometry_msgs::msg::PoseStamped::SharedPtr msg) { imuPose_ = *msg; }
 
     void NavigationFilter::GPSDataCB(const ulisse_msgs::msg::GPSData::SharedPtr msg) { gpsData_ = *msg; }
 
-    void NavigationFilter::IMUDataCB(const ulisse_msgs::msg::IMUData::SharedPtr msg) { imuData_ = *msg; /*RCLCPP_INFO(this->get_logger(), "IMU Callback()");*/ }
+    void NavigationFilter::IMUDataCB(const sensor_msgs::msg::Imu::SharedPtr msg) { imuData_ = *msg; /*RCLCPP_INFO(this->get_logger(), "IMU Callback()");*/ }
 
-    void NavigationFilter::MagnetometerDataCB(const ulisse_msgs::msg::Magnetometer::SharedPtr msg) { magnetometerData_ = *msg; }
+    //void NavigationFilter::MagnetometerDataCB(const ulisse_msgs::msg::Magnetometer::SharedPtr msg) { magnetometerData_ = *msg; }
+    void NavigationFilter::ImuMagnetometerCB(const sensor_msgs::msg::MagneticField::SharedPtr msg) {imuMagnetometer_ = *msg;};
 
     void NavigationFilter::SimulatedVelocitySensorCB(const ulisse_msgs::msg::SimulatedVelocitySensor::SharedPtr msg) { simulatedVelocitySensor_ = *msg; }
 

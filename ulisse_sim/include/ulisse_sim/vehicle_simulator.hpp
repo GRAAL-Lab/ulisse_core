@@ -1,9 +1,13 @@
 #ifndef VEHICLESIMULATOR_H
 #define VEHICLESIMULATOR_H
 
-#include "rclcpp/rclcpp.hpp"
+#include <rclcpp/rclcpp.hpp>
 #include <memory>
 #include <random>
+
+#include <sensor_msgs/msg/imu.hpp>
+#include <sensor_msgs/msg/magnetic_field.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
 
 #include "ulisse_msgs/msg/ambient_sensors.hpp"
 #include "ulisse_msgs/msg/compass.hpp"
@@ -57,30 +61,38 @@ class VehicleSimulator : public rclcpp::Node {
 
     ulisse_msgs::msg::MicroLoopCount microLoopCountMsg_;
     ulisse_msgs::msg::GPSData gpsMsg_;
-    ulisse_msgs::msg::Compass compassMsg_;
-    ulisse_msgs::msg::IMUData imuMsg_;
-    //ulisse_msgs::msg::IMUData orientusMgs_;
+    //ulisse_msgs::msg::Compass compassMsg_;
+    //ulisse_msgs::msg::IMUData imuMsg_;
     ulisse_msgs::msg::DVLData dvlMsg_;
     ulisse_msgs::msg::FOGData fogMsg_;
     ulisse_msgs::msg::AmbientSensors ambsensMsg_;
-    ulisse_msgs::msg::Magnetometer magnetometerMsg_;
+    //ulisse_msgs::msg::Magnetometer magnetometerMsg_;
     ulisse_msgs::msg::ThrustersReference appliedMotorRefMsg_;
     ulisse_msgs::msg::SimulatedSystem groundTruthMsg_;
     ulisse_msgs::msg::LLCThrusters motorsDataMsg_;
     ulisse_msgs::msg::LLCStatus llcStatusMsg_;
 
+    sensor_msgs::msg::Imu imuMsg_;
+    sensor_msgs::msg::MagneticField magnetometerMsg_;
+    geometry_msgs::msg::PoseStamped imuPose_;
+
     rclcpp::Publisher<ulisse_msgs::msg::LLCStatus>::SharedPtr llcStatusPub_;
     rclcpp::Publisher<ulisse_msgs::msg::MicroLoopCount>::SharedPtr microLoopCountPub_;
     rclcpp::Publisher<ulisse_msgs::msg::GPSData>::SharedPtr gpsPub_;
-    rclcpp::Publisher<ulisse_msgs::msg::Compass>::SharedPtr compassPub_;
-    rclcpp::Publisher<ulisse_msgs::msg::IMUData>::SharedPtr imuPub_;
+    //rclcpp::Publisher<ulisse_msgs::msg::Compass>::SharedPtr compassPub_;
+    //rclcpp::Publisher<ulisse_msgs::msg::IMUData>::SharedPtr imuPub_;
     rclcpp::Publisher<ulisse_msgs::msg::DVLData>::SharedPtr dvlPub_;
     rclcpp::Publisher<ulisse_msgs::msg::FOGData>::SharedPtr fogPub_;
     rclcpp::Publisher<ulisse_msgs::msg::AmbientSensors>::SharedPtr ambsensPub_;
-    rclcpp::Publisher<ulisse_msgs::msg::Magnetometer>::SharedPtr magnetometerPub_;
+    //rclcpp::Publisher<ulisse_msgs::msg::Magnetometer>::SharedPtr magnetometerPub_;
     rclcpp::Publisher<ulisse_msgs::msg::ThrustersReference>::SharedPtr appliedMotorRefPub_;
     rclcpp::Publisher<ulisse_msgs::msg::SimulatedSystem>::SharedPtr simulatedSystemPub_;
     rclcpp::Publisher<ulisse_msgs::msg::LLCThrusters>::SharedPtr motorsDataPub_;
+
+    rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imuPub_;
+    rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr imuPosePub_;
+    rclcpp::Publisher<sensor_msgs::msg::MagneticField>::SharedPtr magnetometerPub_;
+
     
     rclcpp::Subscription<ulisse_msgs::msg::ThrustersReference>::SharedPtr thrustersSub_;
 

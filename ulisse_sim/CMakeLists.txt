@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.5)
 project(ulisse_sim)
 
-# Default to C++17
+# Default to C++20
 #if(NOT CMAKE_CXX_STANDARD)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 #endif()
 
 #if(NOT CMAKE_BUILD_TYPE)
@@ -17,6 +17,8 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(surface_vehicle_model REQUIRED)
 find_package(ulisse_msgs REQUIRED)
@@ -35,6 +37,7 @@ add_custom_target(.Files. SOURCES ${SOURCE_FILES})
 
 include_directories(
   include
+  ${sensor_msgs_INCLUDE_DIRS}
   ${ulisse_msgs_INCLUDE_DIRS}
   ${surface_vehicle_model_INCLUDE_DIRS}
   ${ament_index_cpp_INCLUDE_DIRS}
@@ -43,7 +46,15 @@ include_directories(
 ## Libraries
 add_library(VehicleSimulatorClass src/ulisse_sim/vehicle_simulator.cpp)
 #ament_target_dependencies(VehicleSimulatorClass rclcpp ulisse_msgs ament_index_cpp)
-target_link_libraries(VehicleSimulatorClass ${surface_vehicle_model_LIBRARIES} ${ulisse_msgs_LIBRARIES} GeographicLib ament_index_cpp::ament_index_cpp rclcpp::rclcpp rml) 
+target_link_libraries(VehicleSimulatorClass
+    ${surface_vehicle_model_LIBRARIES}
+    ${ulisse_msgs_LIBRARIES}
+    ${sensor_msgs_LIBRARIES}
+    GeographicLib
+    ament_index_cpp::ament_index_cpp
+    rclcpp::rclcpp
+    rml
+) 
 
 ## Executables
 add_executable(simulator_node src/simulator_node.cpp)

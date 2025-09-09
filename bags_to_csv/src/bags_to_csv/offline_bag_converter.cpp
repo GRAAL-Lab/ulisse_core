@@ -63,16 +63,16 @@ bool OfflineBagConverter::ConvertToCSV()
                      << gpsData_.time << ", " << gpsData_.latitude << ", " << gpsData_.longitude << ", " << gpsData_.altitude << ", "
                      << gpsData_.speed << ", " << gpsData_.track
                      << "\n";
-        } else if (bag_message->topic_name == ulisse_msgs::topicnames::sensor_imu){
-            rclcpp::Serialization<ulisse_msgs::msg::IMUData> serialization;
-            rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
-            serialization.deserialize_message(&extracted_serialized_msg, &imuData_);
-            sensorReceived = true;
-        } else if (bag_message->topic_name == ulisse_msgs::topicnames::sensor_compass) {
-            rclcpp::Serialization<ulisse_msgs::msg::Compass> serialization;
-            rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
-            serialization.deserialize_message(&extracted_serialized_msg, &compassData_);
-            sensorReceived = true;
+        //} else if (bag_message->topic_name == ulisse_msgs::topicnames::sensor_imu){
+        //    rclcpp::Serialization<ulisse_msgs::msg::IMUData> serialization;
+        //    rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
+        //    serialization.deserialize_message(&extracted_serialized_msg, &imuData_);
+        //    sensorReceived = true;
+        //} else if (bag_message->topic_name == ulisse_msgs::topicnames::sensor_compass) {
+        //    rclcpp::Serialization<ulisse_msgs::msg::Compass> serialization;
+        //    rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
+        //    serialization.deserialize_message(&extracted_serialized_msg, &compassData_);
+        //    sensorReceived = true;
         } else if (bag_message->topic_name == ulisse_msgs::topicnames::sensor_magnetometer) {
             rclcpp::Serialization<ulisse_msgs::msg::Magnetometer> serialization;
             rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
@@ -182,13 +182,13 @@ bool OfflineBagConverter::ConvertToCSV()
             sensorReceived = false;
             sensorsFile_ << std::fixed << std::setprecision(6)
                          << bag_message->send_timestamp  * 1e-9 << ", "
-                         << imuData_.stamp.sec + (imuData_.stamp.nanosec * 1e-9)<< ", "
-                         << imuData_.accelerometer[0] << ", " << imuData_.accelerometer[1] << ", " << imuData_.accelerometer[2] << ", "
-                         << imuData_.gyro[0] << ", " << imuData_.gyro[1] << ", " << imuData_.gyro[2] << ", "
-                         << compassData_.stamp.sec + (compassData_.stamp.nanosec * 1e-9) << ", "
-                         << compassData_.orientation.roll << ", " << compassData_.orientation.pitch << ", " << compassData_.orientation.yaw << ", "
-                         << magnetometerData_.stamp.sec + (magnetometerData_.stamp.nanosec * 1e-9) << ", "
-                         << magnetometerData_.orthogonalstrength[0] << ", " << magnetometerData_.orthogonalstrength[1] << ", " << magnetometerData_.orthogonalstrength[2] << ", "
+                         //<< imuData_.stamp.sec + (imuData_.stamp.nanosec * 1e-9)<< ", "
+                         //<< imuData_.accelerometer[0] << ", " << imuData_.accelerometer[1] << ", " << imuData_.accelerometer[2] << ", "
+                         //<< imuData_.gyro[0] << ", " << imuData_.gyro[1] << ", " << imuData_.gyro[2] << ", "
+                         //<< compassData_.stamp.sec + (compassData_.stamp.nanosec * 1e-9) << ", "
+                         //<< compassData_.orientation.roll << ", " << compassData_.orientation.pitch << ", " << compassData_.orientation.yaw << ", "
+                         //<< magnetometerData_.stamp.sec + (magnetometerData_.stamp.nanosec * 1e-9) << ", "
+                         //<< magnetometerData_.orthogonalstrength[0] << ", " << magnetometerData_.orthogonalstrength[1] << ", " << magnetometerData_.orthogonalstrength[2] << ", "
                          << dvlData_.bottom_velocity[0] << ", " << dvlData_.bottom_velocity[1] << ", " << dvlData_.bottom_velocity[2] << ", "
                          << dvlData_.water_tracking[0] << ", " << dvlData_.water_tracking[1] << ", " << dvlData_.water_tracking[2] << ", "
                          << fogData_.angular_velocity

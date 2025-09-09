@@ -22,6 +22,8 @@
   <exec_depend>surface_vehicle_model</exec_depend>
   
   <depend>rosidl_typesupport_cpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>geometry_msgs</depend>
 
   <export>
     <build_type>ament_cmake</build_type>
