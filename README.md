@@ -169,10 +169,37 @@ sudo route add default gw 192.168.1.169
 
 ## Miscellaneous
 
+### Disable GPS in the Navigation Filter
+
 For some testing of nav_filter and experiments, an optional switch has been added to toggle the use of the GPS by the navigation filter. To enable or disable the use of the GPS just publish a boolean to the topic "`/ulisse/USE_GPS`". To do it via command line:
 
 `ros2 topic pub /ulisse/USE_GPS -1 std_msgs/msg/Bool "{data: false}"`
 
+### PC104 Rebooting issues
 
+If for some reasons, the PC104 is not correctly shutting down or rebooting, using the watchdog solves the issue.
+
+1. Install the watchdog package:
+
+   ```bash
+   sudo apt install watchdog
+   ```
+
+2. Edit `/etc/systemd/system.conf` and set:
+
+   ```
+   RuntimeWatchdogSec=10s
+   RebootWatchdogSec=10s
+   ```
+
+   * `RuntimeWatchdogSec` = keeps the watchdog fed while system runs.
+   * `RebootWatchdogSec` = when reboot is issued, systemd arms the watchdog and *stops feeding it*, so hardware resets in 5s if kernel reset fails.
+
+3. Reload systemd and reboot:
+
+   ```bash
+   sudo systemctl daemon-reexec
+   sudo reboot
+   ```
 
 For additional info look [info.txt](./info.txt).

@@ -388,23 +388,6 @@ void VehicleSimulator::SimulateSensors()
 
     /// Imu: Angular Acceleration
     ///
-    ///
-    /// Imu: Accelerometer 
-
-    //std::normal_distribution<double> orientusNoiseX(0.0, config_->sensorsNoise.orientus_stdd.x());
-    //std::normal_distribution<double> orientusNoiseY(0.0, config_->sensorsNoise.orientus_stdd.y());
-    //std::normal_distribution<double> orientusNoiseZ(0.0, config_->sensorsNoise.orientus_stdd.z());
-
-
-    //imuMsg_.orientation.roll = imuF_orientation.Roll() + compassNoiseR(generator);
-    //imuMsg_.orientation.pitch = imuF_orientation.Pitch() + compassNoiseP(generator);
-    //imuMsg_.orientation.yaw = imuF_orientation.Yaw() + compassNoiseY(generator);
-
-    //Eigen::Quaterniond orient_q = imuF_orientation.ToQuaternion();
-    //imuMsg_.orientation.w = orient_q.w();
-    //imuMsg_.orientation.x = orient_q.x();
-    //imuMsg_.orientation.y = orient_q.y();
-    //imuMsg_.orientation.z = orient_q.z();
 
 
     /////   COMPASS   /////
