@@ -106,11 +106,7 @@ namespace states {
 
         safetyBoundariesTask_->VehiclePosition() = ctrlData->inertialF_linearPosition;
 
-
-             //std::cout << "*** Is this allocation failing? ***" << std::endl;
         Eigen::MatrixXd Aexternal;
-
-             //std::cout << "*** No it's not ***" << std::endl;
 
         Aexternal = safetyBoundariesTask_->InternalActivationFunction().maxCoeff() * Aexternal.setIdentity(absoluteAxisAlignmentSafetyTask_->TaskSpace(), absoluteAxisAlignmentSafetyTask_->TaskSpace());
 
@@ -120,17 +116,17 @@ namespace states {
         absoluteAxisAlignmentSafetyTask_->SetDirectionAlignment(safetyBoundariesTask_->GetAlignVector(rml::FrameID::WorldFrame),
             rml::FrameID::WorldFrame);
 
-             //To avoid the case in which the error between the goal heading and the current heading is too big
-             //we activate the the cartesian distance through the gain based on a bell-shaped function on the heading error
+        //To avoid the case in which the error between the goal heading and the current heading is too big
+        //we activate the the cartesian distance through the gain based on a bell-shaped function on the heading error
 
-             //compute the heading error
+        //compute the heading error
         double headingErrorsafety = absoluteAxisAlignmentSafetyTask_->ControlVariable().norm();
         //std::cout << "headingErrorsafety: " << headingErrorsafety << std::endl;
 
-             //compute the gain of the cartesian distance
+        //compute the gain of the cartesian distance
         double taskGainSafety = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingErrorsafety);
 
-             // Set the gain of the cartesian distance task
+        // Set the gain of the cartesian distance task
         safetyBoundariesTask_->ExternalActivationFunction() = taskGainSafety * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
 
         double goalDistance, goalHeading;
@@ -146,25 +142,25 @@ namespace states {
                     std::cout << "*** STARTING TRACK ***" << std::endl;
                 } else {
 
-                         //Set the distance vector to the target
+                    //Set the distance vector to the target
                     cartesianDistanceTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(goalHeading), goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame);
                     //Set the align vector to the target
                     alignToTargetTask_->SetTargetDistance(Eigen::Vector3d(goalDistance * cos(goalHeading), goalDistance * sin(goalHeading), 0), rml::FrameID::WorldFrame);
 
-                         //Set the vector that has to been align to the distance vector
+                    //Set the vector that has to been align to the distance vector
                     alignToTargetTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);
 
-                         //To avoid the case in which the error between the goal heading and the current heading is too big
-                         //we activate the the cartesian distance through the gain based on a bell-shaped function on the heading error
+                    //To avoid the case in which the error between the goal heading and the current heading is too big
+                    //we activate the the cartesian distance through the gain based on a bell-shaped function on the heading error
 
-                         //compute the heading error
+                    //compute the heading error
                     double headingError = alignToTargetTask_->ControlVariable().norm();
 
-                         //compute the gain of the cartesian distance
+                    //compute the gain of the cartesian distance
                     double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingError);
 
-                         //Set the gain of the cartesian distance task
-                         //cartesianDistanceTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
+                    //Set the gain of the cartesian distance task
+                    //cartesianDistanceTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
 
                     cartesianDistanceTask_->TaskParameter().gain = taskGain * cartesianDistanceTask_->TaskParameter().conf_gain;
                     cartesianDistanceTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
