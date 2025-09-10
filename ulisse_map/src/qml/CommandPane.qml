@@ -139,7 +139,9 @@ ColumnLayout {
                     Material.background: grey
                     onClicked: {
                         savePathDialog.pathToSave = map.safety_polygon
-                        savePathDialog.open()
+                        savePathDialog.selectFolder = true
+                        savePathDialog.saveFile = true
+                        savePathDialog.open = true
                     }
                 }
             }

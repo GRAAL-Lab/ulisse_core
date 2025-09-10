@@ -23,10 +23,23 @@
 
 #include "ulisse_msgs/srv/set_boundaries.hpp"
 
+void myMsgHandler(QtMsgType type, const QMessageLogContext &ctx, const QString &msg)
+{
+    (void) ctx;
+    // Filter exact warning string
+    if (type == QtWarningMsg && msg.contains("QObject::startTimer: Timers cannot have negative intervals"))
+        return; // drop it
+
+    // default behaviour
+    QByteArray localMsg = msg.toLocal8Bit();
+    fprintf(stderr, "%s\n", localMsg.constData());
+}
 
 int main(int argc, char* argv[])
 {
     //QQmlDebuggingEnabler enabler;
+
+    qInstallMessageHandler(myMsgHandler);
 
     char name[] = { "Ulisse Control GUI" };
 
@@ -36,12 +49,14 @@ int main(int argc, char* argv[])
     //QGuiApplication::setApplicationName(name);
     //QGuiApplication::setOrganizationName("GRAAL Lab");
 
+    qputenv("QSG_RENDER_LOOP", QByteArray("basic"));
     QApplication app(argc, argv);
     app.setApplicationName(name);
     app.setOrganizationName("GRAAL Lab");
 
     //QGuiApplication app(argc, argv);
     QIcon icon(":/images/ulisse_icon.png");
+    //qDebug() << "isNull? " << icon.isNull();
     app.setWindowIcon(icon);
     //QMainWindow::setWindowIcon(":/images/ulisse_icon-48.png");
 

@@ -23,7 +23,7 @@ Item {
         id: fileDialog
         title: root.title
         nameFilters: root.nameFilters
-        folder: root.folder
+        folder: StandardPaths.writableLocation(StandardPaths.HomeLocation) //  "file://" + home_dir + "/"//
         defaultSuffix: root.defaultSuffix   // <-- pass through
         fileMode: selectFolder
             ? FileDialog.Directory
@@ -45,5 +45,9 @@ Item {
     onOpenChanged: {
         if (open)
             fileDialog.open()
+    }
+
+    Component.onCompleted: {
+        fileDialog.folder = StandardPaths.writableLocation(StandardPaths.HomeLocation)
     }
 }

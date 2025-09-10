@@ -54,7 +54,9 @@ RowLayout {
             }
 
             savePathDialog.pathToSave = managedPath;
-            savePathDialog.open()
+            savePathDialog.selectFolder = true
+            savePathDialog.saveFile = true
+            savePathDialog.open = true
         }
     }
 
