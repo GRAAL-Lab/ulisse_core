@@ -219,7 +219,11 @@ Map {
         anchorPoint.y: greenFlagImage.height / 2
         coordinate: fbkUpdater ? fbkUpdater.track_pos : QtPositioning.coordinate(0.0, 0.0)
         z: goalAcceptRadius.z + 1
-        opacity: fbkUpdater ? (fbkUpdater.vehicle_state === "Path_Following") ? 0.6 : 0.0 : 0.0
+        opacity: fbkUpdater ? (fbkUpdater.vehicle_state.indexOf("Path_Following") === 0) ? 0.6 : 0.0 : 0.0
+
+        //onCoordinateChanged: function() {
+        //    console.log("IndexOf: " + fbkUpdater.vehicle_state.indexOf("Path_Following"));
+        //}
     }
 
     MapQuickItem {

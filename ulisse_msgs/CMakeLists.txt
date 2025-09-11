@@ -89,6 +89,7 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/TPIKAction.msg"
   "msg/TPIKPriorityLevel.msg"
   "msg/Obstacle.msg"
+  "msg/PathFollow.msg"
 
   ## Services ##
   "srv/ControlCommand.srv"

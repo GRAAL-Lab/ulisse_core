@@ -14,6 +14,8 @@
 #include "ulisse_msgs/msg/surge_yaw_rate.hpp"
 #include "ulisse_msgs/msg/tpik_action.hpp"
 #include "ulisse_msgs/msg/tpik_priority_level.hpp"
+#include "ulisse_msgs/msg/path_follow.hpp"
+#include "ulisse_msgs/msg/simulated_system.hpp"
 
 #include "ulisse_msgs/srv/control_command.hpp"
 #include "ulisse_msgs/srv/get_boundaries.hpp"
@@ -25,6 +27,10 @@
 #include "ulisse_ctrl/commands/command_hold.hpp"
 #include "ulisse_ctrl/commands/command_latlong.hpp"
 #include "ulisse_ctrl/commands/command_pathfollow.hpp"
+#include "ulisse_ctrl/commands/command_pathfollow_ilos.hpp"
+#include "ulisse_ctrl/commands/command_pathfollow_current.hpp"
+#include "ulisse_ctrl/commands/command_pathfollow_iloscurrent.hpp"
+#include "ulisse_ctrl/commands/command_pathfollow_alos.hpp"
 #include "ulisse_ctrl/commands/command_surgeheading.hpp"
 #include "ulisse_ctrl/commands/command_surgeyawrate.hpp"
 
@@ -35,11 +41,14 @@
 #include "ulisse_ctrl/states/state_hold.hpp"
 #include "ulisse_ctrl/states/state_latlong.hpp"
 #include "ulisse_ctrl/states/state_pathfollow.hpp"
+#include "ulisse_ctrl/states/state_pathfollow_ilos.hpp"
+#include "ulisse_ctrl/states/state_pathfollow_current.hpp"
+#include "ulisse_ctrl/states/state_pathfollow_iloscurrent.hpp"
+#include "ulisse_ctrl/states/state_pathfollow_alos.hpp"
 #include "ulisse_ctrl/states/state_surgeheading.hpp"
 #include "ulisse_ctrl/states/state_surgeyawrate.hpp"
 
 #include "ulisse_ctrl/tasks/SafetyBoundaries.hpp"
-
 
 namespace ulisse {
 
@@ -65,11 +74,14 @@ class VehicleController : public rclcpp::Node {
     rclcpp::Subscription<ulisse_msgs::msg::SurgeHeading>::SharedPtr surgeHeadingSub_;
     rclcpp::Subscription<ulisse_msgs::msg::SurgeYawRate>::SharedPtr surgeYawRateSub_;
 
+    rclcpp::Subscription<ulisse_msgs::msg::SimulatedSystem>::SharedPtr simulatedSystemSub_; //ILOS
+
     rclcpp::Publisher<ulisse_msgs::msg::ReferenceVelocities>::SharedPtr  referenceVelocitiesPub_;
     rclcpp::Publisher<ulisse_msgs::msg::VehicleStatus>::SharedPtr vehicleStatusPub_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr genericLogPub_;
     rclcpp::Publisher<ulisse_msgs::msg::FeedbackGui>::SharedPtr feedbackGuiPub_;
     rclcpp::Publisher<ulisse_msgs::msg::TPIKAction>::SharedPtr tpikActionPub_;
+    rclcpp::Publisher<ulisse_msgs::msg::PathFollow>::SharedPtr pathFollowPub_; // ILOS
 
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr safetyBoundarySetPub_;
 
@@ -84,28 +96,37 @@ class VehicleController : public rclcpp::Node {
 
     std::shared_ptr<tpik::iCAT> iCat_;
 
+    int a;
+
+    int b;
+
     double cruise_;
     //double externalSurge_, externalYawRate_;
     std::shared_ptr<tpik::Solver> solver_;
 
-    // Solution of TPIK
+       // Solution of TPIK
     Eigen::VectorXd yTpik_;
 
-    ///TASKS
+       ///TASKS
     std::shared_ptr<ikcl::LinearVelocity> asvLinearVelocity_;
     std::shared_ptr<ikcl::LinearVelocity> asvLinearVelocityHold_;
     std::shared_ptr<ikcl::AlignToTarget> asvAngularPosition_;
+    std::shared_ptr<ikcl::AlignToTarget> asvAngularPositionILOS_;
     std::shared_ptr<ikcl::CartesianDistance> asvCartesianDistance_;
     std::shared_ptr<ikcl::SafetyBoundaries> asvSafetyBoundaries_;
     std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignment_;
     std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentSafety_;
     std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentHold_;
+    std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentILOS_;
+    std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentCurrentEst_;
+    std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentALOS_;
     std::shared_ptr<ikcl::CartesianDistance> asvCartesianDistancePathFollowing_;
+    std::shared_ptr<ikcl::LinearVelocity> asvLinearVelocityCurrentEst_;
 
     double timestamp_;
     bool boundariesSet_;
 
-    // FSM
+       // FSM
     fsm::FSM uFsm_;
 
     std::shared_ptr<states::StateHalt> stateHalt_;
@@ -114,6 +135,10 @@ class VehicleController : public rclcpp::Node {
     std::shared_ptr<states::StateSurgeHeading> stateSurgeHeading_;
     std::shared_ptr<states::StateSurgeYawRate> stateSurgeYawRate_;
     std::shared_ptr<states::StatePathFollow> statePathFollowing_;
+    std::shared_ptr<states::StatePathFollowILOS> statePathFollowingILOS_;
+    std::shared_ptr<states::StatePathFollowCurrent> statePathFollowingCurrent_;
+    std::shared_ptr<states::StatePathFollowILOSCurrent> statePathFollowingILOSCurrent_;
+    std::shared_ptr<states::StatePathFollowALOS> statePathFollowingALOS_;
 
     commands::CommandHalt commandHalt_;
     commands::CommandHold commandHold_;
@@ -121,6 +146,10 @@ class VehicleController : public rclcpp::Node {
     commands::CommandSurgeHeading commandSurgeHeading_;
     commands::CommandSurgeYawRate commandSurgeYawRate_;
     commands::CommandPathFollow commandPathFollowing_;
+    commands::CommandPathFollowILOS commandPathFollowingILOS_;
+    commands::CommandPathFollowCurrent commandPathFollowingCurrent_;
+    commands::CommandPathFollowILOSCurrent commandPathFollowingILOSCurrent_;
+    commands::CommandPathFollowALOS commandPathFollowingALOS_;
 
     events::EventRCEnabled eventRcEnabled_;
     events::EventNearGoalPosition eventNearGoalPosition_;
@@ -136,6 +165,9 @@ class VehicleController : public rclcpp::Node {
     std::shared_ptr<ControlData> ctrlData_;
     //std::shared_ptr<ctb::LatLong> vehiclePosition_;
     //std::shared_ptr<Eigen::Vector2d> inertialF_waterCurrent_;
+    ulisse_msgs::msg::SimulatedSystem simulatedData_; // ILOS
+    std::shared_ptr<LatLong> real_position_; // ILOS
+    std::shared_ptr<ControlData> ctrlDataReal_;
 
     bool LoadConfiguration(std::shared_ptr<KCLConfiguration>& conf);
     void SetUpFSM();
@@ -159,6 +191,8 @@ class VehicleController : public rclcpp::Node {
     void SurgeYawRateCB(const ulisse_msgs::msg::SurgeYawRate::SharedPtr msg);
     void NavFilterCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
     void LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg);
+
+    void GroundTruthDataCB(const ulisse_msgs::msg::SimulatedSystem::SharedPtr msg);
 
     void PublishLog(std::string log);
 

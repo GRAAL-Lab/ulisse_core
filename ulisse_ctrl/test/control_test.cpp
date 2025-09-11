@@ -1,7 +1,11 @@
 #include "ulisse_msgs/srv/llc_command.hpp"
 #include "ulisse_msgs/srv/rosbag_cmd.hpp"
 #include "ulisse_msgs/topicnames.hpp"
+<<<<<<< HEAD
 //#include "ulisse_driver/LLCHelperDataStructs.h"
+=======
+#include "ulisse_driver/LLCHelperDataStructs.h"
+>>>>>>> origin/juri-thesis
 #include "ulisse_msgs/futils.hpp"
 
 

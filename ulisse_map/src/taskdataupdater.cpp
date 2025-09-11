@@ -80,15 +80,19 @@ void TaskDataUpdater::Init(QQmlApplicationEngine* engine)
     RegisterSubscribers();
 
     tasksMessageMap_.insert( { ulisse::task::asvAbsoluteAxisAlignment, ulisse_msgs::msg::TaskStatus() } );
+    tasksMessageMap_.insert( { ulisse::task::asvAbsoluteAxisAlignmentILOS, ulisse_msgs::msg::TaskStatus() } );//ILOS
+    tasksMessageMap_.insert( { ulisse::task::asvAbsoluteAxisAlignmentALOS, ulisse_msgs::msg::TaskStatus() } );//ALOS
     tasksMessageMap_.insert( { ulisse::task::asvAbsoluteAxisAlignmentHold, ulisse_msgs::msg::TaskStatus() } );
     tasksMessageMap_.insert( { ulisse::task::asvAbsoluteAxisAlignmentSafety, ulisse_msgs::msg::TaskStatus() } );
     tasksMessageMap_.insert( { ulisse::task::asvAngularPosition, ulisse_msgs::msg::TaskStatus()});
+//    tasksMessageMap_.insert( { ulisse::task::asvAngularPositionILOS, ulisse_msgs::msg::TaskStatus()});
     tasksMessageMap_.insert( { ulisse::task::asvCartesianDistance, ulisse_msgs::msg::TaskStatus()});
     tasksMessageMap_.insert( { ulisse::task::asvCartesianDistancePathFollowing, ulisse_msgs::msg::TaskStatus()});
     tasksMessageMap_.insert( { ulisse::task::asvLinearVelocity, ulisse_msgs::msg::TaskStatus()});
     tasksMessageMap_.insert( { ulisse::task::asvLinearVelocityHold, ulisse_msgs::msg::TaskStatus()});
+    tasksMessageMap_.insert( { ulisse::task::asvLinearVelocityCurrentEst, ulisse_msgs::msg::TaskStatus()});//Current
     tasksMessageMap_.insert( { ulisse::task::asvSafetyBoundaries, ulisse_msgs::msg::TaskStatus()});
-
+    tasksMessageMap_.insert( { ulisse::task::asvAbsoluteAxisAlignmentCurrentEst, ulisse_msgs::msg::TaskStatus() } );//Current
 
 }
 
@@ -109,14 +113,23 @@ void TaskDataUpdater::RegisterSubscribers(){
     absoluteAxisAlignmentSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment, 10,
                                                                                         std::bind(&TaskDataUpdater::AbsoluteAxisAlignmentCB, this, _1));
 
+    absoluteAxisAlignmentILOSSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment_ilos, 10,
+        std::bind(&TaskDataUpdater::AbsoluteAxisAlignmentILOSCB, this, _1));
+        
+    absoluteAxisAlignmentALOSSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment_alos, 10,
+                                                                                            std::bind(&TaskDataUpdater::AbsoluteAxisAlignmentALOSCB, this, _1));
+
     absoluteAxisAlignmentHoldSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment_hold, 10,
                                                                                             std::bind(&TaskDataUpdater::AbsoluteAxisAlignmentHoldCB, this, _1));
+
+    absoluteAxisAlignmentCurrentSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment_current, 10,
+        std::bind(&TaskDataUpdater::AbsoluteAxisAlignmentCurrentCB, this, _1));
 
     absoluteAxisAlignmentSafetySub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment_safety, 10,
                                                                                               std::bind(&TaskDataUpdater::AbsoluteAxisAlignmentSafetyCB, this, _1));
 
     angularPositionSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_angular_position, 10,
-                                                                                  std::bind(&TaskDataUpdater::AngularPositionCB, this, _1));
+        std::bind(&TaskDataUpdater::AngularPositionCB, this, _1));
 
     cartesianDistanceSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_cartesian_distance, 10,
                                                                                     std::bind(&TaskDataUpdater::CartesianDistanceCB, this, _1));
@@ -130,6 +143,9 @@ void TaskDataUpdater::RegisterSubscribers(){
     linearVelocityHoldSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_linear_velocity_hold, 10,
                                                                                      std::bind(&TaskDataUpdater::LinearVelocityHoldCB, this, _1));
 
+    linearVelocityCurrentEstSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_linear_velocity_current, 10,
+        std::bind(&TaskDataUpdater::LinearVelocityCurrentEstCB, this, _1));
+
     safetyBoundariesSub_ = this->create_subscription<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_safety_boundaries, 10,
                                                                                    std::bind(&TaskDataUpdater::SafetyBoundariesCB, this, _1));
 
@@ -140,12 +156,16 @@ void TaskDataUpdater::resetPublishersAndSubscribers()
     tpikActionSub_.reset();
 
     absoluteAxisAlignmentSub_         .reset();
+    absoluteAxisAlignmentILOSSub_     .reset(); // ILOS
+    absoluteAxisAlignmentALOSSub_     .reset(); // ALOS
+    absoluteAxisAlignmentCurrentSub_  .reset(); // Current
     absoluteAxisAlignmentHoldSub_     .reset();
     absoluteAxisAlignmentSafetySub_   .reset();
     angularPositionSub_               .reset();
     cartesianDistanceSub_             .reset();
     cartesianDistancePathFollowingSub_.reset();
     linearVelocityHoldSub_            .reset();
+    linearVelocityCurrentEstSub_      .reset(); // Current
     linearVelocitySub_                .reset();
     safetyBoundariesSub_              .reset();
 
@@ -166,9 +186,24 @@ void TaskDataUpdater::AbsoluteAxisAlignmentCB(const ulisse_msgs::msg::TaskStatus
     tasksMessageMap_.at(ulisse::task::asvAbsoluteAxisAlignment) = *msg;
 }
 
+void TaskDataUpdater::AbsoluteAxisAlignmentILOSCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)// ILOS
+{
+    tasksMessageMap_.at(ulisse::task::asvAbsoluteAxisAlignmentILOS) = *msg;
+}
+
+void TaskDataUpdater::AbsoluteAxisAlignmentALOSCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)// ALOS
+{
+    tasksMessageMap_.at(ulisse::task::asvAbsoluteAxisAlignmentALOS) = *msg;
+}
+
 void TaskDataUpdater::AbsoluteAxisAlignmentHoldCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
 {
     tasksMessageMap_.at(ulisse::task::asvAbsoluteAxisAlignmentHold) = *msg;
+}
+
+void TaskDataUpdater::AbsoluteAxisAlignmentCurrentCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
+{
+    tasksMessageMap_.at(ulisse::task::asvAbsoluteAxisAlignmentCurrentEst) = *msg;
 }
 
 void TaskDataUpdater::AbsoluteAxisAlignmentSafetyCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
@@ -180,6 +215,11 @@ void TaskDataUpdater::AngularPositionCB(const ulisse_msgs::msg::TaskStatus::Shar
 {
     tasksMessageMap_.at(ulisse::task::asvAngularPosition) = *msg;
 }
+
+//void TaskDataUpdater::AngularPositionILOSCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
+//{
+//    tasksMessageMap_.at(ulisse::task::asvAngularPositionILOS) = *msg;
+//}
 
 void TaskDataUpdater::CartesianDistanceCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
 {
@@ -199,6 +239,11 @@ void TaskDataUpdater::LinearVelocityCB(const ulisse_msgs::msg::TaskStatus::Share
 void TaskDataUpdater::LinearVelocityHoldCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
 {
     tasksMessageMap_.at(ulisse::task::asvLinearVelocityHold) = *msg;
+}
+
+void TaskDataUpdater::LinearVelocityCurrentEstCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)
+{
+    tasksMessageMap_.at(ulisse::task::asvLinearVelocityCurrentEst) = *msg;
 }
 
 void TaskDataUpdater::SafetyBoundariesCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg)

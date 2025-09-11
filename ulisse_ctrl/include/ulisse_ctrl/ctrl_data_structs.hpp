@@ -43,6 +43,7 @@ struct KCLConfiguration {
     double posAcceptanceRadius;
     double controlLoopRate;
     Eigen::VectorXd saturationMin, saturationMax;
+    int pathFollowMode; // ILOS or LOS
 
     KCLConfiguration()
         : goToHoldAfterMove(false)
@@ -62,6 +63,8 @@ struct KCLConfiguration {
             return false;
         if (!ctb::GetParamVector(confObj, saturationMin, "saturationMin"))
             return false;
+        //if (!ctb::GetParamVector(confObj, pathFollowMode, "pathFollowMode")) // ILOS or LOS
+        //    return false;
 
         return true;
     }

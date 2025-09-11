@@ -54,6 +54,7 @@ class CommandWrapper : public QObject, rclcpp::Node {
     double wpRadius_;
     int errorCheckInterval_, commandTimerPeriod_;
     bool fbkReceived_;
+    int pathFollowMode_;
 
     void FeedbackGuiCB(const ulisse_msgs::msg::FeedbackGui::SharedPtr msg);
     void ShowToast(const QVariant message, const QVariant duration);
@@ -62,6 +63,7 @@ class CommandWrapper : public QObject, rclcpp::Node {
     bool SendCommandRequest(ulisse_msgs::srv::ControlCommand::Request::SharedPtr req);
     void StopOngoingTimers();
     void RegisterPublishersAndSubscribers();
+    bool LoadConfiguration();
 
 public:
     explicit CommandWrapper(QObject* parent = nullptr);

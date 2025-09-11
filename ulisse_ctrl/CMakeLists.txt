@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 project(ulisse_ctrl)
 
 #if(NOT CMAKE_CXX_STANDARD)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 #endif()
 
 #if(NOT CMAKE_BUILD_TYPE)
@@ -12,6 +12,8 @@ set(CMAKE_BUILD_TYPE RelWithDebInfo)
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
+
+#set(BUILD_TYPE_DEBUG TRUE)
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -60,6 +62,10 @@ set(ulisse_kinematic_ctrl_lib_sources
     # Helpers
     src/ulisse_ctrl/configuration.cpp
     src/ulisse_ctrl/path_manager.cpp
+    src/ulisse_ctrl/path_manager_ilos.cpp
+    src/ulisse_ctrl/path_manager_current.cpp
+    src/ulisse_ctrl/path_manager_iloscurrent.cpp
+    src/ulisse_ctrl/path_manager_alos.cpp
     # States
     src/ulisse_ctrl/states/generic_state.cpp
     src/ulisse_ctrl/states/state_halt.cpp
@@ -68,6 +74,10 @@ set(ulisse_kinematic_ctrl_lib_sources
     src/ulisse_ctrl/states/state_surgeheading.cpp
     src/ulisse_ctrl/states/state_surgeyawrate.cpp
     src/ulisse_ctrl/states/state_pathfollow.cpp
+    src/ulisse_ctrl/states/state_pathfollow_ilos.cpp
+    src/ulisse_ctrl/states/state_pathfollow_current.cpp
+    src/ulisse_ctrl/states/state_pathfollow_iloscurrent.cpp
+    src/ulisse_ctrl/states/state_pathfollow_alos.cpp
     # Commands
     src/ulisse_ctrl/commands/generic_command.cpp
     src/ulisse_ctrl/commands/command_halt.cpp
@@ -76,6 +86,10 @@ set(ulisse_kinematic_ctrl_lib_sources
     src/ulisse_ctrl/commands/command_surgeheading.cpp
     src/ulisse_ctrl/commands/command_surgeyawrate.cpp
     src/ulisse_ctrl/commands/command_pathfollow.cpp
+    src/ulisse_ctrl/commands/command_pathfollow_ilos.cpp
+    src/ulisse_ctrl/commands/command_pathfollow_current.cpp
+    src/ulisse_ctrl/commands/command_pathfollow_iloscurrent.cpp
+    src/ulisse_ctrl/commands/command_pathfollow_alos.cpp
     # Events
     #src/ulisse_ctrl/events/generic_event.cpp
     src/ulisse_ctrl/events/event_rc_enabled.cpp

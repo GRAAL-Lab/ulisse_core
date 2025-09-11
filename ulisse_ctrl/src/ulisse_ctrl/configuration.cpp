@@ -46,7 +46,7 @@ bool ConfigurePriorityLevelsFromFile(std::shared_ptr<tpik::ActionManager> action
         for (int i = 0; i < tasks.getLength(); ++i) {
             libconfig::Setting& task = tasks[i];
 
-            std::cout << "Added task: " << task.c_str() << " to " << PLID << std::endl;
+            std::cout << "Adding task: " << task.c_str() << " to " << PLID << std::endl;
 
             std::unordered_map<std::string, ulisse::TasksInfo>::iterator it = tasksMap.find(task.c_str());
 

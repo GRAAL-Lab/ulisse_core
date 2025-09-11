@@ -52,18 +52,24 @@ const std::string reset_kcl_conf_service = "/ulisse/ctrl/reset_kcl_configuration
 const std::string reset_dcl_conf_service = "/ulisse/ctrl/reset_dcl_configuration";
 const std::string surge_heading = "/ulisse/ctrl/surge_heading";
 const std::string surge_yawrate = "/ulisse/ctrl/surge_yawrate";
+const std::string pathfollowing = "/ulisse/ctrl/pathfollowing"; // ILOS
 const std::string safety_boundary_set = "/ulisse/ctrl/safety_boundary_set";
 
 // TASKS
 const std::string task_absolute_axis_alignment = "/ulisse/task/ASV_Absolute_Axis_Alignment";
 const std::string task_linear_velocity = "/ulisse/task/ASV_Linear_Velocity";
 const std::string task_angular_position = "/ulisse/task/ASV_Angular_Position";
+//const std::string task_angular_position_ilos = "/ulisse/task/ASV_Angular_Position_ILOS";
 const std::string task_cartesian_distance = "/ulisse/task/ASV_Cartesian_Distance";
 const std::string task_cartesian_distance_path_follow = "/ulisse/task/ASV_Cartesian_Distance_Path_Follow";
 const std::string task_safety_boundaries = "/ulisse/task/ASV_Safety_Boundaries";
 const std::string task_absolute_axis_alignment_safety = "/ulisse/task/ASV_Absolute_Axis_Alignment_Safety";
 const std::string task_absolute_axis_alignment_hold = "/ulisse/task/ASV_Absolute_Axis_Alignment_Hold";
+const std::string task_absolute_axis_alignment_ilos = "/ulisse/task/ASV_Absolute_Axis_Alignment_ILOS";
 const std::string task_linear_velocity_hold = "/ulisse/task/ASV_Linear_Velocity_Hold";
+const std::string task_linear_velocity_current = "/ulisse/task/ASV_Linear_Velocity_Current";
+const std::string task_absolute_axis_alignment_current = "/ulisse/task/ASV_Absolute_Axis_Alignment_CurrentEst";
+const std::string task_absolute_axis_alignment_alos = "/ulisse/task/ASV_Absolute_Axis_Alignment_ALOS";
 
 const std::string tpik_action = "/ulisse/task/tpik_action";
 

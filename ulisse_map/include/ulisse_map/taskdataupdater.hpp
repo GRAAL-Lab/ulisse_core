@@ -45,12 +45,17 @@ class TaskDataUpdater : public QObject, rclcpp::Node {
     std::map<std::string, ulisse_msgs::msg::TaskStatus> tasksMessageMap_;
 
     rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr absoluteAxisAlignmentSub_;
+    rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr absoluteAxisAlignmentILOSSub_; //ILOS
+    rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr absoluteAxisAlignmentALOSSub_; //ALOS
     rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr absoluteAxisAlignmentHoldSub_;
+    rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr absoluteAxisAlignmentCurrentSub_;
     rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr absoluteAxisAlignmentSafetySub_;
     rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr angularPositionSub_;
+//    rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr angularPositionIlosSub_;
     rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr cartesianDistanceSub_;
     rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr cartesianDistancePathFollowingSub_;
     rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr linearVelocityHoldSub_;
+    rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr linearVelocityCurrentEstSub_; //Current
     rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr linearVelocitySub_;
     rclcpp::Subscription<ulisse_msgs::msg::TaskStatus>::SharedPtr safetyBoundariesSub_;
 
@@ -61,13 +66,18 @@ class TaskDataUpdater : public QObject, rclcpp::Node {
 
     void TPIKActionCB(const ulisse_msgs::msg::TPIKAction::SharedPtr msg);
     void AbsoluteAxisAlignmentCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
+    void AbsoluteAxisAlignmentILOSCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg); // ILOS
+    void AbsoluteAxisAlignmentALOSCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg); // ALOS
     void AbsoluteAxisAlignmentHoldCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
+    void AbsoluteAxisAlignmentCurrentCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg); // Current
     void AbsoluteAxisAlignmentSafetyCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
     void AngularPositionCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
+    //void AngularPositionILOSCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
     void CartesianDistanceCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
     void CartesianDistancePathFollowingCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
     void LinearVelocityCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
     void LinearVelocityHoldCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
+    void LinearVelocityCurrentEstCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
     void SafetyBoundariesCB(const ulisse_msgs::msg::TaskStatus::SharedPtr msg);
 
 

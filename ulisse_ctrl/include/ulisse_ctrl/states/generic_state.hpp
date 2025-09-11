@@ -25,6 +25,8 @@ namespace states {
         std::shared_ptr<tpik::ActionManager> actionManager;
         std::shared_ptr<rml::RobotModel> robotModel;
         std::unordered_map<std::string, TasksInfo> tasksMap;
+        std::shared_ptr<LatLong> real_position; // ILOS
+        std::shared_ptr<ControlData> ctrlDataReal; // ILOS
 
         GenericState();
         virtual ~GenericState(void);

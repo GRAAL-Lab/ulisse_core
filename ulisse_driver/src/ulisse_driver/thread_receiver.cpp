@@ -107,27 +107,27 @@ namespace llc {
                     // change the pointer to a vector
                     switch (llcParser_.GetLastMessageType()) {
                     case LLC_MESSAGETYPE_MOTORS_FEEDBACK:
-                        RCLCPP_INFO(this->get_logger(), "NEW MOTOR MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
+                        RCLCPP_DEBUG(this->get_logger(), "NEW MOTOR MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
                         ParseMotorsFeedback(llcParser_.GetIncomingBuffer());
                         break;
                     case LLC_MESSAGETYPE_BATTERY:
-                        RCLCPP_INFO(this->get_logger(), "NEW BATTERY MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
+                        RCLCPP_DEBUG(this->get_logger(), "NEW BATTERY MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
                         ParseBattery(llcParser_.GetIncomingBuffer());
                         break;
                     case LLC_MESSAGETYPE_STATUS:
-                        RCLCPP_INFO(this->get_logger(), "NEW STATUS MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
+                        RCLCPP_DEBUG(this->get_logger(), "NEW STATUS MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
                         ParseStatus(llcParser_.GetIncomingBuffer());
                         break;
                     case LLC_MESSAGETYPE_SET_CONFIG:
-                        RCLCPP_INFO(this->get_logger(), "NEW SET CONFIG MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
+                        RCLCPP_DEBUG(this->get_logger(), "NEW SET CONFIG MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
                         ParseSetConfig(llcParser_.GetIncomingBuffer());
                         break;
                     case LLC_MESSAGETYPE_VERSION:
-                        RCLCPP_INFO(this->get_logger(), "NEW VERSION MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
+                        RCLCPP_DEBUG(this->get_logger(), "NEW VERSION MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
                         ParseVersion(llcParser_.GetIncomingBuffer());
                         break;
                     case LLC_MESSAGETYPE_ACK:
-                        RCLCPP_INFO(this->get_logger(), "NEW ACK MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
+                        RCLCPP_DEBUG(this->get_logger(), "NEW ACK MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
                         ParseAck(llcParser_.GetIncomingBuffer());
                         break;
                     }
@@ -168,7 +168,7 @@ namespace llc {
         deserializer.PacketExtract_uint8(&llc_ack_msg.ack);
 
         if (llc_ack_msg.ack == 0) {
-            RCLCPP_INFO(this->get_logger(), "Received ACK for command %d", llc_ack_msg.messagetype);
+            RCLCPP_DEBUG(this->get_logger(), "Received ACK for command %d", llc_ack_msg.messagetype);
         } else {
             RCLCPP_ERROR(this->get_logger(), "Received NACK (%d) for command %d", llc_ack_msg.ack, llc_ack_msg.messagetype);
         }

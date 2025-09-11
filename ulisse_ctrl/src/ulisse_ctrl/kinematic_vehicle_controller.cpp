@@ -23,12 +23,18 @@ VehicleController::VehicleController(std::string conf_filename)
     conf_ = std::make_shared<KCLConfiguration>();
 
     ctrlData_ = std::make_shared<ControlData>();
+    //ctrlDataReal_ = std::make_shared<ControlData>(); // no need for now
+    real_position_ = std::make_shared<LatLong>();
 
     fileName_ = conf_filename;
 
     stateHalt_ = std::make_shared<states::StateHalt>();
     stateHold_ = std::make_shared<states::StateHold>();
     statePathFollowing_ = std::make_shared<states::StatePathFollow>();
+    statePathFollowingILOS_ = std::make_shared<states::StatePathFollowILOS>(); //ILOS
+    statePathFollowingCurrent_ = std::make_shared<states::StatePathFollowCurrent>(); //Current
+    statePathFollowingILOSCurrent_ = std::make_shared<states::StatePathFollowILOSCurrent>(); //ILOSCurrent
+    statePathFollowingALOS_ = std::make_shared<states::StatePathFollowALOS>(); //ALOS
     stateLatLong_ = std::make_shared<states::StateLatLong>();
     stateSurgeHeading_ = std::make_shared<states::StateSurgeHeading>();
     stateSurgeYawRate_ = std::make_shared<states::StateSurgeYawRate>();
@@ -41,12 +47,18 @@ VehicleController::VehicleController(std::string conf_filename)
     surgeHeadingSub_ = this->create_subscription<ulisse_msgs::msg::SurgeHeading>(ulisse_msgs::topicnames::surge_heading, 10, std::bind(&VehicleController::SurgeHeadingCB, this, _1));
     surgeYawRateSub_ = this->create_subscription<ulisse_msgs::msg::SurgeYawRate>(ulisse_msgs::topicnames::surge_yawrate, 10, std::bind(&VehicleController::SurgeYawRateCB, this, _1));
 
+
+    simulatedSystemSub_ = this->create_subscription<ulisse_msgs::msg::SimulatedSystem>(ulisse_msgs::topicnames::simulated_system,
+        10, std::bind(&VehicleController::GroundTruthDataCB, this, _1));
+
     // Control Publishers
+
     genericLogPub_ = this->create_publisher<std_msgs::msg::String>("/ulisse/log/generic", 10);
     vehicleStatusPub_ = this->create_publisher<ulisse_msgs::msg::VehicleStatus>(ulisse_msgs::topicnames::vehicle_status, 10);
     referenceVelocitiesPub_ = this->create_publisher<ulisse_msgs::msg::ReferenceVelocities>(ulisse_msgs::topicnames::reference_velocities, 10);
     feedbackGuiPub_ = this->create_publisher<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10);
     tpikActionPub_ = this->create_publisher<ulisse_msgs::msg::TPIKAction>(ulisse_msgs::topicnames::tpik_action, 10);
+    pathFollowPub_ = this->create_publisher<ulisse_msgs::msg::PathFollow>(ulisse_msgs::topicnames::pathfollowing, 10);
 
     safetyBoundarySetPub_ = this->create_publisher<std_msgs::msg::Bool>(ulisse_msgs::topicnames::safety_boundary_set, 10);
 
@@ -118,6 +130,37 @@ VehicleController::VehicleController(std::string conf_filename)
     taskInfo_.task = asvLinearVelocityHold_;
     taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_linear_velocity_hold, 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvLinearVelocityHold, taskInfo_));
+
+
+    // AUV CONTROL ANGULAR POSITION ILOS
+    //asvAngularPositionILOS_ = std::make_shared<ikcl::AlignToTarget>(ikcl::AlignToTarget(ulisse::task::asvAngularPositionILOS, robotModel_, ulisse::robotModelID::ASV));
+    //taskInfo_.task = asvAngularPositionILOS_;
+    //taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_angular_position_ilos, 1);
+    //tasksMap_.insert(std::make_pair(ulisse::task::asvAngularPositionILOS, taskInfo_));
+
+    // ASV absolute axis alignment task
+    asvAbsoluteAxisAlignmentILOS_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asvAbsoluteAxisAlignmentILOS, robotModel_, ulisse::robotModelID::ASV));
+    taskInfo_.task = asvAbsoluteAxisAlignmentILOS_;
+    taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment_ilos, 1);
+    tasksMap_.insert(std::make_pair(ulisse::task::asvAbsoluteAxisAlignmentILOS, taskInfo_));
+
+    // ASV CONTROL VELOCITY LINEAR
+    asvLinearVelocityCurrentEst_ = std::make_shared<ikcl::LinearVelocity>(ikcl::LinearVelocity(ulisse::task::asvLinearVelocityCurrentEst, robotModel_, ulisse::robotModelID::ASV));
+    taskInfo_.task = asvLinearVelocityCurrentEst_;
+    taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_linear_velocity_current, 1);
+    tasksMap_.insert(std::make_pair(ulisse::task::asvLinearVelocityCurrentEst, taskInfo_));
+
+    // ASV absolute axis alignment task
+    asvAbsoluteAxisAlignmentCurrentEst_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asvAbsoluteAxisAlignmentCurrentEst, robotModel_, ulisse::robotModelID::ASV));
+    taskInfo_.task = asvAbsoluteAxisAlignmentCurrentEst_;
+    taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment_current, 1);
+    tasksMap_.insert(std::make_pair(ulisse::task::asvAbsoluteAxisAlignmentCurrentEst, taskInfo_));
+
+    // ASV absolute axis alignment task
+    asvAbsoluteAxisAlignmentALOS_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asvAbsoluteAxisAlignmentALOS, robotModel_, ulisse::robotModelID::ASV));
+    taskInfo_.task = asvAbsoluteAxisAlignmentALOS_;
+    taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment_alos, 1);
+    tasksMap_.insert(std::make_pair(ulisse::task::asvAbsoluteAxisAlignmentALOS, taskInfo_));
 
     // Initialize solver_ and iCAT
     int dof = 6;
@@ -238,12 +281,17 @@ bool VehicleController::LoadConfiguration(std::shared_ptr<KCLConfiguration>& con
         std::cerr << "Failed to load  Actions from file" << std::endl;
         return false;
     };
+    // conf->pathFollowMode //////// ILOS or LOS
 
     //insert states in the map
     statesMap_.insert({ ulisse::states::ID::halt, stateHalt_ });
     statesMap_.insert({ ulisse::states::ID::hold, stateHold_ });
     statesMap_.insert({ ulisse::states::ID::latlong, stateLatLong_ });
     statesMap_.insert({ ulisse::states::ID::pathfollow, statePathFollowing_ });
+    statesMap_.insert({ ulisse::states::ID::pathfollow_ilos, statePathFollowingILOS_ });
+    statesMap_.insert({ ulisse::states::ID::pathfollow_current, statePathFollowingCurrent_ });
+    statesMap_.insert({ ulisse::states::ID::pathfollow_iloscurrent, statePathFollowingILOSCurrent_ });
+    statesMap_.insert({ ulisse::states::ID::pathfollow_alos, statePathFollowingALOS_ });
     statesMap_.insert({ ulisse::states::ID::surgeheading, stateSurgeHeading_ });
     statesMap_.insert({ ulisse::states::ID::surgeyawrate, stateSurgeYawRate_ });
 
@@ -257,6 +305,10 @@ bool VehicleController::LoadConfiguration(std::shared_ptr<KCLConfiguration>& con
     commandsMap_.insert({ ulisse::commands::ID::hold, commandHold_ });
     commandsMap_.insert({ ulisse::commands::ID::latlong, commandLatLong_ });
     commandsMap_.insert({ ulisse::commands::ID::pathfollow, commandPathFollowing_ });
+    commandsMap_.insert({ ulisse::commands::ID::pathfollow_ilos, commandPathFollowingILOS_ });
+    commandsMap_.insert({ ulisse::commands::ID::pathfollow_current, commandPathFollowingCurrent_ });
+    commandsMap_.insert({ ulisse::commands::ID::pathfollow_iloscurrent, commandPathFollowingILOSCurrent_ });
+    commandsMap_.insert({ ulisse::commands::ID::pathfollow_alos, commandPathFollowingALOS_ });
     commandsMap_.insert({ ulisse::commands::ID::surgeheading, commandSurgeHeading_ });
     commandsMap_.insert({ ulisse::commands::ID::surgeyawrate, commandSurgeYawRate_ });
 
@@ -292,6 +344,18 @@ void VehicleController::SetUpFSM()
     commandPathFollowing_.SetFSM(&uFsm_);
     commandPathFollowing_.SetState(statePathFollowing_);
 
+    commandPathFollowingILOS_.SetFSM(&uFsm_);
+    commandPathFollowingILOS_.SetState(statePathFollowingILOS_); //ILOS
+
+    commandPathFollowingCurrent_.SetFSM(&uFsm_);
+    commandPathFollowingCurrent_.SetState(statePathFollowingCurrent_); //Current
+
+    commandPathFollowingILOSCurrent_.SetFSM(&uFsm_); // ILOS Current
+    commandPathFollowingILOSCurrent_.SetState(statePathFollowingILOSCurrent_);
+
+    commandPathFollowingALOS_.SetFSM(&uFsm_);
+    commandPathFollowingALOS_.SetState(statePathFollowingALOS_); //ALOS
+
     // ***** STATES ***** //
     //Set the fsm and the structure that the states need.
     for (auto& state : statesMap_) {
@@ -299,6 +363,8 @@ void VehicleController::SetUpFSM()
         state.second->robotModel = robotModel_;
         state.second->tasksMap = tasksMap_;
         state.second->ctrlData = ctrlData_;
+        state.second->real_position = real_position_; // ILOS
+        //state.second->ctrlDataReal = ctrlDataReal_; // ILOS
         state.second->SetFSM(&uFsm_);
     }
 
@@ -429,7 +495,55 @@ void VehicleController::CommandsHandler(const std::shared_ptr<rmw_request_id_t> 
                 ret = fsm::retval::fail;
             }
 
-            log << "Received Command PathFollowing (id: " << request->path_cmd.path.id << " )";
+            log << "Received Command PathFollowing LOS (id: " << request->path_cmd.path.id << " )";
+            PublishLog(log.str().c_str());
+
+        } else if (request->command_type == ulisse::commands::ID::pathfollow_ilos) {
+
+            std::cout << "Received Command Path Following ILOS" << std::endl;
+
+            if (!statePathFollowingILOS_->LoadPath(request->path_cmd.path)) {
+                response->res = "CommandAnswer::fail - Malformed Path Message.";
+                ret = fsm::retval::fail;
+            }
+
+            log << "Received Command PathFollowing ILOS (id: " << request->path_cmd.path.id << " )";
+            PublishLog(log.str().c_str());
+
+        } else if (request->command_type == ulisse::commands::ID::pathfollow_current) {
+
+            std::cout << "Received Command Path Following LOS with current estimator" << std::endl;
+
+            if (!statePathFollowingCurrent_->LoadPath(request->path_cmd.path)) {
+                response->res = "CommandAnswer::fail - Malformed Path Message.";
+                ret = fsm::retval::fail;
+            }
+
+            log << "Received Command PathFollowing LOS with current estimator (id: " << request->path_cmd.path.id << " )";
+            PublishLog(log.str().c_str());
+
+        } else if (request->command_type == ulisse::commands::ID::pathfollow_iloscurrent) {
+
+            std::cout << "Received Command Path Following ILOS and LOS with current estimator" << std::endl;
+
+            if (!statePathFollowingILOSCurrent_->LoadPath(request->path_cmd.path)) {
+                response->res = "CommandAnswer::fail - Malformed Path Message.";
+                ret = fsm::retval::fail;
+            }
+
+            log << "Received Command PathFollowing ILOS and LOS with current estimator(id: " << request->path_cmd.path.id << " )";
+            PublishLog(log.str().c_str());
+
+        } else if (request->command_type == ulisse::commands::ID::pathfollow_alos) {
+
+            std::cout << "Received Command Path Following ALOS" << std::endl;
+
+            if (!statePathFollowingALOS_->LoadPath(request->path_cmd.path)) {
+                response->res = "CommandAnswer::fail - Malformed Path Message.";
+                ret = fsm::retval::fail;
+            }
+
+            log << "Received Command PathFollowing ALOS (id: " << request->path_cmd.path.id << " )";
             PublishLog(log.str().c_str());
 
         } else {
@@ -591,6 +705,21 @@ void VehicleController::LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr
     ctrlData_->radioControllerEnabled = msg->flags.ppm_remote_enabled;
 }
 
+void VehicleController::GroundTruthDataCB(const ulisse_msgs::msg::SimulatedSystem::SharedPtr msg)
+{
+     simulatedData_ = *msg;
+     //ctrlDataReal_->inertialF_linearPosition.latitude = simulatedData_.inertialframe_linear_position.latlong.latitude;
+     //ctrlDataReal_->inertialF_linearPosition.longitude = simulatedData_.inertialframe_linear_position.latlong.longitude;
+
+     //ctrlDataReal_->inertialF_linearPosition.latitude = msg->inertialframe_linear_position.latlong.latitude;
+     //ctrlDataReal_->inertialF_linearPosition.longitude = msg->inertialframe_linear_position.latlong.longitude;
+
+     //ctrlData_->inertialF_linearPosition.latitude = msg->inertialframe_linear_position.latlong.latitude;
+     //ctrlData_->inertialF_linearPosition.longitude = msg->inertialframe_linear_position.latlong.longitude;
+     real_position_->latitude = msg->inertialframe_linear_position.latlong.latitude;
+     real_position_->longitude = msg->inertialframe_linear_position.latlong.longitude;
+}
+
 void VehicleController::Run()
 {
     if (boundariesSet_) {
@@ -727,13 +856,124 @@ void VehicleController::PublishTasksInfo()
         feedbackGuiMsg.goal_heading = stateLatLong_->goalHeading;
         feedbackGuiMsg.acceptance_radius = stateLatLong_->acceptanceRadius;
         feedbackGuiMsg.goal_distance = stateLatLong_->goalDistance;
-    } else if (uFsm_.GetCurrentStateName() == ulisse::states::ID::pathfollow) {
+    } else if (uFsm_.GetCurrentStateName() == ulisse::states::ID::pathfollow) {        
         feedbackGuiMsg.goal_position.latitude = statePathFollowing_->GetNextPoint().latitude;
         feedbackGuiMsg.goal_position.longitude = statePathFollowing_->GetNextPoint().longitude;
         feedbackGuiMsg.current_track_point.latitude = statePathFollowing_->GetCurrentTrackPoint().latitude;
         feedbackGuiMsg.current_track_point.longitude = statePathFollowing_->GetCurrentTrackPoint().longitude;
         feedbackGuiMsg.goal_distance = statePathFollowing_->GetDistanceToEnd();
+
+        ulisse_msgs::msg::PathFollow pathFollowMsg;
+        pathFollowMsg.stamp.sec = now_stamp_secs;
+        pathFollowMsg.stamp.nanosec = now_stamp_nanosecs;
+        pathFollowMsg.gain = 0;
+        pathFollowMsg.delta = statePathFollowing_->GetDeltaY();
+        pathFollowMsg.y = statePathFollowing_->GetY();
+        pathFollowMsg.x = 0;
+        pathFollowMsg.x_dot = 0;
+        pathFollowMsg.psi = 0;
+
+        pathFollowMsg.heading2closest_point = 0;
+        pathFollowMsg.goal_heading = statePathFollowing_->GetGoalHeading();
+        pathFollowMsg.heading_error = statePathFollowing_->GetHeadingError();
+        pathFollowMsg.y_real = statePathFollowing_->GetYReal();
+
+        pathFollowPub_->publish(pathFollowMsg);
+
+    } else if (uFsm_.GetCurrentStateName() == ulisse::states::ID::pathfollow_ilos){                 // ILOS for the whole path
+        feedbackGuiMsg.goal_position.latitude = statePathFollowingILOS_->GetNextPoint().latitude;
+        feedbackGuiMsg.goal_position.longitude = statePathFollowingILOS_->GetNextPoint().longitude;
+        feedbackGuiMsg.current_track_point.latitude = statePathFollowingILOS_->GetCurrentTrackPoint().latitude;
+        feedbackGuiMsg.current_track_point.longitude = statePathFollowingILOS_->GetCurrentTrackPoint().longitude;
+        feedbackGuiMsg.goal_distance = statePathFollowingILOS_->GetDistanceToEnd();
+        ulisse_msgs::msg::PathFollow pathFollowIlosMsg;
+        pathFollowIlosMsg.stamp.sec = now_stamp_secs;
+        pathFollowIlosMsg.stamp.nanosec = now_stamp_nanosecs;
+        pathFollowIlosMsg.gain = statePathFollowingILOS_->GetSigmaY();
+        pathFollowIlosMsg.delta = statePathFollowingILOS_->GetDeltaY();
+        pathFollowIlosMsg.y = statePathFollowingILOS_->GetY();
+        pathFollowIlosMsg.x = statePathFollowingILOS_->GetYint();
+        pathFollowIlosMsg.x_dot = statePathFollowingILOS_->GetYintDot();
+        pathFollowIlosMsg.psi = statePathFollowingILOS_->GetPsi();
+
+        pathFollowIlosMsg.heading2closest_point = statePathFollowingILOS_->GetHeading2ClosetPoint();
+        pathFollowIlosMsg.goal_heading = statePathFollowingILOS_->GetGoalHeading();
+        pathFollowIlosMsg.heading_error = statePathFollowingILOS_->GetHeadingError();
+        pathFollowIlosMsg.y_real = statePathFollowingILOS_->GetYReal();
+        //pathFollowIlosMsg.y_real = simulatedData_.n_p;
+        pathFollowPub_->publish(pathFollowIlosMsg);
+    } else if (uFsm_.GetCurrentStateName() == ulisse::states::ID::pathfollow_current){                 // Current estimator for the whole path
+        feedbackGuiMsg.goal_position.latitude = statePathFollowingCurrent_->GetNextPoint().latitude;
+        feedbackGuiMsg.goal_position.longitude = statePathFollowingCurrent_->GetNextPoint().longitude;
+        feedbackGuiMsg.current_track_point.latitude = statePathFollowingCurrent_->GetCurrentTrackPoint().latitude;
+        feedbackGuiMsg.current_track_point.longitude = statePathFollowingCurrent_->GetCurrentTrackPoint().longitude;
+        feedbackGuiMsg.goal_distance = statePathFollowingCurrent_->GetDistanceToEnd();
+
+        ulisse_msgs::msg::PathFollow pathFollowMsg;
+        pathFollowMsg.stamp.sec = now_stamp_secs;
+        pathFollowMsg.stamp.nanosec = now_stamp_nanosecs;
+        pathFollowMsg.gain = 0;
+        pathFollowMsg.delta = statePathFollowingCurrent_->GetDeltaY();
+        pathFollowMsg.y = statePathFollowingCurrent_->GetY();
+        pathFollowMsg.x = 0;
+        pathFollowMsg.x_dot = 0;
+        pathFollowMsg.psi = 0;
+
+        pathFollowMsg.heading2closest_point = 0;
+        pathFollowMsg.goal_heading = statePathFollowingCurrent_->GetGoalHeading();
+        pathFollowMsg.heading_error = statePathFollowingCurrent_->GetHeadingError();
+        pathFollowMsg.y_real = statePathFollowingCurrent_->GetYReal();
+
+        pathFollowPub_->publish(pathFollowMsg);
+    } else if (uFsm_.GetCurrentStateName() == ulisse::states::ID::pathfollow_iloscurrent){          // ILOS on straight lines and Current estimator in the curves
+        feedbackGuiMsg.goal_position.latitude = statePathFollowingILOSCurrent_->GetNextPoint().latitude;
+        feedbackGuiMsg.goal_position.longitude = statePathFollowingILOSCurrent_->GetNextPoint().longitude;
+        feedbackGuiMsg.current_track_point.latitude = statePathFollowingILOSCurrent_->GetCurrentTrackPoint().latitude;
+        feedbackGuiMsg.current_track_point.longitude = statePathFollowingILOSCurrent_->GetCurrentTrackPoint().longitude;
+        feedbackGuiMsg.goal_distance = statePathFollowingILOSCurrent_->GetDistanceToEnd();
+
+        ulisse_msgs::msg::PathFollow pathFollowMsg;
+        pathFollowMsg.stamp.sec = now_stamp_secs;
+        pathFollowMsg.stamp.nanosec = now_stamp_nanosecs;
+        pathFollowMsg.gain = statePathFollowingILOSCurrent_->GetSigmaY();
+        pathFollowMsg.delta = statePathFollowingILOSCurrent_->GetDeltaY();
+        pathFollowMsg.y = statePathFollowingILOSCurrent_->GetY();
+        pathFollowMsg.x = statePathFollowingILOSCurrent_->GetYint();
+        pathFollowMsg.x_dot = statePathFollowingILOSCurrent_->GetYintDot();
+        pathFollowMsg.psi = statePathFollowingILOSCurrent_->GetPsi();
+
+        pathFollowMsg.heading2closest_point = statePathFollowingILOSCurrent_->GetHeading2ClosetPoint();
+        pathFollowMsg.goal_heading = statePathFollowingILOSCurrent_->GetGoalHeading();
+        pathFollowMsg.heading_error = statePathFollowingILOSCurrent_->GetHeadingError();
+        pathFollowMsg.y_real = statePathFollowingILOSCurrent_->GetYReal();
+
+        pathFollowPub_->publish(pathFollowMsg);
+    } else if (uFsm_.GetCurrentStateName() == ulisse::states::ID::pathfollow_alos){                 // ALOS for the whole path
+        feedbackGuiMsg.goal_position.latitude = statePathFollowingALOS_->GetNextPoint().latitude;
+        feedbackGuiMsg.goal_position.longitude = statePathFollowingALOS_->GetNextPoint().longitude;
+        feedbackGuiMsg.current_track_point.latitude = statePathFollowingALOS_->GetCurrentTrackPoint().latitude;
+        feedbackGuiMsg.current_track_point.longitude = statePathFollowingALOS_->GetCurrentTrackPoint().longitude;
+        
+        //RCLCPP_INFO_STREAM(this->get_logger(), "trackPoint: " << statePathFollowingALOS_->GetCurrentTrackPoint());
+
+        feedbackGuiMsg.goal_distance = statePathFollowingALOS_->GetDistanceToEnd();
+        ulisse_msgs::msg::PathFollow pathFollowAlosMsg;
+        pathFollowAlosMsg.stamp.sec = now_stamp_secs;
+        pathFollowAlosMsg.stamp.nanosec = now_stamp_nanosecs;
+
+        pathFollowAlosMsg.gain = statePathFollowingALOS_->GetGammaY(); // gamma in ALOS case
+        pathFollowAlosMsg.delta = statePathFollowingALOS_->GetDeltaY();
+        pathFollowAlosMsg.y = statePathFollowingALOS_->GetY();
+        pathFollowAlosMsg.x = statePathFollowingALOS_->GetBeta(); // Beta_hat in ALOS case
+        pathFollowAlosMsg.x_dot = statePathFollowingALOS_->GetBetaDot(); // Beta_hat_dot in ALOS case
+        pathFollowAlosMsg.psi = 0.0;
+        pathFollowAlosMsg.heading2closest_point = statePathFollowingALOS_->GetHeading2ClosetPoint();
+        pathFollowAlosMsg.goal_heading = statePathFollowingALOS_->GetGoalHeading();
+        pathFollowAlosMsg.heading_error = statePathFollowingALOS_->GetHeadingError();
+        pathFollowAlosMsg.y_real = statePathFollowingALOS_->GetYReal();
+        pathFollowPub_->publish(pathFollowAlosMsg);
     }
+
     feedbackGuiPub_->publish(feedbackGuiMsg);
 }
 } // namespace ulisse

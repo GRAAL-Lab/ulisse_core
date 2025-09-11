@@ -37,8 +37,16 @@ public:
      * @param nextP Goal Coordinate for the vehicle
      * @return
      */
-    bool ComputeGoalPosition(const ctb::LatLong& currentP, ctb::LatLong& goalP);
+    bool ComputeGoalPosition(const ctb::LatLong& currentP, ctb::LatLong& goalP,double& delta, ctb::LatLong &closestPos);
 
+    bool ComputeGoalPositionILOS(const ctb::LatLong& currentP, ctb::LatLong& goalP);
+
+    bool ComputeClosetPointILOS(const ctb::LatLong& currentP, ctb::LatLong& goalP);
+
+    bool ComputeGoalHeadingILOS(const ctb::LatLong &currentPos,const double& Heading2ClosetPoint, double& goalHead);
+
+    bool ComputeCrossTrackErrors(const ctb::LatLong &currentPos,const ctb::LatLong &currentRealPos,const ctb::LatLong &goalPos,
+                                               const ctb::LatLong &closestPos, double& estimated, double& real);
     /*
      * Method that resets the path
     */
@@ -98,6 +106,9 @@ public:
         double lookAheadDistance; //max delta increment for select a part of a curve for computing the nearest point
         double directionError; // threshold for the difference between the current and the next tangent direction of the path
 
+        bool variableDelta; // enable/disable delta variation (delta is fixed or has a range)
+        double deltaY;
+
         bool configureFromFile(const libconfig::Config& confObj, const std::string& stateName)
         {
             const libconfig::Setting& root = confObj.getRoot();
@@ -118,27 +129,39 @@ public:
                 return false;
             if (!ctb::GetParam(state, directionError, "tangentDirectionError"))
                 return false;
+            if (!ctb::GetParam(state, deltaY, "deltaY"))
+                return false;
+            if (!ctb::GetParam(state, variableDelta, "variableDelta"))
+                return false;
 
             return true;
         }
     } nurbsParam;
 
+    std::chrono::system_clock::time_point T_last_, T_now_; // ILOS
+    std::chrono::nanoseconds delta_t;
+
 private:
     std::string pathName_;
     std::string pathType_;
     std::string polypathType_;
-    std::shared_ptr<sisl::Path> path_;                // The Curve
+    std::shared_ptr<sisl::Path> path_;          // The Curve
     ctb::LatLong centroid_;                     // The centroid for the convertion from/to cartesian/latlong
     std::vector<ctb::LatLong> coordinates_;     // Coordinate List of polypath
     double angle_, size_1_, size_2_;
     sisl::Path::Direction direction_;
     ctb::LatLong startP_;                       // Starting point of the nurbs path
     ctb::LatLong endP_;                         // Ending point of the nurbs path
-    double currentAbscissa_;                         // The current parameter value on the path
+    double currentAbscissa_;                    // The current parameter value on the path
     ctb::LatLong currentGoal_;
     ctb::LatLong currentTrackPoint_;
 
-    double delta_;                       // The current delta increment
+    double delta_;  // The current delta increment
+
+    double sigma_y;
+    double delta_y;
+    double y_int;
+    double y_int_dot;
 };
 
 #endif // ULISSE_CONFIGURATION_H
