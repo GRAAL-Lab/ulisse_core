@@ -141,7 +141,7 @@ bool PathManagerILOSCurrent::ComputeGoalPosition(const ctb::LatLong &currentPos,
                                       double& delta, ctb::LatLong &closestPos, bool& pathmode)
 {
 
-    double closestPointAbscissa;
+    double closestPointAbscissa{0};
     std::vector<Eigen::Vector3d> currentPosDot, goalPosDot;
 
     // Converting the current geographical position to UTM coordinates

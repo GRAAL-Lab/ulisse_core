@@ -105,7 +105,8 @@ MapPolyline {
     }
 
     function get_path() {
-
+        //console.log("[PointPath] Path name: " + pathName)
+        //console.log("[PointPath] Path size: " + path.length)
         return path
     }
 
@@ -579,13 +580,18 @@ MapPolyline {
     }
 
     function serialize() {
+        //console.log("[PointPath] Serialize")
         var coordinates = []
-        for (var j = 0; j < path.length; j++) {
-            var p_i = path[j]
+        var _path = get_path()
+        for (var j = 0; j < _path.length; j++) {
+            //console.log("[PointPath] j=" + j)
+            var p_i = _path[j]
+            //console.log("Coordinate " + j + ": " + QtPositioning.coordinate(p_i.latitude, p_i.longitude))
             coordinates.push({
                                  latitude: p_i.latitude,
                                  longitude: p_i.longitude
                              })
+            //console.log("Centroid: " + centroid)
         }
         return {
             type: type,
@@ -600,6 +606,7 @@ MapPolyline {
     }
 
     function deserialize(data) {
+        //console.log("[PointPath] Deserialize")
         var lat, lon
         pathName = data.name
         direction = data.params.direction
@@ -607,7 +614,9 @@ MapPolyline {
             lat = data.coordinates[j].latitude
             lon = data.coordinates[j].longitude
             addCoordinate(QtPositioning.coordinate(lat, lon))
+            //console.log("Coordinate " + j + ": " + QtPositioning.coordinate(lat, lon))
         }
+        update_centroid();
     }
 
     function get_params() {

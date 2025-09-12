@@ -72,13 +72,13 @@ int main(int argc, char* argv[])
     QQmlApplicationEngine appEngine;
 
     // Making the QML aware of my functions
-    //auto fbkUpdater = std::make_shared<FeedbackUpdater>();
-    auto fbkUpdater = new FeedbackUpdater();  // no shared_ptr
+    auto fbkUpdater = std::make_shared<FeedbackUpdater>();
+    //auto fbkUpdater = new FeedbackUpdater();  // no shared_ptr
     auto cmdWrapper = std::make_shared<CommandWrapper>();
     auto taskDataUpdater = std::make_shared<TaskDataUpdater>();
     auto addonsBridge = std::make_shared<AddonsBridge>();
 
-    appEngine.rootContext()->setContextProperty("fbkUpdater", fbkUpdater);
+    appEngine.rootContext()->setContextProperty("fbkUpdater", fbkUpdater.get());
     appEngine.rootContext()->setContextProperty("cmdWrapper", cmdWrapper.get());
     appEngine.rootContext()->setContextProperty("taskdataUpdater", taskDataUpdater.get());
     appEngine.rootContext()->setContextProperty("addonsBridge", addonsBridge.get());
@@ -117,8 +117,8 @@ int main(int argc, char* argv[])
         return -1;
     app.exec();
 
-    appEngine.rootContext()->setContextProperty("fbkUpdater", nullptr);
-    fbkUpdater->deleteLater();
+    //appEngine.rootContext()->setContextProperty("fbkUpdater", nullptr);
+    //fbkUpdater->deleteLater();
 
 
     rclcpp::shutdown();

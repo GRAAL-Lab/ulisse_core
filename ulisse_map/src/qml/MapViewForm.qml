@@ -125,8 +125,8 @@ RowLayout {
         Rectangle {
             id: pathManageToolbar
             color: Qt.rgba(0.9, 0.45, 0.1, 0.75)
-            implicitWidth: bar_manage.implicitWidth
-            implicitHeight: bar_manage.implicitHeight
+            implicitWidth: parent.width //bar_manage.implicitWidth
+            implicitHeight: 80//bar_manage.implicitHeight
             anchors.bottom: bottomToolbar.top
             anchors.right: parent.right
             anchors.left: parent.left
@@ -135,7 +135,7 @@ RowLayout {
                 anchors.fill: parent
                 BarManagePaths {
                     id: bar_manage
-                    height: 130
+                    //height: 130
                     Layout.fillWidth: true
                     Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom
                     Layout.bottomMargin: 10

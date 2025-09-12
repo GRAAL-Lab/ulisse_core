@@ -34,7 +34,7 @@ Map {
         id: mapHintsOverlay
 
         font.pointSize: 12
-        color: darkgrey
+        color: grey
         horizontalAlignment: Text.AlignHCenter
         width: parent.width
         anchors.bottom: parent.bottom

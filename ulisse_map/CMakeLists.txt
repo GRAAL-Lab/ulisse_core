@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 project(ulisse_map)
 
 #if(NOT CMAKE_CXX_STANDARD)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 #endif()
 
 #if(NOT CMAKE_BUILD_TYPE)
@@ -12,6 +12,11 @@ set(CMAKE_BUILD_TYPE RelWithDebInfo)
 if(NOT WIN32)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Wextra -fPIC -Wno-deprecated-copy")
 endif()
+
+# near the top of CMakeLists.txt
+option(QT_QML_GENERATE_QMLLS_INI "Generate qmlls.ini for QML Language Server" ON)
+# ensure the option is cached so GUI/CLI sees it:
+set(QT_QML_GENERATE_QMLLS_INI ${QT_QML_GENERATE_QMLLS_INI} CACHE BOOL "Generate qmlls ini")
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)

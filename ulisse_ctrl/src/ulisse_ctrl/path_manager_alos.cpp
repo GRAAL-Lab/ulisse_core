@@ -167,7 +167,7 @@ bool PathManagerALOS::ComputeGoalPosition(const ctb::LatLong &currentPos, ctb::L
         delta_ = delta_ - nurbsParam.deltaStep;
     }
 
-    // Limit delta between min and max if varialbe delta is enabled
+    // Limit delta between min and max if variable delta is enabled
     if(nurbsParam.variableDelta){
         delta_ = std::clamp(delta_, nurbsParam.deltaMin, nurbsParam.deltaMax);
     }
@@ -191,7 +191,6 @@ bool PathManagerALOS::ComputeGoalPosition(const ctb::LatLong &currentPos, ctb::L
     ctb::LocalUTM2LatLong(path_->At(currentAbscissa_), centroid_, currentTrackPoint_, altitude);
 
     closestPos = currentTrackPoint_;
-
 
     return true;
 }
@@ -384,6 +383,10 @@ bool PathManagerALOS::ComputeGoalPositionALOS(const ctb::LatLong &currentPos, ct
     ctb::LocalUTM2LatLong(path_->At(currentAbscissa_), centroid_, currentTrackPoint_, altitude);
 
     //std::cout << "currentTrackPoint_: " << currentTrackPoint_ << std::endl;
+
+    std::cout << "closestPointAbscissa: " << closestPointAbscissa << std::endl;
+    std::cout << "delta: " << delta_ << std::endl;
+    std::cout << "goalAbscissa: " << goalAbscissa << std::endl;
 
     return true;
 }
