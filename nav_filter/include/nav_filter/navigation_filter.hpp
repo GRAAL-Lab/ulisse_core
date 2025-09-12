@@ -96,7 +96,7 @@ namespace nav {
         //ulisse_msgs::msg::Compass compassData_;
         ulisse_msgs::msg::GPSData gpsData_;
         //ulisse_msgs::msg::IMUData imuData_;
-        ulisse_msgs::msg::SimulatedVelocitySensor simulatedVelocitySensor_;
+        //ulisse_msgs::msg::SimulatedVelocitySensor simulatedVelocitySensor_;
         ulisse_msgs::msg::ThrustersReference thrustersPercReference_;
         //ulisse_msgs::msg::Magnetometer magnetometerData_;
         ulisse_msgs::msg::SimulatedSystem simulatedData_;
@@ -156,7 +156,7 @@ namespace nav {
         ulisse_msgs::msg::NavFilterData filterData_;
         Eigen::Vector3d NED_gps_cartesian_;
 
-        void LuenbergerObserverFilter();
+        //void LuenbergerObserverFilter();
 
         void ExtendedKalmanFilter();
 
@@ -192,6 +192,7 @@ namespace nav {
 
         void LLCThrustersCB(const ulisse_msgs::msg::LLCThrusters::SharedPtr msg);
 
+        // DEPRECATED (perfavore rimuovi)
         void USE_GPS_CB(const std_msgs::msg::Bool::SharedPtr msg);
 
         bool LoadConfiguration();

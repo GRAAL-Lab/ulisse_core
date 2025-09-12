@@ -363,6 +363,7 @@ void VehicleController::SetUpFSM()
         state.second->robotModel = robotModel_;
         state.second->tasksMap = tasksMap_;
         state.second->ctrlData = ctrlData_;
+        // TODO: CHECK UNNECESSARY VARIABLES !!!
         state.second->real_position = real_position_; // ILOS
         //state.second->ctrlDataReal = ctrlDataReal_; // ILOS
         state.second->SetFSM(&uFsm_);

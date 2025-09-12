@@ -156,8 +156,8 @@ void DynamicVehicleController::Run()
             thrusterMappigPub_->publish(thrusterMappingMsg);
 
             //fill the feedback for the nav filter
-            simulatedVelocitySensor.water_relative_surge = pidSurgeTM.GetOutput();
-            simulatedVelocitySensorPub_->publish(simulatedVelocitySensor);
+            //simulatedVelocitySensor.water_relative_surge = pidSurgeTM.GetOutput();
+            //simulatedVelocitySensorPub_->publish(simulatedVelocitySensor);
 
         } else if (dcl_conf->ctrlMode == ControlMode::ClassicPIDControl) {
             //Dynamic Pids

@@ -78,8 +78,8 @@ namespace nav {
         llcThrustersSub_ = this->create_subscription<ulisse_msgs::msg::LLCThrusters>(ulisse_msgs::topicnames::llc_thrusters,
             1, std::bind(&NavigationFilter::LLCThrustersCB, this, _1));
 
-        simulatedVelocitySub_ = this->create_subscription<ulisse_msgs::msg::SimulatedVelocitySensor>(ulisse_msgs::topicnames::simulated_velocity_sensor,
-            1, std::bind(&NavigationFilter::SimulatedVelocitySensorCB, this, _1));
+        //simulatedVelocitySub_ = this->create_subscription<ulisse_msgs::msg::SimulatedVelocitySensor>(ulisse_msgs::topicnames::simulated_velocity_sensor,
+        //    1, std::bind(&NavigationFilter::SimulatedVelocitySensorCB, this, _1));
 
         USE_GPS.data = true;
         USE_GPS_Sub = this->create_subscription<std_msgs::msg::Bool>("/ulisse/USE_GPS",
@@ -206,7 +206,7 @@ namespace nav {
         rqtRPMStbdPub_->publish(msg);
     }
 
-    void NavigationFilter::LuenbergerObserverFilter()
+    /*void NavigationFilter::LuenbergerObserverFilter()
     {
         if (gpsValid_) {
 
@@ -267,7 +267,7 @@ namespace nav {
                 obs_.Reset();
             }
         }
-    }
+    }*/
 
     void NavigationFilter::ExtendedKalmanFilter()
     {

@@ -4,11 +4,11 @@
 #include <libconfig.h++>
 #include "rclcpp/rclcpp.hpp"
 
-#include "ulisse_msgs/msg/ambient_sensors.hpp"
-#include "ulisse_msgs/msg/compass.hpp"
+//#include "ulisse_msgs/msg/ambient_sensors.hpp"
+//#include "ulisse_msgs/msg/compass.hpp"
 #include "ulisse_msgs/msg/gps_data.hpp"
-#include "ulisse_msgs/msg/imu_data.hpp"
-#include "ulisse_msgs/msg/magnetometer.hpp"
+//#include "ulisse_msgs/msg/imu_data.hpp"
+//#include "ulisse_msgs/msg/magnetometer.hpp"
 #include "ulisse_msgs/msg/micro_loop_count.hpp"
 #include "ulisse_msgs/msg/thrusters_reference.hpp"
 
@@ -54,27 +54,27 @@ namespace llc {
         rclcpp::AsyncParametersClient::SharedPtr par_client_;
         rclcpp::TimerBase::SharedPtr timer_;
 
-        ulisse_msgs::msg::MicroLoopCount microloopcount_msg_;
-        ulisse_msgs::msg::GPSData gps_msg_;
-        ulisse_msgs::msg::Compass compass_msg_;
-        ulisse_msgs::msg::IMUData imu_msg_;
-        ulisse_msgs::msg::AmbientSensors ambsens_msg_;
-        ulisse_msgs::msg::Magnetometer magneto_msg_;
-        ulisse_msgs::msg::ThrustersReference applied_motorref_msg_;
+        //ulisse_msgs::msg::MicroLoopCount microloopcount_msg_;
+        //ulisse_msgs::msg::GPSData gps_msg_;
+        //ulisse_msgs::msg::Compass compass_msg_;
+        //ulisse_msgs::msg::IMUData imu_msg_;
+        //ulisse_msgs::msg::AmbientSensors ambsens_msg_;
+        //ulisse_msgs::msg::Magnetometer magneto_msg_;
+        //ulisse_msgs::msg::ThrustersReference applied_motorref_msg_;
         // LLC
-        ulisse_msgs::msg::LLCStatus llc_status_msg_;
-        ulisse_msgs::msg::LLCAck llc_ack_msg_;
+        //ulisse_msgs::msg::LLCStatus llc_status_msg_;
+        //ulisse_msgs::msg::LLCAck llc_ack_msg_;
 
 
-        rclcpp::Publisher<ulisse_msgs::msg::MicroLoopCount>::SharedPtr micro_loop_count_pub_;
-        rclcpp::Publisher<ulisse_msgs::msg::GPSData>::SharedPtr gpsdata_pub_;
-        rclcpp::Publisher<ulisse_msgs::msg::Compass>::SharedPtr compass_pub_;
-        rclcpp::Publisher<ulisse_msgs::msg::IMUData>::SharedPtr imu_pub_;
-        rclcpp::Publisher<ulisse_msgs::msg::AmbientSensors>::SharedPtr ambsens_pub_;
-        rclcpp::Publisher<ulisse_msgs::msg::Magnetometer>::SharedPtr magneto_pub_;
+        //rclcpp::Publisher<ulisse_msgs::msg::MicroLoopCount>::SharedPtr micro_loop_count_pub_;
+        //rclcpp::Publisher<ulisse_msgs::msg::GPSData>::SharedPtr gpsdata_pub_;
+        //rclcpp::Publisher<ulisse_msgs::msg::Compass>::SharedPtr compass_pub_;
+        //rclcpp::Publisher<ulisse_msgs::msg::IMUData>::SharedPtr imu_pub_;
+        //rclcpp::Publisher<ulisse_msgs::msg::AmbientSensors>::SharedPtr ambsens_pub_;
+        //rclcpp::Publisher<ulisse_msgs::msg::Magnetometer>::SharedPtr magneto_pub_;
         rclcpp::Publisher<ulisse_msgs::msg::ThrustersReference>::SharedPtr applied_motorref_pub_;
         // LLC
-        rclcpp::Publisher<ulisse_msgs::msg::LLCStatus>::SharedPtr llc_status_pub_;
+        //rclcpp::Publisher<ulisse_msgs::msg::LLCStatus>::SharedPtr llc_status_pub_;
         rclcpp::Publisher<ulisse_msgs::msg::LLCConfig>::SharedPtr llc_config_pub_;
         rclcpp::Publisher<ulisse_msgs::msg::LLCThrusters>::SharedPtr llc_motors_pub_;
         rclcpp::Publisher<ulisse_msgs::msg::LLCVersion>::SharedPtr llc_version_pub_;

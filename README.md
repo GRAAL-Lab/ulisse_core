@@ -169,6 +169,12 @@ sudo route add default gw 192.168.1.169
 
 ## Miscellaneous
 
+### Select network connection from Command Line
+
+`nmcli connection up ULISSE\ GRAAL`
+or
+`nmcli connection up ULISSE\ GRAAL`
+
 ### Disable GPS in the Navigation Filter
 
 For some testing of nav_filter and experiments, an optional switch has been added to toggle the use of the GPS by the navigation filter. To enable or disable the use of the GPS just publish a boolean to the topic "`/ulisse/USE_GPS`". To do it via command line:

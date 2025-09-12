@@ -86,10 +86,9 @@ add_executable(nav_filter_node src/nav_filter_node.cpp)
 #ament_target_dependencies(nav_filter_node rclcpp std_msgs ulisse_msgs rml ctrl_toolbox ament_index_cpp)
 target_link_libraries(nav_filter_node rml nav_filter_lib ctrl_toolbox config++)
 
-## Executables
-add_executable(nav_filter_udp_sender src/nav_filter_udp_sender.cpp)
+#add_executable(nav_filter_udp_sender src/nav_filter_udp_sender.cpp)
 #ament_target_dependencies(nav_filter_udp_sender rclcpp std_msgs ulisse_msgs rml ctrl_toolbox ament_index_cpp)
-target_link_libraries(nav_filter_udp_sender rml nav_filter_lib ctrl_toolbox config++)
+#target_link_libraries(nav_filter_udp_sender rml nav_filter_lib ctrl_toolbox config++)
 
 ament_export_include_directories(include)
 
