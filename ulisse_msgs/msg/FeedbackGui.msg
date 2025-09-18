@@ -1,8 +1,8 @@
-Time stamp
-LatLong goal_position
+builtin_interfaces/Time stamp
+LatLongAlt goal_position
 float64 goal_heading 
 float64 goal_distance
 float64 acceptance_radius
 
-LatLong current_track_point
+LatLongAlt current_track_point
 

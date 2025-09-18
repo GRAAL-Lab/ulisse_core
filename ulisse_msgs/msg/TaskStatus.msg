@@ -1,4 +1,4 @@
-Time stamp # (Two-integer timestamp that is expressed as seconds and nanoseconds)
+builtin_interfaces/Time stamp # (Two-integer timestamp that is expressed as seconds and nanoseconds)
 string id
 bool in_current_action
 bool enabled

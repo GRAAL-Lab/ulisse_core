@@ -1,4 +1,4 @@
-Time stamp
+builtin_interfaces/Time stamp
 float64 delta
 float64 gain
 float64 y

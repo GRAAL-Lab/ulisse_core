@@ -1,4 +1,4 @@
-Time stamp
+builtin_interfaces/Time stamp
 int16 hbpacketstatus0
 int16 hbpacketstatusmax
 int16 hbpacketmotors0

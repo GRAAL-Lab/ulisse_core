@@ -1,4 +1,4 @@
-Time stamp
+builtin_interfaces/Time stamp
 LatLongAlt inertialframe_linear_position  # position
 RPY bodyframe_angular_position            # orientation
 float64[3] bodyframe_linear_velocity

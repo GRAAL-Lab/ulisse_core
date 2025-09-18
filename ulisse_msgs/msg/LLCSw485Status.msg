@@ -1,4 +1,4 @@
-Time stamp
+builtin_interfaces/Time stamp
 uint64 timestamp_sw_485
 uint16 missed_deadlines
 Sw485InOut left_motor

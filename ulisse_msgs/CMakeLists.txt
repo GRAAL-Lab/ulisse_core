@@ -32,25 +32,25 @@ add_custom_target(.Files. SOURCES ${SOURCE_FILES})
 
 rosidl_generate_interfaces(ulisse_msgs
   # Sensors
-  "msg/Time.msg"
+  #"msg/Time.msg"
   "msg/RPY.msg"
-  "msg/LatLong.msg"
-  "msg/PIDData.msg"
-  "msg/IMUData.msg"
+  #"msg/LatLong.msg"
+  #"msg/PIDData.msg"
+  #"msg/IMUData.msg"
   "msg/DVLData.msg"
   "msg/FOGData.msg"
   #"msg/AmbientSensors.msg"
   #"msg/Compass.msg"
-  "msg/Magnetometer.msg"
+  #"msg/Magnetometer.msg"
   "msg/ThrustersReference.msg"
-  "msg/MicroLoopCount.msg"
+  #"msg/MicroLoopCount.msg"
   "msg/GPSData.msg"
   "msg/GPSStatus.msg"
   "msg/LatLongAlt.msg"
   "msg/ReferenceVelocities.msg"
-  "msg/VehicleStatus.msg"
+  #"msg/VehicleStatus.msg"
   "msg/ThrusterMappingControl.msg"
-  "msg/SimulatedVelocitySensor.msg"
+  #"msg/SimulatedVelocitySensor.msg"
   "msg/FeedbackGui.msg"
   "msg/SimulatedSystem.msg"
   "msg/DynamicPidControl.msg"
@@ -82,7 +82,7 @@ rosidl_generate_interfaces(ulisse_msgs
   "msg/SurgeYawRate.msg"
   "msg/NavFilterData.msg"
   "msg/TaskStatus.msg"
-  "msg/Curves.msg"
+  #"msg/Curves.msg"
   "msg/PathData.msg"
 #  "msg/PolygonPath.msg"
   "msg/CoordinateList.msg"
@@ -101,8 +101,7 @@ rosidl_generate_interfaces(ulisse_msgs
   "srv/SetCruiseControl.srv"
   "srv/ResetConfiguration.srv"
   "srv/MinSrv.srv"
-  
-  ## Other ##
+
 
 )
 

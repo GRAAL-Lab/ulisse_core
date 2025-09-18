@@ -1,2 +1,2 @@
 string id
-LatLong[] coordinates
+LatLongAlt[] coordinates
