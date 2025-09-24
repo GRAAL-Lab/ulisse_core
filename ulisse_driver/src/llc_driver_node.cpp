@@ -16,12 +16,8 @@
 #include "ulisse_driver/thread_receiver.h"
 #include "ulisse_driver/thread_sender.h"
 
-
 using namespace ulisse::llc;
 using namespace std::chrono_literals;
-
-int32_t ReloadConfigFile(LowLevelConfiguration& configOut_, std::string configFile);
-void* ThreadSenderFunction(void* dataIn);
 
 int main(int argc, char* argv[])
 {

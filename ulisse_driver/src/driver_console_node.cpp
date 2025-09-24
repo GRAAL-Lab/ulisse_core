@@ -16,8 +16,6 @@
 #include "ulisse_driver/driver_defines.h"
 #include "ulisse_driver/thread_sender.h"
 
-//#include "ulisse_driver/LLCHelperDataStructs.h"
-
 using namespace ulisse;
 using namespace std::chrono_literals;
 

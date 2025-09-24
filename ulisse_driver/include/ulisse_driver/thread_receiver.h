@@ -42,6 +42,7 @@ namespace llc {
         void ParseSetConfig(std::vector<uint8_t> buffer);
         void ParseVersion(std::vector<uint8_t> buffer);
         void ParseAck(std::vector<uint8_t> buffer);
+        void ParseAppliedRef(std::vector<uint8_t> buffer);
 
         builtin_interfaces::msg::Time GetTime();
 
@@ -55,27 +56,7 @@ namespace llc {
         rclcpp::AsyncParametersClient::SharedPtr par_client_;
         rclcpp::TimerBase::SharedPtr timer_;
 
-        //ulisse_msgs::msg::MicroLoopCount microloopcount_msg_;
-        //ulisse_msgs::msg::GPSData gps_msg_;
-        //ulisse_msgs::msg::Compass compass_msg_;
-        //ulisse_msgs::msg::IMUData imu_msg_;
-        //ulisse_msgs::msg::AmbientSensors ambsens_msg_;
-        //ulisse_msgs::msg::Magnetometer magneto_msg_;
-        //ulisse_msgs::msg::ThrustersReference applied_motorref_msg_;
-        // LLC
-        //ulisse_msgs::msg::LLCStatus llc_status_msg_;
-        //ulisse_msgs::msg::LLCAck llc_ack_msg_;
-
-
-        //rclcpp::Publisher<ulisse_msgs::msg::MicroLoopCount>::SharedPtr micro_loop_count_pub_;
-        //rclcpp::Publisher<ulisse_msgs::msg::GPSData>::SharedPtr gpsdata_pub_;
-        //rclcpp::Publisher<ulisse_msgs::msg::Compass>::SharedPtr compass_pub_;
-        //rclcpp::Publisher<ulisse_msgs::msg::IMUData>::SharedPtr imu_pub_;
-        //rclcpp::Publisher<ulisse_msgs::msg::AmbientSensors>::SharedPtr ambsens_pub_;
-        //rclcpp::Publisher<ulisse_msgs::msg::Magnetometer>::SharedPtr magneto_pub_;
-        rclcpp::Publisher<ulisse_msgs::msg::ThrustersReference>::SharedPtr applied_motorref_pub_;
-        // LLC
-        //rclcpp::Publisher<ulisse_msgs::msg::LLCStatus>::SharedPtr llc_status_pub_;
+        rclcpp::Publisher<ulisse_msgs::msg::ThrustersReference>::SharedPtr llc_appliedref_pub_;
         rclcpp::Publisher<ulisse_msgs::msg::LLCConfig>::SharedPtr llc_config_pub_;
         rclcpp::Publisher<ulisse_msgs::msg::LLCThrusters>::SharedPtr llc_motors_pub_;
         rclcpp::Publisher<ulisse_msgs::msg::LLCVersion>::SharedPtr llc_version_pub_;

@@ -5,6 +5,8 @@ int16 hbpacketmotors0
 int16 hbpacketmotorsmax
 int16 hbpacketbattery0
 int16 hbpacketbatterymax
+int16 hbpacketappliedref0
+int16 hbpacketappliedrefmax
 float32 timeoutaccelerometer
 float32 timeoutcompass
 float32 timeoutmagnetometer

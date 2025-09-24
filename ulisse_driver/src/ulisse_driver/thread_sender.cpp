@@ -135,9 +135,6 @@ namespace llc {
 
         std::string serialDevice = "";
         uint32_t baudRate = 0;
-        /*bool debugBytes = false;
-        bool debugIncomingValidMessageType = false;
-        bool debugFailedCrc = false;*/
 
         ctb::GetParam(confObj_, serialDevice, "LLC.SerialDevice");
         ctb::GetParam(confObj_, baudRate, "LLC.BaudRate");
@@ -303,7 +300,7 @@ namespace llc {
         Serializer serializer;
         serializer.PacketAdd_char(0x0A);
         serializer.PacketAdd_char(0x0B);
-        serializer.PacketAdd_uint16(52);
+        serializer.PacketAdd_uint16(56);
         serializer.PacketAdd_uint16(static_cast<uint16_t>(MessageType::set_config));
         serializer.PacketAdd_int16(lowlevelconf_.hbPacketStatus0);
         serializer.PacketAdd_int16(lowlevelconf_.hbPacketStatusMax);
@@ -311,6 +308,8 @@ namespace llc {
         serializer.PacketAdd_int16(lowlevelconf_.hbPacketMotorsMax);
         serializer.PacketAdd_int16(lowlevelconf_.hbPacketBattery0);
         serializer.PacketAdd_int16(lowlevelconf_.hbPacketBatteryMax);
+        serializer.PacketAdd_int16(lowlevelconf_.hbPacketAppliedRef0);
+        serializer.PacketAdd_int16(lowlevelconf_.hbPacketAppliedRefMax);
         serializer.PacketAdd_float32(lowlevelconf_.ppmPulseMin);
         serializer.PacketAdd_float32(lowlevelconf_.ppmPulseMax);
         serializer.PacketAdd_float32(lowlevelconf_.ppmPeriodMin);
@@ -334,33 +333,6 @@ namespace llc {
         }
     }
 
-    void ThreadSender::CopyConfigMsg2LLCStruct(const std::shared_ptr<ulisse_msgs::srv::LLCCommand::Request> request)
-    {
-        /*  lowlevelconf_.hbCompass0 = request->config_data.hbcompass0;
-          lowlevelconf_.hbCompassMax = request->config_data.hbcompassmax;
-          lowlevelconf_.hbMagnetometer0 = request->config_data.hbmagnetometer0;
-          lowlevelconf_.hbMagnetometerMax = request->config_data.hbmagnetometermax;
-          lowlevelconf_.hbPacketSensors0 = request->config_data.hbpacketsensors0;
-          lowlevelconf_.hbPacketSensorsMax = request->config_data.hbpacketsensorsmax;
-          lowlevelconf_.hbPacketStatus0 = request->config_data.hbpacketstatus0;
-          lowlevelconf_.hbPacketStatusMax = request->config_data.hbpacketstatusmax;
-          lowlevelconf_.hbPacketMotors0 = request->config_data.hbpacketmotors0;
-          lowlevelconf_.hbPacketMotorsMax = request->config_data.hbpacketmotorsmax;
-          lowlevelconf_.hbPacketBattery0 = request->config_data.hbpacketbattery0;
-          lowlevelconf_.hbPacketBatteryMax = request->config_data.hbpacketbatterymax;
-          lowlevelconf_.timeoutAccelerometer = request->config_data.timeoutaccelerometer;
-          lowlevelconf_.timeoutCompass = request->config_data.timeoutcompass;
-          lowlevelconf_.timeoutMagnetometer = request->config_data.timeoutmagnetometer;
-          lowlevelconf_.pwmUpMin = request->config_data.pwmupmin;
-          lowlevelconf_.pwmUpMax = request->config_data.pwmupmax;
-          lowlevelconf_.pwmPeriodMin = request->config_data.pwmperiodmin;
-          lowlevelconf_.pwmPeriodMax = request->config_data.pwmperiodmax;
-          lowlevelconf_.pwmTimeThreshold = request->config_data.pwmtimethreshold;
-          lowlevelconf_.pwmZeroThreshold = request->config_data.pwmzerothreshold;
-          lowlevelconf_.deadzoneTime = request->config_data.deadzonetime;
-          lowlevelconf_.thrusterSaturation = request->config_data.thrustersaturation;*/
-    }
-
     void ThreadSender::LoadConfigFile()
     {
         try {
@@ -375,10 +347,10 @@ namespace llc {
 
         // This temporary variablea are needed since the libconfig function does not
         // have any implementation for bit specific types
-        uint temp_uint;
         RCLCPP_INFO(this->get_logger(), "Loading configuration file");
 
         int temp_int;
+        unsigned int temp_uint;
         ctb::GetParam(confObj_, temp_int, "LLC.Config.HbPacketStatus0");
         lowlevelconf_.hbPacketStatus0 = (int16_t)temp_int;
         ctb::GetParam(confObj_, temp_int, "LLC.Config.HbPacketStatusMax");
@@ -391,8 +363,12 @@ namespace llc {
         lowlevelconf_.hbPacketBattery0 = (int16_t)temp_int;
         ctb::GetParam(confObj_, temp_int, "LLC.Config.HbPacketBatteryMax");
         lowlevelconf_.hbPacketBatteryMax = (int16_t)temp_int;
-        ctb::GetParam(confObj_, temp_int, "LLC.Config.ThrusterSaturation");
-        lowlevelconf_.thrusterSaturation = (int16_t)temp_int;
+        ctb::GetParam(confObj_, temp_int, "LLC.Config.HbPacketAppliedRef0");
+        lowlevelconf_.hbPacketAppliedRef0 = (int16_t)temp_int;
+        ctb::GetParam(confObj_, temp_int, "LLC.Config.HbPacketAppliedRefMax");
+        lowlevelconf_.hbPacketAppliedRefMax = (int16_t)temp_int;
+        ctb::GetParam(confObj_, temp_uint, "LLC.Config.ThrusterSaturation");
+        lowlevelconf_.thrusterSaturation = (uint16_t)temp_uint;
 
         double temp_double;
         ctb::GetParam(confObj_, temp_double, "LLC.Config.PpmPulseMin");

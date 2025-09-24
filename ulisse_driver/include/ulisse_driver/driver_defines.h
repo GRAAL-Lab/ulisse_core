@@ -8,14 +8,6 @@
 typedef float float32_t;
 typedef double float64_t;
 
-#define LLC_MESSAGETYPE_ACK                 (122)
-#define LLC_MESSAGETYPE_SET_CONFIG          (117)
-#define LLC_MESSAGETYPE_GET_CONFIG          (119)
-#define LLC_MESSAGETYPE_VERSION             (125)
-#define LLC_MESSAGETYPE_MOTORS_FEEDBACK     (130)
-#define LLC_MESSAGETYPE_BATTERY             (133)
-#define LLC_MESSAGETYPE_STATUS              (134)
-
 #define LLC_PWRBUTTONS_FLAG_LEFT            (0x01)
 #define LLC_PWRBUTTONS_FLAG_RIGHT           (0x02)
 
@@ -26,18 +18,20 @@ typedef double float64_t;
 #define LLC_STSMASK_PPM_NEEDZEROCHECK       (0x0010)
 #define LLC_STSMASK_PPM_CHANNEL             (0x0020)
 #define LLC_STSMASK_PPM_SECONDARY_VALID     (0x0040)
-#define LLC_STSMASK_PPM_TRANSMITTER_CONNECTED (0x0080)
+#define LLC_STSMASK_RESET_BY_WATCHDOG       (0x0080)
 
 namespace ulisse {
 namespace llc {
 
     struct LowLevelConfiguration {
-        uint16_t hbPacketStatus0;
-        uint16_t hbPacketStatusMax;
-        uint16_t hbPacketMotors0;
-        uint16_t hbPacketMotorsMax;
-        uint16_t hbPacketBattery0;
-        uint16_t hbPacketBatteryMax;
+        int16_t hbPacketStatus0;
+        int16_t hbPacketStatusMax;
+        int16_t hbPacketMotors0;
+        int16_t hbPacketMotorsMax;
+        int16_t hbPacketBattery0;
+        int16_t hbPacketBatteryMax;
+        int16_t hbPacketAppliedRef0;
+        int16_t hbPacketAppliedRefMax;
         uint16_t thrusterSaturation;
 
         float32_t ppmPulseMin;
@@ -66,7 +60,6 @@ namespace llc {
         beep = 126,
         enable_ref = 127,
         sensor = 111,
-        status = 118,
         set_config = 117,
         get_config = 119,
         ack = 122,
@@ -79,7 +72,8 @@ namespace llc {
         pumps = 131,
         pwrbuttons = 132,
         battery = 133,
-        sw485Status = 134
+        status = 134,
+        applied_ref = 135
     };
 
     enum class RetVal {

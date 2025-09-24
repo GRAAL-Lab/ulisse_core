@@ -5,7 +5,6 @@
 
 #include "ulisse_driver/driver_defines.h"
 #include "ulisse_driver/thread_receiver.h"
-//#include "ulisse_msgs/msg/time.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 
 #include "ulisse_driver/deserializer.h"
@@ -58,16 +57,7 @@ namespace llc {
             exit(EXIT_FAILURE);
         }
 
-        //micro_loop_count_pub_ = this->create_publisher<ulisse_msgs::msg::MicroLoopCount>(ulisse_msgs::topicnames::micro_loop_count, 1);
-        //compass_pub_ = this->create_publisher<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass, 1);
-        //imu_pub_ = this->create_publisher<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu, 1);
-        //ambsens_pub_ = this->create_publisher<ulisse_msgs::msg::AmbientSensors>(ulisse_msgs::topicnames::sensor_ambient, 1);
-        //magneto_pub_ = this->create_publisher<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer, 1);
-        
-        // TODO - Check if needs to be published!!!
-        applied_motorref_pub_ = this->create_publisher<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_applied_perc, 1);
-
-        //llc_status_pub_ = this->create_publisher<ulisse_msgs::msg::LLCStatus>(ulisse_msgs::topicnames::llc_status, 1);
+        llc_appliedref_pub_ = this->create_publisher<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_applied_perc, 1);
         llc_config_pub_ = this->create_publisher<ulisse_msgs::msg::LLCConfig>(ulisse_msgs::topicnames::llc_config, 1);
         llc_motors_pub_ = this->create_publisher<ulisse_msgs::msg::LLCThrusters>(ulisse_msgs::topicnames::llc_thrusters, 1);
         llc_version_pub_ = this->create_publisher<ulisse_msgs::msg::LLCVersion>(ulisse_msgs::topicnames::llc_version, 1);
@@ -106,57 +96,44 @@ namespace llc {
                 if (ret == 1) {
                     // TODO:
                     // publish the time stamp of ROS in the messages!
-                    // change the pointer to a vector
                     switch (llcParser_.GetLastMessageType()) {
-                    case LLC_MESSAGETYPE_MOTORS_FEEDBACK:
+                    case (uint16_t)MessageType::motors:
                         RCLCPP_DEBUG(this->get_logger(), "NEW MOTOR MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
                         ParseMotorsFeedback(llcParser_.GetIncomingBuffer());
                         break;
-                    case LLC_MESSAGETYPE_BATTERY:
+                    case (uint16_t)MessageType::battery:
                         RCLCPP_DEBUG(this->get_logger(), "NEW BATTERY MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
                         ParseBattery(llcParser_.GetIncomingBuffer());
                         break;
-                    case LLC_MESSAGETYPE_STATUS:
+                    case (uint16_t)MessageType::status:
                         RCLCPP_DEBUG(this->get_logger(), "NEW STATUS MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
                         ParseStatus(llcParser_.GetIncomingBuffer());
                         break;
-                    case LLC_MESSAGETYPE_SET_CONFIG:
+                    case (uint16_t)MessageType::set_config:
                         RCLCPP_DEBUG(this->get_logger(), "NEW SET CONFIG MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
                         ParseSetConfig(llcParser_.GetIncomingBuffer());
                         break;
-                    case LLC_MESSAGETYPE_VERSION:
+                    case (uint16_t)MessageType::version:
                         RCLCPP_DEBUG(this->get_logger(), "NEW VERSION MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
                         ParseVersion(llcParser_.GetIncomingBuffer());
                         break;
-                    case LLC_MESSAGETYPE_ACK:
+                    case (uint16_t)MessageType::ack:
                         RCLCPP_DEBUG(this->get_logger(), "NEW ACK MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
                         ParseAck(llcParser_.GetIncomingBuffer());
                         break;
+                    case (uint16_t)MessageType::applied_ref:
+                        RCLCPP_DEBUG(this->get_logger(), "NEW APPLIEDREF MESSAGE RECEIVED, SIZE = %u", llcParser_.GetSize());
+                        ParseAppliedRef(llcParser_.GetIncomingBuffer());
+                        break;
                     }
+
                 } else if (ret == -2) {
                     RCLCPP_WARN(this->get_logger(), "WRONG CHECKSUM, DISCARDING PACKET");
                 }
-
-                //std::this_thread::sleep_for(1ms);
             }
         }
-        //RCLCPP_WARN(this->get_logger(), "EXIT READLOOP");
     }
 
-    /* void ThreadReceiver::LLCData2RosMsg(const batteryData& llc_batt, ulisse_msgs::msg::LLCBattery& batt_msg)
-     {
-         batt_msg.id = llc_batt.id;
-         batt_msg.timestamp_485 = llc_batt.timestampSW485;
-         batt_msg.timestamp_satellite = llc_batt.timestampSatellite;
-         batt_msg.voltage = llc_batt.voltage;
-         batt_msg.current = llc_batt.current;
-         batt_msg.charge_percent = llc_batt.chargePercent;
-         batt_msg.temperature = llc_batt.temperature;
-         batt_msg.equalisation_cells = llc_batt.equalisationCells;
-         batt_msg.command_state = llc_batt.commandState;
-         batt_msg.alarm_state = llc_batt.alarmState;
-         std::copy(llc_batt.cells, llc_batt.cells + 14, batt_msg.cells.begin());
-     }*/
 
     void ThreadReceiver::ParseAck(std::vector<uint8_t> buffer)
     {
@@ -205,6 +182,8 @@ namespace llc {
         deserializer.PacketExtract_int16(&llc_config_msg.hbpacketmotorsmax);
         deserializer.PacketExtract_int16(&llc_config_msg.hbpacketbattery0);
         deserializer.PacketExtract_int16(&llc_config_msg.hbpacketbatterymax);
+        deserializer.PacketExtract_int16(&llc_config_msg.hbpacketappliedref0);
+        deserializer.PacketExtract_int16(&llc_config_msg.hbpacketappliedrefmax);
         deserializer.PacketExtract_float32(&llc_config_msg.ppmpulsemin);
         deserializer.PacketExtract_float32(&llc_config_msg.ppmpulsemax);
         deserializer.PacketExtract_float32(&llc_config_msg.ppmperiodmin);
@@ -236,8 +215,6 @@ namespace llc {
         deserializer.PacketExtract_uint64(&llc_sw485_msg.left_satellite.sent);
         deserializer.PacketExtract_uint64(&llc_sw485_msg.right_satellite.received);
         deserializer.PacketExtract_uint64(&llc_sw485_msg.right_satellite.sent);
-        deserializer.PacketExtract_int16(&llc_sw485_msg.applied_reference_left);
-        deserializer.PacketExtract_int16(&llc_sw485_msg.applied_reference_right);
         deserializer.PacketExtract_float32(&llc_sw485_msg.humidity);
         deserializer.PacketExtract_float32(&llc_sw485_msg.temperature);
         deserializer.PacketExtract_uint16(&statusBits);
@@ -249,7 +226,26 @@ namespace llc {
         llc_sw485_msg.status_flags.ppm_need_zero_check = (statusBits & LLC_STSMASK_PPM_NEEDZEROCHECK);
         llc_sw485_msg.status_flags.ppm_channel = (statusBits & LLC_STSMASK_PPM_CHANNEL);
         llc_sw485_msg.status_flags.ppm_secondary_valid = (statusBits & LLC_STSMASK_PPM_SECONDARY_VALID);
+        llc_sw485_msg.status_flags.reset_by_watchdog = (statusBits & LLC_STSMASK_RESET_BY_WATCHDOG);
         llc_sw485_pub_->publish(llc_sw485_msg);
+    }
+
+    void ThreadReceiver::ParseAppliedRef(std::vector<uint8_t> buffer)
+    {
+        ulisse_msgs::msg::ThrustersReference llc_thruster_ref;
+        llc_thruster_ref.stamp = GetTime();
+        Deserializer deserializer(buffer);
+
+        uint64_t unusedTimestamp;
+        int16_t left, right;
+        deserializer.MoveOffset(4);
+        deserializer.PacketExtract_uint64(&unusedTimestamp);
+        deserializer.PacketExtract_int16(&left);
+        deserializer.PacketExtract_int16(&right);
+
+        llc_thruster_ref.left_percentage = left / 10.0;
+        llc_thruster_ref.right_percentage = right / 10.0;
+        llc_appliedref_pub_->publish(llc_thruster_ref);
     }
 
     void ThreadReceiver::ParseBattery(std::vector<uint8_t> buffer)

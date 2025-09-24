@@ -5,8 +5,6 @@ Sw485InOut left_motor
 Sw485InOut right_motor
 Sw485InOut left_satellite
 Sw485InOut right_satellite
-int16 applied_reference_left
-int16 applied_reference_right
 float32 humidity
 float32 temperature
 LLCStatusFlags status_flags
