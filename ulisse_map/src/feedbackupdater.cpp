@@ -142,10 +142,10 @@ void FeedbackUpdater::RegisterPublishersAndSubscribers()
     //                                                                                    10, std::bind(&FeedbackUpdater::MicroLoopCountCB, this, _1));
     //ambient_sensors_sub_ = this->create_subscription<ulisse_msgs::msg::AmbientSensors>(ulisse_msgs::topicnames::sensor_ambient,
     //                                                                                   qos_sensor, std::bind(&FeedbackUpdater::AmbientSensorsCB, this, _1));
-    //compass_sub_ = this->create_subscription<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass,
-    //                                                                    qos_sensor, std::bind(&FeedbackUpdater::CompassCB, this, _1));
-    //imu_data_sub_ = this->create_subscription<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu,
-    //                                                                     qos_sensor, std::bind(&FeedbackUpdater::IMUDataCB, this, _1));
+    compass_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(ulisse_msgs::topicnames::sensor_imu_pose,
+                                                                        qos_sensor, std::bind(&FeedbackUpdater::CompassCB, this, _1));
+    imu_data_sub_ = this->create_subscription<sensor_msgs::msg::Imu>(ulisse_msgs::topicnames::sensor_imu,
+                                                                         qos_sensor, std::bind(&FeedbackUpdater::IMUDataCB, this, _1));
     //magnetometer_sub_ = this->create_subscription<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer,
     //                                                                              qos_sensor, std::bind(&FeedbackUpdater::MagnetometerCB, this, _1));
     llc_motors_sub_ = this->create_subscription<ulisse_msgs::msg::LLCThrusters>(ulisse_msgs::topicnames::llc_thrusters,
@@ -277,25 +277,28 @@ void FeedbackUpdater::AmbientSensorsCB(const ulisse_msgs::msg::AmbientSensors::S
     ambient_temperature_ = msg->temperaturectrlbox;
     ambient_humidity_ = msg->humidityctrlbox;
 }
-
-void FeedbackUpdater::CompassCB(const ulisse_msgs::msg::Compass::SharedPtr msg)
+*/
+void FeedbackUpdater::CompassCB(const geometry_msgs::msg::PoseStamped::SharedPtr msg)
 {
-    compass_RPY_ = QString::number(msg->orientation.roll, 'f', 2) + ", "
-                   + QString::number(msg->orientation.pitch, 'f', 2) + ", "
-                   + QString::number(msg->orientation.yaw, 'f', 2);
+    Eigen::Quaterniond poseQ(msg->pose.orientation.w, msg->pose.orientation.x, msg->pose.orientation.y, msg->pose.orientation.z);
+    rml::EulerRPY orientationRPY = rml::EulerRPY(poseQ);
+
+    compass_RPY_ = QString::number(orientationRPY.Roll(), 'f', 2) + ", "
+                   + QString::number(orientationRPY.Pitch(), 'f', 2) + ", "
+                   + QString::number(orientationRPY.Yaw(), 'f', 2);
 }
 
-void FeedbackUpdater::IMUDataCB(const ulisse_msgs::msg::IMUData::SharedPtr msg)
+void FeedbackUpdater::IMUDataCB(const sensor_msgs::msg::Imu::SharedPtr msg)
 {
-    imu_accelerometer_ = QString::number(msg->accelerometer[0], 'f', 2) + ", "
-                         + QString::number(msg->accelerometer[1], 'f', 2) + ", "
-                         + QString::number(msg->accelerometer[2], 'f', 2);
+    imu_accelerometer_ = QString::number(msg->linear_acceleration.x, 'f', 2) + ", "
+                         + QString::number(msg->linear_acceleration.y, 'f', 2) + ", "
+                         + QString::number(msg->linear_acceleration.z, 'f', 2);
 
-    imu_gyro_ = QString::number(msg->gyro[0], 'f', 2) + ", "
-                + QString::number(msg->gyro[1], 'f', 2) + ", "
-                + QString::number(msg->gyro[2], 'f', 2);
+    imu_gyro_ = QString::number(msg->angular_velocity.x, 'f', 2) + ", "
+                + QString::number(msg->angular_velocity.y, 'f', 2) + ", "
+                + QString::number(msg->angular_velocity.z, 'f', 2);
 }
-
+/*
 void FeedbackUpdater::MagnetometerCB(const ulisse_msgs::msg::Magnetometer::SharedPtr msg)
 {
     magnetometer_ = QString::number(msg->orthogonalstrength[0], 'f', 2) + ", "

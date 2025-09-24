@@ -43,8 +43,6 @@ VehicleSimulator::VehicleSimulator(const std::string file_name)
     llcSw485StatusPub_ = this->create_publisher<ulisse_msgs::msg::LLCSw485Status>(ulisse_msgs::topicnames::llc_sw485status,1);
     //microLoopCountPub_ = this->create_publisher<ulisse_msgs::msg::MicroLoopCount>(ulisse_msgs::topicnames::micro_loop_count, 1);
     gpsPub_ = this->create_publisher<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data, 1);
-    //compassPub_ = this->create_publisher<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass, 1);
-    //imuPub_ = this->create_publisher<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu, 1);
     //ambsensPub_ = this->create_publisher<ulisse_msgs::msg::AmbientSensors>(ulisse_msgs::topicnames::sensor_ambient, 1);
     //magnetometerPub_ = this->create_publisher<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer, 1);
     dvlPub_ = this->create_publisher<ulisse_msgs::msg::DVLData>(ulisse_msgs::topicnames::sensor_dvl, 1);
@@ -55,6 +53,7 @@ VehicleSimulator::VehicleSimulator(const std::string file_name)
 
     // Orientus ROS2 Publishers
 	imuPub_ = this->create_publisher<sensor_msgs::msg::Imu>(ulisse_msgs::topicnames::sensor_imu, 1);
+    imuPosePub_ = this->create_publisher<geometry_msgs::msg::PoseStamped>(ulisse_msgs::topicnames::sensor_imu_pose, 1);
 	// imu_raw_pub_ = this->create_publisher<sensor_msgs::msg::Imu>(std::string(node_name_ + "/imu_raw"), 10);
 	// nav_sat_fix_pub_ = this->create_publisher<sensor_msgs::msg::NavSatFix>(std::string(node_name_ + "/nav_sat_fix"), 10);
 	magnetometerPub_ = this->create_publisher<sensor_msgs::msg::MagneticField>(ulisse_msgs::topicnames::sensor_magnetometer, 1);
@@ -396,8 +395,8 @@ void VehicleSimulator::SimulateSensors()
     std::normal_distribution<double> compassNoiseP(0.0, config_->sensorsNoise.compass_stdd.y());
     std::normal_distribution<double> compassNoiseY(0.0, config_->sensorsNoise.compass_stdd.z());
 
-    imuPose_.header.stamp.sec = now_stamp_secs;
-    imuPose_.header.stamp.nanosec = now_stamp_nanosecs;
+    imuPoseMsg_.header.stamp.sec = now_stamp_secs;
+    imuPoseMsg_.header.stamp.nanosec = now_stamp_nanosecs;
 
     rml::EulerRPY imuF_orientationNoisy;
     imuF_orientationNoisy.Roll(imuF_orientation.Roll() + compassNoiseR(generator));
@@ -405,10 +404,10 @@ void VehicleSimulator::SimulateSensors()
     imuF_orientationNoisy.Yaw(imuF_orientation.Yaw() + compassNoiseY(generator));
 
     Eigen::Quaterniond orient_q = imuF_orientationNoisy.ToQuaternion();
-    imuPose_.pose.orientation.w = orient_q.w();
-    imuPose_.pose.orientation.x = orient_q.x();
-    imuPose_.pose.orientation.y = orient_q.y();
-    imuPose_.pose.orientation.z = orient_q.z();
+    imuPoseMsg_.pose.orientation.w = orient_q.w();
+    imuPoseMsg_.pose.orientation.x = orient_q.x();
+    imuPoseMsg_.pose.orientation.y = orient_q.y();
+    imuPoseMsg_.pose.orientation.z = orient_q.z();
 
 
     /////   MAGNETOMETER   /////
@@ -529,7 +528,7 @@ void VehicleSimulator::PublishSensors()
 
     if (static_cast<int>(timestamp_count_ / 20) > compassPubCounter_) {
         compassPubCounter_ = static_cast<int>(timestamp_count_ / 20);
-        //compassPub_->publish(compassMsg_);
+        imuPosePub_->publish(imuPoseMsg_);
     }
 
     /*if (static_cast<int>(timestamp_count_ / 20) > ambientPubCounter_) {

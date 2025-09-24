@@ -22,6 +22,8 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rmw_implementation REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
@@ -51,6 +53,8 @@ include_directories(
     include
     ${rclcpp_INCLUDE_DIRS}
     ${std_msgs_INCLUDE_DIRS}
+    ${geometry_msgs_INCLUDE_DIRS}
+    ${sensor_msgs_INCLUDE_DIRS}
     ${ament_index_INCLUDE_DIRS}
     ${Qt5Core_INCLUDE_DIRS}
     ${Qt5Widgets_INCLUDE_DIRS}
@@ -114,11 +118,14 @@ target_link_libraries(${PROJECT_NAME}_node
         ament_index_cpp::ament_index_cpp
         ${nav_filter_TARGETS}
         ${std_msgs_TARGETS}
+        ${geometry_msgs_TARGETS}
+        ${sensor_msgs_TARGETS}
         ${ulisse_msgs_TARGETS}
         ${JSONCPP_TARGETS}
         GeographicLib
         config++
         sisl_toolbox
+        rml
 )
 
 #ament_export_include_directories(include)

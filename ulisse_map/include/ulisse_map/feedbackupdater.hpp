@@ -13,6 +13,8 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
 #include "std_msgs/msg/bool.hpp"
+#include "sensor_msgs/msg/imu.hpp"
+#include "geometry_msgs/msg/pose_stamped.hpp"
 
 #include "ulisse_msgs/futils.hpp"
 #include "ulisse_msgs/msg/feedback_gui.hpp"
@@ -135,8 +137,8 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     rclcpp::Subscription<ulisse_msgs::msg::GPSData>::SharedPtr gps_data_sub_;
     //rclcpp::Subscription<ulisse_msgs::msg::MicroLoopCount>::SharedPtr micro_loop_count_sub_;
     //rclcpp::Subscription<ulisse_msgs::msg::AmbientSensors>::SharedPtr ambient_sensors_sub_;
-    //rclcpp::Subscription<ulisse_msgs::msg::Compass>::SharedPtr compass_sub_;
-    //rclcpp::Subscription<ulisse_msgs::msg::IMUData>::SharedPtr imu_data_sub_;
+    rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr compass_sub_;
+    rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_data_sub_;
     //rclcpp::Subscription<ulisse_msgs::msg::Magnetometer>::SharedPtr magnetometer_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::LLCThrusters>::SharedPtr llc_motors_sub_;
 
@@ -164,8 +166,8 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     void GPSDataCB(const ulisse_msgs::msg::GPSData::SharedPtr msg);
     //void MicroLoopCountCB(const ulisse_msgs::msg::MicroLoopCount::SharedPtr msg);
     //void AmbientSensorsCB(const ulisse_msgs::msg::AmbientSensors::SharedPtr msg);
-    //void CompassCB(const ulisse_msgs::msg::Compass::SharedPtr msg);
-    //void IMUDataCB(const ulisse_msgs::msg::IMUData::SharedPtr msg);
+    void CompassCB(const geometry_msgs::msg::PoseStamped::SharedPtr msg);
+    void IMUDataCB(const sensor_msgs::msg::Imu::SharedPtr msg);
     //void MagnetometerCB(const ulisse_msgs::msg::Magnetometer::SharedPtr msg);
     void LLCMotorsCB(const ulisse_msgs::msg::LLCThrusters::SharedPtr msg);
 

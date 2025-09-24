@@ -74,7 +74,7 @@ class VehicleSimulator : public rclcpp::Node {
 
     sensor_msgs::msg::Imu imuMsg_;
     sensor_msgs::msg::MagneticField magnetometerMsg_;
-    geometry_msgs::msg::PoseStamped imuPose_;
+    geometry_msgs::msg::PoseStamped imuPoseMsg_;
 
     rclcpp::Publisher<ulisse_msgs::msg::LLCSw485Status>::SharedPtr llcSw485StatusPub_;
     //rclcpp::Publisher<ulisse_msgs::msg::MicroLoopCount>::SharedPtr microLoopCountPub_;
