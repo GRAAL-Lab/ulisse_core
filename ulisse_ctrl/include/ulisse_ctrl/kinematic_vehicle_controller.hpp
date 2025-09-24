@@ -4,12 +4,12 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
 #include "std_msgs/msg/bool.hpp"
-#include "ulisse_msgs/msg/llc_status.hpp"
+#include "ulisse_msgs/msg/llc_sw485_status.hpp"
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
 #include "ulisse_msgs/msg/task_status.hpp"
 #include "ulisse_msgs/msg/feedback_gui.hpp"
 #include "ulisse_msgs/msg/reference_velocities.hpp"
-#include "ulisse_msgs/msg/vehicle_status.hpp"
+//#include "ulisse_msgs/msg/vehicle_status.hpp"
 #include "ulisse_msgs/msg/surge_heading.hpp"
 #include "ulisse_msgs/msg/surge_yaw_rate.hpp"
 #include "ulisse_msgs/msg/tpik_action.hpp"
@@ -69,7 +69,7 @@ class VehicleController : public rclcpp::Node {
     rclcpp::Service<ulisse_msgs::srv::SetCruiseControl>::SharedPtr srvCruise_;
 
     rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr navFilterSub_;
-    rclcpp::Subscription<ulisse_msgs::msg::LLCStatus>::SharedPtr llcStatusSub_;
+    rclcpp::Subscription<ulisse_msgs::msg::LLCSw485Status>::SharedPtr llcSw485StatusSub_;
 
     rclcpp::Subscription<ulisse_msgs::msg::SurgeHeading>::SharedPtr surgeHeadingSub_;
     rclcpp::Subscription<ulisse_msgs::msg::SurgeYawRate>::SharedPtr surgeYawRateSub_;
@@ -77,7 +77,7 @@ class VehicleController : public rclcpp::Node {
     rclcpp::Subscription<ulisse_msgs::msg::SimulatedSystem>::SharedPtr simulatedSystemSub_; //ILOS
 
     rclcpp::Publisher<ulisse_msgs::msg::ReferenceVelocities>::SharedPtr  referenceVelocitiesPub_;
-    rclcpp::Publisher<ulisse_msgs::msg::VehicleStatus>::SharedPtr vehicleStatusPub_;
+    rclcpp::Publisher<std_msgs::msg::String>::SharedPtr KCLStatusPub_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr genericLogPub_;
     rclcpp::Publisher<ulisse_msgs::msg::FeedbackGui>::SharedPtr feedbackGuiPub_;
     rclcpp::Publisher<ulisse_msgs::msg::TPIKAction>::SharedPtr tpikActionPub_;
@@ -190,7 +190,7 @@ class VehicleController : public rclcpp::Node {
     void SurgeHeadingCB(const ulisse_msgs::msg::SurgeHeading::SharedPtr msg);
     void SurgeYawRateCB(const ulisse_msgs::msg::SurgeYawRate::SharedPtr msg);
     void NavFilterCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
-    void LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg);
+    void LLCStatusCB(const ulisse_msgs::msg::LLCSw485Status::SharedPtr msg);
 
     void GroundTruthDataCB(const ulisse_msgs::msg::SimulatedSystem::SharedPtr msg);
 

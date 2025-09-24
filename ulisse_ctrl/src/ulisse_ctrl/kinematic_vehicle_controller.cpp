@@ -41,7 +41,7 @@ VehicleController::VehicleController(std::string conf_filename)
 
     // Sensor Subscriptions
     navFilterSub_ = this->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 10, std::bind(&VehicleController::NavFilterCB, this, _1));
-    llcStatusSub_ = this->create_subscription<ulisse_msgs::msg::LLCStatus>(ulisse_msgs::topicnames::llc_status, 10, std::bind(&VehicleController::LLCStatusCB, this, _1));
+    llcSw485StatusSub_ = this->create_subscription<ulisse_msgs::msg::LLCSw485Status>(ulisse_msgs::topicnames::llc_status, 10, std::bind(&VehicleController::LLCStatusCB, this, _1));
 
     // Data Subscriptions
     surgeHeadingSub_ = this->create_subscription<ulisse_msgs::msg::SurgeHeading>(ulisse_msgs::topicnames::surge_heading, 10, std::bind(&VehicleController::SurgeHeadingCB, this, _1));
@@ -54,7 +54,7 @@ VehicleController::VehicleController(std::string conf_filename)
     // Control Publishers
 
     genericLogPub_ = this->create_publisher<std_msgs::msg::String>("/ulisse/log/generic", 10);
-    vehicleStatusPub_ = this->create_publisher<ulisse_msgs::msg::VehicleStatus>(ulisse_msgs::topicnames::vehicle_status, 10);
+    KCLStatusPub_ = this->create_publisher<std_msgs::msg::String>(ulisse_msgs::topicnames::kcl_status, 10);
     referenceVelocitiesPub_ = this->create_publisher<ulisse_msgs::msg::ReferenceVelocities>(ulisse_msgs::topicnames::reference_velocities, 10);
     feedbackGuiPub_ = this->create_publisher<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10);
     tpikActionPub_ = this->create_publisher<ulisse_msgs::msg::TPIKAction>(ulisse_msgs::topicnames::tpik_action, 10);
@@ -627,7 +627,6 @@ void VehicleController::ResetConfHandler(const std::shared_ptr<rmw_request_id_t>
 
 void VehicleController::SlowTimerCB()
 {
-
     /*if (!boundariesSet_) {
         RCLCPP_INFO(this->get_logger(), "Waiting for the Safety Bounding Box");
     }
@@ -667,8 +666,8 @@ void VehicleController::SurgeYawRateCB(const ulisse_msgs::msg::SurgeYawRate::Sha
 
 void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)
 {
-    ctrlData_->inertialF_linearPosition.latitude = msg->inertialframe_linear_position.latlong.latitude;
-    ctrlData_->inertialF_linearPosition.longitude = msg->inertialframe_linear_position.latlong.longitude;
+    ctrlData_->inertialF_linearPosition.latitude = msg->inertialframe_linear_position.latitude;
+    ctrlData_->inertialF_linearPosition.longitude = msg->inertialframe_linear_position.longitude;
 
     // Get the water current for hold state
     ctrlData_->inertialF_waterCurrent[0] = msg->inertialframe_water_current[0];
@@ -701,9 +700,9 @@ void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::Share
     robotModel_->VelocityVector(ulisse::robotModelID::ASV, velocity_fbk);
 }
 
-void VehicleController::LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg)
+void VehicleController::LLCStatusCB(const ulisse_msgs::msg::LLCSw485Status::SharedPtr msg)
 {
-    ctrlData_->radioControllerEnabled = msg->flags.ppm_remote_enabled;
+    ctrlData_->radioControllerEnabled = msg->status_flags.ppm_remote_enabled;
 }
 
 void VehicleController::GroundTruthDataCB(const ulisse_msgs::msg::SimulatedSystem::SharedPtr msg)
@@ -717,8 +716,8 @@ void VehicleController::GroundTruthDataCB(const ulisse_msgs::msg::SimulatedSyste
 
      //ctrlData_->inertialF_linearPosition.latitude = msg->inertialframe_linear_position.latlong.latitude;
      //ctrlData_->inertialF_linearPosition.longitude = msg->inertialframe_linear_position.latlong.longitude;
-     real_position_->latitude = msg->inertialframe_linear_position.latlong.latitude;
-     real_position_->longitude = msg->inertialframe_linear_position.latlong.longitude;
+     real_position_->latitude = msg->inertialframe_linear_position.latitude;
+     real_position_->longitude = msg->inertialframe_linear_position.longitude;
 }
 
 void VehicleController::Run()
@@ -773,11 +772,11 @@ void VehicleController::PublishControl()
     auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
 
     // Publish vehicle status
-    ulisse_msgs::msg::VehicleStatus vehicleStatusMsg;
-    vehicleStatusMsg.stamp.sec = now_stamp_secs;
-    vehicleStatusMsg.stamp.nanosec = now_stamp_nanosecs;
-    vehicleStatusMsg.vehicle_state = uFsm_.GetCurrentStateName();
-    vehicleStatusPub_->publish(vehicleStatusMsg);
+    std_msgs::msg::String KCLStatusMsg;
+    //KCLStatusMsg.stamp.sec = now_stamp_secs;
+    //vehicleStatusMsg.stamp.nanosec = now_stamp_nanosecs;
+    KCLStatusMsg.data = uFsm_.GetCurrentStateName();
+    KCLStatusPub_->publish(KCLStatusMsg);
 
     ulisse_msgs::msg::ReferenceVelocities referenceVelocities;
     referenceVelocities.stamp.sec = now_stamp_secs;

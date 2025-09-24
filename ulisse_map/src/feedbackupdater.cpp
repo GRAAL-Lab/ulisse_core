@@ -131,23 +131,23 @@ void FeedbackUpdater::RegisterPublishersAndSubscribers()
     //auto qos_sensor = rclcpp::QoS(my_rmw_qos);
     int qos_sensor = 10;
 
-    vehicleStatusSub_ = this->create_subscription<ulisse_msgs::msg::VehicleStatus>(ulisse_msgs::topicnames::vehicle_status,
-                                                                                   10, std::bind(&FeedbackUpdater::VehicleStatusCB, this, _1));
+    KCLStatusSub_ = this->create_subscription<std_msgs::msg::String>(ulisse_msgs::topicnames::kcl_status,
+                                                                                   10, std::bind(&FeedbackUpdater::KCLStatusCB, this, _1));
     referenceVelocitiesSub_ = this->create_subscription<ulisse_msgs::msg::ReferenceVelocities>(ulisse_msgs::topicnames::reference_velocities,
                                                                                                10, std::bind(&FeedbackUpdater::ReferenceVelocitiesCB, this, _1));
     gps_data_sub_ = this->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data,
                                                                          10, std::bind(&FeedbackUpdater::GPSDataCB, this, _1));
 
-    micro_loop_count_sub_ = this->create_subscription<ulisse_msgs::msg::MicroLoopCount>(ulisse_msgs::topicnames::micro_loop_count,
-                                                                                        10, std::bind(&FeedbackUpdater::MicroLoopCountCB, this, _1));
-    ambient_sensors_sub_ = this->create_subscription<ulisse_msgs::msg::AmbientSensors>(ulisse_msgs::topicnames::sensor_ambient,
-                                                                                       qos_sensor, std::bind(&FeedbackUpdater::AmbientSensorsCB, this, _1));
-    compass_sub_ = this->create_subscription<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass,
-                                                                        qos_sensor, std::bind(&FeedbackUpdater::CompassCB, this, _1));
-    imu_data_sub_ = this->create_subscription<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu,
-                                                                         qos_sensor, std::bind(&FeedbackUpdater::IMUDataCB, this, _1));
-    magnetometer_sub_ = this->create_subscription<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer,
-                                                                                  qos_sensor, std::bind(&FeedbackUpdater::MagnetometerCB, this, _1));
+    //micro_loop_count_sub_ = this->create_subscription<ulisse_msgs::msg::MicroLoopCount>(ulisse_msgs::topicnames::micro_loop_count,
+    //                                                                                    10, std::bind(&FeedbackUpdater::MicroLoopCountCB, this, _1));
+    //ambient_sensors_sub_ = this->create_subscription<ulisse_msgs::msg::AmbientSensors>(ulisse_msgs::topicnames::sensor_ambient,
+    //                                                                                   qos_sensor, std::bind(&FeedbackUpdater::AmbientSensorsCB, this, _1));
+    //compass_sub_ = this->create_subscription<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass,
+    //                                                                    qos_sensor, std::bind(&FeedbackUpdater::CompassCB, this, _1));
+    //imu_data_sub_ = this->create_subscription<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu,
+    //                                                                     qos_sensor, std::bind(&FeedbackUpdater::IMUDataCB, this, _1));
+    //magnetometer_sub_ = this->create_subscription<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer,
+    //                                                                              qos_sensor, std::bind(&FeedbackUpdater::MagnetometerCB, this, _1));
     llc_motors_sub_ = this->create_subscription<ulisse_msgs::msg::LLCThrusters>(ulisse_msgs::topicnames::llc_thrusters,
                                                                                 qos_sensor, std::bind(&FeedbackUpdater::LLCMotorsCB, this, _1));
 
@@ -163,8 +163,8 @@ void FeedbackUpdater::RegisterPublishersAndSubscribers()
                                                                                                  1, std::bind(&FeedbackUpdater::ThrustersAppliedReferenceCB, this, _1));
     sw485_status_sub_ = this->create_subscription<ulisse_msgs::msg::LLCSw485Status>(ulisse_msgs::topicnames::llc_sw485status,
                                                                                     10, std::bind(&FeedbackUpdater::LLCSw485StatusCB, this, _1));
-    llc_status_sub_ = this->create_subscription<ulisse_msgs::msg::LLCStatus>(ulisse_msgs::topicnames::llc_status,
-                                                                             10, std::bind(&FeedbackUpdater::LLCStatusCB, this, _1));
+    //llc_status_sub_ = this->create_subscription<ulisse_msgs::msg::LLCStatus>(ulisse_msgs::topicnames::llc_status,
+    //                                                                         10, std::bind(&FeedbackUpdater::LLCStatusCB, this, _1));
     navFilterDataSub_ = this->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data,
                                                                                      10, std::bind(&FeedbackUpdater::NavFilterDataCB, this, _1));
     feedbackGuiSub_ = this->create_subscription<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui,
@@ -191,8 +191,8 @@ void FeedbackUpdater::NavFilterDataCB(const ulisse_msgs::msg::NavFilterData::Sha
 
     water_current_norm = water_current_w.norm();
 
-    q_ulisse_pos_.setLatitude(msg->inertialframe_linear_position.latlong.latitude);
-    q_ulisse_pos_.setLongitude(msg->inertialframe_linear_position.latlong.longitude);
+    q_ulisse_pos_.setLatitude(msg->inertialframe_linear_position.latitude);
+    q_ulisse_pos_.setLongitude(msg->inertialframe_linear_position.longitude);
     q_ulisse_pos_.setAltitude(msg->inertialframe_linear_position.altitude);
 
     q_ulisse_linear_vel_.setX(msg->bodyframe_linear_velocity.at(0));
@@ -229,8 +229,8 @@ void FeedbackUpdater::NavFilterDataCB(const ulisse_msgs::msg::NavFilterData::Sha
 
 void FeedbackUpdater::NavFilterAuxiliaryCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg)
 {
-    q_aux_nav_filter_pos_.setLatitude(msg->inertialframe_linear_position.latlong.latitude);
-    q_aux_nav_filter_pos_.setLongitude(msg->inertialframe_linear_position.latlong.longitude);
+    q_aux_nav_filter_pos_.setLatitude(msg->inertialframe_linear_position.latitude);
+    q_aux_nav_filter_pos_.setLongitude(msg->inertialframe_linear_position.longitude);
 }
 
 double FeedbackUpdater::RadiansToDegrees(const double angle_rad, const bool wraparound360)
@@ -259,7 +259,7 @@ void FeedbackUpdater::GPSDataCB(const ulisse_msgs::msg::GPSData::SharedPtr msg)
 
 }
 
-void FeedbackUpdater::MicroLoopCountCB(const ulisse_msgs::msg::MicroLoopCount::SharedPtr msg)
+/*void FeedbackUpdater::MicroLoopCountCB(const ulisse_msgs::msg::MicroLoopCount::SharedPtr msg)
 {
     micro_loop_count_t_ = msg->timestamp;
 
@@ -301,7 +301,7 @@ void FeedbackUpdater::MagnetometerCB(const ulisse_msgs::msg::Magnetometer::Share
     magnetometer_ = QString::number(msg->orthogonalstrength[0], 'f', 2) + ", "
                     + QString::number(msg->orthogonalstrength[1], 'f', 2) + ", "
                     + QString::number(msg->orthogonalstrength[2], 'f', 2);
-}
+}*/
 
 void FeedbackUpdater::LLCMotorsCB(const ulisse_msgs::msg::LLCThrusters::SharedPtr msg)
 {
@@ -331,11 +331,11 @@ void FeedbackUpdater::ThrustersAppliedReferenceCB(const ulisse_msgs::msg::Thrust
     q_thrust_applied_ref_right_ = msg->right_percentage;
 }
 
-void FeedbackUpdater::LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg)
+/*void FeedbackUpdater::LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg)
 {
     thruster_reference_enabled = msg->flags.enable_reference;
     radio_controller_enabled = msg->flags.ppm_remote_enabled;
-}
+}*/
 
 void FeedbackUpdater::LLCSw485StatusCB(const ulisse_msgs::msg::LLCSw485Status::SharedPtr msg)
 {
@@ -349,9 +349,9 @@ void FeedbackUpdater::ReferenceVelocitiesCB(const ulisse_msgs::msg::ReferenceVel
     q_desired_jog_ = int(msg->desired_yaw_rate * 1E3) / 1E3;
 }
 
-void FeedbackUpdater::VehicleStatusCB(const ulisse_msgs::msg::VehicleStatus::SharedPtr msg)
+void FeedbackUpdater::KCLStatusCB(const std_msgs::msg::String::SharedPtr msg)
 {
-    q_vehicle_state_ = msg->vehicle_state.c_str();
+    q_vehicle_state_ = msg->data.c_str();
 
     if (q_vehicle_state_.toStdString() == ulisse::states::ID::latlong
         or q_vehicle_state_.toStdString() == ulisse::states::ID::hold) {
@@ -399,15 +399,15 @@ void FeedbackUpdater::copyToClipboard(QString newText)
 
 void FeedbackUpdater::resetPublishersAndSubscribers()
 {
-    vehicleStatusSub_.reset();
+    //vehicleStatusSub_.reset();
     referenceVelocitiesSub_.reset();
     gps_data_sub_.reset();
 
-    micro_loop_count_sub_.reset();
-    ambient_sensors_sub_.reset();
-    compass_sub_.reset();
-    imu_data_sub_.reset();
-    magnetometer_sub_.reset();
+    //micro_loop_count_sub_.reset();
+    //ambient_sensors_sub_.reset();
+    //compass_sub_.reset();
+    //imu_data_sub_.reset();
+    //magnetometer_sub_.reset();
     llc_motors_sub_.reset();
 
     battery_left_sub_.reset();

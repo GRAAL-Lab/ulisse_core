@@ -39,7 +39,7 @@ const std::string nav_filter_data = "/ulisse/nav_filter/data";
 const std::string nav_filter_data_auxiliary = "/ulisse/nav_filter/data_auxiliary";
 
 // CTRL
-const std::string vehicle_status = "/ulisse/ctrl/vehicle_status";
+const std::string kcl_status = "/ulisse/ctrl/kcl_status";
 const std::string thruster_mapping_control = "/ulisse/ctrl/thruster_mapping_info";
 const std::string classic_pid_control = "/ulisse/ctrl/classic_pid_control_info";
 const std::string computed_torque_control = "/ulisse/ctrl/computed_torque_control_info";

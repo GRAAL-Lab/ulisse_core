@@ -11,24 +11,25 @@
 #include <libconfig.h++>
 
 #include "rclcpp/rclcpp.hpp"
-
+#include "std_msgs/msg/string.hpp"
 #include "std_msgs/msg/bool.hpp"
+
 #include "ulisse_msgs/futils.hpp"
 #include "ulisse_msgs/msg/feedback_gui.hpp"
 #include "ulisse_msgs/msg/gps_data.hpp"
-#include "ulisse_msgs/msg/micro_loop_count.hpp"
-#include "ulisse_msgs/msg/ambient_sensors.hpp"
-#include "ulisse_msgs/msg/compass.hpp"
-#include "ulisse_msgs/msg/imu_data.hpp"
-#include "ulisse_msgs/msg/magnetometer.hpp"
+//#include "ulisse_msgs/msg/micro_loop_count.hpp"
+//#include "ulisse_msgs/msg/ambient_sensors.hpp"
+//#include "ulisse_msgs/msg/compass.hpp"
+//#include "ulisse_msgs/msg/imu_data.hpp"
+//#include "ulisse_msgs/msg/magnetometer.hpp"
 #include "ulisse_msgs/msg/llc_thrusters.hpp"
 #include "ulisse_msgs/msg/llc_battery.hpp"
 #include "ulisse_msgs/msg/llc_sw485_status.hpp"
-#include "ulisse_msgs/msg/llc_status.hpp"
+//#include "ulisse_msgs/msg/llc_status.hpp"
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
 #include "ulisse_msgs/msg/reference_velocities.hpp"
 #include "ulisse_msgs/msg/thrusters_reference.hpp"
-#include "ulisse_msgs/msg/vehicle_status.hpp"
+
 
 
 class FeedbackUpdater : public QObject, rclcpp::Node {
@@ -132,11 +133,11 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     double water_current_norm;
 
     rclcpp::Subscription<ulisse_msgs::msg::GPSData>::SharedPtr gps_data_sub_;
-    rclcpp::Subscription<ulisse_msgs::msg::MicroLoopCount>::SharedPtr micro_loop_count_sub_;
-    rclcpp::Subscription<ulisse_msgs::msg::AmbientSensors>::SharedPtr ambient_sensors_sub_;
-    rclcpp::Subscription<ulisse_msgs::msg::Compass>::SharedPtr compass_sub_;
-    rclcpp::Subscription<ulisse_msgs::msg::IMUData>::SharedPtr imu_data_sub_;
-    rclcpp::Subscription<ulisse_msgs::msg::Magnetometer>::SharedPtr magnetometer_sub_;
+    //rclcpp::Subscription<ulisse_msgs::msg::MicroLoopCount>::SharedPtr micro_loop_count_sub_;
+    //rclcpp::Subscription<ulisse_msgs::msg::AmbientSensors>::SharedPtr ambient_sensors_sub_;
+    //rclcpp::Subscription<ulisse_msgs::msg::Compass>::SharedPtr compass_sub_;
+    //rclcpp::Subscription<ulisse_msgs::msg::IMUData>::SharedPtr imu_data_sub_;
+    //rclcpp::Subscription<ulisse_msgs::msg::Magnetometer>::SharedPtr magnetometer_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::LLCThrusters>::SharedPtr llc_motors_sub_;
 
     rclcpp::Subscription<ulisse_msgs::msg::LLCBattery>::SharedPtr battery_left_sub_;
@@ -144,10 +145,10 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     rclcpp::Subscription<ulisse_msgs::msg::ThrustersReference>::SharedPtr thrusters_reference_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::ThrustersReference>::SharedPtr thrusters_applied_ref_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::LLCSw485Status>::SharedPtr sw485_status_sub_;
-    rclcpp::Subscription<ulisse_msgs::msg::LLCStatus>::SharedPtr llc_status_sub_;
+    //rclcpp::Subscription<ulisse_msgs::msg::LLCStatus>::SharedPtr llc_status_sub_;
     rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr navFilterDataSub_;
     rclcpp::Subscription<ulisse_msgs::msg::ReferenceVelocities>::SharedPtr referenceVelocitiesSub_;
-    rclcpp::Subscription<ulisse_msgs::msg::VehicleStatus>::SharedPtr vehicleStatusSub_;
+    rclcpp::Subscription<std_msgs::msg::String>::SharedPtr KCLStatusSub_;
     rclcpp::Subscription<ulisse_msgs::msg::FeedbackGui>::SharedPtr feedbackGuiSub_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr safetyBoundarySetSub_;
 
@@ -161,21 +162,21 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     double RadiansToDegrees(const double angle_rad, const bool wraparound360 = false);
 
     void GPSDataCB(const ulisse_msgs::msg::GPSData::SharedPtr msg);
-    void MicroLoopCountCB(const ulisse_msgs::msg::MicroLoopCount::SharedPtr msg);
-    void AmbientSensorsCB(const ulisse_msgs::msg::AmbientSensors::SharedPtr msg);
-    void CompassCB(const ulisse_msgs::msg::Compass::SharedPtr msg);
-    void IMUDataCB(const ulisse_msgs::msg::IMUData::SharedPtr msg);
-    void MagnetometerCB(const ulisse_msgs::msg::Magnetometer::SharedPtr msg);
+    //void MicroLoopCountCB(const ulisse_msgs::msg::MicroLoopCount::SharedPtr msg);
+    //void AmbientSensorsCB(const ulisse_msgs::msg::AmbientSensors::SharedPtr msg);
+    //void CompassCB(const ulisse_msgs::msg::Compass::SharedPtr msg);
+    //void IMUDataCB(const ulisse_msgs::msg::IMUData::SharedPtr msg);
+    //void MagnetometerCB(const ulisse_msgs::msg::Magnetometer::SharedPtr msg);
     void LLCMotorsCB(const ulisse_msgs::msg::LLCThrusters::SharedPtr msg);
 
     void LLCBatteryLeftCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg);
     void LLCBatteryRightCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg);
     void ThrustersReferenceCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg);
     void ThrustersAppliedReferenceCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg);
-    void LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg);
+    //void LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg);
     void LLCSw485StatusCB(const ulisse_msgs::msg::LLCSw485Status::SharedPtr msg);
     void ReferenceVelocitiesCB(const ulisse_msgs::msg::ReferenceVelocities::SharedPtr msg);
-    void VehicleStatusCB(const ulisse_msgs::msg::VehicleStatus::SharedPtr msg);
+    void KCLStatusCB(const std_msgs::msg::String::SharedPtr msg);
     void NavFilterDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
     void FeedbackGuiCB(const ulisse_msgs::msg::FeedbackGui::SharedPtr msg);
     void SafetyBoundaryCB(const std_msgs::msg::Bool::SharedPtr msg);

@@ -95,7 +95,7 @@ ament_export_include_directories(include)
 ## Install
 install(TARGETS
   nav_filter_node
-  nav_filter_udp_sender
+#  nav_filter_udp_sender
   DESTINATION lib/${PROJECT_NAME}
 )
 

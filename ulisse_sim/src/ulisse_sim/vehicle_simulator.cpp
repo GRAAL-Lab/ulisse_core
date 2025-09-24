@@ -6,6 +6,7 @@
 #include "GeographicLib/UTMUPS.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 #include "ulisse_sim/vehicle_simulator.hpp"
+#include "ulisse_msgs/msg/llc_sw485_status.hpp"
 
 namespace ulisse {
 using namespace std::chrono_literals;
@@ -39,12 +40,12 @@ VehicleSimulator::VehicleSimulator(const std::string file_name)
 
     t_start_ = t_last_ = t_now_ = std::chrono::system_clock::now();
 
-    llcStatusPub_ = this->create_publisher<ulisse_msgs::msg::LLCStatus>(ulisse_msgs::topicnames::llc_status,1);
-    microLoopCountPub_ = this->create_publisher<ulisse_msgs::msg::MicroLoopCount>(ulisse_msgs::topicnames::micro_loop_count, 1);
+    llcSw485StatusPub_ = this->create_publisher<ulisse_msgs::msg::LLCSw485Status>(ulisse_msgs::topicnames::llc_sw485status,1);
+    //microLoopCountPub_ = this->create_publisher<ulisse_msgs::msg::MicroLoopCount>(ulisse_msgs::topicnames::micro_loop_count, 1);
     gpsPub_ = this->create_publisher<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data, 1);
     //compassPub_ = this->create_publisher<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass, 1);
     //imuPub_ = this->create_publisher<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu, 1);
-    ambsensPub_ = this->create_publisher<ulisse_msgs::msg::AmbientSensors>(ulisse_msgs::topicnames::sensor_ambient, 1);
+    //ambsensPub_ = this->create_publisher<ulisse_msgs::msg::AmbientSensors>(ulisse_msgs::topicnames::sensor_ambient, 1);
     //magnetometerPub_ = this->create_publisher<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer, 1);
     dvlPub_ = this->create_publisher<ulisse_msgs::msg::DVLData>(ulisse_msgs::topicnames::sensor_dvl, 1);
     fogPub_ = this->create_publisher<ulisse_msgs::msg::FOGData>(ulisse_msgs::topicnames::sensor_fog, 1);
@@ -73,8 +74,8 @@ VehicleSimulator::VehicleSimulator(const std::string file_name)
     n_p_ = 0;
     n_s_ = 0;
 
-    llcStatusMsg_.flags.enable_reference = true;
-    llcStatusMsg_.flags.ppm_remote_enabled = false;
+    llcSw485StatusMsg_.status_flags.enable_reference = true;
+    llcSw485StatusMsg_.status_flags.ppm_remote_enabled = false;
 
     bodyF_projection_.setZero(6, 6);
 
@@ -293,8 +294,8 @@ void VehicleSimulator::SimulateSensors()
     timestamp_count_ = static_cast<uint32_t>(elapsed_secs * 200.0);
     stepssincepps_count_ = static_cast<uint32_t>(elapsed_secs * 200.0) % 200;
 
-    microLoopCountMsg_.timestamp = timestamp_count_;
-    microLoopCountMsg_.stepssincepps = stepssincepps_count_;
+    //microLoopCountMsg_.timestamp = timestamp_count_;
+    //microLoopCountMsg_.stepssincepps = stepssincepps_count_;
 
     // construct a trivial random generator engine from a time-based seed:
     auto seed = std::chrono::system_clock::now().time_since_epoch().count();
@@ -467,17 +468,17 @@ void VehicleSimulator::SimulateSensors()
 
 
     /////   AMBIENT   /////
-    ambsensMsg_.stamp.sec = now_stamp_secs;
-    ambsensMsg_.stamp.nanosec = now_stamp_nanosecs;
-    ambsensMsg_.temperaturectrlbox = 23.0 + (rand() / static_cast<double>(RAND_MAX)) * 2.0;
-    ambsensMsg_.humidityctrlbox = 50.0 + (rand() / static_cast<double>(RAND_MAX)) * 2.0;
+    //ambsensMsg_.stamp.sec = now_stamp_secs;
+    //ambsensMsg_.stamp.nanosec = now_stamp_nanosecs;
+    //ambsensMsg_.temperaturectrlbox = 23.0 + (rand() / static_cast<double>(RAND_MAX)) * 2.0;
+    //ambsensMsg_.humidityctrlbox = 50.0 + (rand() / static_cast<double>(RAND_MAX)) * 2.0;
 
 
     // Fill the ground truth msg
     groundTruthMsg_.stamp.sec = now_stamp_secs;
     groundTruthMsg_.stamp.nanosec = now_stamp_nanosecs;
-    groundTruthMsg_.inertialframe_linear_position.latlong.latitude = vehiclePos_.latitude;
-    groundTruthMsg_.inertialframe_linear_position.latlong.longitude = vehiclePos_.longitude;
+    groundTruthMsg_.inertialframe_linear_position.latitude = vehiclePos_.latitude;
+    groundTruthMsg_.inertialframe_linear_position.longitude = vehiclePos_.longitude;
     groundTruthMsg_.inertialframe_linear_position.altitude = altitude_;
     groundTruthMsg_.bodyframe_angular_position.roll = bodyF_orientation_.Roll();
     groundTruthMsg_.bodyframe_angular_position.pitch = bodyF_orientation_.Pitch();
@@ -510,11 +511,11 @@ void VehicleSimulator::SimulateSensors()
 
 void VehicleSimulator::PublishSensors()
 {
-    microLoopCountPub_->publish(microLoopCountMsg_);
+    //microLoopCountPub_->publish(microLoopCountMsg_);
     simulatedSystemPub_->publish(groundTruthMsg_);
     appliedMotorRefPub_->publish(appliedMotorRefMsg_);
     motorsDataPub_->publish(motorsDataMsg_);
-    llcStatusPub_->publish(llcStatusMsg_);
+    llcSw485StatusPub_->publish(llcSw485StatusMsg_);
 
     if (static_cast<int>(timestamp_count_ / 20) > gpsPubCounter_) {
         gpsPubCounter_ = static_cast<int>(timestamp_count_ / 20);
@@ -531,10 +532,10 @@ void VehicleSimulator::PublishSensors()
         //compassPub_->publish(compassMsg_);
     }
 
-    if (static_cast<int>(timestamp_count_ / 20) > ambientPubCounter_) {
+    /*if (static_cast<int>(timestamp_count_ / 20) > ambientPubCounter_) {
         ambientPubCounter_ = static_cast<int>(timestamp_count_ / 20);
         ambsensPub_->publish(ambsensMsg_);
-    }
+    }*/
 
     if (static_cast<int>(timestamp_count_ / 20) > magnetometerPubCounter_) {
         magnetometerPubCounter_ = static_cast<int>(timestamp_count_ / 20);

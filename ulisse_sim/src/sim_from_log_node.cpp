@@ -1,8 +1,8 @@
 #include "eigen3/Eigen/Dense"
-#include "ulisse_msgs/msg/compass.hpp"
+//#include "ulisse_msgs/msg/compass.hpp"
 #include "ulisse_msgs/msg/gps_data.hpp"
-#include "ulisse_msgs/msg/imu_data.hpp"
-#include "ulisse_msgs/msg/magnetometer.hpp"
+//#include "ulisse_msgs/msg/imu_data.hpp"
+//#include "ulisse_msgs/msg/magnetometer.hpp"
 #include "ulisse_msgs/msg/thrusters_reference.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 #include <ament_index_cpp/get_package_share_directory.hpp>
@@ -32,19 +32,19 @@ int main(int argc, char* argv[])
     rclcpp::WallRate loop_rate(rate);
 
     ulisse_msgs::msg::GPSData gpsMsg;
-    ulisse_msgs::msg::IMUData imuMsg;
-    ulisse_msgs::msg::Magnetometer magnetometerMsg;
+    //ulisse_msgs::msg::IMUData imuMsg;
+    //ulisse_msgs::msg::Magnetometer magnetometerMsg;
     ulisse_msgs::msg::ThrustersReference appliedMotorRefMsg;
-    ulisse_msgs::msg::Compass compassMsg;
+    //ulisse_msgs::msg::Compass compassMsg;
 
     ctb::LatLong centroid(44.393, 8.945); // Genova Harbour lat-long
 
     //Pubs of data
     auto gpsPub = node->create_publisher<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data, 1);
-    auto imuPub = node->create_publisher<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu, 1);
-    auto magnetometerPub = node->create_publisher<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer, 1);
+    //auto imuPub = node->create_publisher<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu, 1);
+    //auto magnetometerPub = node->create_publisher<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer, 1);
     auto thrustersPub = node->create_publisher<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_reference_perc, 1);
-    auto compassPub = node->create_publisher<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass, 1);
+    //auto compassPub = node->create_publisher<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass, 1);
 
     //open gps log file
     std::string line;
@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
             auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs_sensors / static_cast<int>(1E9));
             auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs_sensors % static_cast<int>(1E9));
 
-            compassMsg.stamp.sec = now_stamp_secs;
+            /*compassMsg.stamp.sec = now_stamp_secs;
             compassMsg.stamp.nanosec = now_stamp_nanosecs;
             compassMsg.orientation.roll = sensorsData.row(j + 1)(4);
             compassMsg.orientation.pitch = -sensorsData.row(j + 1)(3);
@@ -101,7 +101,7 @@ int main(int argc, char* argv[])
             imuMsg.gyro[1] = sensorsData.row(j + 1)(12);
             imuMsg.gyro[2] = sensorsData.row(j + 1)(13);
             imuMsg.gyro4x[0] = sensorsData.row(j + 1)(14);
-            imuMsg.gyro4x[1] = sensorsData.row(j + 1)(15);
+            imuMsg.gyro4x[1] = sensorsData.row(j + 1)(15);*/
 
             appliedMotorRefMsg.stamp.sec = now_stamp_secs;
             appliedMotorRefMsg.stamp.nanosec = now_stamp_nanosecs;
@@ -109,10 +109,10 @@ int main(int argc, char* argv[])
             appliedMotorRefMsg.right_percentage = sensorsData.row(j + 1)(21) / 10;
 
             //std::cout << "Publishing..." << std::endl;
-            magnetometerPub->publish(magnetometerMsg);
-            imuPub->publish(imuMsg);
+            //magnetometerPub->publish(magnetometerMsg);
+            //imuPub->publish(imuMsg);
             thrustersPub->publish(appliedMotorRefMsg);
-            compassPub->publish(compassMsg);
+            //compassPub->publish(compassMsg);
             j++;
             sensorsCount = 0;
         }

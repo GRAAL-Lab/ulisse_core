@@ -18,13 +18,13 @@
 #include <sensor_msgs/msg/magnetic_field.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
-#include "ulisse_msgs/msg/compass.hpp"
+//#include "ulisse_msgs/msg/compass.hpp"
 #include "ulisse_msgs/msg/gps_data.hpp"
-#include "ulisse_msgs/msg/imu_data.hpp"
-#include "ulisse_msgs/msg/magnetometer.hpp"
+//#include "ulisse_msgs/msg/imu_data.hpp"
+//#include "ulisse_msgs/msg/magnetometer.hpp"
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
 #include "ulisse_msgs/msg/simulated_system.hpp"
-#include "ulisse_msgs/msg/simulated_velocity_sensor.hpp"
+//#include "ulisse_msgs/msg/simulated_velocity_sensor.hpp"
 #include "ulisse_msgs/msg/thrusters_reference.hpp"
 #include "ulisse_msgs/msg/llc_thrusters.hpp"
 #include "ulisse_msgs/srv/nav_filter_command.hpp"
@@ -81,7 +81,7 @@ namespace nav {
         rclcpp::Subscription<ulisse_msgs::msg::SimulatedSystem>::SharedPtr simulatedSystemSub_;
         rclcpp::Subscription<ulisse_msgs::msg::ThrustersReference>::SharedPtr thrustersAppliedRefSub_;
         rclcpp::Subscription<ulisse_msgs::msg::LLCThrusters>::SharedPtr llcThrustersSub_;
-        rclcpp::Subscription<ulisse_msgs::msg::SimulatedVelocitySensor>::SharedPtr simulatedVelocitySub_;
+        //rclcpp::Subscription<ulisse_msgs::msg::SimulatedVelocitySensor>::SharedPtr simulatedVelocitySub_;
         
         rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr imuPoseSub_;      // substitutes compass
         rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imuSensorSub_;
@@ -184,7 +184,7 @@ namespace nav {
 
         //void MagnetometerDataCB(const ulisse_msgs::msg::Magnetometer::SharedPtr msg);
 
-        void SimulatedVelocitySensorCB(const ulisse_msgs::msg::SimulatedVelocitySensor::SharedPtr msg);
+        //void SimulatedVelocitySensorCB(const ulisse_msgs::msg::SimulatedVelocitySensor::SharedPtr msg);
 
         void ThrustersAppliedReferenceCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg);
 

@@ -26,15 +26,15 @@ DynamicVehicleController::DynamicVehicleController(std::string file_name)
     //Subscribers
     filterSub_ = this->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 10,
         std::bind(&DynamicVehicleController::FilterDataCB, this, _1));
-    vehicleStatusSub_ = this->create_subscription<ulisse_msgs::msg::VehicleStatus>(ulisse_msgs::topicnames::vehicle_status, 10,
-        std::bind(&DynamicVehicleController::VehicleStatusCB, this, _1));
+    KCLStatusSub_ = this->create_subscription<std_msgs::msg::String>(ulisse_msgs::topicnames::kcl_status, 10,
+        std::bind(&DynamicVehicleController::KCLStatusCB, this, _1));
     referenceVelocitiesSub_ = this->create_subscription<ulisse_msgs::msg::ReferenceVelocities>(ulisse_msgs::topicnames::reference_velocities, 10,
         std::bind(&DynamicVehicleController::ReferenceVelocitiesCB, this, _1));
 
     //Publishers
     thrusterDataPub_ = this->create_publisher<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_reference_perc, 1);
     thrusterMappigPub_ = this->create_publisher<ulisse_msgs::msg::ThrusterMappingControl>(ulisse_msgs::topicnames::thruster_mapping_control, 1);
-    simulatedVelocitySensorPub_ = this->create_publisher<ulisse_msgs::msg::SimulatedVelocitySensor>(ulisse_msgs::topicnames::simulated_velocity_sensor, 1);
+    //simulatedVelocitySensorPub_ = this->create_publisher<ulisse_msgs::msg::SimulatedVelocitySensor>(ulisse_msgs::topicnames::simulated_velocity_sensor, 1);
     classicPidControlPub_ = this->create_publisher<ulisse_msgs::msg::DynamicPidControl>(ulisse_msgs::topicnames::classic_pid_control, 1);
     computedTorqueControlPub_ = this->create_publisher<ulisse_msgs::msg::DynamicPidControl>(ulisse_msgs::topicnames::computed_torque_control, 1);
 
@@ -110,22 +110,22 @@ void DynamicVehicleController::Run()
 {
 
     // Evaluating the total surge, taking into account the water current
-    Eigen::Rotation2D<double> wRb = Eigen::Rotation2D<double>(filterData.bodyframe_angular_position.yaw);
-    Eigen::Vector2d water_current_b = wRb.inverse() * Eigen::Vector2d(filterData.inertialframe_water_current.data());
+    Eigen::Rotation2D<double> wRb = Eigen::Rotation2D<double>(filterData_.bodyframe_angular_position.yaw);
+    Eigen::Vector2d water_current_b = wRb.inverse() * Eigen::Vector2d(filterData_.inertialframe_water_current.data());
 
-    double absSurgeFbk = filterData.bodyframe_linear_velocity[0] + water_current_b[0];   // ?! è la velocità relativa all'acqua?
-    double relSurgeFbk = filterData.bodyframe_linear_velocity[0];
-    double yawRateFbk = filterData.bodyframe_angular_velocity[2];
+    double absSurgeFbk = filterData_.bodyframe_linear_velocity[0] + water_current_b[0];   // ?! è la velocità relativa all'acqua?
+    double relSurgeFbk = filterData_.bodyframe_linear_velocity[0];
+    double yawRateFbk = filterData_.bodyframe_angular_velocity[2];
 
-    if (vehicleStatus.vehicle_state != ulisse::states::ID::halt) {
+    if (KCLStatus_.data != ulisse::states::ID::halt) {
         //ThrusterMapping mode
         if (dcl_conf->ctrlMode == ControlMode::ThrusterMapping) {
 
             Eigen::Vector6d requestedVel;
             requestedVel.setZero();
 
-            requestedVel(0) = pidSurgeTM.Compute(referenceVelocities.desired_surge, absSurgeFbk);
-            requestedVel(5) = referenceVelocities.desired_yaw_rate;
+            requestedVel(0) = pidSurgeTM.Compute(referenceVelocities_.desired_surge, absSurgeFbk);
+            requestedVel(5) = referenceVelocities_.desired_yaw_rate;
 
             Eigen::Vector3d tauDrag = ulisseModel.ComputeCoriolisAndDragForces(requestedVel);
             tau = Eigen::Vector2d(tauDrag[0], tauDrag[2]);
@@ -145,10 +145,10 @@ void DynamicVehicleController::Run()
             thrusterMappingMsg.stamp.sec = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
             thrusterMappingMsg.stamp.nanosec = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
 
-            thrusterMappingMsg.desired_surge = referenceVelocities.desired_surge;
+            thrusterMappingMsg.desired_surge = referenceVelocities_.desired_surge;
             thrusterMappingMsg.feedback_surge = absSurgeFbk;
             thrusterMappingMsg.out_pid_surge = pidSurgeTM.GetOutput();
-            thrusterMappingMsg.desired_yaw_rate = referenceVelocities.desired_yaw_rate;
+            thrusterMappingMsg.desired_yaw_rate = referenceVelocities_.desired_yaw_rate;
             thrusterMappingMsg.feedback_yaw_rate = yawRateFbk;
             thrusterMappingMsg.motor_percentage.left_percentage = motorLeft;
             thrusterMappingMsg.motor_percentage.right_percentage = motorRight;
@@ -163,7 +163,7 @@ void DynamicVehicleController::Run()
             //Dynamic Pids
             Eigen::Vector6d feedbackVel = Eigen::Vector6d::Zero();
 
-            tau = { pidSurgeCP.Compute(referenceVelocities.desired_surge, absSurgeFbk), pidYawRateCP.Compute(referenceVelocities.desired_yaw_rate, yawRateFbk) };
+            tau = { pidSurgeCP.Compute(referenceVelocities_.desired_surge, absSurgeFbk), pidYawRateCP.Compute(referenceVelocities_.desired_yaw_rate, yawRateFbk) };
 
             feedbackVel(0) = absSurgeFbk;
             feedbackVel(5) = yawRateFbk;
@@ -178,10 +178,10 @@ void DynamicVehicleController::Run()
             long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
             classicPidControlMsg.stamp.sec = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
             classicPidControlMsg.stamp.nanosec = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
-            classicPidControlMsg.desired_surge = referenceVelocities.desired_surge;
+            classicPidControlMsg.desired_surge = referenceVelocities_.desired_surge;
             classicPidControlMsg.feedback_surge = absSurgeFbk;
             classicPidControlMsg.out_pid_surge = pidSurgeCP.GetOutput();
-            classicPidControlMsg.desired_yaw_rate = referenceVelocities.desired_yaw_rate;
+            classicPidControlMsg.desired_yaw_rate = referenceVelocities_.desired_yaw_rate;
             classicPidControlMsg.feedback_yaw_rate = yawRateFbk;
             classicPidControlMsg.out_pid_yaw_rate = pidYawRateCP.GetOutput();
             classicPidControlMsg.forces = { forces[0], forces[1] };
@@ -192,13 +192,13 @@ void DynamicVehicleController::Run()
             classicPidControlPub_->publish(classicPidControlMsg);
 
             //fill the feedback for the nav filter    <----------- CHECK TODO
-            simulatedVelocitySensor.water_relative_surge = referenceVelocities.desired_surge;
-            simulatedVelocitySensorPub_->publish(simulatedVelocitySensor);
+            //simulatedVelocitySensor.water_relative_surge = referenceVelocities_.desired_surge;
+            //simulatedVelocitySensorPub_->publish(simulatedVelocitySensor);
 
         } else if (dcl_conf->ctrlMode == ControlMode::ComputedTorque) {
 
 
-            tau = { pidSurgeCT.Compute(referenceVelocities.desired_surge, absSurgeFbk), pidYawRateCT.Compute(referenceVelocities.desired_yaw_rate, yawRateFbk) };
+            tau = { pidSurgeCT.Compute(referenceVelocities_.desired_surge, absSurgeFbk), pidYawRateCT.Compute(referenceVelocities_.desired_yaw_rate, yawRateFbk) };
 
             // using relative surge velocity for the feedforward term
             Eigen::Vector6d feedbackVel = Eigen::Vector6d::Zero();
@@ -223,10 +223,10 @@ void DynamicVehicleController::Run()
             long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_.time_since_epoch())).count();
             computedTorqueMsg.stamp.sec = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
             computedTorqueMsg.stamp.nanosec = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
-            computedTorqueMsg.desired_surge = referenceVelocities.desired_surge;
+            computedTorqueMsg.desired_surge = referenceVelocities_.desired_surge;
             computedTorqueMsg.feedback_surge = absSurgeFbk;
             computedTorqueMsg.out_pid_surge = pidSurgeCP.GetOutput();
-            computedTorqueMsg.desired_yaw_rate = referenceVelocities.desired_yaw_rate;
+            computedTorqueMsg.desired_yaw_rate = referenceVelocities_.desired_yaw_rate;
             computedTorqueMsg.feedback_yaw_rate = yawRateFbk;
             computedTorqueMsg.out_pid_yaw_rate = pidYawRateCP.GetOutput();
             computedTorqueMsg.forces = { forces[0], forces[1] };
@@ -236,8 +236,8 @@ void DynamicVehicleController::Run()
             computedTorqueControlPub_->publish(computedTorqueMsg);
 
             //fill the feedback for the nav filter
-            simulatedVelocitySensor.water_relative_surge = referenceVelocities.desired_surge;
-            simulatedVelocitySensorPub_->publish(simulatedVelocitySensor);
+            //simulatedVelocitySensor.water_relative_surge = referenceVelocities_.desired_surge;
+            //simulatedVelocitySensorPub_->publish(simulatedVelocitySensor);
         }
     } else {
         thrustersReference.left_percentage = 0.0;
@@ -324,10 +324,10 @@ void DynamicVehicleController::ComputedTorqueControlInizialization(std::shared_p
     pidYawRate.Initialize(conf->computedTorqueControl.pidGainsYawRate, sampleTime, conf->computedTorqueControl.pidSatYawRate);
 }
 
-void DynamicVehicleController::ReferenceVelocitiesCB(const ulisse_msgs::msg::ReferenceVelocities::SharedPtr msg) { referenceVelocities = *msg; }
+void DynamicVehicleController::ReferenceVelocitiesCB(const ulisse_msgs::msg::ReferenceVelocities::SharedPtr msg) { referenceVelocities_ = *msg; }
 
-void DynamicVehicleController::VehicleStatusCB(const ulisse_msgs::msg::VehicleStatus::SharedPtr msg) { vehicleStatus = *msg; }
+void DynamicVehicleController::KCLStatusCB(const std_msgs::msg::String::SharedPtr msg) { KCLStatus_ = *msg; }
 
-void DynamicVehicleController::FilterDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg) { filterData = *msg; }
+void DynamicVehicleController::FilterDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg) { filterData_ = *msg; }
 
 } // namespace ulisse

@@ -136,7 +136,8 @@ namespace nav {
         SensorsValidityCheck();
 
         if (filterParams_.mode == FilterMode::LuenbergerObserver) {
-            LuenbergerObserverFilter();
+            RCLCPP_ERROR(this->get_logger(), "Luenberger Filter deprecated. Shutting down.");
+            rclcpp::shutdown();
         } else if (filterParams_.mode == FilterMode::KalmanFilter) {
             ExtendedKalmanFilter();
         } else if (filterParams_.mode == FilterMode::GroundTruth) {
@@ -374,8 +375,8 @@ namespace nav {
         filterData_.stamp.sec = now_stamp_secs;
         filterData_.stamp.nanosec = now_stamp_nanosecs;
 
-        filterData_.inertialframe_linear_position.latlong.latitude = map_p.latitude;
-        filterData_.inertialframe_linear_position.latlong.longitude = map_p.longitude;
+        filterData_.inertialframe_linear_position.latitude = map_p.latitude;
+        filterData_.inertialframe_linear_position.longitude = map_p.longitude;
         filterData_.inertialframe_linear_position.altitude = altitude;
         filterData_.bodyframe_angular_position.roll = state_[3];
         filterData_.bodyframe_angular_position.pitch = state_[4];
@@ -412,8 +413,8 @@ namespace nav {
         filterData_.stamp.sec = now_stamp_secs;
         filterData_.stamp.nanosec = now_stamp_nanosecs;
 
-        filterData_.inertialframe_linear_position.latlong.latitude = simulatedData_.inertialframe_linear_position.latlong.latitude;
-        filterData_.inertialframe_linear_position.latlong.longitude = simulatedData_.inertialframe_linear_position.latlong.longitude;
+        filterData_.inertialframe_linear_position.latitude = simulatedData_.inertialframe_linear_position.latitude;
+        filterData_.inertialframe_linear_position.longitude = simulatedData_.inertialframe_linear_position.longitude;
         filterData_.inertialframe_linear_position.altitude = simulatedData_.inertialframe_linear_position.altitude;
         filterData_.bodyframe_angular_position.roll = simulatedData_.bodyframe_angular_position.roll;
         filterData_.bodyframe_angular_position.pitch = simulatedData_.bodyframe_angular_position.pitch;
@@ -829,7 +830,7 @@ namespace nav {
     //void NavigationFilter::MagnetometerDataCB(const ulisse_msgs::msg::Magnetometer::SharedPtr msg) { magnetometerData_ = *msg; }
     void NavigationFilter::ImuMagnetometerCB(const sensor_msgs::msg::MagneticField::SharedPtr msg) {imuMagnetometer_ = *msg;};
 
-    void NavigationFilter::SimulatedVelocitySensorCB(const ulisse_msgs::msg::SimulatedVelocitySensor::SharedPtr msg) { simulatedVelocitySensor_ = *msg; }
+    //void NavigationFilter::SimulatedVelocitySensorCB(const ulisse_msgs::msg::SimulatedVelocitySensor::SharedPtr msg) { simulatedVelocitySensor_ = *msg; }
 
     void NavigationFilter::ThrustersAppliedReferenceCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg) { thrustersPercReference_ = *msg; }
 
