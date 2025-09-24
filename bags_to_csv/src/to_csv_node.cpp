@@ -6,10 +6,10 @@
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/string.hpp>
 
-#include "ulisse_msgs/msg/compass.hpp"
+//#include "ulisse_msgs/msg/compass.hpp"
 #include "ulisse_msgs/msg/gps_data.hpp"
-#include "ulisse_msgs/msg/imu_data.hpp"
-#include "ulisse_msgs/msg/magnetometer.hpp"
+//#include "ulisse_msgs/msg/imu_data.hpp"
+//#include "ulisse_msgs/msg/magnetometer.hpp"
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
 #include "ulisse_msgs/msg/simulated_system.hpp"
 #include "ulisse_msgs/msg/reference_velocities.hpp"
@@ -28,10 +28,10 @@ using namespace std::chrono_literals;
 ulisse_msgs::msg::ThrustersReference thrustersRef;
 ulisse_msgs::msg::NavFilterData filterData;
 ulisse_msgs::msg::SimulatedSystem groundTruthData;
-ulisse_msgs::msg::Compass compassData;
+//ulisse_msgs::msg::Compass compassData;
 ulisse_msgs::msg::GPSData gpsData;
-ulisse_msgs::msg::IMUData imuData;
-ulisse_msgs::msg::Magnetometer magnetometerData;
+//ulisse_msgs::msg::IMUData imuData;
+//ulisse_msgs::msg::Magnetometer magnetometerData;
 ulisse_msgs::msg::ReferenceVelocities refVelocities;
 ulisse_msgs::msg::LLCBattery batteryLeft, batteryRight;
 
@@ -41,15 +41,15 @@ void GroundTruthDataCB(const ulisse_msgs::msg::SimulatedSystem::SharedPtr msg);
 
 void ThrustersReferenceCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg);
 
-void CompassDataCB(const ulisse_msgs::msg::Compass::SharedPtr msg);
+//void CompassDataCB(const ulisse_msgs::msg::Compass::SharedPtr msg);
 
 void GpsDataCB(const ulisse_msgs::msg::GPSData::SharedPtr msg);
 
-void ImuDataCB(const ulisse_msgs::msg::IMUData::SharedPtr msg);
+//void ImuDataCB(const ulisse_msgs::msg::IMUData::SharedPtr msg);
 
 void RefVelocitiesCB(const ulisse_msgs::msg::ReferenceVelocities::SharedPtr msg);
 
-void MagnetometerDataCB(const ulisse_msgs::msg::Magnetometer::SharedPtr msg);
+//void MagnetometerDataCB(const ulisse_msgs::msg::Magnetometer::SharedPtr msg);
 
 void BatteryLeftCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg);
 
@@ -104,10 +104,10 @@ int main(int argc, char* argv[])
     auto filterDataSub = node->create_subscription<ulisse_msgs::msg::NavFilterData>(ulisse_msgs::topicnames::nav_filter_data, 10, FilterDataCB);
     auto realSystemSub = node->create_subscription<ulisse_msgs::msg::SimulatedSystem>(ulisse_msgs::topicnames::simulated_system, 10, GroundTruthDataCB);
     auto thrustersFkbSub = node->create_subscription<ulisse_msgs::msg::ThrustersReference>(ulisse_msgs::topicnames::llc_thrusters_reference_perc, 10, ThrustersReferenceCB);
-    auto compassSub = node->create_subscription<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass, 10, CompassDataCB);
+    //auto compassSub = node->create_subscription<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass, 10, CompassDataCB);
     auto gpsSub = node->create_subscription<ulisse_msgs::msg::GPSData>(ulisse_msgs::topicnames::sensor_gps_data, 10, GpsDataCB);
-    auto imuSub = node->create_subscription<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu, 10, ImuDataCB);
-    auto magSub = node->create_subscription<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer, 10, MagnetometerDataCB);
+    //auto imuSub = node->create_subscription<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu, 10, ImuDataCB);
+    //auto magSub = node->create_subscription<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer, 10, MagnetometerDataCB);
     auto refVelocitiesSub = node->create_subscription<ulisse_msgs::msg::ReferenceVelocities>(ulisse_msgs::topicnames::reference_velocities, 10, RefVelocitiesCB);
     auto batteryLeftSub = node->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_left, 10, BatteryLeftCB);
     auto batteryRightSub = node->create_subscription<ulisse_msgs::msg::LLCBattery>(ulisse_msgs::topicnames::llc_battery_right, 10, BatteryRightCB);
@@ -179,19 +179,19 @@ int main(int argc, char* argv[])
         auto nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
         
         filterFile << secs + (nanosecs * 1e-9) << "," << filterData.stamp.sec + (filterData.stamp.nanosec * 1e-9) << ","
-                   << filterData.inertialframe_linear_position.latlong.latitude << "," << filterData.inertialframe_linear_position.latlong.longitude << "," << filterData.inertialframe_linear_position.altitude << "," << filterData.bodyframe_angular_position.roll << "," << filterData.bodyframe_angular_position.pitch << "," << filterData.bodyframe_angular_position.yaw << "," << filterData.bodyframe_linear_velocity[0] << "," << filterData.bodyframe_linear_velocity[1] << "," << filterData.bodyframe_linear_velocity[2] << "," << filterData.bodyframe_angular_velocity[0] << "," << filterData.bodyframe_angular_velocity[1] << "," << filterData.bodyframe_angular_velocity[2] << "," << filterData.inertialframe_water_current[0] << "," << filterData.inertialframe_water_current[1] << "," << filterData.gyro_bias[0] << "," << filterData.gyro_bias[1] << "," << filterData.gyro_bias[2]
+                   << filterData.inertialframe_linear_position.latitude << "," << filterData.inertialframe_linear_position.longitude << "," << filterData.inertialframe_linear_position.altitude << "," << filterData.bodyframe_angular_position.roll << "," << filterData.bodyframe_angular_position.pitch << "," << filterData.bodyframe_angular_position.yaw << "," << filterData.bodyframe_linear_velocity[0] << "," << filterData.bodyframe_linear_velocity[1] << "," << filterData.bodyframe_linear_velocity[2] << "," << filterData.bodyframe_angular_velocity[0] << "," << filterData.bodyframe_angular_velocity[1] << "," << filterData.bodyframe_angular_velocity[2] << "," << filterData.inertialframe_water_current[0] << "," << filterData.inertialframe_water_current[1] << "," << filterData.gyro_bias[0] << "," << filterData.gyro_bias[1] << "," << filterData.gyro_bias[2]
                    << "\n";
 
         simFile << secs + (nanosecs * 1e-9) << "," << groundTruthData.stamp.sec + (groundTruthData.stamp.nanosec * 1e-9) << ","
-                << groundTruthData.inertialframe_linear_position.latlong.latitude << "," << groundTruthData.inertialframe_linear_position.latlong.longitude << "," << groundTruthData.inertialframe_linear_position.altitude << "," << groundTruthData.bodyframe_angular_position.roll << "," << groundTruthData.bodyframe_angular_position.pitch << "," << groundTruthData.bodyframe_angular_position.yaw << "," << groundTruthData.bodyframe_linear_velocity[0] << "," << groundTruthData.bodyframe_linear_velocity[1] << "," << groundTruthData.bodyframe_linear_velocity[2] << "," << groundTruthData.bodyframe_angular_velocity[0] << "," << groundTruthData.bodyframe_angular_velocity[1] << "," << groundTruthData.bodyframe_angular_velocity[2] << "," << groundTruthData.inertialframe_water_current[0] << "," << groundTruthData.inertialframe_water_current[1] << "," << groundTruthData.gyro_bias[0] << "," << groundTruthData.gyro_bias[1] << "," << groundTruthData.gyro_bias[2]
+                << groundTruthData.inertialframe_linear_position.latitude << "," << groundTruthData.inertialframe_linear_position.longitude << "," << groundTruthData.inertialframe_linear_position.altitude << "," << groundTruthData.bodyframe_angular_position.roll << "," << groundTruthData.bodyframe_angular_position.pitch << "," << groundTruthData.bodyframe_angular_position.yaw << "," << groundTruthData.bodyframe_linear_velocity[0] << "," << groundTruthData.bodyframe_linear_velocity[1] << "," << groundTruthData.bodyframe_linear_velocity[2] << "," << groundTruthData.bodyframe_angular_velocity[0] << "," << groundTruthData.bodyframe_angular_velocity[1] << "," << groundTruthData.bodyframe_angular_velocity[2] << "," << groundTruthData.inertialframe_water_current[0] << "," << groundTruthData.inertialframe_water_current[1] << "," << groundTruthData.gyro_bias[0] << "," << groundTruthData.gyro_bias[1] << "," << groundTruthData.gyro_bias[2]
                 << "\n";
 
         controlFile << secs + (nanosecs * 1e-9) << "," << thrustersRef.stamp.sec + (thrustersRef.stamp.nanosec * 1e-9) << ","
                     << thrustersRef.left_percentage << "," << thrustersRef.right_percentage << "," << refVelocities.stamp.sec + (refVelocities.stamp.nanosec * 1e-9) << "," << refVelocities.desired_surge << "," << refVelocities.desired_yaw_rate
                     << "\n";
 
-        sensorsFile << secs + (nanosecs * 1e-9) << "," << gpsData.time << "," << gpsData.latitude << "," << gpsData.longitude << "," << gpsData.altitude << "," << gpsData.speed << "," << gpsData.track << "," << compassData.stamp.sec + (compassData.stamp.nanosec * 1e-9) << "," << compassData.orientation.roll << "," << compassData.orientation.pitch << "," << compassData.orientation.yaw << ","
-                    << imuData.stamp.sec + (imuData.stamp.nanosec * 1e-9) << "," << imuData.accelerometer[0] << "," << imuData.accelerometer[1] << "," << imuData.accelerometer[2] << "," << imuData.stamp.sec + (imuData.stamp.nanosec * 1e-9) << "," << imuData.gyro[0] << "," << imuData.gyro[1] << "," << imuData.gyro[2] << "," << magnetometerData.stamp.sec + (magnetometerData.stamp.nanosec * 1e-9) << "," << magnetometerData.orthogonalstrength[0] << "," << magnetometerData.orthogonalstrength[1] << "," << magnetometerData.orthogonalstrength[2] << ", "
+        sensorsFile << secs + (nanosecs * 1e-9) << "," << gpsData.time << "," << gpsData.latitude << "," << gpsData.longitude << "," << gpsData.altitude << "," << gpsData.speed << "," << gpsData.track << "," // << compassData.stamp.sec + (compassData.stamp.nanosec * 1e-9) << "," << compassData.orientation.roll << "," << compassData.orientation.pitch << "," << compassData.orientation.yaw << ","
+                    // << imuData.stamp.sec + (imuData.stamp.nanosec * 1e-9) << "," << imuData.accelerometer[0] << "," << imuData.accelerometer[1] << "," << imuData.accelerometer[2] << "," << imuData.stamp.sec + (imuData.stamp.nanosec * 1e-9) << "," << imuData.gyro[0] << "," << imuData.gyro[1] << "," << imuData.gyro[2] << "," << magnetometerData.stamp.sec + (magnetometerData.stamp.nanosec * 1e-9) << "," << magnetometerData.orthogonalstrength[0] << "," << magnetometerData.orthogonalstrength[1] << "," << magnetometerData.orthogonalstrength[2] << ", "
                     << batteryLeft.stamp.sec + (batteryLeft.stamp.nanosec * 1e-9) << "," << batteryLeft.charge_percent  << "," << batteryRight.stamp.sec + (batteryRight.stamp.nanosec * 1e-9) << "," << batteryRight.charge_percent
                     << "\n";
 
@@ -214,15 +214,15 @@ void FilterDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg) { filter
 
 void ThrustersReferenceCB(const ulisse_msgs::msg::ThrustersReference::SharedPtr msg) { thrustersRef = *msg; }
 
-void CompassDataCB(const ulisse_msgs::msg::Compass::SharedPtr msg) { compassData = *msg; }
+//void CompassDataCB(const ulisse_msgs::msg::Compass::SharedPtr msg) { compassData = *msg; }
 
 void GpsDataCB(const ulisse_msgs::msg::GPSData::SharedPtr msg) { gpsData = *msg; }
 
-void ImuDataCB(const ulisse_msgs::msg::IMUData::SharedPtr msg) { imuData = *msg; }
+//void ImuDataCB(const ulisse_msgs::msg::IMUData::SharedPtr msg) { imuData = *msg; }
 
 void RefVelocitiesCB(const ulisse_msgs::msg::ReferenceVelocities::SharedPtr msg) { refVelocities = *msg; }
 
-void MagnetometerDataCB(const ulisse_msgs::msg::Magnetometer::SharedPtr msg) { magnetometerData = *msg; }
+//void MagnetometerDataCB(const ulisse_msgs::msg::Magnetometer::SharedPtr msg) { magnetometerData = *msg; }
 
 void BatteryLeftCB(const ulisse_msgs::msg::LLCBattery::SharedPtr msg) { batteryLeft = *msg; }
 

@@ -9,14 +9,15 @@
 #include "ulisse_msgs/msg/gps_data.hpp"
 //#include "ulisse_msgs/msg/imu_data.hpp"
 //#include "ulisse_msgs/msg/magnetometer.hpp"
-#include "ulisse_msgs/msg/micro_loop_count.hpp"
+//#include "ulisse_msgs/msg/micro_loop_count.hpp"
 #include "ulisse_msgs/msg/thrusters_reference.hpp"
+#include "builtin_interfaces/msg/time.hpp"
 
 #include "ulisse_msgs/msg/llc_ack.hpp"
 #include "ulisse_msgs/msg/llc_battery.hpp"
 #include "ulisse_msgs/msg/llc_config.hpp"
 #include "ulisse_msgs/msg/llc_thrusters.hpp"
-#include "ulisse_msgs/msg/llc_status.hpp"
+//#include "ulisse_msgs/msg/llc_status.hpp"
 #include "ulisse_msgs/msg/llc_sw485_status.hpp"
 #include "ulisse_msgs/msg/llc_version.hpp"
 
@@ -42,7 +43,7 @@ namespace llc {
         void ParseVersion(std::vector<uint8_t> buffer);
         void ParseAck(std::vector<uint8_t> buffer);
 
-        ulisse_msgs::msg::Time GetTime();
+        builtin_interfaces::msg::Time GetTime();
 
         std::string confPath_;
         libconfig::Config confObj_;

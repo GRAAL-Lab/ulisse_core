@@ -73,12 +73,12 @@ bool OfflineBagConverter::ConvertToCSV()
         //    rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
         //    serialization.deserialize_message(&extracted_serialized_msg, &compassData_);
         //    sensorReceived = true;
-        } else if (bag_message->topic_name == ulisse_msgs::topicnames::sensor_magnetometer) {
+        } /*else if (bag_message->topic_name == ulisse_msgs::topicnames::sensor_magnetometer) {
             rclcpp::Serialization<ulisse_msgs::msg::Magnetometer> serialization;
             rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
             serialization.deserialize_message(&extracted_serialized_msg, &magnetometerData_);
             sensorReceived = true;
-        } else if (bag_message->topic_name == ulisse_msgs::topicnames::sensor_dvl) {
+        }*/ else if (bag_message->topic_name == ulisse_msgs::topicnames::sensor_dvl) {
             rclcpp::Serialization<ulisse_msgs::msg::DVLData> serialization;
             rclcpp::SerializedMessage extracted_serialized_msg(*bag_message->serialized_data);
             serialization.deserialize_message(&extracted_serialized_msg, &dvlData_);
@@ -105,7 +105,7 @@ bool OfflineBagConverter::ConvertToCSV()
             navFilterFile_ << std::fixed << std::setprecision(6)
                            << bag_message->send_timestamp  * 1e-9 << ", "
                            << navFilterData_.stamp.sec + (navFilterData_.stamp.nanosec * 1e-9) << ", "
-                           << navFilterData_.inertialframe_linear_position.latlong.latitude << ", " << navFilterData_.inertialframe_linear_position.latlong.longitude << ", " << navFilterData_.inertialframe_linear_position.altitude << ", "
+                           << navFilterData_.inertialframe_linear_position.latitude << ", " << navFilterData_.inertialframe_linear_position.longitude << ", " << navFilterData_.inertialframe_linear_position.altitude << ", "
                            << navFilterData_.bodyframe_angular_position.roll << ", " << navFilterData_.bodyframe_angular_position.pitch << ", " << navFilterData_.bodyframe_angular_position.yaw << ", "
                            << navFilterData_.bodyframe_linear_velocity[0] << ", " << navFilterData_.bodyframe_linear_velocity[1] << ", " << navFilterData_.bodyframe_linear_velocity[2] << ", "
                            << navFilterData_.bodyframe_angular_velocity[0] << ", " << navFilterData_.bodyframe_angular_velocity[1] << ", " << navFilterData_.bodyframe_angular_velocity[2] << ", "
@@ -120,7 +120,7 @@ bool OfflineBagConverter::ConvertToCSV()
             navFilterFileAUX_ << std::fixed << std::setprecision(6)
                            << bag_message->send_timestamp  * 1e-9 << ", "
                            << navFilterDataAUX_.stamp.sec + (navFilterDataAUX_.stamp.nanosec * 1e-9) << ", "
-                           << navFilterDataAUX_.inertialframe_linear_position.latlong.latitude << ", " << navFilterDataAUX_.inertialframe_linear_position.latlong.longitude << ", " << navFilterDataAUX_.inertialframe_linear_position.altitude << ", "
+                           << navFilterDataAUX_.inertialframe_linear_position.latitude << ", " << navFilterDataAUX_.inertialframe_linear_position.longitude << ", " << navFilterDataAUX_.inertialframe_linear_position.altitude << ", "
                            << navFilterDataAUX_.bodyframe_angular_position.roll << ", " << navFilterDataAUX_.bodyframe_angular_position.pitch << ", " << navFilterDataAUX_.bodyframe_angular_position.yaw << ", "
                            << navFilterDataAUX_.bodyframe_linear_velocity[0] << ", " << navFilterDataAUX_.bodyframe_linear_velocity[1] << ", " << navFilterDataAUX_.bodyframe_linear_velocity[2] << ", "
                            << navFilterDataAUX_.bodyframe_angular_velocity[0] << ", " << navFilterDataAUX_.bodyframe_angular_velocity[1] << ", " << navFilterDataAUX_.bodyframe_angular_velocity[2] << ", "
@@ -153,8 +153,8 @@ bool OfflineBagConverter::ConvertToCSV()
             groundtruthFile_ << std::fixed << std::setprecision(6)
                            << bag_message->send_timestamp  * 1e-9 << ", "
                            << groundtruth_.stamp.sec + (groundtruth_.stamp.nanosec * 1e-9) << ", "
-                           << groundtruth_.inertialframe_linear_position.latlong.latitude  << ", "
-                           << groundtruth_.inertialframe_linear_position.latlong.longitude << ", "
+                           << groundtruth_.inertialframe_linear_position.latitude  << ", "
+                           << groundtruth_.inertialframe_linear_position.longitude << ", "
                            << groundtruth_.inertialframe_linear_position.altitude          << ", "
                            << groundtruth_.bodyframe_angular_position.roll                 << ", "
                            << groundtruth_.bodyframe_angular_position.pitch                << ", "

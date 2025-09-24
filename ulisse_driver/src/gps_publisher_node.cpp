@@ -13,11 +13,11 @@
 #include <cstdio>
 #include <thread>
 
-#include "ulisse_driver/GPSDHelperDataStructs.h"
+#include "builtin_interfaces/msg/time.hpp"
 
+#include "ulisse_driver/GPSDHelperDataStructs.h"
 #include "ulisse_msgs/msg/gps_data.hpp"
 #include "ulisse_msgs/msg/gps_status.hpp"
-#include "ulisse_msgs/msg/time.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 
 using namespace ulisse::gpsd;
@@ -75,7 +75,7 @@ int main(int argc, char* argv[])
     auto t_now = std::chrono::system_clock::now();
     long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now.time_since_epoch())).count();
 
-    ulisse_msgs::msg::Time time_now_msg;
+    builtin_interfaces::msg::Time time_now_msg;
     time_now_msg.sec = static_cast<unsigned int>(now_nanosecs / (int)1E9);
     time_now_msg.nanosec = static_cast<unsigned int>(now_nanosecs % (int)1E9);
 

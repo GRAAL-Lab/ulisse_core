@@ -5,7 +5,7 @@
 
 #include "ulisse_driver/driver_defines.h"
 #include "ulisse_driver/thread_receiver.h"
-#include "ulisse_msgs/msg/time.hpp"
+//#include "ulisse_msgs/msg/time.hpp"
 #include "ulisse_msgs/topicnames.hpp"
 
 #include "ulisse_driver/deserializer.h"
@@ -58,8 +58,8 @@ namespace llc {
             exit(EXIT_FAILURE);
         }
 
-        micro_loop_count_pub_ = this->create_publisher<ulisse_msgs::msg::MicroLoopCount>(ulisse_msgs::topicnames::micro_loop_count, 1);
-        compass_pub_ = this->create_publisher<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass, 1);
+        //micro_loop_count_pub_ = this->create_publisher<ulisse_msgs::msg::MicroLoopCount>(ulisse_msgs::topicnames::micro_loop_count, 1);
+        //compass_pub_ = this->create_publisher<ulisse_msgs::msg::Compass>(ulisse_msgs::topicnames::sensor_compass, 1);
         //imu_pub_ = this->create_publisher<ulisse_msgs::msg::IMUData>(ulisse_msgs::topicnames::sensor_imu, 1);
         //ambsens_pub_ = this->create_publisher<ulisse_msgs::msg::AmbientSensors>(ulisse_msgs::topicnames::sensor_ambient, 1);
         //magneto_pub_ = this->create_publisher<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer, 1);
@@ -79,12 +79,12 @@ namespace llc {
         timer_ = create_wall_timer(50ms, std::bind(&ThreadReceiver::ReadLoop, this));
     }
 
-    ulisse_msgs::msg::Time ThreadReceiver::GetTime() {
+    builtin_interfaces::msg::Time ThreadReceiver::GetTime() {
         std::chrono::system_clock::time_point t_now = std::chrono::system_clock::now();
         long now_nanosecs = (std::chrono::duration_cast<std::chrono::nanoseconds>(t_now.time_since_epoch())).count();
         auto now_stamp_secs = static_cast<unsigned int>(now_nanosecs / static_cast<int>(1E9));
         auto now_stamp_nanosecs = static_cast<unsigned int>(now_nanosecs % static_cast<int>(1E9));
-        ulisse_msgs::msg::Time time_msg;
+        builtin_interfaces::msg::Time time_msg;
         time_msg.sec = now_stamp_secs;
         time_msg.nanosec = now_stamp_nanosecs;
         return time_msg;

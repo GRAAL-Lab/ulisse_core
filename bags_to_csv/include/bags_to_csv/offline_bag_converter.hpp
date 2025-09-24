@@ -53,7 +53,7 @@ private:
     //ulisse_msgs::msg::IMUData imuData_;
     ulisse_msgs::msg::DVLData dvlData_;
     ulisse_msgs::msg::FOGData fogData_;
-    ulisse_msgs::msg::Magnetometer magnetometerData_;
+    //ulisse_msgs::msg::Magnetometer magnetometerData_;
     ulisse_msgs::msg::LLCThrusters llcThrustersData_;
     //ulisse_msgs::msg::LLCBattery llcBattery_;
     ulisse_msgs::msg::NavFilterData navFilterData_;
