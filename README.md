@@ -192,8 +192,11 @@ sudo route add default gw 192.168.1.169
 ### Select network connection from Command Line
 
 `nmcli connection up ULISSE`
+
 or
+
 `nmcli connection up ULISSE\ GRAAL`
+
 
 ### Disable GPS in the Navigation Filter
 
@@ -230,7 +233,7 @@ If for some reasons, the PC104 is not correctly shutting down or rebooting, usin
 
 ### Misc
 
-Current compile time, Ubuntu 24.04 on PC104 PCM-3365 (Intel Atom E3845 1.91 GHz):ù
+Current compile time, Ubuntu 24.04 on PC104 PCM-3365 (Intel Atom E3845 1.91 GHz):
 
 ```
 Starting >>> adnav_interfaces
