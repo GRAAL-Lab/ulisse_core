@@ -123,7 +123,18 @@ ros2 run ulisse_map ulisse_map_node
 To enable the GPS on a fresh install of Linux you will have to:
 
 - Add in **/etc/default/gpsd** the following line: `DEVICE:"/dev/ttyS1"`.
-- Add your user to the `dialout` user group: `sudo usermod -a -G dialout graal`.
+- Add your user to the `dialout` user group: `sudo usermod -a -G dialout graal`..
+
+
+## Orientus IMU Calibration
+
+To calibrate the Orientus IMU remotely we need to login in the Ulisse PC via ssh, and redirect the USB Serial to a network port (16719):
+
+```
+socat -d -d tcp-l:16719,reuseaddr,fork file:/dev/ttyUSB0,b115200,raw
+```
+
+Then we can open the Orientus Manager on our remote PC and select "**Network**" in the Communication dropdown menu, then the catamaran **IP** and the port **16719**.
 
 
 ### Testing the serial
@@ -180,7 +191,7 @@ sudo route add default gw 192.168.1.169
 
 ### Select network connection from Command Line
 
-`nmcli connection up ULISSE\ GRAAL`
+`nmcli connection up ULISSE`
 or
 `nmcli connection up ULISSE\ GRAAL`
 
@@ -216,5 +227,36 @@ If for some reasons, the PC104 is not correctly shutting down or rebooting, usin
    sudo systemctl daemon-reexec
    sudo reboot
    ```
+
+### Misc
+
+Current compile time, Ubuntu 24.04 on PC104 PCM-3365 (Intel Atom E3845 1.91 GHz):ù
+
+```
+Starting >>> adnav_interfaces
+Finished <<< adnav_interfaces [2min 36s]                               
+Starting >>> surface_vehicle_model
+Finished <<< surface_vehicle_model [22.5s]                             
+Starting >>> ulisse_msgs
+Finished <<< ulisse_msgs [6min 6s]                                
+Starting >>> adnav_driver
+Finished <<< adnav_driver [2min 36s]                                
+Starting >>> bag_recorder
+Finished <<< bag_recorder [1min 0s]                             
+Starting >>> bags_to_csv
+Finished <<< bags_to_csv [3min 15s]                                
+Starting >>> ulisse_driver
+Finished <<< ulisse_driver [2min 43s]                                
+Starting >>> ulisse_sim
+Finished <<< ulisse_sim [3min 48s]                                
+Starting >>> adnav_launch
+Finished <<< adnav_launch [5.40s]                          
+Starting >>> nav_filter      
+Finished <<< nav_filter [5min 46s]                                
+Starting >>> ulisse_ctrl
+Finished <<< ulisse_ctrl [13min 27s]                                 
+
+Summary: 11 packages finished [41min 47s]
+```
 
 For additional info look [info.txt](./info.txt).
