@@ -233,7 +233,7 @@ If for some reasons, the PC104 is not correctly shutting down or rebooting, usin
 
 ### Misc
 
-Current compile time, Ubuntu 24.04 on PC104 PCM-3365 (Intel Atom E3845 1.91 GHz):
+Current compile time, Ubuntu 24.04 on PC104 PCM-3365 (Intel Atom E3845 1.91 GHz), using `colcon build --symlink-install --executor sequential`:
 
 ```
 Starting >>> adnav_interfaces
@@ -261,5 +261,9 @@ Finished <<< ulisse_ctrl [13min 27s]
 
 Summary: 11 packages finished [41min 47s]
 ```
+
+Using `colcon build --symlink-install`:
+
+
 
 For additional info look [info.txt](./info.txt).
