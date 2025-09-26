@@ -56,7 +56,7 @@ VehicleSimulator::VehicleSimulator(const std::string file_name)
     imuPosePub_ = this->create_publisher<geometry_msgs::msg::PoseStamped>(ulisse_msgs::topicnames::sensor_imu_pose, 1);
 	// imu_raw_pub_ = this->create_publisher<sensor_msgs::msg::Imu>(std::string(node_name_ + "/imu_raw"), 10);
 	// nav_sat_fix_pub_ = this->create_publisher<sensor_msgs::msg::NavSatFix>(std::string(node_name_ + "/nav_sat_fix"), 10);
-	magnetometerPub_ = this->create_publisher<sensor_msgs::msg::MagneticField>(ulisse_msgs::topicnames::sensor_magnetometer, 1);
+	magnetometerPub_ = this->create_publisher<sensor_msgs::msg::MagneticField>(ulisse_msgs::topicnames::sensor_imu_magnetometer, 1);
 	// barometric_pressure_pub_ = this->create_publisher<sensor_msgs::msg::FluidPressure>(std::string(node_name_ + "/barometric_pressure"), 10);
 	// temperature_pub_ = this->create_publisher<sensor_msgs::msg::Temperature>(std::string(node_name_ + "/temperature"), 10);
 	// twist_pub_ = this->create_publisher<geometry_msgs::msg::Twist>(std::string(node_name_ + "/twist"), 10);

@@ -68,7 +68,7 @@ namespace nav {
         
         //magnetometerSub_ = this->create_subscription<ulisse_msgs::msg::Magnetometer>(ulisse_msgs::topicnames::sensor_magnetometer,
         //    1, std::bind(&NavigationFilter::MagnetometerDataCB, this, _1));
-        imuMagnetometerSub_ = this->create_subscription<sensor_msgs::msg::MagneticField>(ulisse_msgs::topicnames::sensor_magnetometer,
+        imuMagnetometerSub_ = this->create_subscription<sensor_msgs::msg::MagneticField>(ulisse_msgs::topicnames::sensor_imu_magnetometer,
             1, std::bind(&NavigationFilter::ImuMagnetometerCB, this, _1));
             
         simulatedSystemSub_ = this->create_subscription<ulisse_msgs::msg::SimulatedSystem>(ulisse_msgs::topicnames::simulated_system,

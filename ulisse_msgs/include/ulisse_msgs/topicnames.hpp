@@ -11,12 +11,16 @@ namespace topicnames {
 const std::string micro_loop_count = "/ulisse/llc/micro_loop_count";
 const std::string sensor_gps_data = "/ulisse/llc/sensor/gps_data";
 const std::string sensor_gps_status = "/ulisse/llc/sensor/gps_status";
-const std::string sensor_compass = "/ulisse/llc/sensor/compass";
-const std::string sensor_imu = "/ulisse/llc/sensor/imu_raw";
-const std::string sensor_imu_pose = "/ulisse/llc/sensor/imu_pose";
-const std::string sensor_imu_magnetometer = "/ulisse/llc/sensor/imu_magnetometer";
 const std::string sensor_ambient = "/ulisse/llc/sensor/ambient";
-const std::string sensor_magnetometer = "/ulisse/llc/sensor/magnetometer";
+//const std::string sensor_compass = "/ulisse/llc/sensor/compass";
+//const std::string sensor_magnetometer = "/ulisse/llc/sensor/magnetometer";
+//const std::string sensor_imu = "/ulisse/llc/sensor/imu_raw";
+//const std::string sensor_imu_pose = "/ulisse/llc/sensor/imu_pose";
+//const std::string sensor_imu_magnetometer = "/ulisse/llc/sensor/imu_magnetometer";
+const std::string sensor_imu = "/adnav_node/imu_raw";
+const std::string sensor_imu_pose = "/adnav_node/pose";
+const std::string sensor_imu_magnetometer = "/adnav_node/magnetic_field";
+
 //const std::string sensor_imu_orientus = "/ulisse/llc/sensor/imu_orientus";
 const std::string sensor_dvl = "/ulisse/llc/sensor/dvl";
 const std::string sensor_fog = "/ulisse/llc/sensor/fog";
