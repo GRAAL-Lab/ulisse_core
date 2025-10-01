@@ -539,7 +539,7 @@ void VehicleController::CommandsHandler(const std::shared_ptr<rmw_request_id_t> 
 
             std::cout << "Received Command Path Following ALOS" << std::endl;
 
-            if (!statePathFollowingALOS_->LoadPath(request->path_cmd.path)) {
+            if (!statePathFollowingALOS_->LoadPath(request->path_cmd.path, request->path_cmd.loop)) {
                 response->res = "CommandAnswer::fail - Malformed Path Message.";
                 ret = fsm::retval::fail;
             }

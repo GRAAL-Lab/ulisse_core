@@ -105,6 +105,7 @@ ApplicationWindow {
         property int ulisseLineWidth: 1
         property bool showUlisseTrace: true
         property bool showAuxiliaryTrace: false
+        property bool loopPaths: false
 
         property bool bypassSafetyBoundaryCheck: false
 

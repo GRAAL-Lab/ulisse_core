@@ -49,7 +49,7 @@ namespace states {
 
         bool ConfigureStateFromFile(libconfig::Config& confObj) override;
 
-        bool LoadPath(const ulisse_msgs::msg::PathData& path);
+        bool LoadPath(const ulisse_msgs::msg::PathData& path, const bool& loop);
         const ctb::LatLong& GetNextPoint() const { return nextP_; }
         const ctb::LatLong& GetCurrentTrackPoint() const { return pathManager_.CurrentTrackPoint(); }
         double GetDistanceToEnd() const { return pathManager_.DistanceToEnd(); }

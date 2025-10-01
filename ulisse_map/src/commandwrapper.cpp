@@ -6,6 +6,7 @@
 #include <ctrl_toolbox/HelperFunctions.h>
 #include <jsoncpp/json/json.h>
 #include <QJsonDocument>
+#include <QSettings>
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <libconfig.h++>
@@ -355,7 +356,9 @@ bool CommandWrapper::sendPath(const QString &pathJsonData)
         std::cout << "Error parsing QML Jason" << e.what() << std::endl;
     }
 
-    serviceReq->path_cmd.loop = true;
+    bool loop = settings_.value("loopPaths", false).toBool();
+    qDebug() << "Loop paths setting is: " << loop;
+    serviceReq->path_cmd.loop = loop;
 
     return SendCommandRequest(serviceReq);
 }

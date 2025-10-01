@@ -56,6 +56,8 @@ class CommandWrapper : public QObject, rclcpp::Node {
     bool fbkReceived_;
     int pathFollowMode_;
 
+    QSettings settings_;
+
     void FeedbackGuiCB(const ulisse_msgs::msg::FeedbackGui::SharedPtr msg);
     void ShowToast(const QVariant message, const QVariant duration);
     bool SendBoundariesRequest(ulisse_msgs::srv::SetBoundaries::Request::SharedPtr req);

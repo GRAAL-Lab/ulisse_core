@@ -16,7 +16,7 @@ StatePathFollowALOS::StatePathFollowALOS()
 StatePathFollowALOS::~StatePathFollowALOS() { }
 
 
-bool StatePathFollowALOS::LoadPath(const ulisse_msgs::msg::PathData& path){
+bool StatePathFollowALOS::LoadPath(const ulisse_msgs::msg::PathData& path, const bool& loop){
     vehicleOnTrack_ = false;
 
     std::cout << "LOADING Path" << std::endl;
@@ -25,7 +25,9 @@ bool StatePathFollowALOS::LoadPath(const ulisse_msgs::msg::PathData& path){
         std::cerr << "PathManager::Initialization: fails" << std::endl;
         return false;
     }
-    loopPath_ = true; // SETTING PATH LOOPING TO TRUE BY DEFAULT
+    loopPath_ = loop; // SETTING PATH LOOPING TO TRUE BY DEFAULT
+
+    std::cout << "Loop Path: " << loopPath_ << std::endl;
 
     isCurveSet_ = true;
 
