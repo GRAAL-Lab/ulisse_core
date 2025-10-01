@@ -17,6 +17,8 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 find_package(ament_index_cpp REQUIRED)
 find_package(ulisse_msgs REQUIRED)
 find_package(ctrl_toolbox REQUIRED)
@@ -25,13 +27,22 @@ find_package(rosbag2_storage REQUIRED)
 
 include_directories(
   include
+  ${sensor_msgs_INCLUDE_DIRS}
+  ${geometry_msgs_INCLUDE_DIRS}
   ${ulisse_msgs_INCLUDE_DIRS}
 )
 
 ## Libraries
 add_library(offline_bag_converter src/bags_to_csv/offline_bag_converter.cpp)
 #ament_target_dependencies(offline_bag_converter rclcpp rosbag2_cpp rosbag2_storage ulisse_msgs)
-target_link_libraries(offline_bag_converter ${bags_to_csv_LIBRARIES} ${ulisse_msgs_LIBRARIES} rclcpp::rclcpp rosbag2_cpp::rosbag2_cpp)
+target_link_libraries(offline_bag_converter
+  ${sensor_msgs_LIBRARIES}
+  ${geometry_msgs_LIBRARIES}
+  ${bags_to_csv_LIBRARIES}
+  ${ulisse_msgs_LIBRARIES}
+  rclcpp::rclcpp
+  rosbag2_cpp::rosbag2_cpp
+)
 
 ## Executables
 add_executable(to_csv_node src/to_csv_node.cpp)

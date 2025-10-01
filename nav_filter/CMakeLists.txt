@@ -39,6 +39,7 @@ add_custom_target(.Files. SOURCES ${SOURCE_FILES})
 include_directories(
   include
   ${sensor_msgs_INCLUDE_DIRS}
+  ${geometry_msgs_INCLUDE_DIRS}
   ${ulisse_driver_INCLUDE_DIRS}
   ${ulisse_msgs_INCLUDE_DIRS}
   ${ulisse_ctrl_INCLUDE_DIRS}

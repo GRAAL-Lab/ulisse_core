@@ -7,16 +7,20 @@
 #include <iostream>
 #include <fstream>
 
-#include "rclcpp/rclcpp.hpp"
-#include "rclcpp/clock.hpp"
-#include "rclcpp/serialization.hpp"
-#include "rclcpp/serialized_message.hpp"
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp/clock.hpp>
+#include <rclcpp/serialization.hpp>
+#include <rclcpp/serialized_message.hpp>
 
 #include "rcpputils/filesystem_helper.hpp"
 #include "rcutils/time.h"
 
 #include "rosbag2_cpp/reader.hpp"
 #include "rosbag2_cpp/readers/sequential_reader.hpp"
+
+#include <sensor_msgs/msg/imu.hpp>
+#include <sensor_msgs/msg/magnetic_field.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
 
 #include "ulisse_msgs/msg/gps_data.hpp"
 //#include "ulisse_msgs/msg/ambient_sensors.hpp"
@@ -50,6 +54,7 @@ private:
     ulisse_msgs::msg::GPSData gpsData_;
     //ulisse_msgs::msg::AmbientSensors ambientSensors_;
     //ulisse_msgs::msg::Compass compassData_;
+
     //ulisse_msgs::msg::IMUData imuData_;
     ulisse_msgs::msg::DVLData dvlData_;
     ulisse_msgs::msg::FOGData fogData_;
@@ -64,11 +69,14 @@ private:
     ulisse_msgs::msg::SimulatedSystem groundtruth_;
     ulisse_msgs::msg::PathFollow pathFollow_;
 
+    sensor_msgs::msg::Imu imuData_;
+    sensor_msgs::msg::MagneticField magData_;
+    geometry_msgs::msg::PoseStamped poseData_;
+
     std::ofstream gpsFile_;
     //std::ofstream ambientFile_;
-    std::ofstream compassFile_;
-    std::ofstream imuFile_;
-    std::ofstream magnetometerFile_;
+    //std::ofstream compassFile_;
+    //std::ofstream magnetometerFile_;
     std::ofstream sensorsFile_;
     std::ofstream motorsFile_;
     //std::ofstream batteryFile_;
@@ -79,6 +87,10 @@ private:
     //std::ofstream vehicleStatusFile_;
     std::ofstream groundtruthFile_;
     std::ofstream pathFollowingFile_;
+
+    std::ofstream imuFile_;
+    std::ofstream imuMagFile_;
+    std::ofstream imuPoseFile_;
 
     bool ConvertToCSV();
     bool OpenFiles();
