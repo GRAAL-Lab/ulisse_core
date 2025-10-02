@@ -357,7 +357,7 @@ bool CommandWrapper::sendPath(const QString &pathJsonData)
     }
 
     bool loop = settings_.value("loopPaths", false).toBool();
-    qDebug() << "Loop paths setting is: " << loop;
+    //qDebug() << "Loop paths setting is: " << loop;
     serviceReq->path_cmd.loop = loop;
 
     return SendCommandRequest(serviceReq);

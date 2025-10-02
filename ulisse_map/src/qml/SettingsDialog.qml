@@ -454,14 +454,12 @@ Dialog {
                 spacing: 10
 
                 Label {
-                    text: "Loop Path:"
+                    text: "Loop Paths:"
                 }
                 CheckBox {
                     id: loopPathsCB
-                    //text: "enable"
                     font.pointSize: 10
                     checkState: settings.loopPaths ? Qt.Checked : Qt.Unchecked
-                    //Material.accent: red
 
                     onClicked: {
                         settings.loopPaths = !settings.loopPaths;

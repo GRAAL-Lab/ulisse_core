@@ -56,7 +56,7 @@ void FeedbackUpdater::Init(QQmlApplicationEngine* engine)
     q_thrust_applied_ref_left_ = q_thrust_applied_ref_right_ = 0.0;
 
     missed_deadlines_ = 0;
-    micro_loop_count_t_ = 0;
+    //micro_loop_count_t_ = 0;
     motor_speed_L_ = motor_speed_R_ = 0;
 
     q_gps_pos_ = q_goal_pos_ = q_track_pos_ = q_ulisse_pos_;
@@ -259,19 +259,7 @@ void FeedbackUpdater::GPSDataCB(const ulisse_msgs::msg::GPSData::SharedPtr msg)
 
 }
 
-/*void FeedbackUpdater::MicroLoopCountCB(const ulisse_msgs::msg::MicroLoopCount::SharedPtr msg)
-{
-    micro_loop_count_t_ = msg->timestamp;
-
-    // Using the MicroLoopCount signal as a watchdog for checking that the vehicle is on and driver is running
-    if (!vehicleAlive_) {
-        vehicleAlive_ = true;
-        std::cout << "Vehicle alive!" << std::endl;
-    }
-
-    vehicleAliveTimer_.Reset();
-}
-
+/*
 void FeedbackUpdater::AmbientSensorsCB(const ulisse_msgs::msg::AmbientSensors::SharedPtr msg)
 {
     ambient_temperature_ = msg->temperaturectrlbox;
@@ -344,6 +332,15 @@ void FeedbackUpdater::LLCSw485StatusCB(const ulisse_msgs::msg::LLCSw485Status::S
 {
     missed_deadlines_ = msg->missed_deadlines;
     timestamp485_ = msg->timestamp_sw_485;
+    thruster_reference_enabled_ = msg->status_flags.enable_reference;
+    radio_controller_enabled_ = msg->status_flags.ppm_remote_enabled;
+
+    if (!vehicleAlive_) {
+        vehicleAlive_ = true;
+        std::cout << "Vehicle alive!" << std::endl;
+    }
+
+    vehicleAliveTimer_.Reset();
 }
 
 void FeedbackUpdater::ReferenceVelocitiesCB(const ulisse_msgs::msg::ReferenceVelocities::SharedPtr msg)
@@ -569,10 +566,10 @@ double FeedbackUpdater::get_thrust_applied_ref_right()
     return q_thrust_applied_ref_right_;
 }
 
-uint FeedbackUpdater::get_micro_loop_count()
-{
-    return micro_loop_count_t_;
-}
+//uint FeedbackUpdater::get_micro_loop_count()
+//{
+//    return micro_loop_count_t_;
+//}
 
 double FeedbackUpdater::get_ambient_temperature()
 {
@@ -636,12 +633,12 @@ double FeedbackUpdater::get_water_current_norm()
 
 bool FeedbackUpdater::get_radio_controller_enabled()
 {
-    return radio_controller_enabled;
+    return radio_controller_enabled_;
 }
 
 bool FeedbackUpdater::get_thruster_ref_enabled()
 {
-    return thruster_reference_enabled;
+    return thruster_reference_enabled_;
 }
 
 bool FeedbackUpdater::get_safety_boundary_set()

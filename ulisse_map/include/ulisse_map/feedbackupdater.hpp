@@ -78,7 +78,7 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     Q_PROPERTY(double battery_perc_L READ get_battery_perc_L NOTIFY callbacks_processed)
     Q_PROPERTY(double battery_perc_R READ get_battery_perc_R NOTIFY callbacks_processed)
 
-    Q_PROPERTY(uint micro_loop_count READ get_micro_loop_count NOTIFY callbacks_processed)
+    //Q_PROPERTY(uint micro_loop_count READ get_micro_loop_count NOTIFY callbacks_processed)
     Q_PROPERTY(double ambient_temperature READ get_ambient_temperature NOTIFY callbacks_processed)
     Q_PROPERTY(double ambient_humidity READ get_ambient_humidity NOTIFY callbacks_processed)
     Q_PROPERTY(QString compass_RPY READ get_compass_rpy NOTIFY callbacks_processed)
@@ -115,7 +115,7 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     double q_thrust_ref_left_, q_thrust_ref_right_;
     double q_thrust_applied_ref_left_, q_thrust_applied_ref_right_;
 
-    uint micro_loop_count_t_; //Y
+    //uint micro_loop_count_t_; //Y
     double ambient_temperature_; //Y
     double ambient_humidity_; //Y
     QString compass_RPY_;
@@ -127,8 +127,8 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     int missed_deadlines_;
     int timestamp485_;
 
-    bool radio_controller_enabled = false;
-    bool thruster_reference_enabled = false;
+    bool radio_controller_enabled_ = false;
+    bool thruster_reference_enabled_ = false;
     bool safetyBoundarySet_ = false;
 
     double water_current_deg;
@@ -227,7 +227,7 @@ public:
     double get_thrust_applied_ref_left();
     double get_thrust_applied_ref_right();
 
-    uint get_micro_loop_count();
+    //uint get_micro_loop_count();
     double get_ambient_temperature();
     double get_ambient_humidity();
     QString get_compass_rpy();
