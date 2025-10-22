@@ -31,10 +31,10 @@ bool PathManagerALOS::Initialization(const ulisse_msgs::msg::PathData& path)
 
     delta_ = nurbsParam.deltaMin;
     currentAbscissa_ = 0.0;
-    std::cout << "nurbsParam.deltaMin: " << nurbsParam.deltaMin << std::endl;
-    std::cout << "nurbsParam.deltaMax: " << nurbsParam.deltaMax << std::endl;
+    //std::cout << "nurbsParam.deltaMin: " << nurbsParam.deltaMin << std::endl;
+    //std::cout << "nurbsParam.deltaMax: " << nurbsParam.deltaMax << std::endl;
 
-    std::cout.precision(10);
+    //std::cout.precision(10);
     //std::cout  << "Path Message:\n" << rosidl_generator_traits::to_yaml(path) << std::fixed << std::endl;
 
     pathName_ = path.id;
@@ -95,7 +95,7 @@ bool PathManagerALOS::Initialization(const ulisse_msgs::msg::PathData& path)
 
     std::cout << *path_ << std::endl;
 
-    std::cout << "lookAheadDistance: " << nurbsParam.lookAheadDistance << " m" << std::endl;
+    //std::cout << "lookAheadDistance: " << nurbsParam.lookAheadDistance << " m" << std::endl;
 
     double altitude;
 
@@ -103,8 +103,8 @@ bool PathManagerALOS::Initialization(const ulisse_msgs::msg::PathData& path)
         ctb::LocalUTM2LatLong(path_->At(path_->StartParameter()), centroid_, startP_, altitude);
         ctb::LocalUTM2LatLong(path_->At(path_->EndParameter()),   centroid_, endP_,   altitude);
 
-        std::cout << "startPoint (A): " << startP_ << std::endl;
-        std::cout << "endPoint   (B): " << endP_   << std::endl;
+        //std::cout << "startPoint (A): " << startP_ << std::endl;
+        //std::cout << "endPoint   (B): " << endP_   << std::endl;
     } catch (const std::runtime_error& e) {
         std::cerr << "Error: " << e.what() << std::endl;
     }
@@ -389,23 +389,23 @@ bool PathManagerALOS::ComputeGoalPositionALOS(const ctb::LatLong &currentPos, ct
 
     //std::cout << "currentTrackPoint_: " << currentTrackPoint_ << std::endl;
 
-    if(slowPrint_.GetCurrentLapTime() > 0.1) {
-        slowPrint_.Lap();
-        std::cout << "***********" << std::endl;
-        std::cout << "currentAbscissa_: " << currentAbscissa_ << std::endl;
-        std::cout << "DistanceToEnd() < nurbsParam.tolleranceEndingPoint ? " << ((DistanceToEnd() < nurbsParam.tolleranceEndingPoint) ? "1" : "0") << std::endl;
-        std::cout << "intervalEnd1: " << intervalEnd1 << std::endl;
-        std::cout << "intervalEnd2: " << intervalEnd2 << std::endl;
-        std::cout << "closestPointAbscissa1: " << closestPointAbscissa1 << std::endl;
-        std::cout << "closestPointAbscissa2: " << closestPointAbscissa2 << std::endl;        
-        std::cout << "path_->EndParameter(): " << path_->EndParameter() << std::endl;
-        std::cout << "intervalEnd: " << intervalEnd << std::endl;
-        std::cout << "closestPointAbscissa: " << closestPointAbscissa << std::endl;
-        std::cout << "delta: " << delta_ << std::endl;
-        std::cout << "nurbsParam.lookAheadDistance: " <<  nurbsParam.lookAheadDistance << std::endl;
-        std::cout << "goalAbscissa: " << goalAbscissa << std::endl;
-
-    }
+    //if(slowPrint_.GetCurrentLapTime() > 0.1) {
+    //    slowPrint_.Lap();
+    //    std::cout << "***********" << std::endl;
+    //    std::cout << "currentAbscissa_: " << currentAbscissa_ << std::endl;
+    //    std::cout << "DistanceToEnd() < nurbsParam.tolleranceEndingPoint ? " << ((DistanceToEnd() < nurbsParam.tolleranceEndingPoint) ? "1" : "0") << std::endl;
+    //    std::cout << "intervalEnd1: " << intervalEnd1 << std::endl;
+    //    std::cout << "intervalEnd2: " << intervalEnd2 << std::endl;
+    //    std::cout << "closestPointAbscissa1: " << closestPointAbscissa1 << std::endl;
+    //    std::cout << "closestPointAbscissa2: " << closestPointAbscissa2 << std::endl;        
+    //    std::cout << "path_->EndParameter(): " << path_->EndParameter() << std::endl;
+    //    std::cout << "intervalEnd: " << intervalEnd << std::endl;
+    //    std::cout << "closestPointAbscissa: " << closestPointAbscissa << std::endl;
+    //    std::cout << "delta: " << delta_ << std::endl;
+    //    std::cout << "nurbsParam.lookAheadDistance: " <<  nurbsParam.lookAheadDistance << std::endl;
+    //    std::cout << "goalAbscissa: " << goalAbscissa << std::endl;
+    //}
+    
     return true;
 }
 
