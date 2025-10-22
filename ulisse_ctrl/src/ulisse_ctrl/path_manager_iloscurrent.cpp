@@ -77,7 +77,7 @@ bool PathManagerILOSCurrent::Initialization(const ulisse_msgs::msg::PathData& pa
             path_ = sisl::PathFactory::NewSerpentine(angle_, direction_, size_1_, polyVerticesUTM);
         } else if (polypathType_ == "RaceTrack"){
             path_ = sisl::PathFactory::NewRaceTrack(angle_, direction_, size_1_, size_2_, polyVerticesUTM);
-        } else if (polypathType_ == "Hippodrome"){
+        } else if (polypathType_ == "Racetrack"){
 
             Eigen::Vector3d baricenter;
             for(int i = 0; i < 3; i++) {
@@ -88,7 +88,7 @@ bool PathManagerILOSCurrent::Initialization(const ulisse_msgs::msg::PathData& pa
                 baricenter[i] = dim_sum/(polyVerticesUTM.size() - 1);
             }
 
-            path_ = sisl::PathFactory::NewHippodrome(-angle_, direction_, size_1_, size_2_, baricenter);
+            path_ = sisl::PathFactory::NewRacetrack(-angle_, direction_, size_1_, size_2_, baricenter);
         } else {
             std::cerr << "Error: polypathType not recognized.";
             return false;

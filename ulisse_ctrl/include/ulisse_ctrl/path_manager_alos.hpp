@@ -184,6 +184,8 @@ private:
     double Bc_hat;
     double Bc_hat_dot;
     bool FirstEntry;
+
+    futils::Timer slowPrint_;
 };
 
 #endif // ULISSE_CONFIGURATION_H

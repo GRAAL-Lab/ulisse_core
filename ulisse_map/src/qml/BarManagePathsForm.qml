@@ -12,7 +12,7 @@ RowLayout {
     property alias b_polySweep: b_polySweep
     property alias b_rectSweep: b_rectSweep
     property alias b_polyline: b_polyline
-    property alias b_hippodrome: b_hippodrome
+    property alias b_Racetrack: b_Racetrack
 
     property alias cancelPathChoice: cancelPathChoice
 
@@ -46,8 +46,8 @@ RowLayout {
         }
 
         Button {
-            id: b_hippodrome
-            text: qsTr("Hippodrome")
+            id: b_Racetrack
+            text: qsTr("Racetrack")
         }
 
         Button {

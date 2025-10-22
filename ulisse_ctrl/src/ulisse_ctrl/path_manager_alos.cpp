@@ -69,7 +69,7 @@ bool PathManagerALOS::Initialization(const ulisse_msgs::msg::PathData& path)
             path_ = sisl::PathFactory::NewSerpentine(angle_, direction_, size_1_, polyVerticesUTM);
         } else if (polypathType_ == "RaceTrack"){
             path_ = sisl::PathFactory::NewRaceTrack(angle_, direction_, size_1_, size_2_, polyVerticesUTM);
-        } else if (polypathType_ == "Hippodrome"){
+        } else if (polypathType_ == "Racetrack"){
 
             Eigen::Vector3d baricenter;
             for(int i = 0; i < 3; i++) {
@@ -80,7 +80,7 @@ bool PathManagerALOS::Initialization(const ulisse_msgs::msg::PathData& path)
                 baricenter[i] = dim_sum/(polyVerticesUTM.size() - 1);
             }
 
-            path_ = sisl::PathFactory::NewHippodrome(-angle_, direction_, size_1_, size_2_, baricenter);
+            path_ = sisl::PathFactory::NewRacetrack(-angle_, direction_, size_1_, size_2_, baricenter);
         } else {
             std::cerr << "Error: polypathType not recognized.";
             return false;
@@ -124,6 +124,8 @@ bool PathManagerALOS::Initialization(const ulisse_msgs::msg::PathData& path)
     // resetting variables in ALOS equation
     Bc_hat_dot = 0.0;
     Bc_hat = 0.0;
+
+    slowPrint_.Start();
 
     return true;
 
@@ -308,13 +310,17 @@ bool PathManagerALOS::ComputeGoalPositionALOS(const ctb::LatLong &currentPos, ct
     Eigen::Vector3d currentPos_UTM;
     ctb::LatLong2LocalUTM(currentPos, 0.0, centroid_, currentPos_UTM);
 
+    double intervalEnd(0.0);
+    double intervalEnd1(0.0);
+    double intervalEnd2(0.0);
 
     try {
-        if(DistanceToEnd() < nurbsParam.tolleranceEndingPoint){
-            double intervalEnd1 = std::min(path_->EndParameter() - nurbsParam.lookAheadDistance, path_->EndParameter());
+        //if(DistanceToEnd() < nurbsParam.tolleranceEndingPoint){
+        if(false){
+            intervalEnd1 = std::min(path_->EndParameter() - nurbsParam.lookAheadDistance, path_->EndParameter());
             closestPointAbscissa1 = path_->FindAbscissaClosestPointOnInterval(currentPos_UTM, intervalEnd1, path_->EndParameter());
 
-            double intervalEnd2 = std::min(0.0 + nurbsParam.lookAheadDistance, path_->EndParameter());
+            intervalEnd2 = std::min(0.0 + nurbsParam.lookAheadDistance, path_->EndParameter());
             closestPointAbscissa2 = path_->FindAbscissaClosestPointOnInterval(currentPos_UTM, 0.0, intervalEnd2);
 
             Eigen::Vector3d closPos1_UTM = path_->At(closestPointAbscissa1);
@@ -331,10 +337,9 @@ bool PathManagerALOS::ComputeGoalPositionALOS(const ctb::LatLong &currentPos, ct
                 closestPointAbscissa = closestPointAbscissa2;
                 currentGoalAbscissa_ = closestPointAbscissa;
             }
-        }
-        else{
+        } else {
             // Retreiving closest point parameter
-            double intervalEnd = std::min(currentAbscissa_ + nurbsParam.lookAheadDistance, path_->EndParameter());
+            intervalEnd = std::min(currentAbscissa_ + nurbsParam.lookAheadDistance, path_->EndParameter());
             closestPointAbscissa = path_->FindAbscissaClosestPointOnInterval(currentPos_UTM, currentAbscissa_, intervalEnd);
             currentGoalAbscissa_ = closestPointAbscissa;
         }
@@ -384,10 +389,23 @@ bool PathManagerALOS::ComputeGoalPositionALOS(const ctb::LatLong &currentPos, ct
 
     //std::cout << "currentTrackPoint_: " << currentTrackPoint_ << std::endl;
 
-    std::cout << "closestPointAbscissa: " << closestPointAbscissa << std::endl;
-    std::cout << "delta: " << delta_ << std::endl;
-    std::cout << "goalAbscissa: " << goalAbscissa << std::endl;
+    if(slowPrint_.GetCurrentLapTime() > 0.1) {
+        slowPrint_.Lap();
+        std::cout << "***********" << std::endl;
+        std::cout << "currentAbscissa_: " << currentAbscissa_ << std::endl;
+        std::cout << "DistanceToEnd() < nurbsParam.tolleranceEndingPoint ? " << ((DistanceToEnd() < nurbsParam.tolleranceEndingPoint) ? "1" : "0") << std::endl;
+        std::cout << "intervalEnd1: " << intervalEnd1 << std::endl;
+        std::cout << "intervalEnd2: " << intervalEnd2 << std::endl;
+        std::cout << "closestPointAbscissa1: " << closestPointAbscissa1 << std::endl;
+        std::cout << "closestPointAbscissa2: " << closestPointAbscissa2 << std::endl;        
+        std::cout << "path_->EndParameter(): " << path_->EndParameter() << std::endl;
+        std::cout << "intervalEnd: " << intervalEnd << std::endl;
+        std::cout << "closestPointAbscissa: " << closestPointAbscissa << std::endl;
+        std::cout << "delta: " << delta_ << std::endl;
+        std::cout << "nurbsParam.lookAheadDistance: " <<  nurbsParam.lookAheadDistance << std::endl;
+        std::cout << "goalAbscissa: " << goalAbscissa << std::endl;
 
+    }
     return true;
 }
 
@@ -402,7 +420,8 @@ bool PathManagerALOS::ComputeClosetPointOnPathALOS(const ctb::LatLong &currentPo
     ctb::LatLong2LocalUTM(currentPos, 0.0, centroid_, currentPos_UTM);
 
     try {
-        if(DistanceToEnd() < nurbsParam.tolleranceEndingPoint){
+        //if(DistanceToEnd() < nurbsParam.tolleranceEndingPoint){
+        if(false){
             double intervalEnd1 = std::min(path_->EndParameter() - nurbsParam.lookAheadDistance, path_->EndParameter());
             closestPointAbscissa1 = path_->FindAbscissaClosestPointOnInterval(currentPos_UTM, intervalEnd1, path_->EndParameter());
 
@@ -562,5 +581,14 @@ void PathManagerALOS::RestartPath()
     ctb::LocalUTM2LatLong(goalPos_UTM, centroid_, currentGoal_, altitude);
 
     currentTrackPoint_ = startP_;
+
+    std::cout << "******  RESTARTING *****" << std::endl;
+    std::cout << "currentAbscissa_: " << currentAbscissa_ << std::endl;
+    std::cout << "DistanceToEnd() < nurbsParam.tolleranceEndingPoint ? " << ((DistanceToEnd() < nurbsParam.tolleranceEndingPoint) ? "1" : "0") << std::endl;
+    std::cout << "delta: " << delta_ << std::endl;
+    std::cout << "nurbsParam.lookAheadDistance: " <<  nurbsParam.lookAheadDistance << std::endl;
+    std::cout << "goalAbscissa: " << goalAbscissa << std::endl;
+
+
 }
 

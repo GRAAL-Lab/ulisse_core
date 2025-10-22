@@ -196,6 +196,8 @@ fsm::retval StatePathFollowALOS::Execute()
                     if(restartingPath_){
                         std::cout << "** Restarting Path! **" << std::endl;
                         restartingPath_ = false;
+                        vehicleOnTrack_ = false;
+                        pathManager_.RestartPath();
                     }
                     //restartingPath_ = true;
 

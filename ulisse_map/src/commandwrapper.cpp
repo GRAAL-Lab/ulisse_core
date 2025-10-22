@@ -94,7 +94,7 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
 
     polypathTypes.append("Serpentine");
     polypathTypes.append("RaceTrack");
-    polypathTypes.append("Hippodrome");
+    polypathTypes.append("Racetrack");
 
     emit startup_info_read();
 }
@@ -250,7 +250,7 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
             newPath = sisl::PathFactory::NewRaceTrack(angle, direction, size_1_Path, size_2_Path, polyVerticesUTM);
             //qDebug() << "*** RACE TRACK DONE ***";
             newPath = sisl::PathFactory::NewRaceTrack(angle, direction, size_1_Path, size_2_Path, polyVerticesUTM);
-        } else if (polypathType == "Hippodrome") {
+        } else if (polypathType == "Racetrack") {
 
             Eigen::Vector3d baricenter;
             for(int i = 0; i < 3; i++) {
@@ -262,7 +262,7 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
             }
             //std::cout << "Lap 1:" << executionTime.Elapsed() << std::endl;
 
-            newPath = sisl::PathFactory::NewHippodrome(-angle, direction, size_1_Path, size_2_Path, baricenter);
+            newPath = sisl::PathFactory::NewRacetrack(-angle, direction, size_1_Path, size_2_Path, baricenter);
         } else {
             std::cout << "[CommandWrapper::createPathFromPolygon] polypathType '" << polypathType << "' not recognized." << std::endl;
             pathCreated = false;

@@ -91,11 +91,11 @@ MapComponentForm {
         return poly_cur
     }
 
-    function createHippodromePath() {
+    function createRacetrackPath() {
         var poly_cur = polyPathComponent.createObject(map_component)
         poly_cur.clickHandler = poly_cur.click_handler_point
         //poly_cur.clickHandler = poly_cur.pos_changed_handler_simple
-        poly_cur._polypathType = "Hippodrome"
+        poly_cur._polypathType = "Racetrack"
         map.addMapItem(poly_cur)
         return poly_cur
     }

@@ -718,7 +718,7 @@ MapPolyline {
         backup_path = path
         reposition_markers()
         reposition_handle()
-        if (_polypathType != "Hippodrome"){
+        if (_polypathType != "Racetrack"){
             enable_markers()
         }
         enable_handle()
@@ -755,7 +755,7 @@ MapPolyline {
             _polypathType = params.polypath_type
         }
 
-        if (_polypathType === "Hippodrome"){
+        if (_polypathType === "Racetrack"){
 
             var objCorners = []
             var _top = centroid.atDistanceAndAzimuth(_size_1/2.0, _angle)

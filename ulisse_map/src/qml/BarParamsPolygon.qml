@@ -78,7 +78,7 @@ RowLayout {
     LabelledField {
         title: qsTr("Size 2")
         Layout.preferredWidth: 100
-        visible: (polypath_type == "RaceTrack" | polypath_type == "Hippodrome") ? true : false
+        visible: (polypath_type == "RaceTrack" | polypath_type == "Racetrack") ? true : false
 
         TextField {
             id: size_2Field

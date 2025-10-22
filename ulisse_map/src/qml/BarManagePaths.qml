@@ -57,14 +57,14 @@ BarManagePathsForm {
         start()
     }
 
-    b_hippodrome.onClicked: function () {
+    b_Racetrack.onClicked: function () {
         map.mapHintsOverlay.text =
-                "<b>HIPPODROME</b><br>"
-                + "Left click on map to define hippodrome center.<br>"
+                "<b>Racetrack</b><br>"
+                + "Left click on map to define Racetrack center.<br>"
                 + map.mapHintsOverlay.text;
-        cur_managed = map.createHippodromePath()
+        cur_managed = map.createRacetrackPath()
         params_panel = panelParamsPolygon
-        panelParamsPolygon.polypath_type_ = "Hippodrome"
+        panelParamsPolygon.polypath_type_ = "Racetrack"
         start()
     }
     
