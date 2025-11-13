@@ -45,16 +45,16 @@ int main(int argc, char* argv[])
 
     rclcpp::init(argc, argv);
 
-    //QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    //QGuiApplication::setApplicationName(name);
-    //QGuiApplication::setOrganizationName("GRAAL Lab");
+    QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    QGuiApplication::setApplicationName(name);
+    QGuiApplication::setOrganizationName("GRAAL Lab");
 
     qputenv("QSG_RENDER_LOOP", QByteArray("basic"));
-    QApplication app(argc, argv);
-    app.setApplicationName(name);
-    app.setOrganizationName("GRAAL Lab");
+    //QApplication app(argc, argv);
+    //app.setApplicationName(name);
+    //app.setOrganizationName("GRAAL Lab");
 
-    //QGuiApplication app(argc, argv);
+    QGuiApplication app(argc, argv);
     QIcon icon(":/images/ulisse_icon.png");
     //qDebug() << "isNull? " << icon.isNull();
     app.setWindowIcon(icon);
