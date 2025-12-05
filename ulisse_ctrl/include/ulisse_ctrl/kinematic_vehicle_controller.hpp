@@ -8,7 +8,7 @@
 #include "ulisse_msgs/msg/nav_filter_data.hpp"
 #include "rov_msgs/msg/nav_filter_data.hpp" // ASV-ROV
 #include "rov_msgs/msg/cable_data.hpp" // ASV-ROV
-#include "rov_msgs/msg/cable_length_reference.hpp" // ASV-ROV
+#include "rov_msgs/msg/cable_reference.hpp" // ASV-ROV
 #include "rov_msgs/msg/winch_motor_reference.hpp" // ASV-ROV
 #include "ulisse_msgs/msg/task_status.hpp"
 #include "ulisse_msgs/msg/feedback_gui.hpp"
@@ -86,7 +86,7 @@ class VehicleController : public rclcpp::Node {
     rclcpp::Publisher<ulisse_msgs::msg::FeedbackGui>::SharedPtr feedbackGuiPub_;
     rclcpp::Publisher<ulisse_msgs::msg::TPIKAction>::SharedPtr tpikActionPub_;
     rclcpp::Publisher<ulisse_msgs::msg::PlotVariables>::SharedPtr plotVarPub_; // ASV-ROV plot
-    rclcpp::Publisher<rov_msgs::msg::CableLengthReference>::SharedPtr referenceCableLengthPub_; // ASV-ROV
+    rclcpp::Publisher<rov_msgs::msg::CableReference>::SharedPtr referenceCablePub_; // ASV-ROV
     rclcpp::Publisher<rov_msgs::msg::WinchMotorReference>::SharedPtr referenceWinchMotorPub_; // ASV-ROV
 
     //rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr safetyBoundarySetPub_;
@@ -164,7 +164,7 @@ class VehicleController : public rclcpp::Node {
     std::shared_ptr<ControlData> ctrlData_;
     std::shared_ptr<ControlData> rovData_;
     rov_msgs::msg::CableData cableData_;
-    rov_msgs::msg::CableLengthReference controlledCable_;
+    rov_msgs::msg::CableReference controlledCable_;
     rov_msgs::msg::WinchMotorReference winchMotorRef_;
     //ulisse_msgs::msg::Obstacle obstacleData_;
     //std::vector<ulisse_msgs::msg::Obstacle> obstacleMsgVector_;
@@ -181,6 +181,11 @@ class VehicleController : public rclcpp::Node {
     std::shared_ptr<ikcl::SphereObstacle> obs1_;
     std::shared_ptr<ikcl::SphereObstacle> obs2_;
     ulisse_msgs::msg::PlotVariables plotVar_;
+
+    double Ts_;
+    std::chrono::system_clock::time_point t_now_, t_last_;
+    std::chrono::nanoseconds iter_elapsed_;
+    float dist_now_, dist_last_;
 
     //std::shared_ptr<ctb::LatLong> vehiclePosition_;
     //std::shared_ptr<Eigen::Vector2d> inertialF_waterCurrent_;
@@ -210,7 +215,10 @@ class VehicleController : public rclcpp::Node {
     void LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg);
     void CableDataRovCB(const rov_msgs::msg::CableData::SharedPtr msg); // ASV-ROV
     void ComputeCableLength(); // ASV-ROV
-    void CableWinchControl(const float &rpm, float &l); // ASV-ROVs
+    void ControlCableLength(const float &rpm, float &l); // ASV-ROVs
+    void ComputeCableVelocity(const float &l_cable, float &vel_cable); // tether modelling
+    void ComputeAsvRovDistance(float &distance);  // tether modelling
+    void ComputeAsvRovDistanceVelocity(float &vel);  // tether modelling
     void ObstacleCB(const detav_msgs::msg::ObstacleList::SharedPtr msg);  // ASV-ROV
     void UpdateObstacles(); // Obstacle Avoidance
     void PrintObstacles(std::vector<std::shared_ptr<ikcl::Obstacle>> obstaclePointers);

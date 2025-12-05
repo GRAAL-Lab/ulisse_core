@@ -182,7 +182,7 @@ bool PathManager::ComputeRovObstacleGoalPosition(const ctb::LatLong& rovP, const
     ctb::LatLong2LocalUTM(obsP, 0.0, centroid_, obs_UTM);
     trans_vec = rov_UTM - obs_UTM;
     trans_vec_unit = trans_vec/trans_vec.norm();
-    goalF_T_rovF.TranslationVector(6*trans_vec_unit);
+    goalF_T_rovF.TranslationVector(10*trans_vec_unit);
     goalF_T_rovF.RotationMatrix(Eigen::Matrix3d::Identity());
     goal_UTM = rov_UTM + goalF_T_rovF.TranslationVector();
     double altitude;
@@ -237,4 +237,12 @@ double PathManager::ComputeDistanceOfClosestObstacle2ROV(const ctb::LatLong& rov
     //ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, obstaclePosition, ASV2obstacleDistance, ASV2obstacleHeading); not needed
 
     return true;
+}
+
+double PathManager::RetrieveObstacleRadius(const std::vector<detav_msgs::msg::Obstacle> obs_vector){
+    if(obs_vector.size() > 0){
+        return obs_vector[0].size.size.length;
+    }
+    else
+        return 0.0;
 }

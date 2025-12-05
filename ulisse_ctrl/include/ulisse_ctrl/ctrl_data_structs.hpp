@@ -53,6 +53,9 @@ struct KCLConfiguration {
     double controlLoopRate;
     Eigen::VectorXd saturationMin, saturationMax;
     float alfa, beta;
+    float Eq1_a, Eq1_b; // tetherAcceptedRange equation 1: a1x + b1
+    float Eq2_a, Eq2_b; // tetherAcceptedRange equation 2: a2x + b2
+    float Eq_delta; // delta for safety distance from both lines
     Eigen::VectorXd obstacleX, obstacleY, obstacleRadius;
 
     KCLConfiguration()
@@ -77,6 +80,18 @@ struct KCLConfiguration {
             return false;
         if (!ctb::GetParam(confObj, beta, "cableBeta"))
             return false;
+
+        if (!ctb::GetParam(confObj, Eq1_a, "eq1_a"))
+            return false;
+        if (!ctb::GetParam(confObj, Eq1_b, "eq1_b"))
+            return false;
+        if (!ctb::GetParam(confObj, Eq2_a, "eq2_a"))
+            return false;
+        if (!ctb::GetParam(confObj, Eq2_b, "eq2_b"))
+            return false;
+        if (!ctb::GetParam(confObj, Eq_delta, "eq_delta"))
+            return false;
+
 
 //        if (!ctb::GetParamVector(confObj, obstacleX, "obstacleX"))
 //            return false;

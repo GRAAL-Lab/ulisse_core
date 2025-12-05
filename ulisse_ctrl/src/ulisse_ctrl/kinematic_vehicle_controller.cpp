@@ -52,8 +52,8 @@ VehicleController::VehicleController(std::string conf_filename)
     referenceVelocitiesPub_ = this->create_publisher<ulisse_msgs::msg::ReferenceVelocities>(ulisse_msgs::topicnames::reference_velocities, 10);
     feedbackGuiPub_ = this->create_publisher<ulisse_msgs::msg::FeedbackGui>(ulisse_msgs::topicnames::feedback_gui, 10);
     tpikActionPub_ = this->create_publisher<ulisse_msgs::msg::TPIKAction>(ulisse_msgs::topicnames::tpik_action, 10);
-    referenceCableLengthPub_ = this->create_publisher<rov_msgs::msg::CableLengthReference>("/winch/reference_cable_length", 10);
-    //referenceWinchMotorPub_ = this->create_publisher<rov_msgs::msg::WinchMotorReference>("/winch/reference_motor", 10);
+    referenceCablePub_ = this->create_publisher<rov_msgs::msg::CableReference>("/winch/reference_cable", 10);
+    referenceWinchMotorPub_ = this->create_publisher<rov_msgs::msg::WinchMotorReference>("/winch/reference_motor", 10); // using the tether model
     plotVarPub_ = this->create_publisher<ulisse_msgs::msg::PlotVariables>(ulisse_msgs::topicnames::plot_variables, 10); // ASV-ROV plot
 
     //safetyBoundarySetPub_ = this->create_publisher<std_msgs::msg::Bool>(ulisse_msgs::topicnames::safety_boundary_set, 10);
@@ -238,6 +238,11 @@ VehicleController::VehicleController(std::string conf_filename)
 
     srvResetConf_ = this->create_service<ulisse_msgs::srv::ResetConfiguration>(ulisse_msgs::topicnames::reset_kcl_conf_service,
         std::bind(&VehicleController::ResetConfHandler, this, _1, _2, _3));
+
+    // variable initialization
+    dist_now_ = 0.0;
+    dist_last_ = 0.0;
+    t_last_ = t_now_ = std::chrono::system_clock::now();
 
     // Main function timer
     int msRunPeriod = 1.0 / (conf_->controlLoopRate) * 1000;
@@ -725,12 +730,6 @@ void VehicleController::NavFilterRovCB(const rov_msgs::msg::NavFilterData::Share
 }
 
 void VehicleController::CableDataRovCB(const rov_msgs::msg::CableData::SharedPtr msg){ //ROV
-    /*cableData_.released_cable_length = msg->released_cable_length;
-    cableData_.layer_n = msg->layer_n;
-    cableData_.winding_radius = msg->winding_radius;
-    cableData_.winch_rpm = msg->winch_rpm;
-    cableData_.max_length = msg->max_length;
-*/
     cableData_ = *msg;
 }
 
@@ -842,10 +841,26 @@ void VehicleController::ComputeCableLength(){
     beta_ = conf_->beta;
     gamma_ = 100;
 
-    controlledCable_.reference_cable_length = (beta_ + alfa_ * goalHeading ) * goalDistance + gamma_;
+    controlledCable_.length = (beta_ + alfa_ * goalHeading ) * goalDistance + gamma_;
 }
 
-void VehicleController::CableWinchControl(const float &rpm_percentage, float &reference_length){
+void VehicleController::ComputeAsvRovDistance(float &distance){
+    double goalDistance, goalHeading;
+    ctb::DistanceAndAzimuthRad(ctrlData_->inertialF_linearPosition, rovData_->inertialF_linearPosition, goalDistance, goalHeading);
+    distance = sqrt(pow(goalDistance,2) + pow(rovData_->inertialF_altitude,2));
+}
+
+void VehicleController::ComputeAsvRovDistanceVelocity(float &vel){
+    ComputeAsvRovDistance(dist_now_);
+    t_now_ = std::chrono::system_clock::now();
+    iter_elapsed_ = std::chrono::duration_cast<std::chrono::nanoseconds>(t_now_ - t_last_);
+    Ts_ = iter_elapsed_.count() / 1E9;
+    vel = (dist_now_ - dist_last_)/Ts_;
+    t_last_ = t_now_;
+    dist_last_ = dist_now_;
+}
+
+void VehicleController::ControlCableLength(const float &rpm_percentage, float &reference_length){
     float precision = 1; //float w;
 
     if(reference_length > cableData_.max_length)
@@ -869,6 +884,46 @@ void VehicleController::CableWinchControl(const float &rpm_percentage, float &re
     else winchMotorRef_.on_off =0;
     //winchMotorRef_.stamp =
     //referenceWinchMotorPub_->publish(winchMotorRef_);
+}
+
+void VehicleController::ComputeCableVelocity(const float &l_cable, float &vel_cable){
+    float distance, dist_vel;
+    ComputeAsvRovDistance(distance);
+    ComputeAsvRovDistanceVelocity(dist_vel);
+
+    float a1, b1, c1, a2, b2, c2; // ax + by + c = 0; x is distnace and y is cable length
+    a1 = conf_->Eq1_a; b1=-1; c1= conf_->Eq1_b;
+    a2 = conf_->Eq2_a;; b2=-1; c2= conf_->Eq2_b;
+    float x ,y; x = distance; y = l_cable;
+    float d1 = abs(a1*x + b1*y + c1)/sqrt(pow(a1,2)+pow(b1,2)); // distance of the point from the line1
+    float d2 = abs(a2*x + b2*y + c2)/sqrt(pow(a2,2)+pow(b2,2)); // distance of the point from the line2
+
+    std::cout << "l_cable = "<< l_cable<< std::endl;
+    std::cout << "distanceASV-ROV = "<< distance<< std::endl;
+    std::cout << "dist_velASV-ROV = "<< dist_vel<< std::endl;
+    std::cout << "d1 = "<< d1<< std::endl;
+    std::cout << "d2 = "<< d2<< std::endl;
+    std::cout << "Eq_delta = "<< conf_->Eq_delta << std::endl;
+    std::cout << "Eq_delta = "<< conf_->Eq_delta << std::endl;
+    std::cout << "Eq1_a = "<< conf_->Eq1_a << std::endl;
+
+    if(d1 < conf_->Eq_delta){
+        if (abs(dist_vel) < 1)
+            vel_cable = 1;
+        else
+            vel_cable = abs(a1 * dist_vel);
+    }
+    else if(d2 < conf_->Eq_delta){
+        if (abs(dist_vel) < 1)
+            vel_cable = -1;
+        else
+            vel_cable = -abs(a2 * dist_vel);
+    }
+    else
+        vel_cable = 0.0;
+
+    std::cout << "vel_cable = "<< vel_cable << std::endl;
+    std::cout << "-----------" << std::endl;
 }
 
 void VehicleController::LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg)
@@ -911,9 +966,15 @@ void VehicleController::Run()
         }
     }
 
+    // reference cable length
     ComputeCableLength();
     //double rpm_percentage = 1;
-    //CableWinchControl(rpm_percentage, controlledCable_.reference_cable_length);
+    //CableWinchControl(rpm_percentage, controlledCable_.length);
+
+    float cable_vel;
+    ComputeCableVelocity(cableData_.released_cable_length, cable_vel);
+    // reference cable velocity
+    controlledCable_.velocity = cable_vel;
 
     tNow_ = std::chrono::system_clock::now();
 
@@ -991,11 +1052,11 @@ void VehicleController::PublishControl()
         if (uFsm_.GetCurrentStateName() == ulisse::states::ID::rovfollow) {
             controlledCable_.stamp.sec = now_stamp_secs;
             controlledCable_.stamp.nanosec = now_stamp_nanosecs;
-            referenceCableLengthPub_->publish(controlledCable_);
+            referenceCablePub_->publish(controlledCable_);
 
-            //winchMotorRef_.stamp.sec = now_stamp_secs;
-            //winchMotorRef_.stamp.nanosec = now_stamp_nanosecs;
-            //referenceWinchMotorPub_->publish(winchMotorRef_);
+            winchMotorRef_.stamp.sec = now_stamp_secs;
+            winchMotorRef_.stamp.nanosec = now_stamp_nanosecs;
+            referenceWinchMotorPub_->publish(winchMotorRef_);
 
             plotVar_.stamp.sec = now_stamp_secs;
             plotVar_.stamp.nanosec = now_stamp_nanosecs;
@@ -1006,7 +1067,10 @@ void VehicleController::PublishControl()
             plotVar_.goal_distance_obstacle = stateRovFollowing_->goalDistanceObstacle;
 
             plotVar_.distance_rov_obstacle = stateRovFollowing_->ROV2obstacleDistance;
-            plotVar_.distance_rov_asv = stateRovFollowing_->goalDistance;
+            float dis;
+            ComputeAsvRovDistance(dis);
+            plotVar_.distance_rov_asv = dis;
+            //plotVar_.distance_rov_asv = stateRovFollowing_->goalDistance;
             plotVarPub_->publish(plotVar_);
         }
     }
