@@ -907,17 +907,28 @@ void VehicleController::ComputeCableVelocity(const float &l_cable, float &vel_ca
     std::cout << "Eq_delta = "<< conf_->Eq_delta << std::endl;
     std::cout << "Eq1_a = "<< conf_->Eq1_a << std::endl;
 
+//    if(d1 < conf_->Eq_delta){
+//        if (abs(dist_vel) < 1)
+//            vel_cable = 1;
+//        else
+//            vel_cable = abs(a1 * dist_vel);
+//    }
+//    else if(d2 < conf_->Eq_delta){
+//        if (abs(dist_vel) < 1)
+//            vel_cable = -1;
+//        else
+//            vel_cable = -abs(a2 * dist_vel);
+//    }
+//    else
+//        vel_cable = 0.0;
+
     if(d1 < conf_->Eq_delta){
-        if (abs(dist_vel) < 1)
-            vel_cable = 1;
-        else
-            vel_cable = abs(a1 * dist_vel);
+        double gain = rml::DecreasingBellShapedFunction(conf_->Eq_delta - 0.5, conf_->Eq_delta, 0, 1.0, d1);
+        vel_cable = gain * 1.0;
     }
     else if(d2 < conf_->Eq_delta){
-        if (abs(dist_vel) < 1)
-            vel_cable = -1;
-        else
-            vel_cable = -abs(a2 * dist_vel);
+        double gain = rml::DecreasingBellShapedFunction(conf_->Eq_delta - 0.5, conf_->Eq_delta, 0, 1.0, d2);
+        vel_cable = - gain * 1.0;
     }
     else
         vel_cable = 0.0;

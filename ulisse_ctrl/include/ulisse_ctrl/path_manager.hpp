@@ -39,8 +39,9 @@ public:
      */
     bool ComputeGoalPosition(const ctb::LatLong& currentP, ctb::LatLong& goalP);
 
-    bool ComputeRovObstacleGoalPosition(const ctb::LatLong& rovP, const ctb::LatLong& obsP, ctb::LatLong& goalP);
+    bool ComputeRovObstacleGoalPosition(const ctb::LatLong& rovP, const ctb::LatLong& obsP, const float& alignmentDistance, ctb::LatLong& goalP);
 
+    bool ComputeWaterCurrentGoalPosition(const ctb::LatLong& rovP, const Eigen::Vector2d &current_vec, const float& alignmentDistance, ctb::LatLong& goalP);
     /*
      * Method that resets the path
     */

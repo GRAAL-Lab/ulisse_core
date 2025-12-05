@@ -36,7 +36,9 @@ bool StateRovFollow::ConfigureStateFromFile(libconfig::Config& confObj)
         return false;
     if (!ctb::GetParam(state, maxObstacleZoneRadius, "maxObstacleZoneRadius"))
         return false;
-    if (!ctb::GetParam(state, redFlagDistance, "redFlagDistance"))
+    if (!ctb::GetParam(state, redFlagDistance, "obstacleAlignmentDistance"))
+        return false;
+    if (!ctb::GetParam(state, currentAlignmentDistance, "currentAlignmentDistance"))
         return false;
 
     return true;
@@ -128,7 +130,7 @@ fsm::retval StateRovFollow::Execute()
 
     LatLong RovObstaclePos;
     // Compute Obstacle-Goal position (the red flag)
-    pathManager_.ComputeRovObstacleGoalPosition(goalPosition, obstaclePosition, RovObstaclePos);
+    pathManager_.ComputeRovObstacleGoalPosition(goalPosition, obstaclePosition, redFlagDistance, RovObstaclePos);
     // Compute distance and heading towards Obstacle-Goal (the red flag)
     ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, RovObstaclePos, goalDistanceObstacle, goalHeadingObstacle); // align to obstacle
     // Compute distance and heading towards ROV

@@ -53,7 +53,7 @@ namespace states {
         double cartesianErrorObstacle;
 
         double minCartesianObstacleError_, maxCartesianObstacleError_, minObstacleZoneRadius, maxObstacleZoneRadius, obstacleGoalAcceptanceRadius;
-        double redFlagDistance;
+        double redFlagDistance, currentAlignmentDistance;
 
 
         bool ConfigureStateFromFile(libconfig::Config& confObj) override;
