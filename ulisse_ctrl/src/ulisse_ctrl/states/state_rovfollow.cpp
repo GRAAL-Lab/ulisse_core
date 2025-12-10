@@ -105,6 +105,8 @@ fsm::retval StateRovFollow::Execute()
 
     obstacleAvoidanceTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(obstacleAvoidanceTask_->TaskSpace(), obstacleAvoidanceTask_->TaskSpace());
     obstacleAvoidanceTask_->Update();
+    LatLong waterCurrentGoal;
+    pathManager_.ComputeWaterCurrentGoalPosition(goalPosition, ctrlData->inertialF_waterCurrent, currentAlignmentDistance, waterCurrentGoal);
 
     /*
     LatLong vehiclePose;

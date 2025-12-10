@@ -191,19 +191,26 @@ bool PathManager::ComputeRovObstacleGoalPosition(const ctb::LatLong& rovP, const
     return true;
 }
 
-bool PathManager::ComputeWaterCurrentGoalPosition(const ctb::LatLong& rovP, const Eigen::Vector2d &current_vec, const float& alignmentDistance, ctb::LatLong& goalP){
-    Eigen::Vector3d rov_UTM, goal_UTM, trans_vec_unit, current_UTM;
+bool PathManager::ComputeWaterCurrentGoalPosition(const ctb::LatLong& rovP, const Eigen::Vector3d &current_vec, const float& alignmentDistance, ctb::LatLong& goalP){
+    Eigen::Vector3d rov_UTM, goal_UTM, trans_vec, trans_vec_unit, current_UTM;
     Eigen::TransformationMatrix goalF_T_rovF;
     ctb::LatLong2LocalUTM(rovP, 0.0, centroid_, rov_UTM);
-    current_UTM.x() = current_vec.x();
-    current_UTM.y() = current_vec.y();
-    current_UTM.z() = 0.0;
-    trans_vec_unit = current_UTM/current_UTM.norm();
+    //current_UTM.x() = current_vec.x();
+    //current_UTM.y() = current_vec.y();
+    //current_UTM.z() = 0.0;
+    trans_vec = 1000 * current_vec;
+    trans_vec_unit = trans_vec/trans_vec.norm();
+    goalF_T_rovF.TranslationVector(alignmentDistance * trans_vec_unit);
+    goalF_T_rovF.RotationMatrix(Eigen::Matrix3d::Identity());
 
-    goal_UTM = rov_UTM + alignmentDistance * trans_vec_unit;
+    goal_UTM = rov_UTM + goalF_T_rovF.TranslationVector();
 
     double altitude;
     ctb::LocalUTM2LatLong(goal_UTM, centroid_, goalP, altitude);
+    std::cout << "rov_UTM = " << rov_UTM << std::endl;
+    std::cout << "trans_vec_unit = " << trans_vec_unit << std::endl;
+    std::cout << "current_vec = " << current_vec << std::endl;
+    std::cout << "water_current_goal_UTM = " << goal_UTM << std::endl;
 
     return true;
 }

@@ -678,6 +678,7 @@ void VehicleController::NavFilterCB(const ulisse_msgs::msg::NavFilterData::Share
     // Get the water current for hold state
     ctrlData_->inertialF_waterCurrent[0] = msg->inertialframe_water_current[0];
     ctrlData_->inertialF_waterCurrent[1] = msg->inertialframe_water_current[1];
+    ctrlData_->inertialF_waterCurrent[2] = 0.0;
 
     ctrlData_->bodyF_angularPosition.Pitch(0.0);
     ctrlData_->bodyF_angularPosition.Roll(0.0);
