@@ -32,6 +32,8 @@ RowLayout {
     property alias pathCmdPane: mapsidebar.pathCmdPane
     property alias savePathDialog: mapsidebar.savePathDialog
     property alias sliderHeading: mapsidebar.sliderHeading
+    property string mapboxAccessToken: "pk.eyJ1IjoiZndhbmRlcmxpbmdoIiwiYSI6ImNtbDg1ZWF4cDAzdHEzZXM1bXE4ZDUzNjIifQ.Vi4_J2LLEKO-CumxBsNu0w"
+
 
     spacing: 0
     width: window.width
@@ -51,10 +53,20 @@ RowLayout {
             value: ':/offline_tiles/osm'
         }
 
+        PluginParameter {
+            name: "osm.mapping.providersrepository.address"
+            value: "https://api.maptiler.com/maps/"
+        }
+
         // IMPORTANT: make the final URL "look like" it ends in .jpg to avoid Qt5 URL-append quirks
         PluginParameter {
             name: "osm.mapping.custom.host"
             value: "https://api.maptiler.com/maps/satellite/256/%z/%x/%y.jpg?key=IE8wkUKXhxpYl47BCBQq&ext=.jpg"
+        }
+
+        PluginParameter {
+            name: "mapboxgl.access_token"
+            value: mapView.mapboxAccessToken
         }
 
 
