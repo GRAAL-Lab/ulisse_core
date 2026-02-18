@@ -808,17 +808,17 @@ void VehicleController::PublishTasksInfo()
 
             std::vector<double> diagonal_internal_activation_function;
             for (unsigned int i = 0; i < taskMap.second.task->InternalActivationFunction().rows(); i++) {
-                diagonal_internal_activation_function.push_back(taskMap.second.task->InternalActivationFunction().at(i, i));
+                diagonal_internal_activation_function.push_back(taskMap.second.task->InternalActivationFunction()(i, i));
             }
 
             std::vector<double> diagonal_external_activation_function;
             for (unsigned int i = 0; i < taskMap.second.task->ExternalActivationFunction().rows(); i++) {
-                diagonal_external_activation_function.push_back(taskMap.second.task->ExternalActivationFunction().at(i, i));
+                diagonal_external_activation_function.push_back(taskMap.second.task->ExternalActivationFunction()(i, i));
             }
 
             std::vector<double> referenceRate;
             for (unsigned int i = 0; i < taskMap.second.task->ReferenceRate().size(); i++) {
-                referenceRate.push_back(taskMap.second.task->ReferenceRate().at(i));
+                referenceRate.push_back(taskMap.second.task->ReferenceRate()(i));
             }
 
             ulisse_msgs::msg::TaskStatus taskstatus_msg;

@@ -93,7 +93,7 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
     });*/
 
     polypathTypes.append("Serpentine");
-    polypathTypes.append("RaceTrack");
+    polypathTypes.append("Racetrack");
     polypathTypes.append("Racetrack");
 
     emit startup_info_read();
@@ -245,24 +245,10 @@ QVector<double> CommandWrapper::createPathFromPolygon(const QString &pathJsonDat
     try {
         if (polypathType == "Serpentine") {
             newPath = sisl::PathFactory::NewSerpentine(angle, direction, size_1_Path, polyVerticesUTM);
-        } else if (polypathType == "RaceTrack") {
-            //qDebug() << "*** CREATING RACE TRACK ***";
-            newPath = sisl::PathFactory::NewRaceTrack(angle, direction, size_1_Path, size_2_Path, polyVerticesUTM);
-            //qDebug() << "*** RACE TRACK DONE ***";
-            newPath = sisl::PathFactory::NewRaceTrack(angle, direction, size_1_Path, size_2_Path, polyVerticesUTM);
         } else if (polypathType == "Racetrack") {
-
-            Eigen::Vector3d baricenter;
-            for(int i = 0; i < 3; i++) {
-                double dim_sum{0};
-                for(size_t j = 0; j < (polyVerticesUTM.size() - 1); j++) {
-                    dim_sum += polyVerticesUTM.at(j)[i];
-                }
-                baricenter[i] = dim_sum/(polyVerticesUTM.size() - 1);
-            }
-            //std::cout << "Lap 1:" << executionTime.Elapsed() << std::endl;
-
-            newPath = sisl::PathFactory::NewRacetrack(-angle, direction, size_1_Path, size_2_Path, baricenter);
+            //qDebug() << "*** CREATING RACE TRACK ***";
+            newPath = sisl::PathFactory::NewRacetrack(angle, direction, size_1_Path, size_2_Path, polyVerticesUTM);
+            //qDebug() << "*** RACE TRACK DONE ***";
         } else {
             std::cout << "[CommandWrapper::createPathFromPolygon] polypathType '" << polypathType << "' not recognized." << std::endl;
             pathCreated = false;

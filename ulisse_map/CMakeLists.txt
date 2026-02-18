@@ -10,8 +10,17 @@ set(CMAKE_BUILD_TYPE RelWithDebInfo)
 #endif()
 
 if(NOT WIN32)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Wextra -fPIC -Wno-deprecated-copy")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -fPIC -Wno-deprecated-copy")
 endif()
+
+# Enable ccache for faster rebuilds
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+  set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+endif()
+
+# Option to enable/disable unity builds (faster compilation)
+option(ENABLE_UNITY_BUILD "Enable unity/jumbo builds for faster compilation" OFF)
 
 # near the top of CMakeLists.txt
 option(QT_QML_GENERATE_QMLLS_INI "Generate qmlls.ini for QML Language Server" ON)
@@ -89,6 +98,15 @@ add_library(ulissemap_lib
     src/commandwrapper.cpp
     src/addonsbridge.cpp
 )
+
+# Enable unity builds for faster compilation (if ENABLE_UNITY_BUILD is ON)
+if(ENABLE_UNITY_BUILD)
+  set_target_properties(ulissemap_lib PROPERTIES
+    UNITY_BUILD ON
+    UNITY_BUILD_BATCH_SIZE 8
+  )
+endif()
+
 target_link_libraries(ulissemap_lib
   rclcpp::rclcpp
   ament_index_cpp::ament_index_cpp
@@ -98,6 +116,15 @@ target_link_libraries(ulissemap_lib
 # otherwise QT automoc won't parse the files and you'll get
 # "undefined reference to vtable"
 add_executable(${PROJECT_NAME}_node ${SOURCE_FILES} "src/qml.qrc" )
+
+# Enable unity builds for faster compilation (Qt projects benefit especially, if ENABLE_UNITY_BUILD is ON)
+if(ENABLE_UNITY_BUILD)
+  set_target_properties(${PROJECT_NAME}_node PROPERTIES
+    UNITY_BUILD ON
+    UNITY_BUILD_BATCH_SIZE 8
+  )
+endif()
+
 #ament_target_dependencies(${PROJECT_NAME}_node
 #        rclcpp
 #        ament_index_cpp

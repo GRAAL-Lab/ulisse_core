@@ -28,7 +28,7 @@ void SafetyBoundaries::Update() noexcept(false)
     ctb::LatLong2LocalUTM(vehiclePositionLatLong_, 0.0, centroid_, vehiclePosition_);
 
     EvaluateAlignmentAndDistance();
-    x_.at(0) = d_;
+    x_(0) = d_;
 
     ReactiveTask::Update();
 }

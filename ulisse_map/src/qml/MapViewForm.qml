@@ -51,6 +51,12 @@ RowLayout {
             value: ':/offline_tiles/osm'
         }
 
+        // IMPORTANT: make the final URL "look like" it ends in .jpg to avoid Qt5 URL-append quirks
+        PluginParameter {
+            name: "osm.mapping.custom.host"
+            value: "https://api.maptiler.com/maps/satellite/256/%z/%x/%y.jpg?key=IE8wkUKXhxpYl47BCBQq&ext=.jpg"
+        }
+
 
         /*PluginParameter {
             id: maxZoomLevel

@@ -67,9 +67,9 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
     if (pathType_ == "PolyPath") {
         if (polypathType_ == "Serpentine"){
             path_ = sisl::PathFactory::NewSerpentine(angle_, direction_, size_1_, polyVerticesUTM);
-        } else if (polypathType_ == "RaceTrack"){
-            path_ = sisl::PathFactory::NewRaceTrack(angle_, direction_, size_1_, size_2_, polyVerticesUTM);
         } else if (polypathType_ == "Racetrack"){
+            path_ = sisl::PathFactory::NewRacetrack(angle_, direction_, size_1_, size_2_, polyVerticesUTM);
+        }/* else if (polypathType_ == "RacetrackOLD"){
 
             Eigen::Vector3d baricenter;
             for(int i = 0; i < 3; i++) {
@@ -81,7 +81,8 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
             }
 
             path_ = sisl::PathFactory::NewRacetrack(-angle_, direction_, size_1_, size_2_, baricenter);
-        } else {
+        }*/
+        else {
             std::cerr << "Error: polypathType not recognized.";
             return false;
         }

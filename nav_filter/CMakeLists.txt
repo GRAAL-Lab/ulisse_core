@@ -13,6 +13,15 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+# Enable ccache for faster rebuilds
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+  set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+endif()
+
+# Option to enable/disable unity builds (faster compilation)
+option(ENABLE_UNITY_BUILD "Enable unity/jumbo builds for faster compilation" OFF)
+
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
@@ -68,6 +77,15 @@ set(nav_filter_lib_sources
 
 ## Libraries
 add_library(nav_filter_lib ${nav_filter_lib_sources})
+
+# Enable unity builds for faster compilation (if ENABLE_UNITY_BUILD is ON)
+if(ENABLE_UNITY_BUILD)
+  set_target_properties(nav_filter_lib PROPERTIES
+    UNITY_BUILD ON
+    UNITY_BUILD_BATCH_SIZE 16
+  )
+endif()
+
 #ament_target_dependencies(nav_filter_lib rclcpp std_msgs ulisse_msgs surface_vehicle_model)
 target_link_libraries(nav_filter_lib
   ${sensor_msgs_LIBRARIES}

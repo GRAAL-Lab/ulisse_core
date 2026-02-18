@@ -5,7 +5,9 @@
 ██║   ██║██║     ██║╚════██║╚════██║██╔══╝  
 ╚██████╔╝███████╗██║███████║███████║███████╗ v2.0
  ╚═════╝ ╚══════╝╚═╝╚══════╝╚══════╝╚══════╝
+(graal@192.168.1.100)
 ```
+
 
 # Ulisse Catamaran Control
 
@@ -64,6 +66,20 @@ All the next times, just execute the following commands:
 ```bash
 
 sourceros2
+colcon build --symlink-install
+```
+
+### Faster Builds on Embedded Systems
+
+For initial builds on the catamaran PC, enable unity builds (30-40% faster, uses more RAM):
+
+```bash
+colcon build --symlink-install --cmake-args -DENABLE_UNITY_BUILD=ON --parallel-workers 4
+```
+
+For incremental development, disable unity:
+
+```bash
 colcon build --symlink-install
 ```
 
@@ -191,11 +207,13 @@ sudo route add default gw 192.168.1.169
 
 ### Select network connection from Command Line
 
-`nmcli connection up ULISSE`
+For local `192.168.1.100` network (in deployment stage):
 
-or
+`sudo nmcli connection up ULISSE`
 
-`nmcli connection up ULISSE\ GRAAL`
+or, for GRAAL `130.251.6.100` network (in development):
+
+`sudo nmcli connection up ULISSE\ GRAAL`
 
 
 ### Disable GPS in the Navigation Filter

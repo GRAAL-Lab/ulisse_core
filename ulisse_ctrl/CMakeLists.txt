@@ -13,6 +13,15 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+# Enable ccache for faster rebuilds
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+  set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+endif()
+
+# Option to enable/disable unity builds (faster compilation)
+option(ENABLE_UNITY_BUILD "Enable unity/jumbo builds for faster compilation" OFF)
+
 #set(BUILD_TYPE_DEBUG TRUE)
 
 find_package(ament_cmake REQUIRED)
@@ -108,6 +117,15 @@ set(ulisse_dynamic_ctrl_lib_sources
 add_library(ulisse_kinematic_ctrl_lib ${ulisse_kinematic_ctrl_lib_sources})
 #ament_target_dependencies(ulisse_kinematic_ctrl_lib rclcpp std_msgs ulisse_msgs surface_vehicle_model ament_index_cpp)
 #target_link_libraries(ulisse_kinematic_ctrl_lib ${surface_vehicle_model_LIBRARIES} ${ulisse_msgs_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ikcl tpik config++ GeographicLib rml fsm ctrl_toolbox sisl_toolbox)
+
+# Enable unity builds for faster compilation (if ENABLE_UNITY_BUILD is ON)
+if(ENABLE_UNITY_BUILD)
+  set_target_properties(ulisse_kinematic_ctrl_lib PROPERTIES
+    UNITY_BUILD ON
+    UNITY_BUILD_BATCH_SIZE 16
+  )
+endif()
+
 target_link_libraries(ulisse_kinematic_ctrl_lib PUBLIC
   ${std_msgs_TARGETS}
   ${ulisse_msgs_TARGETS}
