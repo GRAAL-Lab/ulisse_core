@@ -211,9 +211,9 @@ For local `192.168.1.100` network (in deployment stage):
 
 `sudo nmcli connection up ULISSE`
 
-or, for GRAAL `130.251.6.100` network (in development):
+or, for GRAAL `130.251.6.10` network (in development):
 
-`sudo nmcli connection up ULISSE\ GRAAL`
+`sudo nmcli connection up ULISSE-GRAAL`
 
 
 ### Disable GPS in the Navigation Filter
