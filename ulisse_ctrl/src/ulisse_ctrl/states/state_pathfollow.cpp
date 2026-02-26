@@ -58,6 +58,7 @@ bool StatePathFollow::ConfigureStateFromFile(libconfig::Config& confObj)
     const libconfig::Setting& states = root["states"];
 
     const libconfig::Setting& state = states.lookup(ulisse::states::ID::pathfollow);
+    if (!ctb::GetParam(root, maxVehicleSpeed_, "maxVehicleSpeed"))        return false;
 
     if (!ctb::GetParam(state, maxHeadingError_, "maxHeadingError"))
         return false;
@@ -82,8 +83,8 @@ bool StatePathFollow::ConfigureStateFromFile(libconfig::Config& confObj)
 fsm::retval StatePathFollow::OnEntry()
 {
     //set tasks
-    //safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
-    //absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
+    safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
+    absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
     cartesianDistanceTask_ = std::dynamic_pointer_cast<ikcl::CartesianDistance>(tasksMap.find(ulisse::task::asvCartesianDistance)->second.task);
     alignToTargetTask_ = std::dynamic_pointer_cast<ikcl::AlignToTarget>(tasksMap.find(ulisse::task::asvAngularPosition)->second.task);
     cartesianDistancePathFollowingTask_ = std::dynamic_pointer_cast<ikcl::CartesianDistance>(tasksMap.find(ulisse::task::asvCartesianDistancePathFollowing)->second.task);
@@ -93,6 +94,8 @@ fsm::retval StatePathFollow::OnEntry()
     } else {
         return fsm::fail;
     }
+    //ctrlData->avoidancePathEnabled = true; // juri
+    //std::cout << "Entry::::::::ctrlData-avoidancePathEnabled" << ctrlData->avoidancePathEnabled<< std::endl;
 }
 
 fsm::retval StatePathFollow::Execute()
@@ -101,8 +104,8 @@ fsm::retval StatePathFollow::Execute()
     //a desired escape directon and to generate a desired velocity. To do this we use the task AbsoluteAxisAlignment to cope with
     //the align behavior activated in function of the internal actiovation function of the safety task.
 
-/*    safetyBoundariesTask_->VehiclePosition() = ctrlData->inertialF_linearPosition;
-
+    safetyBoundariesTask_->VehiclePosition() = ctrlData->inertialF_linearPosition;
+    //ctrlData->avoidancePathEnabled = true; // juri
 
     //std::cout << "*** Is this allocation failing? ***" << std::endl;
     Eigen::MatrixXd Aexternal;
@@ -129,7 +132,7 @@ fsm::retval StatePathFollow::Execute()
 
     // Set the gain of the cartesian distance task
     safetyBoundariesTask_->ExternalActivationFunction() = taskGainSafety * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
-*/
+
     double goalDistance, goalHeading;
     //pathfollow action
     if (isCurveSet_) {
@@ -170,7 +173,7 @@ fsm::retval StatePathFollow::Execute()
         } else {
 
             if (pathManager_.DistanceToEnd() < tolleranceEndingPoint_) {
-
+                std::cout << "ctrlData-avoidancePathEnabled" << ctrlData->avoidancePathEnabled<< std::endl;
                 std::cout << "*** MISSION FINISHED! ***" << std::endl;
                 fsm_->EmitEvent(ulisse::events::names::neargoalposition, ulisse::events::priority::medium);
 
@@ -179,6 +182,21 @@ fsm::retval StatePathFollow::Execute()
                 if (!pathManager_.ComputeGoalPosition(ctrlData->inertialF_linearPosition, nextP_)) {
                     return fsm::fail;
                 }
+                double taskGain = cartesianDistancePathFollowingTask_->TaskParameter().conf_gain;
+                double ref_speed = cartesianDistancePathFollowingTask_->TaskParameter().conf_saturation;
+
+                // Saturate the input value between min and max
+
+                if(pathManager_.GetVelocity(ctrlData->inertialF_linearPosition, ref_speed)){
+                    //std::cerr<< " GetVel: "<< ref_speed<<", maxVehicle: "<<maxVehicleSpeed_<<", so task param: ";
+                    ref_speed = std::clamp(ref_speed, 0.0, maxVehicleSpeed_);
+                    //std::cerr<<ref_speed<<std::endl;
+                    // Setting the gain like this ensures that "v_ref > ref_speed"
+                    // for distances greater than the acceptance radius.
+                    taskGain = ref_speed/pathManager_.nurbsParam.deltaMin;
+                }
+
+                cartesianDistancePathFollowingTask_->TaskParameter().saturation = ref_speed;
 
                 ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, nextP_, goalDistance, goalHeading);
 
@@ -197,12 +215,14 @@ fsm::retval StatePathFollow::Execute()
                 double headingError = alignToTargetTask_->ControlVariable().norm();
 
                 //compute the gain of the cartesian distance
-                double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingError);
+                double taskHeadingGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingError);
+                //double taskGain = rml::DecreasingBellShapedFunction(minHeadingError_, maxHeadingError_, 0, 1.0, headingError); //original
 
                 //Set the gain of the cartesian distance task
+                //original
                 //cartesianDistancePathFollowingTask_->ExternalActivationFunction() = taskGain * Eigen::MatrixXd::Identity(cartesianDistancePathFollowingTask_->TaskSpace(), cartesianDistancePathFollowingTask_->TaskSpace());
-                cartesianDistancePathFollowingTask_->TaskParameter().gain = taskGain * cartesianDistancePathFollowingTask_->TaskParameter().conf_gain;
-
+                //cartesianDistancePathFollowingTask_->TaskParameter().gain = taskGain * cartesianDistancePathFollowingTask_->TaskParameter().conf_gain;
+                cartesianDistancePathFollowingTask_->TaskParameter().gain = taskHeadingGain * taskGain;
                 cartesianDistanceTask_->ExternalActivationFunction() = 0.0 * Eigen::MatrixXd::Identity(cartesianDistanceTask_->TaskSpace(), cartesianDistanceTask_->TaskSpace());
                 cartesianDistancePathFollowingTask_->ExternalActivationFunction() = Eigen::MatrixXd::Identity(cartesianDistancePathFollowingTask_->TaskSpace(), cartesianDistancePathFollowingTask_->TaskSpace());
             }

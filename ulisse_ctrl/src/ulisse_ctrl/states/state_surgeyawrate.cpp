@@ -54,7 +54,7 @@ namespace states {
     fsm::retval StateSurgeYawRate::Execute()
     {
         CheckRadioController();
-
+        ctrlData->preStateRovFollow = false; // juri
         tNow_ = std::chrono::system_clock::now();
         totalElapsed_ = std::chrono::duration_cast<std::chrono::seconds>(tNow_ - tStart_);
 

@@ -11,6 +11,7 @@
 #include "surface_vehicle_model/surfacevehiclemodel.hpp"
 #include "ulisse_msgs/msg/task_status.hpp"
 #include "ulisse_msgs/msg/obstacle.hpp" // ASV-ROV
+#include "ulisse_msgs/msg/command_path_follow.hpp"
 
 #include "detav_msgs/msg/obstacle.hpp"
 
@@ -24,6 +25,14 @@ struct ControlData {
     Eigen::Vector3d bodyF_linearVelocity;
     Eigen::Vector3d bodyF_angularVelocity;
     Eigen::Vector3d inertialF_waterCurrent;
+    ctb::LatLong inertialF_linearPositionCurrentGoal; // ASV-ROV
+    bool avoidancePathEnabled; // ASV-ROV
+    bool cableCurrentAligned; // ASV-ROV
+    bool avoidancePathGenerated; // ASV-ROV
+    bool preStateRovFollow;
+    double cable_length;
+    ulisse_msgs::msg::CommandPathFollow avoidancePath;
+
     bool radioControllerEnabled;
     std::vector<detav_msgs::msg::Obstacle> obstacleMsgVector;
 

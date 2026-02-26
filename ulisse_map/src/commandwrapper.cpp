@@ -37,7 +37,7 @@ CommandWrapper::~CommandWrapper()
 void CommandWrapper::Init(QQmlApplicationEngine* engine)
 {
     appEngine_ = engine;
-    checkErrorTimer_.reset(new QTimer());
+    //checkErrorTimer_.reset(new QTimer());
     surgeHeadingPubTimer_.reset(new QTimer());
     surgeYawRatePubTimer_.reset(new QTimer());
     commandTimeoutTimer_.reset(new QTimer());
@@ -48,7 +48,7 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
     fbkReceived_ = false;
 
     // Connecting the timer endings (SIGNAL timeout()) to some speicific functions defined in the SLOTS
-    QObject::connect(checkErrorTimer_.get(), SIGNAL(timeout()), this, SLOT(check_error_slot()));
+    //QObject::connect(checkErrorTimer_.get(), SIGNAL(timeout()), this, SLOT(check_error_slot()));
     QObject::connect(surgeHeadingPubTimer_.get(), SIGNAL(timeout()), this, SLOT(publish_surge_heading()));
     QObject::connect(surgeYawRatePubTimer_.get(), SIGNAL(timeout()), this, SLOT(publish_surge_yawrate()));
     QObject::connect(commandTimeoutTimer_.get(), SIGNAL(timeout()), this, SLOT(stop_command_publisher()));
@@ -90,9 +90,18 @@ void CommandWrapper::Init(QQmlApplicationEngine* engine)
 
     emit startup_info_read();
 }
+void CommandWrapper::StopOngoingTimers()
+{
+    surgeHeadingPubTimer_->stop();
+    surgeYawRatePubTimer_->stop();
+    //checkErrorTimer_->stop();
+}
 
 void CommandWrapper::RegisterPublishersAndSubscribers()
 {
+    // Tesi Depalo
+
+    avoidance_path_srv_ = this->create_client<ulisse_msgs::srv::ComputeAvoidancePath>(ulisse_msgs::topicnames::control_avoidance_cmd_service);
 
     command_srv_ = this->create_client<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service);
     boundary_srv_ = this->create_client<ulisse_msgs::srv::SetBoundaries>(ulisse_msgs::topicnames::set_boundaries_service);
@@ -111,6 +120,9 @@ void CommandWrapper::RegisterPublishersAndSubscribers()
 
 void CommandWrapper::resetPublishersAndSubscribers()
 {
+    // Tesi Depalo
+    avoidance_path_srv_.reset();
+
     command_srv_     .reset();
     cruise_srv_      .reset();
     boundary_srv_    .reset();
@@ -395,14 +407,60 @@ bool CommandWrapper::sendHoldCommand(double radius)
     return SendCommandRequest(serviceReq);
 }
 
-bool CommandWrapper::sendLatLongCommand(const QGeoCoordinate& goal, double radius)
+bool CommandWrapper::sendLatLongCommand(const QGeoCoordinate& goal, double radius, double ref_speed)
 {
     auto serviceReq = std::make_shared<ulisse_msgs::srv::ControlCommand::Request>();
     serviceReq->command_type = ulisse::commands::ID::latlong;
     serviceReq->latlong_cmd.goal.latitude = goal.latitude();
     serviceReq->latlong_cmd.goal.longitude = goal.longitude();
     serviceReq->latlong_cmd.acceptance_radius = radius;
+    serviceReq->latlong_cmd.ref_speed = ref_speed;
     return SendCommandRequest(serviceReq);
+}
+
+/// Tesi Depalo
+#include <chrono>  // For duration and timeout
+
+bool CommandWrapper::sendLatLongAvoidanceCommand(const QGeoCoordinate& goal, double radius, double ref_speed, bool  COLREGS)
+{
+  auto serviceReq = std::make_shared<ulisse_msgs::srv::ComputeAvoidancePath::Request>();
+
+  serviceReq->latlong_cmd.goal.latitude = goal.latitude();
+  serviceReq->latlong_cmd.goal.longitude = goal.longitude();
+  serviceReq->latlong_cmd.acceptance_radius = radius;
+  serviceReq->latlong_cmd.ref_speed = ref_speed;
+  serviceReq->colregs_compliant = COLREGS;
+
+  // Chiama servizio di avoidance
+  static std::string result_msg;
+  bool serviceAvailable;
+
+  if (avoidance_path_srv_->service_is_ready()) {
+    auto result_future = avoidance_path_srv_->async_send_request(serviceReq);
+    std::cout << "Sent Request to Avoidance" << std::endl;
+
+    // Set the timeout for 0.5 seconds (500 milliseconds)
+    auto timeout = std::chrono::milliseconds(500);
+
+    // Wait for the result or timeout
+    if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future, timeout) != rclcpp::FutureReturnCode::SUCCESS) {
+      result_msg = "Avoidance service call failed or timed out :(";
+      RCLCPP_ERROR_STREAM(this->get_logger(), result_msg.c_str());
+    } else {
+      auto result = result_future.get();
+      result_msg = "Avoidance service returned: " + std::to_string(result->res);
+      RCLCPP_INFO_STREAM(this->get_logger(), result_msg);
+    }
+
+    serviceAvailable = true;
+    StopOngoingTimers();
+  } else {
+    result_msg = "The Avoidance Node doesn't seem to be active.";
+    serviceAvailable = false;
+  }
+
+  ShowToast(result_msg.c_str(), 4000);
+  return serviceAvailable;
 }
 
 bool CommandWrapper::sendSurgeHeadingCommand(double surge, double heading)
@@ -513,13 +571,14 @@ bool CommandWrapper::startPath()
     qDebug() << "Acceptance Radius: " << wpRadius_;
     qDebug() << "Loop Over Path: " << (loopPathObj_->property("checked")).toBool();
 
-    bool ret = sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), 0);
+    //bool ret = sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), 0);
 
-    if (ret) {
-        checkErrorTimer_->start(errorCheckInterval_);
-    }
+    //if (ret) {
+    //    checkErrorTimer_->start(errorCheckInterval_);
+    //}
 
-    return ret;
+    //return ret;
+    return false;
 }
 
 void CommandWrapper::stopPath()
@@ -541,7 +600,7 @@ void CommandWrapper::resumePath()
     wpRadius_ = (waypointRadiusObj_->property("text")).toDouble();
 
     if (wpCurrentIndex_ < waypoint_path_.size()) {
-        sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), wpRadius_);
+    //    sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), wpRadius_);
     }
     // FIXME: what if resuming a loop path, and we were at the last waypoint?
 }
@@ -564,7 +623,7 @@ bool CommandWrapper::goToNextWaypoint()
     wpCurrentIndex_++;
 
     if (wpCurrentIndex_ < waypoint_path_.size()) {
-        ret = sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), 0);
+    //    ret = sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), 0);
     } else {
         if ((loopPathObj_->property("checked")).toBool()) {
             ret = startPath();
@@ -586,19 +645,12 @@ bool CommandWrapper::goToPreviousWaypoint()
     wpCurrentIndex_--;
 
     if (wpCurrentIndex_ >= 0) {
-        ret = sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), 0);
+    //    ret = sendLatLongCommand(qvariant_cast<QGeoCoordinate>(waypoint_path_.at(wpCurrentIndex_)), 0);
     } else {
         wpCurrentIndex_ = 0;
     }
     std::cout << "[Prev] wpCurrentIndex: " << wpCurrentIndex_ << std::endl;
     return ret;
-}
-
-void CommandWrapper::StopOngoingTimers()
-{
-    surgeHeadingPubTimer_->stop();
-    surgeYawRatePubTimer_->stop();
-    checkErrorTimer_->stop();
 }
 
 void CommandWrapper::publish_surge_heading()

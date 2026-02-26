@@ -86,6 +86,8 @@ set(ulisse_kinematic_ctrl_lib_sources
     #src/ulisse_ctrl/events/generic_event.cpp
     src/ulisse_ctrl/events/event_rc_enabled.cpp
     src/ulisse_ctrl/events/event_near_goal_position.cpp
+    src/ulisse_ctrl/events/event_long_tether.cpp
+    src/ulisse_ctrl/events/event_far_alignment_position.cpp
 
     # TASKS
     src/ulisse_ctrl/tasks/SafetyBoundaries.cpp

@@ -10,6 +10,7 @@ namespace states {
     {
         maxHeadingError_ = M_PI / 16;
         minHeadingError_ = M_PI / 32;
+        maxVehicleSpeed_ = 4.0;
     }
 
     StateLatLong::~StateLatLong() { }
@@ -31,12 +32,22 @@ namespace states {
     fsm::retval StateLatLong::OnEntry()
     {
         //set tasks
-        //safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
-        //absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
+        safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
+        absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
         cartesianDistanceTask_ = std::dynamic_pointer_cast<ikcl::CartesianDistance>(tasksMap.find(ulisse::task::asvCartesianDistance)->second.task);
         alignToTargetTask_ = std::dynamic_pointer_cast<ikcl::AlignToTarget>(tasksMap.find(ulisse::task::asvAngularPosition)->second.task);
 
         if (actionManager->SetAction(ulisse::action::goTo, true)) {
+            // Saturate the input value between min and max
+            ref_speed = std::clamp(ref_speed, 0.0, maxVehicleSpeed_);
+            auto taskParams = cartesianDistanceTask_->TaskParameter();
+            taskParams.saturation = ref_speed;
+            // Setting the gain like this ensures that "v_ref > ref_speed"
+            // for distances greater than the acceptance radius.
+            taskParams.gain = ref_speed/acceptanceRadius;
+            cartesianDistanceTask_->TaskParameter() = taskParams;
+            std::cout << "[StateLatLong] Goal (lat,long): " << goalPosition << std::endl;
+            std::cout << "[StateLatLong] Ref. Speed:" << ref_speed << ", Acceptance Radius:" << acceptanceRadius << std::endl;
             return fsm::ok;
         } else {
             return fsm::fail;
@@ -54,12 +65,12 @@ namespace states {
     {
 
         CheckRadioController();
-
+        ctrlData->preStateRovFollow = false; // juri
         //SafetyBoundaries task: it's a velocity task base on the distance from the boundaries. The behaviour that has to achive is align to
         //a desired escape directon and to generate a desired velocity. To do this we use the task AbsoluteAxisAlignment to cope with
         //the align behavior activated in function of the internal actiovation function of the safety task.
 
-        /*safetyBoundariesTask_->VehiclePosition() = ctrlData->inertialF_linearPosition;
+        safetyBoundariesTask_->VehiclePosition() = ctrlData->inertialF_linearPosition;
 
         Eigen::MatrixXd Aexternal;
 
@@ -82,9 +93,6 @@ namespace states {
 
         // Set the gain of the cartesian distance task
         safetyBoundariesTask_->ExternalActivationFunction() = taskGainSafety * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
-*/
-
-
 
         //goto task
         /** if (we have obstacles){
@@ -133,6 +141,16 @@ namespace states {
 
         //std::cout << "STATE LATLONG" << std::endl;
 
+        return fsm::ok;
+    }
+
+    fsm::retval StateLatLong::OnExit()
+    {
+        // Returing to default values
+        auto taskParams = cartesianDistanceTask_->TaskParameter();
+        taskParams.saturation = taskParams.conf_saturation;
+        taskParams.gain = taskParams.conf_gain;
+        cartesianDistanceTask_->TaskParameter() = taskParams;
         return fsm::ok;
     }
 

@@ -10,6 +10,7 @@
 
 #include "fsm/fsm.h"
 #include "ulisse_ctrl/states/state_hold.hpp"
+#include "ulisse_ctrl/states/state_rovfollow.hpp"
 
 namespace ulisse {
 
@@ -20,6 +21,7 @@ namespace events {
         bool goToHold_;
         std::shared_ptr<ulisse::ControlData> ctrlData_;
         std::shared_ptr<ulisse::states::StateHold> stateHold_;
+        std::shared_ptr<ulisse::states::StateRovFollow> stateRovFollow_; // juri
 
     public:
         EventNearGoalPosition(void) {}
@@ -29,6 +31,7 @@ namespace events {
 
         auto ControlData() -> std::shared_ptr<ulisse::ControlData>& { return ctrlData_; }
         auto StateHold() -> std::shared_ptr<ulisse::states::StateHold>& { return stateHold_; }
+        auto StateRovFollow() -> std::shared_ptr<ulisse::states::StateRovFollow>& { return stateRovFollow_; }
 
         auto GoToHoldAfterMove(bool flag) { goToHold_ = flag; }
     };

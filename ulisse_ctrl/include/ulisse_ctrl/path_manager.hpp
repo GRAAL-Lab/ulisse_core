@@ -42,6 +42,8 @@ public:
     bool ComputeRovObstacleGoalPosition(const ctb::LatLong& rovP, const ctb::LatLong& obsP, const float& alignmentDistance, ctb::LatLong& goalP);
 
     bool ComputeWaterCurrentGoalPosition(const ctb::LatLong& rovP, const Eigen::Vector3d &current_vec, const float& alignmentDistance, ctb::LatLong& goalP);
+
+    bool TetherIsAlignedToCurrent(const ctb::LatLong& asvP, const ctb::LatLong& rovP, const Eigen::Vector3d &current_vec);
     /*
      * Method that resets the path
     */
@@ -83,8 +85,14 @@ public:
      * Method that get the path
     */
     auto GetPath() const -> const std::shared_ptr<sisl::Path> { return path_; }
+    
+    /*
+     * Method that gets the desired velocity
+    */
+    bool GetVelocity(const ctb::LatLong& position, double& velocity) const;
 
-    double ComputeDistanceOfClosestObstacle2ROV(const ctb::LatLong& rov_pos, const std::vector<detav_msgs::msg::Obstacle>,
+
+    bool ComputeDistanceOfClosestObstacle2ROV(const ctb::LatLong& rov_pos, const std::vector<detav_msgs::msg::Obstacle>,
                                                   double& distance, double& heading, ctb::LatLong& closest_obs);
    double RetrieveObstacleRadius(const std::vector<detav_msgs::msg::Obstacle>);
 
@@ -130,6 +138,8 @@ private:
     std::shared_ptr<sisl::Path> path_;                // The Curve
     ctb::LatLong centroid_;                     // The centroid for the convertion from/to cartesian/latlong
     std::vector<ctb::LatLong> coordinates_;     // Coordinate List of polypath
+    std::vector<double> velocities_;
+    std::vector<double> velocities_abscissas_;
     double angle_, size_1_, size_2_;
     sisl::Path::Direction direction_;
     ctb::LatLong startP_;                       // Starting point of the nurbs path

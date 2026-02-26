@@ -27,6 +27,7 @@
 #include "ulisse_msgs/srv/reset_configuration.hpp"
 #include "ulisse_msgs/srv/set_boundaries.hpp"
 #include "ulisse_msgs/srv/set_cruise_control.hpp"
+#include "ulisse_msgs/srv/compute_avoidance_path.hpp"
 
 #include "ulisse_ctrl/commands/command_halt.hpp"
 #include "ulisse_ctrl/commands/command_hold.hpp"
@@ -38,6 +39,8 @@
 
 #include "ulisse_ctrl/events/event_near_goal_position.hpp"
 #include "ulisse_ctrl/events/event_rc_enabled.hpp"
+#include "ulisse_ctrl/events/event_long_tether.hpp"
+#include "ulisse_ctrl/events/event_far_alignment_position.hpp"
 
 #include "ulisse_ctrl/states/state_halt.hpp"
 #include "ulisse_ctrl/states/state_hold.hpp"
@@ -66,10 +69,11 @@ class VehicleController : public rclcpp::Node {
     //ulisse_msgs::msg::TaskStatus taskstatusMsg_;
     std::string fileName_;
     rclcpp::Service<ulisse_msgs::srv::ControlCommand>::SharedPtr srvCommand_;
-    //rclcpp::Service<ulisse_msgs::srv::SetBoundaries>::SharedPtr srvSetBoundaries_;
-    //rclcpp::Service<ulisse_msgs::srv::GetBoundaries>::SharedPtr srvGetBoundaries_;
+    rclcpp::Service<ulisse_msgs::srv::SetBoundaries>::SharedPtr srvSetBoundaries_;
+    rclcpp::Service<ulisse_msgs::srv::GetBoundaries>::SharedPtr srvGetBoundaries_;
     rclcpp::Service<ulisse_msgs::srv::ResetConfiguration>::SharedPtr srvResetConf_;
     rclcpp::Service<ulisse_msgs::srv::SetCruiseControl>::SharedPtr srvCruise_;
+    rclcpp::Client<ulisse_msgs::srv::ComputeAvoidancePath>::SharedPtr srvAvoidancePath_;
 
     rclcpp::Subscription<ulisse_msgs::msg::NavFilterData>::SharedPtr navFilterSub_;
     rclcpp::Subscription<rov_msgs::msg::NavFilterData>::SharedPtr navFilterROVSub_; // ASV-ROV
@@ -80,6 +84,8 @@ class VehicleController : public rclcpp::Node {
     rclcpp::Subscription<ulisse_msgs::msg::SurgeHeading>::SharedPtr surgeHeadingSub_;
     rclcpp::Subscription<ulisse_msgs::msg::SurgeYawRate>::SharedPtr surgeYawRateSub_;
 
+    rclcpp::Subscription<ulisse_msgs::msg::CommandPathFollow>::SharedPtr avoidancePathSub_;
+
     rclcpp::Publisher<ulisse_msgs::msg::ReferenceVelocities>::SharedPtr  referenceVelocitiesPub_;
     rclcpp::Publisher<ulisse_msgs::msg::VehicleStatus>::SharedPtr vehicleStatusPub_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr genericLogPub_;
@@ -89,7 +95,7 @@ class VehicleController : public rclcpp::Node {
     rclcpp::Publisher<rov_msgs::msg::CableReference>::SharedPtr referenceCablePub_; // ASV-ROV
     rclcpp::Publisher<rov_msgs::msg::WinchMotorReference>::SharedPtr referenceWinchMotorPub_; // ASV-ROV
 
-    //rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr safetyBoundarySetPub_;
+    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr safetyBoundarySetPub_;
 
     rclcpp::TimerBase::SharedPtr runTimer_;
     rclcpp::TimerBase::SharedPtr slow_timer_;
@@ -117,10 +123,10 @@ class VehicleController : public rclcpp::Node {
     std::shared_ptr<ikcl::AlignToTarget> asvAngularPositionRovFollowing_; // ASV-ROV
     std::shared_ptr<ikcl::AlignToTarget> asvAngularPositionObstacle_; // Obstacle
     std::shared_ptr<ikcl::CartesianDistance> asvCartesianDistance_;
-    //std::shared_ptr<ikcl::SafetyBoundaries> asvSafetyBoundaries_;
+    std::shared_ptr<ikcl::SafetyBoundaries> asvSafetyBoundaries_; // Safety
     std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignment_;
     //std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentObstacle_; // Obstacle Alignment
-    //std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentSafety_;
+    std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentSafety_; // Safety
     std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentHold_;
     //std::shared_ptr<ikcl::AbsoluteAxisAlignment> asvAbsoluteAxisAlignmentObstacle_; // ASV-ROV
     std::shared_ptr<ikcl::CartesianDistance> asvCartesianDistancePathFollowing_;
@@ -152,6 +158,8 @@ class VehicleController : public rclcpp::Node {
 
     events::EventRCEnabled eventRcEnabled_;
     events::EventNearGoalPosition eventNearGoalPosition_;
+    events::EventLongTether eventLongTether_;
+    events::EventFarAlignmentPosition eventFarAlignmentPosition_;
 
     std::shared_ptr<KCLConfiguration> conf_;
 
@@ -181,6 +189,7 @@ class VehicleController : public rclcpp::Node {
     std::shared_ptr<ikcl::SphereObstacle> obs1_;
     std::shared_ptr<ikcl::SphereObstacle> obs2_;
     ulisse_msgs::msg::PlotVariables plotVar_;
+    ulisse_msgs::msg::CommandPathFollow aPath_;
 
     double Ts_;
     std::chrono::system_clock::time_point t_now_, t_last_;
@@ -197,12 +206,12 @@ class VehicleController : public rclcpp::Node {
     void CommandsHandler(const std::shared_ptr<rmw_request_id_t> request_header,
         const std::shared_ptr<ulisse_msgs::srv::ControlCommand::Request> request,
         std::shared_ptr<ulisse_msgs::srv::ControlCommand::Response> response);
-    /*void SetBoundariesHandler(const std::shared_ptr<rmw_request_id_t> request_header,
+    void SetBoundariesHandler(const std::shared_ptr<rmw_request_id_t> request_header,
         const std::shared_ptr<ulisse_msgs::srv::SetBoundaries::Request> request,
         std::shared_ptr<ulisse_msgs::srv::SetBoundaries::Response> response);
     void GetBoundariesHandler(const std::shared_ptr<rmw_request_id_t> request_header,
         const std::shared_ptr<ulisse_msgs::srv::GetBoundaries::Request> request,
-        std::shared_ptr<ulisse_msgs::srv::GetBoundaries::Response> response);*/
+        std::shared_ptr<ulisse_msgs::srv::GetBoundaries::Response> response);
     void ResetConfHandler(const std::shared_ptr<rmw_request_id_t> request_header,
         const std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Request> request,
         std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Response> response);
@@ -214,6 +223,8 @@ class VehicleController : public rclcpp::Node {
     void NavFilterRovCB(const rov_msgs::msg::NavFilterData::SharedPtr msg); // ASV-ROV
     void LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg);
     void CableDataRovCB(const rov_msgs::msg::CableData::SharedPtr msg); // ASV-ROV
+    void AvoidancePathCB(const ulisse_msgs::msg::CommandPathFollow::SharedPtr msg);
+
     void ComputeCableLength(); // ASV-ROV
     void ControlCableLength(const float &rpm, float &l); // ASV-ROVs
     void ComputeCableVelocity(const float &l_cable, float &vel_cable); // tether modelling
@@ -224,6 +235,9 @@ class VehicleController : public rclcpp::Node {
     void PrintObstacles(std::vector<std::shared_ptr<ikcl::Obstacle>> obstaclePointers);
 
     void PublishLog(std::string log);
+
+    bool sendLatLongAvoidanceCommand(const ctb::LatLong & goal, double radius, double ref_speed, bool COLREGS);
+    bool sentReq;
 
 public:
     VehicleController(std::string conf_filename);

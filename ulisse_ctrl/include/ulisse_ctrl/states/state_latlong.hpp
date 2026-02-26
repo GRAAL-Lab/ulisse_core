@@ -19,6 +19,7 @@ namespace states {
         ~StateLatLong() override;
         fsm::retval OnEntry() override;
         fsm::retval Execute() override;
+        fsm::retval OnExit() override;
 
         LatLong goalPosition;
         double goalHeading;
@@ -26,7 +27,7 @@ namespace states {
         double acceptanceRadius;
 
         // Classe PathController
-
+        double ref_speed;
         // Variabili ostacoli
         // Variabili polyline
 

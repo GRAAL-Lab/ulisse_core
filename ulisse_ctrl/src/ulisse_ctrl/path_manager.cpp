@@ -40,6 +40,14 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
     pathType_ = path.type;
     polypathType_ = path.polypath_type;
 
+    // depalo
+    velocities_ = path.velocities;
+    velocities_abscissas_ = path.velocities_abscissas;
+    if (velocities_abscissas_.size() != velocities_.size()) {
+        std::cerr << "Error: Input vectors (velocities & abscissas) must have the same size.";
+        return false;
+    }
+
     centroid_.latitude = path.centroid.latitude;
     centroid_.longitude = path.centroid.longitude;
 
@@ -82,7 +90,12 @@ bool PathManager::Initialization(const ulisse_msgs::msg::PathData& path)
         }
 
     } else if (pathType_ == "PointPath") {
-        path_ = sisl::PathFactory::NewPolygonalChain(direction_, polyVerticesUTM);
+        //path_ = sisl::PathFactory::NewPolygonalChain(direction_, polyVerticesUTM); // original
+        try{ // depalo
+            path_ = sisl::PathFactory::NewPolygonalChain(direction_, polyVerticesUTM);
+        }catch(const std::exception &e){
+            std::cerr<< std::string(e.what());
+        }
     } else {
         std::cerr << "Error: pathType not recognized.";
         return false;
@@ -188,6 +201,12 @@ bool PathManager::ComputeRovObstacleGoalPosition(const ctb::LatLong& rovP, const
     double altitude;
     ctb::LocalUTM2LatLong(goal_UTM, centroid_, goalP, altitude);
 
+    /*std::cout << "rov_UTM = " << rov_UTM << std::endl;
+    std::cout << "trans_vec_unit = " << trans_vec_unit << std::endl;
+    std::cout << "obs_UTM = " << obs_UTM << std::endl;
+    std::cout << "obstacle_goal_UTM = " << goal_UTM << std::endl;
+    std::cout << " -------- --------- -------- " << std::endl;*/
+
     return true;
 }
 
@@ -198,8 +217,10 @@ bool PathManager::ComputeWaterCurrentGoalPosition(const ctb::LatLong& rovP, cons
     //current_UTM.x() = current_vec.x();
     //current_UTM.y() = current_vec.y();
     //current_UTM.z() = 0.0;
-    trans_vec = 1000 * current_vec;
-    trans_vec_unit = trans_vec/trans_vec.norm();
+    trans_vec = current_vec;
+    //trans_vec_unit = trans_vec/trans_vec.norm();
+    trans_vec_unit = trans_vec.normalized();
+
     goalF_T_rovF.TranslationVector(alignmentDistance * trans_vec_unit);
     goalF_T_rovF.RotationMatrix(Eigen::Matrix3d::Identity());
 
@@ -207,28 +228,64 @@ bool PathManager::ComputeWaterCurrentGoalPosition(const ctb::LatLong& rovP, cons
 
     double altitude;
     ctb::LocalUTM2LatLong(goal_UTM, centroid_, goalP, altitude);
-    std::cout << "rov_UTM = " << rov_UTM << std::endl;
-    std::cout << "trans_vec_unit = " << trans_vec_unit << std::endl;
-    std::cout << "current_vec = " << current_vec << std::endl;
+    /*std::cout << "rov_UTM = " << rov_UTM << std::endl;
+    std::cout << "rovP = " << rovP << std::endl;
+    std::cout << "goalP = " << goalP << std::endl;
     std::cout << "water_current_goal_UTM = " << goal_UTM << std::endl;
+    std::cout << " -------- --------- -------- " << std::endl;*/
 
     return true;
+}
+
+bool PathManager::TetherIsAlignedToCurrent(const ctb::LatLong& asvP, const ctb::LatLong& rovP, const Eigen::Vector3d &current_vec){
+    Eigen::Vector3d rov_UTM, asv_UTM, asv_rov_UTM;
+    ctb::LatLong2LocalUTM(rovP, 0.0, centroid_, rov_UTM);
+    ctb::LatLong2LocalUTM(asvP, 0.0, centroid_, asv_UTM);
+    asv_rov_UTM = asv_UTM - rov_UTM;
+    double cosin = asv_rov_UTM.dot(current_vec) /( asv_rov_UTM.norm()*current_vec.norm());
+    if(cosin > 0.96){ // angle less than 5deg
+        return true;
+    }
+    else
+        return false;
 }
 
 double PathManager::DistanceToEnd() const
 {
     return std::fabs(path_->EndParameter() - currentAbscissa_);
+
 }
 
+bool PathManager::GetVelocity(const ctb::LatLong& position, double& velocity) const
+{
+    if(velocities_.empty()) return false;
+    Eigen::Vector3d currentPos_UTM;
+    ctb::LatLong2LocalUTM(position, 0.0, centroid_, currentPos_UTM);
+    int id;
+    double abscissa;
+    path_->FindClosestPoint(currentPos_UTM, id, abscissa);
+    // Find the first position where velocities_abscissas[i] > abscissa
 
-double PathManager::ComputeDistanceOfClosestObstacle2ROV(const ctb::LatLong& rov_pos, const std::vector<detav_msgs::msg::Obstacle> obs_vector,
+    auto it = std::lower_bound(velocities_abscissas_.begin(), velocities_abscissas_.end(), abscissa);
+    if (it == velocities_abscissas_.begin()) {
+        velocity = velocities_.front();
+    }else if (it == velocities_abscissas_.end()) {
+        velocity = velocities_.back();
+    }else{
+        velocity = velocities_[std::distance(velocities_abscissas_.begin(), it) - 1];
+    }
+    return true;
+
+}
+
+bool PathManager::ComputeDistanceOfClosestObstacle2ROV(const ctb::LatLong& rov_pos, const std::vector<detav_msgs::msg::Obstacle> obs_vector,
                                                           double& shortest_distance, double& heading2closest_obs, ctb::LatLong& closest_obs){
     //double obsAltitude;
     //std::vector<double> obs_distance_vect;
     //std::vector<double> heading_vect;
-    double min_distance;
-    double min_heading;
-    int min_id;
+    double min_distance; min_distance = 0.0;
+    double min_heading; min_heading = 0.0;
+    int min_id; min_id = 0;
     for(int unsigned long i=0; i<obs_vector.size(); i++){
         double distance, heading;
         ctb::LatLong obs_latlong;
@@ -255,7 +312,8 @@ double PathManager::ComputeDistanceOfClosestObstacle2ROV(const ctb::LatLong& rov
     heading2closest_obs = min_heading;
     closest_obs.latitude = obs_vector[min_id].pose.position.position.latitude;
     closest_obs.longitude = obs_vector[min_id].pose.position.position.longitude;
-    std::cout << "min_id = " << min_id << std::endl;
+    //std::cout << "min_id = " << min_id << std::endl;
+    //std::cout << "shortest_distance_obstalce = " << shortest_distance << std::endl;
     //ctb::LocalUTM2LatLong(worldF_obstacle, centroid_, obstaclePosition, obsAltitude);
 
     //ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, obstaclePosition, ASV2obstacleDistance, ASV2obstacleHeading); not needed

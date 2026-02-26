@@ -9,11 +9,11 @@ namespace ulisse {
 namespace states {
 
     class StateRovFollow : public GenericState {
-
+    std::chrono::system_clock::time_point tStart_, tNow_;
     protected:
         std::shared_ptr<ikcl::AlignToTarget> alignToTargetTask_;
         std::shared_ptr<ikcl::CartesianDistance> cartesianDistanceTask_;
-        std::shared_ptr<ikcl::AlignToTarget> alignToTargetObstacleTask_; // Obstacle
+        std::shared_ptr<ikcl::AlignToTarget> alignToAlignmentPointTask_; // Obstacle
         std::shared_ptr<ikcl::CartesianDistance> cartesianDistanceObstacleTask_; // Obstacle
         std::shared_ptr<ikcl::ObstacleAvoidance> obstacleAvoidanceTask_;
         //std::shared_ptr<ikcl::AbsoluteAxisAlignment> obstacleAlignmentTask_;
@@ -28,13 +28,15 @@ namespace states {
         StateRovFollow();
         ~StateRovFollow() override;
         fsm::retval OnEntry() override;
+        //fsm::retval OnExist() override; // juri
         fsm::retval Execute() override;
+        void ResetTimer();
 
         LatLong goalPosition;
         double goalHeading;
         double goalDistance;
-        double goalHeadingObstacle;
-        double goalDistanceObstacle;
+        double goalHeadingAP; // Alignment Point
+        double goalDistanceAP; // Alignment Point
         double acceptanceRadius;
 
         LatLong centroidLocation;
@@ -49,11 +51,12 @@ namespace states {
         double obsAltitude;
 
         double headingError;
-        double headingErrorObstacle;
-        double cartesianErrorObstacle;
+        double headingErrorAP;
+        double cartesianErrorAP;
 
         double minCartesianObstacleError_, maxCartesianObstacleError_, minObstacleZoneRadius, maxObstacleZoneRadius, obstacleGoalAcceptanceRadius;
-        double redFlagDistance, currentAlignmentDistance;
+        double redFlagDistance, currentAlignmentDistance, currentAlignmentThreshold, alignmentPointRadius;
+        bool long_tether;
 
 
         bool ConfigureStateFromFile(libconfig::Config& confObj) override;

@@ -14,8 +14,16 @@ namespace events {
     fsm::retval EventNearGoalPosition::Execute()
     {
         std::cout << "Executing: EventNearGoalPosition" << std::endl;
+        if (ctrlData_->preStateRovFollow) {
+            // Go back to rovfollow state
+            ctrlData_->avoidancePathEnabled = false;
+            ctrlData_->avoidancePathGenerated = false;
+            fsm_->SetNextState("ROV_Following");
 
-        if (goToHold_) {
+            //stateHold_->positionToHold = ctrlData_->inertialF_linearPosition;
+            //fsm_->SetNextState("Hold");
+        }
+        else if (goToHold_) {
             stateHold_->positionToHold = ctrlData_->inertialF_linearPosition;
             fsm_->SetNextState("Hold");
         } else {

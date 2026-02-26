@@ -18,7 +18,7 @@ namespace ulisse {
 
 VehicleController::VehicleController(std::string conf_filename)
     : Node("kinematic_control_node")
-    , boundariesSet_(true) // changed to true!!
+    , boundariesSet_(false) // changed to true!!
 {
     conf_ = std::make_shared<KCLConfiguration>();
 
@@ -46,6 +46,9 @@ VehicleController::VehicleController(std::string conf_filename)
     surgeHeadingSub_ = this->create_subscription<ulisse_msgs::msg::SurgeHeading>(ulisse_msgs::topicnames::surge_heading, 10, std::bind(&VehicleController::SurgeHeadingCB, this, _1));
     surgeYawRateSub_ = this->create_subscription<ulisse_msgs::msg::SurgeYawRate>(ulisse_msgs::topicnames::surge_yawrate, 10, std::bind(&VehicleController::SurgeYawRateCB, this, _1));
 
+    // Avoidance Path Subscription
+    avoidancePathSub_ = this->create_subscription<ulisse_msgs::msg::CommandPathFollow>("ulisse/avoidance/current_path", 10, std::bind(&VehicleController::AvoidancePathCB, this, _1)); // ASV-ROV
+
     // Control Publishers
     genericLogPub_ = this->create_publisher<std_msgs::msg::String>("/ulisse/log/generic", 10);
     vehicleStatusPub_ = this->create_publisher<ulisse_msgs::msg::VehicleStatus>(ulisse_msgs::topicnames::vehicle_status, 10);
@@ -56,7 +59,7 @@ VehicleController::VehicleController(std::string conf_filename)
     referenceWinchMotorPub_ = this->create_publisher<rov_msgs::msg::WinchMotorReference>("/winch/reference_motor", 10); // using the tether model
     plotVarPub_ = this->create_publisher<ulisse_msgs::msg::PlotVariables>(ulisse_msgs::topicnames::plot_variables, 10); // ASV-ROV plot
 
-    //safetyBoundarySetPub_ = this->create_publisher<std_msgs::msg::Bool>(ulisse_msgs::topicnames::safety_boundary_set, 10);
+    safetyBoundarySetPub_ = this->create_publisher<std_msgs::msg::Bool>(ulisse_msgs::topicnames::safety_boundary_set, 10);
 
     /// TPIK Manager
     actionManager_ = std::make_shared<tpik::ActionManager>(tpik::ActionManager());
@@ -126,11 +129,11 @@ VehicleController::VehicleController(std::string conf_filename)
     taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_cartesian_distance_obstacle, 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvCartesianDistanceObstacle, taskInfo_));
 
-    // ASV SAFETY BOUNDARIES (INEQUALITY TASK)
-    /*asvSafetyBoundaries_ = std::make_shared<ikcl::SafetyBoundaries>(ikcl::SafetyBoundaries(ulisse::task::asvSafetyBoundaries, robotModel_, ulisse::robotModelID::ASV));
+    // ASV SAFETY BOUNDARIES (INEQUALITY TASK) // Safety
+    asvSafetyBoundaries_ = std::make_shared<ikcl::SafetyBoundaries>(ikcl::SafetyBoundaries(ulisse::task::asvSafetyBoundaries, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvSafetyBoundaries_;
     taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_safety_boundaries, 1);
-    tasksMap_.insert(std::make_pair(ulisse::task::asvSafetyBoundaries, taskInfo_)); */
+    tasksMap_.insert(std::make_pair(ulisse::task::asvSafetyBoundaries, taskInfo_));
 
     // ASV absolute axis alignment task
     asvAbsoluteAxisAlignment_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asvAbsoluteAxisAlignment, robotModel_, ulisse::robotModelID::ASV));
@@ -138,11 +141,11 @@ VehicleController::VehicleController(std::string conf_filename)
     taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment, 1);
     tasksMap_.insert(std::make_pair(ulisse::task::asvAbsoluteAxisAlignment, taskInfo_));
 
-    // ASV absolute axis alignment task
-    /*asvAbsoluteAxisAlignmentSafety_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asvAbsoluteAxisAlignmentSafety, robotModel_, ulisse::robotModelID::ASV));
+    // ASV absolute axis alignment task // Safety
+    asvAbsoluteAxisAlignmentSafety_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asvAbsoluteAxisAlignmentSafety, robotModel_, ulisse::robotModelID::ASV));
     taskInfo_.task = asvAbsoluteAxisAlignmentSafety_;
     taskInfo_.taskPub = this->create_publisher<ulisse_msgs::msg::TaskStatus>(ulisse_msgs::topicnames::task_absolute_axis_alignment_safety, 1);
-    tasksMap_.insert(std::make_pair(ulisse::task::asvAbsoluteAxisAlignmentSafety, taskInfo_)); */
+    tasksMap_.insert(std::make_pair(ulisse::task::asvAbsoluteAxisAlignmentSafety, taskInfo_));
 
     // ASV absolute axis alignment task hold
     asvAbsoluteAxisAlignmentHold_ = std::make_shared<ikcl::AbsoluteAxisAlignment>(ikcl::AbsoluteAxisAlignment(ulisse::task::asvAbsoluteAxisAlignmentHold, robotModel_, ulisse::robotModelID::ASV));
@@ -230,19 +233,24 @@ VehicleController::VehicleController(std::string conf_filename)
     srvCommand_ = this->create_service<ulisse_msgs::srv::ControlCommand>(ulisse_msgs::topicnames::control_cmd_service,
         std::bind(&VehicleController::CommandsHandler, this, _1, _2, _3));
 
-    /*srvSetBoundaries_ = this->create_service<ulisse_msgs::srv::SetBoundaries>(ulisse_msgs::topicnames::set_boundaries_service,
+    srvSetBoundaries_ = this->create_service<ulisse_msgs::srv::SetBoundaries>(ulisse_msgs::topicnames::set_boundaries_service,
         std::bind(&VehicleController::SetBoundariesHandler, this, _1, _2, _3));
 
     srvGetBoundaries_ = this->create_service<ulisse_msgs::srv::GetBoundaries>(ulisse_msgs::topicnames::get_boundaries_service,
-        std::bind(&VehicleController::GetBoundariesHandler, this, _1, _2, _3));*/
+        std::bind(&VehicleController::GetBoundariesHandler, this, _1, _2, _3));
 
     srvResetConf_ = this->create_service<ulisse_msgs::srv::ResetConfiguration>(ulisse_msgs::topicnames::reset_kcl_conf_service,
         std::bind(&VehicleController::ResetConfHandler, this, _1, _2, _3));
+
+    srvAvoidancePath_ = this->create_client<ulisse_msgs::srv::ComputeAvoidancePath>(ulisse_msgs::topicnames::control_avoidance_cmd_service);
+    //srvAvoidancePath_.reset();
 
     // variable initialization
     dist_now_ = 0.0;
     dist_last_ = 0.0;
     t_last_ = t_now_ = std::chrono::system_clock::now();
+    ctrlData_->avoidancePathEnabled = false;
+    sentReq = false;
 
     // Main function timer
     int msRunPeriod = 1.0 / (conf_->controlLoopRate) * 1000;
@@ -288,7 +296,7 @@ bool VehicleController::LoadConfiguration(std::shared_ptr<KCLConfiguration>& con
 
     std::cout << "Centroid: " << centroidLocation_.latitude << ", " << centroidLocation_.longitude << std::endl;
 
-    //asvSafetyBoundaries_->Centroid() = centroidLocation_;
+    asvSafetyBoundaries_->Centroid() = centroidLocation_;
 
     ///////////////////////////////////////////////////////////////////////////
     /////        LOAD KCL CONFIGURATION
@@ -416,6 +424,16 @@ void VehicleController::SetUpFSM()
     eventNearGoalPosition_.ControlData() = ctrlData_;
     eventNearGoalPosition_.GoToHoldAfterMove(conf_->goToHoldAfterMove);
     eventNearGoalPosition_.StateHold() = std::dynamic_pointer_cast<ulisse::states::StateHold>(statesMap_.find(ulisse::states::ID::hold)->second);
+    eventNearGoalPosition_.StateRovFollow() = std::dynamic_pointer_cast<ulisse::states::StateRovFollow>(statesMap_.find(ulisse::states::ID::rovfollow)->second);
+    // Add here the same for the eventLongCable_
+    eventLongTether_.SetFSM(&uFsm_);
+    eventLongTether_.ControlData() = ctrlData_;
+    eventLongTether_.StatePathFollow() = std::dynamic_pointer_cast<ulisse::states::StatePathFollow>(statesMap_.find(ulisse::states::ID::pathfollow)->second);
+
+    eventFarAlignmentPosition_.SetFSM(&uFsm_);
+    eventFarAlignmentPosition_.ControlData() = ctrlData_;
+    eventFarAlignmentPosition_.StatePathFollow() = std::dynamic_pointer_cast<ulisse::states::StatePathFollow>(statesMap_.find(ulisse::states::ID::pathfollow)->second);
+
     std::cout << "Events are configured" << std::endl;
 
     // ***** FSM CONFIGURATION ***** //
@@ -432,6 +450,8 @@ void VehicleController::SetUpFSM()
     // ADD EVENTS
     uFsm_.AddEvent(ulisse::events::names::rcenabled, &eventRcEnabled_);
     uFsm_.AddEvent(ulisse::events::names::neargoalposition, &eventNearGoalPosition_);
+    uFsm_.AddEvent(ulisse::events::names::longtether, &eventLongTether_);
+    uFsm_.AddEvent(ulisse::events::names::faralignmentposition, &eventFarAlignmentPosition_);
 
     // ENABLE TRANSITIONS
     for (auto& currentState : statesMap_) {
@@ -505,7 +525,8 @@ void VehicleController::CommandsHandler(const std::shared_ptr<rmw_request_id_t> 
 
             std::cout << "Received Command LatLong" << std::endl;
             if(!commandLatLong_.SetGoTo(LatLong(request->latlong_cmd.goal.latitude, request->latlong_cmd.goal.longitude),
-                    request->latlong_cmd.acceptance_radius)){
+                    //request->latlong_cmd.acceptance_radius)){
+                    request->latlong_cmd.acceptance_radius, request->latlong_cmd.ref_speed)){
                 response->res = "CommandAnswer::fail - Malformed LatLong Message.";
                 ret = fsm::retval::fail;
             }
@@ -563,6 +584,7 @@ void VehicleController::CommandsHandler(const std::shared_ptr<rmw_request_id_t> 
                 try {
                     taskMap.second.task->Update();
                 } catch (tpik::ExceptionWithHow& e) {
+                    std::cerr << "Command Handler" << std::endl;
                     std::cerr << "UPDATE TASK EXCEPTION" << std::endl;
                     std::cerr << "who " << e.what() << " how: " << e.how() << std::endl;
                 }
@@ -575,7 +597,7 @@ void VehicleController::CommandsHandler(const std::shared_ptr<rmw_request_id_t> 
     RCLCPP_INFO(this->get_logger(), "Service Response: %s", response->res.c_str());
 }
 
-/*void VehicleController::SetBoundariesHandler(const std::shared_ptr<rmw_request_id_t> request_header,
+void VehicleController::SetBoundariesHandler(const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<ulisse_msgs::srv::SetBoundaries::Request> request,
     std::shared_ptr<ulisse_msgs::srv::SetBoundaries::Response> response)
 {
@@ -610,7 +632,7 @@ void VehicleController::GetBoundariesHandler(const std::shared_ptr<rmw_request_i
     } else {
         response->res = "[KCL] NoBoundSet";
     }
-}*/
+}
 
 void VehicleController::ResetConfHandler(const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<ulisse_msgs::srv::ResetConfiguration::Request> request,
@@ -639,7 +661,7 @@ void VehicleController::SlowTimerCB()
     return;*/
     std_msgs::msg::Bool sbSet;
     sbSet.data = boundariesSet_;
-    //safetyBoundarySetPub_->publish(sbSet);
+    safetyBoundarySetPub_->publish(sbSet);
 
     // Publish Hierarchy Info
     ulisse_msgs::msg::TPIKAction tpikActionMsg_;
@@ -732,6 +754,7 @@ void VehicleController::NavFilterRovCB(const rov_msgs::msg::NavFilterData::Share
 
 void VehicleController::CableDataRovCB(const rov_msgs::msg::CableData::SharedPtr msg){ //ROV
     cableData_ = *msg;
+    ctrlData_->cable_length =  cableData_.released_cable_length;
 }
 
 //void VehicleController::ObstacleCB(const ulisse_msgs::msg::Obstacle::SharedPtr msg){ //ROV
@@ -793,6 +816,11 @@ void VehicleController::ObstacleCB(const detav_msgs::msg::ObstacleList::SharedPt
     if(!ExistsObs){
         ctrlData_->obstacleMsgVector.push_back(obs);
     }*/
+}
+
+void VehicleController::AvoidancePathCB(const ulisse_msgs::msg::CommandPathFollow::SharedPtr msg){
+    //ctrlData_->avoidancePath = *msg;
+    aPath_ = *msg;
 }
 
 void VehicleController::UpdateObstacles(){
@@ -899,14 +927,14 @@ void VehicleController::ComputeCableVelocity(const float &l_cable, float &vel_ca
     float d1 = abs(a1*x + b1*y + c1)/sqrt(pow(a1,2)+pow(b1,2)); // distance of the point from the line1
     float d2 = abs(a2*x + b2*y + c2)/sqrt(pow(a2,2)+pow(b2,2)); // distance of the point from the line2
 
-    std::cout << "l_cable = "<< l_cable<< std::endl;
-    std::cout << "distanceASV-ROV = "<< distance<< std::endl;
-    std::cout << "dist_velASV-ROV = "<< dist_vel<< std::endl;
-    std::cout << "d1 = "<< d1<< std::endl;
-    std::cout << "d2 = "<< d2<< std::endl;
-    std::cout << "Eq_delta = "<< conf_->Eq_delta << std::endl;
-    std::cout << "Eq_delta = "<< conf_->Eq_delta << std::endl;
-    std::cout << "Eq1_a = "<< conf_->Eq1_a << std::endl;
+    //std::cout << "l_cable = "<< l_cable<< std::endl;
+    //std::cout << "distanceASV-ROV = "<< distance<< std::endl;
+    //std::cout << "dist_velASV-ROV = "<< dist_vel<< std::endl;
+    //std::cout << "d1 = "<< d1<< std::endl;
+    //std::cout << "d2 = "<< d2<< std::endl;
+    //std::cout << "Eq_delta = "<< conf_->Eq_delta << std::endl;
+    //std::cout << "Eq_delta = "<< conf_->Eq_delta << std::endl;
+    //std::cout << "Eq1_a = "<< conf_->Eq1_a << std::endl;
 
 //    if(d1 < conf_->Eq_delta){
 //        if (abs(dist_vel) < 1)
@@ -923,24 +951,75 @@ void VehicleController::ComputeCableVelocity(const float &l_cable, float &vel_ca
 //    else
 //        vel_cable = 0.0;
 
-    if(d1 < conf_->Eq_delta){
+    //if(d1 < conf_->Eq_delta){
+    if(d1 < distance/10){
         double gain = rml::DecreasingBellShapedFunction(conf_->Eq_delta - 0.5, conf_->Eq_delta, 0, 1.0, d1);
         vel_cable = gain * 1.0;
     }
-    else if(d2 < conf_->Eq_delta){
+    //else if(d2 < conf_->Eq_delta){
+    else if(d2 < distance/10){
         double gain = rml::DecreasingBellShapedFunction(conf_->Eq_delta - 0.5, conf_->Eq_delta, 0, 1.0, d2);
         vel_cable = - gain * 1.0;
     }
     else
         vel_cable = 0.0;
 
-    std::cout << "vel_cable = "<< vel_cable << std::endl;
-    std::cout << "-----------" << std::endl;
+    //std::cout << "vel_cable = "<< vel_cable << std::endl;
+    //std::cout << "-----------" << std::endl;
 }
 
 void VehicleController::LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg)
 {
     ctrlData_->radioControllerEnabled = msg->flags.ppm_remote_enabled;
+}
+
+bool VehicleController::sendLatLongAvoidanceCommand(const ctb::LatLong & goal, double radius, double ref_speed, bool COLREGS)
+{
+  auto serviceReq = std::make_shared<ulisse_msgs::srv::ComputeAvoidancePath::Request>();
+
+  serviceReq->latlong_cmd.goal.latitude = goal.latitude;
+  serviceReq->latlong_cmd.goal.longitude = goal.longitude;
+  serviceReq->latlong_cmd.acceptance_radius = radius;
+  serviceReq->latlong_cmd.ref_speed = ref_speed;
+  serviceReq->colregs_compliant = COLREGS;
+
+  // Chiama servizio di avoidance
+  static std::string result_msg;
+  bool serviceAvailable;
+
+  if (srvAvoidancePath_->service_is_ready()) {
+    auto result_future = srvAvoidancePath_->async_send_request(serviceReq);
+    std::cout << "Sent Request to Avoidance" << std::endl;
+    //ctrlData_->avoidancePath.path = result_future.get()->path;
+
+    ctrlData_->avoidancePath = aPath_;
+    ctrlData_->avoidancePathGenerated = true;
+    std::cout << "avoidancePath.path ---> assigned" << std::endl;
+    // Set the timeout for 0.5 seconds (500 milliseconds)
+//    auto timeout = std::chrono::milliseconds(500);
+
+//    // Wait for the result or timeout
+//    if (rclcpp::spin_until_future_complete(this->get_node_base_interface(), result_future, timeout) != rclcpp::FutureReturnCode::SUCCESS) {
+//      result_msg = "Avoidance service call failed or timed out :(";
+//      RCLCPP_ERROR_STREAM(this->get_logger(), result_msg.c_str());
+//    } else {
+//      auto result = result_future.get();
+//      result_msg = "Avoidance service returned: " + std::to_string(result->res);
+//      RCLCPP_INFO_STREAM(this->get_logger(), result_msg);
+//      ctrlData_->avoidancePathGenerated = true;
+//    }
+
+    serviceAvailable = true;
+    //StopOngoingTimers();
+  } else {
+    result_msg = "The Avoidance Node doesn't seem to be active.";
+    serviceAvailable = false;
+  }
+
+  //ShowToast(result_msg.c_str(), 4000);
+  //ctrlData_->avoidancePathGenerated = true;
+  //std::cout << "End of sendLatLongAvoidanceCommand" << std::endl;
+  return serviceAvailable;
 }
 
 void VehicleController::Run()
@@ -961,6 +1040,7 @@ void VehicleController::Run()
             try {
                 taskMap.second.task->Update();
             } catch (tpik::ExceptionWithHow& e) {
+                std::cerr << "RUN" << std::endl;
                 std::cerr << "UPDATE TASK EXCEPTION" << std::endl;
                 std::cerr << "who " << e.what() << " how: " << e.how() << std::endl;
             }
@@ -978,8 +1058,30 @@ void VehicleController::Run()
         }
     }
 
+    if(ctrlData_->avoidancePathEnabled ){//&& !sentReq){
+        if(!ctrlData_->avoidancePathGenerated){
+            std::cerr << "sentReq " << sentReq << std::endl;
+            //ctb::LatLong inertialF_linearPositionCurrentGoal; double altitude;
+            //Eigen::Vector3d pos;
+            //pos.x()=-5.0;
+            //pos.y()=-25.0;
+            //pos.z()=0.0;
+            //ctb::LocalUTM2LatLong(pos, centroidLocation_, inertialF_linearPositionCurrentGoal, altitude);
+            bool request_result = sendLatLongAvoidanceCommand(ctrlData_->inertialF_linearPositionCurrentGoal, 4.0, 1.5, false);
+            //bool request_result = sendLatLongAvoidanceCommand(inertialF_linearPositionCurrentGoal, 4.0, 1.5, false);
+            std::cerr << "request_result = " << request_result << std::endl;
+            ctrlData_->avoidancePathGenerated = true;
+            sentReq = true;
+        }
+        ctrlData_->avoidancePath = aPath_;
+        //sendLatLongAvoidanceCommand(ctrlData_->inertialF_linearPositionCurrentGoal, 4.0, 1.5, true);
+    }
+    else
+        sentReq = false;
+
     // reference cable length
-    ComputeCableLength();
+    //ComputeCableLength();
+
     //double rpm_percentage = 1;
     //CableWinchControl(rpm_percentage, controlledCable_.length);
 
@@ -1061,7 +1163,7 @@ void VehicleController::PublishControl()
         }
         referenceVelocitiesPub_->publish(referenceVelocities);
 
-        if (uFsm_.GetCurrentStateName() == ulisse::states::ID::rovfollow) {
+        //if (uFsm_.GetCurrentStateName() == ulisse::states::ID::rovfollow) {
             controlledCable_.stamp.sec = now_stamp_secs;
             controlledCable_.stamp.nanosec = now_stamp_nanosecs;
             referenceCablePub_->publish(controlledCable_);
@@ -1070,21 +1172,24 @@ void VehicleController::PublishControl()
             winchMotorRef_.stamp.nanosec = now_stamp_nanosecs;
             referenceWinchMotorPub_->publish(winchMotorRef_);
 
-            plotVar_.stamp.sec = now_stamp_secs;
-            plotVar_.stamp.nanosec = now_stamp_nanosecs;
+
             plotVar_.heading_error_rov = stateRovFollowing_->headingError;
             plotVar_.goal_distance_rov = stateRovFollowing_->goalDistance;
 
-            plotVar_.heading_error_obstacle = stateRovFollowing_->headingErrorObstacle;
-            plotVar_.goal_distance_obstacle = stateRovFollowing_->goalDistanceObstacle;
+            plotVar_.heading_error_obstacle = stateRovFollowing_->headingErrorAP;
+            plotVar_.goal_distance_obstacle = stateRovFollowing_->goalDistanceAP;
 
             plotVar_.distance_rov_obstacle = stateRovFollowing_->ROV2obstacleDistance;
-            float dis;
-            ComputeAsvRovDistance(dis);
-            plotVar_.distance_rov_asv = dis;
-            //plotVar_.distance_rov_asv = stateRovFollowing_->goalDistance;
-            plotVarPub_->publish(plotVar_);
-        }
+
+
+        //}
+        plotVar_.stamp.sec = now_stamp_secs;
+        plotVar_.stamp.nanosec = now_stamp_nanosecs;
+        float dis;
+        ComputeAsvRovDistance(dis);
+        plotVar_.distance_rov_asv = dis;
+        //plotVar_.distance_rov_asv = stateRovFollowing_->goalDistance;
+        plotVarPub_->publish(plotVar_);
     }
 
 }

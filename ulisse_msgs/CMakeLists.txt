@@ -27,6 +27,12 @@ file(GLOB_RECURSE SOURCE_FILES
 add_custom_target(.Files. SOURCES ${SOURCE_FILES})
 
 rosidl_generate_interfaces(ulisse_msgs
+# Tesi Depalo
+  "msg/Waypoint.msg"
+  "msg/AvoidancePath.msg"
+  "msg/AvoidanceStatus.msg"
+  "msg/ObsDistance.msg"
+  
   # Sensors
   "msg/Time.msg"
   "msg/RPY.msg"
@@ -99,6 +105,7 @@ rosidl_generate_interfaces(ulisse_msgs
   "srv/SetCruiseControl.srv"
   "srv/ResetConfiguration.srv"
   "srv/MinSrv.srv"
+  "srv/ComputeAvoidancePath.srv"
   
   ## Other ##
   "msg/ColorRGB.msg"

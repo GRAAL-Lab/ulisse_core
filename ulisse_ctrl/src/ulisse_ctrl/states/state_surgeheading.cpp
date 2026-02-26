@@ -41,8 +41,8 @@ namespace states {
     fsm::retval StateSurgeHeading::OnEntry()
     {
         // Set tasks
-        //safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
-        //absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
+        safetyBoundariesTask_ = std::dynamic_pointer_cast<ikcl::SafetyBoundaries>(tasksMap.find(ulisse::task::asvSafetyBoundaries)->second.task);
+        absoluteAxisAlignmentSafetyTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignmentSafety)->second.task);
         linearVelocityTask_ = std::dynamic_pointer_cast<ikcl::LinearVelocity>(tasksMap.find(ulisse::task::asvLinearVelocity)->second.task);
         absoluteAxisAlignmentTask_ = std::dynamic_pointer_cast<ikcl::AbsoluteAxisAlignment>(tasksMap.find(ulisse::task::asvAbsoluteAxisAlignment)->second.task);
 
@@ -56,6 +56,7 @@ namespace states {
     fsm::retval StateSurgeHeading::Execute()
     {
         CheckRadioController();
+        ctrlData->preStateRovFollow = false; // juri
 
         tNow_ = std::chrono::system_clock::now();
         totalElapsed_ = std::chrono::duration_cast<std::chrono::seconds>(tNow_ - tStart_);
@@ -69,7 +70,7 @@ namespace states {
         // a desired escape directon and to generate a desired velocity. To do this we use the task AbsoluteAxisAlignment to cope with
         // the align behavior activated in function of the internal activation function of the safety task.
 
-/*        safetyBoundariesTask_->VehiclePosition() = ctrlData->inertialF_linearPosition;
+        safetyBoundariesTask_->VehiclePosition() = ctrlData->inertialF_linearPosition;
 
         Eigen::MatrixXd Aexternal;
 
@@ -95,7 +96,7 @@ namespace states {
 
         // Set the gain of the cartesian distance task
         safetyBoundariesTask_->TaskParameter().gain = taskGainSafety * safetyBoundariesTask_->TaskParameter().conf_gain;
-*/
+
 
         //////     surgeheading task     /////////
         absoluteAxisAlignmentTask_->SetRobotAxis2Align(Eigen::Vector3d(1, 0, 0), ulisse::robotModelID::ASV);

@@ -87,8 +87,8 @@ RowLayout {
         id: mapsidebar
         Layout.fillHeight: true
         Layout.minimumHeight: 150
-        Layout.minimumWidth: 320
-        Layout.preferredWidth: 320
+        Layout.minimumWidth: 330
+        Layout.preferredWidth: 330
         Layout.maximumWidth: 350
         //Material.elevation: myElevation
         Material.accent: grey
@@ -137,7 +137,7 @@ RowLayout {
                     id: bar_manage
                     height: 130
                     Layout.fillWidth: true
-                    Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom
+                    Layout.alignment: Qt.AlignCenter | Qt.AlignBottom
                     Layout.bottomMargin: 10
                 }
             }
@@ -152,4 +152,5 @@ RowLayout {
         }
     }
 }
+
 

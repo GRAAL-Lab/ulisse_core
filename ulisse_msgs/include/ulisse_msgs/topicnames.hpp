@@ -6,6 +6,11 @@
 namespace ulisse_msgs {
 
 namespace topicnames {
+// Tesi Depalo
+const std::string control_avoidance_cmd_service = "/ulisse/service/compute_avoidance_path";
+const std::string check_avoidance_path_service = "/ulisse/service/check_avoidance_path";
+const std::string avoidance_status = "/ulisse/avoidance/status";
+const std::string avoidance_path_oal = "/ulisse/avoidance/path";
 
 // LLC
 const std::string micro_loop_count = "/ulisse/llc/micro_loop_count";
@@ -78,6 +83,7 @@ const std::string control_cmd_service = "/ulisse/service/control_cmd";
 const std::string navfilter_cmd_service = "/ulisse/service/navfilter_cmd";
 const std::string set_boundaries_service = "/ulisse/ctrl/set_boundaries";
 const std::string get_boundaries_service = "/ulisse/ctrl/get_boundaries";
+
 
 // OTHER
 const std::string obstacle = "/gt/obstacle_list";

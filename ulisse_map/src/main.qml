@@ -14,7 +14,7 @@ import "./qml"
 ApplicationWindow {
     id: window
     minimumWidth: 1200
-    minimumHeight: 800
+    minimumHeight: 850
     visible: true
 
     property color blue: Material.color(Material.Blue, Material.Shade700)
@@ -94,6 +94,7 @@ ApplicationWindow {
         property int visualizerTimeout: 30
         property int pathLineWidth: 2
         property int ulisseLineWidth: 1
+        property real cruiseSpeedReference: 2.0
 
         property bool bypassSafetyBoundaryCheck: false
 

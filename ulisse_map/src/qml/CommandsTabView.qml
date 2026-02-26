@@ -97,6 +97,7 @@ Rectangle {
             ColumnLayout {
                 id: commandsTab
                 Layout.fillWidth: true
+                spacing: 1
 
                 Button {
                     id: holdButton
@@ -124,17 +125,22 @@ Rectangle {
                             var coord = QtPositioning.coordinate(coords_tokens[0], coords_tokens[1])
 
                             if (coord.isValid) {
-                            toast.show("Moving to coordinate:\n"
-                                       + coord.latitude.toFixed(7) + ", " + coord.longitude.toFixed(7), 6000)
-                            cmdWrapper.sendLatLongCommand(
-                                        coord,
-                                        holdRadius.value)
+                                if (!avoidanceEnableCB.checked) {
+                                    if(cmdWrapper.sendLatLongCommand(coord, holdRadius.value, speedRef.value)) {
+                                        toast.show("Moving to coordinate:\n"
+                                                   + coord.latitude.toFixed(7) + ", " + coord.longitude.toFixed(7), 6000)
+                                    }
+                                } else {
+                                    if(cmdWrapper.sendLatLongAvoidanceCommand(coord, holdRadius.value, speedRef.value, colregsCB.checked)) {
+                                        toast.show("Moving with avoidance to coordinate:\n"
+                                                    + coord.latitude.toFixed(7) + ", " + coord.longitude.toFixed(7), 6000)
+                                    }
+                                }
+
                             } else {
                                 toast.show("Invalid coordinate.")
                             }
                         }
-
-
                     }
 
                     Button {
@@ -143,7 +149,7 @@ Rectangle {
                         font.family: "fontello"
                         font.pointSize: 12
                         padding: 5
-                        Layout.minimumWidth: 18
+                        Layout.minimumWidth: 16
                         Material.background: pressed ? orange : mainColor
                         enabled: Helper.coord_inside_polygon(map.marker_coords,
                                                              map.safety_polygon.path)
@@ -155,12 +161,49 @@ Rectangle {
                         ToolTip.text: qsTr("Move to marker")
 
                         onClicked: {
-                            toast.show("Moving to coordinate:\n"
-                                       + map.marker_coords.latitude.toFixed(7) + ", " + map.marker_coords.longitude.toFixed(7), 6000)
-                            cmdWrapper.sendLatLongCommand(
-                                        map.marker_coords,
-                                        holdRadius.value)
+                            if (!avoidanceEnableCB.checked) {
+                                if(cmdWrapper.sendLatLongCommand(map.marker_coords, holdRadius.value, speedRef.value)) {
+                                    toast.show("Moving to coordinate:\n"
+                                               + map.marker_coords.latitude.toFixed(7) + ", " + map.marker_coords.longitude.toFixed(7), 6000)
+                                }
+                            } else {
+                                if(cmdWrapper.sendLatLongAvoidanceCommand(map.marker_coords, holdRadius.value, speedRef.value, colregsCB.checked)) {
+                                    toast.show("Moving with avoidance to coordinate:\n"
+                                               + map.marker_coords.latitude.toFixed(7) + ", " + map.marker_coords.longitude.toFixed(7), 6000)
+                                }
+                            }
                         }
+                    }
+                }
+
+                RowLayout {
+                    spacing: 1
+                    CheckBox {
+                        id: avoidanceEnableCB
+                        text: "Avoidance Planner"
+                        font.pointSize: 9
+                        font.weight: Font.DemiBold
+                        Layout.fillWidth: true
+                        Material.accent: mainColor
+                        ToolTip.delay: 1000
+                        ToolTip.timeout: 5000
+                        ToolTip.visible: hovered
+                        ToolTip.text: qsTr("Move to marker avoiding obstacles")
+                    }
+
+                    CheckBox {
+                        id: colregsCB
+                        text: "Use COLREGS"
+                        font.pointSize: 9
+                        font.weight: Font.DemiBold
+                        Layout.fillWidth: true
+                        Material.accent: mainColor
+                        //highlighted: true
+                        ToolTip.delay: 1000
+                        ToolTip.timeout: 5000
+                        ToolTip.visible: hovered
+                        ToolTip.text: qsTr("Move to marker using Maritime Safety rules.")
+
                     }
                 }
 
@@ -190,6 +233,41 @@ Rectangle {
                     }
                 }
 
+                RowLayout {
+                    id: speedRefControl
+                    Layout.alignment: Qt.AlignVCenter //| Qt.AlignHCenter
+
+                    Label {
+                        text: qsTr("Speed reference")
+                        leftPadding: 5
+                        font.pointSize: 11
+                        width: labelWidth
+                        horizontalAlignment: Text.AlignLeft
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    Slider {
+                        id: speedRef
+                        Layout.preferredWidth: sliderWidth
+                        Layout.leftMargin: 0
+                        value: settings.cruiseSpeedReference
+                        stepSize: 0.1
+                        from: 0.1
+                        to: 4.0
+
+                        onValueChanged: function(){
+                            settings.cruiseSpeedReference = speedRef.value
+                        }
+                    }
+
+                    Text {
+                        text: speedRef.value.toFixed(1) + " m/s"
+                        Layout.preferredWidth: unitsWidth
+                        font.pointSize: 11
+                        horizontalAlignment: Text.AlignLeft
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                }
 
                 RowLayout {
                     id: acceptRadControl
@@ -223,6 +301,7 @@ Rectangle {
                     }
                 }
 
+                // Custom Separator
                 Rectangle {
                     Layout.fillWidth: true
                     implicitHeight: 1
@@ -440,3 +519,4 @@ Rectangle {
         }
     }
 }
+

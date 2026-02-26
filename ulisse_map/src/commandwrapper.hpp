@@ -19,7 +19,7 @@
 #include "ulisse_msgs/srv/nav_filter_command.hpp"
 #include "ulisse_msgs/msg/surge_heading.hpp"
 #include "ulisse_msgs/msg/surge_yaw_rate.hpp"
-
+#include "ulisse_msgs/srv/compute_avoidance_path.hpp"
 
 class CommandWrapper : public QObject, rclcpp::Node {
     Q_OBJECT
@@ -31,7 +31,8 @@ class CommandWrapper : public QObject, rclcpp::Node {
 
     Q_PROPERTY(QStringList polypath_types READ get_polypath_types NOTIFY startup_info_read)
 
-
+    // Tesi Depalo
+    rclcpp::Client<ulisse_msgs::srv::ComputeAvoidancePath>::SharedPtr avoidance_path_srv_;
     rclcpp::Client<ulisse_msgs::srv::ControlCommand>::SharedPtr command_srv_;
     rclcpp::Client<ulisse_msgs::srv::SetCruiseControl>::SharedPtr cruise_srv_;
     rclcpp::Client<ulisse_msgs::srv::SetBoundaries>::SharedPtr boundary_srv_;
@@ -75,7 +76,7 @@ public:
     Q_INVOKABLE bool sendPath(const QString &pathJsonData);
     Q_INVOKABLE bool sendHaltCommand();
     Q_INVOKABLE bool sendHoldCommand(double radius);
-    Q_INVOKABLE bool sendLatLongCommand(const QGeoCoordinate& goal, double radius);
+    //Q_INVOKABLE bool sendLatLongCommand(const QGeoCoordinate& goal, double radius, double speedref); // juri
     Q_INVOKABLE bool sendSurgeHeadingCommand(double surge, double heading);
     Q_INVOKABLE bool sendSurgeYawRateCommand(double surge, double yawrate);
     Q_INVOKABLE bool sendEnableReference(bool activate);
@@ -92,6 +93,11 @@ public:
     Q_INVOKABLE bool reloadKCLConf();
     Q_INVOKABLE bool reloadDCLConf();
     Q_INVOKABLE bool reloadNavFilterConf();
+    //Tesi Depalo
+    Q_INVOKABLE bool sendLatLongAvoidanceCommand(const QGeoCoordinate& goal, double radius, double speedref, bool COLREGS);
+    Q_INVOKABLE bool sendLatLongCommand(const QGeoCoordinate& goal, double radius, double speedref);
+
+
 
     QStringList get_polypath_types();
     bool get_safety_boundary_set();
