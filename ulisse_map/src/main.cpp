@@ -41,6 +41,9 @@ int main(int argc, char* argv[])
     QIcon icon(":/images/ulisse_icon-48.png");
     app.setWindowIcon(icon);
 
+    //QIcon icon2(":/images/rov_icon.png");
+    //app.setWindowIcon(icon2);
+
     // Font with icons. See the fontello-icons folder for more info.
     QFontDatabase fontDatabase;
     if (fontDatabase.addApplicationFont(":/fonts/fontello-icons/fontello.ttf") == -1){

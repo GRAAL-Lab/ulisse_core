@@ -250,6 +250,8 @@ VehicleController::VehicleController(std::string conf_filename)
     dist_last_ = 0.0;
     t_last_ = t_now_ = std::chrono::system_clock::now();
     ctrlData_->avoidancePathEnabled = false;
+    ctrlData_->preApReached = true;
+    //ctrlData_->pathFollowRequested = false;
     sentReq = false;
 
     // Main function timer
@@ -924,8 +926,10 @@ void VehicleController::ComputeCableVelocity(const float &l_cable, float &vel_ca
     a1 = conf_->Eq1_a; b1=-1; c1= conf_->Eq1_b;
     a2 = conf_->Eq2_a;; b2=-1; c2= conf_->Eq2_b;
     float x ,y; x = distance; y = l_cable;
-    float d1 = abs(a1*x + b1*y + c1)/sqrt(pow(a1,2)+pow(b1,2)); // distance of the point from the line1
-    float d2 = abs(a2*x + b2*y + c2)/sqrt(pow(a2,2)+pow(b2,2)); // distance of the point from the line2
+    float d1 = -(a1*x + b1*y + c1)/sqrt(pow(a1,2)+pow(b1,2)); // distance of the point from the line1
+    float d2 = (a2*x + b2*y + c2)/sqrt(pow(a2,2)+pow(b2,2)); // distance of the point from the line2
+    //float d1 = abs(a1*x + b1*y + c1)/sqrt(pow(a1,2)+pow(b1,2)); // distance of the point from the line1
+    //float d2 = abs(a2*x + b2*y + c2)/sqrt(pow(a2,2)+pow(b2,2)); // distance of the point from the line2
 
     //std::cout << "l_cable = "<< l_cable<< std::endl;
     //std::cout << "distanceASV-ROV = "<< distance<< std::endl;
@@ -952,7 +956,14 @@ void VehicleController::ComputeCableVelocity(const float &l_cable, float &vel_ca
 //        vel_cable = 0.0;
 
     //if(d1 < conf_->Eq_delta){
-    if(d1 < distance/10){
+    if(d1 < 0){
+        vel_cable = 1.0;
+    }
+    else if (d2 < 0){
+        vel_cable = -1.0;
+    }
+    else if(d1 < distance/10){
+    //if(d1 < distance/10){
         double gain = rml::DecreasingBellShapedFunction(conf_->Eq_delta - 0.5, conf_->Eq_delta, 0, 1.0, d1);
         vel_cable = gain * 1.0;
     }
@@ -964,8 +975,11 @@ void VehicleController::ComputeCableVelocity(const float &l_cable, float &vel_ca
     else
         vel_cable = 0.0;
 
-    //std::cout << "vel_cable = "<< vel_cable << std::endl;
-    //std::cout << "-----------" << std::endl;
+//    std::cout << "d1 = "<< d1 << std::endl;
+//    std::cout << "d2 = "<< d2 << std::endl;
+//    std::cout << "d11 = "<< d11 << std::endl;
+//    std::cout << "d22 = "<< d22 << std::endl;
+//    std::cout << "-----------" << std::endl;
 }
 
 void VehicleController::LLCStatusCB(const ulisse_msgs::msg::LLCStatus::SharedPtr msg)
@@ -1072,6 +1086,7 @@ void VehicleController::Run()
             std::cerr << "request_result = " << request_result << std::endl;
             ctrlData_->avoidancePathGenerated = true;
             sentReq = true;
+            ctrlData_->avoidancePath = aPath_;
         }
         ctrlData_->avoidancePath = aPath_;
         //sendLatLongAvoidanceCommand(ctrlData_->inertialF_linearPositionCurrentGoal, 4.0, 1.5, true);
@@ -1177,8 +1192,8 @@ void VehicleController::PublishControl()
             plotVar_.goal_distance_rov = stateRovFollowing_->goalDistance;
 
             plotVar_.heading_error_obstacle = stateRovFollowing_->headingErrorAP;
-            plotVar_.goal_distance_obstacle = stateRovFollowing_->goalDistanceAP;
-
+            //plotVar_.goal_distance_obstacle = stateRovFollowing_->goalDistanceAP;
+            plotVar_.goal_distance_obstacle = ctrlData_->distanceToAP;
             plotVar_.distance_rov_obstacle = stateRovFollowing_->ROV2obstacleDistance;
 
 

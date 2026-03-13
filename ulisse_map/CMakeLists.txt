@@ -23,6 +23,7 @@ find_package(Qt5QuickControls2 REQUIRED)
 find_package(Qt5Location REQUIRED)
 find_package(Qt5Positioning REQUIRED)
 find_package(ulisse_msgs REQUIRED)
+find_package(rov_msgs REQUIRED)
 find_package(ulisse_driver REQUIRED)
 find_package(ulisse_ctrl REQUIRED)
 find_package(nav_filter REQUIRED)
@@ -48,6 +49,7 @@ include_directories(
     ${Qt5Widgets_INCLUDE_DIRS}
     ${Qt5Quick_INCLUDE_DIRS}
     ${ulisse_msgs_INCLUDE_DIRS}
+    ${rov_msgs_INCLUDE_DIRS}
     ${ulisse_ctrl_INCLUDE_DIRS}
     ${ulisse_driver_INCLUDE_DIRS}
     ${nav_filter_INCLUDE_DIRS}
@@ -72,6 +74,7 @@ ament_target_dependencies(${PROJECT_NAME}_node
         ament_index_cpp
         std_msgs
         ulisse_msgs
+        rov_msgs
         rmw_implementation
         nav_filter
 )

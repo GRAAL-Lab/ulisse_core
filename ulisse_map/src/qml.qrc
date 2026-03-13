@@ -552,5 +552,7 @@
         <file>offline_tiles/osm/osm_100-l-1-9-271-185.png</file>
         <file>offline_tiles/osm/osm_100-l-1-9-271-186.png</file>
         <file>offline_tiles/osm/osm_100-l-1-9-272-186.png</file>
+        <file>images/rov_icon.png</file>
+        <file>images/BlueRov2_color.png</file>
     </qresource>
 </RCC>

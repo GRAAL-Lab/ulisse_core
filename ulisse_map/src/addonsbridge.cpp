@@ -84,6 +84,10 @@ void AddonsBridge::RegisterPublishersAndSubscribers()
     polylineSub_ = this->create_subscription<ulisse_msgs::msg::CoordinateList>(ulisse_msgs::topicnames::avoidance_path,
         qos_sensor, std::bind(&AddonsBridge::PolylineCB, this, _1));
 
+    //polylineSub_ = this->create_subscription<ulisse_msgs::msg::CoordinateList>(ulisse_msgs::topicnames::avoidance_path,
+    //    qos_sensor, std::bind(&AddonsBridge::PolylineCB, this, _1));
+
+
 }
 
 void AddonsBridge::ShowToast(const QVariant message, const QVariant duration)

@@ -142,7 +142,7 @@ fsm::retval StateRovFollow::Execute()
         pathManager_.ComputeWaterCurrentGoalPosition(goalPosition, ctrlData->inertialF_waterCurrent, currentAlignmentDistance, ApPos);
         ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, ApPos, goalDistanceAP, goalHeadingAP); // align to obstacle
         ctrlData->inertialF_linearPositionCurrentGoal = ApPos;
-        if(goalDistanceAP > alignmentPointRadius && RovInObsZone){
+        if(goalDistanceAP > alignmentPointRadius && RovInObsZone && ctrlData->preApReached){
             ctrlData->avoidancePathEnabled = true;
             fsm_->EmitEvent(ulisse::events::names::faralignmentposition, ulisse::events::priority::medium);
         }
@@ -151,7 +151,7 @@ fsm::retval StateRovFollow::Execute()
         }
 
     }
-    else if(ctrlData->cable_length < currentAlignmentThreshold - 3.0){
+    else if(ctrlData->cable_length < currentAlignmentThreshold - 2.0){
         long_tether = false;
         ctrlData->avoidancePathEnabled = false;
         /*
@@ -177,6 +177,7 @@ fsm::retval StateRovFollow::Execute()
         // Compute distance and heading towards Obstacle-Goal (the obstacle alignment point)
         ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, RovObstaclePos, goalDistanceAP, goalHeadingAP); // align to obstacle
     }
+    ctrlData->distanceToAP = goalDistanceAP;
 
     /*
     LatLong vehiclePose;
@@ -269,7 +270,7 @@ fsm::retval StateRovFollow::Execute()
             //fsm_->EmitEvent(ulisse::events::names::neargoalposition, ulisse::events::priority::medium);
 
         }
-     else {
+     else if(goalDistanceAP < obstacleGoalAcceptanceRadius - 1.0){
             normalZoneObs = false;
         }
 

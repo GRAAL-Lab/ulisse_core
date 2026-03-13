@@ -27,6 +27,7 @@ MapViewForm {
 
         onTriggered: {
             map.center = fbkUpdater.ulisse_pos
+            map.center = fbkUpdater.rov_pos
         }
     }
 
@@ -74,6 +75,7 @@ MapViewForm {
 
         onTriggered: {
             map.center = fbkUpdater.ulisse_pos
+            map.center = fbkUpdater.rov_pos
             //console.log("settings.unIndiceSalvatoACaso: " + settings.unIndiceSalvatoACaso)
             //console.log("settings.mapTypeIndex: " + settings.mapTypeIndex)
             //console.log("map.supportedMapTypes[settings]: " + map.supportedMapTypes[settings.mapTypeIndex])

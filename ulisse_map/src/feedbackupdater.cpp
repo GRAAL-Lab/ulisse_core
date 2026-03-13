@@ -8,7 +8,7 @@
 #include "ctrl_toolbox/HelperFunctions.h"
 #include "ulisse_ctrl/ulisse_defines.hpp"
 #include "ulisse_msgs/topicnames.hpp"
-
+#include "rov_msgs/topicnames.hpp"
 
 using std::placeholders::_1;
 using namespace std::chrono_literals;
@@ -173,6 +173,9 @@ void FeedbackUpdater::RegisterPublishersAndSubscribers()
     safetyBoundarySetSub_ = this->create_subscription<std_msgs::msg::Bool>(ulisse_msgs::topicnames::safety_boundary_set, 1,
                                                                            std::bind(&FeedbackUpdater::SafetyBoundaryCB, this, _1) );
 
+    rov_nav_filter_sub_ = this->create_subscription<rov_msgs::msg::NavFilterData>("/rov/nav_filter/data",
+                                                                                     10, std::bind(&FeedbackUpdater::RovNavFilterDataCB, this, _1));
+
 
 }
 
@@ -222,6 +225,51 @@ void FeedbackUpdater::NavFilterDataCB(const ulisse_msgs::msg::NavFilterData::Sha
     magnetometerReceived_ = msg->magnetometer_received;
 
 }
+
+void FeedbackUpdater::RovNavFilterDataCB(const rov_msgs::msg::NavFilterData::SharedPtr msg)
+{
+
+
+    q_rov_pos_.setLatitude(msg->inertialframe_linear_position.latlong.latitude);
+    q_rov_pos_.setLongitude(msg->inertialframe_linear_position.latlong.longitude);
+    q_rov_pos_.setAltitude(msg->inertialframe_linear_position.altitude);
+
+    q_rov_rpy_deg_.setX(RadiansToDegrees(msg->bodyframe_angular_position.roll, false));
+    q_rov_rpy_deg_.setY(RadiansToDegrees(msg->bodyframe_angular_position.pitch, false));
+    q_rov_rpy_deg_.setZ(RadiansToDegrees(msg->bodyframe_angular_position.yaw, true));
+
+    /*q_ulisse_linear_vel_.setX(msg->bodyframe_linear_velocity.at(0));
+    q_ulisse_linear_vel_.setY(msg->bodyframe_linear_velocity.at(1));
+    q_ulisse_linear_vel_.setZ(msg->bodyframe_linear_velocity.at(2));
+
+    q_ulisse_rpy_deg_.setX(RadiansToDegrees(msg->bodyframe_angular_position.roll, false));
+    q_ulisse_rpy_deg_.setY(RadiansToDegrees(msg->bodyframe_angular_position.pitch, false));
+    q_ulisse_rpy_deg_.setZ(RadiansToDegrees(msg->bodyframe_angular_position.yaw, true));
+
+    //double theta = atan2(catamaran_rel_vel_b.y(), catamaran_rel_vel_b.x());
+    Eigen::Rotation2D<double> wRb = Eigen::Rotation2D<double>(msg->bodyframe_angular_position.yaw);
+    Eigen::Vector2d water_current_b = wRb.inverse() * water_current_w;
+
+    q_ulisse_surge_ = catamaran_rel_vel_b.x() + water_current_b.x();
+    // TODO (?): freccia surge assoluto
+
+    // Rounding surge and heading to 2 decimal places
+    q_ulisse_rpy_deg_[2] = int(q_ulisse_rpy_deg_[2] * 1E2) / 1E2;
+    q_ulisse_surge_ = int(q_ulisse_surge_ * 1E2) / 1E2;
+
+
+    q_ulisse_rpy_rate_deg_.setX(msg->bodyframe_angular_velocity.at(0));
+    q_ulisse_rpy_rate_deg_.setY(msg->bodyframe_angular_velocity.at(1));
+    q_ulisse_rpy_rate_deg_.setZ(msg->bodyframe_angular_velocity.at(2));
+
+    // SENSORS STATUS
+    gpsReceived_ = msg->gps_received;
+    imuReceived_ = msg->imu_received;
+    compassReceived_ = msg->compass_received;
+    magnetometerReceived_ = msg->magnetometer_received;*/
+
+}
+
 
 /*void FeedbackUpdater::SetNodeHandle(const rclcpp::Node::SharedPtr& np)
 {
@@ -413,6 +461,8 @@ void FeedbackUpdater::resetPublishersAndSubscribers()
     current_status_sub_.reset();
     feedbackGuiSub_.reset();
 
+    rov_nav_filter_sub_.reset();
+
     RegisterPublishersAndSubscribers();
 }
 
@@ -436,6 +486,11 @@ QGeoCoordinate FeedbackUpdater::get_ulisse_pos()
     return q_ulisse_pos_;
 }
 
+QGeoCoordinate FeedbackUpdater::get_rov_pos()
+{
+    return q_rov_pos_;
+}
+
 QVector3D FeedbackUpdater::get_ulisse_linear_vel()
 {
     return q_ulisse_linear_vel_;
@@ -454,6 +509,11 @@ QGeoCoordinate FeedbackUpdater::get_goal_pos()
 QVector3D FeedbackUpdater::get_ulisse_rpy()
 {
     return q_ulisse_rpy_deg_;
+}
+
+QVector3D FeedbackUpdater::get_rov_rpy()
+{
+    return q_rov_rpy_deg_;
 }
 
 QVector3D FeedbackUpdater::get_ulisse_rpy_rate_deg()

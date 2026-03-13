@@ -134,6 +134,8 @@ fsm::retval StatePathFollow::Execute()
     safetyBoundariesTask_->ExternalActivationFunction() = taskGainSafety * Eigen::MatrixXd::Identity(safetyBoundariesTask_->TaskSpace(), safetyBoundariesTask_->TaskSpace());
 
     double goalDistance, goalHeading;
+
+    ctrlData->distanceToAP = pathManager_.DistanceToEnd();
     //pathfollow action
     if (isCurveSet_) {
         //Going to the starting point

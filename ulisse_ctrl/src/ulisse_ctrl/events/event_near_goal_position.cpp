@@ -18,6 +18,8 @@ namespace events {
             // Go back to rovfollow state
             ctrlData_->avoidancePathEnabled = false;
             ctrlData_->avoidancePathGenerated = false;
+            ctrlData_->preApReached = true;
+            ctrlData_->avoidancePath.path.type.clear();
             fsm_->SetNextState("ROV_Following");
 
             //stateHold_->positionToHold = ctrlData_->inertialF_linearPosition;

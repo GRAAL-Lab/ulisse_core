@@ -20,6 +20,7 @@ Map {
     property alias currentArrow: currentArrow
     property alias currentLabel: currentLabel
     property alias ulisseIcon: ulisseIcon
+    property alias rovIcon: rovIcon
     property alias ulisseGPSIcon: ulisseGPSIcon
     property alias goalFlag: goalFlag
     property alias ruler: ruler
@@ -169,6 +170,21 @@ Map {
         coordinate: fbkUpdater.ulisse_pos
         anchorPoint.x: ulisseImage.width / 2
         anchorPoint.y: ulisseImage.height / 2
+        visible: false
+        z: map.z + 5
+    }
+
+    MapQuickItem {
+        id: rovIcon
+        sourceItem: Image {
+            id: rovImage
+            width: 30
+            height: 30
+            source: 'qrc:/images/BlueRov2_color.png'
+        }
+        coordinate: fbkUpdater.rov_pos
+        anchorPoint.x: rovImage.width / 2
+        anchorPoint.y: rovImage.height / 2
         visible: false
         z: map.z + 5
     }

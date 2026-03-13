@@ -30,6 +30,7 @@
 #include "ulisse_msgs/msg/thrusters_reference.hpp"
 #include "ulisse_msgs/msg/vehicle_status.hpp"
 
+#include "rov_msgs/msg/nav_filter_data.hpp"
 
 class FeedbackUpdater : public QObject, rclcpp::Node {
     Q_OBJECT
@@ -45,8 +46,10 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
 
     Q_PROPERTY(QString vehicle_state READ get_vehicle_state NOTIFY callbacks_processed)
     Q_PROPERTY(QGeoCoordinate ulisse_pos READ get_ulisse_pos NOTIFY callbacks_processed)
+    Q_PROPERTY(QGeoCoordinate rov_pos READ get_rov_pos NOTIFY callbacks_processed)
     Q_PROPERTY(QVector3D ulisse_linear_vel READ get_ulisse_linear_vel NOTIFY callbacks_processed)
     Q_PROPERTY(QVector3D ulisse_rpy_deg READ get_ulisse_rpy NOTIFY callbacks_processed)
+    Q_PROPERTY(QVector3D rov_rpy_deg READ get_rov_rpy NOTIFY callbacks_processed)
     Q_PROPERTY(QVector3D ulisse_rpy_rate_deg READ get_ulisse_rpy_rate_deg NOTIFY callbacks_processed)
     Q_PROPERTY(double ulisse_surge READ get_ulisse_surge NOTIFY callbacks_processed)
     Q_PROPERTY(double accept_radius READ get_accept_radius NOTIFY callbacks_processed)
@@ -94,11 +97,12 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     bool controlAlive_ = false;
     bool vehicleAlive_ = false;
     bool gpsReceived_, imuReceived_, compassReceived_, magnetometerReceived_;
-    QGeoCoordinate q_centroid, q_ulisse_pos_, q_goal_pos_, q_gps_pos_, q_track_pos_;
+    QGeoCoordinate q_centroid, q_ulisse_pos_, q_goal_pos_, q_gps_pos_, q_track_pos_, q_rov_pos_;
     double q_goal_distance_, q_goal_heading_deg_;
     double q_ulisse_surge_;
     QVector3D q_ulisse_rpy_deg_, q_ulisse_rpy_rate_deg_;
     QVector3D q_ulisse_linear_vel_;
+    QVector3D q_rov_rpy_deg_;
     double q_battery_perc_L_, q_battery_perc_R_;
     QString q_vehicle_state_, q_gps_time_;
 
@@ -148,6 +152,8 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     rclcpp::Subscription<ulisse_msgs::msg::FeedbackGui>::SharedPtr feedbackGuiSub_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr safetyBoundarySetSub_;
 
+    rclcpp::Subscription<rov_msgs::msg::NavFilterData>::SharedPtr rov_nav_filter_sub_;
+
     QVector<double> GenerateRandFloatVector(int size);
     bool LoadConfiguration();
     void RegisterPublishersAndSubscribers();
@@ -170,6 +176,7 @@ class FeedbackUpdater : public QObject, rclcpp::Node {
     void ReferenceVelocitiesCB(const ulisse_msgs::msg::ReferenceVelocities::SharedPtr msg);
     void VehicleStatusCB(const ulisse_msgs::msg::VehicleStatus::SharedPtr msg);
     void NavFilterDataCB(const ulisse_msgs::msg::NavFilterData::SharedPtr msg);
+    void RovNavFilterDataCB(const rov_msgs::msg::NavFilterData::SharedPtr msg);
     void FeedbackGuiCB(const ulisse_msgs::msg::FeedbackGui::SharedPtr msg);
     void SafetyBoundaryCB(const std_msgs::msg::Bool::SharedPtr msg);
 
@@ -186,10 +193,12 @@ public:
     bool get_vehicle_alive();
     QGeoCoordinate get_centroid();
     QGeoCoordinate get_ulisse_pos();
+    QGeoCoordinate get_rov_pos();
     QVector3D get_ulisse_linear_vel();
     double get_ulisse_surge();
     QGeoCoordinate get_goal_pos();
     QVector3D get_ulisse_rpy();
+    QVector3D get_rov_rpy();
     QVector3D get_ulisse_rpy_rate_deg();
     QString get_vehicle_state();
     double get_goal_distance();

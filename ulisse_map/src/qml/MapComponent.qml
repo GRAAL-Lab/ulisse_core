@@ -167,6 +167,22 @@ MapComponentForm {
         }
     ]
 
+    rovIcon.transform: [
+        Rotation {
+            origin.x: rovIcon.sourceItem.width / 2
+            origin.y: rovIcon.sourceItem.height / 2
+            angle: fbkUpdater.rov_rpy_deg.z - map.bearing
+        },
+        Rotation {
+            origin.x: rovIcon.sourceItem.width / 2
+            origin.y: rovIcon.sourceItem.height / 2
+            angle: map.tilt
+            axis.x: 1
+            axis.y: 0
+            axis.z: 0
+        }
+    ]
+
     ulisseGPSIcon.transform: [
         Rotation {
             origin.x: ulisseIcon.sourceItem.width / 2
@@ -216,6 +232,7 @@ MapComponentForm {
                 ulissePath.addCoordinate(fbkUpdater.ulisse_pos)
                 ulissePath.firstRun = false
                 ulisseIcon.visible = true;
+                rovIcon.visible = true;
             }
             // To reduce the line density (and avoid to overload the gui)
             // we add a new point only every 1.0 meter

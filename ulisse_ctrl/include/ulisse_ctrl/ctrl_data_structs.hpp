@@ -29,8 +29,11 @@ struct ControlData {
     bool avoidancePathEnabled; // ASV-ROV
     bool cableCurrentAligned; // ASV-ROV
     bool avoidancePathGenerated; // ASV-ROV
+    bool preApReached; // ASV-ROV
+    bool pathFollowRequested; // ASV-ROV
     bool preStateRovFollow;
     double cable_length;
+    double distanceToAP;
     ulisse_msgs::msg::CommandPathFollow avoidancePath;
 
     bool radioControllerEnabled;
