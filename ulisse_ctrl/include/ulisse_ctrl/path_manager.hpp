@@ -93,7 +93,7 @@ public:
 
 
     bool ComputeDistanceOfClosestObstacle2ROV(const ctb::LatLong& rov_pos, const std::vector<detav_msgs::msg::Obstacle>,
-                                                  double& distance, double& heading, ctb::LatLong& closest_obs);
+                                                   double& distance, double& heading, ctb::LatLong& closest_obs);
    double RetrieveObstacleRadius(const std::vector<detav_msgs::msg::Obstacle>);
 
     // Nurbs parameters

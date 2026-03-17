@@ -96,7 +96,7 @@ fsm::retval StateRovFollow::Execute()
 
     CheckRadioController();
     //ctrlData->preStateRovFollow = true; // moved to long_tether Event handler
-
+    uint obstacleExist;
     pathManager_.ComputeDistanceOfClosestObstacle2ROV(goalPosition, ctrlData->obstacleMsgVector,
                                                               ROV2obstacleDistance, ROV2obstacleHeading, obstaclePosition);
     bool RovInObsZone = false;

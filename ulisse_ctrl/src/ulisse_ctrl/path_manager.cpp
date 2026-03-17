@@ -279,46 +279,55 @@ bool PathManager::GetVelocity(const ctb::LatLong& position, double& velocity) co
 }
 
 bool PathManager::ComputeDistanceOfClosestObstacle2ROV(const ctb::LatLong& rov_pos, const std::vector<detav_msgs::msg::Obstacle> obs_vector,
-                                                          double& shortest_distance, double& heading2closest_obs, ctb::LatLong& closest_obs){
+                                                           double& shortest_distance, double& heading2closest_obs, ctb::LatLong& closest_obs){
     //double obsAltitude;
     //std::vector<double> obs_distance_vect;
     //std::vector<double> heading_vect;
     double min_distance; min_distance = 0.0;
     double min_heading; min_heading = 0.0;
     int min_id; min_id = 0;
-    for(int unsigned long i=0; i<obs_vector.size(); i++){
-        double distance, heading;
-        ctb::LatLong obs_latlong;
-        obs_latlong.latitude= obs_vector[i].pose.position.position.latitude;
-        obs_latlong.longitude= obs_vector[i].pose.position.position.longitude;
-        ctb::DistanceAndAzimuthRad(rov_pos, obs_latlong, distance, heading);
-        //obs_distance_vect.push_back(distance);
-        //heading_vect.push_back(heading);
+    if(obs_vector.size() == 0){
+        shortest_distance = INFINITY;
+        return true;
+    }
+    else{
+        //obstacle_exist = 1;
+        for(int unsigned long i=0; i<obs_vector.size(); i++){
+            double distance, heading;
+            ctb::LatLong obs_latlong;
+            obs_latlong.latitude= obs_vector[i].pose.position.position.latitude;
+            obs_latlong.longitude= obs_vector[i].pose.position.position.longitude;
+            ctb::DistanceAndAzimuthRad(rov_pos, obs_latlong, distance, heading);
+            //obs_distance_vect.push_back(distance);
+            //heading_vect.push_back(heading);
 
-        if(i<1){
-            min_distance = distance;
-            min_heading = heading;
-            min_id = 0;
-        }
-        else
-            if(min_distance > distance){
+            if(i<1){
                 min_distance = distance;
                 min_heading = heading;
-                min_id = i;
+                min_id = 0;
             }
+            else
+                if(min_distance > distance){
+                    min_distance = distance;
+                    min_heading = heading;
+                    min_id = i;
+                }
 
+        }
+        shortest_distance = min_distance;
+        heading2closest_obs = min_heading;
+        closest_obs.latitude = obs_vector[min_id].pose.position.position.latitude;
+        closest_obs.longitude = obs_vector[min_id].pose.position.position.longitude;
+        //std::cout << "min_id = " << min_id << std::endl;
+        //std::cout << "shortest_distance_obstalce = " << shortest_distance << std::endl;
+        //ctb::LocalUTM2LatLong(worldF_obstacle, centroid_, obstaclePosition, obsAltitude);
+
+        //ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, obstaclePosition, ASV2obstacleDistance, ASV2obstacleHeading); not needed
+
+        return true;
     }
-    shortest_distance = min_distance;
-    heading2closest_obs = min_heading;
-    closest_obs.latitude = obs_vector[min_id].pose.position.position.latitude;
-    closest_obs.longitude = obs_vector[min_id].pose.position.position.longitude;
-    //std::cout << "min_id = " << min_id << std::endl;
-    //std::cout << "shortest_distance_obstalce = " << shortest_distance << std::endl;
-    //ctb::LocalUTM2LatLong(worldF_obstacle, centroid_, obstaclePosition, obsAltitude);
 
-    //ctb::DistanceAndAzimuthRad(ctrlData->inertialF_linearPosition, obstaclePosition, ASV2obstacleDistance, ASV2obstacleHeading); not needed
 
-    return true;
 }
 
 double PathManager::RetrieveObstacleRadius(const std::vector<detav_msgs::msg::Obstacle> obs_vector){
