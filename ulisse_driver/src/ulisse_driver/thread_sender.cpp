@@ -281,7 +281,7 @@ namespace llc {
         serializer.PacketAdd_uint16(chksm::CalculateChecksum(serializer.Buffer(), 2));
 
         SendMessage(serializer.Buffer());
-        RCLCPP_INFO(this->get_logger(), "Sending reference! (L:%d, R:%d)", leftPercentage, rightPercentage);
+        //RCLCPP_INFO(this->get_logger(), "Sending reference! (L:%d, R:%d)", leftPercentage, rightPercentage);
     }
 
     void ThreadSender::RetrieveConfiguration()
