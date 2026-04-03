@@ -1,6 +1,7 @@
 #include "nav_filter/navigation_filter.hpp"
 #include "ulisse_msgs/futils.hpp"
 #include <unistd.h>
+#include <cmath>
 
 using std::placeholders::_1;
 using std::placeholders::_2;
@@ -296,13 +297,37 @@ namespace nav {
 
         if (imuValid_) {
             if (measuresActive_.find("gyro")->second) {
-                // Verify !TODO!
-                gyroMeasurement_->MeasureVector() = Eigen::Vector3d { imuData_.angular_velocity.x, imuData_.angular_velocity.y, imuData_.angular_velocity.z };
-                extendedKalmanFilter_->AddMeasurement(gyroMeasurement_);
+                // Verify measurements are finite. IMU may publish INF/NaN for faulty axes.
+                double gx = imuData_.angular_velocity.x;
+                double gy = imuData_.angular_velocity.y;
+                double gz = imuData_.angular_velocity.z;
+
+                if (!std::isfinite(gx) || !std::isfinite(gy) || !std::isfinite(gz)) {
+                    RCLCPP_WARN(this->get_logger(), "IMU angular velocity contains non-finite values; skipping gyro measurement for EKF (gx=%f, gy=%f, gz=%f)", gx, gy, gz);
+                } else {
+                    // Optional: warn on all-zero measurements which might indicate a dead sensor
+                    if (gx == 0.0 && gy == 0.0 && gz == 0.0) {
+                        RCLCPP_WARN(this->get_logger(), "IMU angular velocity is zero on all axes, check the sensor and the topic");
+                    }
+                    gyroMeasurement_->MeasureVector() = Eigen::Vector3d { gx, gy, gz };
+                    extendedKalmanFilter_->AddMeasurement(gyroMeasurement_);
+                }
             }
             if (measuresActive_.find("accelerometer")->second) {
-                accelerometerMeasurement_->MeasureVector() = Eigen::Vector3d { imuData_.linear_acceleration.x, imuData_.linear_acceleration.y, imuData_.linear_acceleration.z };
-                extendedKalmanFilter_->AddMeasurement(accelerometerMeasurement_);
+                double ax = imuData_.linear_acceleration.x;
+                double ay = imuData_.linear_acceleration.y;
+                double az = imuData_.linear_acceleration.z;
+
+                //RCLCPP_INFO(this->get_logger(), "IMU linear acceleration values; (ax=%f, ay=%f, az=%f)", ax, ay, az);
+                if (!std::isfinite(ax) || !std::isfinite(ay) || !std::isfinite(az)) {
+                    RCLCPP_WARN(this->get_logger(), "IMU linear acceleration contains non-finite values; skipping accelerometer measurement for EKF (ax=%f, ay=%f, az=%f)", ax, ay, az);
+                } else {
+                    if (ax == 0.0 && ay == 0.0 && az == 0.0) {
+                        RCLCPP_WARN(this->get_logger(), "IMU linear acceleration is zero on all axes, check the sensor and the topic");
+                    }
+                    accelerometerMeasurement_->MeasureVector() = Eigen::Vector3d { ax, ay, az };
+                    extendedKalmanFilter_->AddMeasurement(accelerometerMeasurement_);
+                }
             }
         }
 
@@ -346,7 +371,7 @@ namespace nav {
             extendedKalmanFilter_->AddMeasurement(zMeterMeasurement_);
         }
 
-             //RCLCPP_INFO(this->get_logger(), "EFK measurement: imu %d - gps %d - magnetometer %d", imuValid_, gpsValid_, magnetometerValid_);
+        //RCLCPP_INFO(this->get_logger(), "EFK measurement: imu %d - gps %d - magnetometer %d", imuValid_, gpsValid_, magnetometerValid_);
 
              //Filter Update
         fifo_h_p_.push(thrustersPercReference_.left_percentage);
@@ -825,7 +850,7 @@ namespace nav {
 
     void NavigationFilter::GPSDataCB(const ulisse_msgs::msg::GPSData::SharedPtr msg) { gpsData_ = *msg; }
 
-    void NavigationFilter::IMUDataCB(const sensor_msgs::msg::Imu::SharedPtr msg) { imuData_ = *msg; /*RCLCPP_INFO(this->get_logger(), "IMU Callback()");*/ }
+    void NavigationFilter::IMUDataCB(const sensor_msgs::msg::Imu::SharedPtr msg) { imuData_ = *msg; /*RCLCPP_INFO(this->get_logger(), "IMU Callback()"); */}
 
     //void NavigationFilter::MagnetometerDataCB(const ulisse_msgs::msg::Magnetometer::SharedPtr msg) { magnetometerData_ = *msg; }
     void NavigationFilter::ImuMagnetometerCB(const sensor_msgs::msg::MagneticField::SharedPtr msg) {imuMagnetometer_ = *msg;};
