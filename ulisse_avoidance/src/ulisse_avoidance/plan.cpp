@@ -151,6 +151,7 @@ bool Plan::UpdateStatus(const ctb::LatLong& vhPos, const double& wpAcceptanceRad
 {
     // TODO should I update vhPose? prob unncessary
     // Remove reached waypoints and stop saving them as nodes parents
+    //vhPose = oal::Pose(GetLocal2d(vhPos), vhHeading);
     if ((GetLocal2d(vhPos) - path.Data().front()->data.position).norm() < wpAcceptanceRadius) {
         std::cerr << "Reached waypoint" << std::endl;
         currentSupportObs_ = path.Data().front()->data.obs_ptr;

@@ -1005,8 +1005,9 @@ bool VehicleController::sendLatLongAvoidanceCommand(const ctb::LatLong & goal, d
     auto result_future = srvAvoidancePath_->async_send_request(serviceReq);
     std::cout << "Sent Request to Avoidance" << std::endl;
     //ctrlData_->avoidancePath.path = result_future.get()->path;
+    //aPath_.path = result_future.get()->path;
 
-    ctrlData_->avoidancePath = aPath_;
+    //ctrlData_->avoidancePath = aPath_;
     ctrlData_->avoidancePathGenerated = true;
     std::cout << "avoidancePath.path ---> assigned" << std::endl;
     // Set the timeout for 0.5 seconds (500 milliseconds)
@@ -1086,9 +1087,13 @@ void VehicleController::Run()
             std::cerr << "request_result = " << request_result << std::endl;
             ctrlData_->avoidancePathGenerated = true;
             sentReq = true;
-            ctrlData_->avoidancePath = aPath_;
+            //statePathFollowing_->LoadPath(aPath_.path);
+            //ctrlData_->avoidancePath = aPath_;
         }
-        ctrlData_->avoidancePath = aPath_;
+        else{
+            ctrlData_->avoidancePath = aPath_;
+            statePathFollowing_->LoadPath(ctrlData_->avoidancePath.path);
+        }
         //sendLatLongAvoidanceCommand(ctrlData_->inertialF_linearPositionCurrentGoal, 4.0, 1.5, true);
     }
     else

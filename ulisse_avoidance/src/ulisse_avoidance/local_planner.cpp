@@ -32,6 +32,7 @@ void LocalPlannerNode::handlePlanRequest(
     // SyncObsToLastVhUpdate(syncedObs);
     SyncObsToLastVhUpdate();
 
+    std::cout << "vh_position_: " << vh_position_.latitude <<", " << vh_position_.longitude << std::endl;
     plan = std::make_shared<Plan>(vh_position_, vh_heading_, currentGoal_, conf_.centroid, obstacles_,
         this->now(), debugSettings->logDirectory, debugSettings);
 
@@ -179,7 +180,7 @@ void LocalPlannerNode::NavFilterCB(ulisse_msgs::msg::NavFilterData::SharedPtr ms
             RCLCPP_INFO(this->get_logger(), "Reached end of path!");
             StopCheckingProgress();
             // HoldCmd();
-        }
+       }
     }
 }
 

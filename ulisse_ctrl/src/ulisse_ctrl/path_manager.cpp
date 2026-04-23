@@ -291,7 +291,6 @@ bool PathManager::ComputeDistanceOfClosestObstacle2ROV(const ctb::LatLong& rov_p
         return true;
     }
     else{
-        //obstacle_exist = 1;
         for(int unsigned long i=0; i<obs_vector.size(); i++){
             double distance, heading;
             ctb::LatLong obs_latlong;
