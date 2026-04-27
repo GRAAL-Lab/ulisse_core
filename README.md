@@ -46,17 +46,17 @@ All the dependencies can be installed using the script contained in this repo: [
 In order of installation to respect dependencies:
 
 - **ros2 jazzy**: https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debians.html
-- **rml**: http://bitbucket.org/isme_robotics/rml
-- **fsm**: http://bitbucket.org/isme_robotics/fsm
-- **tpik**: http://bitbucket.org/isme_robotics/tpik
-- **ikcl**: https://bitbucket.org/isme_robotics/ikcl
-- **marine_vehicle_models**: https://bitbucket.org/isme_robotics/marine_vehicle_models
 - **libgps**: `sudo apt install libgps-dev`
 - **orientus-ros2-driver**: https://bitbucket.org/isme_robotics/orientus-ros2-driver
 - **SISL lib**: `git clone https://github.com/SINTEF-Geometry/SISL.git`
-- **ctrl_toolbox**: http://bitbucket.org/isme_robotics/ctrl_toolbox
-- **sisl_toolbox**: http://bitbucket.org/isme_robotics/sisl_toolbox
-- **qt5-libraries**: Installed with the `graal_utils` [script](https://bitbucket.org/isme_robotics/graal_utils/src/master/scripts/install_update_graal_libs.sh). When building the package on the catamaran you don't need the **ulisse_map** sub-package (so you can add a COLCON_IGNORE file inside it), and these dependencies can be skipped.
+- **rml**: https://github.com/GRAAL-Lab/rml
+- **fsm**: https://github.com/GRAAL-Lab/fsm
+- **tpik**: https://github.com/GRAAL-Lab/tpik
+- **ikcl**: https://github.com/GRAAL-Lab/ikcl
+- **marine_vehicle_models**: https://github.com/GRAAL-Lab/marine_vehicle_models
+- **ctrl_toolbox**: https://github.com/GRAAL-Lab/ctrl_toolbox
+- **sisl_toolbox**: https://github.com/GRAAL-Lab/sisl_toolbox
+- **qt5-libraries**: Installed with the `graal_utils` [script](https://github.com/GRAAL-Lab/graal_utils/blob/main/scripts/install_update_graal_libs.sh). When building the package on the catamaran you don't need the **ulisse_map** sub-package (so you can add a COLCON_IGNORE file inside it), and these dependencies can be skipped.
 
 
 ### Additional packages (for building)
@@ -65,12 +65,10 @@ In order of installation to respect dependencies:
 
 ## Build
 
-<!--⚠️ If you're using both ROS1 and ROS2 it's important that you define separate aliases in your `~/.bashrc` to source your workspace, that are **not** automatically called when launching new terminals, otherwise you will mix environment variables from different ROS versions.-->
-
-To install the dependencies altogether you can use the [`install_ulisse_core.sh`](https://bitbucket.org/isme_robotics/ulisse_core/src/master/scripts/install_ulisse_core.sh) script inside the **scripts** folder. After installing all the needed dependencies, to build the repo for the first time:
+To install the dependencies altogether you can use the [`install_ulisse_core.sh`](https://github.com/GRAAL-Lab/ulisse_core/blob/main/scripts/install_ulisse_core.sh) script inside the **scripts** folder. After installing all the needed dependencies, to build the repo for the first time:
 
 - Create a ros2 workspace using `colcon` (https://docs.ros.org/en/galactic/Tutorials/Colcon-Tutorial.html)
-- Clone in the **src** folder the ulisse_core repo (git clone git@bitbucket.org:isme_robotics/ulisse_core.git)
+- Clone in the **src** folder the ulisse_core repo (`git clone git@github.com:GRAAL-Lab/ulisse_core.git`)
 - Source the workspace with `sourceros2`
 - Then compile all the other pakages: `colcon build --symlink-install`
 
