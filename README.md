@@ -47,7 +47,7 @@ In order of installation to respect dependencies:
 
 - **ros2 jazzy**: https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debians.html
 - **libgps**: `sudo apt install libgps-dev`
-- **orientus-ros2-driver**: https://bitbucket.org/isme_robotics/orientus-ros2-driver
+- **adnav_driver_ros**: https://github.com/GRAAL-Lab/adnav_driver_ros2 (for the Orientus IMU)
 - **SISL lib**: `git clone https://github.com/SINTEF-Geometry/SISL.git`
 - **rml**: https://github.com/GRAAL-Lab/rml
 - **fsm**: https://github.com/GRAAL-Lab/fsm
