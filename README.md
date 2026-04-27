@@ -1,3 +1,7 @@
+[![ROS2](https://img.shields.io/badge/ROS2-Jazzy-22314E)](https://docs.ros.org)
+![Build](https://img.shields.io/badge/Build-colcon-blue)
+![C++](https://img.shields.io/badge/C%2B%2B-17-00599C)
+
 ``` 
 ██╗   ██╗██╗     ██╗███████╗███████╗███████╗
 ██║   ██║██║     ██║██╔════╝██╔════╝██╔════╝
@@ -11,7 +15,7 @@
 
 # Ulisse Catamaran Control
 
-Ulisse catamaran controller revamped with ROS2 (Kilted Kaiju), on Ubuntu 24.04.
+Ulisse catamaran controller. Using ROS2 (Jazzy Jalisco) on Ubuntu 24.04.
 
 ## Subpackages
 
