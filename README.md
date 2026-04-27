@@ -237,7 +237,24 @@ For some testing of nav_filter and experiments, an optional switch has been adde
 
 ### PC104 Rebooting issues
 
-If for some reasons, the PC104 is not correctly shutting down or rebooting, using the watchdog solves the issue.
+If for some reasons, the PC104 is not correctly shutting down or rebooting, follow these two procedures to get it working:
+
+#### 1. BIOS Settings 
+
+Enter BIOS pressing `DEL` at boot. Then in **ACPI Settings** disable all the options:
+
+```
+Enable ACPI Auto Configuration      [Disabled]
+
+Enable Hibernation                  [Disabled]
+ACPI Sleep State                    [Suspend Disabled]
+Lock Legacy Resources               [Disabled]
+Wake Up By Ring                     [Disabled]
+```
+
+#### 2. Set up the watchdog
+
+Watchdog configuration.
 
 1. Install the watchdog package:
 

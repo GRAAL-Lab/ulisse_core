@@ -195,6 +195,7 @@ rml.config
 
 # vscode stuff
 **/.vscode
+.vscode/
 
 
 srv/_*.py
