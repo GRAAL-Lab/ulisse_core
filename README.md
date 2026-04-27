@@ -15,7 +15,16 @@
 
 # Ulisse Catamaran Control
 
-Ulisse catamaran controller. Using ROS2 (Jazzy Jalisco) on Ubuntu 24.04.
+**ulisse_core** is the main ROS 2 workspace/meta-package for the **Ulisse catamaran** (Ubuntu 24.04, ROS 2 Jazzy).  
+It provides everything needed to run the system end-to-end:
+
+- vehicle state estimation & sensor filtering
+- control and actuation
+- hardware drivers
+- simulation and log replay
+- operator GUI and data logging tools
+
+Scroll down for **packages**, **dependencies**, **build**, and **run** instructions.
 
 ## Subpackages
 
@@ -36,7 +45,7 @@ All the dependencies can be installed using the script contained in this repo: [
 
 In order of installation to respect dependencies:
 
-- **ros2 kilted**: https://docs.ros.org/en/kilted/Installation/Ubuntu-Install-Debians.html
+- **ros2 jazzy**: https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debians.html
 - **rml**: http://bitbucket.org/isme_robotics/rml
 - **fsm**: http://bitbucket.org/isme_robotics/fsm
 - **tpik**: http://bitbucket.org/isme_robotics/tpik
